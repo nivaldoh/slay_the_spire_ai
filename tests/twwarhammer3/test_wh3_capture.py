@@ -359,3 +359,64 @@ def test_passive_capture_cannot_write_through_a_path_component(tmp_path, monkeyp
     metadata = json.loads((bridge / "capture-b-opening.json").read_text())
     assert metadata["status"] == "captured" and metadata["file"] == expected.name
     assert expected.read_bytes() == b"capture"
+
+
+@pytest.mark.parametrize("mailbox_file", ["observation.json", "imagery-b.json"])
+@pytest.mark.parametrize("failure", ["missing", "half-json", "locked"])
+def test_passive_capture_retries_transient_mailbox_reads(
+    tmp_path, monkeypatch, mailbox_file, failure
+):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    target = bridge / mailbox_file
+    worker = capture.PassiveCapture(bridge, job="j", pid=123, enabled=True)
+    poll = 0
+
+    def next_poll(_):
+        nonlocal poll
+        if worker.stop.is_set() or poll == 2:
+            worker.stop.set()
+            return True
+        poll += 1
+        (bridge / "observation.json").write_text(json.dumps({"job": "j", "battle": "b"}))
+        (bridge / "imagery-b.json").write_text(json.dumps({
+            "job": "j", "battle": "b", "stills": [
+                {"trigger": "opening", "status": "capture_ready"}]}))
+        if poll == 1:
+            if failure == "missing":
+                target.unlink()
+            elif failure == "half-json":
+                target.write_text('{"job":')
+        return False
+
+    open_path = Path.open
+    denied = False
+
+    def open_mailbox(path, mode="r", *args, **kwargs):
+        nonlocal denied
+        if failure == "locked" and path == target and "r" in mode and not denied:
+            denied = True
+            raise PermissionError("mailbox writer holds the file")
+        return open_path(path, mode, *args, **kwargs)
+
+    calls = []
+
+    def screenshot(command, **kwargs):
+        calls.append(command[-2:])
+        (bridge / "still-b-opening.png").write_bytes(b"ready capture")
+        return SimpleNamespace(stdout=json.dumps({
+            "status": "captured", "file": "still-b-opening.png"}))
+
+    monkeypatch.setattr(worker.stop, "wait", next_poll)
+    monkeypatch.setattr(Path, "open", open_mailbox)
+    monkeypatch.setattr(capture, "windows_path", str)
+    monkeypatch.setattr(capture.subprocess, "run", screenshot)
+    worker.run()
+
+    assert calls == [["j", "b"]], "a later usable mailbox must capture exactly once"
+    assert denied == (failure == "locked")
+    metadata = json.loads((bridge / "capture-b-opening.json").read_text())
+    assert {key: metadata.get(key) for key in ("job", "battle", "trigger", "status", "file")} == {
+        "job": "j", "battle": "b", "trigger": "opening", "status": "captured",
+        "file": "still-b-opening.png"}
+    assert (bridge / metadata["file"]).read_bytes() == b"ready capture"

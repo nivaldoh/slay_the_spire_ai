@@ -1910,3 +1910,21 @@ old = "                    if (not NAME.fullmatch(trigger) or key in seen\n     
 new = "                    if (key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_cannot_write_through_a_path_component"]
 source = "2026-10-31 passive capture path component ownership oracle"
+
+[[plant]]
+id = "passive-mailbox-transient-read-errors-reraised"
+guards = "Transient missing, locked and partial mailbox reads allow a later capture"
+file = "src/twwarhammer3/battle/capture.py"
+old = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+new = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                raise"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_retries_transient_mailbox_reads"]
+source = "2026-10-31 passive mailbox read recovery oracle"
+
+[[plant]]
+id = "passive-mailbox-locked-reads-not-caught"
+guards = "Transient missing, locked and partial mailbox reads allow a later capture"
+file = "src/twwarhammer3/battle/capture.py"
+old = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+new = "            except (FileNotFoundError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_retries_transient_mailbox_reads"]
+source = "2026-10-31 passive mailbox read recovery oracle"
