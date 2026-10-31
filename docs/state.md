@@ -6,34 +6,30 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex testing audit: `../slay_the_spire_ai-test-quality`, main integration waiting on live checks.
-Evidence there: `runs/test-quality-20261031/`; earlier factory audit: `runs/factory-assessment-20261031/`.
+Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); check-edit/CI decisions wait.
+Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.
+[Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
 
-Claude Code built the [native multiplayer plan](twwarhammer3/native-multiplayer.md#implementation-status)
-up to accounts/billing (owner, 2026-10-30 15:01), merged at `5d10e2a`; no game, $0. Decisions
-wait in `runs/wh3-native-mp-20261030/handoff.md`.
-
-Claude Code's night run (2026-10-30, from 02:55 to the owner's return around noon): light
-factory checks and Land interview evidence merged ([log](twwarhammer3/log.md)); three
-decisions wait in `runs/overnight-20261030/handoff.md`. No game, $0.
+Claude Code's long run (2026-10-31): agreed live checks at `150ef84` and `1cc4582`; Land and team now
+fail on a UI stat and on WSL clock jumps; b52, an unused outcome scorer and compare-peers fixes
+merged; five branches and decisions wait in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
-Earlier factory audit: `runs/light-factory-20261030/handoff.md` ([log](twwarhammer3/log.md)).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
-draft branches are unmerged ([list](#branches)).
+Claude's live-check sequence runs in main; this audit stays offline. Local LLM post-training
+stays paused; ten draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
-MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
+MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 
 ## Total War: WARHAMMER III
 
 Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
-- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b51,
+- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52,
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. The new benchmark is not implemented or verified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
@@ -67,20 +63,17 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 
 ## Known issues
 
-- `runs/` has no backup (31 GB on 2026-10-28, 16 GB of it in `checkpoints/` folders); the owner said not now (2026-10-21).
-- Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowance are kept by hand.
-- Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
+- `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
+- Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowance are kept by hand. Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in
   `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- WH3 readers still differ on timer wins and failures; the new engine-outcome definition needs a
-  versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping.
-- The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail. Since b51 `digest` reads battle time per Windows second from observation write times; one scripted battle so far (1.0000).
+- WH3 readers differ on 3 timer wins, 8 controller failures and 5 wall caps of 642 rows; `cards.benchmark_outcome` v1 maps the outcome table, no reader uses it yet. Register/`stats` also have blank benchmark versions and commit grouping.
+- Since `1cc4582` each observation's `speed` is the engine's `current_battle_speed()` (one probe: 440/440 read 1); a slowed battle was never tried. `awaiting_orders` stays false (the mod never waits). Pauses run no script: the Windows-clock line (b51) covers them.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23;
   [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before
   more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
-- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait) and once
-  `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression.
+- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; 30 s on branch `factory-20261031`) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
 - Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
@@ -117,4 +110,11 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
+- `wh3-team-report` (`b4a7080`, worktree `../slay_the_spire_ai-team`): `report` reads team members'
+  records; replaces one assertion in an agreed check's test (needs your yes).
+- `factory-20261031` (`e1fd1c7`, worktree `../slay_the_spire_ai-factory`): yes items once, Stop-hook
+  log, scratch pruning (needs your yes).
+- `wh3-cleanup-interrupt` (`b1b6281`): result.json kept on Ctrl-C during cleanup; `land-check-stats-apart`
+  (`dabb389`): Land compares card stats apart; `gate-xdist` (`859a454`): check.py on xdist
+  workers (~28 s); `test-quality-audit`: another session's.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

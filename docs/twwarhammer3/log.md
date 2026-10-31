@@ -37,12 +37,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest: the [starting-set screen](#2026-10-22-the-starting-set-screen) (30 floor launches, 2026-10-22); first: `bench-g1-cavalry-ai10-01-20261014` |
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages and native multiplayer unimplemented |
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Unplayed; no agreed check yet |
-| benchmark harness | b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| benchmark harness | b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
 | checkpoint RL | merged 2026-10-28 (`6b942a3`) | `battle/rl.py`, `candidates.py`, `audit.py`, `confirm.py`, `checkpoint.py`, `gameai/lm.py`, mod export `twwarhammer3_inject` | Stage 1 and closed-loop checks agreed 2026-10-26 ([agreed-checks.md](../agreed-checks.md)); learning collapsed, held-out 0.76 ([2026-10-26](#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses); decision 11) |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-31: run the old local-evidence cases from the audit worktree
+
+Fourteen existing offline cases pass at `4856a6c`: saved siege/step-run wrong-value
+controls, Land recount/classification, the old G1 replay, synthetic task regeneration
+and the Spire v1 inventory reference. Eight stopped input roots were copied; all
+328 files match SHA256/size before and after (656 original/copy checks). One embedded
+late-rung path still reads the hashed original record; no paths or expectations changed.
+Card, manifests, JUnit and raw output: `runs/test-quality-20261031/local-evidence-*`,
+`local-extra-evidence.*`. These are recorded-case checks, not live-game or learning
+verification. No game, model training, Windows call or paid request was started.
 
 ## 2026-10-31: invalid billing values cannot weaken the ledger cap
 
@@ -205,6 +216,28 @@ gives six focused passes; removing its production SIGTERM handler still fails as
 Worktree gate: Ruff clean, 2079 passed, 69 skipped; main integration waits for live checks.
 The handoff holds the raw output and final review. No live verification or whole-repo coverage
 claim. Next: exception expectations (two wrong-type KeyError variants pass) and remaining helpers.
+
+## 2026-10-31 (night): agreed live checks after the multiplayer merge; outcome readers; b52
+
+Claude Code, 02:38-~07:00 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
+At `150ef84`: Land checkpoints passed (0 mismatches over 2,000/2,001 ticks, 9/9 readings per
+restore, the changed restore diverged at 1303); scripted team 4/4; siege passed (4 states, 8
+identical restores with 0 mismatches over 2,402-2,403 ticks, 194 readings); army setup failed
+(the load phase's menu stopped after step 4 until the 600 s timeout; settings restored, all 7
+fields). Observer smoke steps 1-4 dry run: worker hello matched build, exe and pack.
+At `1cc4582` (all merges below): siege passed (8 identical restores, 0 mismatches over
+2,400-2,404 ticks, 192 readings); army passed (save, load, reserves); team 3 of 4 (probe 3's
+3 s delay lasted ~1 s of battle time while WSL's clocks jumped; Windows clock 1.0000); Land
+failed at `35ade85` and at `2302d1e` (mod bytes of `150ef84`) on one unit's UI-card stats
+(`StatList`) only: checksums, live readings and both restores equal.
+Readers over 642 register rows differ on 3 timer wins, 8 controller failures, 5 wall caps;
+none on the card's scenario (recounted). `cards.benchmark_outcome` v1 (`79834ad`, unused)
+maps result.json to benchmark.md's outcome rows; 3 of 12 reader plants and 1 scorer plant
+passed every test until 4 new tests. compare-peers fixes and a Lua-to-comparator seam test
+(`b9e1cce`); b52: team episodes off the card board, `running_at_close` (`56d3937`), the engine
+speed reading (`5067ba5`; probe 440/440 read 1). Plants 100 to 139, 139/139 caught at `1cc4582`.
+Waiting: `wh3-team-report`, `factory-20261031`, `wh3-cleanup-interrupt`, `land-check-stats-apart`.
+Unverified: the army stall's cause; a slowed battle's reading; any model team; real peers.
 
 ## 2026-10-31: factory checks require successful execution evidence
 
