@@ -477,3 +477,10 @@ For `.github/workflows/check.yml` (2026-10-29):
   helper logic while imports and module qualifiers change.
   Its `offline()` context also illustrates isolating an external boundary while running
   real code, used for the hook cleanup test's child-interpreter process scan. *Read.*
+- PyTorch [`.github/workflows/lint.yml`](https://github.com/pytorch/pytorch/blob/main/.github/workflows/lint.yml),
+  `test_collect_env` (read 2026-10-31): separate matrix entries exercise environments with
+  different installed dependencies. Pattern for the optional-extra jobs in our check workflow;
+  their CPU execution does not establish CUDA behavior. *Read.*
+- actionlint [`docs/install.md`](https://github.com/rhysd/actionlint/blob/v1.7.12/docs/install.md):
+  Go installation command inspected on 2026-10-31; task-local v1.7.12 validates workflow
+  syntax and action expressions. Shellcheck was unavailable; profile shell commands run directly.

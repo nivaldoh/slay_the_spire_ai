@@ -44,6 +44,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: proposed CI jobs exercise the existing optional extras on CPU
+
+The `check` job keeps its existing name and commands. A separate train/llm matrix installs
+the locked extras, imports the required libraries explicitly, then runs the same gate.
+Missing optional packages therefore fail a selected job before pytest can skip their tests.
+CUDA is hidden, model loading stays offline, and Windows opt-ins are off. No runtime source,
+dependency pin, assertion or benchmark definition changed. Pattern: PyTorch `lint.yml`.
+Selection of both profiles rests on JUDGEMENT? `.github/workflows/check.yml` Optional CI;
+it remains a draft for the owner's recurring-CI decision, not an agreed verification method.
+Card, local profile commands, syntax check, Actions output and review live under
+`runs/test-quality-20261031/optional-ci-*` and `review/optional-ci/`. No hardware or learning claim.
+
 ## 2026-10-31: cover uncaptured transport errors and mailbox publication locks
 
 Fresh branch coverage identified two unexecuted error paths. Added cases require
