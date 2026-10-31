@@ -22,7 +22,7 @@ WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
-CI runs `check.py` on each push (results: `gh run list`).
+CI runs `check.py` on each push to `main` and each pull request (results: `gh run list`).
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; nine
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
