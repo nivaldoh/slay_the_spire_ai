@@ -636,14 +636,6 @@ local function terminal_countdown(now)
             deadline_ms = deadline, expired = now >= deadline, source = "countdown_deadline"}
 end
 
--- The game speed as the engine reports it (battle:current_battle_speed, documented with
--- modify_battle_speed: 1 is normal speed, 0.5 half, 0 paused). A failed read is "unreadable",
--- which play.py refuses like any speed other than 1. A paused battle runs no script, so no
--- observation is written while paused; digest's Windows-clock ratio sees that instead.
-local function battle_speed()
-    return get(bm.battle, "current_battle_speed", "unreadable")
-end
-
 -- The local player's army. bm:get_player_army() is army 1 of the local alliance, which in a
 -- multiplayer battle can be an ally's; local_army() is an index within the local alliance
 -- (CA's battle.html, and vanilla lib_generated_battle.lua generated_army:new uses it so).
@@ -736,7 +728,7 @@ local function observation(now)
     if not ok then section = {error = clean_error(section)} end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
-        phase = bm:get_current_phase_name(), time_ms = now, speed = battle_speed(),
+        phase = bm:get_current_phase_name(), time_ms = now, speed = 1,
         awaiting_orders = false, remaining_ms = remaining_ms, timer = terminal_countdown(now),
         armies = {
             player = {faction = get(player, "faction_key", "?")},

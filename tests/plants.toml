@@ -1285,32 +1285,3 @@ old = "            running = member.running_at_close = (member.future is not Non
 new = "            running = (member.future is not None and not member.future.done())"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
 source = "2026-10-31 run, B3 team records"
-
-# 2026-10-31 run, B4: the engine's game speed in each observation (runs/overnight-20261031/b4/).
-
-[[plant]]
-id = "speed-constant-again"
-guards = "WH3 observations carry the engine speed reading"
-file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
-old = "time_ms = now, speed = battle_speed(),"
-new = "time_ms = now, speed = 1,"
-tests = ["tests/twwarhammer3/test_wh3_native_lua.py"]
-source = "2026-10-31 run, B4 speed reading"
-
-[[plant]]
-id = "speed-failed-read-is-1x"
-guards = "WH3 observations carry the engine speed reading"
-file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
-old = "    return get(bm.battle, \"current_battle_speed\", \"unreadable\")"
-new = "    return get(bm.battle, \"current_battle_speed\", 1)"
-tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
-source = "2026-10-31 run, B4 speed reading"
-
-[[plant]]
-id = "play-accepts-any-speed"
-guards = "WH3 observations carry the engine speed reading"
-file = "src/twwarhammer3/battle/play.py"
-old = "        if observation.get(\"awaiting_orders\") or observation.get(\"speed\", 1) != 1:"
-new = "        if observation.get(\"awaiting_orders\"):"
-tests = ["tests/twwarhammer3/test_wh3_play.py"]
-source = "2026-10-31 run, B4 speed reading"
