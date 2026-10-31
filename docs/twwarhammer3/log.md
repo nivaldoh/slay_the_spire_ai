@@ -27,6 +27,39 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - A new entry goes at the top, and "On main" is updated with it.
 
 
+
+
+## 2026-10-31: reject replay identity before touching episode evidence
+
+- Two wrong copiers passed all 15 capture/integration cases: copying before identity
+  rejection, or checking the job while ignoring the battle header. Source is correct.
+- Four added cases cover job/battle mismatch with absent or different existing destination
+  bytes; source and destination must remain unchanged. All prior test definitions retained.
+  Control: 19 passed; wrong copiers: 4 failed/15 passed and 2 failed/17 passed.
+- Related capture/play/team checks: 165 passed. The two replay faults plus six handler faults
+  bring registrations from 172 to 180; no full 180-entry replay is claimed.
+- Card/raw evidence: `runs/test-quality-20261031/replay-identity/`; independent review and
+  final gate recorded in the commit. Card unagreed; agreed-file adoption still pending.
+  File checks only: no live recording, policy-strength or new verification-method claim.
+
+## 2026-10-31: keep episode results when optional evidence copying fails
+
+- A malformed replay header (`[]`) or numeric still filename raised during cleanup and
+  discarded `result.json` after a fake engine win. Each optional copier now records an
+  ordinary exception as existing `status=error` metadata, then saves the engine result.
+- New integration tests: before fix 2 failed/1 valid control passed; final 7 passed,
+  including deep-JSON errors and interrupt propagation. Related suites: 161 passed.
+- Six wrong handlers caught: narrow IO catches fail 2/7 cases; consumed interrupts or
+  shape-only catches fail 1/7. Review found and closed the initial deep-JSON test gap.
+  Pre-change play-only sweep: 13/14 caught; the missed team guard already had a test in the
+  team suite. Expanded sweep: 14/14 caught before and after, no hangs; baselines 108/115.
+  Six new handler faults were replayed; all prior registrations are retained unchanged.
+- Card/raw traces and checks: `runs/test-quality-20261031/capture-schema/`; independent review
+  in `runs/test-quality-20261031/review/capture-schema/`, final gate in the commit.
+- Offline only: 3,611 files in the two agent directories retained modification times.
+  No live capture/gameplay effect established; card unagreed, feature unverified under the
+  hard rule. Existing adoption questions remain pending; no new agreed check or scoring rule.
+
 ## 2026-10-31: test audit integrates factory changes through main 8076fc1
 
 - Merged main `8076fc1` into the isolated testing draft; retained the audit status and main's

@@ -1612,3 +1612,75 @@ old = "        with CACHE.with_name(\"stop-hook.log\").open(\"a\", encoding=\"ut
 new = "        with open(os.devnull, \"a\", encoding=\"utf-8\") as log:"
 tests = ["tests/test_hooks.py"]
 source = "2026-10-31 run, B5 factory"
+
+[[plant]]
+id = "play-lets-recording-errors-escape"
+guards = "Malformed optional evidence cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except OSError as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-consumes-recording-interrupts"
+guards = "Optional evidence copying propagates an operator interrupt"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except BaseException as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_copying_does_not_consume_an_operator_interrupt"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-lets-imagery-errors-escape"
+guards = "Malformed optional evidence cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except OSError as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-consumes-imagery-interrupts"
+guards = "Optional evidence copying propagates an operator interrupt"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except BaseException as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_copying_does_not_consume_an_operator_interrupt"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-only-observed-recording-shape-errors"
+guards = "A deeply malformed optional sidecar cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except (AttributeError, TypeError) as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 independent optional-evidence review"
+
+[[plant]]
+id = "play-only-observed-imagery-shape-errors"
+guards = "A deeply malformed optional sidecar cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except (AttributeError, TypeError) as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 independent optional-evidence review"
+
+[[plant]]
+id = "recording-copies-before-identity-check"
+guards = "Rejected replay identity cannot create or overwrite episode evidence"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}\n        shutil.copyfile(source, episode / \"replay.jsonl\")"
+new = "        shutil.copyfile(source, episode / \"replay.jsonl\")\n        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
+source = "2026-10-31 replay-identity oracle audit"
+
+[[plant]]
+id = "recording-ignores-battle-identity"
+guards = "Rejected replay identity cannot create or overwrite episode evidence"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if header.get(\"job\") != job or header.get(\"battle\") != battle:"
+new = "if header.get(\"job\") != job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
+source = "2026-10-31 replay-identity oracle audit"

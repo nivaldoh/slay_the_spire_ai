@@ -26,6 +26,31 @@ def test_copy_keeps_interrupted_bytes_and_cannot_cross_rematches(tmp_path):
     assert copy(bridge, episode, job="job", battle="absent")["status"] == "missing"
 
 
+
+@pytest.mark.parametrize("field", ["job", "battle"])
+@pytest.mark.parametrize("destination_exists", [False, True], ids=["missing", "existing"])
+def test_rejected_replay_identity_cannot_create_or_overwrite_evidence(tmp_path, field,
+                                                                    destination_exists):
+    bridge, episode = tmp_path / "bridge", tmp_path / "episode"
+    bridge.mkdir()
+    episode.mkdir()
+    header = {"recorder": 1, "job": "job", "battle": "b"}
+    header[field] = "another"
+    raw = json.dumps(header).encode() + b'\n{"partial":'
+    source, destination = bridge / "replay-b.jsonl", episode / "replay.jsonl"
+    source.write_bytes(raw)
+    if destination_exists:
+        destination.write_bytes(b"unrelated replay already in the episode")
+    before = destination.read_bytes() if destination.exists() else None
+
+    result = capture.copy_recording(bridge, episode, job="job", battle="b")
+
+    assert result["status"] == "identity_mismatch"
+    assert source.read_bytes() == raw
+    after = destination.read_bytes() if destination.exists() else None
+    assert after == before
+
+
 def test_capture_copy_keeps_failures_and_checks_battle_identity(tmp_path):
     bridge, episode = tmp_path / "bridge", tmp_path / "episode"
     bridge.mkdir()
