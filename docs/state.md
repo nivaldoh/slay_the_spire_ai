@@ -12,14 +12,14 @@ Waiting decisions: Codex's factory assessment (`runs/factory-assessment-20261031
 
 Claude Code's long run (2026-10-31): agreed live checks at `150ef84` and `1cc4582`; Land and team now
 fail on a UI stat and on WSL clock jumps; b52, an unused outcome scorer and compare-peers fixes
-merged; four branches and decisions wait in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
+merged; five branches and decisions wait in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; nine
+**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; ten
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
@@ -115,5 +115,6 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 - `factory-20261031` (`e1fd1c7`, worktree `../slay_the_spire_ai-factory`): yes items once, Stop-hook
   log, scratch pruning (needs your yes).
 - `wh3-cleanup-interrupt` (`b1b6281`): result.json kept on Ctrl-C during cleanup; `land-check-stats-apart`
-  (`dabb389`): Land compares card stats apart; `test-quality-audit`: another session's.
+  (`dabb389`): Land compares card stats apart; `gate-xdist` (`859a454`): check.py on xdist
+  workers (~28 s); `test-quality-audit`: another session's.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
