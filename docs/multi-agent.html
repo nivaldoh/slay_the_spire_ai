@@ -285,6 +285,116 @@ const MP_HELLO_A = ["mp.A>handler", "~mp.A>handler"];
 const MP_BEAT_A = ["mp.Ahb>handler", "~mp.Ahb>handler"];
 const MP_BEAT_B = ["mp.Bhb>handler", "~mp.Bhb>handler"];
 const MP_NUMBERS = "runs/multi-agent-diagram-20261031/multiplayer_numbers.py";
+const PLAY_EP = "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000";
+const PLAY_TRACE = PLAY_EP + "/trace.jsonl";
+const PLAY_MODLOG = PLAY_EP + "/mod.log";
+const PLAY_NUMBERS = "runs/multi-agent-diagram-20261031/play_numbers.py";
+const FRONTEND = "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua";
+const SPINE_LIVE = {
+  text:
+    "agreed live check, team configuration only: the scripted-team check runs this same lock," +
+    " launch, menu, play loop, mailbox and Lua tick and poll path with a two-member team, one" +
+    " episode per launch: 4/4 at 96bb137 (latest pass; the code files this tab cites are unchanged" +
+    " from 96bb137 to 21f6204), 3/4 at 1cc4582 (latest failure: one probe's 3 s wait lasted" +
+    " about 1 s of battle time while WSL's clock jumped). Every probe of both runs ended" +
+    " truncated, at 88.7-93.2 s of battle time, so it covers tick()'s applying and publishing, not the" +
+    " end check, a result or a rematch. No live check runs a single controller",
+  refs: [
+    "docs/agreed-checks.md:18-30",
+    "docs/twwarhammer3/log.md:55-67",
+    "tests/twwarhammer3/team/check_wh3_team.py:200-223",
+    "runs/twwarhammer3/team-live-20261031e/checks.json",
+    "runs/twwarhammer3/team-live-20261031c/checks.json",
+    PLAY_NUMBERS,
+  ],
+  rests: [
+    { file: "tests/twwarhammer3/team/check_wh3_team.py", line: 67, name: "member age witness" },
+    { file: "tests/twwarhammer3/team/check_wh3_team.py", line: 94, name: "Movement witness" },
+    {
+      file: "tests/twwarhammer3/team/check_wh3_team.py",
+      line: 106,
+      name: "team_clock_band",
+      sure: false,
+    },
+  ],
+};
+const PLAY_OFFLINE = {
+  text:
+    "agreed offline check: the whole tests/twwarhammer3 suite, agreed for UI requests, failure" +
+    " reporting, scheduling, startup-query errors and session lifetime; passed at 21f6204 (1153" +
+    " tests, 28 skipped), no failure recorded since the record began on 2026-10-29. Simulated game" +
+    " APIs and play-loop observations; no live claim",
+  refs: [
+    "docs/agreed-checks.md:41-44",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const PLAY_MAILBOX = {
+  text:
+    "agreed offline check: replacement mailbox requests reach Lua's pending state and duplicate" +
+    " delivery is rejected (real files, the real Lua poll), passed at 21f6204 (1 test), no failure" +
+    " recorded; no game execution claim",
+  refs: [
+    "docs/agreed-checks.md:49-52",
+    "tests/twwarhammer3/test_wh3_mailbox.py:119-152",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const PLAY_FINITE = {
+  text:
+    "agreed offline check: non-finite order fields are rejected before transmission, with" +
+    " invalid-batch feedback, passed at 21f6204 (55 tests), no failure recorded; play-loop" +
+    " observations are simulated",
+  refs: [
+    "docs/agreed-checks.md:53-56",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const PLAY_ENDING = {
+  text:
+    "agreed offline check: the engine's ending is kept when acknowledge or close() fails after" +
+    " it, passed at 21f6204 (2 tests), no failure recorded; no game execution claim",
+  refs: [
+    "docs/agreed-checks.md:76-80",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const PLAY_LEDGER = {
+  text:
+    "agreed offline check: play refuses a missing ledger file, and model controllers share one" +
+    " budget, passed at 21f6204 (2 tests), no failure recorded; it does not check the reserve," +
+    " charge and release amounts",
+  refs: [
+    "docs/agreed-checks.md:45-48",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const PLAY_MODEL = {
+  text:
+    "built, unverified: no agreed check covers the model controller. It has component tests" +
+    " (test_wh3_llm.py, gameai/test_model.py) and recorded battles, which are evidence, not" +
+    " verification",
+  refs: ["tests/twwarhammer3/test_wh3_llm.py", "tests/gameai/test_model.py"],
+};
+const PLAY_COMMANDER = {
+  text:
+    "built, unverified: commander v8 has not played; it is unplayed since v4. Component tests" +
+    " only (test_wh3_commander.py, test_wh3_skills.py)",
+  refs: [
+    "src/twwarhammer3/battle/controllers.py:30",
+    "docs/twwarhammer3/controllers.md:122-124",
+    "tests/twwarhammer3/test_wh3_commander.py",
+  ],
+};
+const P_OBSERVE = ["play.tick>obs", "play.obs>mailbox", "play.mailbox>drive"];
+const P_DECIDE = ["play.drive>public", "play.public>policy"];
+const P_REQUEST = [
+  "play.drive>mailbox",
+  "play.mailbox>orders",
+  "play.orders>poll",
+  "play.poll>pending",
+];
+const P_ROUND = [...P_OBSERVE, ...P_DECIDE, "play.policy>drive", ...P_REQUEST, "play.pending>tick"];
 const DIAGRAM = {
   repo: "https://github.com/nivaldoh/slay_the_spire_ai",
   tabs: [
@@ -5217,6 +5327,1734 @@ const DIAGRAM = {
             "src/twwarhammer3/engine/worker.py:33-35",
             "src/twwarhammer3/engine/mailbox.py:259-274",
           ],
+        },
+      ],
+    },
+    {
+      id: "play",
+      title: "Play loop",
+      commit: "21f6204",
+      checked: "2026-10-31",
+      summary:
+        "One battle, one controller. Inside the game, the Lua mod runs two loops: tick() on battle" +
+        " time applies a request and publishes observations; poll() on real time picks requests up." +
+        " In WSL, the play loop reads observations through files, gives the policy a public view and" +
+        " writes one request at a time. The battle never waits for the policy.",
+      size: [1400, 700],
+      bands: [
+        { where: "Windows game", x: 0, y: 0, w: 1400, h: 190 },
+        { where: "WSL Python", x: 0, y: 198, w: 1400, h: 400 },
+        { where: "cloud API", x: 0, y: 606, w: 1400, h: 88 },
+      ],
+      elements: [
+        {
+          id: "play.tick",
+          label: "tick(): battle time",
+          sub: "applies pending, then publishes",
+          kind: "thread",
+          where: "Windows game",
+          x: 250,
+          y: 26,
+          w: 250,
+          h: 62,
+          status: SPINE_LIVE,
+          refs: [
+            LUA + ":1313-1338",
+            LUA + ":1480",
+            "src/twwarhammer3/__main__.py:23",
+            "docs/twwarhammer3/integration.md:206-207",
+            PLAY_NUMBERS,
+          ],
+          note:
+            "A battle-time callback every tick_ms (250 by default). In the recorded episode all 88" +
+            " requests were applied on a 300 ms grid (5000 + k x 300 ms). Each tick: apply the" +
+            " pending request, check for the end, then publish if a request was applied or" +
+            " observe_ms has passed since the last publish. It stops while the battle is paused.",
+        },
+        {
+          id: "play.pending",
+          label: "state.pending",
+          sub: "one request slot",
+          kind: "file",
+          where: "Windows game",
+          x: 595,
+          y: 36,
+          w: 180,
+          h: 44,
+          status: PLAY_MAILBOX,
+          refs: [LUA + ":18-25", LUA + ":1404", LUA + ":1317", LUA + ":1489-1505"],
+          note:
+            "The hand-off between the two clocks: poll() sets it, the next tick() applies and clears" +
+            " it. The checkpoint agent's inject() is a second writer (single-player only, refused" +
+            " while a request is pending); the play loop does not use it.",
+        },
+        {
+          id: "play.poll",
+          label: "poll(): real time",
+          sub: "every 200 ms: read, delete",
+          kind: "thread",
+          where: "Windows game",
+          x: 870,
+          y: 26,
+          w: 250,
+          h: 62,
+          status: PLAY_MAILBOX,
+          refs: [LUA + ":1368-1405", LUA + ":1537"],
+          note:
+            "A real-time callback, so it keeps running while battle time is paused. It reads and" +
+            " deletes orders.json, drops a request for another job or battle and a repeated id, runs" +
+            " a restart or start control, drops any other control, and parks the rest in" +
+            " state.pending.",
+        },
+        {
+          id: "play.obs",
+          label: "observation.json",
+          sub: "one slot, overwritten",
+          kind: "file",
+          where: "Windows game",
+          x: 270,
+          y: 122,
+          w: 210,
+          h: 48,
+          status: SPINE_LIVE,
+          refs: [LUA + ":58-70", LUA + ":715-757", "src/twwarhammer3/engine/mailbox.py:43-67"],
+          note:
+            "Written whole (temporary file, then rename). It holds the newest observation only: one" +
+            " the play loop has not read when the next is published is gone. orders carries the ack" +
+            " of the last applied request.",
+        },
+        {
+          id: "play.orders",
+          label: "orders.json",
+          sub: "one request at a time",
+          kind: "file",
+          where: "Windows game",
+          x: 890,
+          y: 122,
+          w: 210,
+          h: 48,
+          status: PLAY_MAILBOX,
+          refs: [
+            "src/twwarhammer3/engine/mailbox.py:11-23",
+            "src/twwarhammer3/engine/mailbox.py:232-242",
+          ],
+          note: "The play loop writes it only when the last one is gone; poll() deletes it on reading.",
+        },
+        {
+          id: "play.game",
+          label: "Warhammer3.exe",
+          sub: "under a supervisor",
+          only: "lifecycle",
+          kind: "outside service",
+          where: "Windows game",
+          x: 20,
+          y: 28,
+          w: 180,
+          h: 54,
+          status:
+            "outside our code: the game runs on Windows from its Steam install (AGENTS.md:142-146)",
+          refs: ["AGENTS.md:142-146", "src/twwarhammer3/engine/runtime.py:135-143"],
+        },
+        {
+          id: "play.frontend",
+          label: "frontend script",
+          sub: "menu.json, a step / 500 ms",
+          only: "lifecycle",
+          kind: "process",
+          where: "Windows game",
+          x: 20,
+          y: 118,
+          w: 180,
+          h: 54,
+          status: SPINE_LIVE,
+          refs: [FRONTEND + ":1-16", FRONTEND + ":87-143"],
+          note: "Our Lua script for the main menu. Inert unless session.json says menu: true.",
+        },
+        {
+          id: "play.session",
+          label: "session.json",
+          sub: "the job's switches",
+          only: "lifecycle",
+          kind: "file",
+          where: "Windows game",
+          x: 600,
+          y: 124,
+          w: 170,
+          h: 46,
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:99-102",
+            "src/twwarhammer3/engine/mailbox.py:195-210",
+            LUA + ":1507-1509",
+            FRONTEND + ":131-135",
+          ],
+          note:
+            "enabled, autostart, menu, observe_ms, tick_ms, speed 1, no pause. Both Lua scripts read" +
+            " it when they load; without it they stay inert. Removed after the game stops.",
+        },
+        {
+          id: "play.load",
+          label: "load(), start()",
+          sub: "once per battle load",
+          only: "lifecycle",
+          kind: "process",
+          where: "Windows game",
+          x: 1190,
+          y: 28,
+          w: 190,
+          h: 54,
+          status: SPINE_LIVE,
+          refs: [LUA + ":1507-1555", LUA + ":1407-1483"],
+          note:
+            "load(): a new battle id, poll() every 200 ms, autostart every 5 s, a Loading" +
+            " observation (seq 0). start() at Deployed: speed 1, then tick().",
+        },
+        {
+          id: "play.restart",
+          label: "restart()",
+          sub: "rematch, then confirm",
+          only: "lifecycle",
+          kind: "process",
+          where: "Windows game",
+          x: 1190,
+          y: 118,
+          w: 190,
+          h: 54,
+          status:
+            "built, unverified: no test drives the rematch clicks and no agreed check uses a" +
+            " rematch; recorded multi-episode jobs show its log lines",
+          refs: [
+            LUA + ":1174-1199",
+            "runs/twwarhammer3/battle/bench-b36-chariot-c1-foils-l10-20261019/episode-0001/mod.log lines 1-3",
+          ],
+        },
+        {
+          id: "play.job",
+          label: "play(): one job",
+          sub: "lock, launch, menus, episodes",
+          only: "lifecycle",
+          kind: "process",
+          where: "WSL Python",
+          x: 60,
+          y: 230,
+          w: 200,
+          h: 60,
+          status: {
+            text:
+              "agreed offline check: the tests/twwarhammer3 suite runs play() with a simulated" +
+              " mailbox, restarts included, passed at 21f6204 (1153 tests). No live check runs play()" +
+              " itself: the team check calls its parts (session, start_frontend, play_episode)",
+            refs: [
+              "docs/agreed-checks.md:41-44",
+              "tests/twwarhammer3/test_wh3_play.py:469-490",
+              "tests/twwarhammer3/team/check_wh3_team.py:213-223",
+            ],
+          },
+          refs: [
+            "src/twwarhammer3/battle/play.py:105-219",
+            "src/twwarhammer3/battle/play.py:142-171",
+          ],
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 166, name: "Job stop" }],
+        },
+        {
+          id: "play.lock",
+          label: "RuntimeLock",
+          sub: "owner.lock: one controller",
+          only: "lifecycle",
+          kind: "file",
+          where: "WSL Python",
+          x: 30,
+          y: 338,
+          w: 180,
+          h: 48,
+          status: SPINE_LIVE,
+          refs: ["src/gameai/windows.py:43-76", "src/twwarhammer3/engine/runtime.py:130-132"],
+          note: "An exclusive flock on the runtime folder's owner.lock, released when the job ends or dies.",
+        },
+        {
+          id: "play.mailbox",
+          label: "mailbox.py",
+          sub: "reads every 0.1 s; one request out",
+          kind: "process",
+          where: "WSL Python",
+          x: 550,
+          y: 230,
+          w: 300,
+          h: 58,
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/engine/mailbox.py:172-180",
+            "src/twwarhammer3/engine/mailbox.py:232-242",
+            "src/twwarhammer3/engine/mailbox.py:259-299",
+          ],
+          note:
+            "Runs on the play loop's thread. It polls observation.json every 0.1 s for a higher" +
+            " seq, treats a missing or half-written file as not yet, and raises on a new battle id." +
+            " A write waits up to 15 s for the last orders.json to be consumed, then names the" +
+            " request <prefix>-r<N>.",
+        },
+        {
+          id: "play.drive",
+          label: "play loop: _drive",
+          sub: "decides only when no request is out",
+          kind: "thread",
+          where: "WSL Python",
+          x: 550,
+          y: 336,
+          w: 300,
+          h: 64,
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:574-723",
+            "src/twwarhammer3/battle/play.py:594-595",
+            "src/twwarhammer3/battle/play.py:656-668",
+            "src/twwarhammer3/battle/play.py:681-702",
+            "src/twwarhammer3/battle/play.py:358-384",
+          ],
+          rests: [
+            { file: "src/twwarhammer3/battle/play.py", line: 660, name: "Added age", sure: false },
+            { file: "src/twwarhammer3/battle/play.py", line: 648, name: "Wall cap" },
+            {
+              file: "src/twwarhammer3/battle/play.py",
+              line: 378,
+              name: "Forfeit split",
+              sure: false,
+            },
+            { file: "src/twwarhammer3/battle/play.py", line: 365, name: "Operator errors" },
+            {
+              file: "src/twwarhammer3/battle/play.py",
+              line: 692,
+              name: "Whole-batch refusal",
+              sure: false,
+            },
+            {
+              file: "docs/twwarhammer3/integration.md",
+              line: 219,
+              name: "Runtime speed fields",
+              sure: false,
+            },
+          ],
+          note:
+            "One thread, one loop: read the newest observation; refuse one that is not unpaused 1x;" +
+            " match its ack; stop on a result or the episode deadline; append its public view; then," +
+            " only if no request is outstanding, decide (blocking), re-read for a result, check the" +
+            " batch and write it. A decide with no valid reply, or a provider error other than the" +
+            " ones below, sends nothing and the next state asks again. HTTP 401 or 402, a ledger" +
+            " stop or a refused reservation end the episode as budget_exhausted; any other" +
+            " controller error ends it as a policy failure.",
+        },
+        {
+          id: "play.trace",
+          label: "trace.jsonl, result.json",
+          sub: "per episode",
+          kind: "file",
+          where: "WSL Python",
+          x: 270,
+          y: 360,
+          w: 210,
+          h: 52,
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:285-287",
+            "src/twwarhammer3/battle/play.py:482-520",
+            "src/twwarhammer3/battle/play.py:704-719",
+            "src/twwarhammer3/battle/play.py:336-351",
+          ],
+          note:
+            "trace.jsonl: model calls, the basis observation, decisions and acks, written by the play" +
+            " loop's thread. A quiet decision is logged once per observe_ms. result.json: every delay" +
+            " and think time, the status and the totals, written at the end.",
+        },
+        {
+          id: "play.public",
+          label: "public()",
+          sub: "drops 4 hidden keys",
+          kind: "process",
+          where: "WSL Python",
+          x: 940,
+          y: 344,
+          w: 130,
+          h: 48,
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/battle/play.py:523-533", "src/twwarhammer3/protocol.py:43-45"],
+          note:
+            "Drops evaluation, final, setup and native before an observation enters the policy's" +
+            " history. The whole observation crosses the bridge; this is where the policy's view is cut.",
+        },
+        {
+          id: "play.policy",
+          label: "LLMPolicy (llm_rules)",
+          sub: "decide() waits for the model",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1150,
+          y: 336,
+          w: 230,
+          h: 64,
+          status: PLAY_MODEL,
+          refs: [
+            "src/twwarhammer3/battle/llm.py:596-674",
+            "src/twwarhammer3/battle/llm.py:454-507",
+            "src/twwarhammer3/battle/controllers.py:124-150",
+          ],
+          rests: [
+            {
+              file: "docs/twwarhammer3/controllers.md",
+              line: 57,
+              name: "`llm` memory",
+              sure: false,
+            },
+            { file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" },
+          ],
+          note:
+            "One instance per episode. Its memory: notes, the last 8 decisions, the last latency and" +
+            " ack, where enemies were last seen. decide() renders the prompt, calls Model.ask and" +
+            " returns the orders; acknowledge() stores the ack and latency for the next prompt.",
+          variants: {
+            scripted: {
+              label: "scripted policy",
+              sub: "rules, no model call",
+              status:
+                "built, unverified: no agreed check names the scripted baselines; component tests" +
+                " (test_wh3_scripted.py)",
+              refs: ["src/twwarhammer3/battle/scripted.py:1-70"],
+              rests: null,
+              note:
+                "hold, attack_nearest, rush_nearest. Fast, but not stateless: AttackNearest keeps each" +
+                " unit's target and re-orders only on a new nearest enemy or a lapsed attack.",
+            },
+            commander: {
+              label: "CommanderPolicy",
+              sub: "decide() never waits",
+              status: PLAY_COMMANDER,
+              refs: [
+                "src/twwarhammer3/battle/commander.py:1-9",
+                "src/twwarhammer3/battle/commander.py:110-158",
+                "src/twwarhammer3/battle/commander.py:240-241",
+                "src/twwarhammer3/battle/controllers.py:99-109",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/controllers.md",
+                  line: 122,
+                  name: "Commander plans",
+                  sure: false,
+                },
+                { file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" },
+              ],
+              note:
+                "A model planner over the skills executor. Its card says kind hybrid, timing" +
+                " asynchronous. close() waits for the plan request still in flight.",
+            },
+            lifecycle: {
+              label: "policy",
+              sub: "a fresh one per episode",
+              status: {
+                text:
+                  "agreed offline check: the tests/twwarhammer3 suite plays a job of two episodes with" +
+                  " a simulated mailbox, passed at 21f6204 (1153 tests); no live check plays two" +
+                  " episodes in one job",
+                refs: [
+                  "docs/agreed-checks.md:41-44",
+                  "tests/twwarhammer3/test_wh3_play.py:469-490",
+                ],
+              },
+              rests: null,
+              refs: [
+                "src/twwarhammer3/battle/play.py:289-296",
+                "src/twwarhammer3/battle/controllers.py:124-150",
+              ],
+              note: "Each episode calls the trial's maker for a fresh controller, so no memory carries over.",
+            },
+          },
+        },
+        {
+          id: "play.team",
+          label: "or: TeamPolicy",
+          sub: "two members (Team tab)",
+          kind: "agent",
+          tab: "team",
+          where: "WSL Python",
+          x: 1150,
+          y: 230,
+          w: 230,
+          h: 52,
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/team.py:126-379",
+            "src/twwarhammer3/battle/play.py:297-298",
+            "src/twwarhammer3/battle/play.py:696-697",
+          ],
+          note:
+            "One possible policy behind the same decide and acknowledge calls. The play loop refuses" +
+            " it with a delay or interval other than 0 and leaves batch checks to it. Its inside is on" +
+            " the Team tab.",
+        },
+        {
+          id: "play.skills",
+          label: "skills executor",
+          sub: "orders every decide",
+          only: "commander",
+          kind: "process",
+          where: "WSL Python",
+          x: 940,
+          y: 446,
+          w: 170,
+          h: 50,
+          status: PLAY_COMMANDER,
+          refs: [
+            "src/twwarhammer3/battle/skills.py:222-316",
+            "src/twwarhammer3/battle/commander.py:144",
+            "docs/twwarhammer3/controllers.md:110-111",
+          ],
+          rests: [{ file: "docs/twwarhammer3/controllers.md", line: 98, name: "Executor rules" }],
+          note: "Turns each unit's standing assignment into orders on every observation; class defaults until the first plan.",
+        },
+        {
+          id: "play.worker",
+          label: "plan worker thread",
+          sub: "one Model.ask at a time",
+          only: "commander",
+          kind: "thread",
+          where: "WSL Python",
+          x: 1150,
+          y: 446,
+          w: 230,
+          h: 50,
+          status: PLAY_COMMANDER,
+          refs: [
+            "src/twwarhammer3/battle/commander.py:119",
+            "src/twwarhammer3/battle/commander.py:152-158",
+          ],
+          note: "ThreadPoolExecutor(max_workers=1). It only makes the call; all state changes stay on the play loop's thread.",
+        },
+        {
+          id: "play.ledger",
+          label: "spend ledger",
+          sub: "reserve, charge, release",
+          kind: "file",
+          where: "WSL Python",
+          x: 880,
+          y: 526,
+          w: 200,
+          h: 50,
+          status: PLAY_LEDGER,
+          refs: [
+            "src/gameai/ledger.py:22-61",
+            "src/gameai/llm.py:239-248",
+            "src/twwarhammer3/battle/controllers.py:140",
+            PLAY_NUMBERS,
+          ],
+          rests: [
+            {
+              file: "src/gameai/llm.py",
+              line: 36,
+              name: "600 s per read x 3 attempts",
+              sure: false,
+            },
+          ],
+          note:
+            "One per job, shared by every model call. At 21f6204 a call reserves its worst case x 3" +
+            " attempts before sending (held under a lock), charges the reported cost after, then" +
+            " releases the hold. At b7e2dd1, the recorded episode's revision, reserve only compared" +
+            " the spent total plus that worst case with the budget: no hold, no release. It reads" +
+            " the file's total once, when the job starts.",
+        },
+        {
+          id: "play.ask",
+          label: "Model.ask",
+          sub: "reserve, send, parse, retry",
+          kind: "process",
+          where: "WSL Python",
+          x: 1150,
+          y: 522,
+          w: 230,
+          h: 58,
+          status: PLAY_MODEL,
+          refs: [
+            "src/gameai/llm.py:200-248",
+            "src/gameai/llm.py:325-374",
+            "src/gameai/llm.py:95-142",
+            "src/twwarhammer3/battle/llm.py:40",
+          ],
+          rests: [
+            { file: "src/gameai/llm.py", line: 30, name: "Resends and retry text", sure: false },
+            {
+              file: "src/gameai/llm.py",
+              line: 36,
+              name: "600 s per read x 3 attempts",
+              sure: false,
+            },
+            { file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" },
+          ],
+          note:
+            "Runs in the caller's thread. A reply its parser rejects is asked again with the error" +
+            " appended (2 retries for llm_rules); a failed response is resent; transient HTTP errors" +
+            " are retried after 2 s and 4 s. Each exchange is queued for the trace.",
+        },
+        {
+          id: "play.api",
+          label: "provider API",
+          sub: "OpenAI or OpenRouter",
+          kind: "outside service",
+          where: "cloud API",
+          x: 1150,
+          y: 626,
+          w: 230,
+          h: 52,
+          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
+          refs: [
+            "docs/twwarhammer3/README.md:223-225",
+            "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/manifest.json",
+          ],
+          note: "The recorded episode used OpenRouter, pinned to one backend (Decart) for GLM 5.3.",
+        },
+      ],
+      wires: [
+        {
+          id: "play.tick>obs",
+          from: "play.tick",
+          to: "play.obs",
+          label: "publish",
+          payload:
+            "seq, time_ms, phase, friendly units, visible enemies, the roster, orders (the ack of the" +
+            " last applied request: request, based_on, applied_ms, results), result, and the hidden" +
+            " evaluation, final, setup and native",
+          sync: "file write in tick(): right after an applied request, else once observe_ms has passed",
+          status: SPINE_LIVE,
+          refs: [LUA + ":1324-1335", LUA + ":716", LUA + ":737-756", LUA + ":1126-1130"],
+        },
+        {
+          id: "play.obs>mailbox",
+          from: "play.obs",
+          to: "play.mailbox",
+          label: "every 0.1 s",
+          payload: "The newest observation of this job and battle with a higher seq",
+          sync: "polled every 0.1 s by the play loop's thread",
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/engine/mailbox.py:259-299"],
+        },
+        {
+          id: "play.mailbox>drive",
+          from: "play.mailbox",
+          to: "play.drive",
+          bend: 16,
+          payload: "One observation (the whole file, hidden keys included)",
+          sync: "return value of wait_observation",
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/battle/play.py:588-596"],
+        },
+        {
+          id: "play.drive>mailbox",
+          from: "play.drive",
+          to: "play.mailbox",
+          bend: 16,
+          payload: "battle, based_on (the basis seq), orders",
+          sync: "blocking call: write_orders waits until the last request was consumed (15 s, then MailboxTimeout)",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:714",
+            "src/twwarhammer3/engine/mailbox.py:212-242",
+          ],
+        },
+        {
+          id: "play.mailbox>orders",
+          from: "play.mailbox",
+          to: "play.orders",
+          label: "write if empty",
+          payload: "schema, job, battle, request (<prefix>-r<N>), based_on, orders; or a control",
+          sync: "file write (temporary file, then rename)",
+          status: PLAY_MAILBOX,
+          refs: ["src/twwarhammer3/engine/mailbox.py:232-255"],
+        },
+        {
+          id: "play.orders>poll",
+          from: "play.orders",
+          to: "play.poll",
+          label: "read, delete",
+          payload: "The request",
+          sync: "polled every 200 ms of real time",
+          status: PLAY_MAILBOX,
+          refs: [LUA + ":1375-1389", LUA + ":1537"],
+        },
+        {
+          id: "play.poll>pending",
+          from: "play.poll",
+          to: "play.pending",
+          label: "park",
+          payload: "The request, unless it is foreign, a repeat or a control",
+          sync: "Lua assignment, no check for an unapplied one",
+          status: PLAY_MAILBOX,
+          refs: [LUA + ":1404"],
+        },
+        {
+          id: "play.pending>tick",
+          from: "play.pending",
+          to: "play.tick",
+          label: "next tick",
+          payload:
+            "The request, applied order by order through one unit controller per friendly unit",
+          sync: "read at the start of the next battle-time tick",
+          status: SPINE_LIVE,
+          refs: [LUA + ":1317", LUA + ":1101-1132"],
+        },
+        {
+          id: "play.drive>trace",
+          from: "play.drive",
+          to: "play.trace",
+          label: "events",
+          payload:
+            "model_exchange, observation (the basis), decision, ack, result; result.json at the end",
+          sync: "line-buffered file writes on the play loop's thread",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:285-287",
+            "src/twwarhammer3/battle/play.py:704-719",
+          ],
+        },
+        {
+          id: "play.drive>public",
+          from: "play.drive",
+          to: "play.public",
+          payload: "Each Deployed observation, on its way into the history",
+          sync: "function call",
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/battle/play.py:654-655"],
+        },
+        {
+          id: "play.public>policy",
+          from: "play.public",
+          to: "play.policy",
+          label: "decide",
+          payload:
+            "decide(basis): the newest public view at least --delay-seconds old (0 here, so the newest)",
+          sync: "blocking call on the play loop's thread, only when no request is outstanding",
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/battle/play.py:656-680"],
+          rests: [
+            { file: "src/twwarhammer3/battle/play.py", line: 660, name: "Added age", sure: false },
+          ],
+        },
+        {
+          id: "play.policy>drive",
+          from: "play.policy",
+          to: "play.drive",
+          label: "orders",
+          bend: -80,
+          payload: "A list of orders, possibly empty",
+          sync: "return value; play then checks it against the basis and writes it",
+          status: PLAY_FINITE,
+          refs: ["src/twwarhammer3/battle/play.py:691-702", "src/twwarhammer3/protocol.py:67"],
+          rests: [
+            {
+              file: "src/twwarhammer3/battle/play.py",
+              line: 692,
+              name: "Whole-batch refusal",
+              sure: false,
+            },
+          ],
+        },
+        {
+          id: "play.drive>policy",
+          from: "play.drive",
+          to: "play.policy",
+          label: "acknowledge",
+          bend: -80,
+          payload:
+            "The engine's ack (plus play's own refusal, if any) and the latency: delay_ms (battle" +
+            " time), think_s and roundtrip_s (WSL wall time)",
+          sync: "blocking call, before the next decide",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:637-640",
+            "src/twwarhammer3/battle/play.py:492-520",
+          ],
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+        },
+        {
+          id: "play.policy>ask",
+          from: "play.policy",
+          to: "play.ask",
+          only: "model",
+          label: "ask(prompt)",
+          payload:
+            "The prompt, the reply schema, a parser that checks the orders on the basis, 2 retries",
+          sync: "blocking call on the play loop's thread",
+          status: PLAY_MODEL,
+          refs: [
+            "src/twwarhammer3/battle/llm.py:631-640",
+            "src/twwarhammer3/battle/llm.py:510-516",
+          ],
+          rests: [{ file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" }],
+        },
+        {
+          id: "play.ask>ledger",
+          from: "play.ask",
+          to: "play.ledger",
+          payload:
+            "reserve the worst case x 3 before sending; charge the reported cost, then release",
+          sync: "blocking, under the ledger's lock (at 21f6204)",
+          status: PLAY_LEDGER,
+          refs: [
+            "src/gameai/llm.py:239-248",
+            "src/gameai/llm.py:273",
+            "src/gameai/ledger.py:39-61",
+          ],
+          rests: [
+            {
+              file: "src/gameai/llm.py",
+              line: 36,
+              name: "600 s per read x 3 attempts",
+              sure: false,
+            },
+          ],
+        },
+        {
+          id: "play.ask>api",
+          from: "play.ask",
+          to: "play.api",
+          label: "HTTPS",
+          payload: "A Responses API request; the reply comes back on the same connection",
+          sync: "blocking HTTP, 600 s read timeout, up to 3 transport attempts",
+          status: PLAY_MODEL,
+          refs: [
+            "src/gameai/llm.py:95-142",
+            "src/gameai/llm.py:250-253",
+            "src/gameai/llm.py:29-39",
+          ],
+          rests: [
+            {
+              file: "src/gameai/llm.py",
+              line: 36,
+              name: "600 s per read x 3 attempts",
+              sure: false,
+            },
+          ],
+        },
+        {
+          id: "play.policy>skills",
+          from: "play.policy",
+          to: "play.skills",
+          only: "commander",
+          bend: 14,
+          payload: "The current observation",
+          sync: "blocking call in every decide",
+          status: PLAY_COMMANDER,
+          refs: ["src/twwarhammer3/battle/commander.py:144"],
+        },
+        {
+          id: "play.skills>policy",
+          from: "play.skills",
+          to: "play.policy",
+          only: "commander",
+          bend: 14,
+          payload: "Orders for the units' standing assignments",
+          sync: "return value",
+          status: PLAY_COMMANDER,
+          refs: ["src/twwarhammer3/battle/skills.py:239-300"],
+        },
+        {
+          id: "play.policy>worker",
+          from: "play.policy",
+          to: "play.worker",
+          only: "commander",
+          label: "submit",
+          bend: 14,
+          payload: "A plan prompt from the current state, and that state's time",
+          sync: "asynchronous: pool.submit, only when no plan request is in flight",
+          status: PLAY_COMMANDER,
+          refs: ["src/twwarhammer3/battle/commander.py:145-150"],
+        },
+        {
+          id: "play.worker>policy",
+          from: "play.worker",
+          to: "play.policy",
+          only: "commander",
+          bend: 14,
+          payload: "The finished plan: reply, attempts and the time of the state it was based on",
+          sync: "polled: collected by the first decide after the call finished",
+          status: PLAY_COMMANDER,
+          refs: ["src/twwarhammer3/battle/commander.py:139-143"],
+        },
+        {
+          id: "play.worker>ask",
+          from: "play.worker",
+          to: "play.ask",
+          only: "commander",
+          payload: "The plan prompt, 1 retry for a reply off the schema",
+          rests: [{ file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" }],
+          sync: "blocking call inside the worker thread",
+          status: PLAY_COMMANDER,
+          refs: [
+            "src/twwarhammer3/battle/commander.py:152-158",
+            "src/twwarhammer3/battle/commander.py:43",
+          ],
+        },
+        {
+          id: "play.job>lock",
+          from: "play.job",
+          to: "play.lock",
+          only: "lifecycle",
+          payload: "An exclusive, non-blocking flock",
+          sync: "held for the whole job",
+          status: SPINE_LIVE,
+          refs: ["src/twwarhammer3/battle/play.py:189", "src/gameai/windows.py:56-69"],
+        },
+        {
+          id: "play.job>session",
+          from: "play.job",
+          to: "play.session",
+          only: "lifecycle",
+          label: "write",
+          payload:
+            "job, enabled, autostart, menu, speed, pause, observe_ms, tick_ms, record_replay, stills",
+          sync: "file write once per launch; removed after the game stops",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:194-196",
+            "src/twwarhammer3/engine/mailbox.py:195-210",
+          ],
+        },
+        {
+          id: "play.job>game",
+          from: "play.job",
+          to: "play.game",
+          only: "lifecycle",
+          label: "launch",
+          bend: 150,
+          payload: "Warhammer3.exe with the mod list, run by windows_game.py on Windows Python",
+          sync: "a subprocess; stdin 'stop' ends it",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:196-197",
+            "src/gameai/windows.py:115-135",
+            "src/gameai/windows.py:165-182",
+          ],
+        },
+        {
+          id: "play.game>frontend",
+          from: "play.game",
+          to: "play.frontend",
+          only: "lifecycle",
+          payload: "The game's mod loader runs the frontend script at the main menu",
+          sync: "in the game",
+          status: SPINE_LIVE,
+          refs: [FRONTEND + ":1-4", FRONTEND + ":131-139"],
+        },
+        {
+          id: "play.job>frontend",
+          from: "play.job",
+          to: "play.frontend",
+          only: "lifecycle",
+          label: "menu.json",
+          bend: 14,
+          payload: "job, request id, steps: the custom battle's clicks, settings and checks",
+          sync: "file write; the script reads and deletes it",
+          status: PLAY_OFFLINE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:242-243",
+            "src/twwarhammer3/engine/mailbox.py:225-230",
+          ],
+        },
+        {
+          id: "play.frontend>job",
+          from: "play.frontend",
+          to: "play.job",
+          only: "lifecycle",
+          bend: 14,
+          payload:
+            "frontend loaded; step results; if the battle has not started after the start click and" +
+            ' a 20 s wait, why not and "the battle did not start"; menu <id>: done or failed',
+          sync: "append-only file, polled every 1 s",
+          status: PLAY_OFFLINE,
+          refs: ["src/twwarhammer3/battle/play.py:237-261", FRONTEND + ":50-53"],
+        },
+        {
+          id: "play.job>drive",
+          from: "play.job",
+          to: "play.drive",
+          only: "lifecycle",
+          label: "play_episode",
+          bend: 24,
+          payload: "A fresh policy and the battle id to skip (the previous one)",
+          sync: "blocking call, one per episode",
+          status: SPINE_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:149-154",
+            "src/twwarhammer3/battle/play.py:266-299",
+          ],
+        },
+        {
+          id: "play.drive>job",
+          from: "play.drive",
+          to: "play.job",
+          only: "lifecycle",
+          label: "result",
+          bend: 24,
+          payload: "status, battle time, decisions, delays, think times, the engine's ending",
+          sync: "return value; the job appends the results.csv row",
+          status: PLAY_ENDING,
+          refs: [
+            "src/twwarhammer3/battle/play.py:632-647",
+            "src/twwarhammer3/battle/play.py:155-170",
+          ],
+        },
+        {
+          id: "play.job>mailbox",
+          from: "play.job",
+          to: "play.mailbox",
+          only: "lifecycle",
+          label: "restart control",
+          payload: "control: restart, for the battle just played",
+          sync: "a request through orders.json, with its own id",
+          status: PLAY_OFFLINE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:147-148",
+            "src/twwarhammer3/engine/mailbox.py:221-223",
+          ],
+        },
+        {
+          id: "play.poll>restart",
+          from: "play.poll",
+          to: "play.restart",
+          only: "lifecycle",
+          payload: "A restart control for this battle",
+          sync: "function call in poll()",
+          status: "built, unverified: no test drives the rematch clicks",
+          refs: [LUA + ":1393-1396"],
+        },
+        {
+          id: "play.restart>load",
+          from: "play.restart",
+          to: "play.load",
+          only: "lifecycle",
+          payload: "The confirmed rematch reloads the battle, which runs the battle script again",
+          sync: "in the game",
+          status: "built, unverified: no test drives the rematch clicks",
+          refs: [LUA + ":1174-1199", LUA + ":1532"],
+        },
+      ],
+      flows: [
+        {
+          id: "decision",
+          title: "One decision, one model controller",
+          variant: "model",
+          clock: "battle time",
+          timing: "one episode, not a measurement",
+          source:
+            PLAY_EP +
+            " (llm_rules, GLM 5.3 low effort, at b7e2dd1; the last note says what changed since)",
+          drawn:
+            "Publish and apply times are recorded (mod.log, trace). The publishes at 80.9 and 82.1 s" +
+            " are computed with the mod's rule; only their seq numbers are recorded. The read, reply" +
+            " and write times are WSL times mapped to battle time by a straight-line fit over 5 acks" +
+            " from 79.7 to 91.4 s (1091 battle ms per WSL second, largest miss 56 ms). The acks" +
+            " before 79.7 s sit off that line (r12-r23 about 3.2 s, r1-r11 about 6.1 s); why (a WSL clock step, or a paused or" +
+            ' slowed battle) is not recorded. Mapped times are written "about ..., mapped". The' +
+            " steps in the first 0.25 s and the poll's pickup are spaced for legibility.",
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+          derived: [PLAY_NUMBERS],
+          start: 79600,
+          end: 83700,
+          speed: 0.25,
+          steps: [
+            {
+              at: 79700,
+              until: 79760,
+              dots: [P_OBSERVE],
+              caption:
+                "79.70 s: the tick applies r24 and publishes seq 70, which carries r24's ack. The play loop reads it at its next 0.1 s poll.",
+              refs: [LUA + ":1313-1335", PLAY_MODLOG + " line 26", PLAY_TRACE + " rows 98, 100"],
+            },
+            {
+              at: 79760,
+              until: 79800,
+              dots: [["play.drive>policy"]],
+              caption:
+                "The ack matches the outstanding request r24, so the ack and its latency go to the policy: delay_ms 4800.",
+              refs: ["src/twwarhammer3/battle/play.py:637-640", PLAY_TRACE + " row 98"],
+            },
+            {
+              at: 79800,
+              until: 79840,
+              dots: [P_DECIDE],
+              caption:
+                "Seq 70 enters the history through public(). Nothing is outstanding, so decide(seq 70) starts at once.",
+              refs: ["src/twwarhammer3/battle/play.py:654-673", PLAY_TRACE + " row 100"],
+            },
+            {
+              at: 79840,
+              until: 79900,
+              dots: [["play.policy>ask", "play.ask>ledger"]],
+              caption:
+                "LLMPolicy renders the prompt (notes, recent decisions, the timing line, the last ack, the state). Model.ask first asks the ledger for the worst case, $0.2962 (the request's size plus 16,000 output tokens at b7e2dd1's prices, x 3 attempts). At 21f6204 the ledger holds that amount until the call returns; at b7e2dd1 it only checked it against the budget.",
+              refs: [
+                "src/twwarhammer3/battle/llm.py:615-634",
+                "src/gameai/llm.py:239-244",
+                "src/gameai/ledger.py:39-49",
+                PLAY_NUMBERS,
+              ],
+              rests: [
+                {
+                  file: "src/gameai/llm.py",
+                  line: 36,
+                  name: "600 s per read x 3 attempts",
+                  sure: false,
+                },
+              ],
+            },
+            {
+              at: 79900,
+              until: 79950,
+              dots: [["play.ask>api"]],
+              caption:
+                "The request goes to OpenRouter (GLM 5.3, low effort). The play loop's thread waits for the reply.",
+              refs: ["src/gameai/llm.py:250-253", "src/gameai/llm.py:95-130"],
+            },
+            {
+              at: 79950,
+              until: 82660,
+              box: "play.api",
+              caption:
+                "Call m25 is in flight: 2.79 s of WSL time, about 3.0 s of battle time by the clock fit. The battle keeps going; nobody reads observation.json.",
+              refs: [PLAY_TRACE + " row 99", PLAY_NUMBERS],
+            },
+            {
+              at: 80900,
+              until: 80950,
+              dots: [["play.tick>obs"]],
+              caption:
+                "80.90 s: the periodic timer ran out at 80.7 s (1000 ms after the 79.7 s publish), so this tick publishes seq 71, 1200 ms after seq 70. Nobody reads it.",
+              refs: [LUA + ":1331-1335", PLAY_NUMBERS],
+            },
+            {
+              at: 82100,
+              until: 82150,
+              dots: [["play.tick>obs"]],
+              caption:
+                "82.10 s: seq 72 overwrites seq 71, which was never read. The model will not see seq 72 either; it decides on seq 70.",
+              refs: [LUA + ":58-70", PLAY_NUMBERS],
+            },
+            {
+              at: 82660,
+              until: 82710,
+              dots: [["~play.ask>api", "play.ask>ledger", "~play.policy>ask"]],
+              caption:
+                "The reply arrives (475 output tokens, 265 of them reasoning): one run move for f2, the Knights. Model.ask charges $0.0025 (at 21f6204 it then releases the hold); its parser checked the orders on seq 70.",
+              refs: [
+                "src/gameai/llm.py:260-273",
+                "src/gameai/llm.py:353-354",
+                "src/twwarhammer3/battle/llm.py:510-516",
+                PLAY_TRACE + " row 99",
+              ],
+            },
+            {
+              at: 82710,
+              until: 82720,
+              dots: [["play.policy>drive"]],
+              caption:
+                "decide returns at about 82.71 s, mapped. The play loop re-reads observation.json for a result: it finds seq 72, with no result. It checks the batch again and builds the request.",
+              refs: ["src/twwarhammer3/battle/play.py:681-702"],
+            },
+            {
+              at: 82720,
+              until: 82760,
+              dots: [["play.drive>mailbox", "play.mailbox>orders"], ["play.drive>trace"]],
+              caption:
+                "At about 82.72 s, mapped, r25 (based_on 70, one order) is written to orders.json, and the call, basis and decision go to the trace. think_s stops here: 2.798 s of WSL time.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:714-722",
+                "src/twwarhammer3/engine/mailbox.py:232-242",
+                PLAY_TRACE + " rows 99-101",
+              ],
+            },
+            {
+              at: 82760,
+              until: 82920,
+              dots: [["play.orders>poll", "play.poll>pending"]],
+              caption:
+                "The real-time poll reads and deletes orders.json within 200 ms and parks r25 in state.pending.",
+              refs: [LUA + ":1368-1405", LUA + ":1537"],
+            },
+            {
+              at: 82760,
+              until: 82800,
+              dots: [["play.obs>mailbox", "play.mailbox>drive", "play.drive>public"]],
+              caption:
+                "Meanwhile the play loop's next wait returns seq 72 at once (its seq is above 70). It goes into the history, but r25 is outstanding, so there is no decide: the model never sees seq 72.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:591-596",
+                "src/twwarhammer3/battle/play.py:654-657",
+                "src/twwarhammer3/battle/play.py:683",
+                PLAY_NUMBERS,
+              ],
+            },
+            {
+              at: 82920,
+              until: 83000,
+              box: "play.pending",
+              caption: "r25 waits for the next battle-time tick.",
+              refs: [LUA + ":1317"],
+            },
+            {
+              at: 83000,
+              until: 83050,
+              dots: [["play.pending>tick", "play.tick>obs"]],
+              caption:
+                "83.00 s: the tick applies r25 and, in the same tick, publishes seq 73 with the ack (applied_ms 83000, f2 #1 ok). That publish restarts the periodic timer: the next one is due at 84.0 s.",
+              refs: [LUA + ":1101-1132", LUA + ":1331-1335", PLAY_MODLOG + " line 27"],
+            },
+            {
+              at: 83050,
+              until: 83090,
+              dots: [["play.obs>mailbox", "play.mailbox>drive", "play.drive>policy"]],
+              caption:
+                "The play loop reads seq 73. Its ack matches r25: delay_ms = 83000 - 79700 = 3300 (battle time); think_s 2.798 and roundtrip_s 3.107 (WSL time).",
+              refs: ["src/twwarhammer3/battle/play.py:492-501", PLAY_TRACE + " row 102"],
+              rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+            },
+            {
+              at: 83090,
+              until: 83140,
+              dots: [[...P_DECIDE, "play.policy>ask", "play.ask>ledger", "play.ask>api"]],
+              caption:
+                'decide(seq 73) starts call m26. Its prompt says: "Your last batch was issued to the engine 3.3 s after the state you saw (you took 2.8 s to reply). Expect a similar delay now." and "Last orders: f2 #1 issued."',
+              refs: ["src/twwarhammer3/battle/llm.py:454-477", PLAY_TRACE + " row 103"],
+            },
+            {
+              at: 83140,
+              until: 83700,
+              box: "play.api",
+              caption:
+                "m26 is in flight and the cycle repeats: r26 is applied at 86.9 s, delay 3900 ms.",
+              refs: [PLAY_TRACE + " rows 103-106"],
+            },
+          ],
+          lanes: {
+            rows: [
+              { id: "game", label: "game: applied" },
+              { id: "unread", label: "obs. never read" },
+              { id: "unseen", label: "obs. model never sees" },
+              { id: "A", label: "model calls" },
+            ],
+            items: [
+              {
+                row: "A",
+                label: "m25",
+                input: 79700,
+                completed: 82713,
+                sent: 82719,
+                applied: 83000,
+              },
+              { row: "A", label: "m26", input: 83056, completed: null, sent: null, applied: null },
+            ],
+            marks: [
+              { row: "game", kind: "applied", at: [79700, 83000] },
+              { row: "unread", kind: "observation overwritten unread", at: [80900] },
+              {
+                row: "unseen",
+                kind: "observation read by the play loop, never shown to the model",
+                at: [82100],
+              },
+            ],
+            legend:
+              "Model calls: blue while the call runs (mapped from WSL time), grey from the request's" +
+              " write until the tick that applied it.",
+          },
+        },
+        {
+          id: "scripted",
+          title: "Scripted policy",
+          variant: "scripted",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code at 21f6204",
+          drawn:
+            "Times are made up to show the order of events. Ticks are drawn 300 ms apart, as in the" +
+            " recorded model episode's mod.log.",
+          start: 0,
+          end: 1800,
+          speed: 0.25,
+          steps: [
+            {
+              at: 0,
+              until: 50,
+              dots: [P_OBSERVE],
+              caption:
+                "The tick applies the last request and publishes its ack; the play loop reads it.",
+              refs: [LUA + ":1313-1335", "src/twwarhammer3/engine/mailbox.py:287-299"],
+            },
+            {
+              at: 50,
+              until: 90,
+              dots: [["play.drive>policy"], P_DECIDE],
+              caption: "acknowledge, then decide on the same observation at once.",
+              refs: ["src/twwarhammer3/battle/play.py:637-673"],
+            },
+            {
+              at: 90,
+              until: 110,
+              dots: [["play.policy>drive"]],
+              caption:
+                "A scripted policy answers with no model call. AttackNearest orders each able unit onto its nearest visible enemy and repeats an order only on a new nearest enemy or a lapsed attack.",
+              refs: ["src/twwarhammer3/battle/scripted.py:25-56"],
+            },
+            {
+              at: 110,
+              until: 300,
+              dots: [P_REQUEST],
+              caption:
+                "The request is written, even with no orders; poll() parks it; the next tick applies it.",
+              refs: ["src/twwarhammer3/battle/play.py:714", LUA + ":1368-1405"],
+            },
+            {
+              at: 300,
+              until: 1800,
+              every: 300,
+              dots: [P_ROUND],
+              caption:
+                "So the policy decides once per tick, and every observation it reads is an ack: each applied request publishes at once and restarts the periodic timer, which never runs out.",
+              refs: [LUA + ":1324-1335"],
+            },
+            {
+              at: 300,
+              until: 1800,
+              every: 1000,
+              dots: [["play.drive>trace"]],
+              caption:
+                "The trace keeps every decision with orders and quiet ones once per observe_ms; result.json keeps every delay and think time.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:704-719",
+                "src/twwarhammer3/battle/play.py:497-512",
+              ],
+            },
+          ],
+        },
+        {
+          id: "commander",
+          title: "commander (unplayed since v4)",
+          variant: "commander",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code at 21f6204; commander v8 has not played",
+          drawn: "Times are made up to show the order of events. Ticks are drawn 300 ms apart.",
+          start: 0,
+          end: 3300,
+          speed: 0.5,
+          steps: [
+            {
+              at: 0,
+              until: 50,
+              dots: [P_OBSERVE],
+              caption: "An observation reaches the play loop; no request is outstanding.",
+              refs: ["src/twwarhammer3/battle/play.py:656"],
+            },
+            {
+              at: 50,
+              until: 100,
+              dots: [P_DECIDE, ["play.policy>skills", "play.skills>policy"]],
+              caption:
+                "decide runs the skills executor on this observation: each unit's standing assignment becomes orders now (class defaults before the first plan).",
+              refs: [
+                "src/twwarhammer3/battle/commander.py:135-144",
+                "docs/twwarhammer3/controllers.md:104-111",
+              ],
+              rests: [
+                { file: "docs/twwarhammer3/controllers.md", line: 98, name: "Executor rules" },
+              ],
+            },
+            {
+              at: 100,
+              until: 140,
+              dots: [["play.policy>worker"]],
+              caption:
+                "No plan request is in flight, so decide submits one to the worker thread and returns the executor's orders without waiting.",
+              refs: ["src/twwarhammer3/battle/commander.py:145-150"],
+            },
+            {
+              at: 140,
+              until: 200,
+              dots: [["play.worker>ask", "play.ask>ledger", "play.ask>api"]],
+              caption:
+                "On the worker thread, Model.ask reserves on the ledger and sends the plan request.",
+              refs: ["src/twwarhammer3/battle/commander.py:152-158", "src/gameai/llm.py:239-253"],
+            },
+            {
+              at: 200,
+              until: 2600,
+              box: "play.worker",
+              caption: "The plan request is in flight; only the worker thread waits.",
+              refs: ["src/twwarhammer3/battle/commander.py:1-9"],
+            },
+            {
+              at: 140,
+              until: 2700,
+              every: 300,
+              dots: [
+                [
+                  ...P_OBSERVE,
+                  ...P_DECIDE,
+                  "play.policy>skills",
+                  "play.skills>policy",
+                  "play.policy>drive",
+                  ...P_REQUEST,
+                  "play.pending>tick",
+                ],
+              ],
+              caption:
+                "Meanwhile decide runs every tick: the executor acts on each observation and a request goes out each round.",
+              refs: [
+                "docs/twwarhammer3/controllers.md:126-128",
+                "src/twwarhammer3/battle/commander.py:135-150",
+              ],
+            },
+            {
+              at: 2600,
+              until: 2660,
+              dots: [["~play.ask>api", "play.ask>ledger", "~play.worker>ask"]],
+              caption:
+                "The plan arrives. The worker only returns it; all state changes stay on the play loop's thread.",
+              refs: ["src/twwarhammer3/battle/commander.py:152-158"],
+            },
+            {
+              at: 2700,
+              until: 2760,
+              dots: [P_OBSERVE, P_DECIDE, ["play.worker>policy"]],
+              caption:
+                "The next decide collects the plan and adopts it against the current state: assignments for dead units or without a needed point are dropped, the rest go to the executor. A worker error would surface here, and that tick would send nothing.",
+              refs: [
+                "src/twwarhammer3/battle/commander.py:139-143",
+                "src/twwarhammer3/battle/commander.py:160-204",
+              ],
+            },
+            {
+              at: 2760,
+              until: 2800,
+              dots: [["play.policy>skills", "play.skills>policy"], ["play.policy>worker"]],
+              caption:
+                "The executor acts on the new assignments, and the next plan request leaves at once. Its prompt gives the last plan's age in battle time.",
+              refs: [
+                "src/twwarhammer3/battle/commander.py:102-107",
+                "src/twwarhammer3/battle/commander.py:144-150",
+                "src/twwarhammer3/battle/commander.py:193",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/controllers.md",
+                  line: 122,
+                  name: "Commander plans",
+                  sure: false,
+                },
+              ],
+            },
+            {
+              at: 2800,
+              until: 3300,
+              dots: [["play.policy>drive", ...P_REQUEST, "play.pending>tick"]],
+              caption: "The orders go out as one request, as with any policy.",
+              refs: ["src/twwarhammer3/battle/play.py:714"],
+            },
+          ],
+        },
+        {
+          id: "lifecycle",
+          title: "Job and episodes",
+          variant: "lifecycle",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code at 21f6204",
+          drawn: "Times only order the steps; a real launch and menu take minutes.",
+          start: 0,
+          end: 11000,
+          speed: 1,
+          steps: [
+            {
+              at: 0,
+              until: 400,
+              dots: [["play.job>lock"]],
+              caption:
+                "play() takes RuntimeLock: one controller owns the game runtime, and a second one fails at once.",
+              refs: ["src/twwarhammer3/battle/play.py:189", "src/gameai/windows.py:43-69"],
+            },
+            {
+              at: 400,
+              until: 800,
+              box: "play.job",
+              caption:
+                "With the game stopped, prepare_runtime installs the mod pack and the startup skip and warns if Steam's build is not the pinned one. The mailbox folder is cleared.",
+              refs: [
+                "src/twwarhammer3/engine/runtime.py:97-127",
+                "src/twwarhammer3/battle/play.py:190-193",
+              ],
+            },
+            {
+              at: 800,
+              until: 1100,
+              dots: [["play.job>session"]],
+              caption: "session.json switches the mod on for this job.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:194-196",
+                "src/twwarhammer3/engine/mailbox.py:199-210",
+              ],
+            },
+            {
+              at: 1100,
+              until: 1500,
+              dots: [["play.job>game"]],
+              caption:
+                "OwnedGame starts Warhammer3.exe with the mod list, under a supervisor on Windows that refuses a second game.",
+              refs: ["src/twwarhammer3/battle/play.py:196-198", "src/gameai/windows.py:91-135"],
+            },
+            {
+              at: 1500,
+              until: 1800,
+              dots: [["play.game>frontend"]],
+              caption: 'At the main menu the frontend script loads and logs "frontend loaded".',
+              refs: [FRONTEND + ":131-139", "src/twwarhammer3/battle/play.py:237-241"],
+            },
+            {
+              at: 1800,
+              until: 2400,
+              dots: [["play.job>frontend"]],
+              caption:
+                'play writes menu.json: the scenario\'s custom-battle steps. They end with a click on start, a 20 s wait, then a reading of why the battle did not start and the line "the battle did not start". The script runs at most one UI action per 500 ms callback.',
+              refs: [
+                "src/twwarhammer3/battle/play.py:242-243",
+                "src/twwarhammer3/battle/setup.py:304-310",
+                FRONTEND + ":87-129",
+              ],
+            },
+            {
+              at: 2400,
+              until: 2700,
+              dots: [["play.frontend>job"]],
+              caption:
+                'Each step\'s result goes to menu.log, which play reads every second. A failed required or timed step, or "the battle did not start", stops the job as a setup failure; another failed step is logged and the steps go on.',
+              refs: [
+                "src/twwarhammer3/battle/play.py:244-256",
+                "src/twwarhammer3/battle/play.py:206-208",
+                FRONTEND + ":50-53",
+                FRONTEND + ":118-125",
+              ],
+            },
+            {
+              at: 2700,
+              until: 3100,
+              box: "play.load",
+              caption:
+                "When the start click works, the battle loads during the 20 s wait and the frontend script unloads. load() reads session.json, makes a battle id, starts poll() and publishes a Loading observation (seq 0); every 5 s of real time it tries to end deployment.",
+              refs: [
+                LUA + ":1507-1552",
+                LUA + ":1538-1546",
+                "src/twwarhammer3/battle/setup.py:306-307",
+              ],
+            },
+            {
+              at: 3100,
+              until: 3400,
+              box: "play.job",
+              dots: [["play.obs>mailbox"]],
+              caption:
+                "That first observation ends play's wait for the menu. In the recorded job, menu.log stops at step 89 of 91 (the 20 s wait), and the trace's first row is the seq-0 Loading observation.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:257-258",
+                "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/menu.log",
+                "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 1",
+              ],
+            },
+            {
+              at: 3400,
+              until: 3700,
+              dots: [["play.job>drive"]],
+              caption:
+                "Episode 1: play_episode builds a fresh policy, and _drive takes the newest observation of this job as the battle's first (there is no earlier battle to skip).",
+              refs: [
+                "src/twwarhammer3/battle/play.py:142-154",
+                "src/twwarhammer3/battle/play.py:574-579",
+                "src/twwarhammer3/engine/mailbox.py:276-285",
+              ],
+            },
+            {
+              at: 3700,
+              until: 4000,
+              box: "play.tick",
+              caption:
+                "At Deployed, start() sets speed 1 and starts tick() on battle time; its first tick publishes.",
+              refs: [LUA + ":1534", LUA + ":1478-1480"],
+            },
+            {
+              at: 4000,
+              until: 7000,
+              every: 600,
+              dots: [P_ROUND],
+              caption:
+                "The episode runs the decision loop of the first flow until an observation carries a result.",
+              refs: ["src/twwarhammer3/battle/play.py:588-723"],
+            },
+            {
+              at: 7000,
+              until: 7300,
+              dots: [P_OBSERVE, ["play.drive>job"]],
+              caption:
+                "finish() publishes the result observation last. The play loop keeps the engine's ending and returns; the job appends the results.csv row. Any ending but won, lost or draw stops the job.",
+              refs: [
+                LUA + ":1146-1172",
+                "src/twwarhammer3/battle/play.py:632-647",
+                "src/twwarhammer3/battle/play.py:155-170",
+              ],
+              rests: [{ file: "src/twwarhammer3/battle/play.py", line: 166, name: "Job stop" }],
+            },
+            {
+              at: 7300,
+              until: 7600,
+              box: "play.job",
+              caption:
+                "Before the next episode, play checks that no file in its source scope changed; a change stops the job.",
+              refs: ["src/twwarhammer3/battle/play.py:145-146"],
+            },
+            {
+              at: 7600,
+              until: 8000,
+              dots: [["play.job>mailbox", "play.mailbox>orders"]],
+              caption: "It writes a restart control for the battle just played to orders.json.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:147-148",
+                "src/twwarhammer3/engine/mailbox.py:221-223",
+              ],
+            },
+            {
+              at: 8000,
+              until: 8300,
+              dots: [["play.job>drive"]],
+              caption:
+                "Right away, play starts episode 2: a fresh policy, and _drive waits for a battle id other than the last one, so the old battle's observations are skipped.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:147-162",
+                "src/twwarhammer3/engine/mailbox.py:276-285",
+              ],
+            },
+            {
+              at: 8300,
+              until: 8600,
+              dots: [["play.orders>poll", "play.poll>restart"]],
+              caption: "poll() reads the control and calls restart().",
+              refs: [LUA + ":1393-1396"],
+            },
+            {
+              at: 8600,
+              until: 9500,
+              box: "play.restart",
+              caption:
+                "A 1000 ms real-time callback clicks the results popup's rematch button, then the confirm tick. In a recorded job (b36) the two log lines are stamped 1 s apart.",
+              refs: [
+                LUA + ":1174-1199",
+                "runs/twwarhammer3/battle/bench-b36-chariot-c1-foils-l10-20261019/episode-0001/mod.log lines 1-3",
+              ],
+            },
+            {
+              at: 9500,
+              until: 9800,
+              dots: [["play.restart>load"]],
+              caption: "The battle reloads; load() runs again and makes a new battle id.",
+              refs: [LUA + ":1532"],
+            },
+            {
+              at: 9800,
+              until: 10100,
+              dots: [["play.obs>mailbox", "play.mailbox>drive"]],
+              caption: "_drive's wait sees the new battle id, and episode 2 begins.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:576-579",
+                "src/twwarhammer3/engine/mailbox.py:276-285",
+              ],
+            },
+            {
+              at: 10100,
+              until: 11000,
+              box: "play.job",
+              caption:
+                "After the last episode the job leaves its contexts: the supervisor stops the game, session.json is removed, the lock is released.",
+              refs: [
+                "src/gameai/windows.py:165-182",
+                "src/twwarhammer3/engine/mailbox.py:199-210",
+                "src/gameai/windows.py:71-76",
+              ],
+            },
+          ],
+        },
+      ],
+      notes: [
+        {
+          text: "delay_ms is battle time: the ack's applied_ms minus the basis observation's time_ms. think_s and roundtrip_s are WSL wall time, which runs 6-8% slow and steps forward by 1.8-2.9 s at a time. In this episode 9 of 88 acks had think_s longer than delay_ms, which a 1x battle and a steady clock cannot produce; r24's 7.1 s against 4.8 s went into the next prompt. A WSL clock step is the likely cause; nothing recorded rules out a slowed battle.",
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+          refs: [
+            "src/twwarhammer3/battle/play.py:494-501",
+            "docs/twwarhammer3/integration.md:223-245",
+            PLAY_NUMBERS,
+            PLAY_TRACE,
+          ],
+        },
+        {
+          text: "think_s is not pure model time: it runs from the read before decide to after the mailbox write, so it also covers the prompt, the checks, the metadata and any wait for orders.json to clear (up to 15 s). In this episode those added 5 to 13 ms per decision.",
+          refs: [
+            "src/twwarhammer3/battle/play.py:669-722",
+            "src/twwarhammer3/engine/mailbox.py:232-237",
+            PLAY_NUMBERS,
+          ],
+        },
+        {
+          text: "A reply that arrives after the battle ended is dropped: the mod publishes the result observation last, and the play loop re-reads observation.json after every decide. Here the last call, m89, started from the state at 333.5 s and took 7.7 s of WSL time; the battle had ended at 335.2 s, so nothing was sent (89 calls, 88 requests).",
+          status:
+            "built, component tests only: test_wh3_play.py:260-283 (part of the suite the WH3 offline check runs)",
+          refs: [
+            "src/twwarhammer3/battle/play.py:681-684",
+            LUA + ":1146-1172",
+            "tests/twwarhammer3/test_wh3_play.py:260-283",
+            PLAY_NUMBERS,
+            PLAY_TRACE + " rows 354-356",
+          ],
+        },
+        {
+          text: "The model's own retry checks orders before play checks them again: Model.ask's parser runs validate_orders, so an illegal batch is asked again, at extra cost, before play's check sees it. Here 3 of 89 calls (m58, m66, m80) had a first reply refused for ordering f2 twice without queue; each passed on the retry, and play's own check refused no batch. After 2 failed retries, llm_rules keeps the last reply's valid orders.",
+          status:
+            "built, component tests only: test_wh3_llm.py:60-71 and gameai/test_model.py:49-72; no agreed check",
+          refs: [
+            "src/twwarhammer3/battle/llm.py:510-547",
+            "src/twwarhammer3/battle/llm.py:631-640",
+            "src/gameai/llm.py:353-365",
+            "src/twwarhammer3/battle/play.py:691-702",
+            PLAY_NUMBERS,
+          ],
+          rests: [{ file: "docs/twwarhammer3/controllers.md", line: 118, name: "Invalid replies" }],
+        },
+        {
+          text: "Play's own check: one illegal or non-finite order voids the whole batch, which is sent as [] with the refusal fed back at the next ack.",
+          status: PLAY_FINITE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:691-702",
+            "src/twwarhammer3/battle/play.py:515",
+            "src/twwarhammer3/protocol.py:227-231",
+          ],
+          rests: [
+            {
+              file: "src/twwarhammer3/battle/play.py",
+              line: 692,
+              name: "Whole-batch refusal",
+              sure: false,
+            },
+          ],
+        },
+        {
+          text: "An ack restarts the periodic observation timer: the tick that applies a request publishes at once and sets the next periodic publish observe_ms later. While a slow model thinks, periodic observations go by: here seq 71 was overwritten unread, and seq 72 was read by the play loop after the reply and put in the history, but never shown to the model. A fast policy that decides every tick reads only acks.",
+          refs: [LUA + ":1324-1335", PLAY_NUMBERS],
+        },
+        {
+          text: "tick_ms is 250 by default, but the engine ran tick() every 300 ms: all 88 applied requests of this episode fall on 5000 + k x 300 ms. The cause is unverified.",
+          refs: ["src/twwarhammer3/__main__.py:23", LUA + ":1480", PLAY_MODLOG, PLAY_NUMBERS],
+        },
+        {
+          text: "The episode ran at b7e2dd1 (2026-10-20). Before 21f6204, play.py, mailbox.py, the battle script, both llm.py files, ledger.py and protocol.py all changed (517 lines added, 117 removed). Most parts this flow draws read the same: tick(), publish() and finish() are identical, poll() and apply_pending() differ only in multiplayer branches, and the latency fields, the timing line, the reservation amount and the mailbox's request and wait functions are unchanged. Two differ: at b7e2dd1 the ledger's reserve only checked the worst case against the budget (no hold, no release, no lock), and the play loop hid three keys (native came later).",
+          refs: [PLAY_NUMBERS, "src/twwarhammer3/protocol.py:43-45"],
         },
       ],
     },
