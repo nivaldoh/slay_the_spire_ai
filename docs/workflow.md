@@ -10,6 +10,8 @@ This page is the light factory plan (2026-10-28/29; the full plan with the owner
 "Implement docs/light-factory-plan.md". The process is in use; every check it
 added is still "proposed, not agreed" under the [hard rule](../AGENTS.md#verification-hard-rule).
 Sources are linked inline and listed in [references.md](references.md).
+A diagram of these parts is the Factory tab of [multi-agent.html](multi-agent.html#factory)
+(open it in a local browser; the [WH3 README](twwarhammer3/README.md#pages) gives the path).
 
 ## Sizes of change
 
