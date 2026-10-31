@@ -1,0 +1,3382 @@
+<!doctype html>
+<!-- How the multi-agent parts connect, as an animated diagram. Open it in a local browser:
+     paste \\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html into
+     the address bar. Plan: runs/multi-agent-diagram-20261031/plan.md (local, not in Git). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-agent parts</title>
+<script>
+"use strict";
+/* Every claim the page draws, as plain data. The viewer further down reads only DIAGRAM.
+
+   Each tab names the commit its claims were checked at. A ref is "path:line" or
+   "path:first-last" at that commit (the page links it on GitHub), or a path under runs/,
+   which is local evidence and not in Git.
+
+   status: a string that starts with one of
+     "agreed live check", "agreed offline check" (from docs/agreed-checks.md, the WH3 log or
+       runs/checks/agreed-passes.jsonl; only revisions in the tab commit's history),
+     "built, component tests only", "built, unverified",
+     "planned" (names the page and section that plans it),
+     "outside our code" (names the doc line that describes it);
+   or an object {text, refs, rests} when the status needs its own sources.
+   rests: [{file, line, name, sure}]: a value or rule here sits under a marked judgement call
+     in that file; the page shows it as "rests on" that marker. sure: false for a marker the
+     agent was unsure counts (written with a question mark).
+   kind sets a box's shape: process, thread, agent, file, outside service, human.
+   where sets its background band. only: "<variant>" shows an item only in flows of that
+     variant; variants: {<variant>: {...}} replaces fields in flows of that variant.
+   A flow's steps run on one clock (battle milliseconds unless the flow says otherwise).
+     A step is active while at <= t < until. dots: each entry is a path of wire ids (or
+     {path, who}); "~id" runs that wire backwards; the dot crosses the path once over the
+     step, or once every `every` ms. box: the box is busy during the step. who: "A" or "B",
+     the member whose colour the dot or box takes.
+   lanes: rows, then items: {row, label, who, from, to} for a request, or {row, label, input,
+     completed, sent, applied} for a member call (thinking, waiting to be sent, sent until the
+     engine applied it; null: not reached, its bar runs to `until` or the flow's end);
+     marks: {row, kind, at}. */
+
+const TRACE = "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl";
+const LUA = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua";
+const TEAM_LIVE = {
+  text:
+    "agreed live check: scripted team 4/4 at 96bb137 (latest pass), 3/4 at 1cc4582 (latest" +
+    " failure: one probe's 3 s wait lasted about 1 s of battle time while WSL's clock jumped);" +
+    " its pytest part passed at 21f6204 (151 tests)",
+  refs: [
+    "docs/agreed-checks.md:18-30",
+    "docs/twwarhammer3/log.md:55-67",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+    "runs/twwarhammer3/team-live-20261031e/checks.json",
+    "runs/twwarhammer3/team-live-20261031c/checks.json",
+  ],
+  rests: [
+    { file: "tests/twwarhammer3/team/check_wh3_team.py", line: 67, name: "member age witness" },
+    { file: "tests/twwarhammer3/team/check_wh3_team.py", line: 94, name: "Movement witness" },
+    {
+      file: "tests/twwarhammer3/team/check_wh3_team.py",
+      line: 106,
+      name: "team_clock_band",
+      sure: false,
+    },
+  ],
+};
+const MODEL_TEAM = {
+  text:
+    "built, unverified: the model team (team_llm_rules) has never played live and has no" +
+    " agreed check; 31 component tests",
+  refs: [
+    "tests/twwarhammer3/team/test_wh3_model_team.py",
+    "docs/state.md:36",
+    "docs/twwarhammer3/log.md:39",
+  ],
+};
+const WH3_OFFLINE = {
+  text:
+    "agreed offline check: WH3 UI requests, failure reporting, scheduling, startup-query errors" +
+    " and session lifetime (tests/twwarhammer3), passed at 21f6204 (1153 tests). Component" +
+    " contracts with simulated game APIs; no live claim",
+  refs: [
+    "docs/agreed-checks.md:41-44",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const MAILBOX_OFFLINE = {
+  text:
+    "agreed offline check: replacement mailbox requests reach Lua's pending state and duplicate" +
+    " delivery is rejected, passed at 21f6204 (1 test); no game execution claim",
+  refs: [
+    "docs/agreed-checks.md:49-52",
+    "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41)",
+  ],
+};
+const DISPATCH = [
+  "team.game>obs",
+  "team.obs>play",
+  "team.play>team",
+  "team.team>play",
+  "team.play>orders",
+  "team.orders>game",
+];
+const OBSERVE = ["team.game>obs", "team.obs>play"];
+const REQUEST = ["team.play>orders", "team.orders>game"];
+
+const DIAGRAM = {
+  repo: "https://github.com/nivaldoh/slay_the_spire_ai",
+  tabs: [
+    {
+      id: "overview",
+      title: "Overview",
+      commit: "21f6204",
+      checked: "2026-10-31",
+      summary:
+        "How the areas connect. The development factory starts play jobs; a play job runs the" +
+        " play loop; the play loop hosts one policy, which may be the two-member team; native" +
+        " multiplayer puts one worker beside each game client. Click an area to open its tab." +
+        " Only the Team tab is drawn so far.",
+      size: [1400, 470],
+      bands: [
+        { where: "Windows game", x: 0, y: 0, w: 1400, h: 110 },
+        { where: "owner", x: 0, y: 118, w: 200, h: 222 },
+        { where: "WSL Python", x: 208, y: 118, w: 1192, h: 222 },
+        { where: "GitHub", x: 0, y: 348, w: 692, h: 112 },
+        { where: "cloud API", x: 700, y: 348, w: 700, h: 112 },
+      ],
+      elements: [
+        {
+          id: "ov.owner",
+          label: "Owner",
+          sub: "decides, reads reports",
+          kind: "human",
+          where: "owner",
+          x: 22,
+          y: 200,
+          w: 160,
+          h: 58,
+          status: "outside our code: agents execute, the owner decides (AGENTS.md:44)",
+          refs: ["AGENTS.md:44", "docs/workflow.md:1-7"],
+          note: "Owner review is unavailable for now (2026-10-31); most of the code has not been reviewed by hand.",
+        },
+        {
+          id: "ov.factory",
+          label: "Development factory",
+          sub: "agent sessions, check.py, hooks, queue",
+          kind: "process",
+          where: "WSL Python",
+          x: 240,
+          y: 200,
+          w: 230,
+          h: 62,
+          tab: "factory",
+          status: "built, component tests only",
+          refs: [
+            "scripts/check.py",
+            "scripts/hooks/stop_check.py",
+            "scripts/hooks/pre_bash.py",
+            "scripts/wh3_queue.py:71-131",
+            "tests/test_hooks.py",
+            "docs/workflow.md:1-12",
+          ],
+          note: "check.py, the hooks and the queue have tests; the process itself is proposed, not agreed (workflow.md).",
+        },
+        {
+          id: "ov.play",
+          label: "Play loop",
+          sub: "one controller per battle, via files",
+          kind: "process",
+          where: "WSL Python",
+          x: 540,
+          y: 200,
+          w: 230,
+          h: 62,
+          tab: "play",
+          status: WH3_OFFLINE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:189-257",
+            "src/twwarhammer3/battle/play.py:574-723",
+          ],
+          note: "One play job: lock, launch, menus, then each battle's loop of observations and requests.",
+        },
+        {
+          id: "ov.team",
+          label: "Team policy",
+          sub: "two members behind one controller",
+          kind: "agent",
+          where: "WSL Python",
+          x: 860,
+          y: 200,
+          w: 220,
+          h: 62,
+          tab: "team",
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:126-379"],
+          note: "The scripted two-member team has the agreed check; the model team (team_llm_rules) is built and unverified.",
+        },
+        {
+          id: "ov.mp",
+          label: "Native multiplayer",
+          sub: "coordinator + one worker per client",
+          kind: "process",
+          where: "WSL Python",
+          x: 1150,
+          y: 200,
+          w: 225,
+          h: 62,
+          tab: "multiplayer",
+          status: "built, component tests only",
+          refs: [
+            "src/twwarhammer3/engine/link.py:122-147",
+            "src/twwarhammer3/engine/worker.py:148",
+            "docs/twwarhammer3/native-multiplayer.md:31-37",
+            "docs/twwarhammer3/log.md:54",
+            "runs/overnight-20261031/handoff.md:122-126",
+          ],
+          note: "Built offline; zero live multiplayer battles. One dry run on 2026-10-31 (observer smoke steps 1-4) launched a real game to its menu and attached a worker, whose hello matched the build, exe and pack; no battle was started.",
+        },
+        {
+          id: "ov.mod",
+          label: "Lua battle mod",
+          sub: "our API inside the game",
+          kind: "process",
+          where: "Windows game",
+          x: 860,
+          y: 24,
+          w: 220,
+          h: 62,
+          status: MAILBOX_OFFLINE,
+          refs: [LUA + ":1313-1405"],
+        },
+        {
+          id: "ov.game",
+          label: "WH3 engine",
+          sub: "one per game client",
+          kind: "outside service",
+          where: "Windows game",
+          x: 1150,
+          y: 24,
+          w: 225,
+          h: 62,
+          status:
+            "outside our code: the game runs on Windows from its Steam install (AGENTS.md:142-146)",
+          refs: ["AGENTS.md:142-146"],
+        },
+        {
+          id: "ov.ci",
+          label: "GitHub CI",
+          sub: "runs check.py",
+          kind: "outside service",
+          where: "GitHub",
+          x: 240,
+          y: 376,
+          w: 230,
+          h: 56,
+          status:
+            "outside our code: GitHub runs our workflow on each push to main and each pull request (.github/workflows/check.yml:1-8)",
+          refs: [".github/workflows/check.yml:1-20"],
+        },
+        {
+          id: "ov.api",
+          label: "Model provider API",
+          sub: "OpenAI or OpenRouter",
+          kind: "outside service",
+          where: "cloud API",
+          x: 730,
+          y: 376,
+          w: 220,
+          h: 56,
+          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
+          refs: ["docs/twwarhammer3/README.md:223-225", "src/gameai/llm.py:200"],
+        },
+      ],
+      wires: [
+        {
+          id: "ov.owner>factory",
+          from: "ov.owner",
+          to: "ov.factory",
+          label: "decisions",
+          payload: "Directions, answers to cards and questions",
+          sync: "asynchronous, by hand",
+          status: "outside our code: the owner's answers (AGENTS.md:44)",
+          rests: [
+            { file: "docs/workflow.md", line: 34, name: "Slice contract" },
+            { file: "docs/workflow.md", line: 39, name: "Away cards" },
+          ],
+          refs: ["docs/workflow.md:32-80"],
+        },
+        {
+          id: "ov.factory>play",
+          from: "ov.factory",
+          to: "ov.play",
+          label: "play jobs",
+          payload: "A frozen plan of play jobs",
+          sync: "wh3_queue.py runs one twwarhammer3 play command per job",
+          status: "built, component tests only",
+          refs: ["scripts/wh3_queue.py:71-131", "tests/twwarhammer3/test_wh3_queue.py"],
+        },
+        {
+          id: "ov.play>team",
+          from: "ov.play",
+          to: "ov.team",
+          label: "decide, acknowledge",
+          payload:
+            "The controller interface: decide(observation) returns orders; acknowledge(ack, latency)",
+          sync: "blocking calls on the play loop's thread",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:656-723",
+            "src/twwarhammer3/battle/play.py:639",
+            "src/twwarhammer3/battle/play.py:492-520",
+          ],
+        },
+        {
+          id: "ov.play>mod",
+          from: "ov.play",
+          to: "ov.mod",
+          label: "bridge files",
+          payload: "observation.json and orders.json in the bridge folder",
+          sync: "files, polled on both sides",
+          status: MAILBOX_OFFLINE,
+          refs: ["src/twwarhammer3/engine/mailbox.py:11-30"],
+        },
+        {
+          id: "ov.mod>game",
+          from: "ov.mod",
+          to: "ov.game",
+          label: "unit commands",
+          payload: "Unit commands and state reads through the game's script interface",
+          sync: "in-game calls",
+          status: TEAM_LIVE,
+          refs: [LUA + ":1101-1132"],
+        },
+        {
+          id: "ov.play>api",
+          from: "ov.play",
+          to: "ov.api",
+          label: "model calls",
+          payload: "Model calls of llm controllers and team members",
+          sync: "blocking HTTP in the caller's thread",
+          status: "built, unverified",
+          refs: ["src/gameai/llm.py:325-345"],
+        },
+        {
+          id: "ov.mp>mod",
+          from: "ov.mp",
+          to: "ov.mod",
+          label: "worker per client",
+          payload: "One worker beside each game client: its mod runs in observe or control mode",
+          sync: "files, polled",
+          status: "built, component tests only",
+          refs: ["src/twwarhammer3/engine/worker.py:148-212"],
+        },
+        {
+          id: "ov.factory>ci",
+          from: "ov.factory",
+          to: "ov.ci",
+          label: "git push",
+          payload: "A push to main or a pull request",
+          sync: "asynchronous",
+          status: "outside our code: GitHub Actions (.github/workflows/check.yml:4-8)",
+          refs: [".github/workflows/check.yml:4-8"],
+        },
+      ],
+    },
+    {
+      id: "team",
+      title: "Team",
+      commit: "21f6204",
+      checked: "2026-10-31",
+      summary:
+        "Two members share one army behind one controller. To the play loop and the game," +
+        " TeamPolicy looks like one ordinary controller. Inside, each member decides on its own" +
+        " copy of the observation on a worker thread, and each request the game gets carries" +
+        " one member's whole batch, or nothing.",
+      size: [1400, 650],
+      bands: [
+        { where: "Windows game", x: 0, y: 0, w: 1400, h: 118 },
+        { where: "WSL Python", x: 0, y: 126, w: 1400, h: 406 },
+        { where: "cloud API", x: 0, y: 540, w: 1400, h: 104 },
+      ],
+      elements: [
+        {
+          id: "team.game",
+          label: "Lua battle script",
+          sub: "in WH3: poll() reads, tick() applies",
+          kind: "process",
+          where: "Windows game",
+          x: 300,
+          y: 26,
+          w: 300,
+          h: 70,
+          status: TEAM_LIVE,
+          refs: [LUA + ":1313-1336", LUA + ":1368-1405", LUA + ":1480", LUA + ":1537"],
+          note:
+            "poll() reads and deletes orders.json every 200 ms of real time; tick() applies it" +
+            " on battle time every tick_ms (250 ms in the check; rounds took 300 ms in the probe)" +
+            " and then writes an observation. The script knows nothing about members.",
+        },
+        {
+          id: "team.obs",
+          label: "observation.json",
+          sub: "one slot, overwritten",
+          kind: "file",
+          where: "Windows game",
+          x: 40,
+          y: 38,
+          w: 180,
+          h: 46,
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/engine/mailbox.py:11-30", LUA + ":1331-1335", LUA + ":751"],
+          note: "Rewritten every observe_ms of battle time and right after each applied request; the ack of the last applied request rides in it (orders).",
+        },
+        {
+          id: "team.orders",
+          label: "orders.json",
+          sub: "one request at a time",
+          kind: "file",
+          where: "Windows game",
+          x: 690,
+          y: 38,
+          w: 180,
+          h: 46,
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/engine/mailbox.py:212-242"],
+          note: "The play loop writes a new request only after the game deleted the last one (15 s, then MailboxTimeout).",
+        },
+        {
+          id: "team.play",
+          label: "play loop",
+          sub: "_drive: the only mailbox writer",
+          kind: "thread",
+          where: "WSL Python",
+          x: 300,
+          y: 186,
+          w: 200,
+          h: 62,
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:574-723",
+            "src/twwarhammer3/battle/play.py:656",
+            "src/twwarhammer3/battle/play.py:683-684",
+            "src/twwarhammer3/battle/play.py:297-298",
+          ],
+          note:
+            "Calls decide only when no request is outstanding, writes one request per decide" +
+            " (even an empty one) unless the battle ended meanwhile, and passes the ack back." +
+            " It refuses a team with" +
+            " delay_ms or interval_ms other than 0.",
+        },
+        {
+          id: "team.team",
+          label: "TeamPolicy",
+          sub: "on the play loop's thread",
+          kind: "thread",
+          where: "WSL Python",
+          x: 580,
+          y: 186,
+          w: 200,
+          h: 62,
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: [
+            "src/twwarhammer3/battle/team.py:126-379",
+            "src/twwarhammer3/battle/team.py:299-331",
+          ],
+          note:
+            "Each decide, without waiting: collect finished member calls, check each ready batch on" +
+            " its member's own view (and its age), start idle members on fresh views, and return" +
+            " one member's whole batch, the earliest finished, or [] (an idle poll).",
+        },
+        {
+          id: "team.pool",
+          label: "2-thread pool",
+          sub: "one call per member",
+          kind: "thread",
+          where: "WSL Python",
+          x: 830,
+          y: 270,
+          w: 130,
+          h: 56,
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: ["src/twwarhammer3/battle/team.py:142", "src/twwarhammer3/battle/team.py:233-240"],
+          note: "ThreadPoolExecutor(max_workers=2). A member gets a new call only when its last one is done, so each has at most one call running.",
+        },
+        {
+          id: "team.A",
+          label: "member cavalry",
+          sub: "probe: one 20 m move, no wait",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1010,
+          y: 150,
+          w: 170,
+          h: 62,
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:448-479"],
+          note: "Owns the Knights (f2). Decides on its own view: its unit in friendly, the teammate's in allies.",
+          variants: {
+            model: {
+              sub: "TeamLLM: the Knights",
+              status: MODEL_TEAM,
+              refs: [
+                "src/twwarhammer3/battle/team.py:401-445",
+                "src/twwarhammer3/battle/team.py:55-56",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/multi-agent-implementation.md",
+                  line: 120,
+                  name: "`team.py` PARTITION, ARMY_OWNER",
+                },
+              ],
+              note: "The llm_rules controller on its own view plus a team section. It keeps its own notes, history and ack memory; with its teammate it shares only the ledger, the send function and the stop event.",
+            },
+          },
+        },
+        {
+          id: "team.B",
+          label: "member infantry",
+          sub: "probe: waits 3 s, then one move",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1010,
+          y: 390,
+          w: 170,
+          h: 62,
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:448-479"],
+          note: "Owns the Swordsmen (f1). In probe 1 (DelayInfantry) its first decide waits 3 s on the stop event; the check alternates which member waits.",
+          variants: {
+            model: {
+              label: "member line",
+              sub: "TeamLLM: the rest + army orders",
+              status: MODEL_TEAM,
+              refs: [
+                "src/twwarhammer3/battle/team.py:401-445",
+                "src/twwarhammer3/battle/team.py:55-56",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/multi-agent-implementation.md",
+                  line: 120,
+                  name: "`team.py` PARTITION, ARMY_OWNER",
+                },
+              ],
+              note: "Every unit but the Knights, and the only member that sees army and purchase data and may give army orders.",
+            },
+          },
+        },
+        {
+          id: "team.stop",
+          label: "stop event",
+          sub: "one Event, shared",
+          kind: "file",
+          where: "WSL Python",
+          x: 1030,
+          y: 280,
+          w: 130,
+          h: 46,
+          status: "built, component tests only",
+          refs: [
+            "src/twwarhammer3/battle/team.py:344-348",
+            "src/twwarhammer3/battle/team.py:473-479",
+            "src/twwarhammer3/battle/team.py:432-439",
+          ],
+          note: "close() sets it. The scripted members share it (the delayed probe waits on it); the model team's guarded send refuses new requests once it is set.",
+        },
+        {
+          id: "team.trace",
+          label: "trace.jsonl, result.json",
+          sub: "per episode",
+          kind: "file",
+          where: "WSL Python",
+          x: 300,
+          y: 330,
+          w: 200,
+          h: 52,
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:482-490",
+            "src/twwarhammer3/battle/team.py:159-199",
+            "tests/twwarhammer3/team/check_wh3_team.py:149",
+          ],
+          note: "Team events (partition, input, completed, feedback, discarded, ...) are buffered and written by the main thread after each decide and ack; result.json gets one row per member.",
+        },
+        {
+          id: "team.c1",
+          label: "model client",
+          sub: "cavalry's own",
+          only: "model",
+          kind: "thread",
+          where: "WSL Python",
+          x: 1200,
+          y: 156,
+          w: 130,
+          h: 50,
+          status: MODEL_TEAM,
+          refs: ["src/twwarhammer3/battle/llm.py:596-601", "src/gameai/llm.py:200-248"],
+          note: "One Model per member, so per-member totals and exchange ids; it runs inside the member's worker thread.",
+        },
+        {
+          id: "team.c2",
+          label: "model client",
+          sub: "line's own",
+          only: "model",
+          kind: "thread",
+          where: "WSL Python",
+          x: 1200,
+          y: 396,
+          w: 130,
+          h: 50,
+          status: MODEL_TEAM,
+          refs: ["src/twwarhammer3/battle/llm.py:596-601", "src/gameai/llm.py:200-248"],
+        },
+        {
+          id: "team.ledger",
+          label: "spend ledger",
+          sub: "one per job, shared",
+          only: "model",
+          kind: "file",
+          where: "WSL Python",
+          x: 1200,
+          y: 278,
+          w: 130,
+          h: 50,
+          status: MODEL_TEAM,
+          refs: ["src/gameai/ledger.py:39-60", "src/twwarhammer3/battle/controllers.py:140"],
+          note: "Reserve before a call, then charge and release, under a lock. Reservations of calls in flight count against --budget-usd, so two members cannot overspend it.",
+        },
+        {
+          id: "team.api",
+          label: "provider API",
+          sub: "OpenAI or OpenRouter",
+          only: "model",
+          kind: "outside service",
+          where: "cloud API",
+          x: 1190,
+          y: 566,
+          w: 200,
+          h: 56,
+          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
+          refs: [
+            "docs/twwarhammer3/README.md:223-225",
+            "docs/twwarhammer3/multi-agent-implementation.md:238",
+            "docs/twwarhammer3/team-structures.md:112-115",
+          ],
+          note: "Whether the pinned backend serves two calls at once is unchecked: its record is calls made one at a time.",
+        },
+        {
+          id: "team.msg",
+          label: "member messages",
+          sub: "not built",
+          kind: "process",
+          where: "WSL Python",
+          x: 1210,
+          y: 280,
+          w: 130,
+          h: 46,
+          status: "planned: multi-agent-plan.md §4 Communication",
+          variants: { model: { x: 830, y: 150 } },
+          refs: ["docs/twwarhammer3/multi-agent-plan.md:176-189"],
+          note: "A logged channel with recipients, size, rate and delivery time, delivered at the recipient's next request. Today members never message each other.",
+        },
+        {
+          id: "team.rr",
+          label: "round-robin schedule",
+          sub: "one call in flight per team",
+          kind: "process",
+          where: "WSL Python",
+          x: 580,
+          y: 330,
+          w: 200,
+          h: 52,
+          status: "planned: team-structures.md §4",
+          refs: ["docs/twwarhammer3/team-structures.md:92-121"],
+          rests: [
+            { file: "docs/twwarhammer3/team-structures.md", line: 243, name: "round-robin screen" },
+          ],
+          note: "The member whose last call is oldest goes next. A team-wide wait by design, so the agreed check does not cover it.",
+        },
+        {
+          id: "team.more",
+          label: "S2-S6, S7's team foil",
+          sub: "2 to 7 members, planner groups",
+          kind: "agent",
+          where: "WSL Python",
+          x: 30,
+          y: 186,
+          w: 220,
+          h: 62,
+          status: "planned: team-structures.md §3",
+          refs: [
+            "docs/twwarhammer3/team-structures.md:56-67",
+            "src/twwarhammer3/battle/calibration.py:1559",
+          ],
+          note: "Built: S0 (one controller, the Play loop tab), S1 (this model team) and S7's LineTeam (calibration.py:1559). Not built: S2 to S6 and S7's team foil.",
+        },
+        {
+          id: "team.planner",
+          label: "planner call (S4, S5)",
+          sub: "groups and missions",
+          kind: "agent",
+          where: "cloud API",
+          x: 580,
+          y: 566,
+          w: 200,
+          h: 56,
+          status: "planned: team-structures.md §3",
+          refs: ["docs/twwarhammer3/team-structures.md:56-67"],
+          rests: [
+            { file: "docs/twwarhammer3/team-structures.md", line: 248, name: "planner missions" },
+          ],
+        },
+      ],
+      wires: [
+        {
+          id: "team.game>obs",
+          from: "team.game",
+          to: "team.obs",
+          label: "observation",
+          payload:
+            "seq, time_ms, phase, every friendly unit, visible enemies, the enemy roster, and orders: the ack of the last applied request",
+          sync: "file write: every observe_ms of battle time and right after each applied request",
+          status: TEAM_LIVE,
+          refs: [LUA + ":737-756", LUA + ":1313-1336", LUA + ":1126-1130"],
+        },
+        {
+          id: "team.obs>play",
+          from: "team.obs",
+          to: "team.play",
+          label: "every 0.1 s",
+          bend: -40,
+          payload: "The newest observation with a higher seq",
+          sync: "polled every 0.1 s",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/engine/mailbox.py:173",
+            "src/twwarhammer3/engine/mailbox.py:287-299",
+          ],
+        },
+        {
+          id: "team.play>team",
+          from: "team.play",
+          to: "team.team",
+          label: "decide",
+          bend: 16,
+          payload:
+            "decide(basis): the public observation (evaluation, final, setup and native removed)",
+          sync: "blocking call, only when no request is outstanding; TeamPolicy never waits for a member",
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: [
+            "src/twwarhammer3/battle/play.py:656",
+            "src/twwarhammer3/battle/play.py:523-533",
+            "src/twwarhammer3/protocol.py:45",
+            "src/twwarhammer3/battle/team.py:299-331",
+          ],
+        },
+        {
+          id: "team.team>play",
+          from: "team.team",
+          to: "team.play",
+          label: "batch or []",
+          bend: 16,
+          payload:
+            "One member's whole batch, or [] (an idle poll). Batches of the two members are never merged",
+          sync: "return value",
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: ["src/twwarhammer3/battle/team.py:322-331"],
+        },
+        {
+          id: "team.play>orders",
+          from: "team.play",
+          to: "team.orders",
+          label: "request",
+          bend: 30,
+          payload: "request id, based_on (the basis seq), orders",
+          sync: "file write; waits until the game consumed the previous request (15 s, then MailboxTimeout)",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:714",
+            "src/twwarhammer3/engine/mailbox.py:212-242",
+          ],
+        },
+        {
+          id: "team.orders>game",
+          from: "team.orders",
+          to: "team.game",
+          label: "poll, then tick",
+          payload: "The request, applied in batch order on the next battle-time tick",
+          sync: "polled every 200 ms of real time; applied every tick_ms of battle time",
+          status: TEAM_LIVE,
+          refs: [LUA + ":1368-1405", LUA + ":1537", LUA + ":1101-1132", LUA + ":1480"],
+        },
+        {
+          id: "team.team>pool",
+          from: "team.team",
+          to: "team.pool",
+          label: "submit",
+          bend: 14,
+          payload: "The member's view, built when its call starts",
+          sync: "asynchronous: pool.submit",
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: ["src/twwarhammer3/battle/team.py:313-321"],
+        },
+        {
+          id: "team.pool>team",
+          from: "team.pool",
+          to: "team.team",
+          label: "collect",
+          bend: 14,
+          payload: "A finished call: orders, metadata, started and completed times, the view",
+          sync: "polled: collected at the next decide, never in the decide that started it",
+          status: TEAM_LIVE,
+          variants: { model: { status: MODEL_TEAM } },
+          refs: [
+            "src/twwarhammer3/battle/team.py:304-306",
+            "src/twwarhammer3/battle/team.py:242-267",
+          ],
+        },
+        {
+          id: "team.pool>A",
+          from: "team.pool",
+          to: "team.A",
+          label: "view",
+          bend: 14,
+          payload:
+            "Its own units in friendly; the teammate's units in allies (condition, state, visible target; never its orders, queue or navigation); visible enemies",
+          sync: "blocking call inside the worker thread",
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:67-100", "src/twwarhammer3/battle/team.py:44-53"],
+          rests: [
+            {
+              file: "docs/twwarhammer3/multi-agent-implementation.md",
+              line: 123,
+              name: "`team.py` project() target filter",
+            },
+          ],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.A>pool",
+          from: "team.A",
+          to: "team.pool",
+          label: "batch",
+          bend: 14,
+          payload: "A list of orders for its own units, or []",
+          sync: "return value inside the worker thread",
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:233-240"],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.pool>B",
+          from: "team.pool",
+          to: "team.B",
+          label: "view",
+          bend: -14,
+          payload:
+            "Its own units in friendly; the teammate's units in allies (condition, state, visible target; never its orders, queue or navigation); visible enemies",
+          sync: "blocking call inside the worker thread",
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:67-100", "src/twwarhammer3/battle/team.py:44-53"],
+          rests: [
+            {
+              file: "docs/twwarhammer3/multi-agent-implementation.md",
+              line: 123,
+              name: "`team.py` project() target filter",
+            },
+          ],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.B>pool",
+          from: "team.B",
+          to: "team.pool",
+          label: "batch",
+          bend: -14,
+          payload: "A list of orders for its own units, or []",
+          sync: "return value inside the worker thread",
+          status: TEAM_LIVE,
+          refs: ["src/twwarhammer3/battle/team.py:233-240"],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.team>A",
+          from: "team.team",
+          to: "team.A",
+          label: "ack + age",
+          bend: 40,
+          payload:
+            "The engine's ack of this member's request, and its order age: applied_ms minus its own view's time_ms",
+          sync: "blocking call on the main thread, only to the member whose batch was sent",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/team.py:278-297",
+            "src/twwarhammer3/battle/team.py:333-337",
+          ],
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.team>B",
+          from: "team.team",
+          to: "team.B",
+          label: "ack + age",
+          bend: 130,
+          payload:
+            "The engine's ack of this member's request, and its order age: applied_ms minus its own view's time_ms",
+          sync: "blocking call on the main thread, only to the member whose batch was sent",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/team.py:278-297",
+            "src/twwarhammer3/battle/team.py:333-337",
+          ],
+          rests: [{ file: "src/twwarhammer3/battle/play.py", line: 494, name: "Delay" }],
+          variants: { model: { status: MODEL_TEAM } },
+        },
+        {
+          id: "team.team>trace",
+          from: "team.team",
+          to: "team.trace",
+          label: "team events",
+          payload:
+            "partition, input (with the member's view), completed, failed, feedback, discarded, close_failed, fault",
+          sync: "buffered; written by the main thread after each decide and ack, so in drain order, not worker time",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/team.py:159-174",
+            "src/twwarhammer3/battle/play.py:482-490",
+          ],
+        },
+        {
+          id: "team.stop>A",
+          from: "team.stop",
+          to: "team.A",
+          payload: "close() sets it; a probe waiting on it stops waiting",
+          sync: "threading.Event",
+          status: "built, component tests only",
+          refs: [
+            "src/twwarhammer3/battle/team.py:344-348",
+            "src/twwarhammer3/battle/team.py:455-460",
+          ],
+          variants: {
+            model: {
+              payload: "Once it is set, the guarded send refuses any new request or reply retry",
+              refs: ["src/twwarhammer3/battle/team.py:432-439"],
+            },
+          },
+        },
+        {
+          id: "team.stop>B",
+          from: "team.stop",
+          to: "team.B",
+          payload: "close() sets it; the delayed probe waits on it, so cleanup ends its wait",
+          sync: "threading.Event",
+          status: "built, component tests only",
+          refs: [
+            "src/twwarhammer3/battle/team.py:344-348",
+            "src/twwarhammer3/battle/team.py:455-460",
+          ],
+          variants: {
+            model: {
+              payload: "Once it is set, the guarded send refuses any new request or reply retry",
+              refs: ["src/twwarhammer3/battle/team.py:432-439"],
+            },
+          },
+        },
+        {
+          id: "team.A>c1",
+          from: "team.A",
+          to: "team.c1",
+          only: "model",
+          payload:
+            "api.ask(prompt plus the team section): the llm_rules prompt on its own view and memory",
+          sync: "blocking call inside the worker thread",
+          status: MODEL_TEAM,
+          refs: [
+            "src/twwarhammer3/battle/team.py:401-419",
+            "src/twwarhammer3/battle/llm.py:615-651",
+          ],
+        },
+        {
+          id: "team.B>c2",
+          from: "team.B",
+          to: "team.c2",
+          only: "model",
+          payload:
+            "api.ask(prompt plus the team section): the llm_rules prompt on its own view and memory",
+          sync: "blocking call inside the worker thread",
+          status: MODEL_TEAM,
+          refs: [
+            "src/twwarhammer3/battle/team.py:401-419",
+            "src/twwarhammer3/battle/llm.py:615-651",
+          ],
+        },
+        {
+          id: "team.c1>ledger",
+          from: "team.c1",
+          to: "team.ledger",
+          only: "model",
+          payload:
+            "reserve the worst-case cost x 3 attempts before sending; charge the real cost and release after",
+          sync: "blocking, under the ledger's lock",
+          status: MODEL_TEAM,
+          refs: ["src/gameai/llm.py:224-248", "src/gameai/llm.py:29", "src/gameai/ledger.py:39-60"],
+        },
+        {
+          id: "team.c2>ledger",
+          from: "team.c2",
+          to: "team.ledger",
+          only: "model",
+          payload:
+            "reserve the worst-case cost x 3 attempts before sending; charge the real cost and release after",
+          sync: "blocking, under the ledger's lock",
+          status: MODEL_TEAM,
+          refs: ["src/gameai/llm.py:224-248", "src/gameai/llm.py:29", "src/gameai/ledger.py:39-60"],
+        },
+        {
+          id: "team.c1>api",
+          from: "team.c1",
+          to: "team.api",
+          only: "model",
+          bend: -170,
+          payload: "A Responses API request; the reply comes back on the same call",
+          sync: "blocking HTTP; retries for an invalid reply, resends for a failed response",
+          status: MODEL_TEAM,
+          refs: ["src/gameai/llm.py:325-345"],
+          rests: [
+            { file: "src/gameai/llm.py", line: 30, name: "Resends and retry text", sure: false },
+          ],
+        },
+        {
+          id: "team.c2>api",
+          from: "team.c2",
+          to: "team.api",
+          only: "model",
+          payload: "A Responses API request; the reply comes back on the same call",
+          sync: "blocking HTTP; retries for an invalid reply, resends for a failed response",
+          status: MODEL_TEAM,
+          refs: ["src/gameai/llm.py:325-345"],
+          rests: [
+            { file: "src/gameai/llm.py", line: 30, name: "Resends and retry text", sure: false },
+          ],
+        },
+        {
+          id: "team.A>msg",
+          from: "team.A",
+          to: "team.msg",
+          payload: "A message: text, optional target, action and time",
+          sync: "asynchronous",
+          status: "planned: multi-agent-plan.md §4 Communication",
+          refs: ["docs/twwarhammer3/multi-agent-plan.md:176-189"],
+        },
+        {
+          id: "team.msg>B",
+          from: "team.msg",
+          to: "team.B",
+          payload: "Delivered at the recipient's next request",
+          sync: "asynchronous",
+          status: "planned: multi-agent-plan.md §4 Communication",
+          refs: ["docs/twwarhammer3/multi-agent-plan.md:176-189"],
+        },
+        {
+          id: "team.planner>team",
+          from: "team.planner",
+          to: "team.team",
+          bend: 240,
+          payload: "Groups and missions on the first observation; each unit in exactly one group",
+          sync: "one model call",
+          status: "planned: team-structures.md §3",
+          refs: [
+            "docs/twwarhammer3/team-structures.md:56-67",
+            "docs/twwarhammer3/team-structures.md:150-151",
+          ],
+        },
+      ],
+      flows: [
+        {
+          id: "probe",
+          title: "Two scripted members, one army",
+          variant: "scripted",
+          clock: "battle time",
+          timing: "one episode, not a measurement",
+          source:
+            "runs/twwarhammer3/team-live-20261031e/probe-1 (DelayInfantry, at 96bb137, whose team.py matches 21f6204)",
+          drawn:
+            "Observation, request and application times are recorded. The spacing of steps inside" +
+            " one 300 ms round is drawn for legibility, and the repeated rounds loop their dots." +
+            " Infantry's think time is WSL time mapped to battle time by a straight-line fit over" +
+            " this window's 13 inputs (1111 battle ms per WSL second, largest miss 58 ms; one fit" +
+            " over the whole episode misses by up to 1.7 s because WSL's clock steps).",
+          derived: ["runs/multi-agent-diagram-20261031/team_numbers.py"],
+          start: 5300,
+          end: 10400,
+          speed: 0.25,
+          steps: [
+            {
+              at: 5300,
+              until: 5350,
+              dots: [OBSERVE],
+              caption:
+                "5.30 s: the first Deployed observation (seq 1) reaches the play loop. No request is outstanding, so it calls decide.",
+              refs: ["src/twwarhammer3/battle/play.py:656", TRACE + " rows 1-6"],
+            },
+            {
+              at: 5350,
+              until: 5390,
+              dots: [["team.play>team"]],
+              caption:
+                "decide(seq 1): TeamPolicy splits the units by type. Infantry gets f1 (Swordsmen), cavalry gets f2 (Knights).",
+              refs: ["src/twwarhammer3/battle/team.py:205-231", TRACE + " row 3"],
+            },
+            {
+              at: 5390,
+              until: 5430,
+              dots: [
+                { who: "A", path: ["team.team>pool", "team.pool>A"] },
+                { who: "B", path: ["team.team>pool", "team.pool>B"] },
+              ],
+              caption:
+                "Both members are idle, so each starts a call on its own copy of the observation: its unit in friendly, the teammate's unit in allies.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:313-321",
+                "src/twwarhammer3/battle/team.py:67-100",
+                TRACE + " rows 4-5",
+              ],
+            },
+            {
+              at: 5430,
+              until: 5450,
+              dots: [{ who: "A", path: ["team.A>pool"] }],
+              caption:
+                "Cavalry's call returns its move at once. The result waits in the pool: only the next decide collects it.",
+              refs: ["src/twwarhammer3/battle/team.py:304-306", TRACE + " row 9"],
+            },
+            {
+              at: 5430,
+              until: 8590,
+              box: "team.B",
+              who: "B",
+              caption:
+                "Infantry's first decide waits 3 s on the stop event before it moves: 3.0 s of WSL time, about 5.30 to 8.59 s of battle time with this window's clock fit.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:455-464",
+                "src/twwarhammer3/battle/team.py:473-479",
+                TRACE + " row 54",
+              ],
+            },
+            {
+              at: 5450,
+              until: 5470,
+              dots: [["team.team>play"]],
+              caption: "Nothing is ready yet, so decide returns [] at once: an idle poll.",
+              refs: ["src/twwarhammer3/battle/team.py:322-325", TRACE + " row 7"],
+            },
+            {
+              at: 5470,
+              until: 5600,
+              dots: [REQUEST],
+              caption:
+                "Request r1 (no orders) is written. The game reads it at its next 200 ms poll and applies it on the tick at 5.60 s.",
+              refs: ["src/twwarhammer3/battle/play.py:714", LUA + ":1368-1405", TRACE + " row 8"],
+            },
+
+            {
+              at: 5600,
+              until: 5650,
+              dots: [OBSERVE],
+              caption:
+                "Observation seq 2 carries the ack of r1. r1 was an idle poll, so no member hears about it.",
+              refs: ["src/twwarhammer3/battle/team.py:333-335", TRACE + " rows 8-10"],
+            },
+            {
+              at: 5650,
+              until: 5690,
+              dots: [["team.play>team"], { who: "A", path: ["team.pool>team"] }],
+              caption:
+                "decide(seq 2) collects cavalry's finished call and checks it again on cavalry's own view; its age is 300 ms, under the 5 s limit.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:304-312",
+                "src/twwarhammer3/battle/team.py:269-276",
+                TRACE + " row 9",
+              ],
+            },
+            {
+              at: 5690,
+              until: 5710,
+              dots: [{ who: "A", path: ["team.team>play"] }],
+              caption:
+                "Cavalry's batch is the only one ready, so it goes: one 20 m run move for f2. Nobody waits for infantry.",
+              refs: ["src/twwarhammer3/battle/team.py:322-331", TRACE + " row 11"],
+            },
+            {
+              at: 5710,
+              until: 5900,
+              dots: [{ who: "A", path: REQUEST }],
+              caption:
+                "Request r2 is applied at 5.90 s. The engine reports the Knights moving from seq 4 (6.20 s).",
+              refs: [
+                LUA + ":1101-1132",
+                TRACE + " row 12",
+                "runs/twwarhammer3/team-live-20261031e/probe-1/observations.jsonl rows 1-4",
+              ],
+            },
+
+            {
+              at: 5900,
+              until: 5950,
+              dots: [OBSERVE],
+              caption: "Observation seq 3 carries the ack of r2: f2's move was accepted.",
+              refs: [TRACE + " rows 12, 15"],
+            },
+            {
+              at: 5950,
+              until: 5990,
+              dots: [["team.play>team"], { who: "A", path: ["team.team>A"] }],
+              caption:
+                "The ack goes only to cavalry, whose batch it was. Its order age is 5.90 - 5.30 = 600 ms: two request rounds.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:278-297",
+                "src/twwarhammer3/battle/team.py:333-337",
+                TRACE + " row 13",
+              ],
+            },
+            {
+              at: 5990,
+              until: 6050,
+              dots: [{ who: "A", path: ["team.team>pool", "team.pool>A", "team.A>pool"] }],
+              caption:
+                "Cavalry is idle again, so it starts cavalry-2 on a fresh view (seq 3). The probe moves only once, so it returns [] at once.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:313-321",
+                "src/twwarhammer3/battle/team.py:455-458",
+                TRACE + " rows 14, 18",
+              ],
+            },
+            {
+              at: 6050,
+              until: 6070,
+              dots: [["team.team>play"]],
+              caption:
+                "cavalry-2 is collected only at the next decide, so this one returns []: an idle poll.",
+              refs: ["src/twwarhammer3/battle/team.py:322-325", TRACE + " row 16"],
+            },
+            {
+              at: 6070,
+              until: 6200,
+              dots: [REQUEST],
+              caption: "r3 (idle poll) is applied at 6.20 s.",
+              refs: [TRACE + " row 17"],
+            },
+
+            {
+              at: 6200,
+              until: 6250,
+              dots: [OBSERVE],
+              caption: "Observation seq 4 carries the ack of r3.",
+              refs: [TRACE + " rows 17, 19"],
+            },
+            {
+              at: 6250,
+              until: 6290,
+              dots: [["team.play>team"], { who: "A", path: ["team.pool>team"] }],
+              caption: "decide(seq 4) collects cavalry-2. It is the only one ready.",
+              refs: [TRACE + " row 18"],
+            },
+            {
+              at: 6290,
+              until: 6310,
+              dots: [{ who: "A", path: ["team.team>play"] }],
+              caption: "Cavalry's empty batch goes out as a member decision: a no-op request.",
+              refs: [TRACE + " row 20"],
+            },
+            {
+              at: 6310,
+              until: 6500,
+              dots: [{ who: "A", path: REQUEST }],
+              caption: "r4 is applied at 6.50 s; its ack will go to cavalry (age 600 ms).",
+              refs: [TRACE + " rows 21-22"],
+            },
+
+            {
+              at: 6500,
+              until: 8600,
+              every: 300,
+              dots: [DISPATCH],
+              caption:
+                "Rounds r5 to r11 (6.50 to 8.60 s): idle polls alternate with cavalry's no-ops, one request every 300 ms of battle time. Idle polls fall only at seq 1, 3, 5, 7, 9 and 11.",
+              refs: [TRACE + " rows 25-58"],
+            },
+            {
+              at: 6500,
+              until: 8600,
+              every: 600,
+              dots: [
+                {
+                  who: "A",
+                  path: [
+                    "team.team>A",
+                    "team.team>pool",
+                    "team.pool>A",
+                    "team.A>pool",
+                    "team.pool>team",
+                  ],
+                },
+              ],
+              caption:
+                "Cavalry repeats its cycle every two rounds: its ack, a new call (cavalry-3 to cavalry-6) that returns [] at once, collected at the next decide.",
+              refs: ["src/twwarhammer3/battle/team.py:313-321", TRACE + " rows 22-55"],
+            },
+
+            {
+              at: 8590,
+              until: 8610,
+              dots: [{ who: "B", path: ["team.B>pool"] }],
+              caption:
+                "Infantry's call finishes with its move (WSL time ...496.644, about 8.59 s of battle time).",
+              refs: [TRACE + " row 54"],
+            },
+            {
+              at: 8600,
+              until: 8650,
+              dots: [OBSERVE],
+              caption: "Observation seq 12 carries the ack of r11, an idle poll.",
+              refs: [TRACE + " rows 53, 56"],
+            },
+            {
+              at: 8650,
+              until: 8690,
+              dots: [
+                ["team.play>team"],
+                { who: "A", path: ["team.pool>team"] },
+                { who: "B", path: ["team.pool>team"] },
+              ],
+              caption:
+                "decide(seq 12) collects both infantry-1 and cavalry-6. Both are ready; cavalry-6 finished first in WSL time (...496.371 before ...496.644), so cavalry's [] goes first.",
+              refs: ["src/twwarhammer3/battle/team.py:326-327", TRACE + " rows 54-57"],
+            },
+            {
+              at: 8690,
+              until: 8710,
+              dots: [{ who: "A", path: ["team.team>play"] }],
+              caption:
+                "r12 carries cavalry-6's empty batch. Infantry's move stays ready and waits one round.",
+              refs: [TRACE + " row 57"],
+            },
+            {
+              at: 8710,
+              until: 8900,
+              dots: [{ who: "A", path: REQUEST }],
+              caption: "r12 is applied at 8.90 s.",
+              refs: [TRACE + " row 58"],
+            },
+
+            {
+              at: 8900,
+              until: 8950,
+              dots: [OBSERVE],
+              caption: "Observation seq 13 carries the ack of r12.",
+              refs: [TRACE + " rows 58, 61"],
+            },
+            {
+              at: 8950,
+              until: 8990,
+              dots: [
+                ["team.play>team"],
+                { who: "A", path: ["team.team>A", "team.team>pool", "team.pool>A", "team.A>pool"] },
+              ],
+              caption:
+                "The ack goes to cavalry, which starts cavalry-7. Infantry's move is checked again on its own seq-1 view; its age is 8.90 - 5.30 = 3.6 s, under the 5 s limit.",
+              refs: ["src/twwarhammer3/battle/team.py:269-276", TRACE + " rows 59-60"],
+            },
+            {
+              at: 8990,
+              until: 9010,
+              dots: [{ who: "B", path: ["team.team>play"] }],
+              caption:
+                "Only infantry's batch is ready (cavalry-7 is collected next time), so infantry's move goes as r13.",
+              refs: [TRACE + " row 62"],
+            },
+            {
+              at: 9010,
+              until: 9200,
+              dots: [{ who: "B", path: REQUEST }],
+              caption:
+                "r13 is applied at 9.20 s, 3.9 s after the view it was decided on. The engine reports the Swordsmen moving from seq 15 (9.50 s).",
+              refs: [
+                TRACE + " rows 63-64",
+                "runs/twwarhammer3/team-live-20261031e/probe-1/observations.jsonl rows 14-15",
+              ],
+            },
+
+            {
+              at: 9200,
+              until: 9250,
+              dots: [OBSERVE],
+              caption: "Observation seq 14 carries the ack of r13.",
+              refs: [TRACE + " rows 63, 67"],
+            },
+            {
+              at: 9250,
+              until: 9290,
+              dots: [
+                ["team.play>team"],
+                { who: "B", path: ["team.team>B", "team.team>pool", "team.pool>B", "team.B>pool"] },
+                { who: "A", path: ["team.pool>team"] },
+              ],
+              caption:
+                "The ack goes to infantry: order age 3900 ms, think 3.0 s. decide collects cavalry-7 and starts infantry-2, which returns [] at once.",
+              refs: ["src/twwarhammer3/battle/team.py:278-297", TRACE + " rows 64-66"],
+            },
+            {
+              at: 9290,
+              until: 9310,
+              dots: [{ who: "A", path: ["team.team>play"] }],
+              caption: "From here the members strictly alternate: r14 carries cavalry-7's [].",
+              refs: [TRACE + " row 68"],
+            },
+            {
+              at: 9310,
+              until: 9500,
+              dots: [{ who: "A", path: REQUEST }],
+              caption: "r14 is applied at 9.50 s.",
+              refs: [TRACE + " row 69"],
+            },
+
+            {
+              at: 9500,
+              until: 10400,
+              every: 300,
+              dots: [DISPATCH],
+              caption:
+                "Rounds r15 to r17: every request carries one member's batch, infantry and cavalry in turn, with no idle polls. Each batch goes in the round after its call started, so each order age is 600 ms.",
+              refs: [TRACE + " rows 70-93"],
+            },
+            {
+              at: 9500,
+              until: 10400,
+              every: 600,
+              dots: [
+                {
+                  who: "A",
+                  path: [
+                    "team.team>A",
+                    "team.team>pool",
+                    "team.pool>A",
+                    "team.A>pool",
+                    "team.pool>team",
+                  ],
+                },
+              ],
+              caption:
+                "Cavalry's cycle: ack, new call (cavalry-8, then cavalry-9), collected one round later.",
+              refs: [TRACE + " rows 70-92"],
+            },
+            {
+              at: 9500,
+              until: 10400,
+              every: 600,
+              dots: [
+                {
+                  who: "B",
+                  path: [
+                    "team.pool>team",
+                    "team.team>B",
+                    "team.team>pool",
+                    "team.pool>B",
+                    "team.B>pool",
+                  ],
+                },
+              ],
+              caption:
+                "Infantry's cycle, one round out of step: collected (infantry-2, then infantry-3), ack, new call.",
+              refs: [TRACE + " rows 71-89"],
+            },
+          ],
+          lanes: {
+            rows: [
+              { id: "game", label: "game: applied" },
+              { id: "play", label: "play loop: requests" },
+              { id: "A", label: "member cavalry" },
+              { id: "B", label: "member infantry" },
+            ],
+            items: [
+              { row: "play", label: "r1", from: 5300, to: 5600 },
+              { row: "play", label: "r2", who: "A", from: 5600, to: 5900 },
+              { row: "play", label: "r3", from: 5900, to: 6200 },
+              { row: "play", label: "r4", who: "A", from: 6200, to: 6500 },
+              { row: "play", label: "r5", from: 6500, to: 6800 },
+              { row: "play", label: "r6", who: "A", from: 6800, to: 7100 },
+              { row: "play", label: "r7", from: 7100, to: 7400 },
+              { row: "play", label: "r8", who: "A", from: 7400, to: 7700 },
+              { row: "play", label: "r9", from: 7700, to: 8000 },
+              { row: "play", label: "r10", who: "A", from: 8000, to: 8300 },
+              { row: "play", label: "r11", from: 8300, to: 8600 },
+              { row: "play", label: "r12", who: "A", from: 8600, to: 8900 },
+              { row: "play", label: "r13", who: "B", from: 8900, to: 9200 },
+              { row: "play", label: "r14", who: "A", from: 9200, to: 9500 },
+              { row: "play", label: "r15", who: "B", from: 9500, to: 9800 },
+              { row: "play", label: "r16", who: "A", from: 9800, to: 10100 },
+              { row: "play", label: "r17", who: "B", from: 10100, to: 10400 },
+              {
+                row: "A",
+                label: "cavalry-1",
+                input: 5300,
+                completed: 5300,
+                sent: 5600,
+                applied: 5900,
+              },
+              {
+                row: "A",
+                label: "cavalry-2",
+                input: 5900,
+                completed: 5900,
+                sent: 6200,
+                applied: 6500,
+              },
+              {
+                row: "A",
+                label: "cavalry-3",
+                input: 6500,
+                completed: 6500,
+                sent: 6800,
+                applied: 7100,
+              },
+              {
+                row: "A",
+                label: "cavalry-4",
+                input: 7100,
+                completed: 7100,
+                sent: 7400,
+                applied: 7700,
+              },
+              {
+                row: "A",
+                label: "cavalry-5",
+                input: 7700,
+                completed: 7700,
+                sent: 8000,
+                applied: 8300,
+              },
+              {
+                row: "A",
+                label: "cavalry-6",
+                input: 8300,
+                completed: 8300,
+                sent: 8600,
+                applied: 8900,
+              },
+              {
+                row: "A",
+                label: "cavalry-7",
+                input: 8900,
+                completed: 8900,
+                sent: 9200,
+                applied: 9500,
+              },
+              {
+                row: "A",
+                label: "cavalry-8",
+                input: 9500,
+                completed: 9500,
+                sent: 9800,
+                applied: 10100,
+              },
+              {
+                row: "A",
+                label: "cavalry-9",
+                input: 10100,
+                completed: 10100,
+                sent: 10400,
+                applied: 10700,
+              },
+              {
+                row: "B",
+                label: "infantry-1",
+                input: 5300,
+                completed: 8590,
+                sent: 8900,
+                applied: 9200,
+              },
+              {
+                row: "B",
+                label: "infantry-2",
+                input: 9200,
+                completed: 9200,
+                sent: 9500,
+                applied: 9800,
+              },
+              {
+                row: "B",
+                label: "infantry-3",
+                input: 9800,
+                completed: 9800,
+                sent: 10100,
+                applied: 10400,
+              },
+            ],
+            marks: [
+              {
+                row: "game",
+                kind: "applied",
+                at: [
+                  5600, 5900, 6200, 6500, 6800, 7100, 7400, 7700, 8000, 8300, 8600, 8900, 9200,
+                  9500, 9800, 10100, 10400,
+                ],
+              },
+            ],
+          },
+        },
+        {
+          id: "model",
+          title: "Model team (built, never played live)",
+          variant: "model",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code at 21f6204; no team_llm_rules episode exists",
+          drawn:
+            "All times are made up to show the order of events. Request rounds are drawn at 300 ms;" +
+            " a model team's real rounds, call times and costs are unmeasured.",
+          start: 0,
+          end: 5600,
+          speed: 0.5,
+          steps: [
+            {
+              at: 0,
+              until: 50,
+              dots: [OBSERVE],
+              caption:
+                "An observation reaches the play loop. (Illustrative times: this team has never played live.)",
+              refs: ["src/twwarhammer3/battle/play.py:656"],
+            },
+            {
+              at: 50,
+              until: 90,
+              dots: [
+                ["team.play>team"],
+                { who: "A", path: ["team.team>pool", "team.pool>A"] },
+                { who: "B", path: ["team.team>pool", "team.pool>B"] },
+              ],
+              caption:
+                "decide starts both members on their own views and returns at once: nothing is ready, so [] (an idle poll).",
+              refs: ["src/twwarhammer3/battle/team.py:299-325"],
+            },
+            {
+              at: 90,
+              until: 140,
+              dots: [
+                { who: "A", path: ["team.A>c1", "team.c1>ledger"] },
+                { who: "B", path: ["team.B>c2", "team.c2>ledger"] },
+              ],
+              caption:
+                "Each member renders its own prompt (its own notes and history, plus the ally section), and its client reserves the worst-case cost x 3 on the one shared ledger. Two reservations are held at once.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:401-419",
+                "src/gameai/llm.py:224-248",
+                "src/gameai/ledger.py:39-50",
+              ],
+            },
+            {
+              at: 140,
+              until: 200,
+              dots: [
+                { who: "A", path: ["team.c1>api"] },
+                { who: "B", path: ["team.c2>api"] },
+              ],
+              caption: "Both requests are in flight at the same time.",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 90,
+              until: 2700,
+              every: 300,
+              dots: [DISPATCH],
+              caption: "Meanwhile the dispatcher sends an idle poll every round.",
+              refs: ["src/twwarhammer3/battle/team.py:322-325"],
+            },
+            {
+              at: 200,
+              until: 2440,
+              box: "team.c1",
+              who: "A",
+              caption: "cavalry's call is in flight.",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 200,
+              until: 3840,
+              box: "team.c2",
+              who: "B",
+              caption: "line's call is in flight. The replies come back at different times.",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 2440,
+              until: 2540,
+              dots: [{ who: "A", path: ["~team.c1>api", "team.c1>ledger", "~team.A>c1"] }],
+              caption:
+                "cavalry's reply arrives: the client charges the real cost and releases its reservation; the member checks the reply against its own view.",
+              refs: [
+                "src/gameai/llm.py:241-248",
+                "src/gameai/llm.py:273",
+                "src/twwarhammer3/battle/llm.py:615-651",
+              ],
+            },
+            {
+              at: 2540,
+              until: 2560,
+              dots: [{ who: "A", path: ["team.A>pool"] }],
+              caption: "cavalry's batch waits in the pool for the next decide.",
+              refs: ["src/twwarhammer3/battle/team.py:304-306"],
+            },
+            {
+              at: 2700,
+              until: 2750,
+              dots: [OBSERVE],
+              caption: "The next observation reaches the play loop.",
+              refs: ["src/twwarhammer3/battle/play.py:656"],
+            },
+            {
+              at: 2750,
+              until: 2790,
+              dots: [["team.play>team"], { who: "A", path: ["team.pool>team"] }],
+              caption:
+                "decide collects cavalry's batch. The model team has no age limit (max_age_ms=None), so the batch is only checked on cavalry's view.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:269-276",
+                "src/twwarhammer3/battle/team.py:444",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/multi-agent-implementation.md",
+                  line: 126,
+                  name: "`team.py` ModelTeam max_age_ms=None",
+                },
+              ],
+            },
+            {
+              at: 2790,
+              until: 3000,
+              dots: [
+                { who: "A", path: ["team.team>play", "team.play>orders", "team.orders>game"] },
+              ],
+              caption: "cavalry's batch goes as one request and is applied on the next tick.",
+              refs: ["src/twwarhammer3/battle/team.py:322-331"],
+            },
+            {
+              at: 3000,
+              until: 3050,
+              dots: [OBSERVE],
+              caption: "The observation carries the ack.",
+              refs: [LUA + ":1126-1130"],
+            },
+            {
+              at: 3050,
+              until: 3090,
+              dots: [
+                ["team.play>team"],
+                { who: "A", path: ["team.team>A", "team.team>pool", "team.pool>A"] },
+              ],
+              caption:
+                "The ack and order age go to cavalry, which starts its next call (cavalry-2).",
+              refs: [
+                "src/twwarhammer3/battle/team.py:278-297",
+                "src/twwarhammer3/battle/team.py:313-321",
+              ],
+            },
+            {
+              at: 3090,
+              until: 3150,
+              dots: [{ who: "A", path: ["team.A>c1", "team.c1>ledger", "team.c1>api"] }],
+              caption: "cavalry-2 reserves on the ledger and is sent.",
+              refs: ["src/gameai/llm.py:224-248"],
+            },
+            {
+              at: 3090,
+              until: 4200,
+              every: 300,
+              dots: [DISPATCH],
+              caption: "Idle polls again while both calls run.",
+              refs: ["src/twwarhammer3/battle/team.py:322-325"],
+            },
+            {
+              at: 3150,
+              until: 4900,
+              box: "team.c1",
+              who: "A",
+              caption: "cavalry-2 is in flight.",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 3840,
+              until: 3940,
+              dots: [{ who: "B", path: ["~team.c2>api", "team.c2>ledger", "~team.B>c2"] }],
+              caption: "line's reply arrives; its client charges and releases.",
+              refs: ["src/gameai/llm.py:241-248", "src/gameai/llm.py:273"],
+            },
+            {
+              at: 3940,
+              until: 3960,
+              dots: [{ who: "B", path: ["team.B>pool"] }],
+              caption: "line's batch waits in the pool.",
+              refs: ["src/twwarhammer3/battle/team.py:304-306"],
+            },
+            {
+              at: 4200,
+              until: 4250,
+              dots: [OBSERVE],
+              caption: "The next observation reaches the play loop.",
+              refs: ["src/twwarhammer3/battle/play.py:656"],
+            },
+            {
+              at: 4250,
+              until: 4290,
+              dots: [["team.play>team"], { who: "B", path: ["team.pool>team"] }],
+              caption:
+                "decide collects line's batch: its own units' orders, and army orders, which only the army owner may give.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:269-276",
+                "src/twwarhammer3/battle/team.py:55-56",
+              ],
+            },
+            {
+              at: 4290,
+              until: 4500,
+              dots: [
+                { who: "B", path: ["team.team>play", "team.play>orders", "team.orders>game"] },
+              ],
+              caption: "line's batch goes as one request.",
+              refs: ["src/twwarhammer3/battle/team.py:322-331"],
+            },
+            {
+              at: 4500,
+              until: 4550,
+              dots: [OBSERVE],
+              caption: "The observation carries the ack.",
+              refs: [LUA + ":1126-1130"],
+            },
+            {
+              at: 4550,
+              until: 4590,
+              dots: [
+                ["team.play>team"],
+                { who: "B", path: ["team.team>B", "team.team>pool", "team.pool>B"] },
+              ],
+              caption: "The ack goes to line, which starts line-2.",
+              refs: ["src/twwarhammer3/battle/team.py:278-297"],
+            },
+            {
+              at: 4590,
+              until: 4650,
+              dots: [{ who: "B", path: ["team.B>c2", "team.c2>ledger", "team.c2>api"] }],
+              caption: "line-2 reserves and is sent.",
+              refs: ["src/gameai/llm.py:224-248"],
+            },
+            {
+              at: 4650,
+              until: 5600,
+              box: "team.c2",
+              who: "B",
+              caption: "line-2 is in flight.",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 4590,
+              until: 5100,
+              every: 300,
+              dots: [DISPATCH],
+              caption: "Idle polls.",
+              refs: ["src/twwarhammer3/battle/team.py:322-325"],
+            },
+            {
+              at: 4900,
+              until: 4960,
+              dots: [
+                { who: "A", path: ["~team.c1>api", "team.c1>ledger", "~team.A>c1", "team.A>pool"] },
+              ],
+              caption: "cavalry-2's reply arrives and waits in the pool.",
+              refs: ["src/gameai/llm.py:241-248"],
+            },
+            {
+              at: 5100,
+              until: 5150,
+              dots: [OBSERVE],
+              caption:
+                "The observation carries the battle's result. The play loop sends no batch decided after it.",
+              refs: ["src/twwarhammer3/battle/play.py:683-684"],
+            },
+            {
+              at: 5150,
+              until: 5250,
+              dots: [["team.play>team"], { path: ["team.stop>A"] }, { path: ["team.stop>B"] }],
+              caption:
+                "Cleanup: close() sets the stop event, so the guarded send refuses any new request or reply retry, and shuts the pool down without waiting.",
+              refs: [
+                "src/twwarhammer3/battle/play.py:316-318",
+                "src/twwarhammer3/battle/team.py:342-351",
+                "src/twwarhammer3/battle/team.py:436-439",
+              ],
+            },
+            {
+              at: 5250,
+              until: 5600,
+              box: "team.c2",
+              who: "B",
+              caption:
+                "close() waits up to 30 s (not to scale). line-2 is still running, so it is left running (running_at_close). It keeps its ledger reservation until it returns, and the job process waits for it at exit. cavalry-2 finished but was never sent: it is recorded as discarded.",
+              refs: [
+                "src/twwarhammer3/battle/team.py:349-366",
+                "src/twwarhammer3/battle/team.py:422-430",
+              ],
+              rests: [
+                {
+                  file: "docs/twwarhammer3/multi-agent-implementation.md",
+                  line: 129,
+                  name: "`team.py` CLOSE_WAIT_S",
+                },
+              ],
+            },
+          ],
+          lanes: {
+            rows: [
+              { id: "play", label: "play loop: requests" },
+              { id: "A", label: "member cavalry" },
+              { id: "B", label: "member line" },
+            ],
+            items: [
+              { row: "play", label: "idle polls", from: 0, to: 2700 },
+              { row: "play", label: "cavalry", who: "A", from: 2700, to: 3000 },
+              { row: "play", label: "idle polls", from: 3000, to: 4200 },
+              { row: "play", label: "line", who: "B", from: 4200, to: 4500 },
+              { row: "play", label: "idle polls", from: 4500, to: 5100 },
+              {
+                row: "A",
+                label: "cavalry-1",
+                input: 50,
+                completed: 2540,
+                sent: 2700,
+                applied: 3000,
+              },
+              {
+                row: "A",
+                label: "cavalry-2",
+                input: 3050,
+                completed: 4960,
+                sent: null,
+                applied: null,
+                until: 5150,
+              },
+              { row: "B", label: "line-1", input: 50, completed: 3940, sent: 4200, applied: 4500 },
+              {
+                row: "B",
+                label: "line-2",
+                input: 4550,
+                completed: null,
+                sent: null,
+                applied: null,
+              },
+            ],
+            marks: [
+              { row: "A", kind: "discarded", at: [5150] },
+              { row: "B", kind: "running at close", at: [5250] },
+            ],
+          },
+        },
+      ],
+      notes: [
+        {
+          text: "The game gets one request at a time. The play loop decides only when no request is outstanding, and it writes the next request only after the game consumed the last one. Each request is one member's whole batch or an empty idle poll; the two members' batches are never merged.",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/play.py:656",
+            "src/twwarhammer3/engine/mailbox.py:232-237",
+            "src/twwarhammer3/battle/team.py:322-331",
+          ],
+        },
+        {
+          text: "Members never message each other. All a member learns of its teammate is the teammate's units as the game reports them, in allies: condition, state and visible target, never its orders. The scripted members also share one stop event.",
+          status: TEAM_LIVE,
+          refs: [
+            "src/twwarhammer3/battle/team.py:47-53",
+            "src/twwarhammer3/battle/team.py:57-60",
+            "src/twwarhammer3/battle/team.py:86-88",
+            "src/twwarhammer3/battle/team.py:473-479",
+          ],
+        },
+        {
+          text: "The model team's two members share one budget ledger, one guarded send function and the stop event.",
+          status: MODEL_TEAM,
+          refs: ["src/twwarhammer3/battle/team.py:432-444"],
+        },
+        {
+          text: "The probe has two regimes. While infantry thinks, idle polls alternate with cavalry's no-ops (idle polls at seq 1, 3, 5, 7, 9 and 11 only, in each of the four probes). After infantry's first move, the members strictly alternate.",
+          refs: ["runs/multi-agent-diagram-20261031/team_numbers.py", TRACE],
+        },
+        {
+          text: "Order ages of 900 ms come from a request round that took 600 ms of battle time instead of 300; such a round ages the batch it carries and the next one. Probe 1 had 3 such rounds out of 284 and 6 ages of 900 ms; the four probes of this run had 22 and 44. They are not waits behind the teammate: apart from the delayed member's first move, every member batch went in the decide right after the one that started it (277 of 278 in probe 1).",
+          refs: [
+            "runs/multi-agent-diagram-20261031/team_numbers.py",
+            "runs/twwarhammer3/team-live-20261031e/probe-1/episode/result.json",
+          ],
+        },
+        {
+          text: "Failure paths are built and covered by component tests only: a forfeit re-asks the member; a key, credit or budget stop ends the episode as budget_exhausted; a member bug as policy_failure; a partition or dispatcher fault as unsupported_or_invalid; a batch that fails its member's checks gets local feedback. None of them happened in the 28 recorded probe episodes (7 runs of 4).",
+          status: "built, component tests only",
+          refs: [
+            "src/twwarhammer3/battle/team.py:242-276",
+            "src/twwarhammer3/battle/team.py:201-231",
+            "src/twwarhammer3/battle/play.py:300-329",
+          ],
+          rests: [
+            { file: "src/twwarhammer3/battle/play.py", line: 365, name: "Operator errors" },
+            {
+              file: "src/twwarhammer3/battle/play.py",
+              line: 378,
+              name: "Forfeit split",
+              sure: false,
+            },
+          ],
+        },
+        {
+          text: "Clocks: source_ms and applied_ms are battle time; delivered, started and completed are WSL time.time(), which runs about 6-8% slow and steps. The lanes convert WSL times with a straight-line fit, as the lanes.py prototype does, but fitted only on this window's inputs (lanes.py fits a whole episode).",
+          refs: [
+            "src/twwarhammer3/battle/team.py:131-132",
+            "tests/twwarhammer3/team/check_wh3_team.py:107-108",
+            "docs/twwarhammer3/integration.md:223",
+            "runs/twwarhammer3/team-structures-20261021/visualization/lanes.py",
+            "runs/multi-agent-diagram-20261031/team_numbers.py",
+          ],
+        },
+      ],
+    },
+  ],
+};
+</script>
+<style>
+/* Light colours and type as the WH3 report has (report_assets/report.css). Member A is
+   Okabe-Ito blue and member B vermillion everywhere on this page; dashes mean planned. */
+:root {
+  --page: #f1f3f1;
+  --sheet: #fbfcfb;
+  --ink: #1a2125;
+  --ink-2: #46525a;
+  --muted: #6b767d;
+  --faint: #a5aeb3;
+  --line: #d3d9d6;
+  --member-a: #0072b2;
+  --member-b: #d55e00;
+  --idle: #b9c1c5;
+  --agreed: #2e7d4f;
+  --tests: #2f6690;
+  --unverified: #b7791f;
+  --planned: #8a949a;
+  --outside: #6b5b95;
+  --missing: #c62828;
+  --band-windows: #e8eef5;
+  --band-wsl: #eef2ea;
+  --band-cloud: #f4ecf1;
+  --band-github: #ecebf0;
+  --band-owner: #f5f0e6;
+  --sans: Bahnschrift, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Noto Sans",
+    "Ubuntu Sans", Ubuntu, Cantarell, "Liberation Sans", system-ui, sans-serif;
+  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", "Noto Serif",
+    "Liberation Serif", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.45 var(--sans);
+}
+header {
+  padding: 14px 24px 6px;
+}
+header h1 {
+  margin: 0;
+  font: 600 22px/1.2 var(--serif);
+}
+header p {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  max-width: 110ch;
+}
+nav {
+  display: flex;
+  gap: 4px;
+  padding: 8px 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+nav button {
+  border: 1px solid var(--line);
+  border-bottom: none;
+  background: var(--page);
+  padding: 6px 16px;
+  font: 600 14px var(--sans);
+  color: var(--ink-2);
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+}
+nav button[aria-selected="true"] {
+  background: var(--sheet);
+  color: var(--ink);
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 0;
+}
+#stage {
+  padding: 10px 16px 16px 24px;
+  background: var(--sheet);
+}
+#panel {
+  background: var(--sheet);
+  border-left: 1px solid var(--line);
+  padding: 12px 18px 24px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+}
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  color: var(--ink-2);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+#legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+#legend label {
+  margin-left: auto;
+  cursor: pointer;
+}
+.chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.chip.agreed {
+  background: var(--agreed);
+}
+.chip.tests {
+  background: var(--tests);
+}
+.chip.unverified {
+  background: var(--unverified);
+}
+.chip.planned {
+  background: var(--planned);
+}
+.chip.outside {
+  background: var(--outside);
+}
+.chip.missing {
+  background: var(--missing);
+}
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--sans);
+}
+#canvas {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.band rect {
+  stroke: none;
+}
+.band text {
+  font: 600 12px var(--sans);
+  fill: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.box {
+  cursor: pointer;
+}
+.box .shape {
+  fill: #fff;
+  stroke: var(--ink-2);
+  stroke-width: 1.4;
+}
+.box .stripe {
+  fill: var(--ink-2);
+}
+.box .label {
+  font: 600 13.5px var(--sans);
+  fill: var(--ink);
+  text-anchor: middle;
+}
+.box .sub {
+  font: 11px var(--sans);
+  fill: var(--ink-2);
+  text-anchor: middle;
+}
+.box .pip {
+  stroke: #fff;
+  stroke-width: 1;
+}
+.box.s-agreed .pip {
+  fill: var(--agreed);
+}
+.box.s-tests .pip {
+  fill: var(--tests);
+}
+.box.s-unverified .pip {
+  fill: var(--unverified);
+}
+.box.s-planned .pip {
+  fill: var(--planned);
+}
+.box.s-outside .pip {
+  fill: var(--outside);
+}
+.box.s-missing .pip {
+  fill: var(--missing);
+}
+.box.s-outside .shape {
+  fill: #f7f5fa;
+}
+.box.s-planned {
+  opacity: 0.55;
+}
+.box.s-planned .shape {
+  stroke-dasharray: 6 4;
+  fill: #f7f8f8;
+}
+.box.k-human .shape {
+  stroke-width: 2.2;
+}
+.box.selected .shape {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.box.busy.who-A .shape {
+  stroke: var(--member-a);
+  stroke-width: 4;
+}
+.box.busy.who-B .shape {
+  stroke: var(--member-b);
+  stroke-width: 4;
+}
+.box.busy .shape {
+  fill: #fffbea;
+}
+.box .nosource {
+  font: 600 10px var(--sans);
+  fill: var(--missing);
+}
+.box:focus {
+  outline: none;
+}
+.box:focus-visible .shape {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.wire {
+  cursor: pointer;
+}
+.wire .hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+}
+.wire .line {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.wire.s-planned {
+  opacity: 0.55;
+}
+.wire.s-planned .line {
+  stroke: var(--planned);
+  stroke-dasharray: 6 4;
+}
+.wire.s-outside .line {
+  stroke: var(--outside);
+}
+.wire.selected .line {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.wire.lit .line {
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+.wire-label {
+  font: 11px var(--sans);
+  fill: var(--ink-2);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.wire-label.s-planned {
+  fill: var(--planned);
+}
+.dot {
+  stroke: #fff;
+  stroke-width: 1.5;
+  fill: var(--ink);
+}
+.dot.who-A {
+  fill: var(--member-a);
+}
+.dot.who-B {
+  fill: var(--member-b);
+}
+#player {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+#player button,
+#player select {
+  font: 600 13px var(--sans);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+#player button:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+#player #play {
+  min-width: 74px;
+}
+#player input[type="range"] {
+  flex: 1 1 260px;
+}
+#player .time {
+  font: 13px var(--mono);
+  color: var(--ink-2);
+  min-width: 150px;
+}
+#flows {
+  display: flex;
+  gap: 4px;
+}
+#flows button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+#lanes {
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: crosshair;
+}
+.lane-label {
+  font: 12px var(--sans);
+  fill: var(--ink-2);
+}
+.lane-rule {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.axis text {
+  font: 10.5px var(--sans);
+  fill: var(--muted);
+  text-anchor: middle;
+}
+.axis line {
+  stroke: var(--line);
+}
+.bar {
+  stroke: #fff;
+  stroke-width: 0.5;
+}
+.bar.req {
+  fill: var(--idle);
+}
+.bar.req.who-A {
+  fill: var(--member-a);
+  opacity: 0.75;
+}
+.bar.req.who-B {
+  fill: var(--member-b);
+  opacity: 0.75;
+}
+.bar.think.who-A {
+  fill: var(--member-a);
+}
+.bar.think.who-B {
+  fill: var(--member-b);
+}
+.bar.wait.who-A {
+  fill: #b9d8ec;
+}
+.bar.wait.who-B {
+  fill: #f2c6a8;
+}
+.bar.engine {
+  fill: #7b868c;
+}
+.mark {
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+  fill: none;
+}
+.mark.discarded {
+  stroke: var(--ink);
+  fill: #fff;
+}
+.mark.running {
+  fill: var(--ink);
+  stroke: none;
+}
+#cursor {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+#lane-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 5px;
+}
+#lane-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+#lane-legend svg.swatch {
+  width: 18px;
+  height: 9px;
+  display: inline-block;
+}
+#panel h2 {
+  font: 600 18px/1.25 var(--serif);
+  margin: 4px 0 2px;
+}
+#panel h3 {
+  font: 600 15px/1.3 var(--sans);
+  margin: 16px 0 4px;
+}
+#panel h4 {
+  font: 600 12px var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 16px 0 4px;
+}
+#panel p {
+  margin: 4px 0;
+}
+#panel .meta {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+#panel ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+#panel li {
+  margin: 3px 0;
+}
+#panel .refs {
+  font: 12px/1.5 var(--mono);
+  padding-left: 0;
+  list-style: none;
+  word-break: break-all;
+}
+#panel .refs a {
+  color: var(--tests);
+}
+#panel .refs .local {
+  color: var(--ink-2);
+}
+#panel .status {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+#panel .status .chip {
+  flex: none;
+  transform: translateY(1px);
+}
+#panel .badge {
+  display: inline-block;
+  font: 600 11.5px var(--sans);
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: #fff3d6;
+  color: #6d4c00;
+}
+#panel .badge.illustrative {
+  background: #eceff1;
+  color: var(--ink-2);
+}
+#panel .step {
+  border-left: 3px solid var(--line);
+  padding: 2px 0 2px 9px;
+  margin: 8px 0;
+}
+#panel .step.who-A {
+  border-color: var(--member-a);
+}
+#panel .step.who-B {
+  border-color: var(--member-b);
+}
+#panel .step .when {
+  font: 12px var(--mono);
+  color: var(--muted);
+}
+#panel .rests {
+  color: #6d4c00;
+  font-size: 12.5px;
+}
+#panel .missing {
+  color: var(--missing);
+  font-weight: 600;
+}
+#panel .kv {
+  color: var(--ink-2);
+}
+#panel .kv b {
+  color: var(--ink);
+  font-weight: 600;
+}
+#panel .hint {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Multi-agent parts</h1>
+  <p>How the WH3 battle code's agents, threads, files and services connect. Pick a tab, play a
+    flow or step through it with the arrow keys, and click any box or wire for its source. Every
+    claim cites a line at the commit named in the side panel.</p>
+</header>
+<nav id="tabs" role="tablist"></nav>
+<main>
+  <section id="stage">
+    <div id="legend"></div>
+    <svg id="canvas" role="img" aria-label="Diagram"></svg>
+    <div id="player">
+      <span id="flows"></span>
+      <button id="back" title="Previous step (left arrow)">&#9664; Step</button>
+      <button id="play" title="Play or pause (space)">Play</button>
+      <button id="next" title="Next step (right arrow)">Step &#9654;</button>
+      <select id="speed" title="Speed">
+        <option value="0.1">0.1x</option>
+        <option value="0.25">0.25x</option>
+        <option value="0.5">0.5x</option>
+        <option value="1">1x</option>
+      </select>
+      <input id="slider" type="range" min="0" max="1" step="10" value="0" aria-label="Time">
+      <span class="time" id="time"></span>
+    </div>
+    <svg id="lanes" aria-label="Lanes"></svg>
+    <div id="lane-legend"></div>
+  </section>
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+<script>
+"use strict";
+/* The viewer. Techniques are borrowed as ideas, not code:
+   - a flow as a list of steps, quadratic wires, play/pause/step keys:
+     konraddzbik/architecture-diagram-skill, skills/architecture-diagram/assets/template.html
+     (MIT). Its packets ride SMIL <animateMotion> (:1640); here each dot is placed every frame
+     with getPointAtLength, which the template uses only to rest a packet at a wire's end (:1687).
+   - several dots in flight on one clock, each at (t - sent) / (received - sent) of its path,
+     and a time slider that pauses: ongardie/raftscope, script.js:450-453 and 736-756 (ISC-style).
+   - lanes, one row per actor, bars for work and white space for idle: the Dask dashboard's
+     task stream (docs.dask.org/en/stable/dashboard.html, BSD-3).
+   - a source card per element pinned to a commit, an illustrative-or-measured label on each
+     flow, links that restore a view, and reduced motion: tt-a1i/archify, README:88, 286-287
+     and 434 (Apache-2.0).
+   - one short caption per step: The Secret Lives of Data (thesecretlivesofdata.com/raft, MIT).
+   - the svg() helper, the time slider and the requestAnimationFrame loop:
+     src/twwarhammer3/battle/report_assets/replay.js in this repo. */
+const $ = (id) => document.getElementById(id);
+const el = (tag, text, className) => {
+  const node = document.createElement(tag);
+  if (text != null) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+};
+const svg = (tag, attrs = {}, text) => {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  if (text != null) node.textContent = text;
+  return node;
+};
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const STATUSES = [
+  ["agreed", /^agreed (live|offline) check/, "agreed check"],
+  ["tests", /^built, component tests only/, "built, component tests only"],
+  ["unverified", /^built, unverified/, "built, unverified"],
+  ["planned", /^planned/, "planned"],
+  ["outside", /^outside our code/, "outside our code"],
+];
+const statusText = (status) =>
+  status == null ? "" : typeof status === "string" ? status : status.text;
+function statusKind(status) {
+  const hit = STATUSES.find(([, pattern]) => pattern.test(statusText(status)));
+  return hit ? hit[0] : "missing";
+}
+
+const state = {
+  tab: null,
+  flow: null,
+  time: 0,
+  playing: false,
+  speed: 0.25,
+  planned: true,
+  selected: null,
+  loop: null,
+  lastTick: null,
+  nowKey: null,
+};
+let boxes = {};
+let wires = {};
+let lines = {};
+
+const tabById = (id) => DIAGRAM.tabs.find((tab) => tab.id === id);
+function currentFlow() {
+  const flows = state.tab.flows || [];
+  return flows.find((flow) => flow.id === state.flow) || flows[0] || null;
+}
+function variant() {
+  const flow = currentFlow();
+  return flow ? flow.variant : null;
+}
+function merged(item) {
+  const extra = item.variants && item.variants[variant()];
+  return extra ? { ...item, ...extra } : item;
+}
+function visible(item) {
+  if (item.only && item.only !== variant()) return false;
+  return state.planned || statusKind(item.status) !== "planned";
+}
+
+// Geometry: a wire leaves its box where the line toward its curve's control point crosses the
+// box's edge, so wires need no hand-placed anchors.
+const centre = (b) => [b.x + b.w / 2, b.y + b.h / 2];
+function edge(b, px, py) {
+  const [cx, cy] = centre(b);
+  const dx = px - cx;
+  const dy = py - cy;
+  if (!dx && !dy) return [cx, cy];
+  const scale = Math.min(
+    dx ? b.w / 2 / Math.abs(dx) : Infinity,
+    dy ? b.h / 2 / Math.abs(dy) : Infinity,
+  );
+  return [cx + dx * scale, cy + dy * scale];
+}
+function wirePath(w) {
+  const [ax, ay] = centre(boxes[w.from]);
+  const [bx, by] = centre(boxes[w.to]);
+  const length = Math.hypot(bx - ax, by - ay) || 1;
+  const bend = w.bend || 0;
+  const qx = (ax + bx) / 2 - ((by - ay) / length) * bend;
+  const qy = (ay + by) / 2 + ((bx - ax) / length) * bend;
+  const [sx, sy] = edge(boxes[w.from], qx, qy);
+  const [ex, ey] = edge(boxes[w.to], qx, qy);
+  const r = (v) => v.toFixed(1);
+  return `M${r(sx)},${r(sy)} Q${r(qx)},${r(qy)} ${r(ex)},${r(ey)}`;
+}
+
+function shape(e) {
+  const { x, y, w, h } = e;
+  if (e.kind === "file") {
+    const c = 11;
+    return [
+      svg("path", {
+        class: "shape",
+        d: `M${x},${y} H${x + w - c} L${x + w},${y + c} V${y + h} H${x} Z`,
+      }),
+    ];
+  }
+  const rx = { agent: 16, "outside service": h / 2, human: h / 2 }[e.kind] ?? 3;
+  const parts = [svg("rect", { class: "shape", x, y, width: w, height: h, rx })];
+  if (e.kind === "thread")
+    parts.push(svg("rect", { class: "stripe", x: x + 1, y: y + 1, width: 5, height: h - 2 }));
+  return parts;
+}
+
+function drawBox(e) {
+  const g = svg("g", {
+    class: `box k-${e.kind.replace(/\s+/g, "-")} s-${statusKind(e.status)}`,
+    "data-id": e.id,
+    tabindex: 0,
+  });
+  g.append(svg("title", {}, `${e.label}: ${e.note || e.sub || ""}`), ...shape(e));
+  const cx = e.x + e.w / 2;
+  g.append(svg("text", { class: "label", x: cx, y: e.y + e.h / 2 + (e.sub ? -2 : 5) }, e.label));
+  if (e.sub) g.append(svg("text", { class: "sub", x: cx, y: e.y + e.h / 2 + 14 }, e.sub));
+  g.append(svg("circle", { class: "pip", cx: e.x + e.w - 9, cy: e.y + 9, r: 4.5 }));
+  if (!(e.refs || []).length)
+    g.append(svg("text", { class: "nosource", x: e.x + 6, y: e.y + e.h + 12 }, "no source"));
+  const pick = (event) => {
+    event.stopPropagation();
+    if (e.tab && tabById(e.tab) && state.selected === e.id) openTab(e.tab);
+    else select(e.id);
+  };
+  g.addEventListener("click", pick);
+  g.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") pick(event);
+  });
+  return g;
+}
+
+function drawCanvas() {
+  const tab = state.tab;
+  const canvas = $("canvas");
+  canvas.replaceChildren();
+  canvas.setAttribute("viewBox", `0 0 ${tab.size[0]} ${tab.size[1]}`);
+  const defs = svg("defs");
+  for (const [name, colour] of [
+    ["built", "var(--ink-2)"],
+    ["planned", "var(--planned)"],
+    ["outside", "var(--outside)"],
+  ]) {
+    const marker = svg("marker", {
+      id: `arrow-${name}`,
+      viewBox: "0 0 10 10",
+      refX: 9,
+      refY: 5,
+      markerWidth: 7,
+      markerHeight: 7,
+      orient: "auto-start-reverse",
+    });
+    const head = svg("path", { d: "M0,1 L9,5 L0,9 Z" });
+    head.style.fill = colour;
+    marker.append(head);
+    defs.append(marker);
+  }
+  canvas.append(defs);
+  for (const band of tab.bands) {
+    const g = svg("g", { class: "band" });
+    const fill = `var(--band-${band.where.split(" ")[0].toLowerCase()})`;
+    const rect = svg("rect", { x: band.x, y: band.y, width: band.w, height: band.h, rx: 4 });
+    rect.style.fill = fill;
+    g.append(rect);
+    g.append(svg("text", { x: band.x + 10, y: band.y + 17 }, band.where));
+    canvas.append(g);
+  }
+  boxes = {};
+  wires = {};
+  lines = {};
+  for (const item of tab.elements) {
+    const e = merged(item);
+    if (visible(e)) boxes[e.id] = e;
+  }
+  const wireLayer = svg("g");
+  const labelLayer = svg("g");
+  const boxLayer = svg("g");
+  canvas.append(wireLayer, boxLayer, labelLayer, svg("g", { id: "dots" }));
+  for (const item of tab.wires) {
+    const w = merged(item);
+    if (!visible(w) || !boxes[w.from] || !boxes[w.to]) continue;
+    wires[w.id] = w;
+    const kind = statusKind(w.status);
+    const d = wirePath(w);
+    const g = svg("g", { class: `wire s-${kind}`, "data-id": w.id });
+    const arrow = kind === "planned" || kind === "outside" ? kind : "built";
+    const line = svg("path", { class: "line", d, "marker-end": `url(#arrow-${arrow})` });
+    g.append(svg("title", {}, w.payload), svg("path", { class: "hit", d }), line);
+    g.addEventListener("click", (event) => {
+      event.stopPropagation();
+      select(w.id);
+    });
+    wireLayer.append(g);
+    lines[w.id] = line;
+    if (w.label) {
+      const middle = line.getPointAtLength(line.getTotalLength() / 2);
+      labelLayer.append(
+        svg("text", { class: `wire-label s-${kind}`, x: middle.x, y: middle.y + 4 }, w.label),
+      );
+    }
+  }
+  for (const e of Object.values(boxes)) boxLayer.append(drawBox(e));
+  canvas.onclick = () => select(null);
+  markSelected();
+}
+
+// Where a step's dot is: the share of the step that has passed, as RaftScope places a message
+// at (now - sendTime) / (recvTime - sendTime); a repeating step restarts every `every` ms.
+function progress(step, t) {
+  if (step.every) return ((t - step.at) % step.every) / step.every;
+  return (t - step.at) / (step.until - step.at);
+}
+function pointOn(path, share) {
+  const i = Math.min(path.length - 1, Math.floor(share * path.length));
+  const local = share * path.length - i;
+  const backwards = path[i].startsWith("~");
+  const line = lines[path[i].replace("~", "")];
+  if (!line) return null;
+  return line.getPointAtLength((backwards ? 1 - local : local) * line.getTotalLength());
+}
+const activeSteps = (flow, t) => flow.steps.filter((step) => step.at <= t && t < step.until);
+const dotsOf = (step) =>
+  (step.dots || []).map((dot) =>
+    Array.isArray(dot) ? { path: dot, who: step.who } : { who: step.who, ...dot },
+  );
+
+function drawDots() {
+  const layer = $("dots");
+  if (!layer) return;
+  layer.replaceChildren();
+  document
+    .querySelectorAll(".busy, .lit")
+    .forEach((node) => node.classList.remove("busy", "lit", "who-A", "who-B"));
+  const flow = currentFlow();
+  if (!flow) return;
+  for (const step of activeSteps(flow, state.time)) {
+    if (step.box) {
+      const box = document.querySelector(`.box[data-id="${step.box}"]`);
+      if (box) box.classList.add("busy", `who-${step.who}`);
+    }
+    for (const dot of dotsOf(step)) {
+      if (reducedMotion) {
+        for (const id of dot.path)
+          document.querySelector(`.wire[data-id="${id.replace("~", "")}"]`)?.classList.add("lit");
+        continue;
+      }
+      const point = pointOn(dot.path, progress(step, state.time));
+      const shift = { A: -3, B: 3 }[dot.who] || 0; // two dots on one spot stay visible
+      if (point)
+        layer.append(
+          svg("circle", {
+            class: `dot who-${dot.who || "none"}`,
+            cx: point.x + shift,
+            cy: point.y + shift,
+            r: 7,
+          }),
+        );
+    }
+  }
+}
+
+// Lanes: one row per actor along the flow's clock, bars for work and white space for idle.
+const LANE = { left: 150, right: 16, top: 26, row: 28 };
+function laneX(flow, t) {
+  const width = state.tab.size[0] - LANE.left - LANE.right;
+  const clamped = Math.max(flow.start, Math.min(flow.end, t));
+  return LANE.left + ((clamped - flow.start) / (flow.end - flow.start)) * width;
+}
+function drawLanes() {
+  const flow = currentFlow();
+  const lanes = $("lanes");
+  lanes.replaceChildren();
+  const legend = $("lane-legend");
+  legend.replaceChildren();
+  if (!flow || !flow.lanes) {
+    lanes.style.display = "none";
+    return;
+  }
+  lanes.style.display = "";
+  const { rows, items, marks = [] } = flow.lanes;
+  const width = state.tab.size[0];
+  const height = LANE.top + rows.length * LANE.row + 8;
+  lanes.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const x = (t) => laneX(flow, t);
+  const rowY = Object.fromEntries(rows.map((row, i) => [row.id, LANE.top + i * LANE.row]));
+  const axis = svg("g", { class: "axis" });
+  const step = flow.end - flow.start > 4000 ? 500 : 250;
+  for (let t = Math.ceil(flow.start / step) * step; t <= flow.end; t += step) {
+    axis.append(svg("line", { x1: x(t), x2: x(t), y1: 16, y2: height - 4 }));
+    axis.append(svg("text", { x: x(t), y: 12 }, `${(t / 1000).toFixed(t % 1000 ? 1 : 0)} s`));
+  }
+  lanes.append(axis);
+  rows.forEach((row, i) => {
+    const y = LANE.top + i * LANE.row;
+    lanes.append(svg("text", { class: "lane-label", x: 8, y: y + 17 }, row.label));
+    lanes.append(
+      svg("line", {
+        class: "lane-rule",
+        x1: LANE.left,
+        x2: width - LANE.right,
+        y1: y + LANE.row - 1,
+        y2: y + LANE.row - 1,
+      }),
+    );
+  });
+  const bar = (row, from, to, className, title) => {
+    if (from == null || to == null || to <= from) return;
+    const rect = svg("rect", {
+      class: `bar ${className}`,
+      x: x(from),
+      y: rowY[row] + 5,
+      width: Math.max(1, x(to) - x(from)),
+      height: LANE.row - 11,
+    });
+    rect.append(svg("title", {}, title));
+    lanes.append(rect);
+  };
+  for (const item of items) {
+    const who = item.who || item.row;
+    if (item.input == null) {
+      bar(
+        item.row,
+        item.from,
+        item.to,
+        `req who-${item.who || "none"}`,
+        `${item.label}: ${item.who ? "a member's batch" : "idle poll"}, ${item.from}-${item.to} ms`,
+      );
+      continue;
+    }
+    const end = item.until ?? flow.end;
+    bar(item.row, item.input, item.completed ?? end, `think who-${who}`, `${item.label}: thinking`);
+    if (item.completed != null)
+      bar(
+        item.row,
+        item.completed,
+        item.sent ?? end,
+        `wait who-${who}`,
+        `${item.label}: finished, waiting to be sent`,
+      );
+    if (item.sent != null)
+      bar(
+        item.row,
+        item.sent,
+        item.applied ?? end,
+        "engine",
+        `${item.label}: sent, until the engine applied it`,
+      );
+    if (item.input === item.completed) {
+      const tick = svg("line", {
+        class: "mark",
+        x1: x(item.input),
+        x2: x(item.input),
+        y1: rowY[item.row] + 3,
+        y2: rowY[item.row] + LANE.row - 4,
+      });
+      tick.style.stroke = `var(--member-${who.toLowerCase()})`;
+      tick.append(svg("title", {}, `${item.label}: started and finished at once`));
+      lanes.append(tick);
+    }
+  }
+  for (const mark of marks) {
+    for (const at of [].concat(mark.at)) {
+      const mx = x(at);
+      const my = rowY[mark.row] + LANE.row / 2;
+      let node;
+      if (mark.kind === "applied")
+        node = svg("line", { class: "mark", x1: mx, x2: mx, y1: my - 7, y2: my + 7 });
+      else if (mark.kind === "discarded")
+        node = svg("circle", { class: "mark discarded", cx: mx, cy: my, r: 5 });
+      else
+        node = svg("path", {
+          class: "mark running",
+          d: `M${mx},${my - 6} L${mx + 6},${my} L${mx},${my + 6} L${mx - 6},${my} Z`,
+        });
+      node.append(svg("title", {}, `${mark.kind} at ${at} ms`));
+      lanes.append(node);
+    }
+  }
+  lanes.append(
+    svg("line", { id: "cursor", x1: x(state.time), x2: x(state.time), y1: 16, y2: height - 2 }),
+  );
+  lanes.onclick = (event) => {
+    const box = lanes.getBoundingClientRect();
+    const sx = ((event.clientX - box.left) / box.width) * width;
+    const share = (sx - LANE.left) / (width - LANE.left - LANE.right);
+    pause();
+    setTime(flow.start + Math.max(0, Math.min(1, share)) * (flow.end - flow.start));
+    writeHash();
+  };
+  const entries = [
+    ["think who-A", "thinking (member colour)"],
+    ["wait who-A", "finished, waiting to be sent"],
+    ["engine", "sent, until the engine applied it"],
+    ["req who-none", "idle poll (no member's batch)"],
+  ];
+  for (const [className, text] of entries) {
+    const item = el("span");
+    const sample = svg("svg", { width: 18, height: 9, class: "swatch" });
+    sample.append(svg("rect", { class: `bar ${className}`, width: 18, height: 9 }));
+    item.append(sample, text);
+    legend.append(item);
+  }
+  const kinds = new Set(marks.map((mark) => mark.kind));
+  if (kinds.has("applied")) legend.append(el("span", "| tick: request applied"));
+  if (kinds.has("discarded")) legend.append(el("span", "o: call discarded at cleanup"));
+  if (kinds.has("running at close"))
+    legend.append(el("span", "\u25C6: call still running at cleanup"));
+  legend.append(el("span", `Time axis: ${flow.clock}.`));
+}
+
+// Player.
+function stepTimes(flow) {
+  return [...new Set(flow.steps.map((step) => step.at))].sort((a, b) => a - b);
+}
+function setTime(t) {
+  const flow = currentFlow();
+  if (!flow) return;
+  state.time = Math.max(flow.start, Math.min(flow.end, t));
+  renderTime();
+}
+function tick(now) {
+  state.loop = null;
+  if (!state.playing) return;
+  const flow = currentFlow();
+  if (state.lastTick != null) {
+    state.time += (now - state.lastTick) * state.speed;
+    if (state.time >= flow.end) {
+      state.time = flow.end;
+      pause();
+    }
+  }
+  state.lastTick = now;
+  renderTime();
+  if (state.playing) state.loop = requestAnimationFrame(tick);
+}
+function play() {
+  const flow = currentFlow();
+  if (!flow) return;
+  if (state.time >= flow.end) state.time = flow.start;
+  state.playing = true;
+  state.lastTick = null;
+  state.loop ??= requestAnimationFrame(tick);
+  $("play").textContent = "Pause";
+}
+function pause() {
+  state.playing = false;
+  $("play").textContent = "Play";
+  writeHash();
+}
+function stepBy(direction) {
+  const flow = currentFlow();
+  if (!flow) return;
+  pause();
+  const times = stepTimes(flow);
+  const target =
+    direction > 0
+      ? (times.find((t) => t > state.time + 0.5) ?? flow.end)
+      : ([...times].reverse().find((t) => t < state.time - 0.5) ?? flow.start);
+  setTime(target);
+  writeHash();
+}
+function renderTime() {
+  const flow = currentFlow();
+  if (!flow) return;
+  drawDots();
+  $("slider").value = state.time;
+  $("time").textContent =
+    `${(state.time / 1000).toFixed(2)} s ${flow.clock === "battle time" ? "battle" : "(illustrative)"}`;
+  const cursor = $("cursor");
+  if (cursor) {
+    const x = laneX(flow, state.time);
+    cursor.setAttribute("x1", x);
+    cursor.setAttribute("x2", x);
+  }
+  const active = activeSteps(flow, state.time);
+  const key = active.map((step) => flow.steps.indexOf(step)).join(",");
+  if (key !== state.nowKey) {
+    state.nowKey = key;
+    renderNow(active);
+  }
+}
+
+// Side panel.
+function refList(refs, commit) {
+  const list = el("ul", null, "refs");
+  for (const ref of refs || []) {
+    const item = el("li");
+    const match = ref.match(/^([^\s:]+)(?::(\d+)(?:-(\d+))?)?(.*)$/);
+    if (ref.startsWith("runs/") || !match) {
+      item.append(el("span", `${ref} (local evidence, not in Git)`, "local"));
+    } else {
+      const [, path, first, last] = match;
+      const link = el("a", ref);
+      link.href = `${DIAGRAM.repo}/blob/${commit}/${path}${first ? `#L${first}${last ? `-L${last}` : ""}` : ""}`;
+      link.target = "_blank";
+      link.rel = "noopener";
+      item.append(link);
+    }
+    list.append(item);
+  }
+  if (!(refs || []).length) list.append(el("li", "no source", "missing"));
+  return list;
+}
+function restsList(rests, commit) {
+  const box = el("div");
+  for (const rest of rests || []) {
+    const p = el("p", null, "rests");
+    const link = el("a", `${rest.file} ${rest.name}`);
+    link.href = `${DIAGRAM.repo}/blob/${commit}/${rest.file}#L${rest.line}`;
+    link.target = "_blank";
+    link.rel = "noopener";
+    p.append(`rests on JUDGEMENT${rest.sure === false ? "?" : ""} `, link);
+    box.append(p);
+  }
+  return box;
+}
+function statusBlock(status, commit) {
+  const kind = statusKind(status);
+  const wrap = el("div");
+  const line = el("div", null, "status");
+  line.append(
+    el("span", null, `chip ${kind}`),
+    el("span", statusText(status) || "no status", kind === "missing" ? "missing" : ""),
+  );
+  wrap.append(line);
+  if (status && typeof status === "object") {
+    if (status.refs) wrap.append(refList(status.refs, commit));
+    if (status.rests) wrap.append(restsList(status.rests, commit));
+  }
+  return wrap;
+}
+function renderNow(active) {
+  const now = $("now");
+  if (!now) return;
+  now.replaceChildren();
+  const flow = currentFlow();
+  if (!flow) return;
+  if (!active.length) {
+    now.append(el("p", "No step is active at this time. Press Play or the right arrow.", "hint"));
+    return;
+  }
+  for (const step of active) {
+    const div = el(
+      "div",
+      null,
+      `step who-${step.who || (dotsOf(step).find((dot) => dot.who) || {}).who || "none"}`,
+    );
+    const until = step.every
+      ? `${step.until} ms, repeating every ${step.every} ms`
+      : `${step.until} ms`;
+    div.append(el("div", `${step.at} to ${until}`, "when"), el("p", step.caption));
+    div.append(refList(step.refs, state.tab.commit));
+    if (step.rests) div.append(restsList(step.rests, state.tab.commit));
+    now.append(div);
+  }
+}
+function renderSelected(container) {
+  const id = state.selected;
+  const item = boxes[id] || wires[id];
+  if (!item) return false;
+  const commit = state.tab.commit;
+  const isWire = Boolean(wires[id]);
+  container.append(
+    el("h3", isWire ? `${boxes[item.from].label} \u2192 ${boxes[item.to].label}` : item.label),
+  );
+  if (!isWire)
+    container.append(el("p", [item.kind, item.where].filter(Boolean).join(", "), "meta"));
+  container.append(el("h4", "Status"), statusBlock(item.status, commit));
+  if (item.note) container.append(el("p", item.note));
+  if (isWire) {
+    const payload = el("p", null, "kv");
+    payload.append(el("b", "Carries: "), item.payload || "");
+    const sync = el("p", null, "kv");
+    sync.append(el("b", "How: "), item.sync || "");
+    container.append(payload, sync);
+  }
+  if (item.rests) container.append(el("h4", "Judgement calls"), restsList(item.rests, commit));
+  container.append(el("h4", "Source"), refList(item.refs, commit));
+  if (item.tab && tabById(item.tab)) {
+    const open = el("button", `Open the ${tabById(item.tab).title} tab`);
+    open.addEventListener("click", () => openTab(item.tab));
+    container.append(open);
+  } else if (item.tab) {
+    container.append(el("p", "Its tab is not drawn yet.", "hint"));
+  }
+  return true;
+}
+function renderPanel() {
+  const panel = $("panel");
+  panel.replaceChildren();
+  const tab = state.tab;
+  const flow = currentFlow();
+  panel.append(el("h2", tab.title));
+  const meta = el("p", null, "meta");
+  const commit = el("a", tab.commit);
+  commit.href = `${DIAGRAM.repo}/tree/${tab.commit}`;
+  commit.target = "_blank";
+  commit.rel = "noopener";
+  meta.append("Claims checked against the code at ", commit, ` on ${tab.checked}.`);
+  panel.append(meta);
+  if (flow) {
+    panel.append(el("h4", "Flow"), el("p", flow.title));
+    panel.append(
+      el(
+        "span",
+        flow.timing,
+        `badge ${flow.timing.startsWith("illustrative") ? "illustrative" : ""}`,
+      ),
+    );
+    panel.append(el("p", `From: ${flow.source}.`, "meta"), el("p", flow.drawn, "meta"));
+    if (flow.derived) panel.append(refList(flow.derived, tab.commit));
+    panel.append(el("h4", "Now"));
+    const now = el("div");
+    now.id = "now";
+    panel.append(now);
+  }
+  const selected = el("div");
+  if (renderSelected(selected)) {
+    panel.append(selected);
+    const back = el("button", "Back to the tab notes");
+    back.addEventListener("click", () => select(null));
+    panel.append(back);
+  } else {
+    panel.append(el("h4", "About this tab"), el("p", tab.summary));
+    for (const note of tab.notes || []) {
+      const div = el("div", null, "step");
+      div.append(el("p", note.text));
+      if (note.status) div.append(statusBlock(note.status, tab.commit));
+      div.append(refList(note.refs, tab.commit));
+      if (note.rests) div.append(restsList(note.rests, tab.commit));
+      panel.append(div);
+    }
+    panel.append(
+      el("p", "Click a box or wire for what it carries, its status and its source.", "hint"),
+    );
+  }
+  state.nowKey = null;
+  if (flow) renderTime();
+}
+function markSelected() {
+  document.querySelectorAll(".selected").forEach((node) => node.classList.remove("selected"));
+  if (state.selected)
+    document.querySelector(`[data-id="${state.selected}"]`)?.classList.add("selected");
+}
+function select(id) {
+  state.selected = id;
+  markSelected();
+  renderPanel();
+}
+
+// Tabs, flows and the URL hash (#tab/flow/step).
+function renderTabs() {
+  const nav = $("tabs");
+  nav.replaceChildren();
+  for (const tab of DIAGRAM.tabs) {
+    const button = el("button", tab.title);
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(tab === state.tab));
+    button.addEventListener("click", () => openTab(tab.id));
+    nav.append(button);
+  }
+}
+function renderFlows() {
+  const flows = state.tab.flows || [];
+  const holder = $("flows");
+  holder.replaceChildren();
+  for (const flow of flows) {
+    const button = el("button", flow.title);
+    button.setAttribute("aria-pressed", String(flow === currentFlow()));
+    button.addEventListener("click", () => openFlow(flow.id));
+    holder.append(button);
+  }
+  const player = $("player");
+  player.style.display = flows.length ? "" : "none";
+  const flow = currentFlow();
+  if (!flow) return;
+  $("slider").min = flow.start;
+  $("slider").max = flow.end;
+  state.speed = flow.speed || 0.25;
+  $("speed").value = String(state.speed);
+}
+function renderLegend() {
+  const legend = $("legend");
+  legend.replaceChildren();
+  for (const [kind, , text] of STATUSES) {
+    const item = el("span");
+    item.append(el("span", null, `chip ${kind}`), text);
+    legend.append(item);
+  }
+  const shapes = el(
+    "span",
+    "Shapes: square corners process, side stripe thread, round agent, folded corner file, pill outside service or person; dashed and faded: planned.",
+  );
+  legend.append(shapes);
+  const label = el("label");
+  const box = el("input");
+  box.type = "checkbox";
+  box.checked = state.planned;
+  box.addEventListener("change", () => {
+    state.planned = box.checked;
+    drawCanvas();
+    drawDots();
+  });
+  label.append(box, " show planned");
+  legend.append(label);
+}
+function openTab(id, flowId, stepIndex) {
+  pause();
+  state.tab = tabById(id) || DIAGRAM.tabs[0];
+  state.flow = flowId || null;
+  state.selected = null;
+  renderAll(stepIndex);
+}
+function openFlow(id) {
+  pause();
+  state.flow = id;
+  renderAll(0);
+}
+function renderAll(stepIndex) {
+  const flow = currentFlow();
+  state.flow = flow ? flow.id : null;
+  if (flow) {
+    const times = stepTimes(flow);
+    state.time = times[stepIndex ?? 0] ?? flow.start;
+  }
+  renderTabs();
+  renderFlows();
+  drawCanvas();
+  drawLanes();
+  renderPanel();
+  writeHash();
+}
+function writeHash() {
+  if (!state.tab) return;
+  const flow = currentFlow();
+  let hash = `#${state.tab.id}`;
+  if (flow) {
+    const times = stepTimes(flow);
+    let index = 0;
+    times.forEach((t, i) => {
+      if (t <= state.time) index = i;
+    });
+    hash += `/${flow.id}/${index}`;
+  }
+  if (location.hash !== hash) history.replaceState(null, "", hash);
+}
+function readHash() {
+  const [id, flowId, step] = location.hash.slice(1).split("/");
+  openTab(id || DIAGRAM.tabs[0].id, flowId, step ? Number(step) : 0);
+}
+
+$("play").addEventListener("click", () => (state.playing ? pause() : play()));
+$("next").addEventListener("click", () => stepBy(1));
+$("back").addEventListener("click", () => stepBy(-1));
+$("speed").addEventListener("change", (event) => {
+  state.speed = Number(event.target.value);
+});
+$("slider").addEventListener("input", (event) => {
+  if (state.playing) pause();
+  setTime(Number(event.target.value));
+});
+$("slider").addEventListener("change", writeHash);
+document.addEventListener("keydown", (event) => {
+  if (event.target.closest("input, select, textarea") || !currentFlow()) return;
+  if (event.key === " ") {
+    event.preventDefault();
+    if (state.playing) pause();
+    else play();
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    stepBy(1);
+  } else if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    stepBy(-1);
+  }
+});
+window.addEventListener("hashchange", readHash); // the page's own writes use replaceState
+renderLegend();
+readHash();
+</script>
+</body>
+</html>

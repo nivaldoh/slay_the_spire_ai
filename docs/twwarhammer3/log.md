@@ -44,6 +44,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: multi-agent diagram page, step 1 (viewer, Overview, Team tab)
+
+Claude Code, $0, no game; plan and evidence `runs/multi-agent-diagram-20261031/` (the owner's
+decisions of 2026-10-31). [`docs/multi-agent.html`](../multi-agent.html) is one file of plain SVG and
+JavaScript that opens from file://. It has tabs, a flow player that moves dots on one clock, lanes
+and a side panel with each part's payload, status, judgement markers and source lines at `21f6204`.
+Step 1 draws a boxes-only Overview and the Team tab (18 boxes, 26 wires). The scripted flow
+replays 5.30-10.40 s of `team-live-20261031e` probe 1 by hand (one episode, not a measurement):
+idle polls alternate with cavalry's no-ops while infantry waits 3 s, then the members alternate.
+The model-team flow is drawn from the code, since that team has never played live.
+Reviewer: round 1 checked 183 claims, 158 confirmed, 15 wrong (line refs, three stale statuses,
+missing markers), 10 unsupported; round 2 found 30 of 32 changed items right; the last two and an
+unsure-marker display were fixed. Numbers recounted from the traces (`team_numbers.py`).
+Not checked: whether the page teaches well (the plan's stop for the owner's look; the run went
+on under /goal). The page verifies no behaviour.
+
 ## 2026-10-31 (night): agreed live checks after the multiplayer merge; outcome readers; b52
 
 Claude Code, 02:38-~09:50 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
