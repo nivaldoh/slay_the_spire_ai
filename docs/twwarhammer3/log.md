@@ -44,6 +44,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: multi-agent diagram page, Factory tab (plan step 4)
+
+Claude Code, $0, no game. The Factory tab of [`docs/multi-agent.html`](../multi-agent.html): 23
+boxes, 37 wires and two flows drawn from the code ("a normal change", "the WH3 experiment loop";
+illustrative). It shows the gaps the plan names: git runs no hook on a merge that completes by
+itself (the main session's Stop hook reruns check.py at the turn's end); main has no branch
+protection or required checks (read-only GitHub API, 404 "Branch not protected"); CI runs after
+a push and on each pull request; nothing makes a commit wait for the reviewer; version-review
+adoption is unsettled. The viewer also gained tab banners, failed requests drawn as hollow red
+dots, per-flow lane legends and markers, and a fixed tab order.
+Reviewer: round 1, 101 items: 93 confirmed, 8 wrong (rules stated as facts, a flow that put the
+commit before the review, a queue stop rule), plus missing markers; round 2, 49 changed items:
+48 confirmed, 1 wrong; that and one missing marker fixed. Found on the way: the version-review
+tie-break is untested (a planted mean-first sort passed all 7 tests).
+
 ## 2026-10-31: multi-agent diagram page, step 1 (viewer, Overview, Team tab)
 
 Claude Code, $0, no game; plan and evidence `runs/multi-agent-diagram-20261031/` (the owner's

@@ -25,18 +25,22 @@
    rests: [{file, line, name, sure}]: a value or rule here sits under a marked judgement call
      in that file; the page shows it as "rests on" that marker. sure: false for a marker the
      agent was unsure counts (written with a question mark).
+   banner: a sentence shown above a tab's canvas. A flow's own rests cover the values in its
+     `drawn` text.
    kind sets a box's shape: process, thread, agent, file, outside service, human.
    where sets its background band. only: "<variant>" shows an item only in flows of that
      variant; variants: {<variant>: {...}} replaces fields in flows of that variant.
    A flow's steps run on one clock (battle milliseconds unless the flow says otherwise).
      A step is active while at <= t < until. dots: each entry is a path of wire ids (or
-     {path, who}); "~id" runs that wire backwards; the dot crosses the path once over the
-     step, or once every `every` ms. box: the box is busy during the step. who: "A" or "B",
-     the member whose colour the dot or box takes.
+     {path, who, fail}); "~id" runs that wire backwards; the dot crosses the path once over
+     the step, or once every `every` ms. box: the box is busy during the step. who: "A" or
+     "B", the member whose colour the dot or box takes. fail: true (on a dot or a step) draws
+     a hollow red dot: a request that fails.
    lanes: rows, then items: {row, label, who, from, to} for a request, or {row, label, input,
      completed, sent, applied} for a member call (thinking, waiting to be sent, sent until the
      engine applied it; null: not reached, its bar runs to `until` or the flow's end);
-     marks: {row, kind, at}. */
+     marks: {row, kind, at}. legend: a sentence that replaces the team legend under the lanes,
+     for flows whose bars mean something else. */
 
 const TRACE = "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl";
 const LUA = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua";
@@ -103,6 +107,76 @@ const DISPATCH = [
 const OBSERVE = ["team.game>obs", "team.obs>play"];
 const REQUEST = ["team.play>orders", "team.orders>game"];
 
+const FAC_NUMBERS = "runs/multi-agent-diagram-20261031/factory_numbers.py";
+const FAC_GH = "runs/multi-agent-diagram-20261031/scratch-factory/gh-branch-main.txt";
+const FAC_GH_RULES = "runs/multi-agent-diagram-20261031/scratch-factory/gh-rules-main.txt";
+const FAC_GH_PROTECTION = "runs/multi-agent-diagram-20261031/scratch-factory/gh-protection.txt";
+const FAC_VR = ".claude/workflows/wh3-version-review.js";
+const FAC_STOP = "scripts/hooks/stop_check.py";
+const FAC_BASH = "scripts/hooks/pre_bash.py";
+const FAC_HOOK = "scripts/githooks/pre-commit";
+const FAC_CHECK = "scripts/check.py";
+const FAC_QUEUE = "scripts/wh3_queue.py";
+const FAC_PLAY = "src/twwarhammer3/battle/play.py";
+const FAC_README = "docs/twwarhammer3/README.md";
+const FAC_PROCESS = {
+  text: "built, unverified: a written process in use, proposed, not agreed; no script enforces it",
+  refs: ["docs/workflow.md:8-11"],
+};
+const FAC_CHECK_TESTS = {
+  text: "built, component tests only: tests/test_check_script.py and the --plants replay; no agreed check",
+  refs: ["tests/test_check_script.py", "docs/workflow.md:357-359"],
+};
+const FAC_PRECOMMIT_TESTS =
+  "built, component tests only: tests/test_hooks.py runs it in a scratch repository; no agreed check";
+const FAC_STOP_TESTS = {
+  text: "built, component tests only: tests/test_hooks.py; seen running check.py at a turn's end in Claude Code on 2026-10-29; no agreed check",
+  refs: ["tests/test_hooks.py", "docs/workflow.md:362"],
+};
+const FAC_BASH_TESTS = {
+  text: "built, component tests only: tests/test_hooks.py; seen refusing a probe in Claude Code on 2026-10-29; no agreed check",
+  refs: ["tests/test_hooks.py", "docs/workflow.md:362"],
+};
+const FAC_REVIEWER = {
+  text: "built, unverified: no agreed check; its saved eval found 2 of 2 planted bugs with no false alarm (3 cases)",
+  refs: ["docs/twwarhammer3/log.md:260-261", "docs/twwarhammer3/log.md:423-424"],
+};
+const FAC_QUEUE_TESTS = {
+  text: "built, component tests only: tests/twwarhammer3/test_wh3_queue.py; the factory's experiment-loop stage waits for its first experiment",
+  refs: ["tests/twwarhammer3/test_wh3_queue.py", "docs/workflow.md:363"],
+  rests: [{ file: "docs/workflow.md", line: 352, name: "Rollout order" }],
+};
+const FAC_PLAY_TESTS = {
+  text: "built, component tests only: tests/twwarhammer3/test_wh3_play.py (the source recheck: :460-467)",
+  refs: ["tests/twwarhammer3/test_wh3_play.py:460-467"],
+};
+const FAC_VR_TESTS = {
+  text: "built, component tests only: its ending runs under Node with agent() stubbed (skipped without Node); the stubbed judges all pick the same title with no scores, so the tie-break is untested. None of the 10 saved full runs (all on 2026-10-13) has the No change candidate or a status",
+  refs: [
+    "tests/twwarhammer3/test_wh3_version_review.py:1-4",
+    "tests/twwarhammer3/test_wh3_version_review.py:18-29",
+    "tests/twwarhammer3/test_wh3_version_review.py:37-43",
+    FAC_NUMBERS,
+  ],
+};
+const FAC_VR_AGENTS = {
+  text: "built, unverified: no agreed check; the prompt tells them to stay read-only, and the script's agent() calls pass only a label, a phase and a schema",
+  refs: [FAC_VR + ":21", FAC_VR + ":63-65", FAC_VR + ":80", FAC_VR + ":99"],
+};
+const FAC_ADOPT = {
+  text: "built, unverified: three written rules that disagree; no script enforces any of them or decides between them",
+  refs: [FAC_README + ":253-255", "docs/autonomy.md:48-53", "docs/workflow.md:39-41"],
+};
+const FAC_CI =
+  "built, unverified: our workflow file .github/workflows/check.yml, run by GitHub on each push to main and each pull request";
+const FAC_ACTIVE = {
+  text: "built, unverified: a written rule (docs/workflow.md:288-289); no script reads or enforces it",
+  refs: ["docs/workflow.md:288-289", FAC_NUMBERS],
+};
+const FAC_SLICE = { file: "docs/workflow.md", line: 34, name: "Slice contract" };
+const FAC_RESTS_CONCURRENT = { file: FAC_CHECK, line: 605, name: "Concurrent passes", sure: false };
+const FAC_RESTS_TREE = { file: FAC_CHECK, line: 549, name: "Checked tree", sure: false };
+const FAC_RESTS_HOOKS = { file: "docs/workflow.md", line: 365, name: "Hook details", sure: false };
 const DIAGRAM = {
   repo: "https://github.com/nivaldoh/slay_the_spire_ai",
   tabs: [
@@ -2034,6 +2108,1285 @@ const DIAGRAM = {
         },
       ],
     },
+    {
+      id: "factory",
+      title: "Factory",
+      commit: "21f6204",
+      checked: "2026-10-31",
+      summary:
+        "How a change gets made and checked, and how the WH3 experiment loop runs. One agent" +
+        " session does the work; check.py, three hooks and a reviewer subagent check it; GitHub" +
+        " reruns check.py after a push. The process is in use and proposed, not agreed.",
+      size: [1400, 700],
+      bands: [
+        { where: "owner", x: 0, y: 0, w: 1400, h: 84 },
+        { where: "WSL Python", x: 0, y: 92, w: 1400, h: 478 },
+        { where: "GitHub", x: 0, y: 578, w: 1400, h: 116 },
+      ],
+      elements: [
+        {
+          id: "fac.owner",
+          label: "Owner",
+          sub: "decides; reads cards and reports",
+          kind: "human",
+          where: "owner",
+          x: 600,
+          y: 16,
+          w: 200,
+          h: 54,
+          status: "outside our code: the owner decides, agents execute (AGENTS.md:44)",
+          refs: [
+            "AGENTS.md:44",
+            "docs/workflow.md:3-7",
+            "docs/workflow.md:74-77",
+            "AGENTS.md:192",
+            "docs/agreed-checks.md:6",
+          ],
+          note: "Answers cards and at most three questions, authorizes commits and pushes to main, and alone agrees checks. Owner review is unavailable for now (2026-10-31).",
+        },
+        {
+          id: "fac.session",
+          label: "Claude Code or Codex",
+          sub: "the session making the change",
+          kind: "agent",
+          where: "WSL Python",
+          x: 590,
+          y: 200,
+          w: 220,
+          h: 64,
+          status:
+            "outside our code: the owner's two agent tools; both get the same instructions, hooks, reviewer and skills (docs/workflow.md:389-399)",
+          refs: [
+            "docs/workflow.md:389-399",
+            ".claude/settings.json:1-28",
+            ".codex/hooks.json:1-28",
+            "tests/test_agent_sync.py:1-6",
+          ],
+          note: "Writes the card, edits, runs check.py, commits, and starts the reviewer, a queue or the version review. Codex runs the project hooks only after the owner trusts them with /hooks, and has no Workflow tool.",
+        },
+        {
+          id: "fac.active",
+          label: "Active work",
+          sub: "docs/state.md: who does what",
+          kind: "file",
+          where: "WSL Python",
+          x: 24,
+          y: 128,
+          w: 190,
+          h: 48,
+          status: FAC_ACTIVE,
+          refs: [
+            "docs/state.md:7-15",
+            "docs/workflow.md:288-289",
+            "docs/autonomy.md:28-31",
+            FAC_NUMBERS,
+          ],
+          note: "Each session claims its task here first, because Claude Code and Codex share this checkout. Only the docs ask for it: no hook, queue or gate reads the list.",
+        },
+        {
+          id: "fac.card",
+          label: "Card",
+          sub: "about ten lines, before a change",
+          kind: "file",
+          where: "WSL Python",
+          x: 290,
+          y: 112,
+          w: 190,
+          h: 48,
+          status: FAC_PROCESS,
+          refs: ["docs/workflow.md:32-67"],
+          rests: [
+            { file: "docs/workflow.md", line: 34, name: "Slice contract" },
+            { file: "docs/workflow.md", line: 39, name: "Away cards" },
+            { file: "docs/workflow.md", line: 20, name: "Sizes", sure: false },
+          ],
+          note: "The change, one WHEN ... SHALL line per case, what must not break, the reference (never the code itself), the check with a wrong version it must catch, and what is not checked. It goes in the commit message or runs/<task>/.",
+        },
+        {
+          id: "fac.reviewer",
+          label: "Reviewer",
+          sub: "a background subagent",
+          kind: "agent",
+          where: "WSL Python",
+          x: 960,
+          y: 112,
+          w: 170,
+          h: 56,
+          status: FAC_REVIEWER,
+          refs: [
+            ".claude/agents/reviewer.md:1-63",
+            ".codex/agents/reviewer.toml:1-4",
+            "docs/workflow.md:217-229",
+            "docs/twwarhammer3/log.md:260-261",
+            FAC_NUMBERS,
+          ],
+          rests: [{ file: "docs/testing.md", line: 173, name: "Agent review workflow" }],
+          note: "Called for on every normal change and on every number bound for the owner's pages; nothing enforces it (the 10-29 long run left 4 commits unreviewed). Read-only by instruction only: it has Bash. All 30 Claude Code reviewer runs saved by 15:45 on 2026-10-31 were background subagents of the main session (factory_numbers.py).",
+        },
+        {
+          id: "fac.check",
+          label: "scripts/check.py",
+          sub: "Ruff + the whole offline suite",
+          kind: "process",
+          where: "WSL Python",
+          x: 260,
+          y: 210,
+          w: 190,
+          h: 58,
+          status: FAC_CHECK_TESTS,
+          refs: [
+            FAC_CHECK + ":1-48",
+            FAC_CHECK + ":608-717",
+            "docs/workflow.md:82-139",
+            "runs/checks/20261031-154118-21f6204-2352223.log",
+            FAC_NUMBERS,
+          ],
+          rests: [
+            { file: FAC_CHECK, line: 641, name: "Completion evidence", sure: false },
+            FAC_RESTS_CONCURRENT,
+          ],
+          note: "Exits 1 if Ruff or a test fails, or pytest leaves no completed report. Its warnings (needs your yes, pages, markers) never fail it. It never launches a game, spends or commits. One run at 21f6204: 2164 passed, 43 skipped, pytest 89 s.",
+        },
+        {
+          id: "fac.record",
+          label: "last-pass.json",
+          sub: "hash of the checked files",
+          kind: "file",
+          where: "WSL Python",
+          x: 24,
+          y: 380,
+          w: 190,
+          h: 50,
+          status: "built, component tests only: tests/test_check_script.py; no agreed check",
+          refs: [
+            FAC_CHECK + ":14-16",
+            FAC_CHECK + ":543-564",
+            FAC_CHECK + ":688-691",
+            FAC_CHECK + ":709-714",
+          ],
+          rests: [FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+          note: "In runs/checks/. Written only when a run passed and no file changed while it ran. The hash covers every file git does not ignore, untracked ones included (the owner's docs/thesis/ notes aside), so any later edit, by any session, voids it.",
+        },
+        {
+          id: "fac.precommit",
+          label: "pre-commit hook",
+          sub: "git: the hash must match",
+          kind: "process",
+          where: "WSL Python",
+          x: 260,
+          y: 330,
+          w: 190,
+          h: 54,
+          status: FAC_PRECOMMIT_TESTS,
+          refs: [FAC_HOOK + ":1-32", "docs/workflow.md:84-91", "tests/test_hooks.py:439-451"],
+          rests: [FAC_RESTS_TREE],
+          note: "Runs for every git commit, however typed, where core.hooksPath is scripts/githooks. Not for merges, cherry-picks, reverts, rebases or am; --no-verify skips it. A broken record or check.py refuses the commit.",
+        },
+        {
+          id: "fac.stop",
+          label: "Stop hook",
+          sub: "turn end: check.py if no pass",
+          kind: "process",
+          where: "WSL Python",
+          x: 490,
+          y: 370,
+          w: 190,
+          h: 54,
+          status: FAC_STOP_TESTS,
+          refs: [
+            FAC_STOP + ":1-21",
+            FAC_STOP + ":35",
+            FAC_STOP + ":187-235",
+            ".claude/settings.json:15-26",
+            ".codex/hooks.json:15-26",
+            FAC_NUMBERS,
+          ],
+          rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+          note: "Exit 2 keeps the turn going, never twice in a row. It lets the stop through when check.py cannot run or timed out (600 s), and checks only the checkout the session started in. Its log, 10:31 to 15:44 on 2026-10-31: 32 decisions; 29 found a remembered pass, 2 an earlier check.py pass, 1 ran check.py and passed.",
+        },
+        {
+          id: "fac.bash",
+          label: "Bash hook",
+          sub: "before each Bash command",
+          kind: "process",
+          where: "WSL Python",
+          x: 730,
+          y: 370,
+          w: 160,
+          h: 54,
+          status: FAC_BASH_TESTS,
+          refs: [
+            FAC_BASH + ":1-12",
+            FAC_BASH + ":176-224",
+            ".claude/settings.json:3-14",
+            ".codex/hooks.json:3-14",
+          ],
+          rests: [FAC_RESTS_HOOKS],
+          note: "Refuses ruff format (except --check or --diff) everywhere. While a wh3_queue.py process exists, it also refuses git commands that move this checkout's HEAD. It does not follow aliases, variables or bash -c strings, and lets through input it cannot read.",
+        },
+        {
+          id: "fac.main",
+          label: "main checkout",
+          sub: "the local branch main",
+          kind: "file",
+          where: "WSL Python",
+          x: 276,
+          y: 470,
+          w: 180,
+          h: 50,
+          status:
+            "outside our code: git; the owner authorizes commits and pushes to main (AGENTS.md:192)",
+          refs: ["AGENTS.md:192", "AGENTS.md:74-76", FAC_BASH + ":9-11"],
+          note: "Commits land here. The rule is to commit nothing here while a WH3 queue runs, because a moved HEAD stops the queue before its next job; the Bash hook refuses the git commands it can parse.",
+        },
+        {
+          id: "fac.worktree",
+          label: "git worktree",
+          sub: "a branch beside main",
+          kind: "file",
+          where: "WSL Python",
+          x: 24,
+          y: 470,
+          w: 140,
+          h: 50,
+          status: {
+            text: "built, unverified: drafting there is a written rule; its commits run that checkout's own pre-commit hook, where the file exists",
+            refs: ["AGENTS.md:130-132", FAC_HOOK + ":2-6", FAC_NUMBERS],
+          },
+          refs: [
+            "AGENTS.md:74-75",
+            "AGENTS.md:130-132",
+            "docs/workflow.md:143-148",
+            "docs/workflow.md:407-409",
+            FAC_HOOK + ":13-19",
+            FAC_NUMBERS,
+          ],
+          note: "For drafting while a game job runs. Its commits are checked against its own runs/checks record, and no Stop hook checks it. Two worktrees, spire-replay and wh3-human-opponent, have no hook file, so their commits run no check.",
+        },
+        {
+          id: "fac.queue",
+          label: "scripts/wh3_queue.py",
+          sub: "a frozen plan, one job at a time",
+          kind: "process",
+          where: "WSL Python",
+          x: 600,
+          y: 470,
+          w: 190,
+          h: 56,
+          status: FAC_QUEUE_TESTS,
+          refs: [FAC_QUEUE + ":1-33", FAC_QUEUE + ":71-129"],
+          note: "Refuses to start unless HEAD is the plan's commit with a clean play scope. Before each job it checks the source, PLAN-stop and start_before. It stops at a failed job (with keep_going, at the second failure in a row) or at a rematch that started differently, and never retries. SIGINT or SIGTERM passes one SIGINT to the running job.",
+        },
+        {
+          id: "fac.play",
+          label: "play job",
+          sub: "owns the game for its episodes",
+          kind: "process",
+          where: "WSL Python",
+          x: 880,
+          y: 470,
+          w: 200,
+          h: 56,
+          status: FAC_PLAY_TESTS,
+          refs: [
+            FAC_PLAY + ":115-116",
+            "src/gameai/provenance.py:48-53",
+            FAC_PLAY + ":140-171",
+            FAC_PLAY + ":188-205",
+            "src/twwarhammer3/__main__.py:406",
+            FAC_QUEUE + ":101",
+          ],
+          rests: [{ file: FAC_PLAY, line: 166, name: "Job stop" }],
+          note: "Refuses uncommitted source and records the commit and every source file's hash. Before each episode it hashes those files again and stops if one changed; it does not recheck HEAD, so a commit that leaves them alone does not stop it (the queue checks HEAD between jobs). Takes the runtime lock and owns the game. Exits 0 only when every episode ended won, lost or draw. The battle itself is on the Play loop tab.",
+        },
+        {
+          id: "fac.evidence",
+          label: "job evidence",
+          sub: "trace, result, a results.csv row",
+          kind: "file",
+          where: "WSL Python",
+          x: 1180,
+          y: 370,
+          w: 200,
+          h: 50,
+          status: FAC_PLAY_TESTS,
+          refs: [
+            FAC_PLAY + ":117-140",
+            FAC_PLAY + ":149-161",
+            FAC_PLAY + ":274",
+            FAC_PLAY + ":351",
+            "src/twwarhammer3/battle/stats.py:17-18",
+            "AGENTS.md:165-166",
+          ],
+          note: "runs/twwarhammer3/battle/<job>: manifest.json and each episode's trace.jsonl and result.json. Each episode also appends a row to the tracked docs/twwarhammer3/results.csv, so the checkout changes while a job runs.",
+        },
+        {
+          id: "fac.vr",
+          label: "wh3-version-review",
+          sub: "Workflow script; Claude Code only",
+          kind: "process",
+          where: "WSL Python",
+          x: 960,
+          y: 185,
+          w: 200,
+          h: 60,
+          status: FAC_VR_TESTS,
+          refs: [
+            FAC_VR + ":1-21",
+            FAC_VR + ":62-118",
+            FAC_README + ":255-262",
+            "docs/workflow.md:398",
+          ],
+          note: "Three phases in turn; each runs its agents in parallel and waits for all of them. ROOT is fixed to the main checkout. It returns a proposal; the script itself writes no file.",
+        },
+        {
+          id: "fac.vr_rev",
+          label: "episode reviewers",
+          sub: "one per episode",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1180,
+          y: 268,
+          w: 200,
+          h: 50,
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":20-36", FAC_VR + ":62-67"],
+          note: "Each reads its episode's digest, the decisions near the turning points (digest --at), the prompts and the raw replies, and returns mistakes with battle times, what went well and harness issues.",
+        },
+        {
+          id: "fac.vr_prop",
+          label: "3 proposers",
+          sub: "tactics, information, interface",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1180,
+          y: 112,
+          w: 200,
+          h: 50,
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":38-48", FAC_VR + ":69-80"],
+          note: "Each gets every review and one angle, reads the current files and proposes one small change: title, change, evidence, expected effect, risks.",
+        },
+        {
+          id: "fac.vr_none",
+          label: "No change",
+          sub: "a fixed candidate",
+          kind: "file",
+          where: "WSL Python",
+          x: 980,
+          y: 280,
+          w: 150,
+          h: 44,
+          status: "built, component tests only: tests/twwarhammer3/test_wh3_version_review.py",
+          refs: [FAC_VR + ":81-88"],
+          note: "Keep the version and collect more evidence first. The script adds it; no agent writes it.",
+        },
+        {
+          id: "fac.vr_judge",
+          label: "3 judges",
+          sub: "score every candidate, pick one",
+          kind: "agent",
+          where: "WSL Python",
+          x: 1180,
+          y: 190,
+          w: 200,
+          h: 50,
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":50-60", FAC_VR + ":90-99"],
+          note: "Each gets the review summaries and mistakes and every candidate, scores each 1-10 on impact, evidence, simplicity and generality, and picks one title. They are told to prefer No change unless repeated evidence supports a change.",
+        },
+        {
+          id: "fac.adopt",
+          label: "Adopt it?",
+          sub: "unsettled: the pages disagree",
+          kind: "process",
+          where: "WSL Python",
+          x: 730,
+          y: 104,
+          w: 180,
+          h: 48,
+          status: FAC_ADOPT,
+          refs: [
+            FAC_README + ":253-255",
+            "docs/autonomy.md:3-5",
+            "docs/autonomy.md:48-53",
+            "docs/workflow.md:39-41",
+          ],
+          rests: [{ file: "docs/workflow.md", line: 39, name: "Away cards" }],
+          note: "The WH3 README has the agent make at most one change and log the version. autonomy.md's 2026-10-21 proposal parks prompt and observation changes for the owner. workflow.md's away rule builds and reports 'not agreed'.",
+        },
+        {
+          id: "fac.gh",
+          label: "main on GitHub",
+          sub: "no protection, no required checks",
+          kind: "outside service",
+          where: "GitHub",
+          x: 260,
+          y: 608,
+          w: 240,
+          h: 56,
+          status: {
+            text: "outside our code: GitHub. Read on 2026-10-31 with gh api: main is not protected, and has no rulesets and no required status checks",
+            refs: [FAC_GH, FAC_GH_PROTECTION, FAC_GH_RULES],
+          },
+          refs: [FAC_GH, FAC_GH_PROTECTION, FAC_GH_RULES, "AGENTS.md:192"],
+          note: "A push lands whatever CI says later. Pull requests run CI too.",
+        },
+        {
+          id: "fac.ci",
+          label: "GitHub Actions: check",
+          sub: "check.py after a push, on each PR",
+          kind: "outside service",
+          where: "GitHub",
+          x: 620,
+          y: 608,
+          w: 260,
+          h: 56,
+          status: FAC_CI,
+          refs: [
+            ".github/workflows/check.yml:1-21",
+            "AGENTS.md:157",
+            "docs/state.md:21",
+            "runs/factory-assessment-20261031/ci-status.json",
+            "docs/workflow.md:362",
+            FAC_NUMBERS,
+          ],
+          note: "uv sync --locked, then check.py, in a 15-minute job with no game, key or runs/ evidence (runs/ stays out of Git). It reports after the fact and gates nothing. Runs passed at da47cde and e1d141c, with one failing run between them from a racy test, since fixed (workflow.md:362); one run at 356e723 took 118 s.",
+        },
+      ],
+      wires: [
+        {
+          id: "fac.session>active",
+          from: "fac.session",
+          to: "fac.active",
+          label: "claim",
+          payload: "A line in Active work that claims the task",
+          sync: "by hand: a docs edit",
+          status: FAC_ACTIVE,
+          refs: ["docs/workflow.md:288-289", "docs/state.md:7-15"],
+        },
+        {
+          id: "fac.session>card",
+          from: "fac.session",
+          to: "fac.card",
+          label: "write",
+          payload: "The card: change, behaviour, must not break, reference, check, not checked",
+          sync: "by hand, before the change",
+          status: FAC_PROCESS,
+          refs: ["docs/workflow.md:36-37", "docs/workflow.md:43-67"],
+          rests: [FAC_SLICE],
+        },
+        {
+          id: "fac.card>owner",
+          from: "fac.card",
+          to: "fac.owner",
+          label: "agree?",
+          payload: "The card, ending 'You: agree / change / not now'",
+          sync: "asynchronous: the owner reads it when available",
+          status: FAC_PROCESS,
+          refs: ["docs/workflow.md:36", "docs/workflow.md:54"],
+          rests: [FAC_SLICE],
+        },
+        {
+          id: "fac.owner>session",
+          from: "fac.owner",
+          to: "fac.session",
+          label: "answers",
+          payload: "Agree, change or not now; answers to at most three questions; new directions",
+          sync: "asynchronous, in the chat",
+          status: "outside our code: the owner's answers (AGENTS.md:44)",
+          refs: ["docs/workflow.md:36", "docs/workflow.md:74-77"],
+          rests: [FAC_SLICE],
+        },
+        {
+          id: "fac.session>check",
+          from: "fac.session",
+          to: "fac.check",
+          label: "run",
+          payload: "uv run --locked python scripts/check.py",
+          sync: "a blocking command; it prints five lines, then the warnings",
+          status: FAC_CHECK_TESTS,
+          refs: [FAC_CHECK + ":3-7", "docs/workflow.md:84"],
+        },
+        {
+          id: "fac.check>record",
+          from: "fac.check",
+          to: "fac.record",
+          label: "on a pass",
+          payload: "{tree: sha256 of every file git does not ignore, revision, log}",
+          sync: "deleted at the start; written at the end only if the run passed and no file changed during it",
+          status: FAC_CHECK_TESTS,
+          refs: [FAC_CHECK + ":608", FAC_CHECK + ":688-691", FAC_CHECK + ":709-714"],
+          rests: [FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+        },
+        {
+          id: "fac.session>reviewer",
+          from: "fac.session",
+          to: "fac.reviewer",
+          label: "review",
+          bend: 14,
+          payload:
+            "The card, the diff or commit range, the raw check output and the code that reads the changed data; never the author's explanation",
+          sync: "asynchronous: a background subagent",
+          status: FAC_REVIEWER,
+          refs: ["docs/workflow.md:221-222", ".claude/agents/reviewer.md:12-15", FAC_NUMBERS],
+          rests: [{ file: "docs/testing.md", line: 173, name: "Agent review workflow" }],
+        },
+        {
+          id: "fac.reviewer>session",
+          from: "fac.reviewer",
+          to: "fac.session",
+          label: "verdict",
+          bend: 14,
+          payload:
+            "No findings, findings or incomplete; each finding with file:line, a failure case and how it was shown; the commands it ran",
+          sync: "a notification when it finishes; no hook waits for it",
+          status: FAC_REVIEWER,
+          refs: [".claude/agents/reviewer.md:57-63", "docs/workflow.md:243"],
+          rests: [{ file: "docs/workflow.md", line: 233, name: "Work loops" }],
+        },
+        {
+          id: "fac.session>precommit",
+          from: "fac.session",
+          to: "fac.precommit",
+          label: "git commit",
+          payload: "Any git commit in this checkout, however typed",
+          sync: "git runs the hook before it writes the commit",
+          status: FAC_PRECOMMIT_TESTS,
+          refs: [FAC_HOOK + ":2-6", "docs/workflow.md:84-89"],
+        },
+        {
+          id: "fac.precommit>record",
+          from: "fac.precommit",
+          to: "fac.record",
+          payload: "Reads last-pass.json and recomputes the hash with check.py's own tree_content",
+          sync: "a blocking read",
+          status: FAC_PRECOMMIT_TESTS,
+          refs: [FAC_HOOK + ":17-25"],
+          rests: [FAC_RESTS_TREE],
+        },
+        {
+          id: "fac.precommit>main",
+          from: "fac.precommit",
+          to: "fac.main",
+          label: "commit",
+          payload: "The commit, only if the hashes match; otherwise exit 1 and git aborts it",
+          sync: "exit 0 lets git write the commit",
+          status: FAC_PRECOMMIT_TESTS,
+          refs: [FAC_HOOK + ":28-32"],
+        },
+        {
+          id: "fac.session>stop",
+          from: "fac.session",
+          to: "fac.stop",
+          label: "turn ends",
+          payload: "The Stop event: the session id and stop_hook_active",
+          sync: "Claude Code or Codex runs it at each turn's end (660 s limit)",
+          status: FAC_STOP_TESTS,
+          refs: [".claude/settings.json:15-26", ".codex/hooks.json:15-26", FAC_STOP + ":238-245"],
+        },
+        {
+          id: "fac.stop>record",
+          from: "fac.stop",
+          to: "fac.record",
+          label: "a pass here?",
+          payload:
+            "Its own fingerprint (HEAD, index, diff, untracked files) against its cache; then last-pass.json against the files",
+          sync: "blocking reads",
+          status: FAC_STOP_TESTS,
+          refs: [FAC_STOP + ":49-60", FAC_STOP + ":172-201"],
+          rests: [FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+        },
+        {
+          id: "fac.stop>check",
+          from: "fac.stop",
+          to: "fac.check",
+          label: "else run it",
+          payload: "uv run --locked python scripts/check.py in its own process group, 600 s limit",
+          sync: "blocking; exit 2 with the report if it fails or the files changed during it",
+          status: FAC_STOP_TESTS,
+          refs: [FAC_STOP + ":98-132", FAC_STOP + ":215-235"],
+          rests: [FAC_RESTS_TREE, FAC_RESTS_CONCURRENT, FAC_RESTS_HOOKS],
+        },
+        {
+          id: "fac.stop>queue",
+          from: "fac.stop",
+          to: "fac.queue",
+          label: "game job? skip",
+          payload:
+            "Looks in /proc for a Python game command (twwarhammer3 play, launch, menu, rl, or a spire one), wh3_queue.py or a live-check script",
+          sync: "read at each turn's end",
+          status: FAC_STOP_TESTS,
+          refs: [FAC_STOP + ":37-42", FAC_STOP + ":63-95", FAC_STOP + ":212-214"],
+          rests: [FAC_RESTS_HOOKS],
+        },
+        {
+          id: "fac.session>bash",
+          from: "fac.session",
+          to: "fac.bash",
+          label: "each command",
+          payload: "The Bash command text and its working directory",
+          sync: "before every Bash tool call (10 s limit); exit 2 blocks it and returns the reason",
+          status: FAC_BASH_TESTS,
+          refs: [".claude/settings.json:3-14", ".codex/hooks.json:3-14", FAC_BASH + ":214-224"],
+        },
+        {
+          id: "fac.bash>queue",
+          from: "fac.bash",
+          to: "fac.queue",
+          label: "queue?",
+          payload:
+            "Looks in /proc for a Python process whose arguments name wh3_queue.py, from any checkout",
+          sync: "read on every Bash call",
+          status: FAC_BASH_TESTS,
+          refs: [FAC_BASH + ":154-164"],
+          rests: [FAC_RESTS_HOOKS],
+        },
+        {
+          id: "fac.main>gh",
+          from: "fac.main",
+          to: "fac.gh",
+          label: "git push",
+          payload: "main's new commits",
+          sync: "by hand; no hook checks or refuses it (the Bash hook lets git push through), and GitHub requires no check",
+          status:
+            "outside our code: git and GitHub; the owner authorizes pushes to main (AGENTS.md:192)",
+          refs: ["AGENTS.md:192", FAC_BASH + ":21-23", FAC_GH],
+        },
+        {
+          id: "fac.worktree>main",
+          from: "fac.worktree",
+          to: "fac.main",
+          label: "merge, no hook",
+          payload: "The branch's commits, by a fast-forward or a merge commit",
+          sync: "git runs no hook for the merge. For a session started in main, the Stop hook reruns check.py at the turn's end, as the files no longer match last-pass.json; a push in the same turn goes before it",
+          status:
+            "outside our code: git runs no pre-commit hook for a merge (scripts/githooks/pre-commit:3-5)",
+          refs: [
+            FAC_HOOK + ":2-6",
+            "docs/workflow.md:88-89",
+            "docs/workflow.md:143-146",
+            FAC_STOP + ":187-216",
+            FAC_NUMBERS,
+          ],
+          rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+        },
+        {
+          id: "fac.worktree>gh",
+          from: "fac.worktree",
+          to: "fac.gh",
+          label: "pull request",
+          payload: "A pushed branch with a pull request",
+          sync: "by hand",
+          status:
+            "outside our code: GitHub runs CI on each pull request (.github/workflows/check.yml:8)",
+          refs: [".github/workflows/check.yml:4-8"],
+        },
+        {
+          id: "fac.gh>ci",
+          from: "fac.gh",
+          to: "fac.ci",
+          label: "push or PR",
+          payload: "The pushed commit, or the pull request's",
+          sync: "GitHub starts the workflow after the push has landed",
+          status: FAC_CI,
+          refs: [".github/workflows/check.yml:4-8"],
+        },
+        {
+          id: "fac.session>queue",
+          from: "fac.session",
+          to: "fac.queue",
+          label: "plan",
+          payload:
+            "PLAN.json: source_revision (the full commit) and each job's output and play arguments",
+          sync: "uv run python scripts/wh3_queue.py PLAN.json",
+          status: FAC_QUEUE_TESTS,
+          refs: [FAC_QUEUE + ":1-17", "docs/autonomy.md:141-143"],
+        },
+        {
+          id: "fac.queue>play",
+          from: "fac.queue",
+          to: "fac.play",
+          label: "one job",
+          payload: "uv run python -m twwarhammer3 play ARGS --output OUTPUT; back: its exit code",
+          sync: "spawned in its own session; the queue waits for it",
+          status: FAC_QUEUE_TESTS,
+          refs: [FAC_QUEUE + ":100-121"],
+        },
+        {
+          id: "fac.play>evidence",
+          from: "fac.play",
+          to: "fac.evidence",
+          label: "per episode",
+          payload:
+            "trace.jsonl and result.json; manifest.json with the commit and file hashes; a results.csv row",
+          sync: "file writes during and after each episode",
+          status: FAC_PLAY_TESTS,
+          refs: [
+            FAC_PLAY + ":117-140",
+            FAC_PLAY + ":149-161",
+            FAC_PLAY + ":274",
+            FAC_PLAY + ":351",
+          ],
+        },
+        {
+          id: "fac.session>vr",
+          from: "fac.session",
+          to: "fac.vr",
+          label: "job, episodes",
+          bend: 14,
+          payload: "args: {job, episodes, history}",
+          sync: "the Workflow tool; the result comes back when all phases end",
+          status: FAC_VR_TESTS,
+          refs: [FAC_VR + ":1-6", FAC_VR + ":14-17"],
+        },
+        {
+          id: "fac.vr>session",
+          from: "fac.vr",
+          to: "fac.session",
+          label: "proposal",
+          bend: 14,
+          payload: "{status, missing, proposal, reviews, proposals, totals, comments}",
+          sync: "returned when the run ends",
+          status: FAC_VR_TESTS,
+          refs: [FAC_VR + ":104-118"],
+        },
+        {
+          id: "fac.vr>vr_rev",
+          from: "fac.vr",
+          to: "fac.vr_rev",
+          bend: 10,
+          payload: "The shared context and one episode path",
+          sync: "parallel agent calls; the phase waits for all",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":62-65"],
+        },
+        {
+          id: "fac.vr_rev>evidence",
+          from: "fac.vr_rev",
+          to: "fac.evidence",
+          label: "digest",
+          payload:
+            "twwarhammer3 digest, then digest --at near the turning points; the prompts and raw replies",
+          sync: "commands and file reads",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":20", FAC_VR + ":64"],
+        },
+        {
+          id: "fac.vr_rev>vr",
+          from: "fac.vr_rev",
+          to: "fac.vr",
+          bend: 10,
+          payload:
+            "REVIEW: outcome, summary (at most 150 words), mistakes with battle times, good, harness issues",
+          sync: "return value; a missing one is listed in missing",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":23-36", FAC_VR + ":65-67"],
+        },
+        {
+          id: "fac.vr>vr_prop",
+          from: "fac.vr",
+          to: "fac.vr_prop",
+          bend: 10,
+          payload: "Every review plus one angle",
+          sync: "parallel agent calls",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":69-80"],
+        },
+        {
+          id: "fac.vr_prop>vr",
+          from: "fac.vr_prop",
+          to: "fac.vr",
+          bend: 10,
+          payload: "PROPOSAL: title, change, evidence, expected effect, risks",
+          sync: "return value",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":38-48", FAC_VR + ":80"],
+        },
+        {
+          id: "fac.vr_none>vr",
+          from: "fac.vr_none",
+          to: "fac.vr",
+          payload: "The No change candidate",
+          sync: "a constant the script appends",
+          status: "built, component tests only: tests/twwarhammer3/test_wh3_version_review.py",
+          refs: [FAC_VR + ":81-88"],
+        },
+        {
+          id: "fac.vr>vr_judge",
+          from: "fac.vr",
+          to: "fac.vr_judge",
+          bend: 10,
+          payload: "The review summaries and mistakes, and every candidate including No change",
+          sync: "parallel agent calls",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":90-99"],
+        },
+        {
+          id: "fac.vr_judge>vr",
+          from: "fac.vr_judge",
+          to: "fac.vr",
+          bend: 10,
+          payload:
+            "SCORE: 1-10 on impact, evidence, simplicity and generality per candidate, and one pick",
+          sync: "return value; a pick that names no candidate counts as missing",
+          status: FAC_VR_AGENTS,
+          refs: [FAC_VR + ":50-60", FAC_VR + ":100-103"],
+        },
+        {
+          id: "fac.session>adopt",
+          from: "fac.session",
+          to: "fac.adopt",
+          payload: "The proposal, or No change",
+          sync: "by hand",
+          status: FAC_ADOPT,
+          refs: [FAC_README + ":253-255"],
+        },
+        {
+          id: "fac.adopt>owner",
+          from: "fac.adopt",
+          to: "fac.owner",
+          label: "park it?",
+          payload: "The proposal, parked for the owner (autonomy.md's 2026-10-21 proposal)",
+          sync: "asynchronous",
+          status: FAC_ADOPT,
+          refs: ["docs/autonomy.md:3-5", "docs/autonomy.md:48-53"],
+        },
+        {
+          id: "fac.adopt>card",
+          from: "fac.adopt",
+          to: "fac.card",
+          label: "one change?",
+          payload:
+            "One change to the prompt, rendering, memory or executor, made as a normal change and logged as a version in log.md (the README)",
+          sync: "by hand",
+          status: FAC_ADOPT,
+          refs: [FAC_README + ":253-255", "docs/workflow.md:39-41"],
+        },
+      ],
+      flows: [
+        {
+          id: "change",
+          title: "A normal change",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code and docs at 21f6204; no recorded change is replayed",
+          drawn:
+            "All times are made up to show the order of events. One recorded check.py run and one" +
+            " recorded CI run are in those boxes' notes.",
+          start: 0,
+          end: 12600,
+          speed: 0.5,
+          steps: [
+            {
+              at: 0,
+              until: 500,
+              dots: [["fac.session>active"]],
+              caption:
+                "The session reads Active work and claims the task there, because Claude Code and Codex share this checkout. Only the docs ask for this; no script reads the list.",
+              refs: ["docs/workflow.md:288-289", "docs/autonomy.md:28-31", "docs/state.md:7-15"],
+            },
+            {
+              at: 500,
+              until: 1200,
+              dots: [["fac.session>card", "fac.card>owner"]],
+              caption:
+                "It writes a card of about ten lines: one WHEN ... SHALL line per case, the reference, and the check with a plausible wrong version it must catch.",
+              refs: ["docs/workflow.md:36-37", "docs/workflow.md:43-63"],
+              rests: [{ file: "docs/workflow.md", line: 34, name: "Slice contract" }],
+            },
+            {
+              at: 1200,
+              until: 1800,
+              dots: [["fac.owner>session"]],
+              caption:
+                "The owner answers agree, change or not now. While the owner is away, the agent builds anyway and its report says the card was not agreed.",
+              refs: ["docs/workflow.md:36", "docs/workflow.md:39-41"],
+              rests: [FAC_SLICE, { file: "docs/workflow.md", line: 39, name: "Away cards" }],
+            },
+            {
+              at: 1800,
+              until: 2800,
+              box: "fac.session",
+              caption:
+                "It edits the files: in the main checkout, or in a git worktree while a game job runs.",
+              refs: ["AGENTS.md:130-132"],
+            },
+            {
+              at: 2800,
+              until: 3100,
+              dots: [["fac.session>check"]],
+              caption:
+                "It runs uv run --locked python scripts/check.py, which first deletes the old pass record.",
+              refs: [FAC_CHECK + ":3-7", FAC_CHECK + ":608", "docs/workflow.md:84"],
+              rests: [FAC_RESTS_CONCURRENT],
+            },
+            {
+              at: 3100,
+              until: 4600,
+              box: "fac.check",
+              caption:
+                "check.py runs ruff check . and the whole offline suite with a JUnit report, then lists the edits that need the owner's yes. A pass needs Ruff clean, pytest exit 0 and a report with a named passing test; the warnings never fail it.",
+              refs: [FAC_CHECK + ":618-649", FAC_CHECK + ":675-694", "docs/workflow.md:111-139"],
+              rests: [{ file: FAC_CHECK, line: 641, name: "Completion evidence", sure: false }],
+            },
+            {
+              at: 4600,
+              until: 5000,
+              dots: [["fac.check>record"]],
+              caption:
+                "It passed and no file changed while it ran, so it writes runs/checks/last-pass.json: a hash of every file git does not ignore.",
+              refs: [FAC_CHECK + ":543-564", FAC_CHECK + ":688-691", FAC_CHECK + ":709-714"],
+              rests: [FAC_RESTS_TREE],
+            },
+            {
+              at: 5000,
+              until: 5400,
+              dots: [["fac.session>reviewer"]],
+              caption:
+                "It starts the reviewer subagent in the background with the card, the diff, the raw check output and the code that reads the changed data, never its own explanation.",
+              refs: ["docs/workflow.md:217-222", ".claude/agents/reviewer.md:12-15"],
+              rests: [{ file: "docs/testing.md", line: 173, name: "Agent review workflow" }],
+            },
+            {
+              at: 5400,
+              until: 7000,
+              box: "fac.reviewer",
+              caption:
+                "The reviewer works on its own. Its findings only point at problems; scripts decide pass or fail.",
+              refs: ["docs/workflow.md:166-168", ".claude/agents/reviewer.md:32-50"],
+            },
+            {
+              at: 7000,
+              until: 7400,
+              dots: [["fac.reviewer>session"]],
+              caption:
+                "The verdict comes back as a notification: no findings, findings or incomplete. The change counts as done only when its findings are fixed or parked; a fix is a new edit and a new check.py pass.",
+              refs: [
+                ".claude/agents/reviewer.md:57-63",
+                "docs/workflow.md:243",
+                "AGENTS.md:37-38",
+                FAC_NUMBERS,
+              ],
+              rests: [{ file: "docs/workflow.md", line: 233, name: "Work loops" }],
+            },
+            {
+              at: 7400,
+              until: 7800,
+              dots: [["fac.session>precommit", "fac.precommit>record"]],
+              caption:
+                "git commit runs the pre-commit hook, which recomputes the hash and compares it with last-pass.json. It checks only the hash: nothing makes the commit wait for the review.",
+              refs: [FAC_HOOK + ":13-25", "docs/workflow.md:84-88", ".claude/settings.json:3-26"],
+              rests: [FAC_RESTS_TREE],
+            },
+            {
+              at: 7800,
+              until: 8200,
+              dots: [["fac.precommit>main"]],
+              caption:
+                "The hashes match, so the commit lands. Any edit since the pass, by this or another session, would refuse it; --no-verify skips the hook.",
+              refs: [FAC_HOOK + ":2-6", FAC_HOOK + ":28-32", FAC_CHECK + ":543-552"],
+              rests: [FAC_RESTS_TREE],
+            },
+            {
+              at: 8200,
+              until: 8700,
+              dots: [["fac.session>stop", "fac.stop>record"]],
+              caption:
+                "At the turn's end the Stop hook fingerprints the checkout and finds a completed check.py pass on these files, so the stop goes through. Without one it runs check.py itself and, if that fails, keeps the turn going once.",
+              refs: [FAC_STOP + ":187-235", FAC_STOP + ":49-60"],
+              rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+            },
+            {
+              at: 8800,
+              until: 9300,
+              dots: [["fac.main>gh"]],
+              caption:
+                "The owner authorizes pushes to main. No hook checks or refuses a push (the Bash hook lets git push through), and main on GitHub has no branch protection, rulesets or required checks, so the push lands as it is.",
+              refs: ["AGENTS.md:192", FAC_BASH + ":21-23", FAC_NUMBERS, FAC_GH, FAC_GH_RULES],
+            },
+            {
+              at: 9300,
+              until: 9700,
+              dots: [["fac.gh>ci"]],
+              caption:
+                "GitHub then starts the check workflow: after the push has landed, and on each pull request.",
+              refs: [".github/workflows/check.yml:1-8"],
+            },
+            {
+              at: 9700,
+              until: 11200,
+              box: "fac.ci",
+              caption:
+                "It runs uv sync --locked and check.py in a 15-minute job, without the game, keys or runs/ evidence. Its result is read later (gh run list); nothing waits for it.",
+              refs: [".github/workflows/check.yml:11-21", "AGENTS.md:157", "docs/state.md:21"],
+            },
+            {
+              at: 11200,
+              until: 11900,
+              dots: [["fac.worktree>main"]],
+              caption:
+                "The other route: a change made in a worktree is committed there against that checkout's own pass record, then merged into main. git runs no hook on a merge that completes by itself (a conflicted merge finished with git commit runs pre-commit). For a session started in main, the Stop hook reruns check.py at the turn's end, as the files no longer match last-pass.json; it skips while a game job runs, lets the stop through after one block, and a push in the same turn goes out before it.",
+              refs: [
+                FAC_HOOK + ":2-6",
+                FAC_HOOK + ":13-19",
+                "docs/workflow.md:143-146",
+                FAC_STOP + ":187-216",
+              ],
+              rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+            },
+            {
+              at: 11900,
+              until: 12600,
+              dots: [["fac.worktree>gh", "fac.gh>ci"]],
+              caption:
+                "A branch can also go to GitHub as a pull request, which runs the same check workflow. GitHub requires no check before a merge.",
+              refs: [".github/workflows/check.yml:4-8", FAC_GH],
+            },
+          ],
+        },
+        {
+          id: "loop",
+          title: "The WH3 experiment loop",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source:
+            "the code and docs at 21f6204; the factory's experiment-loop stage waits for its first experiment (docs/workflow.md:363)",
+          drawn:
+            "All times are made up to show the order of events. The 10 saved version reviews of" +
+            " 2026-10-13 (an older script) took 732 to 1424 s each (factory_numbers.py).",
+          start: 0,
+          end: 15200,
+          speed: 0.5,
+          steps: [
+            {
+              at: 0,
+              until: 600,
+              dots: [["fac.session>active"]],
+              caption:
+                "Before a launch, the session commits an Active work line with the agent, purpose and cutoff, then freezes the plan at that commit. The queue enforces the frozen plan; committing the Active work line first is autonomy.md's 2026-10-21 proposal, in force only once the owner says yes.",
+              refs: [
+                "docs/autonomy.md:129-143",
+                "AGENTS.md:82-85",
+                FAC_README + ":264-265",
+                "scripts/wh3_queue.py:57",
+                "scripts/wh3_queue.py:76-77",
+              ],
+            },
+            {
+              at: 600,
+              until: 1100,
+              dots: [["fac.session>queue"]],
+              caption:
+                "It starts uv run python scripts/wh3_queue.py PLAN.json. The plan names the full commit, and each job's output folder and play arguments.",
+              refs: [FAC_QUEUE + ":1-17"],
+            },
+            {
+              at: 1100,
+              until: 1700,
+              box: "fac.queue",
+              caption:
+                "The queue refuses to start if the plan already has a state file, HEAD is not the plan's commit, the play source or the queue script has uncommitted changes, or a job's output exists.",
+              refs: [FAC_QUEUE + ":48", FAC_QUEUE + ":52-57", FAC_QUEUE + ":71-80"],
+            },
+            {
+              at: 1700,
+              until: 2200,
+              dots: [["fac.queue>play"]],
+              caption:
+                "Before each job it checks the source again, the PLAN-stop file and start_before, then runs twwarhammer3 play in its own session and waits for it.",
+              refs: [FAC_QUEUE + ":100-114"],
+            },
+            {
+              at: 2200,
+              until: 7600,
+              box: "fac.play",
+              caption:
+                "The job refuses uncommitted source, records the commit and each source file's hash, takes the runtime lock and owns the game. Before each episode it hashes the files again and stops if one changed.",
+              refs: [
+                FAC_PLAY + ":115-116",
+                "src/gameai/provenance.py:48-53",
+                FAC_PLAY + ":140-146",
+                FAC_PLAY + ":188-205",
+              ],
+            },
+            {
+              at: 2600,
+              until: 7400,
+              every: 1600,
+              dots: [["fac.play>evidence"]],
+              caption:
+                "Each episode writes trace.jsonl and result.json and appends a row to the tracked results.csv, so the checkout changes while the job runs.",
+              refs: [
+                FAC_PLAY + ":149-161",
+                FAC_PLAY + ":274",
+                FAC_PLAY + ":351",
+                "src/twwarhammer3/battle/stats.py:17",
+              ],
+            },
+            {
+              at: 3000,
+              until: 3600,
+              dots: [["fac.session>stop", "fac.stop>queue"]],
+              caption:
+                "The session's turn ends. The Stop hook finds the queue or a game command in /proc and skips check.py, to keep its load off the game.",
+              refs: [FAC_STOP + ":63-95", FAC_STOP + ":212-214"],
+              rests: [FAC_RESTS_HOOKS],
+            },
+            {
+              at: 3800,
+              until: 4500,
+              dots: [
+                ["fac.session>bash", "fac.bash>queue", "~fac.bash>queue", "~fac.session>bash"],
+              ],
+              caption:
+                "The session tries git commit in this checkout. The Bash hook sees a Python process running wh3_queue.py and refuses it: a moved HEAD would stop the queue before its next job.",
+              refs: [
+                FAC_BASH + ":154-164",
+                FAC_BASH + ":171-173",
+                FAC_BASH + ":208-210",
+                "AGENTS.md:75-76",
+              ],
+              rests: [FAC_RESTS_HOOKS],
+            },
+            {
+              at: 4500,
+              until: 5500,
+              box: "fac.worktree",
+              caption:
+                "So the session drafts the next change in a git worktree; a commit there does not move this checkout's HEAD.",
+              refs: [FAC_README + ":263-264", FAC_BASH + ":4-6", FAC_BASH + ":125-130"],
+            },
+            {
+              at: 7600,
+              until: 8100,
+              dots: [["~fac.queue>play"]],
+              caption:
+                "The job exits 0 only if every episode ended won, lost or draw. The queue stops at a nonzero exit (with keep_going, at the second in a row) or at a rematch that started with a changed army.",
+              refs: [
+                "src/twwarhammer3/__main__.py:406",
+                FAC_PLAY + ":166-171",
+                FAC_QUEUE + ":114-121",
+              ],
+              rests: [{ file: FAC_PLAY, line: 166, name: "Job stop" }],
+            },
+            {
+              at: 8100,
+              until: 8500,
+              dots: [["fac.session>vr"]],
+              caption:
+                "The session starts the wh3-version-review workflow with the job, its episodes and the version history. Only Claude Code has it; Codex runs one reviewer per episode by hand.",
+              refs: [FAC_VR + ":1-17", "docs/workflow.md:398"],
+            },
+            {
+              at: 8500,
+              until: 10000,
+              dots: [
+                ["fac.vr>vr_rev", "fac.vr_rev>evidence", "~fac.vr_rev>evidence", "fac.vr_rev>vr"],
+              ],
+              caption:
+                "Review: one agent per episode, all at once. Each reads the digest, then the decisions near the turning points, the prompts and the raw replies, and returns its mistakes with battle times.",
+              refs: [FAC_VR + ":20", FAC_VR + ":62-67"],
+            },
+            {
+              at: 10000,
+              until: 11300,
+              dots: [["fac.vr>vr_prop", "fac.vr_prop>vr"], ["fac.vr_none>vr"]],
+              caption:
+                "Propose: three agents (tactics, information, interface) each get every review and propose one small change. The script adds a fixed No change candidate.",
+              refs: [FAC_VR + ":69-88"],
+            },
+            {
+              at: 11300,
+              until: 12600,
+              dots: [["fac.vr>vr_judge", "fac.vr_judge>vr"]],
+              caption:
+                "Judge: three agents score every candidate 1-10 on impact, evidence, simplicity and generality, and each picks one. They are told to prefer No change unless repeated evidence supports a change.",
+              refs: [FAC_VR + ":90-99"],
+            },
+            {
+              at: 12600,
+              until: 13100,
+              box: "fac.vr",
+              caption:
+                "The candidate with the most picks wins; a tie goes to the higher mean of the judges' summed scores. A judge whose pick names no candidate counts as missing, and any missing step makes the run incomplete.",
+              refs: [FAC_VR + ":100-117"],
+            },
+            {
+              at: 13100,
+              until: 13500,
+              dots: [["fac.vr>session"]],
+              caption:
+                "The session gets the proposal (or No change) with every review, candidate and score. The script itself writes no file.",
+              refs: [FAC_VR + ":113-118"],
+            },
+            {
+              at: 13500,
+              until: 14600,
+              dots: [
+                ["fac.session>adopt", "fac.adopt>owner"],
+                ["fac.session>adopt", "fac.adopt>card"],
+              ],
+              caption:
+                "Unsettled: what happens to the proposal. The WH3 README has the agent make at most one change and log the version; autonomy.md's 2026-10-21 proposal parks prompt and observation changes for the owner; workflow.md's away rule builds and reports 'not agreed'. No code decides.",
+              refs: [FAC_README + ":253-255", "docs/autonomy.md:48-53", "docs/workflow.md:39-41"],
+              rests: [{ file: "docs/workflow.md", line: 39, name: "Away cards" }],
+            },
+            {
+              at: 14600,
+              until: 15200,
+              dots: [["fac.session>card"]],
+              caption:
+                "A change goes through the normal change (card, check.py, reviewer, commit) and a version entry in log.md; the next plan is frozen at the new commit.",
+              refs: [FAC_README + ":253-255", "AGENTS.md:165-166", "docs/autonomy.md:141-143"],
+            },
+          ],
+        },
+      ],
+      notes: [
+        {
+          text: "The process is in use and proposed, not agreed. No step of it (card, check.py, the hooks, the reviewer, the queue, the version review) has an agreed check. Scripts decide pass or fail (check.py, the hooks); agents, the reviewer included, only point at problems.",
+          status: FAC_PROCESS,
+          refs: ["docs/workflow.md:166-168", "docs/agreed-checks.md:1-7"],
+        },
+        {
+          text: "Gap: git runs no hook on a merge into main that completes by itself (scripts/githooks holds only pre-commit; a conflicted merge finished with git commit does run it). Since the hook reached main (2026-10-30, 15:51), main moved by 7 fast-forward merges that brought in 33 commits, 6 of them merge commits. For a session started in main, the Stop hook then reruns check.py at the turn's end; it skips while a game job runs, lets the stop through after one block, and comes after any push made in the same turn.",
+          refs: [
+            FAC_HOOK + ":2-6",
+            "docs/workflow.md:88-89",
+            FAC_STOP + ":187-216",
+            FAC_STOP + ":7-12",
+            FAC_NUMBERS,
+          ],
+        },
+        {
+          text: "Gap: main on GitHub has no branch protection, no rulesets and no required status checks (read with gh api on 2026-10-31). CI runs after a push to main has landed, and on each pull request; nothing waits for it.",
+          refs: [FAC_GH, FAC_GH_PROTECTION, FAC_GH_RULES, ".github/workflows/check.yml:4-8"],
+        },
+        {
+          text: "The hooks are a guardrail, not an enforcement boundary. The Bash hook does not follow aliases, variables or bash -c strings. The Stop hook lets a stop through when check.py cannot run or timed out, never blocks twice in a row, and checks only the checkout the session started in.",
+          status: {
+            text: "built, component tests only: tests/test_hooks.py; no agreed check",
+            refs: ["tests/test_hooks.py"],
+            rests: [FAC_RESTS_HOOKS],
+          },
+          refs: [FAC_BASH + ":9-11", FAC_STOP + ":7-15", "docs/workflow.md:406-409"],
+        },
+        {
+          text: "One agreed check sits on the queue-to-play path: a play command refuses a ledger file that does not exist, so a queued paid job cannot count its budget from $0.",
+          status: {
+            text: "agreed offline check: play commands refuse a missing ledger file (2 tests); latest recorded pass at 21f6204, no recorded failure; no live claim",
+            refs: [
+              "docs/agreed-checks.md:45-48",
+              "runs/checks/agreed-passes.jsonl (the 21f6204 line of 15:41:18)",
+              FAC_NUMBERS,
+            ],
+            rests: [{ file: FAC_CHECK, line: 226, name: "Pass at a revision", sure: false }],
+          },
+          refs: ["AGENTS.md:161-163", "docs/agreed-checks.md:45-48"],
+        },
+      ],
+    },
   ],
 };
 </script>
@@ -2126,6 +3479,13 @@ main {
   overflow-y: auto;
   position: sticky;
   top: 0;
+}
+#banner {
+  margin: 0 0 8px;
+  padding: 7px 12px;
+  border-left: 4px solid var(--unverified);
+  background: #fff6e0;
+  font-weight: 600;
 }
 #legend {
   display: flex;
@@ -2323,6 +3683,11 @@ svg {
 }
 .dot.who-B {
   fill: var(--member-b);
+}
+.dot.fail {
+  fill: #fff;
+  stroke: var(--missing);
+  stroke-width: 3;
 }
 #player {
   display: flex;
@@ -2560,6 +3925,7 @@ svg {
 <main>
   <section id="stage">
     <div id="legend"></div>
+    <p id="banner" hidden></p>
     <svg id="canvas" role="img" aria-label="Diagram"></svg>
     <div id="player">
       <span id="flows"></span>
@@ -2821,7 +4187,9 @@ function pointOn(path, share) {
 const activeSteps = (flow, t) => flow.steps.filter((step) => step.at <= t && t < step.until);
 const dotsOf = (step) =>
   (step.dots || []).map((dot) =>
-    Array.isArray(dot) ? { path: dot, who: step.who } : { who: step.who, ...dot },
+    Array.isArray(dot)
+      ? { path: dot, who: step.who, fail: step.fail }
+      : { who: step.who, fail: step.fail, ...dot },
   );
 
 function drawDots() {
@@ -2849,7 +4217,7 @@ function drawDots() {
       if (point)
         layer.append(
           svg("circle", {
-            class: `dot who-${dot.who || "none"}`,
+            class: `dot who-${dot.who || "none"}${dot.fail ? " fail" : ""}`,
             cx: point.x + shift,
             cy: point.y + shift,
             r: 7,
@@ -2923,7 +4291,9 @@ function drawLanes() {
         item.from,
         item.to,
         `req who-${item.who || "none"}`,
-        `${item.label}: ${item.who ? "a member's batch" : "idle poll"}, ${item.from}-${item.to} ms`,
+        flow.lanes.legend
+          ? `${item.label}, ${item.from}-${item.to} ms`
+          : `${item.label}: ${item.who ? "a member's batch" : "idle poll"}, ${item.from}-${item.to} ms`,
       );
       continue;
     }
@@ -2988,23 +4358,28 @@ function drawLanes() {
     writeHash();
   };
   const entries = [
-    ["think who-A", "thinking (member colour)"],
+    ["think who-A", "thinking"],
     ["wait who-A", "finished, waiting to be sent"],
     ["engine", "sent, until the engine applied it"],
-    ["req who-none", "idle poll (no member's batch)"],
   ];
-  for (const [className, text] of entries) {
+  if (items.some((item) => item.input == null && !item.who))
+    entries.push(["req who-none", "idle poll (no member's batch)"]);
+  for (const [className, text] of flow.lanes.legend ? [] : entries) {
     const item = el("span");
     const sample = svg("svg", { width: 18, height: 9, class: "swatch" });
     sample.append(svg("rect", { class: `bar ${className}`, width: 18, height: 9 }));
     item.append(sample, text);
     legend.append(item);
   }
+  if (flow.lanes.legend) legend.append(el("span", flow.lanes.legend));
   const kinds = new Set(marks.map((mark) => mark.kind));
   if (kinds.has("applied")) legend.append(el("span", "| tick: request applied"));
   if (kinds.has("discarded")) legend.append(el("span", "o: call discarded at cleanup"));
   if (kinds.has("running at close"))
     legend.append(el("span", "\u25C6: call still running at cleanup"));
+  for (const kind of kinds)
+    if (!["applied", "discarded", "running at close"].includes(kind))
+      legend.append(el("span", `\u25C6: ${kind}`));
   legend.append(el("span", `Time axis: ${flow.clock}.`));
 }
 
@@ -3209,6 +4584,7 @@ function renderPanel() {
     );
     panel.append(el("p", `From: ${flow.source}.`, "meta"), el("p", flow.drawn, "meta"));
     if (flow.derived) panel.append(refList(flow.derived, tab.commit));
+    if (flow.rests) panel.append(restsList(flow.rests, tab.commit));
     panel.append(el("h4", "Now"));
     const now = el("div");
     now.id = "now";
@@ -3324,6 +4700,8 @@ function renderAll(stepIndex) {
     state.time = times[stepIndex ?? 0] ?? flow.start;
   }
   renderTabs();
+  $("banner").hidden = !state.tab.banner;
+  $("banner").textContent = state.tab.banner || "";
   renderFlows();
   drawCanvas();
   drawLanes();
@@ -3375,6 +4753,8 @@ document.addEventListener("keydown", (event) => {
   }
 });
 window.addEventListener("hashchange", readHash); // the page's own writes use replaceState
+const TAB_ORDER = ["overview", "play", "team", "multiplayer", "factory"];
+DIAGRAM.tabs.sort((a, b) => TAB_ORDER.indexOf(a.id) - TAB_ORDER.indexOf(b.id));
 renderLegend();
 readHash();
 </script>
