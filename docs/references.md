@@ -369,6 +369,38 @@ OpenAI posts and cookbook:
 - [codex-plugin-cc](https://github.com/openai/codex-plugin-cc): Codex's `/codex:review` and
   `/codex:adversarial-review` inside Claude Code; uses Codex quota. *Read.*
 
+## Diagram viewers
+
+For [multi-agent.html](multi-agent.html), the animated diagram of the multi-agent parts
+(2026-10-31). We copy techniques, not code; the viewer names each source in a comment.
+Checked on 2026-10-31 by a second agent (`runs/multi-agent-diagram-20261031/maps-and-references.json`).
+
+- [architecture-diagram-skill](https://github.com/konraddzbik/architecture-diagram-skill)
+  (`skills/architecture-diagram/assets/template.html`, MIT): a flow is a list of steps with from,
+  to, title and payload; wires are quadratic curves (:1564); play, pause and step keys. Its
+  packets ride SMIL `<animateMotion>` (:1640) and only one wire is lit at a time; we place each
+  dot per frame with `getPointAtLength`, which it uses to rest a packet at a wire's end (:1687).
+  *Checked.*
+- [RaftScope](https://github.com/ongardie/raftscope) (`script.js`, ISC-style): several messages
+  in flight on one clock, each at (now - sendTime) / (recvTime - sendTime) of its path
+  (:450-453); a time slider that pauses and seeks (:736-756). *Checked.*
+- [Dask dashboard task stream](https://docs.dask.org/en/stable/dashboard.html) (BSD-3): "Each row
+  represents a thread, and each rectangle represents an individual task"; white space is idle
+  time. The lanes under the canvas follow it. *Checked.*
+- [Archify](https://github.com/tt-a1i/archify) (Apache-2.0): claims cite sources pinned to a
+  commit (README:88); Timeline and Waterfall specs mark their evidence "illustrative" or
+  measured (README:286-287), as each flow here does. *Checked.* Links that restore a view and
+  motion that respects `prefers-reduced-motion` (README:434). *Read.*
+- [The Secret Lives of Data: Raft](http://thesecretlivesofdata.com/raft/) (MIT): captioned frames,
+  one short caption per step. *Checked.*
+
+Looked at and not used: [GitDiagram](https://github.com/ahmedkhaleel2004/gitdiagram) and
+[PR Lens](https://github.com/coldteadotai/pr-lens) send the repository or each diff to a model
+provider; [React Flow](https://reactflow.dev/examples/edges/animating-edges) needs React;
+[Mermaid](https://mermaid.js.org/syntax/flowchart.html) animates edges by moving dashes;
+[Dashmotion](https://github.com/csthink/dashmotion) also moves dashes, and on this
+page dashes mean "planned". *Checked.*
+
 ## GitHub Actions
 
 For `.github/workflows/check.yml` (2026-10-29):

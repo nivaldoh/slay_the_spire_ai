@@ -25,6 +25,9 @@
    rests: [{file, line, name, sure}]: a value or rule here sits under a marked judgement call
      in that file; the page shows it as "rests on" that marker. sure: false for a marker the
      agent was unsure counts (written with a question mark).
+   opensTabs: clicking a box with a `tab` opens that tab, and the panel lists every box's
+     status and sources. A flow with loop: true wraps around; autoplay: true starts it on open
+     (unless the viewer asked for reduced motion).
    banner: a sentence shown above a tab's canvas. A flow's own rests cover the values in its
      `drawn` text.
    kind sets a box's shape: process, thread, agent, file, outside service, human.
@@ -406,8 +409,9 @@ const DIAGRAM = {
       summary:
         "How the areas connect. The development factory starts play jobs; a play job runs the" +
         " play loop; the play loop hosts one policy, which may be the two-member team; native" +
-        " multiplayer puts one worker beside each game client. Click an area to open its tab." +
-        " Only the Team tab is drawn so far.",
+        " multiplayer puts one worker beside each game client. Click an area to open its tab;" +
+        " each area's status and sources are listed below.",
+      opensTabs: true,
       size: [1400, 470],
       bands: [
         { where: "Windows game", x: 0, y: 0, w: 1400, h: 110 },
@@ -545,7 +549,7 @@ const DIAGRAM = {
           w: 230,
           h: 56,
           status:
-            "outside our code: GitHub runs our workflow on each push to main and each pull request (.github/workflows/check.yml:1-8)",
+            "built, unverified: our workflow file, run by GitHub on each push to main and each pull request",
           refs: [".github/workflows/check.yml:1-20"],
         },
         {
@@ -651,6 +655,96 @@ const DIAGRAM = {
           sync: "asynchronous",
           status: "outside our code: GitHub Actions (.github/workflows/check.yml:4-8)",
           refs: [".github/workflows/check.yml:4-8"],
+        },
+      ],
+      flows: [
+        {
+          id: "links",
+          title: "How the areas connect",
+          clock: "illustrative time",
+          timing: "illustrative: drawn from the code, no recorded episode",
+          source: "the code at 21f6204; each step names the tab that draws it in detail",
+          drawn:
+            "Every built link carries a looping dot; the loop speeds are made up. Click an area to open its tab.",
+          start: 0,
+          end: 6000,
+          speed: 1,
+          loop: true,
+          autoplay: true,
+          steps: [
+            {
+              at: 0,
+              until: 6000,
+              every: 3000,
+              dots: [["ov.owner>factory"]],
+              caption: "The owner decides; agent sessions do the work (Factory tab).",
+              refs: ["AGENTS.md:44"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 2000,
+              dots: [["ov.factory>play"]],
+              caption: "wh3_queue.py runs a frozen plan of play jobs, one at a time (Factory tab).",
+              refs: ["scripts/wh3_queue.py:71-131"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 3000,
+              dots: [["ov.factory>ci"]],
+              caption: "A push to main or a pull request runs check.py on GitHub (Factory tab).",
+              refs: [".github/workflows/check.yml:4-8", ".github/workflows/check.yml:21"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 1000,
+              dots: [["ov.play>mod"], ["~ov.play>mod"]],
+              caption:
+                "The play loop and the Lua mod trade observation.json and orders.json, one request at a time (Play loop tab).",
+              refs: ["src/twwarhammer3/engine/mailbox.py:11-30"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 1000,
+              dots: [["ov.mod>game"]],
+              caption:
+                "The mod applies each request it accepts on the next battle-time tick (Play loop tab).",
+              refs: [LUA + ":1101-1132", LUA + ":1313-1317", LUA + ":1480"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 1500,
+              dots: [["ov.play>team"], ["~ov.play>team"]],
+              caption:
+                "The play loop calls one policy's decide and acknowledge; the team is one such policy (Team tab).",
+              refs: [
+                "src/twwarhammer3/battle/play.py:656-723",
+                "src/twwarhammer3/battle/play.py:637-640",
+              ],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 3000,
+              dots: [["ov.play>api"], ["~ov.play>api"]],
+              caption:
+                "Model controllers and the model team's members call the provider API (Play loop and Team tabs).",
+              refs: ["src/gameai/llm.py:325-345"],
+            },
+            {
+              at: 0,
+              until: 6000,
+              every: 2000,
+              dots: [["ov.mp>mod"]],
+              caption:
+                "In native multiplayer one worker sits beside each game client and its mod (Multiplayer tab; built offline, never run in a battle).",
+              refs: ["src/twwarhammer3/engine/worker.py:148-212"],
+            },
+          ],
         },
       ],
     },
@@ -7061,6 +7155,8 @@ const DIAGRAM = {
   ],
 };
 </script>
+<!-- A measured flow generated from a recorded episode by scripts/diagram_replay.py. -->
+<script src="multi-agent-replay.js"></script>
 <style>
 /* Light colours and type as the WH3 report has (report_assets/report.css). Member A is
    Okabe-Ito blue and member B vermillion everywhere on this page; dashes mean planned. */
@@ -7545,6 +7641,10 @@ svg {
   background: #fff3d6;
   color: #6d4c00;
 }
+#panel .badge.measured {
+  background: #e3f1e8;
+  color: #1f5a37;
+}
 #panel .badge.illustrative {
   background: #eceff1;
   color: var(--ink-2);
@@ -7757,7 +7857,8 @@ function drawBox(e) {
     g.append(svg("text", { class: "nosource", x: e.x + 6, y: e.y + e.h + 12 }, "no source"));
   const pick = (event) => {
     event.stopPropagation();
-    if (e.tab && tabById(e.tab) && state.selected === e.id) openTab(e.tab);
+    const opens = state.tab.opensTabs || state.selected === e.id;
+    if (e.tab && tabById(e.tab) && opens) openTab(e.tab);
     else select(e.id);
   };
   g.addEventListener("click", pick);
@@ -8061,6 +8162,7 @@ function stepTimes(flow) {
 function setTime(t) {
   const flow = currentFlow();
   if (!flow) return;
+  if (flow.loop && t >= flow.end) t = flow.start; // a looping flow has no idle end point
   state.time = Math.max(flow.start, Math.min(flow.end, t));
   renderTime();
 }
@@ -8070,7 +8172,9 @@ function tick(now) {
   const flow = currentFlow();
   if (state.lastTick != null) {
     state.time += (now - state.lastTick) * state.speed;
-    if (state.time >= flow.end) {
+    if (state.time >= flow.end && flow.loop) {
+      state.time = flow.start + ((state.time - flow.start) % (flow.end - flow.start));
+    } else if (state.time >= flow.end) {
       state.time = flow.end;
       pause();
     }
@@ -8100,7 +8204,7 @@ function stepBy(direction) {
   const times = stepTimes(flow);
   const target =
     direction > 0
-      ? (times.find((t) => t > state.time + 0.5) ?? flow.end)
+      ? (times.find((t) => t > state.time + 0.5) ?? (flow.loop ? flow.start : flow.end))
       : ([...times].reverse().find((t) => t < state.time - 0.5) ?? flow.start);
   setTime(target);
   writeHash();
@@ -8250,7 +8354,7 @@ function renderPanel() {
       el(
         "span",
         flow.timing,
-        `badge ${flow.timing.startsWith("illustrative") ? "illustrative" : ""}`,
+        `badge ${["illustrative", "measured"].find((kind) => flow.timing.startsWith(kind)) || ""}`,
       ),
     );
     panel.append(el("p", `From: ${flow.source}.`, "meta"), el("p", flow.drawn, "meta"));
@@ -8269,6 +8373,14 @@ function renderPanel() {
     panel.append(back);
   } else {
     panel.append(el("h4", "About this tab"), el("p", tab.summary));
+    if (tab.opensTabs)
+      for (const e of tab.elements) {
+        const div = el("div", null, "step");
+        div.append(el("p", `${e.label}: ${e.sub || ""}`), statusBlock(e.status, tab.commit));
+        if (e.note) div.append(el("p", e.note));
+        div.append(refList(e.refs, tab.commit));
+        panel.append(div);
+      }
     for (const note of tab.notes || []) {
       const div = el("div", null, "step");
       div.append(el("p", note.text));
@@ -8378,6 +8490,7 @@ function renderAll(stepIndex) {
   drawLanes();
   renderPanel();
   writeHash();
+  if (flow && flow.autoplay && !reducedMotion) play();
 }
 function writeHash() {
   if (!state.tab) return;
