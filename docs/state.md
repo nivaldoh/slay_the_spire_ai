@@ -14,6 +14,9 @@ Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb
 team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer,
 compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
+Building (Claude Code, 2026-10-31): [multi-agent.html](multi-agent.html), an animated diagram of the
+team, play loop, multiplayer and factory, per `runs/multi-agent-diagram-20261031/plan.md`. $0, no game.
+
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).

@@ -295,6 +295,21 @@ gives six focused passes; removing its production SIGTERM handler still fails as
 Worktree gate: Ruff clean, 2079 passed, 69 skipped; main integration waits for live checks.
 The handoff holds the raw output and final review. No live verification or whole-repo coverage
 claim. Next: exception expectations (two wrong-type KeyError variants pass) and remaining helpers.
+## 2026-10-31: multi-agent diagram page, step 1 (viewer, Overview, Team tab)
+
+Claude Code, $0, no game; plan and evidence `runs/multi-agent-diagram-20261031/` (the owner's
+decisions of 2026-10-31). [`docs/multi-agent.html`](../multi-agent.html) is one file of plain SVG and
+JavaScript that opens from file://. It has tabs, a flow player that moves dots on one clock, lanes
+and a side panel with each part's payload, status, judgement markers and source lines at `21f6204`.
+Step 1 draws a boxes-only Overview and the Team tab (18 boxes, 26 wires). The scripted flow
+replays 5.30-10.40 s of `team-live-20261031e` probe 1 by hand (one episode, not a measurement):
+idle polls alternate with cavalry's no-ops while infantry waits 3 s, then the members alternate.
+The model-team flow is drawn from the code, since that team has never played live.
+Reviewer: round 1 checked 183 claims, 158 confirmed, 15 wrong (line refs, three stale statuses,
+missing markers), 10 unsupported; round 2 found 30 of 32 changed items right; the last two and an
+unsure-marker display were fixed. Numbers recounted from the traces (`team_numbers.py`).
+Not checked: whether the page teaches well (the plan's stop for the owner's look; the run went
+on under /goal). The page verifies no behaviour.
 
 ## 2026-10-31 (night): agreed live checks after the multiplayer merge; outcome readers; b52
 
