@@ -6,6 +6,27 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## GaP graph controllers for WH3 (2026-10-31)
+
+- Chen et al., [GaP paper v1](https://arxiv.org/html/2607.05369v1), July 2026:
+  the method motivating our proposed WH3 extension, not evidence of battle performance.
+- [Graph-as-Policy](https://github.com/graph-robots/graph-as-policy), inspected at
+  `71549e1584839337eb355c280e7b1e50c805b8c7`: `gap/agent/multi_agent.py`,
+  `gap/runtime/{workflow,validate,executor}.py`, `gap/benchmark/__init__.py`,
+  `tests/agent/test_pipeline.py`, `tests/runtime/test_executor.py`; references for
+  authoring, graph contracts and independent tests. Its benchmark describes one-shot
+  generation, not the paper's full rehearsal loop. No external tests were run.
+- [GaP docs](https://graph-robots.github.io/graph-as-policy/): workflow schema,
+  executor semantics, skill authoring and postcondition checks. Their “checkpoints” are
+  verification predicates, not WH3 replay restoration.
+- [Open Robot Skills](https://github.com/graph-robots/open-robot-skills), inspected at
+  `752dfbd96968d4d08379f8111765efbf6457800b`: `skills/transporting-objects/SKILL.md`
+  supplies a concrete catalog pattern, not transferable battle tactics.
+
+The [WH3 GaP plan](twwarhammer3/gap-plan.md#references) links each donor file and explains
+what to mirror or change. Research entry: [papers](thesis/papers.md#gap-graph-as-policy-for-variational-automation).
+Code/docs inspection only; no robotics results reproduced or WH3 GaP behavior verified.
+
 Each entry ends with its status:
 - **checked**: a second agent re-fetched the page and confirmed the quotes or facts we use;
 - **read**: one agent read it; not re-checked;

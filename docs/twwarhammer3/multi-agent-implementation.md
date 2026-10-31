@@ -13,6 +13,10 @@ page covers the code.
 
 ## What team.py does
 
+Proposed extension, 2026-10-31: [GaP graph controllers](gap-plan.md) reuse this dispatcher
+and the existing policy interface. The plan covers skills, live LLM members, between-battle
+revision and later native allied armies; no graph controller is implemented.
+
 The probe battle is `emp-knights-emp-swordsmen` (one Swordsmen, one Empire Knights unit).
 `DelayInfantry` and `DelayCavalry` are zero-argument controllers, so they load through the
 usual `package.module:Class` syntax. Each member (`_MoveOnce`) sends one running move 20 m

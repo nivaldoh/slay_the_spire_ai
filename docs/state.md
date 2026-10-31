@@ -24,6 +24,7 @@ Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next e
 CI runs `check.py` on each push to `main` and each pull request (results: `gh run list`).
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; nine
 draft branches are unmerged ([list](#branches)).
+GaP: [graph-controller plan](twwarhammer3/gap-plan.md), split army then allied armies; G1–G14 await review. No implementation or runs.
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 

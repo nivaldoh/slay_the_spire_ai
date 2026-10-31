@@ -412,6 +412,12 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-31 (GaP, plan only): add the paper to the research collection and plan graph
+  controllers for one army with multiple LLMs, then multiple allied armies. Inspect GaP's
+  GitHub code/docs, existing controller interfaces, WH3 skill needs, between-battle learning
+  and checkpoint-based alternatives. Cover risks and repeatable verification; mark open
+  choices as JUDGEMENT calls. "Right now we are only focused on the plan, so don't start
+  the actual implementation yet." [Plan](twwarhammer3/gap-plan.md).
 - 2026-10-30 15:01 (native multiplayer, implement): "Implement
   docs/twwarhammer3/native-multiplayer.md. Note that I haven't set up accounts, billing, etc,
   so do as much as we reasonably can before that part becomes a blocker." Inline notes on the
