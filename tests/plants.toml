@@ -1155,3 +1155,113 @@ old = "    if status == \"unsupported_or_invalid\":\n        return \"setup_or_g
 new = "    if status == \"unsupported_or_invalid\":\n        return \"not_built\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
 source = "2026-10-31 run, B1 outcome readers"
+
+# 2026-10-31 run, B2: compare-peers seams (runs/overnight-20261031/b2/).
+
+[[plant]]
+id = "peers-first-difference-ignores-missing"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too\n                pair[\"first_difference_ms\"] = time_ms\n"
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-reads-lines-unguarded"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        problem = unreadable(event)"
+new = "        problem = None"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-row-type-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if \"error\" not in row and any(field in row and not isinstance(row[field], int | float)\n                                          for field in \"xz\"):"
+new = "            if False:"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-joins-by-alias"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "    return row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
+new = "    return row.get(\"id\") or row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-missing-ignores-failed-rows"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "                    and key not in failed[client] and (None, *key[1:]) not in failed[client]]"
+new = "                    ]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-reads-every-event-as-an-observation"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            continue\n        data = event[\"event\"][\"data\"][\"observation\"]"
+new = "        data = event[\"event\"][\"data\"][\"observation\"]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-last-missing-time-wins"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
+new = "            if gone:  # a missing unit differs too"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-first-difference-from-b-only"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
+new = "            if gone and client == b and pair[\"first_difference_ms\"] is None:"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-kind-optional"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            return None"
+new = "        if event[\"event\"].get(\"kind\") != \"observation\":\n            return None"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-battle-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        missing = [field for field in (\"battle\", \"time_ms\") if field not in data]"
+new = "        missing = [field for field in (\"time_ms\",) if field not in data]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-error-rows-need-nothing"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            needed = ROW_FIELDS[:2] if \"error\" in row else ROW_FIELDS"
+new = "            needed = () if \"error\" in row else ROW_FIELDS"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-z-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "                                          for field in \"xz\"):"
+new = "                                          for field in \"x\"):"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"

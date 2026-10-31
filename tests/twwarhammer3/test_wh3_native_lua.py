@@ -360,3 +360,46 @@ def test_the_policy_view_drops_the_native_identities():
     native = {"mode": "control", "units": [{"id": "a1", "ui_id": 11, "owner": "allied"}]}
     view = play.public({"seq": 4, "friendly": [], "evaluation": {}, "native": native}, {})
     assert view == {"seq": 4, "friendly": []}
+
+
+def test_two_peers_owning_different_armies_compare_exact_through_the_real_seam(tmp_path):
+    # The whole offline seam: each client's battle script (this stub engine) publishes
+    # observation.json; the real Mailbox reads it from disk, Worker.watch sends it over
+    # loopback to the real coordinator, and compare-peers reads what the coordinator wrote.
+    # Owners and aliases differ by client (A owns army 1, B army 2); identities must not.
+    from twwarhammer3.battle.peers import compare
+    from twwarhammer3.engine.link import Coordinator, WorkerLink, token_sha256
+    from twwarhammer3.engine.mailbox import Mailbox
+
+    games = {"A": battle({"multiplayer": "observe"}, "bm.local_army = const(1)"),
+             "B": battle({"multiplayer": "observe"})}
+    manifest = {"match": "m1", "attempt": "a1", "expected": {},
+                "clients": {client: {"token_sha256": token_sha256(f"token-{client}")}
+                            for client in games}}
+    with Coordinator(manifest, tmp_path / "a1", clock=lambda: 0.0) as coordinator:
+        for client, g in games.items():
+            link = WorkerLink(coordinator.url, f"token-{client}", match="m1", attempt="a1",
+                              client=client, manifest={}, stop=lambda: None, clock=lambda: 0.0)
+            link.hello()
+            link.event("session", {"multiplayer": "observe"})  # worker.run's first event
+            bridge = tmp_path / f"bridge-{client}"
+            bridge.mkdir()
+            mailbox = Mailbox(bridge, job="j")
+            game_worker = worker.Worker(link, mailbox, "observe")
+            g.phases["Deployed"]()
+            for now in (1000, 2000):
+                g.now = now
+                g.callbacks["twwarhammer3_tick"]()
+                (bridge / "observation.json").write_text(g.files[BRIDGE + "observation.json"])
+                game_worker.watch()
+            link.beat()
+            assert list(g.trapped.values()) == []
+    summary = compare(tmp_path / "a1")
+    assert {client: counts["observations"] for client, counts in summary["clients"].items()} == {
+        "A": 2, "B": 2}
+    [pair] = summary["pairs"]
+    assert pair["compared_times"] == 2 and pair["first_difference_ms"] is None
+    # Six rows a time: five read on both sides, one failed read (2, 1, 2) on both.
+    assert pair["units_compared"] == pair["exact"] == 10
+    assert pair["failed_rows"] == {"A": 2, "B": 2}
+    assert pair["missing"] == {"A": [], "B": []} and pair["differences"] == []

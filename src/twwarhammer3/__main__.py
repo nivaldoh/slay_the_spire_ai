@@ -459,6 +459,9 @@ def main() -> int:
             summary = compare(args.attempt)
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
+        except (KeyError, TypeError, AttributeError) as exc:  # a shape unreadable() lets by
+            parser.error(f"{args.attempt}: evidence the comparison cannot read: "
+                         f"{type(exc).__name__}: {exc}")
         print(json.dumps(summary, indent=1))
         return 0
 

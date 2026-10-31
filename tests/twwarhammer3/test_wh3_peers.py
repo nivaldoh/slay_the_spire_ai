@@ -232,3 +232,102 @@ def test_a_failed_reinforcement_row_without_alliance_is_not_also_missing(tmp_pat
     assert pair["failed_rows"] == {"A": 2, "B": 0}
     assert pair["missing"] == {"A": [{"time_ms": 1000, "unit": [2, 1, 2]}], "B": []}
     assert counts(pair, "units_compared", "exact") == {"units_compared": 3, "exact": 3}
+
+
+def test_a_unit_missing_on_one_side_is_the_first_difference_though_every_position_agrees(
+        tmp_path):
+    fewer = army(2.0 * 2)
+    del fewer[3]  # the enemy unit, at 2000 only
+    summary = attempt(tmp_path, {"A": run("A", [1000, 2000, 3000]),
+                                 "B": run("B", [1000, 2000, 3000], {2000: fewer})})
+    pair = summary["pairs"][0]
+    assert pair["missing"] == {"A": [], "B": [{"time_ms": 2000, "unit": [2, 1, 1]}]}
+    assert pair["differences"] == [] and pair["first_difference_ms"] == 2000
+
+
+@pytest.mark.parametrize("side", ["A", "B"])
+def test_the_first_difference_is_the_earliest_whichever_side_lacks_the_unit(tmp_path, side):
+    def without_enemy(seq):
+        units = army(2.0 * seq)
+        del units[3]
+        return units
+    moved = army(2.0 * 3)
+    moved[0]["x"] += 0.5
+    lacking = run(side, [1000, 2000, 3000, 4000], {2000: without_enemy(2), 4000: without_enemy(4)})
+    other = run("B" if side == "A" else "A", [1000, 2000, 3000, 4000], {3000: moved})
+    summary = attempt(tmp_path, {side: lacking, "B" if side == "A" else "A": other})
+    pair = summary["pairs"][0]
+    assert [item["time_ms"] for item in pair["missing"][side]] == [2000, 4000]
+    assert pair["first_difference_ms"] == 2000  # before the 3000 position difference
+
+
+def _broken(event, change):
+    data = event["event"]["data"]["observation"]
+    rows = data["native"]["units"]
+    if change in ("kind", "data"):
+        del event["event"][change]
+    elif change == "no observation":
+        del event["event"]["data"]["observation"]
+    elif change == "no battle":
+        del data["battle"]
+    elif change == "error row without index":
+        rows[0] = {"alliance": 1, "army": 1, "error": "position: no unit"}
+    elif change in ("type", "ui_id"):
+        del rows[0][change]
+    elif change == "z not a number":
+        rows[1]["z"] = None
+    elif change == "observation not an object":
+        event["event"]["data"]["observation"] = "seen"
+    elif change == "no time":
+        del data["time_ms"]
+    elif change == "no units":
+        del data["native"]["units"]
+    elif change == "row without x":
+        del data["native"]["units"][1]["x"]
+    elif change == "row not an object":
+        data["native"]["units"][2] = "f3"
+    elif change == "x not a number":
+        data["native"]["units"][0]["x"] = "100.25"
+    elif change == "no event":
+        del event["event"]
+    return event
+
+
+@pytest.mark.parametrize("change, problem", [
+    ("not JSON", "is not JSON"),
+    ("no event", "KeyError: 'event'"),
+    ("no time", "missing time_ms"),
+    ("no units", "KeyError: 'units'"),
+    ("row without x", "missing units\\[1\\].x"),
+    ("row not an object", "units\\[2\\] is not an object"),
+    ("x not a number", "units\\[0\\] has a position that is not a number"),
+    ("z not a number", "units\\[1\\] has a position that is not a number"),
+    ("kind", "KeyError: 'kind'"),
+    ("data", "KeyError: 'data'"),
+    ("no observation", "KeyError: 'observation'"),
+    ("no battle", "missing battle"),
+    ("error row without index", "missing units\\[0\\].index"),
+    ("type", "missing units\\[0\\].type"),
+    ("ui_id", "missing units\\[0\\].ui_id"),
+    ("observation not an object", "the observation is not an object"),
+])
+def test_a_malformed_events_line_is_refused_by_its_number_and_compare_peers_says_why(
+        tmp_path, monkeypatch, capsys, change, problem):
+    import json
+    import sys
+
+    from twwarhammer3.__main__ import main
+
+    attempt(tmp_path, {"A": run("A", [1000, 2000]), "B": run("B", [1000, 2000])})
+    path = tmp_path / "a1/events-A.jsonl"
+    lines = path.read_text().splitlines()
+    assert len(lines) == 2  # the worker's two observation events, as the coordinator wrote
+    last = json.loads(lines[-1])
+    path.write_text("\n".join(lines + [
+        "{not json" if change == "not JSON" else json.dumps(_broken(last, change))]) + "\n")
+    with pytest.raises(ValueError, match=f"events-A.jsonl line 3 .*{problem}"):
+        compare(tmp_path / "a1")
+    monkeypatch.setattr(sys, "argv", ["wh3", "compare-peers", str(tmp_path / "a1")])
+    with pytest.raises(SystemExit) as stopped:
+        main()
+    assert stopped.value.code == 2 and "line 3" in capsys.readouterr().err

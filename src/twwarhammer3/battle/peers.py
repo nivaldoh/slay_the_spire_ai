@@ -34,7 +34,8 @@ at its own first tick, so common times may be few or none (unverified). A passiv
 completed-tick collector is a later, separately reviewed step (plan step 4).
 
 Refusal (ValueError): a client's events holding more than one battle id (each client's Lua
-makes its own id, so ids never match across clients; one battle per attempt).
+makes its own id, so ids never match across clients; one battle per attempt), or an events
+line that is not JSON or lacks what the comparison reads (``unreadable``), named by line.
 
 Summary: ``match``, ``attempt``; ``clients``: per client ``battle``, ``observations``
 (distinct ones), ``repeated_times``, ``without_native`` (counted, not compared; the seq-0
@@ -51,7 +52,8 @@ a reinforcement row that failed before its alliance was read has none, and as ``
 numbers reinforcement armies across alliances, its army and index still name the unit),
 ``failed_rows`` (client -> error rows at compared times), ``max_dx`` and ``max_dz``
 (``{"value", "time_ms", "unit"}``, or null when every value is equal),
-``first_difference_ms`` and ``differences`` (every compared unit that is not exact:
+``first_difference_ms`` (the first compared time with a unit that is missing or not exact)
+and ``differences`` (every compared unit that is not exact:
 ``{"time_ms", "unit": [alliance, army, index], "dx", "dz", "type"?: [A, B], "ui_id"?: [A,
 B]}``).
 """
@@ -68,16 +70,50 @@ def unit_key(row: dict) -> tuple:
     return row.get("alliance"), row["army"], row["index"]
 
 
+# What the comparison reads of a unit row; a failed row has only its error, army and index.
+ROW_FIELDS = ("army", "index", "x", "z", "type", "ui_id")
+
+
+def unreadable(event) -> str | None:
+    """Why an events-file line is not an event this comparison can read, or None."""
+    try:
+        if event["event"]["kind"] != "observation":
+            return None
+        data = event["event"]["data"]["observation"]
+        if not isinstance(data, dict):
+            return "the observation is not an object"
+        missing = [field for field in ("battle", "time_ms") if field not in data]
+        native = data.get("native")
+        for n, row in enumerate([] if native is None else native["units"]):
+            if not isinstance(row, dict):
+                return f"units[{n}] is not an object"
+            needed = ROW_FIELDS[:2] if "error" in row else ROW_FIELDS
+            missing += [f"units[{n}].{field}" for field in needed if field not in row]
+            if "error" not in row and any(field in row and not isinstance(row[field], int | float)
+                                          for field in "xz"):
+                return f"units[{n}] has a position that is not a number"
+    except (KeyError, TypeError) as exc:
+        return f"{type(exc).__name__}: {exc}"
+    return f"missing {', '.join(missing)}" if missing else None
+
+
 def observations(directory: Path, client: str) -> tuple[dict, dict]:
     """One client's distinct observations listed by ``time_ms``, and its counts."""
     path = directory / f"events-{client}.jsonl"
     lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
     by_time, battle = {}, None
-    for line in lines:
-        event = json.loads(line)["event"]
-        if event["kind"] != "observation":
+    for number, line in enumerate(lines, 1):
+        try:
+            event = json.loads(line)
+        except ValueError as exc:
+            raise ValueError(f"{path} line {number} is not JSON: {exc}") from exc
+        problem = unreadable(event)
+        if problem:
+            raise ValueError(f"{path} line {number} is not an event the comparison reads:"
+                             f" {problem}")
+        if event["event"]["kind"] != "observation":
             continue
-        data = event["data"]["observation"]
+        data = event["event"]["data"]["observation"]
         battle = data["battle"] if battle is None else battle
         if data["battle"] != battle:
             raise ValueError(f"client {client}'s events hold more than one battle id ({battle}, "
@@ -138,10 +174,12 @@ def compare_pair(a: str, seen_a: dict, b: str, seen_b: dict) -> dict:
                 else:
                     units[client][unit_key(row)] = row
         for client, other in ((a, b), (b, a)):
-            pair["missing"][client] += [{"time_ms": time_ms, "unit": list(key)}
-                                        for key in units[other] if key not in units[client]
-                                        and key not in failed[client]
-                                        and (None, *key[1:]) not in failed[client]]
+            gone = [{"time_ms": time_ms, "unit": list(key)}
+                    for key in units[other] if key not in units[client]
+                    and key not in failed[client] and (None, *key[1:]) not in failed[client]]
+            pair["missing"][client] += gone
+            if gone and pair["first_difference_ms"] is None:  # a missing unit differs too
+                pair["first_difference_ms"] = time_ms
         for key, row_a in units[a].items():
             row_b = units[b].get(key)
             if row_b is None:
@@ -161,6 +199,9 @@ def compare_pair(a: str, seen_a: dict, b: str, seen_b: dict) -> dict:
                 if row_a[field] != row_b[field]:
                     difference[field] = [row_a[field], row_b[field]]
                     pair[f"{field}_mismatches"] += 1
+            # JUDGEMENT?: exact — Claude, 2026-10-30: equal x, z, type and ui_id; ui_id is not
+            # proved equal across peers, and if it differs by client no unit is exact. Exact on x,
+            # z and type (ui_id still counted) changes exact, differences and first_difference_ms.
             if not position and "type" not in difference and "ui_id" not in difference:
                 pair["exact"] += 1
                 continue
