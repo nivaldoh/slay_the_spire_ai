@@ -7,6 +7,12 @@ The owner asked for a GaP research
 reference and a concrete plan for one army with several LLM controllers, then several allied
 armies. Code read at `35dbeab`; outside sources are pinned under [References](#references).
 
+Initial release implemented at `d6dfe92`: the bounded library, interchangeable controller
+composition, independent graph members, multi-LLM authoring and between-battle revision.
+The agreed component/live checks and two authored whole-battle smoke runs are recorded in
+the [log](log.md#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke).
+Live holding/firing, tactical strength and learning remain unverified.
+
 ## In short
 
 GaP ([Chen et al., July 2026](https://arxiv.org/html/2607.05369v1)) has LLMs write a robot's

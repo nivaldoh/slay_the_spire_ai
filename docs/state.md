@@ -6,9 +6,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) live effects passed 3/3 at `d12be58`; first run preserved.
-Haiku v1 generation rejected malformed point/mode; v2 clarifies types. Next: generation/revision.
-Spent $0.00402 of $5; `runs/gap-implementation-20261031/brief.md`.
+Codex: [GaP](twwarhammer3/gap-plan.md) initial delivery complete; [evidence](twwarhammer3/log.md#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke).
+Author/battle/revision smoke finished; $0.01304 of $5. No strength or learning established.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
 Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.
@@ -43,7 +42,8 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0; the key has spent $0.02 of its $200 for both games (the smoke's own ledger). A new paid cohort needs a bounded plan.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.01304;
+  the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle

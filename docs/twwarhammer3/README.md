@@ -38,6 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [native-multiplayer.md](native-multiplayer.md) | initial native team-battle assessment: unattended versus headless clients, synchronization probes, cloud costs and risks |
 | [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
 | [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
+| [gap-plan.md](gap-plan.md) | initial graph controllers: frozen skills, interchangeable members, authoring/revision commands, checks, evidence and deferred research |
 | [../multi-agent.html](../multi-agent.html) | an animated diagram of the play loop, the team, native multiplayer and the factory: boxes, wires and step-by-step flows, each claim with its source. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html` |
 | [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |

@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: complete the initial GaP author-battle-revision smoke
+
+- At `d6dfe92`, author v2 generated both graphs in 3 Haiku calls ($0.0025157), then revised
+  them from one completed battle in 3 calls ($0.006504). Cavalry adds an ownership refresh
+  before charge and spells out the existing 60 s timeout; line stays identical. Frozen
+  library/authority/parent pins and each member's public context pass independent review.
+- Whole battles: initial lost at 618.2 s; revised lost at 460.7 s; both engine endings,
+  zero invalid batches and zero battle model calls. Source `d6dfe92`, build 25961564;
+  speed flags 1, recorded Windows ratios 1.0000 (ordinary play does not retain raw Windows
+  timestamps to independently rebuild these ratios). No strength or learning claim.
+- Total paid: 10 calls, $0.0130393 of $5, including failed v1; credentialless invocation
+  made no call. All attempts/exchanges retained under `runs/twwarhammer3/gap-20261101/`.
+  Battles: `runs/twwarhammer3/battle/gap-{initial-02,revised-01}-20261101/`.
+- All 91 agreed component cases passed at `d6dfe92`; live effects remain the 3/3 pass at
+  `d12be58`, with the failed 360 s run preserved. Graph/author refusal sweeps caught 6/6
+  and 16/16; ack-as-success and missing fresh dispatch plants failed their named cases.
+- Final independent review and exit gate: commit message. `runs/gap-implementation-20261031/`
+  holds cards, checks, reviews and handoff. One intermediate doctor failed on WSL interop;
+  retry and final doctor passed, all controllers stopped. Own scratch/worktree removed.
+  Live holding/firing, charge bonus, multiplayer, restoration and learning stay unverified.
+
 ## 2026-11-01: live effects pass; first Haiku generation finds missing interface detail
 
 - Extended live check passed 3/3 fresh probes at `d12be58`:
@@ -190,6 +211,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest: the [starting-set screen](#2026-10-22-the-starting-set-screen) (30 floor launches, 2026-10-22); first: `bench-g1-cavalry-ai10-01-20261014` |
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages and native multiplayer unimplemented |
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Unplayed; no agreed check yet |
+| graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | benchmark harness | b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |

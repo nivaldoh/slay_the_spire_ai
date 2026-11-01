@@ -642,3 +642,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-22,shortcut1-slaves1-ogresfirst-l3,episode-0000,skv-ogres-slaves-emp-halberds-1,twwarhammer3.battle.shortcuts:OgresFirst,,,,2d12f27,realtime,1.0,0.0,won,298,0.66,0.46,970,0,0.3,0,classic,,,,,0.663,0.0,0.0,engine_result,
 2026-10-30,b51-1x-check-wolves-20261029,episode-0000,emp-handgunners-grn-wolves-boyz,attack_nearest,,,,6f6b01b,realtime,1.0,0.0,lost,418,0.44,0.29,1360,0,0.3,0,classic,,,,,0.0,0.287,0.0,engine_result,
 2026-10-31,speed-probe-20261031,episode-0000,emp-knights-emp-swordsmen,attack_nearest,,,,5067ba5,realtime,1.0,0.0,lost,504,0.24,0.33,1635,0,0.31,0,classic,,,,,0.0,0.33,0.0,engine_result,
+2026-11-01,gap-initial-02-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,d6dfe92,realtime,1.0,0.0,lost,618,0.32,0.61,2016,0,0.61,0,classic,,,,,0.0,0.567,0.0,engine_result,
+2026-11-01,gap-revised-01-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,d6dfe92,realtime,1.0,0.0,lost,461,0.69,0.82,1507,0,0.6,0,classic,,,,,0.0,0.819,0.0,engine_result,

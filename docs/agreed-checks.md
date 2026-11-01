@@ -23,7 +23,9 @@ revisions written below are the earlier passes.
   tests/twwarhammer3/team/test_wh3_graph_team.py
   tests/twwarhammer3/graph/test_wh3_graph_live_check.py
   tests/twwarhammer3/graph/test_wh3_graph_author.py`. Runtime part passed 35 cases at
-  `ff5e4ea`; author/revision component cases do not establish learning or live effects.
+  `ff5e4ea`; all 91 component cases passed at `d6dfe92`
+  (`runs/gap-implementation-20261031/components-d6dfe92.txt`). Author/revision component
+  cases do not establish learning or live effects.
   Live method: fresh 1x attempts, movement with no-order controls, then contact/charge
   with public target and melee witnesses. PC available tonight. No strength/learning claim.
   Command: `uv run --locked python tests/twwarhammer3/graph/check_wh3_graph.py --output
