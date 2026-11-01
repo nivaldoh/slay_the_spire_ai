@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: inspect recorded GaP graphs and their battle execution
+
+- Added offline `graph-view`: frozen member graphs, active/ready nodes, public positions,
+  orders, acknowledgements and completion witnesses, with trace rows and source times.
+  It keeps missing results/witnesses explicit and checks graph/battle/producer identities.
+  Local preview: `runs/twwarhammer3/reports/gap-20261101.html` (both authored whole battles).
+- Owner agreed the reader/browser check. Working-tree evidence: 31 reader cases, both
+  members in both recorded battles, and 3 synthetic browser regressions passed. Eight
+  reader regressions and the missing-witness browser case failed before their fixes.
+- Independent review found collection-time, partial-ack, nested-proof and clipped-label
+  bugs, then missing-witness wording; all fixed, final no findings. Guard-removal sweep
+  initially caught 5/7; removed one redundant refusal and added missing-recording cases;
+  final 6/6 caught. Wrong member binding and ack-as-completion plants also failed.
+- Built wheel includes all 3 assets; browser passed without network requests/errors, and
+  the preview URL returned HTTP 200 from Windows. Exit gate and checked revision: commit
+  and `runs/gap-continuation-20261101/`. No game/model calls or strength claim in this change.
+  Next: the planned live target-preference slice; its proposed check awaits the owner.
+
 ## 2026-11-01: complete the initial GaP author-battle-revision smoke
 
 - At `d6dfe92`, author v2 generated both graphs in 3 Haiku calls ($0.0025157), then revised

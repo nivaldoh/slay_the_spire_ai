@@ -15,6 +15,10 @@ Both games:
   Follow-up (2026-11-01): "Include graph authoring and between-battle revision now."
   Also approved extending the contact check from 360 to 540 seconds and a fresh rerun,
   preserving the failed run and every effect criterion: "Yes, extend the contact limit and rerun."
+  Follow-up (2026-11-01): "Continue to work on GaP, accrording to our plan. Run overnigjt
+  using your best judgement. If you finish early, keep going with other tasks planned".
+  Viewer check (2026-11-01): "Use this check" — raw graph/node/order/witness mappings,
+  planted wrong mappings, then both saved battles exercised in a browser.
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check

@@ -236,6 +236,11 @@ def main() -> int:
     report.add_argument("--output", type=Path, required=True, metavar="STEM",
                         help="writes STEM.txt, STEM.json and the offline field report STEM.html")
 
+    graph_view = commands.add_parser(
+        "graph-view", help="Inspect recorded graphs and their public battle trace")
+    graph_view.add_argument("paths", nargs="+", type=Path, metavar="JOB_OR_EPISODE")
+    graph_view.add_argument("--output", type=Path, required=True, help="offline .html page")
+
     export = commands.add_parser("export", help="Export saved model decisions for post-training")
     export.add_argument("paths", nargs="*", type=Path, metavar="JOB_OR_EPISODE")
     export.add_argument("--jobs-file", type=Path, help="JSON list of job or episode paths")
@@ -533,6 +538,16 @@ def main() -> int:
         write_json(stem.with_name(stem.name + ".json"), data)
         stem.with_name(stem.name + ".txt").write_text(text + "\n")
         print(text)
+        return 0
+
+    if args.command == "graph-view":
+        from twwarhammer3.battle import graph_view
+
+        try:
+            output = graph_view.write(args.paths, args.output)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            parser.error(str(exc))
+        print(output)
         return 0
 
     if args.command == "spend":

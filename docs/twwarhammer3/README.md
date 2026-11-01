@@ -166,6 +166,7 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    configured.py (JSON controller composition), graph.py (resumable graph
                    nodes), skill_contracts.py (typed skills and public effect witnesses),
                    graph_author.py (offline multi-LLM authoring and whole-battle revision),
+                   graph_view.py and graph_view_assets/ (recorded graph/battle inspection),
                    calibration.py (disclosed scenario diagnostics),
                    cards.py (tactic cards: foils, witness, admission rule, board and
                    verdict; backs `card`), capture.py (1 Hz replay recorder and stills),
@@ -200,6 +201,7 @@ uv run python -m twwarhammer3 watch JOB --next            # wait for an episode,
 uv run python -m twwarhammer3 digest JOB[/episode-NNNN]   # per-episode table, or one battle
 uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decision in full
 uv run python -m twwarhammer3 digest JOB[/episode-NNNN] --units  # unit fates and refusals
+uv run python -m twwarhammer3 graph-view JOB [JOB ...] --output runs/twwarhammer3/reports/graphs.html
 uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
 uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # board; add paths for a verdict
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME

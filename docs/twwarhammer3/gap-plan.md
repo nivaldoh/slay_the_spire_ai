@@ -357,6 +357,22 @@ New artifacts may be unchanged; a revision is not evidence of learning or improv
 
 ## A first test graph
 
+Inspect recorded executions with the offline viewer (no game or model call):
+
+```bash
+uv run --locked python -m twwarhammer3 graph-view \
+  runs/twwarhammer3/battle/gap-initial-02-20261101 \
+  runs/twwarhammer3/battle/gap-revised-01-20261101 \
+  --output runs/twwarhammer3/reports/gap-20261101.html
+```
+
+Open the HTML file in a browser. Select a member, seek by battle time or step through
+events. The graph is the recorded configuration; unit positions come from public trace
+observations without interpolation. Orders, engine acknowledgements and node results have
+their own events and source rows. A ready successor has not started yet. The view preserves
+source observation time and the later collection/dispatch/application bounds; it does not
+reconstruct exact Python execution times, infer missing witnesses or score graphs.
+
 This graph tests the machinery, not strength. It uses the current team split: `cavalry` owns
 the Knights, `line` every other unit.
 

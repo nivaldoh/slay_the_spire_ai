@@ -15,6 +15,17 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 GaP execution viewer (agreed 2026-11-01, owner: "Use this check"): compare graph
+  identity, node transitions, ordinary orders, acknowledgements and completion witnesses
+  against raw configuration/trace rows; plant wrong mappings, then exercise both saved
+  battles in a browser. Reader command: `uv run --locked pytest -ra
+  tests/twwarhammer3/graph/test_wh3_graph_view.py`. Browser command:
+  `NODE_PATH=~/.cache/wh3-playwright/node_modules node
+  tests/twwarhammer3/graph/check_wh3_graph_view.cjs OUTPUT_DIR PAGE.html EPISODE [EPISODE ...]`.
+  Browser cases must use raw trace/result records, not the collector's JSON as their reference.
+  The view must distinguish source and collection times, ready and started nodes, and
+  acceptance and completion. No interpolation or inferred missing effects. Evidence:
+  `runs/gap-continuation-20261101/`; checked revisions are recorded after the first commit.
 - WH3 initial GaP (agreed 2026-10-31): offline graph typing, branches/loops,
   effect-based completion, independent team progress, stale targets, public information
   boundaries, fresh episodes and canned multi-LLM author/revision replies, with planted

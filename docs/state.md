@@ -6,8 +6,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) initial delivery complete; [evidence](twwarhammer3/log.md#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke).
-Author/battle/revision smoke finished; $0.01304 of $5. No strength or learning established.
+Codex: [GaP](twwarhammer3/gap-plan.md) continues: [graph viewer](http://localhost:8765/gap-20261101.html) built; live target preferences next.
+No game runs; $0.01304 of $5 spent. `runs/gap-continuation-20261101/brief.md`; benchmark choices deferred.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
 Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.

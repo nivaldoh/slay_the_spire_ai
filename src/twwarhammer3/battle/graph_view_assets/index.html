@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GaP · Recorded graph execution</title>
+    <style>
+      /* GRAPH_VIEW_CSS */
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">GaP · Recorded execution</p>
+        <h1>Watch a graph control its units</h1>
+      </div>
+      <label>Battle<select id="episode" aria-label="Battle"></select></label>
+    </header>
+    <p id="outcome"></p>
+    <main>
+      <section class="controls" aria-label="Replay controls">
+        <button id="play" type="button">Play replay</button>
+        <button id="previous" type="button" aria-label="Previous event">← Event</button>
+        <button id="next" type="button" aria-label="Next event">Event →</button>
+        <input id="time" type="range" step="100" aria-label="Battle time" /><output
+          id="clock"
+        ></output>
+        <label
+          >Replay speed<select id="speed">
+            <option value="1">1×</option>
+            <option value="4" selected>4×</option>
+            <option value="16">16×</option>
+          </select></label
+        >
+      </section>
+      <section class="workspace">
+        <article class="graph-panel">
+          <div class="panel-heading">
+            <h2>What the graph does</h2>
+            <label>Member<select id="member" aria-label="Member"></select></label>
+          </div>
+          <p id="state" role="status"></p>
+          <svg id="graph" aria-label="Frozen graph"></svg>
+          <p class="legend">
+            <span class="running-key">● Running</span> ·
+            <span class="next-key">◌ Next, not started</span> · Hover a node for all exits.
+          </p>
+        </article>
+        <article class="map-panel">
+          <h2>What the game observed</h2>
+          <p id="frame-time"></p>
+          <svg id="map" viewBox="0 0 580 370" aria-label="Recorded public unit positions"></svg>
+          <p class="legend">● This member · ○ Other friendly units · ◆ Visible enemies · North ↑</p>
+        </article>
+      </section>
+      <section class="evidence-panel">
+        <div class="panel-heading">
+          <h2 id="caption">Recorded events</h2>
+          <label
+            >Event list<select id="filter">
+              <option value="results">Orders, contact and skill results</option>
+              <option value="all">All node events</option>
+            </select></label
+          >
+        </div>
+        <p id="event-time"></p>
+        <div class="evidence-grid">
+          <select id="events" size="5" aria-label="Recorded events"></select>
+          <div>
+            <p id="evidence"></p>
+            <details>
+              <summary>Source record and graph inputs</summary>
+              <pre id="record"></pre>
+            </details>
+          </div>
+        </div>
+      </section>
+      <details class="method">
+        <summary>How to read this view</summary>
+        <p>
+          Positions come from public observations. They are not interpolated. Enemy positions appear
+          only in frames where the enemy was visible. The graphs are the ones saved in this battle’s
+          controller card.
+        </p>
+        <p>
+          Event time is no earlier than its source observation and the latest observation already
+          collected at its trace row. Orders also use their dispatch time; acknowledgements also use
+          their application time. These are recorded bounds, not measurements of Python execution
+          time.
+        </p>
+        <p>
+          “Accepted” means the engine accepted an order. A graph reports completion separately,
+          using its recorded witness. Repeated completions can describe an existing engagement. A
+          local cancellation sends no halt order. Replay speed changes only this offline view.
+        </p>
+        <p>
+          This view does not score graphs, infer missing effects or establish tactical strength or
+          learning.
+        </p>
+        <pre id="provenance"></pre>
+      </details>
+    </main>
+    <script id="graph-data" type="application/json">
+      /* GRAPH_VIEW_DATA */
+    </script>
+    <script>
+      /* GRAPH_VIEW_JS */
+    </script>
+  </body>
+</html>
