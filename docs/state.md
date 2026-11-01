@@ -18,7 +18,9 @@ team also failed in between, on a UI stat and on WSL clock jumps); b52, an unuse
 compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 Built (Claude Code, 2026-10-31): [multi-agent.html](multi-agent.html), the animated diagram (claims checked
-at `21f6204`); owner: "looks good", detailed review later (2026-10-31). Step 6 (measured replay) merged.
+at `21f6204`). Owner 2026-11-01: it becomes a whole-repo "How the code works" map with short stories
+([plan](how-code-works-plan.md), answered). Claude Code builds its pilot tonight (2026-11-01) in
+`../slay_the_spire_ai-howcode`, branch `how-code-works`; $0, no game; `runs/how-code-works-20261101/`.
 
 Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; no battle or run yet.
 

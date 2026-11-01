@@ -5,6 +5,22 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-01 (visual docs): "I like the general idea of helping me quickly understand how the
+  code works in a visual, concrete, simple, intuitive way. That's by far the most important
+  thing about that." Earlier (2026-10-31): make it "the main way I understand the structure of
+  our codebase and execution of the code", keep it current as part of the factory, and avoid
+  updating it "after every single commit". On the [plan](how-code-works-plan.md): "My answers:
+  1a, 2a, 3a. About the three questions that need my 'yes', I agree with them." So:
+  - `multi-agent.html` becomes a "How the code works" map of the whole repo, plus short
+    stories built on real battles; today's tabs are frozen as an appendix;
+  - refreshes run as away-window upkeep or on request, at most weekly and at most 100 API calls
+    each;
+  - small excerpts of recorded battles are committed in `docs/`, publicly: a standing exception
+    to "run evidence stays out of Git";
+  - three 2026-10-31 build answers change: a flagging script in `check.py` with 2-3 tests of the
+    script; planned parts hidden by default; status colours behind a switch.
+
+  The plan's other defaults were not answered one by one.
 - 2026-10-31 (GaP): implement the existing plan autonomously; initial minimal implementation,
   interchangeable battle controllers, clean code and proper tests. Up to $5 in paid calls,
   using a cheap Anthropic model. Approved first library: existing move/hold/engage/shoot/charge
