@@ -13,12 +13,13 @@ from pathlib import Path
 
 from gameai.llm import Model, api_key, check_fields, post
 from gameai.provenance import git, sha256, write_json
-from twwarhammer3.battle import configured, graph, graph_goals, skills, team
+from twwarhammer3.battle import configured, graph, graph_goals, graph_initiation, skills, team
 from twwarhammer3.battle import skill_contracts as catalog
 from twwarhammer3.battle.llm import MAX_OUTPUT_TOKENS
 
 ARTIFACT_TYPE = "wh3-graph-author"
-VERSION = f"{ARTIFACT_TYPE}-v3"
+VERSION = f"{ARTIFACT_TYPE}-v4"
+LEGACY_VERSION = f"{ARTIFACT_TYPE}-v3"
 # JUDGEMENT: Author limits — Codex, 2026-11-01: one repair, latest 12 views/orders/acks
 # per member and 2000 characters per coordinator task. More history or attempts changes
 # what authors can learn and spend; this is a bounded baseline, not a learning study.
@@ -127,7 +128,9 @@ def load_artifact(directory, library=None):
     manifest = json.loads((directory / "manifest.json").read_text())
     data, digest = read_bytes(directory / "controller.json")
     candidate = json.loads(data)
-    if (manifest.get("artifact_type") != ARTIFACT_TYPE or manifest.get("version") != VERSION
+    version = manifest.get("version")
+    if (manifest.get("artifact_type") != ARTIFACT_TYPE
+            or version not in (VERSION, LEGACY_VERSION)
             or manifest.get("status") != "ready"
             or manifest.get("controller_sha256") != digest):
         raise ValueError("previous candidate is incomplete or changed")
@@ -140,6 +143,19 @@ def load_artifact(directory, library=None):
         spec = member["controller"]
         (graph_goals.validate_graph if spec["type"] == "graph_llm" else graph.validate)(
             spec["graph"])
+    initiation = manifest.get("initiation_check")
+    if version == VERSION:
+        names = manifest.get("initiators")
+        if (not isinstance(names, list) or any(not isinstance(n, str) for n in names)
+                or len(set(names)) != len(names) or "initiation_check" not in manifest
+                or bool(names) != (initiation is not None)
+                or (initiation is not None and initiation.get("initiators") != names)):
+            raise ValueError("candidate initiation requirement or proof is missing or changed")
+    elif "initiation_check" in manifest or "initiators" in manifest:
+        raise ValueError("legacy artifact cannot carry new initiation requirements")
+    if initiation is not None and initiation.get("reports") != graph_initiation.reports(
+            candidate, initiation):
+        raise ValueError("candidate initiation proof differs from its graphs or starting views")
     return candidate, {"directory": str(directory.resolve()), "controller_sha256": digest,
                        "library_sha256": manifest["library_sha256"]}
 
@@ -234,18 +250,31 @@ def coordinator_schema(names):
 
 
 def generate(template_path, task, output, ledger, *, model, effort="low", provider="anthropic",
-             previous=None, evidence=None, send=None):
+             previous=None, evidence=None, starting_episode=None, initiators=(), send=None):
     """A new immutable candidate; a caller explicitly chooses whether a later job runs it."""
     template, library = load_template(template_path, provider=provider), frozen_library()
     if not isinstance(task, str) or not task.strip():
         raise ValueError("a public task is required")
     if bool(previous) != bool(evidence):
         raise ValueError("revision requires both --previous and --evidence")
+    if bool(starting_episode) != bool(initiators):
+        raise ValueError("initiation check requires --starting-episode and --initiator together")
+    initiation = (graph_initiation.starting_views(starting_episode, template, initiators)
+                  if starting_episode else None)
     parent, parent_record, feedback, evidence_record = None, None, {}, None
     if previous:
         parent, parent_record = previous_artifact(previous, template, library)
         feedback, evidence_record = public_feedback(
             evidence, parent, parent_record["library_sha256"])
+        parent_initiation = json.loads((Path(previous) / "manifest.json").read_text()).get(
+            "initiation_check")
+        if parent_initiation is not None:
+            if initiation is None:
+                initiation = deepcopy(parent_initiation)
+                initiation.pop("reports", None)
+                initiators = tuple(initiation["initiators"])
+            elif set(initiators) != set(parent_initiation["initiators"]):
+                raise ValueError("revision must preserve the caller-declared initiators")
     output = Path(output)
     output.mkdir(parents=True)
     manifest = {"artifact_type": ARTIFACT_TYPE, "version": VERSION,
@@ -256,7 +285,8 @@ def generate(template_path, task, output, ledger, *, model, effort="low", provid
                 "model": model, "effort": effort, "provider": provider,
                 "ledger": str(ledger.path.resolve()), "budget_usd": ledger.budget,
                 "feedback_limit": FEEDBACK_LIMIT, "retries": RETRIES,
-                "instructions": INSTRUCTIONS, "parent": parent_record, "evidence": evidence_record}
+                "instructions": INSTRUCTIONS, "parent": parent_record, "evidence": evidence_record,
+                "initiators": list(initiators), "initiation_check": initiation}
     write_json(output / "manifest.json", manifest)
     api = None
     call_count = 0
@@ -298,25 +328,40 @@ def generate(template_path, task, output, ledger, *, model, effort="low", provid
                     "members": authority(template)["members"], "skills": DESCRIPTIONS,
                     "previous_graphs": {n: m["controller"]["graph"]
                                         for n, m in parent["members"].items()} if parent else None,
-                    "reply": "Assign exactly one short task per member; return tasks."},
+                    "reply": "Assign exactly one short task per member; return tasks.",
+                    **({"must_initiate_before_contact": list(initiators)} if initiation else {})},
                     schema, parse_tasks)
         candidate = deepcopy(template)
 
-        def parse_graph(text, *, live_goals=False):
+        def parse_graph(text, *, live_goals=False, starting_view=None):
             value = check_fields(json.loads(text), GRAPH_REPLY)
             validator = graph_goals.validate_graph if live_goals else graph.validate
-            return validator(json.loads(value["graph_json"]))
+            spec = validator(json.loads(value["graph_json"]))
+            if starting_view is not None:
+                graph_initiation.check(spec, starting_view)
+            return spec
 
         for name in names:
             live_goals = candidate["members"][name]["controller"]["type"] == "graph_llm"
+            starting_view = initiation["views"].get(name) if initiation else None
             spec = ask(name, {"role": "specialist", "member": name, "task": tasks[name],
                        "library": library, "ownership": authority(template)["members"][name],
                        "previous_graph": parent["members"][name]["controller"]["graph"]
                        if parent else None, "public_feedback": feedback.get(name),
-                       "reply": "Return graph_json containing the complete graph JSON."},
-                       GRAPH_REPLY, partial(parse_graph, live_goals=live_goals))
+                       "reply": "Return graph_json containing the complete graph JSON.",
+                       **({"must_initiate_before_contact": True,
+                           "public_starting_view": starting_view,
+                           "initiation_check": "Your graph must allow an owned attack on a visible "
+                           "enemy before anyone is in melee. Do not require an already-engaged "
+                           "enemy or wait for a teammate to start. Valid move/hold exits may be "
+                           "followed; this check does not simulate movement or prove effects."}
+                          if starting_view is not None else {})},
+                       GRAPH_REPLY, partial(parse_graph, live_goals=live_goals,
+                                            starting_view=starting_view))
             controller = candidate["members"][name]["controller"]
             controller["graph"] = spec
+        if initiation is not None:
+            initiation["reports"] = graph_initiation.reports(candidate, initiation)
         write_json(output / "controller.json", candidate)
         manifest.update(status="ready", controller_sha256=sha256(output / "controller.json"),
                         graphs={n: graph.digest(m["controller"]["graph"])

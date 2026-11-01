@@ -190,6 +190,11 @@ def main() -> int:
     author.add_argument("--output", type=Path, required=True, help="new artifact directory")
     author.add_argument("--previous", type=Path, help="previous ready artifact, for revision")
     author.add_argument("--evidence", type=Path, help="completed episode that ran --previous")
+    author.add_argument("--starting-episode", type=Path,
+                        help="recorded episode supplying public pre-melee starting views")
+    author.add_argument("--initiator", action="append", default=[], metavar="MEMBER",
+                        help="member that must have an attack route before contact "
+                             "(temporary check)")
     author.add_argument("--provider", choices=PROVIDERS, default="anthropic")
     author.add_argument("--model", default=None, help="default: provider's default model")
     author.add_argument("--effort", default="low")
@@ -430,7 +435,8 @@ def main() -> int:
                 args.template, args.task, args.output, ledger,
                 model=args.model or next(iter(get_provider(args.provider).prices)),
                 effort=args.effort, provider=args.provider,
-                previous=args.previous, evidence=args.evidence)
+                previous=args.previous, evidence=args.evidence,
+                starting_episode=args.starting_episode, initiators=args.initiator)
         except (ValueError, OSError, BudgetExhausted, APIError, InvalidReply) as exc:
             parser.error(str(exc))
         print(json.dumps({"output": str(args.output), "status": manifest["status"],

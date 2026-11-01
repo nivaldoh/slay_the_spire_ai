@@ -39,6 +39,11 @@ Both games:
   method" — delayed/stale replies, cancellation, ownership and independent progress
   offline, then a bounded fresh 1x probe of two eligible target preferences and their
   dispatched orders/public target readings. Existing cumulative $5 cap; no strength claim.
+  Author-initiation check (2026-11-01): "Ok, we can proceed with this solution temporarily"
+  after the concrete explanation: infantry's plan must let it start combat before anyone
+  is already fighting; cavalry may wait. Catch circular waiting before launch and give
+  the author its existing repair chance. Public starting-state check only; no live-effect
+  or strength claim, and no permanent benchmark rule.
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check

@@ -192,6 +192,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   graphs
 - `src/twwarhammer3/battle/graph_author.py`: offline multi-LLM authoring and whole-battle
   revision
+- `src/twwarhammer3/battle/graph_initiation.py`: temporary pre-contact attack-path check
+  for caller-declared initiators
 - `src/twwarhammer3/battle/graph_view.py`: recorded graph/battle inspection
 - `src/twwarhammer3/battle/graph_view_assets/`: the graph view's page, script and style
 - `src/twwarhammer3/battle/checkpoint.py`: battle checkpoints: save, fast checked rebuild,

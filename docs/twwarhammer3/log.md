@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: temporary author-initiation check catches circular waiting
+
+- Owner approved temporarily: infantry must have a way to start combat; cavalry may wait.
+  Author v4 adds `--starting-episode EPISODE --initiator line`; a rejected initiator reply
+  uses the existing repair allowance. Revisions inherit the caller's declaration.
+- Only first public member inputs reach the check. Saved artifacts bind the declared
+  members, public view, graph, checker and source metadata. Legacy v3 without the new
+  fields remains readable with the same frozen library; no old artifact is rewritten.
+- Final focused set: 249 passed. Both actual stalled line graphs reject; both one-field
+  nearest-target drafts produce owned f1-to-e2 attacks in the starting-state check.
+- Review found malformed input reaching canned calls and proof removal/source-edit gaps;
+  regressions failed before fixes. It also caught idle out-of-range artillery acceptance.
+- Checker sweeps: initial 7/9, then 9/9; later 11/12 exposed a preprojection test gap.
+  Final 12/12 caught (80 baseline), no hangs. Author v4: 21/21 caught; 3 semantic plants
+  caught. Independent final report: `runs/gap-initiation-20261101/review/report-final.txt`.
+- Semantics rest on JUDGEMENT `graph_initiation.py` Temporary initiation semantics:
+  possible move/hold exits do not prove effects, universal progress, learning or strength.
+  Full gate/pinned-revision pass pending; no new game or paid call in this implementation.
+- Next: one actual revision of the stalled plan with this check and the original task,
+  library/settings and cumulative $5 cap; stop on failure. A live rerun needs a current PC window.
+
 ## 2026-11-01: the "How the code works" page: map, three stories, flags (merged)
 
 - Plan [how-code-works-plan.md](../how-code-works-plan.md) (answers 1a, 2a, 3a), merged as

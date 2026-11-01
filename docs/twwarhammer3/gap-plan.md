@@ -346,8 +346,28 @@ wait for an already-engaged enemy, while cavalry also waited for contact. Both t
 and revised whole battles lost at the timer without orders or live model requests;
 revision left the line's restriction unchanged. The software path and artifact/public
 feedback checks passed, but those generated graphs did not initiate engagement.
-An offline public-starting-state progress check for a declared initiator is proposed;
-the owner's answer is pending. This is separate from the passed live target dispatch check.
+The owner approved a temporary pre-battle initiation check on 2026-11-01: "Ok, we can
+proceed with this solution temporarily." A caller names the initiator; its graph must
+have a route to an owned attack before contact. Waiting members are exempt. A rejected
+specialist reply uses the existing repair allowance, with every attempt retained.
+The optional author arguments are `--starting-episode EPISODE --initiator line` (repeat
+`--initiator` for more members). Only first public member views from the supplied episode
+are used; no final/evaluation/setup evidence reaches the check or prompts. The coordinator
+cannot override the caller's declaration. The immutable artifact records views, source
+hashes and check reports, which are rechecked when loaded. Existing artifacts stay intact.
+Revisions inherit that requirement when flags are omitted and cannot reassign the initiator.
+This temporary path check allows possible move/hold exits; it does not simulate their
+effects or guarantee every branch progresses. It rests on JUDGEMENT
+`battle/graph_initiation.py` Temporary initiation semantics. This is separate from the
+passed live target dispatch check; no new live or strength result yet.
+
+Bounded follow-up after the check's committed offline pass: one new revision of the
+existing `live-revised-01`, using that battle's public evidence and first public views,
+the same task, frozen library, authority and Haiku settings, within the cumulative $5.
+Use only the existing repair allowance; retain a failure and stop rather than generate
+another candidate. This produces an inspectable corrected plan, not a gameplay result.
+Card: `runs/gap-initiation-20261101/author-followup-card.md`. A live rerun needs a current
+PC window; the earlier availability was overnight.
 
 ### Authoring and revision command
 
@@ -357,9 +377,11 @@ ordinary runtime composition still accepts graphs, scripts and direct model memb
 The coordinator receives the public task, fixed ownership and skill summaries. Each
 specialist receives the detailed frozen library and its own prior graph and permitted
 feedback. Model replies contain graph JSON; they cannot change Python skills or ownership.
-Author v3 also accepts `graph_llm` templates and preserves their model/task/request limits;
-authors can only replace their graphs. Older artifacts remain immutable and require their
-original library/revision; they are not silently accepted under the changed source pin.
+Author v4 accepts `graph_llm` templates and preserves their model/task/request limits;
+authors can only replace their graphs. It stores the caller's initiator declaration
+separately from the proof, so dropping a proof cannot disable the requirement. Existing
+v3 artifacts without initiation metadata remain readable with the same frozen library;
+older incompatible libraries/versions require their original revision. No artifact is rewritten.
 
 ```bash
 uv run --locked python -m twwarhammer3 graph-author \

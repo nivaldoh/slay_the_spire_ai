@@ -15,6 +15,19 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 GaP temporary author-initiation check (agreed 2026-11-01, owner: "Ok, we can proceed
+  with this solution temporarily"): a caller-declared initiator must have an attack route
+  before contact; waiting members remain allowed. Reject a stalled specialist reply via
+  the existing limited repair, retaining rejected attempts and charges. Check the first
+  permitted member starting view; private/outcome changes must not change model inputs.
+  Command: `uv run --locked pytest -ra
+  tests/twwarhammer3/graph/test_wh3_graph_initiation.py`.
+  Check stalled/fixed graphs, contact branches, move-before-attack, invalid identities,
+  projection, repair/exhaustion, revision and saved proof identity; plant an always-pass
+  check, wrong contact branch and accidental checking of waiting members.
+  This is an optimistic control-flow check: possible skill exits do not prove movement,
+  contact, completion, universal progress or strength. Semantics rest on JUDGEMENT
+  `battle/graph_initiation.py` Temporary initiation semantics. Not yet passed at a revision.
 - WH3 GaP live target preferences (agreed 2026-11-01, owner: "I agree with the proposed
   live verification method"): delayed/stale replies, cancellation, ownership, independent
   graph/team progress, fresh instances, public inputs and shared budgets; canned replies
