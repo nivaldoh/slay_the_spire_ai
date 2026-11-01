@@ -454,6 +454,18 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "scripts/diagram_files.py",
+   "text": "the page's file lists, from these lists and the map's boxes",
+   "box": "map.factory",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "scripts/diagram_examples.py",
+   "text": "small excerpts of a recorded battle for the page's stories",
+   "box": "map.factory",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "scripts/sft_smoke.py",
    "text": "a minimal local LoRA fine-tuning smoke test (CUDA only)",
    "box": "map.posttraining",
@@ -508,12 +520,6 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "scripts/wh3_queue.py",
-   "text": "the plan format is in its docstring. It refuses to start unless HEAD is the plan's `source_revision` with a clean source scope, and it stops at the first job that fails (or the second in a row with `keep_going`) or whose rematch started with a changed roster, strength, loadout or resources; a `PLAN-stop` file or the plan's `start_before` time ends it between jobs.",
-   "box": "map.factory",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "src/spire/__main__.py",
    "text": "CLI: doctor, play, digest, watch, spend, stats, export (full runs); rollout, evaluate, train, report (first combat)",
    "box": "map.spire",
@@ -545,7 +551,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/spire/engine/bridge.py",
-   "text": "the relay bridge: one TCP session to CommunicationMod",
+   "text": "the relay bridge: one TCP session to the CommunicationMod relay",
    "box": "map.spire",
    "list": "docs/spire/AGENTS.md"
   },

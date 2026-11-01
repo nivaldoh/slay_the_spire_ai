@@ -7867,6 +7867,22 @@ nav .frozen button {
 .unit.enemy rect {
   fill: var(--missing);
 }
+.unit.routing rect {
+  fill: #fff;
+  stroke-width: 2;
+}
+.unit.friendly.routing rect {
+  stroke: var(--member-a);
+}
+.unit.enemy.routing rect {
+  stroke: var(--missing);
+}
+#panel .message.tall pre {
+  max-height: 340px;
+}
+#panel code {
+  font: 12px var(--mono);
+}
 .unit text {
   font: 600 10.5px var(--sans);
   fill: var(--ink);
@@ -8622,8 +8638,7 @@ function flagsOf(tab) {
   return (DIAGRAM_FLAGS && DIAGRAM_FLAGS.views && DIAGRAM_FLAGS.views[tab.id]) || null;
 }
 function drawUnitMap(map) {
-  const { example } = map;
-  const [x0, x1, z0, z1] = example.bounds;
+  const [x0, x1, z0, z1] = map.bounds || map.example.bounds;
   const W = 324;
   const H = 180;
   const pad = 16;
@@ -8662,7 +8677,7 @@ function drawUnitMap(map) {
     unit.labelY = y;
   }
   for (const unit of map.units) {
-    const g = svg("g", { class: `unit ${unit.side}` });
+    const g = svg("g", { class: `unit ${unit.side}${unit.routing ? " routing" : ""}` });
     const size = 9;
     g.append(
       svg("rect", {
@@ -8715,6 +8730,7 @@ function renderStoryNow() {
   if (message) {
     const box = el("div", null, "message");
     box.append(el("div", message.title || "", "title"), el("pre", message.text));
+    if (!step.map) box.classList.add("tall"); // no map below it: room for the whole message
     holder.append(box);
   }
   const map = resolve(step.map, "frames");
@@ -8953,6 +8969,7 @@ function renderLegend() {
     box.checked = state[key];
     box.addEventListener("change", () => {
       state[key] = box.checked;
+      box.blur(); // the arrow keys step the story again
       applySwitches();
       if (redraw) {
         drawCanvas();
@@ -9016,7 +9033,7 @@ function renderAll(stepIndex) {
   }
   const banner =
     flags && flags.flagged
-      ? `Out of date: ${flags.reasons.length} flags from check.py on ${DIAGRAM_FLAGS.date}; turn on Sources to see them.`
+      ? `Out of date: ${flags.reasons.length} ${flags.reasons.length === 1 ? "flag" : "flags"} from check.py on ${DIAGRAM_FLAGS.date}; turn on Sources to see them.`
       : tab.banner;
   $("banner").hidden = !banner;
   $("banner").textContent = banner || "";

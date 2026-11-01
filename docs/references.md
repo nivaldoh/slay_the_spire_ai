@@ -460,6 +460,38 @@ provider; [React Flow](https://reactflow.dev/examples/edges/animating-edges) nee
 [Dashmotion](https://github.com/csthink/dashmotion) also moves dashes, and on this
 page dashes mean "planned". *Checked.*
 
+## How the code works page (2026-11-01)
+
+For the [plan](how-code-works-plan.md) that turns `multi-agent.html` into a whole-repo map plus
+short stories. Each quote was checked against a saved copy on 2026-11-01
+(`runs/diagram-upkeep-plan-20261031/pass2/`, `python3 -I pass2/verify_quotes.py
+pass2/quotes.json`: every quote found, 0 missing). *Checked* means those quotes only, not the
+whole source.
+
+- [C4 model](https://c4model.com/), Simon Brown: "maps of your code" at "various levels of
+  detail"; large diagrams overload the reader; "each diagram will change at a different rate".
+  The map-then-stories split and the idea that areas change rarely follow it. *Checked.*
+- Bret Victor, [Up and Down the Ladder of Abstraction](https://worrydream.com/LadderOfAbstraction/)
+  (2011) and [Explorable Explanations](https://worrydream.com/ExplorableExplanations/) (2011):
+  move between levels; "an explorable example makes the abstract concrete". *Checked.*
+- [Diátaxis](https://diataxis.fr/explanation/), Daniele Procida: an explanation answers a "why"
+  question; explanation tends to absorb other material. Each story's title is its question.
+  *Checked.*
+- matklad, [ARCHITECTURE.md](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html) (2021):
+  a codemap answers "where's the thing that does X?" and names only what rarely changes. The
+  one-file-per-line lists follow it. *Checked.*
+- *Software Engineering at Google*, [ch. 10](https://abseil.io/resources/swe-book/html/ch10.html)
+  (Tom Manshreck): accuracy can give way to clarity; "freshness dates" with reminders after
+  three months. The 92-day review flag follows it. *Checked.*
+- [The Secret Lives of Data: Raft](https://thesecretlivesofdata.com/raft/): one small scenario,
+  one plain sentence per step; raft.github.io calls it "more guided and less interactive".
+  The story player follows it. *Checked.*
+- Weinstein, Madan and Sumeracki (2018), [Teaching the science of
+  learning](https://pmc.ncbi.nlm.nih.gov/articles/PMC5780548/): concrete examples help
+  understanding; LeFevre and Dixon (1986), as it reports: when examples and instructions
+  disagreed, students followed the examples. So examples are copied by script. *Checked*
+  (the review only; LeFevre and Dixon *secondary*).
+
 ## GitHub Actions
 
 For `.github/workflows/check.yml` (2026-10-29):

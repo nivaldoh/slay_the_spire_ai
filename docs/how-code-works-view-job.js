@@ -16,9 +16,27 @@ DIAGRAM.tabs.push({
   "example": "job",
   "size": [1000, 470],
   "bands": [
-    { "where": "Windows game", "x": 0, "y": 0, "w": 1000, "h": 120 },
-    { "where": "WSL Python", "x": 0, "y": 128, "w": 1000, "h": 258 },
-    { "where": "cloud API", "x": 0, "y": 394, "w": 1000, "h": 76 }
+    {
+      "where": "Windows game",
+      "x": 0,
+      "y": 0,
+      "w": 1000,
+      "h": 120
+    },
+    {
+      "where": "WSL Python",
+      "x": 0,
+      "y": 128,
+      "w": 1000,
+      "h": 258
+    },
+    {
+      "where": "cloud API",
+      "x": 0,
+      "y": 394,
+      "w": 1000,
+      "h": 76
+    }
   ],
   "elements": [
     {
@@ -47,7 +65,7 @@ DIAGRAM.tabs.push({
       "w": 185,
       "h": 60,
       "note":
-        "Our Lua script inside the battle: it writes the state our side can see and applies orders.",
+        "Our Lua script inside the battle: it writes the battle state, with enemy units only while our side can see them, and applies orders.",
       "status": "built, component tests only",
       "refs": [
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1-6",
@@ -65,9 +83,9 @@ DIAGRAM.tabs.push({
       "w": 210,
       "h": 60,
       "note":
-        "menu.json, observation.json and orders.json: the only way the Python side and the game's scripts talk.",
+        "session.json, menu.json and orders.json from the Python side; observation.json, menu.log and mod.log from the game. These files are the only way the two sides talk.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/engine/mailbox.py:1-3"]
+      "refs": ["src/twwarhammer3/engine/mailbox.py:1-3", "src/twwarhammer3/engine/mailbox.py:11-28"]
     },
     {
       "id": "job.frontend",
@@ -167,9 +185,9 @@ DIAGRAM.tabs.push({
       "w": 200,
       "h": 52,
       "note":
-        "Every state, model exchange, decision and acknowledgement, plus the result. Kept under runs/, not in Git.",
+        "The states the model decided from, every model exchange, decision and acknowledgement, and the result; the 1 Hz frames go to replay.jsonl. Kept under runs/, not in Git.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:161"]
+      "refs": ["src/twwarhammer3/battle/play.py:274", "src/twwarhammer3/battle/play.py:358"]
     },
     {
       "id": "job.results",
@@ -312,7 +330,7 @@ DIAGRAM.tabs.push({
       "to": "job.evidence",
       "label": "trace rows",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:1"]
+      "refs": ["src/twwarhammer3/battle/play.py:274", "src/twwarhammer3/battle/play.py:358"]
     },
     {
       "id": "job.play>results",
@@ -339,21 +357,30 @@ DIAGRAM.tabs.push({
       "speed": 0.25,
       "steps": [
         {
-          "caption":
-            "The queue runs one play command: GLM 5.3 will command our side in one custom battle.",
-          "dots": [["job.queue>play"]],
+          "caption": "The queue runs one play command, and the play job launches the game.",
+          "dots": [["job.queue>play", "job.play>game"]],
           "box": "job.play",
-          "message": { "example": "job", "key": "command" },
-          "refs": ["scripts/wh3_queue.py:1-3", "src/twwarhammer3/battle/play.py:105"]
+          "message": {
+            "example": "job",
+            "key": "command"
+          },
+          "refs": [
+            "scripts/wh3_queue.py:1-3",
+            "src/twwarhammer3/battle/play.py:105",
+            "src/twwarhammer3/battle/play.py:186-197"
+          ]
         },
         {
           "caption":
-            "The play job launches the game, and the menu script clicks through the custom battle screen.",
-          "dots": [["job.play>game"], ["job.setup>play", "job.play>files", "job.files>frontend"]],
+            "The menu script clicks through the custom battle screen, following steps the play job wrote to menu.json.",
+          "dots": [["job.setup>play", "job.play>files", "job.files>frontend"]],
           "box": "job.frontend",
-          "message": { "example": "job", "key": "setup" },
+          "message": {
+            "example": "job",
+            "key": "setup"
+          },
           "refs": [
-            "src/twwarhammer3/battle/play.py:186-197",
+            "src/twwarhammer3/battle/play.py:114",
             "src/twwarhammer3/battle/play.py:243",
             "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua:1-9"
           ]
@@ -363,8 +390,14 @@ DIAGRAM.tabs.push({
             "The battle starts: our Swordsmen and Knights against three enemy Swordsmen, on a very hard setting.",
           "dots": [["job.battle>files", "job.files>play"]],
           "box": "job.battle",
-          "message": { "example": "job", "key": "start" },
-          "map": { "example": "job", "key": "r1" },
+          "message": {
+            "example": "job",
+            "key": "start"
+          },
+          "map": {
+            "example": "job",
+            "key": "start"
+          },
           "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762"]
         },
         {
@@ -374,8 +407,14 @@ DIAGRAM.tabs.push({
             ["job.play>policy", "job.policy>provider", "job.provider>policy", "job.policy>play"]
           ],
           "box": "job.policy",
-          "message": { "example": "job", "key": "r1" },
-          "map": { "example": "job", "key": "r1" },
+          "message": {
+            "example": "job",
+            "key": "r1"
+          },
+          "map": {
+            "example": "job",
+            "key": "r1"
+          },
           "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/battle/llm.py:1"]
         },
         {
@@ -383,8 +422,14 @@ DIAGRAM.tabs.push({
             "The battle never waits for the model: orders based on the 79.7 s state apply at 83.0 s.",
           "dots": [["job.play>files", "job.files>battle"]],
           "box": "job.battle",
-          "message": { "example": "job", "key": "r25" },
-          "map": { "example": "job", "key": "r25" },
+          "message": {
+            "example": "job",
+            "key": "r25"
+          },
+          "map": {
+            "example": "job",
+            "key": "r25"
+          },
           "refs": [
             "src/twwarhammer3/engine/mailbox.py:212",
             "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1375-1377"
@@ -397,28 +442,36 @@ DIAGRAM.tabs.push({
             ["job.play>policy", "job.policy>provider", "job.provider>policy", "job.policy>play"]
           ],
           "box": "job.policy",
-          "message": { "example": "job", "key": "r88" },
-          "map": { "example": "job", "key": "r88" },
+          "message": {
+            "example": "job",
+            "key": "r88"
+          },
+          "map": {
+            "example": "job",
+            "key": "r88"
+          },
           "refs": ["src/twwarhammer3/battle/llm.py:1"]
         },
         {
           "caption":
             "The engine reports a loss at 335 s; the play job records the episode and appends one results.csv row.",
-          "dots": [
-            ["job.battle>files", "job.files>play"],
-            ["job.play>evidence"],
-            ["job.play>results"]
-          ],
+          "dots": [["job.battle>files", "job.files>play", "job.play>results"]],
           "box": "job.results",
-          "message": { "example": "job", "key": "row" },
+          "message": {
+            "example": "job",
+            "key": "row"
+          },
           "refs": ["src/twwarhammer3/battle/play.py:161", "src/twwarhammer3/battle/stats.py:1-3"]
         },
         {
           "caption":
             "Later, report reads the episode files offline; this report was built for this page, not the published one.",
-          "dots": [["job.evidence>report"]],
+          "dots": [["job.play>evidence", "job.evidence>report"]],
           "box": "job.report",
-          "message": { "example": "job", "key": "report" },
+          "message": {
+            "example": "job",
+            "key": "report"
+          },
           "refs": [
             "src/twwarhammer3/battle/report.py:1",
             "configs/twwarhammer3/benchmark_jobs.json"

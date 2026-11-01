@@ -8,17 +8,38 @@ DIAGRAM.tabs.push({
   "title": "Map",
   "question": "What are the parts of this repo, and how do they connect?",
   "takeaway":
-    "A play job runs one battle at a time in the real game; everything else prepares, checks or reads those battles.",
+    "A WH3 play job runs one battle at a time in the real game; most other parts prepare, check or read those battles.",
   "summary":
     "Twelve areas, in the bands where they run. Click a box for what it does, the command that starts it, its stories and its files.",
   "commit": "7bf32e6",
   "reviewed": "2026-11-01",
-  "facts": { "providers": ["openai", "openrouter", "anthropic"] },
+  "facts": {
+    "providers": ["openai", "openrouter", "anthropic"],
+    "hidden_keys": ["evaluation", "final", "setup", "native"]
+  },
   "size": [1060, 572],
   "bands": [
-    { "where": "Windows game", "x": 0, "y": 0, "w": 1060, "h": 96 },
-    { "where": "WSL Python", "x": 0, "y": 104, "w": 1060, "h": 398 },
-    { "where": "cloud API", "x": 0, "y": 508, "w": 1060, "h": 64 }
+    {
+      "where": "Windows game",
+      "x": 0,
+      "y": 0,
+      "w": 1060,
+      "h": 96
+    },
+    {
+      "where": "WSL Python",
+      "x": 0,
+      "y": 104,
+      "w": 1060,
+      "h": 398
+    },
+    {
+      "where": "cloud API",
+      "x": 0,
+      "y": 508,
+      "w": 1060,
+      "h": 64
+    }
   ],
   "elements": [
     {
@@ -33,8 +54,8 @@ DIAGRAM.tabs.push({
       "h": 60,
       "state": "runs today",
       "note":
-        "Warhammer3.exe runs our Lua scripts. In a battle they write the state our side can see to observation.json and apply the orders found in orders.json.",
-      "command": "uv run python -m twwarhammer3 doctor",
+        "Warhammer3.exe runs our Lua scripts. In a battle they write observation.json, with enemy units only while our side can see them, and apply the orders found in orders.json.",
+      "command": "uv run python -m twwarhammer3 launch (or a play job)",
       "stories": ["job"],
       "files": [
         "src/twwarhammer3/engine/",
@@ -44,11 +65,15 @@ DIAGRAM.tabs.push({
         "src/gameai/windows_game.py",
         "scripts/wh3_db.py"
       ],
-      "status": "built, component tests only",
+      "status":
+        "agreed offline check: WH3 UI requests and mailbox requests (docs/agreed-checks.md:71, 79)",
       "refs": [
         "src/twwarhammer3/engine/mailbox.py:1",
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1-6",
-        "src/gameai/windows.py"
+        "src/gameai/windows.py",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289",
+        "docs/agreed-checks.md:71-74",
+        "docs/agreed-checks.md:79-82"
       ]
     },
     {
@@ -73,8 +98,12 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/scenarios.json",
         "configs/twwarhammer3/custom_battle.json"
       ],
-      "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/setup.py:1-3", "configs/twwarhammer3/scenarios.json"]
+      "status": "agreed live check: WH3 saved armies and experience (docs/agreed-checks.md:61)",
+      "refs": [
+        "src/twwarhammer3/battle/setup.py:1-3",
+        "configs/twwarhammer3/scenarios.json",
+        "docs/agreed-checks.md:61-70"
+      ]
     },
     {
       "id": "map.factory",
@@ -114,8 +143,9 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "A battle plan written as a graph of steps, each pointing to the next by outcome. A model can write or revise a graph offline, or suggest targets while it runs.",
-      "command": "twwarhammer3 play --policy configured --controller-config FILE ...",
+        "A battle plan written as a graph of steps, each pointing to the next by outcome. A model can write or revise a graph offline; target suggestions while it runs were built offline. Codex's graph view draws each recorded battle's graph and orders.",
+      "command":
+        "twwarhammer3 play --policy configured --controller-config FILE ...; to look: twwarhammer3 graph-view JOB --output runs/twwarhammer3/reports/NAME.html",
       "files": [
         "src/twwarhammer3/battle/graph.py",
         "src/twwarhammer3/battle/graph_author.py",
@@ -126,13 +156,16 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/graphs/",
         "configs/twwarhammer3/graph_goal_prompt.md"
       ],
-      "status": "agreed offline check: WH3 initial GaP, components (docs/agreed-checks.md:31)",
+      "status":
+        "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:31)",
       "refs": [
         "src/twwarhammer3/battle/graph.py:1",
         "src/twwarhammer3/battle/graph_author.py:1",
         "src/twwarhammer3/battle/graph_goals.py:1",
         "docs/agreed-checks.md:31-47",
-        "docs/twwarhammer3/gap-plan.md:358-360"
+        "docs/twwarhammer3/gap-plan.md:358-360",
+        "docs/twwarhammer3/gap-plan.md:396-398",
+        "docs/state.md:9"
       ]
     },
     {
@@ -183,7 +216,8 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/rules_prompt.md",
         "configs/twwarhammer3/commander_prompt.md"
       ],
-      "status": "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48)",
+      "status":
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); no agreed check covers the model controllers",
       "refs": [
         "src/twwarhammer3/battle/play.py:1",
         "src/twwarhammer3/battle/controllers.py:1",
@@ -204,7 +238,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "Each episode appends one results.csv row. digest, stats and report read a job's recorded files offline and print tables or write an HTML report.",
+        "Each episode appends one results.csv row. digest and report read a job's recorded files offline, and stats reads results.csv; they print tables or write an HTML report.",
       "command": "uv run python -m twwarhammer3 report JOB --output runs/twwarhammer3/reports/NAME",
       "stories": ["job"],
       "files": [
@@ -321,7 +355,7 @@ DIAGRAM.tabs.push({
     {
       "id": "map.models",
       "label": "Model calls and budget",
-      "code": "llm.py · providers.py · ledger.py",
+      "code": "gameai/llm.py · ledger.py",
       "kind": "process",
       "where": "WSL Python",
       "x": 800,
@@ -331,10 +365,16 @@ DIAGRAM.tabs.push({
       "state": "runs today",
       "note":
         "Every model call goes through one module. It first holds the call's worst-case cost in a spend ledger with a hard cap, then sends it to OpenAI, OpenRouter or Anthropic.",
-      "command": "uv run python -m twwarhammer3 spend --provider P",
+      "command": "a play job with a model policy (--policy llm ...)",
       "files": ["src/gameai/llm.py", "src/gameai/providers.py", "src/gameai/ledger.py"],
-      "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:1", "src/gameai/ledger.py:1", "src/gameai/providers.py:92"]
+      "status":
+        "agreed offline check: play commands refuse a missing ledger file (docs/agreed-checks.md:75)",
+      "refs": [
+        "src/gameai/llm.py:1",
+        "src/gameai/ledger.py:1",
+        "src/gameai/providers.py:92",
+        "docs/agreed-checks.md:75-78"
+      ]
     },
     {
       "id": "map.provider",
@@ -397,9 +437,14 @@ DIAGRAM.tabs.push({
       "to": "map.play",
       "label": "battle state",
       "bend": -40,
-      "payload": "observation.json: our units in full, enemies only while our side can see them.",
+      "payload":
+        "observation.json: our units in full, enemy units only while our side can see them. Python then strips the hidden keys (evaluation, final, setup, native) before a policy sees it.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/engine/mailbox.py:1"]
+      "refs": [
+        "src/twwarhammer3/engine/mailbox.py:91-92",
+        "src/twwarhammer3/protocol.py:45",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289"
+      ]
     },
     {
       "id": "map.checkpoints>runtime",

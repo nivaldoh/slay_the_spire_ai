@@ -36,11 +36,12 @@ owner changes markers, so they never fail.
 
 "diagram" counts the views of the "How the code works" page (docs/multi-agent.html, plan
 docs/how-code-works-plan.md section 6; the owner's yes, 2026-11-01) that need a refresh, from Git
-objects at HEAD: a line a view cites whose text changed (text found elsewhere counts as moved,
-recorded, not flagged), a cited file gone, a `src/` Python file missing from the file lists (the
-WH3 README Code map, docs/spire/AGENTS.md Layout) or a listed path in no map box, the provider
-names and hidden observation keys the view states, a review older than three months, and an
-example's cited file changed since the example was made. Details go to the log and to the
+objects at HEAD: a line a view cites whose text changed, indentation aside (the same text found
+elsewhere counts as moved, recorded, not flagged), cited text that cannot be read, a cited file
+gone, a `src/` Python file missing from the file lists (the WH3 README's Code map section and
+docs/spire/AGENTS.md's Layout section) or a listed path in no map box or not in the repo, the
+provider names and hidden observation keys a view states, a review older than three months, and
+an example's cited file changed since the example was made. Details go to the log and to the
 ignored runs/checks/diagram-flags.js, which the page reads. It skips in a shallow clone (no old
 commits) and in a linked worktree (its page data is not the main checkout's); any error prints
 "could not run" and never changes the exit code or the pass record.
@@ -604,7 +605,7 @@ def skip_reasons(output: str) -> str:
 
 DIAGRAM_VIEW = "docs/how-code-works-view-"  # one hand-written view per file: <id>.js
 DIAGRAM_EXAMPLE = "docs/how-code-works-example-"  # written by scripts/diagram_examples.py
-DIAGRAM_LISTS = ("docs/twwarhammer3/README.md", "docs/spire/AGENTS.md")
+DIAGRAM_LISTS = {"docs/twwarhammer3/README.md": "## Code map", "docs/spire/AGENTS.md": "## Layout"}
 DIAGRAM_ENTRY = re.compile(r"^- `([^`\s]+)`: (.+(?:\n  \S.*)*)", re.M)  # one file per line
 DIAGRAM_REF = re.compile(r"^([^\s:]+)(?::(\d+)(?:-(\d+))?)?$")
 DIAGRAM_DATA = "runs/checks/diagram-flags.js"
@@ -612,6 +613,15 @@ DIAGRAM_DATA = "runs/checks/diagram-flags.js"
 # months", Software Engineering at Google ch. 10): 92 days. A shorter floor flags quiet views
 # sooner and costs more refreshes; the "not reviewed" flags rest on it.
 DIAGRAM_REVIEW_DAYS = 92
+
+
+def file_list(text: str, heading: str) -> list[tuple[str, str]]:
+    """The (path, description) lines of one list: its heading's section only."""
+    start = re.search(rf"^{re.escape(heading)}\n", text, re.M)
+    if not start:
+        return []
+    end = text.find("\n## ", start.end())
+    return DIAGRAM_ENTRY.findall(text[start.end():end if end > 0 else len(text)])
 
 
 def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
@@ -649,11 +659,15 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
 
     def literal(path: str, name: str) -> list | None:  # a constant's keys or items, by ast
         for node in ast.parse(text(rev, path) or "").body:
-            if isinstance(node, ast.Assign) and any(
-                    isinstance(target, ast.Name) and target.id == name for target in node.targets):
-                if isinstance(node.value, ast.Dict):
-                    return sorted(ast.literal_eval(key) for key in node.value.keys)
-                return sorted(ast.literal_eval(node.value))
+            targets = node.targets if isinstance(node, ast.Assign) else (
+                [node.target] if isinstance(node, ast.AnnAssign) else [])
+            if any(isinstance(target, ast.Name) and target.id == name for target in targets):
+                value = node.value
+                if isinstance(value, ast.Call) and value.args:  # frozenset({...}), tuple([...])
+                    value = value.args[0]
+                if isinstance(value, ast.Dict):
+                    return sorted(ast.literal_eval(key) for key in value.keys)
+                return sorted(ast.literal_eval(value))
         return None
 
     try:
@@ -677,8 +691,14 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                 reasons.append(f"not reviewed since {view['reviewed']}, over three months")
             for fact, (path, name) in facts.items():
                 stated = view.get("facts", {}).get(fact)
-                found = literal(path, name) if stated is not None else None
-                if stated is not None and sorted(stated) != found:
+                if stated is None:
+                    continue
+                try:
+                    found = literal(path, name)
+                except (SyntaxError, ValueError) as exc:
+                    reasons.append(f"cannot read {name} from {path}: {exc}")
+                    continue
+                if sorted(stated) != found:
                     reasons.append(f"{path} {name} is now {found}; the view says {sorted(stated)}")
             items = [view, *view.get("elements", []), *view.get("wires", []),
                      *view.get("notes", []),
@@ -699,7 +719,10 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                 old = [line.strip() for line in (text(commit, path) or "").splitlines()
                        [first - 1:last]]
                 new = [line.strip() for line in (text(rev, path) or "").splitlines()]
-                if not old or new[first - 1:last] == old:
+                if not old:
+                    reasons.append(f"cannot read {ref} at {commit}")
+                    continue
+                if new[first - 1:last] == old:
                     continue
                 hits = [i for i in range(len(new) - len(old) + 1)
                         if new[i:i + len(old)] == old]
@@ -708,6 +731,10 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                     moved[ref] = f"{path}:{hits[0] + 1}{end}"
                 else:
                     reasons.append(f"{ref} changed since {commit}")
+            # JUDGEMENT?: Example flags — Claude Code, 2026-11-01, plan section 3 and default 3:
+            # a story is flagged only for cited files changed after its example was made;
+            # changed_since keeps the "code changed since" badge. Flagging every change since
+            # the battle would keep the story flagged until a new battle runs.
             changed: list[str] = []
             example = examples.get(view.get("example")) if isinstance(view.get("example"),
                                                                         str) else None
@@ -721,8 +748,8 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                                    " was made")
             if view["id"] == "map":
                 listed = {}
-                for page in DIAGRAM_LISTS:
-                    listed.update(DIAGRAM_ENTRY.findall(text(rev, page) or ""))
+                for page, heading in DIAGRAM_LISTS.items():
+                    listed.update(file_list(text(rev, page) or "", heading))
                 owners = [prefix for box in view["elements"] for prefix in box.get("files", [])]
                 missing = [n for n in names if n.startswith("src/") and n.endswith(".py")
                            and not n.endswith("__init__.py") and n not in listed]

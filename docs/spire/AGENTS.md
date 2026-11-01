@@ -27,7 +27,7 @@ ending in `/` covers the files below it.
 
 `src/spire/engine/`, real-game plumbing for every track:
 - `src/spire/engine/runtime.py`: Windows game setup and process ownership from WSL
-- `src/spire/engine/bridge.py`: the relay bridge: one TCP session to CommunicationMod
+- `src/spire/engine/bridge.py`: the relay bridge: one TCP session to the CommunicationMod relay
 - `src/spire/engine/doctor.py`: the read-only launch check
 - `src/spire/engine/windows_relay.py`: the Windows-side relay CommunicationMod launches
 
@@ -79,6 +79,7 @@ Outside `src/`:
   `tests/openweight/`: legacy Spire suites; `tests/fixtures/` holds engine transitions
 - `docs/spire/`: integration.md, approaches.md and one folder per track: fullrun/,
   first-combat/, open-weight/
+
 Spire evidence is under `runs/`: fullrun/, fullrun-exports/, first-combat/, research-notes/.
 
 Spire's scripts (first-combat inventory, audits, dataset export, training drivers and plots)

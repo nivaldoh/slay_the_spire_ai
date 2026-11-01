@@ -36,12 +36,6 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/engine/mailbox.py",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
   ],
-  "bounds": [
-   -420,
-   170,
-   -327,
-   240
-  ],
   "messages": {
    "command": {
     "title": "The job's entry in the queue plan (plan-d.json)",
@@ -59,17 +53,17 @@ Object.assign(DIAGRAM_EXAMPLES, {
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 4"
    },
    "r1": {
-    "title": "The model's reply, request 1 (trace row 5)",
+    "title": "The decision, request 1 (trace row 5; the model's reply is row 3)",
     "text": "State it saw: 5.3 s (trace row 4)\nApplied in the game: 8.9 s, 3.6 s later\nReason: \"Advance infantry frontally toward the enemy line while sending knights on a wide flank to hit the swordsmen from behind.\"\nOrders: move Swordsmen (f1) to x -200, z 100, running; move Knights (f2) to x -150, z 200, running",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl rows 4 and 5"
    },
    "r25": {
-    "title": "The model's reply, request 25 (trace row 101)",
+    "title": "The decision, request 25 (trace row 101; the model's reply is row 99)",
     "text": "State it saw: 79.7 s (trace row 100)\nApplied in the game: 83.0 s, 3.3 s later\nReason: \"f2 got dragged into melee with e3 by game's choice while e1/e2 are only ~30 m away; I'm pulling it out west to avoid being bogged by all three infantry blocks, then it can cycle-charge.\"\nOrders: move Knights (f2) to x -380, z 40, running",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl rows 100 and 101"
    },
    "r88": {
-    "title": "The model's reply, request 88 (trace row 353)",
+    "title": "The decision, request 88 (trace row 353; the model's reply is row 351)",
     "text": "State it saw: 329.3 s (trace row 352)\nApplied in the game: 333.5 s, 4.2 s later\nReason: \"Switch f1 onto the weakest enemy (e2, 42% hp) to break it and trigger a morale cascade, since grinding full-strength e1 with exhausted f1 is unfavorable attrition.\"\nOrders: Swordsmen (f1) attacks Swordsmen 2 (e2) (melee)",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl rows 352 and 353"
    },
@@ -92,6 +86,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "f1",
       "side": "friendly",
       "label": "Swordsmen (f1)",
+      "routing": false,
       "x": 130,
       "z": -242,
       "bearing": 312,
@@ -102,6 +97,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "f2",
       "side": "friendly",
       "label": "Knights (f2)",
+      "routing": false,
       "x": 90,
       "z": -287,
       "bearing": 312,
@@ -112,6 +108,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e1",
       "side": "enemy",
       "label": "Swordsmen 1 (e1)",
+      "routing": false,
       "x": -260,
       "z": 148,
       "bearing": 138,
@@ -122,6 +119,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e2",
       "side": "enemy",
       "label": "Swordsmen 2 (e2)",
+      "routing": false,
       "x": -243,
       "z": 166,
       "bearing": 138,
@@ -132,6 +130,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e3",
       "side": "enemy",
       "label": "Swordsmen 3 (e3)",
+      "routing": false,
       "x": -278,
       "z": 132,
       "bearing": 138,
@@ -152,7 +151,13 @@ Object.assign(DIAGRAM_EXAMPLES, {
      }
     ],
     "note": "What the model saw at 5.3 s: our units blue, the enemies our side could see red (a policy never sees the others); dashed: a move order. x right, z up.",
-    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 4"
+    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 4",
+    "bounds": [
+     -308,
+     160,
+     -317,
+     230
+    ]
    },
    "r25": {
     "time_ms": 79700,
@@ -161,6 +166,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "f1",
       "side": "friendly",
       "label": "Swordsmen (f1)",
+      "routing": false,
       "x": -18,
       "z": -89,
       "bearing": 318,
@@ -171,6 +177,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "f2",
       "side": "friendly",
       "label": "Knights (f2)",
+      "routing": false,
       "x": -270,
       "z": 97,
       "bearing": 323,
@@ -181,6 +188,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e1",
       "side": "enemy",
       "label": "Swordsmen 1 (e1)",
+      "routing": false,
       "x": -240,
       "z": 135,
       "bearing": 168,
@@ -191,6 +199,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e2",
       "side": "enemy",
       "label": "Swordsmen 2 (e2)",
+      "routing": false,
       "x": -242,
       "z": 144,
       "bearing": 196,
@@ -201,6 +210,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e3",
       "side": "enemy",
       "label": "Swordsmen 3 (e3)",
+      "routing": false,
       "x": -265,
       "z": 111,
       "bearing": 149,
@@ -216,7 +226,13 @@ Object.assign(DIAGRAM_EXAMPLES, {
      }
     ],
     "note": "What the model saw at 79.7 s: our units blue, the enemies our side could see red (a policy never sees the others); dashed: a move order. x right, z up.",
-    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 100"
+    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 100",
+    "bounds": [
+     -410,
+     12,
+     -119,
+     174
+    ]
    },
    "r88": {
     "time_ms": 329300,
@@ -225,6 +241,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "f1",
       "side": "friendly",
       "label": "Swordsmen (f1)",
+      "routing": false,
       "x": -223,
       "z": 58,
       "bearing": 296,
@@ -234,7 +251,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      {
       "id": "f2",
       "side": "friendly",
-      "label": "Knights (f2)",
+      "label": "Knights (f2), routing",
+      "routing": true,
       "x": -183,
       "z": 44,
       "bearing": 128,
@@ -245,6 +263,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e1",
       "side": "enemy",
       "label": "Swordsmen 1 (e1)",
+      "routing": false,
       "x": -235,
       "z": 64,
       "bearing": 110,
@@ -255,6 +274,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e2",
       "side": "enemy",
       "label": "Swordsmen 2 (e2)",
+      "routing": false,
       "x": -229,
       "z": 69,
       "bearing": 135,
@@ -265,6 +285,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       "id": "e3",
       "side": "enemy",
       "label": "Swordsmen 3 (e3)",
+      "routing": false,
       "x": -235,
       "z": 63,
       "bearing": 95,
@@ -273,8 +294,83 @@ Object.assign(DIAGRAM_EXAMPLES, {
      }
     ],
     "orders": [],
-    "note": "What the model saw at 329.3 s: our units blue, the enemies our side could see red (a policy never sees the others); dashed: a move order. x right, z up.",
-    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 352"
+    "note": "What the model saw at 329.3 s: our units blue, the enemies our side could see red (a policy never sees the others). x right, z up.",
+    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 352",
+    "bounds": [
+     -269,
+     -149,
+     14,
+     99
+    ]
+   },
+   "start": {
+    "time_ms": 5300,
+    "units": [
+     {
+      "id": "f1",
+      "side": "friendly",
+      "label": "Swordsmen (f1)",
+      "routing": false,
+      "x": 130,
+      "z": -242,
+      "bearing": 312,
+      "men": 90,
+      "men0": 90
+     },
+     {
+      "id": "f2",
+      "side": "friendly",
+      "label": "Knights (f2)",
+      "routing": false,
+      "x": 90,
+      "z": -287,
+      "bearing": 312,
+      "men": 45,
+      "men0": 45
+     },
+     {
+      "id": "e1",
+      "side": "enemy",
+      "label": "Swordsmen 1 (e1)",
+      "routing": false,
+      "x": -260,
+      "z": 148,
+      "bearing": 138,
+      "men": 90,
+      "men0": 90
+     },
+     {
+      "id": "e2",
+      "side": "enemy",
+      "label": "Swordsmen 2 (e2)",
+      "routing": false,
+      "x": -243,
+      "z": 166,
+      "bearing": 138,
+      "men": 90,
+      "men0": 90
+     },
+     {
+      "id": "e3",
+      "side": "enemy",
+      "label": "Swordsmen 3 (e3)",
+      "routing": false,
+      "x": -278,
+      "z": 132,
+      "bearing": 138,
+      "men": 90,
+      "men0": 90
+     }
+    ],
+    "orders": [],
+    "note": "The battle at 5.3 s, as the model first saw it: our units blue, the enemies our side could see red. x right, z up.",
+    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 4",
+    "bounds": [
+     -308,
+     160,
+     -317,
+     196
+    ]
    }
   }
  }

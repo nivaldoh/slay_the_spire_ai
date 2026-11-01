@@ -36,8 +36,8 @@ def main() -> None:
     owners = sorted(((prefix, box["id"]) for box in view["elements"]
                      for prefix in box.get("files", [])), key=lambda pair: -len(pair[0]))
     files = []
-    for page in check.DIAGRAM_LISTS:
-        for path, text in check.DIAGRAM_ENTRY.findall((ROOT / page).read_text(encoding="utf-8")):
+    for page, heading in check.DIAGRAM_LISTS.items():
+        for path, text in check.file_list((ROOT / page).read_text(encoding="utf-8"), heading):
             box = next((owner for prefix, owner in owners if path.startswith(prefix)), None)
             files.append({"path": path, "text": " ".join(text.split()), "box": box,
                           "list": page})

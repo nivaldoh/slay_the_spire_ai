@@ -2077,7 +2077,7 @@ source = "2026-11-01 How the code works pilot"
 id = "diagram-flags-never-see-changed-text"
 guards = "Changed cited text flags its view"
 file = "scripts/check.py"
-old = "                if not old or new[first - 1:last] == old:"
+old = "                if new[first - 1:last] == old:"
 new = "                if True:"
 tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
 source = "2026-11-01 How the code works pilot"
@@ -2099,3 +2099,57 @@ old = "    except Exception as exc:\n        diagram = None"
 new = "    except OSError as exc:\n        diagram = None"
 tests = ["tests/test_check_script.py::test_a_diagram_failure_never_changes_the_exit_code_or_the_pass_record"]
 source = "2026-11-01 How the code works pilot"
+
+[[plant]]
+id = "diagram-example-rule-off"
+guards = "A story is flagged when an example's cited file changes after the example was made"
+file = "scripts/check.py"
+old = "            if example:\n"
+new = "            if False:\n"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-item-commit-ignored"
+guards = "An item's own commit decides where its refs are read"
+file = "scripts/check.py"
+old = "cited = sorted({(item.get(\"commit\") or view[\"commit\"], ref)"
+new = "cited = sorted({(view[\"commit\"], ref)"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-facts-one-way"
+guards = "A view stating fewer providers or hidden keys than the code is flagged"
+file = "scripts/check.py"
+old = "                if sorted(stated) != found:"
+new = "                if any(s not in found for s in stated):"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-linked-not-skipped"
+guards = "A linked worktree skips the diagram flags"
+file = "scripts/check.py"
+old = "        elif linked_worktree(ROOT):\n"
+new = "        elif False:\n"
+tests = ["tests/test_check_script.py::test_a_diagram_failure_never_changes_the_exit_code_or_the_pass_record"]
+source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-unreadable-not-flagged"
+guards = "Cited text that cannot be read at its commit flags the view"
+file = "scripts/check.py"
+old = "                    reasons.append(f\"cannot read {ref} at {commit}\")"
+new = "                    pass"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-lists-whole-page"
+guards = "Only the Code map and Layout sections are file lists"
+file = "scripts/check.py"
+old = "    return DIAGRAM_ENTRY.findall(text[start.end():end if end > 0 else len(text)])"
+new = "    return DIAGRAM_ENTRY.findall(text)"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 How the code works review"

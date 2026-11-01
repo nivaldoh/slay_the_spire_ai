@@ -21,6 +21,7 @@ recorded files, the story file and HEAD's copies of the cited files, so two runs
 write identical files. Modelled on scripts/diagram_replay.py.
 """
 import argparse
+import csv
 import hashlib
 import json
 import re
@@ -30,8 +31,8 @@ from pathlib import Path
 from twwarhammer3.battle import replay
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIVATE = re.compile(r"/home/|C:\\\\Users|C:/Users|/mnt/c/Users|7656119\d{10}"
-                     r"|[\w.+-]+@[\w-]+\.[\w.]+|sk-[A-Za-z0-9_-]{16,}", re.I)
+PRIVATE = re.compile(r"/home/|\\\\home\\\\|C:\\\\Users|C:/Users|/mnt/c/Users|7656119\d{10}"
+                     r"|[\w.+-]+@[\w-]+\.[\w.]+|sk-[A-Za-z0-9_-]{16,}|wrkspc_", re.I)
 # JUDGEMENT?: Example choices (Claude Code, 2026-11-01): the battle and its three decisions
 # (plan, Knights pulled out, last order). Other decisions would tell a different story; the
 # "One play job" story's messages and maps rest on these.
@@ -89,7 +90,10 @@ def order_text(order: dict, names: dict) -> str:
 
 
 def frame_units(frame: dict, names: dict) -> list[dict]:
-    return [{"id": unit["id"], "side": side, "label": names.get(unit["id"], unit["id"]),
+    routed = lambda unit: bool({"routing", "shattered"} & set(unit.get("state") or []))  # noqa: E731
+    return [{"id": unit["id"], "side": side,
+             "label": names.get(unit["id"], unit["id"]) + (", routing" if routed(unit) else ""),
+             "routing": routed(unit),
              "x": round(unit["x"]), "z": round(unit["z"]),
              "bearing": round(unit.get("bearing") or 0),
              "men": unit.get("men"), "men0": unit.get("men0")}
@@ -134,6 +138,12 @@ def build(recipe: dict, runs: Path) -> dict:
                            f"{checks['time_limit_s']} s"]),
         "source": f"{recipe['job']}/manifest.json: scenario.brief and setup_checks"}
     first = data["frames"][by_request[recipe["decisions"][0]]["basis_frame"]]
+    exchanges = {}  # exchange id -> its model_exchange row (1-based), the model's reply
+    for number, line in enumerate((episode / "trace.jsonl").open(), 1):
+        if '"kind": "model_exchange"' in line:
+            row = json.loads(line)
+            for attempt in row.get("attempts", []):
+                exchanges[attempt.get("exchange_id")] = number
     messages["start"] = {
         "title": f"The units at {seconds(first['time_ms'])} ({first['source']['file']} row "
                  f"{first['source']['line']})",
@@ -152,8 +162,9 @@ def build(recipe: dict, runs: Path) -> dict:
                          f"{seconds(decision['applied_ms'] - decision['time_ms'])} later")
         lines.append(f"Reason: \"{decision['reason']}\"")
         lines.append("Orders: " + ("; ".join(order_text(o, names) for o in orders) or "none"))
-        messages[request] = {"title": f"The model's reply, request {request[1:]} "
-                                      f"(trace row {row})",
+        reply = exchanges.get((decision.get("attempts") or [{}])[-1].get("exchange_id"))
+        messages[request] = {"title": f"The decision, request {request[1:]} (trace row {row}; "
+                                      f"the model's reply is row {reply})",
                              "text": "\n".join(lines),
                              "source": f"{recipe['job']}/{recipe['episode']}/trace.jsonl rows "
                                        f"{basis['source']['line']} and {row}"}
@@ -163,14 +174,15 @@ def build(recipe: dict, runs: Path) -> dict:
             "orders": [{"unit": o["unit"], "x": o["x"], "z": o["z"]} for o in orders
                        if o.get("type") == "move"],
             "note": f"What the model saw at {seconds(decision['time_ms'])}: our units blue, the "
-                    "enemies our side could see red (a policy never sees the others); dashed: a "
-                    "move order. x right, z up.",
+                    "enemies our side could see red (a policy never sees the others)"
+                    + ("; dashed: a move order" if any(o.get("type") == "move" for o in orders)
+                       else "") + ". x right, z up.",
             "source": f"{recipe['job']}/{recipe['episode']}/trace.jsonl row "
                       f"{basis['source']['line']}"}
-    header, *rows = (ROOT / recipe["results"]).read_text().splitlines()
-    keys = header.split(",")
-    number, row = next((i + 2, dict(zip(keys, line.split(",")))) for i, line in enumerate(rows)
-                       if f",{Path(recipe['job']).name},{recipe['episode']}," in line)
+    with (ROOT / recipe["results"]).open(newline="") as table:
+        number, row = next((i + 2, row) for i, row in enumerate(csv.DictReader(table))
+                           if row["job"] == Path(recipe["job"]).name
+                           and row["episode"] == recipe["episode"])
     messages["row"] = {"title": f"The results.csv row (line {number})",
                        "text": "\n".join(f"{key}: {row[key]}" for key in ROW_FIELDS),
                        "source": f"{recipe['results']} line {number}"}
@@ -180,15 +192,24 @@ def build(recipe: dict, runs: Path) -> dict:
         "title": "The report built for this page (the job is not in benchmark_jobs.json)",
         "text": "twwarhammer3 report JOB --output NAME\n" + "\n".join(table[:3]),
         "source": f"{recipe['report']}, built on 2026-11-01"}
-    points = [(u["x"], u["z"]) for f in frames.values() for u in f["units"]]
-    points += [(o["x"], o["z"]) for f in frames.values() for o in f["orders"]]
-    xs, zs = [p[0] for p in points], [p[1] for p in points]
+    frames["start"] = {**frames[recipe["decisions"][0]], "orders": [],
+                       "note": f"The battle at {seconds(first['time_ms'])}, as the model first "
+                               "saw it: our units blue, the enemies our side could see red. "
+                               "x right, z up."}
+    for frame in frames.values():  # each map is scaled to its own units, at least 120 x 80 m
+        points = [(u["x"], u["z"]) for u in frame["units"]]
+        points += [(o["x"], o["z"]) for o in frame["orders"]]
+        xs, zs = [p[0] for p in points], [p[1] for p in points]
+        cx, cz = (min(xs) + max(xs)) / 2, (min(zs) + max(zs)) / 2
+        half_x = max(60, (max(xs) - min(xs)) / 2 + 30)
+        half_z = max(40, (max(zs) - min(zs)) / 2 + 30)
+        frame["bounds"] = [round(cx - half_x), round(cx + half_x), round(cz - half_z),
+                           round(cz + half_z)]
     month = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()[int(row["date"][5:7]) - 1]
     return {"job": Path(recipe["job"]).name, "episode": recipe["episode"],
             "date": row["date"], "date_text": f"{int(row['date'][8:])} {month}",
             "commit": commit[:7], "outcome": row["outcome"], "story": recipe["story"],
             "files": files, "changed_since": changed,
-            "bounds": [min(xs) - 40, max(xs) + 40, min(zs) - 40, max(zs) + 40],
             "messages": messages, "frames": frames}
 
 

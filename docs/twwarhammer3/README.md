@@ -248,6 +248,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `scripts/wh3_db.py`: reads rows of a WH3 database table from the game's db.pack
 - `scripts/refusal_sweep.py`: removes one refusal at a time and lists those no test catches
 - `scripts/diagram_replay.py`: one recorded team episode as a measured flow for the page
+- `scripts/diagram_files.py`: the page's file lists, from these lists and the map's boxes
+- `scripts/diagram_examples.py`: small excerpts of a recorded battle for the page's stories
 - `scripts/sft_smoke.py`: a minimal local LoRA fine-tuning smoke test (CUDA only)
 - `scripts/inventory_scenarios.py`: Spire first combat: the development inventory
 - `scripts/audit_language_training.py`: Spire first combat: audit of saved SFT evidence
