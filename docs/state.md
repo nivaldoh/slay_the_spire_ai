@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one actual revision fixes infantry selection, cavalry unchanged. Awaiting current PC window for one live check. [Viewer](http://localhost:8765/gap-all-20261101.html). Recorded spend $0.02744/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
+Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one actual revision fixes infantry selection, cavalry unchanged. PC now available; preparing one fresh 1x live check. [Viewer](http://localhost:8765/gap-all-20261101.html). Recorded spend $0.02744/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
 
 Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
 [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.

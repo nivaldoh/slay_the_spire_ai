@@ -369,7 +369,7 @@ Only that battle's permitted public feedback and first public views reached revi
 This produces an inspectable corrected plan, not a gameplay result or improvement claim.
 Cards/evidence: `runs/gap-initiation-20261101/`. The one fresh diagnostic now proposed
 uses the same scenario and raw target/contact/melee witnesses at 1x; it needs a current
-PC window (the earlier availability was overnight). The owner's availability answer is pending.
+PC window. The owner confirmed it on 2026-11-01: "Yes, the PC is free now. Let's finish this."
 No additional author candidate or changed benchmark/strength method is planned.
 
 ### Authoring and revision command

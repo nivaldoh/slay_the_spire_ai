@@ -44,6 +44,8 @@ Both games:
   is already fighting; cavalry may wait. Catch circular waiting before launch and give
   the author its existing repair chance. Public starting-state check only; no live-effect
   or strength claim, and no permanent benchmark rule.
+  Live follow-up (2026-11-01): "Yes, the PC is free now. Let's finish this" — one fresh
+  battle, up to 30 minutes, checking infantry starts combat and cavalry joins after contact.
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check
