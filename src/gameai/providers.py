@@ -1,12 +1,14 @@
-"""Declared Responses API routes; configuration never makes a network request.
+"""Declared model routes; configuration never makes a network request.
 
-Prices are USD per million input, cached input and output tokens. OpenRouter prices
-are enforced routing ceilings, not the catalogue's cheapest advertised endpoint.
-Checked 2026-10-16; actual OpenRouter charges come from the response's usage.cost.
-Reasoning efforts are per model, each accepted by one live schema call on 2026-10-16:
-OpenAI's lists come from the API's own unsupported-value errors, OpenRouter's from the
-catalogue's supported_efforts. A model whose catalogue entry lists none is on/off: "none"
-and "medium" (OpenRouter's level for reasoning enabled).
+OpenAI and OpenRouter take Responses API requests; Anthropic's Messages API gets the same
+request translated in ``gameai.llm``. Prices are USD per million input, cached input and
+output tokens. OpenRouter prices are enforced routing ceilings, not the catalogue's cheapest
+advertised endpoint. Checked 2026-10-16; actual OpenRouter charges come from the response's
+usage.cost. Reasoning efforts are per model, each accepted by one live schema call on
+2026-10-16: OpenAI's lists come from the API's own unsupported-value errors, OpenRouter's
+from the catalogue's supported_efforts. A model whose catalogue entry lists none is on/off:
+"none" and "medium" (OpenRouter's level for reasoning enabled). Anthropic's prices and
+efforts are from its pricing and effort pages, read 2026-10-31.
 """
 
 from dataclasses import dataclass
@@ -39,6 +41,27 @@ OPENROUTER = Provider(
      # accepted, "none" did not reason, and low to max all reasoned 1.3k-4k tokens.
      "qwen/qwen3.6-35b-a3b": ("none", "medium")},
 )
+# Haiku's prices hold for prompts up to 100,000 tokens (five times higher above; gameai.llm
+# refuses larger Haiku requests). Nothing is cached: no request sends cache_control.
+# JUDGEMENT: Anthropic efforts — assistant's plan, adopted 2026-10-31: no "none" (thinking off
+# only on Haiku and Sonnet, at high or below); a "none" mode would need an effort chosen for it.
+# JUDGEMENT: Haiku first — assistant's plan, adopted 2026-10-31: WH3's default Anthropic model;
+# Sonnet first would change every job that names no @MODEL.
+# JUDGEMENT: Effort labels — assistant's plan, 2026-10-31: Anthropic "high" is not OpenAI
+# "high" in compute; any cross-provider comparison at one label rests on treating them alike.
+ANTHROPIC = Provider(
+    "https://api.anthropic.com/v1/messages", "GAMEAI_ANTHROPIC_API_KEY",
+    "GAMEAI_ANTHROPIC_API_KEY_FILE",
+    {"claude-haiku-5-5": (0.10, 0.01, 0.50), "claude-sonnet-5-5": (2.00, 0.10, 10.00),
+     "claude-opus-5-5": (4.00, 0.20, 20.00)},
+    dict.fromkeys(("claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"),
+                  ("low", "medium", "high", "xhigh", "max")),
+)
+# JUDGEMENT: API version — assistant's plan, adopted 2026-10-31: 2026-10-21, the latest; for
+# Messages it only refuses fields never sent here. 2023-06-01 would accept the same requests.
+ANTHROPIC_VERSION = "2026-10-21"
+# A key not scoped to one workspace needs the workspace's ID on every request.
+ANTHROPIC_WORKSPACE_ENV = "GAMEAI_ANTHROPIC_WORKSPACE_ID"
 # Per-model request fields, sent and recorded with every request. Qwen3.6-35B-A3B is the
 # open-weight model to fine-tune: its baseline runs at fp8 or better (its cheapest endpoint
 # is fp4) with the catalogue's default sampling made explicit.
@@ -65,7 +88,7 @@ SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
 # JUDGEMENT: 10 alternatives (assistant, 2026-10-23): every single-digit choice; 5 halves the
 # size, 20 doubles it. The choice distributions in Spire traces rest on it.
 LOGPROBS = {"qwen/qwen3.6-35b-a3b": 10}
-PROVIDERS = {"openai": OPENAI, "openrouter": OPENROUTER}
+PROVIDERS = {"openai": OPENAI, "openrouter": OPENROUTER, "anthropic": ANTHROPIC}
 
 
 def get_provider(name: str) -> Provider:
@@ -92,7 +115,7 @@ def logprobs(model: str) -> dict:
 
 def routing(provider: str, model: str) -> dict:
     """Request fields that route and sample ``model`` beyond the transport's own."""
-    if provider == "openai":
+    if provider != "openrouter":
         return {}
     price_in, _, price_out = get_provider(provider).prices[model]
     return {"provider": {"require_parameters": True,

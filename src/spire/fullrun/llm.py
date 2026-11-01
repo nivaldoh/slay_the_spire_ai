@@ -28,7 +28,8 @@ MONSTER_NOTES_PATH = SYSTEM_PROMPT_PATH.with_name("monsters.json")
 # other games keep their own.
 LEDGER_PATH = REPO_ROOT / "runs/llm-spend.jsonl"
 OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("spire-openrouter-spend.jsonl")
-LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH}
+LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH,
+           "anthropic": LEDGER_PATH.with_name("spire-anthropic-spend.jsonl")}
 MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
 # JUDGEMENT?: Run memory — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): notes of up to
 # 2,000 characters the model rewrites whole, its last 12 decisions with reasons, declined card

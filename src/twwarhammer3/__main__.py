@@ -14,6 +14,11 @@ from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
 from twwarhammer3.battle.watch import STALL_S
 
+# One spend file, and so one budget, per provider (Spire keeps its own). Not in battle/llm.py:
+# that file's hash is the llm policy's card identity.
+LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH,
+           "anthropic": LEDGER_PATH.with_name("anthropic-spend.jsonl")}
+
 
 def add_session_arguments(parser: argparse.ArgumentParser) -> None:
     """Settings the mod reads from session.json; battles always run unpaused at 1x."""
@@ -146,7 +151,7 @@ def main() -> int:
                       help="API gateway for every model controller in this job")
     play.add_argument("--model", default=None,
                       help="model for policies without @MODEL; default: gpt-6-luna (OpenAI),"
-                      " z-ai/glm-5.3 (OpenRouter)")
+                      " z-ai/glm-5.3 (OpenRouter), claude-haiku-5-5 (Anthropic)")
     play.add_argument("--effort", default="low",
                       help="the reasoning effort of a model policy named without /EFFORT")
     play.add_argument("--budget-usd", type=float, default=None,
@@ -395,8 +400,7 @@ def main() -> int:
         config = {key: value for key, value in vars(args).items()
                   if key not in ("command", "output")}
         config["model"] = args.model or next(iter(get_provider(args.provider).prices))
-        ledger = OPENROUTER_LEDGER_PATH if args.provider == "openrouter" else LEDGER_PATH
-        config.update(ledger=str(ledger), results=str(RESULTS_PATH))
+        config.update(ledger=str(LEDGERS[args.provider]), results=str(RESULTS_PATH))
         try:
             rotation(config)
             makers = factories(config)
@@ -493,8 +497,7 @@ def main() -> int:
     if args.command == "spend":
         from gameai.ledger import Ledger
 
-        path = args.ledger or (OPENROUTER_LEDGER_PATH if args.provider == "openrouter"
-                               else LEDGER_PATH)
+        path = args.ledger or LEDGERS[args.provider]
         print(f"${Ledger(path, budget_usd=0).spent:.4f} spent ({path})")
         return 0
     return 1

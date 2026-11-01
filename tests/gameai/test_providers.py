@@ -10,7 +10,7 @@ import pytest
 
 from gameai import llm
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.providers import OPENROUTER, routing, validate
+from gameai.providers import ANTHROPIC, ANTHROPIC_WORKSPACE_ENV, OPENROUTER, routing, validate
 
 SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}},
           "required": ["ok"], "additionalProperties": False}
@@ -46,6 +46,28 @@ def test_credentials_are_selected_per_gateway_and_empty_files_are_rejected(tmp_p
         llm.api_key("openrouter")
 
 
+def test_a_key_with_paste_debris_or_anthropic_without_a_workspace_fails_before_any_call(
+        tmp_path, monkeypatch):
+    # 2026-10-31: pasting into `read -s` left escape codes before the Anthropic key, and the
+    # server answered HTTP 400 with an empty body, which WH3 would score as the model failing.
+    path = tmp_path / "secret"
+    path.write_text("\x1b[2~\x1b[2~\x1b[sk-ant-test\n")
+    monkeypatch.delenv(ANTHROPIC.key_env, raising=False)
+    monkeypatch.setenv(ANTHROPIC.key_file_env, str(path))
+    monkeypatch.setenv(ANTHROPIC_WORKSPACE_ENV, "wrkspc_test")
+    with pytest.raises(llm.APIError, match="unprintable") as failure:
+        llm.api_key("anthropic")
+    assert "sk-ant" not in str(failure.value)
+    path.write_text("sk-ant-test\n")
+    assert llm.api_key("anthropic") == "sk-ant-test"
+    monkeypatch.setenv("OPENROUTER_API_KEY", "\x1b[2~router-secret")
+    with pytest.raises(llm.APIError, match="unprintable"):
+        llm.api_key("openrouter")
+    monkeypatch.delenv(ANTHROPIC_WORKSPACE_ENV)
+    with pytest.raises(llm.APIError, match=ANTHROPIC_WORKSPACE_ENV):
+        llm.api_key("anthropic")
+
+
 def test_http_error_redacts_a_key_crossing_the_display_limit(monkeypatch):
     key = "secret-key-that-crosses-the-boundary"
 
@@ -74,6 +96,9 @@ def test_reasoning_efforts_are_declared_per_model():
                           ("qwen/qwen3.6-35b-a3b", "high")]:
         with pytest.raises(ValueError, match=f"{model}: use an effort in"):
             validate("openrouter", model, effort)
+    validate("anthropic", "claude-opus-5-5", "max")
+    with pytest.raises(ValueError, match="claude-haiku-5-5: use an effort in low"):
+        validate("anthropic", "claude-haiku-5-5", "none")
 
 
 @pytest.mark.parametrize("name", OPENROUTER.prices)
@@ -217,9 +242,153 @@ def test_the_model_to_fine_tune_routes_at_fp8_or_better_with_explicit_sampling()
     assert (route["temperature"], route["top_p"]) == (1.0, 0.95)
     assert "quantizations" not in routing("openrouter", "z-ai/glm-5.3")["provider"]
     assert "temperature" not in routing("openrouter", "z-ai/glm-5.3")
+    # OpenRouter's fields would otherwise reach Anthropic and every card's routing record.
+    assert routing("anthropic", "claude-haiku-5-5") == {}
 
 
 def test_an_unknown_provider_is_refused_with_the_known_names():
     # Removing this refusal passed every test (runs/refusal-sweep-20261029/gameai-providers.txt).
     with pytest.raises(ValueError, match="provider 'bogus'; use openai, openrouter"):
         llm.get_provider("bogus")
+
+
+# Messages API replies shaped as its reference documents them (2026-10-31); values made up.
+def message(text, stop="end_turn", thinking="", **usage):
+    content = [{"type": "thinking", "thinking": thinking, "signature": "sig"}]
+    content += [{"type": "text", "text": text}] if text is not None else []
+    return {"id": "msg_test", "type": "message", "role": "assistant",
+            "model": "claude-haiku-5-5", "content": content, "stop_reason": stop,
+            "stop_sequence": None, "stop_details": None,
+            "usage": {"input_tokens": 1000, "cache_creation_input_tokens": 0,
+                      "cache_read_input_tokens": 0, "output_tokens": 40,
+                      "output_tokens_details": {"thinking_tokens": 30},
+                      "service_tier": "standard", **usage}}
+
+
+def anthropic_model(tmp_path, monkeypatch, replies, **kwargs):
+    """A Haiku model whose calls go through post() to a fake Messages endpoint."""
+    sent = []
+
+    class Response(io.BytesIO):
+        headers = {}
+
+    def urlopen(request, timeout):
+        sent.append((request.full_url, {key.lower(): value for key, value in
+                                        request.header_items()}, json.loads(request.data)))
+        return Response(json.dumps(replies.pop(0)).encode())
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", urlopen)
+    monkeypatch.setenv(ANTHROPIC_WORKSPACE_ENV, "wrkspc_test")
+    agent = llm.Model("claude-haiku-5-5", "high", Ledger(tmp_path / "ledger.jsonl", 1),
+                      instructions="Reply with JSON.", max_output_tokens=256,
+                      send=partial(llm.post, "test-key", provider="anthropic",
+                                   record_transport=True), provider="anthropic", **kwargs)
+    return agent, sent
+
+
+def test_anthropic_calls_are_translated_both_ways_and_charged_from_usage(tmp_path, monkeypatch):
+    # A reply cut at max_tokens gets the cut-off notice; the second completes.
+    cut = message('{"ok":', stop="max_tokens", thinking="Check the field.", output_tokens=256,
+                  input_tokens=1000, cache_read_input_tokens=200, cache_creation_input_tokens=50)
+    agent, sent = anthropic_model(tmp_path, monkeypatch, [cut, message('{"ok":true}')],
+                                  record_exchanges=True)
+    value, attempts = agent.ask("Return ok=true.", SCHEMA, json.loads, retries=1)
+    assert value == {"ok": True}
+    url, headers, body = sent[0]
+    assert url == ANTHROPIC.url and headers["authorization"] == "Bearer test-key"
+    assert headers["anthropic-version"] == "2026-10-21"
+    assert headers["anthropic-workspace-id"] == "wrkspc_test"
+    assert body == {"model": "claude-haiku-5-5", "max_tokens": 256,
+                    "system": "Reply with JSON.",
+                    "messages": [{"role": "user", "content": "Return ok=true."}],
+                    "output_config": {"effort": "high",
+                                      "format": {"type": "json_schema", "schema": SCHEMA}},
+                    "thinking": {"type": "adaptive", "display": "summarized"}}
+    assert sent[1][2]["messages"][0]["content"] == "Return ok=true." + llm.CUT_OFF
+    first = attempts[0]
+    assert first["status"] == "incomplete" and first["text"] == '{"ok":'
+    assert first["incomplete_details"] == {"reason": "max_output_tokens"}
+    # Evidence keeps the Responses shape the exporters read.
+    assert first["request"]["instructions"] == "Reply with JSON."
+    assert [part["text"] for part in llm.reasoning_parts(first["output"])] == [
+        "Check the field."]
+    assert llm.reasoning_parts(attempts[1]["output"]) == []  # its thinking text was empty
+    assert first["actual_model"] == "claude-haiku-5-5" and first["provider"] == "anthropic"
+    assert "backend" not in first
+    # Cache reads and writes are input too: 1,250 tokens, 200 of them at the cached price.
+    assert first["usage"]["input_tokens"] == 1250
+    assert first["usd"] == pytest.approx((1050 * .10 + 200 * .01 + 256 * .50) / 1e6)
+    assert attempts[1]["usd"] == pytest.approx((1000 * .10 + 40 * .50) / 1e6)
+    assert agent.ledger.spent == pytest.approx(first["usd"] + attempts[1]["usd"])
+    assert agent.totals["reasoning_tokens"] == 60
+
+
+def test_an_anthropic_refusal_is_charged_and_re_asked_as_an_invalid_reply(tmp_path, monkeypatch):
+    refusal = message("I can't help with that.", stop="refusal")
+    refusal["stop_details"] = {"type": "refusal", "category": None, "explanation": "declined"}
+    agent, sent = anthropic_model(tmp_path, monkeypatch, [refusal, dict(refusal)],
+                                  record_exchanges=True)
+    with pytest.raises(llm.InvalidReply) as failure:
+        agent.ask("test", SCHEMA, json.loads, retries=1)
+    attempts = failure.value.attempts
+    assert len(sent) == 2 and "fallbacks" not in sent[0][2]
+    assert attempts[0]["status"] == "completed" and attempts[0]["text"] == ""
+    assert attempts[0]["output"][-1]["content"] == [{
+        "type": "refusal", "refusal": "I can't help with that.",
+        "stop_details": refusal["stop_details"]}]
+    assert agent.ledger.spent == pytest.approx(2 * (1000 * .10 + 40 * .50) / 1e6)
+
+
+def test_an_anthropic_reply_without_usage_is_charged_the_reserved_worst_case(
+        tmp_path, monkeypatch):
+    bare = {"id": "msg_test", "model": "claude-haiku-5-5", "stop_reason": "pause_turn",
+            "content": [{"type": "redacted_thinking", "data": "x"}, {"type": "unknown"}]}
+    agent, sent = anthropic_model(tmp_path, monkeypatch, [bare])
+    attempt = agent.call("test", SCHEMA)
+    assert "thinking" not in sent[0][2]  # summaries only for recorded exchanges
+    assert attempt["status"] == "incomplete" and attempt["text"] == ""
+    assert attempt["incomplete_details"] == {"reason": "pause_turn"}
+    assert attempt["usage"]["output_tokens"] == 256 and attempt["usd"] > 256 * .50 / 1e6
+
+
+def test_untranslatable_anthropic_requests_are_refused_before_sending(monkeypatch):
+    sent = []
+    monkeypatch.setattr(llm.urllib.request, "urlopen", lambda request, timeout: sent.append(
+        request) or io.BytesIO(json.dumps(message("{}")).encode()))
+    request = {"model": "claude-haiku-5-5", "instructions": "x", "max_output_tokens": 10,
+               "input": [{"role": "user", "content": "y"}]}
+    with pytest.raises(ValueError, match="temperature"):
+        llm.post("test-key", dict(request, temperature=1.0), provider="anthropic")
+    long = dict(request, instructions="x" * 100_000)  # past Haiku's 100k-token price step
+    with pytest.raises(ValueError, match="over 100000 bytes"):
+        llm.post("test-key", long, provider="anthropic")
+    assert not sent
+    sonnet = llm.post("test-key", dict(long, model="claude-sonnet-5-5"), provider="anthropic")
+    assert sonnet["status"] == "completed" and len(sent) == 1  # Sonnet's prices have no step
+
+
+@pytest.mark.parametrize("provider,sends", [("anthropic", 2), ("openai", 1), ("openrouter", 1)])
+def test_only_anthropic_resends_an_overloaded_529(provider, sends, monkeypatch):
+    replies = [urllib.error.HTTPError("url", 529, "overloaded", {}, io.BytesIO(b"{}")),
+               io.BytesIO(json.dumps(message("{}") if provider == "anthropic" else reply())
+                          .encode())]
+    sent = []
+
+    def urlopen(request, timeout):
+        sent.append(request)
+        outcome = replies.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(llm.time, "sleep", lambda _: None)
+    body = {"model": "claude-haiku-5-5", "instructions": "x", "max_output_tokens": 10,
+            "input": [{"role": "user", "content": "y"}]}
+    if sends == 1:
+        with pytest.raises(llm.APIError, match="HTTP 529") as failure:
+            llm.post("test-key", body, provider=provider)
+        assert failure.value.uncertain_attempts == 1
+    else:
+        assert llm.post("test-key", body, provider=provider)["_uncertain_attempts"] == 1
+    assert len(sent) == sends

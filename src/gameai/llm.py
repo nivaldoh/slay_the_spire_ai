@@ -1,10 +1,11 @@
-"""Responses API calls for any game: transport, spend and the reply-retry loop.
+"""Model API calls for any game: transport, spend and the reply-retry loop.
 
-Standard library only. Provider settings name the credential environment variables;
-keys are never logged or written to evidence. A ``Model`` reserves a conservative cost
-including retries before sending, then charges reported usage. Attempts with uncertain
-billing are charged at the reserved rate. The game supplies instructions, prompt, reply
-schema and parser.
+Standard library only. Requests and replies use the OpenAI Responses API shape; ``post``
+translates them to and from Anthropic's Messages API, so nothing else knows that format.
+Provider settings name the credential environment variables; keys are never logged or
+written to evidence. A ``Model`` reserves a conservative cost including retries before
+sending, then charges reported usage. Attempts with uncertain billing are charged at the
+reserved rate. The game supplies instructions, prompt, reply schema and parser.
 """
 
 from __future__ import annotations
@@ -22,7 +23,15 @@ from pathlib import Path
 from queue import Empty, SimpleQueue
 
 from gameai.ledger import Ledger
-from gameai.providers import OPENAI, get_provider, logprobs, routing, validate
+from gameai.providers import (
+    ANTHROPIC_VERSION,
+    ANTHROPIC_WORKSPACE_ENV,
+    OPENAI,
+    get_provider,
+    logprobs,
+    routing,
+    validate,
+)
 
 API_URL = OPENAI.url
 PRICES = OPENAI.prices
@@ -38,6 +47,9 @@ FAILED_RESENDS = 2  # per ask, apart from the parse retries
 # owner's; 600 s itself is the assistant's (b27). Engineering or a benchmark parameter?
 READ_TIMEOUT_S = 600
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
+# JUDGEMENT: Anthropic 529 — assistant's plan, adopted 2026-10-31: resent like the codes above and
+# charged at the reservation each time; raising at once would forfeit sooner and bill less.
+OVERLOADED = {"anthropic": {529}}  # other providers' 529s raise at once, as before
 CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
            " Reply again.")
 JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int,
@@ -65,14 +77,19 @@ class InvalidReply(RuntimeError):
 def api_key(provider: str = "openai") -> str:
     spec = get_provider(provider)
     key = os.environ.get(spec.key_env, "").strip()
-    if key:
-        return key
-    path = os.environ.get(spec.key_file_env)
-    if not path:
-        raise APIError(f"Set {spec.key_env} or {spec.key_file_env}")
-    key = Path(path).expanduser().read_text().strip()
     if not key:
-        raise APIError(f"Empty credential file named by {spec.key_file_env}")
+        path = os.environ.get(spec.key_file_env)
+        if not path:
+            raise APIError(f"Set {spec.key_env} or {spec.key_file_env}")
+        key = Path(path).expanduser().read_text().strip()
+        if not key:
+            raise APIError(f"Empty credential file named by {spec.key_file_env}")
+    # Both fail here, before any game launches: the server would answer HTTP 400, which WH3
+    # scores as the model failing. A paste once left terminal escape codes before a key.
+    if not key.isprintable():
+        raise APIError(f"The {provider} key holds unprintable characters; write it again")
+    if provider == "anthropic" and not os.environ.get(ANTHROPIC_WORKSPACE_ENV):
+        raise APIError(f"Set {ANTHROPIC_WORKSPACE_ENV} to the workspace each request bills")
     return key
 
 
@@ -94,45 +111,33 @@ def usage_cost(model: str, usage: dict, provider: str = "openai") -> float:
 
 def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
          record_transport: bool = False, provider: str = "openai") -> dict:
-    """One Responses API call; retries only transient transport and service errors."""
-    data = json.dumps(body).encode()
+    """One API call; retries only transient transport and service errors. An Anthropic
+    request is translated before the first attempt (a ValueError then sends nothing) and its
+    reply after the read, outside the retries, so a translation can never resend a call."""
+    url = get_provider(provider).url
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     if provider == "openrouter":
         headers["X-OpenRouter-Metadata"] = "enabled"
+    elif provider == "anthropic":
+        body = _to_messages(body)
+        headers["anthropic-version"] = ANTHROPIC_VERSION
+        if workspace := os.environ.get(ANTHROPIC_WORKSPACE_ENV):
+            headers["anthropic-workspace-id"] = workspace
+    data = json.dumps(body).encode()
+    transient = TRANSIENT_HTTP | OVERLOADED.get(provider, set())
     started = time.time()
     uncertain = 0
     for attempt in range(1, attempts + 1):
         try:
-            request = urllib.request.Request(get_provider(provider).url, data=data, headers=headers)
+            request = urllib.request.Request(url, data=data, headers=headers)
             with urllib.request.urlopen(request, timeout=READ_TIMEOUT_S) as response:
                 value = json.load(response)
-                if uncertain:
-                    value["_uncertain_attempts"] = uncertain
-                if record_transport:
-                    processing = response.headers.get("openai-processing-ms")
-                    try:
-                        processing = float(processing) if processing else None
-                    except ValueError:
-                        processing = None
-                    value["_transport"] = {
-                        "wall_seconds": time.time() - started,
-                        "provider_processing_ms": processing,
-                        "actual_model": value.get("model"), "transport_attempts": attempt,
-                    }
-                    if provider == "openrouter":
-                        metadata = value.get("openrouter_metadata") or {}
-                        selected = next((item for item in (metadata.get("endpoints") or {}).get(
-                            "available", []) if item.get("selected")), {})
-                        value["_transport"].update(
-                            provider=provider, backend=value.get("provider") or
-                            selected.get("provider"), backend_model=selected.get("model"),
-                            router_attempts=metadata.get("attempt"))
-                return value
+            break
         except urllib.error.HTTPError as error:
             # Read past the display boundary so truncation cannot leave a key prefix behind.
             detail = error.read(500 + len(key)).decode(errors="replace").replace(key, "<key>")[:500]
             uncertain += error.code >= 500 or error.code == 408
-            if error.code not in TRANSIENT_HTTP or attempt == attempts:
+            if error.code not in transient or attempt == attempts:
                 raise APIError(f"HTTP {error.code}: {detail}", uncertain) from None
         except (OSError, http.client.HTTPException, ValueError) as error:
             uncertain += 1
@@ -140,13 +145,112 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
                 detail = str(error).replace(key, "<key>")
                 raise APIError(f"{type(error).__name__}: {detail}", uncertain) from None
         time.sleep(2**attempt)
+    if provider == "anthropic":
+        value = _from_messages(value)
+    if uncertain:
+        value["_uncertain_attempts"] = uncertain
+    if record_transport:
+        processing = response.headers.get("openai-processing-ms")
+        try:
+            processing = float(processing) if processing else None
+        except ValueError:
+            processing = None
+        value["_transport"] = {
+            "wall_seconds": time.time() - started,
+            "provider_processing_ms": processing,
+            "actual_model": value.get("model"), "transport_attempts": attempt,
+        }
+        if provider == "openrouter":
+            metadata = value.get("openrouter_metadata") or {}
+            selected = next((item for item in (metadata.get("endpoints") or {}).get(
+                "available", []) if item.get("selected")), {})
+            value["_transport"].update(
+                provider=provider, backend=value.get("provider") or
+                selected.get("provider"), backend_model=selected.get("model"),
+                router_attempts=metadata.get("attempt"))
+    return value
+
+
+# Model.call's request fields; any other has no translation and is refused before sending.
+MESSAGES_FIELDS = {"model", "instructions", "input", "max_output_tokens", "reasoning", "text",
+                   "store"}
+# Haiku 5.5 bills prompts over 100,000 tokens at five times the declared prices, which
+# usage_cost would undercharge. The server adds its own prompt for thinking and structured
+# outputs, so this byte cap is a margin under that step, not a proof.
+# JUDGEMENT: Haiku byte cap — assistant's plan, adopted 2026-10-31: a larger request is refused
+# (in WH3, a forfeit); declaring the higher prices instead would send and charge it.
+LONG_PROMPT_BYTES = {"claude-haiku-5-5": 100_000}
+
+
+def _to_messages(body: dict) -> dict:
+    """The Messages API request for the Responses-shaped ``body`` that ``Model.call`` builds.
+    ``store`` is dropped: Anthropic keeps no response for later turns."""
+    unknown = sorted(body.keys() - MESSAGES_FIELDS)
+    if unknown:
+        raise ValueError(f"no Anthropic translation for request fields {unknown}")
+    wire = {"model": body["model"], "max_tokens": body["max_output_tokens"],
+            "system": body["instructions"], "messages": body["input"]}
+    reasoning = body.get("reasoning") or {}
+    config = {"effort": reasoning["effort"]} if "effort" in reasoning else {}
+    if "text" in body:
+        config["format"] = {"type": "json_schema", "schema": body["text"]["format"]["schema"]}
+    if config:
+        wire["output_config"] = config
+    if reasoning.get("summary") == "auto":
+        wire["thinking"] = {"type": "adaptive", "display": "summarized"}
+    limit = LONG_PROMPT_BYTES.get(body["model"])
+    if limit and len(json.dumps(wire).encode()) > limit:
+        raise ValueError(f"{body['model']} request over {limit} bytes, where its long-prompt"
+                         " prices start; they are not declared")
+    return wire
+
+
+def _from_messages(reply: dict) -> dict:
+    """The Responses-shaped reply for a Messages API ``reply``. Unknown blocks and stop
+    reasons pass without raising: a raise here would escape the call's charge."""
+    blocks = [block for block in reply.get("content") or [] if isinstance(block, dict)]
+    # Omitted thinking has empty text and redacted thinking none: nothing to keep.
+    output = [{"type": "reasoning",
+               "summary": [{"type": "summary_text", "text": block["thinking"]}]}
+              for block in blocks if block.get("type") == "thinking" and block.get("thinking")]
+    content = [{"type": "output_text", "text": block["text"]} for block in blocks
+               if block.get("type") == "text" and isinstance(block.get("text"), str)]
+    stop = reply.get("stop_reason")
+    # JUDGEMENT: Refusals — assistant's plan, adopted 2026-10-31: never sent `fallbacks` (another
+    # model would answer); a refusal is OpenAI's refusal shape, re-asked as an invalid reply.
+    if stop == "refusal":
+        content = [{"type": "refusal", "refusal": "".join(part["text"] for part in content),
+                    "stop_details": reply.get("stop_details")}]
+    if content:
+        output.append({"type": "message", "role": "assistant", "content": content})
+    status, details = "completed", None
+    if stop == "max_tokens":
+        status, details = "incomplete", {"reason": "max_output_tokens"}
+    elif stop not in ("end_turn", "refusal"):
+        status, details = "incomplete", {"reason": stop}
+    usage = reply.get("usage")
+    if isinstance(usage, dict):
+        # Anthropic's input_tokens leaves out cache reads and writes; Responses' includes them.
+        read = usage.get("cache_read_input_tokens") or 0
+        usage = {
+            "input_tokens": (usage.get("input_tokens") or 0) + read
+            + (usage.get("cache_creation_input_tokens") or 0),
+            "input_tokens_details": {"cached_tokens": read},
+            "output_tokens": usage.get("output_tokens") or 0,
+            "output_tokens_details": {"reasoning_tokens": (
+                usage.get("output_tokens_details") or {}).get("thinking_tokens") or 0},
+        }
+    else:
+        usage = None  # Model.call then charges the reserved worst case
+    return {"id": reply.get("id"), "model": reply.get("model"), "status": status,
+            "incomplete_details": details, "output": output, "usage": usage}
 
 
 def reasoning_parts(output: list | None) -> list[dict]:
     """Text parts of returned reasoning items, with their provider type, field and item index.
 
-    OpenAI returns summaries (``summary_text``); open-weight models through OpenRouter return
-    the reasoning itself (``reasoning_text`` in ``content``).
+    OpenAI and Anthropic return summaries (``summary_text``); open-weight models through
+    OpenRouter return the reasoning itself (``reasoning_text`` in ``content``).
     """
     return [dict(part, item_index=i, field=field)
             for i, item in enumerate(output or []) if item.get("type") == "reasoning"
@@ -234,7 +338,11 @@ class Model:
             **routing(self.provider, self.name),
             **(logprobs(self.name) if self.record_logprobs else {}),
         }
-        if self.record_exchanges and self.provider == "openai" and self.effort != "none":
+        # JUDGEMENT: Anthropic summaries — assistant's plan, adopted 2026-10-31: on whenever
+        # exchanges are recorded. A separate model writes them; added latency, which WH3
+        # counts, is unverified.
+        if (self.record_exchanges and self.provider in ("openai", "anthropic")
+                and self.effort != "none"):
             body["reasoning"]["summary"] = "auto"
         # Include the schema and an allowance for provider framing at one token/byte.
         tokens = len(json.dumps(body).encode()) + 1024
@@ -292,7 +400,9 @@ class Model:
                             ("provider_processing_ms", "actual_model", "transport_attempts")})
             attempt["seconds"] = transport["wall_seconds"]
             if self.provider != "openai":
-                attempt.update(provider=self.provider, backend=transport.get("backend"),
+                attempt["provider"] = self.provider
+            if self.provider == "openrouter":
+                attempt.update(backend=transport.get("backend"),
                                backend_model=transport.get("backend_model"),
                                router_attempts=transport.get("router_attempts"))
         self.totals.update(

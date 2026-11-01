@@ -21,9 +21,11 @@ def run(monkeypatch, *arguments):
     (["--model", "gpt-6-luna"], "openai", LEDGER_PATH),
     (["--provider", "openrouter", "--model", "qwen/qwen3.6-35b-a3b", "--effort", "none"],
      "openrouter", OPENROUTER_LEDGER_PATH),
+    (["--provider", "anthropic", "--model", "claude-haiku-5-5"], "anthropic",
+     LEDGER_PATH.with_name("spire-anthropic-spend.jsonl")),
 ])
 def test_play_charges_the_providers_ledger_and_records_the_provider(
-        tmp_path, monkeypatch, arguments, provider, ledger):
+        tmp_path, monkeypatch, capsys, arguments, provider, ledger):
     assert LEDGERS[provider] == ledger
     ledger = tmp_path / ledger.name  # a stand-in, so a fresh clone without runs/ passes
     ledger.touch()
@@ -43,6 +45,9 @@ def test_play_charges_the_providers_ledger_and_records_the_provider(
     assert config["provider"] == provider and config["ledger"] == str(ledger)
     assert "output" not in config and "command" not in config
     assert seen["api"].provider == provider and seen["api"].ledger.path == ledger
+    capsys.readouterr()
+    assert run(monkeypatch, "spend", "--provider", provider) == 0
+    assert capsys.readouterr().out.endswith(f" spent ({ledger})\n")
 
 
 def test_play_ledger_override_and_spend_read_the_named_file(tmp_path, monkeypatch, capsys):

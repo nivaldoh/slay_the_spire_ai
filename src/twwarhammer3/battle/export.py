@@ -489,7 +489,7 @@ histories and repeated starts.
 
 Before post-training or redistribution, review the source provider/model terms for the
 intended use (including restrictions on training competing models). Rows produced by
-OpenAI models stay out of training sets by default while that review is open; rows from
-open-weight models served through OpenRouter may enter them. This export is not
-permission or a training license. No credentials or HTTP authorization headers are read.
+OpenAI or Anthropic models stay out of training sets by default while that review is
+open; rows from open-weight models served through OpenRouter may enter them. This export
+is not permission or a training license. No credentials or HTTP authorization headers are read.
 """

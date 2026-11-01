@@ -123,7 +123,13 @@ def test_cli_play_config_has_no_wait_and_the_fixed_ledger_and_register(tmp_path,
     assert seen["makers"] == {"hold": Hold} and seen["output"] == tmp_path / "job"
 
 
-def test_cli_openrouter_selects_its_own_ledger_and_default_model(tmp_path, monkeypatch):
+# Before LEDGERS, every provider but OpenRouter charged the OpenAI ledger.
+@pytest.mark.parametrize("provider,model,ledger", [
+    ("openrouter", "z-ai/glm-5.3", OPENROUTER_LEDGER_PATH),
+    ("anthropic", "claude-haiku-5-5", LEDGER_PATH.with_name("anthropic-spend.jsonl")),
+])
+def test_cli_provider_selects_its_own_ledger_and_default_model(tmp_path, monkeypatch, capsys,
+                                                               provider, model, ledger):
     from twwarhammer3.battle import controllers
 
     seen = {}
@@ -131,18 +137,22 @@ def test_cli_openrouter_selects_its_own_ledger_and_default_model(tmp_path, monke
 
     def fake_play(output, config, *, makers):
         seen.update(config)
-        assert makers["llm"]().api.provider == "openrouter"
+        assert makers["llm"]().api.provider == provider
         return {"status": "completed"}
 
     monkeypatch.setattr(play, "play", fake_play)
-    ledger = tmp_path / OPENROUTER_LEDGER_PATH.name  # a stand-in for a fresh clone
+    assert cli.LEDGERS[provider] == ledger
+    ledger = tmp_path / ledger.name  # a stand-in for a fresh clone
     ledger.touch()
-    monkeypatch.setattr(cli, "OPENROUTER_LEDGER_PATH", ledger)
-    monkeypatch.setattr(sys, "argv", ["wh3", "play", "--provider", "openrouter",
+    monkeypatch.setitem(cli.LEDGERS, provider, ledger)
+    monkeypatch.setattr(sys, "argv", ["wh3", "play", "--provider", provider,
         "--scenario", "kho5-dwf5", "--budget-usd", "50", "--output", str(tmp_path / "job")])
     assert main() == 0
     assert seen["ledger"] == str(ledger)
-    assert seen["model"] == "z-ai/glm-5.3" and seen["provider"] == "openrouter"
+    assert seen["model"] == model and seen["provider"] == provider
+    monkeypatch.setattr(sys, "argv", ["wh3", "spend", "--provider", provider])
+    assert main() == 0
+    assert capsys.readouterr().out.endswith(f" spent ({ledger})\n")
 
 
 def test_report_command_prints_the_text_and_saves_text_json_and_html(tmp_path, monkeypatch,

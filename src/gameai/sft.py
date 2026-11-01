@@ -267,7 +267,8 @@ rows. Dropped by reason: `{json.dumps(counts['dropped'], sort_keys=True)}`.
 
 - Providers kept: {', '.join(arguments['providers'])}. Rows produced by other providers'
   models are dropped by default: whether OpenAI outputs may train a model is the owner's
-  open provider-terms decision. Open-weight model rows served through OpenRouter may.
+  open provider-terms decision, and Anthropic's terms forbid using its API to train
+  competing models. Open-weight model rows served through OpenRouter may.
   OpenRouter also serves closed models, so `openrouter` means open-weight only while
   `gameai/providers.py` declares nothing else for it: check each kept model's license.
 - Models kept: {', '.join(models) or 'none'}. Efforts kept: {efforts}.

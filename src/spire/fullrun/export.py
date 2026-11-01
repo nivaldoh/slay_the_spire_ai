@@ -429,8 +429,8 @@ def _data_card(summary: dict) -> str:
             if run["exported_records"]]
     statuses = Counter(run["status"] for run in runs)
     levels = Counter(str((run["profile"] or {}).get("ironclad_unlock_level")) for run in runs)
-    openai = sum(n for key, n in summary["records_by_model"].items()
-                 if key.startswith("openai/"))
+    closed = sum(n for key, n in summary["records_by_model"].items()
+                 if key.startswith(("openai/", "anthropic/")))
     return f"""# Slay the Spire full-run model-request export (schema {SCHEMA_VERSION})
 
 Offline export of saved original-engine runs (Ironclad, Ascension 0). One JSONL row per
@@ -468,8 +468,8 @@ attempt sent, retry feedback included. Traces before model-exchange capture
 (`manifest.model_exchange_version` absent) kept the first prompt but not retry prompts,
 request bodies or output items: such retry prompts are null (`missing_retry_prompt`) and
 `reasoning` is null (`reasoning_not_recorded`). An empty reasoning list means capture
-existed but no visible reasoning was returned. OpenAI returns reasoning summaries, not
-full reasoning. Reasoning never re-enters the prompts.
+existed but no visible reasoning was returned. OpenAI and Anthropic return reasoning
+summaries, not full reasoning. Reasoning never re-enters the prompts.
 
 A request that ended without an accepted reply (invalid replies, an API failure, a budget
 stop) has a non-null `error`, no `decision` and no `choice`; its last attempt carries the
@@ -519,8 +519,9 @@ are not the same task: check `provenance.unlock_level` before mixing them. Devel
 seeds were replayed across harness versions, so rows of one seed share game situations:
 split by `group`.
 
-Provider terms: {openai} rows here were produced by OpenAI models. By default they must
-not enter a training set; the owner has not decided whether the provider's terms allow
-it. Rows from open-weight models served through OpenRouter may. This export is not
-permission or a training license. No credentials or authorization headers are read.
+Provider terms: {closed} rows here were produced by OpenAI or Anthropic models. By default
+they must not enter a training set: the owner has not decided whether OpenAI's terms
+allow it, and Anthropic's terms forbid using its API to train competing models. Rows
+from open-weight models served through OpenRouter may. This export is not permission or
+a training license. No credentials or authorization headers are read.
 """
