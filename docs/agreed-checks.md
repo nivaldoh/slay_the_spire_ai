@@ -15,6 +15,27 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 GaP live target preferences (agreed 2026-11-01, owner: "I agree with the proposed
+  live verification method"): delayed/stale replies, cancellation, ownership, independent
+  graph/team progress, fresh instances, public inputs and shared budgets; canned replies
+  and planted wrong implementations. Component command: `uv run --locked pytest -ra
+  tests/gameai/test_goal_transport_timeout.py
+  tests/twwarhammer3/graph/test_wh3_graph_goals.py
+  tests/twwarhammer3/graph/test_wh3_graph_goal_factory.py
+  tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py
+  tests/twwarhammer3/graph/test_wh3_graph_goal_view.py`.
+  Live: one fresh 1x diagnostic, two Haiku members and two goal requests each; each
+  eligible preference must reach selection, an owned accepted attack and a later public
+  target reading, with a change from first target to second. Raw records must match
+  controller/graph/battle/source identities, model requests, ledger charges and cleanup;
+  check engine speed and the agreed Windows-clock band. No strength/completion claim.
+  Frozen local command: `uv run --locked python
+  runs/gap-continuation-20261101/goal-probe-draft.py --output OUTPUT`;
+  `--recount OUTPUT` never launches. Checker SHA256:
+  `4c992d383a9c0484b1a975e9a87c3484aa77c180486fd6300624a06cca43ac26`.
+  Bounds rest on JUDGEMENT Goal probe bounds in that script/card. The conservative
+  transient-target rejection can fail a valid run; failure alone is not a runtime bug.
+  Component/checker evidence: `runs/gap-continuation-20261101/`; live not yet run.
 - WH3 GaP execution viewer (agreed 2026-11-01, owner: "Use this check"): compare graph
   identity, node transitions, ordinary orders, acknowledgements and completion witnesses
   against raw configuration/trace rows; plant wrong mappings, then exercise both saved

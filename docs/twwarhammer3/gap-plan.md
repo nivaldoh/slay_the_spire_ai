@@ -333,10 +333,11 @@ Use it with `play --policy configured --controller-config PATH --provider anthro
 --budget-usd 5`, adding normal scenario/output arguments. A missing ledger is refused;
 the cap includes prior jobs. This example has not run live.
 
-The proposed check covers delayed/stale replies, cancellation, eligibility, independent
+The owner agreed the live verification method on 2026-11-01: "I agree with the proposed
+live verification method." It covers delayed/stale replies, cancellation, eligibility, independent
 team progress, shared budgets and trace provenance with canned models and planted errors,
-then a bounded fresh 1x two-target dispatch probe. The owner's answer on that new method
-is pending; the feature is unverified and no dependent live probe has run.
+then a bounded fresh 1x two-target dispatch probe. The feature remains unverified until
+that check passes at a recorded revision; no dependent live probe has run yet.
 
 ### Authoring and revision command
 

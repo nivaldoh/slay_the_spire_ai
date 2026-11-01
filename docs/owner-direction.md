@@ -35,6 +35,10 @@ Both games:
   using your best judgement. If you finish early, keep going with other tasks planned".
   Viewer check (2026-11-01): "Use this check" — raw graph/node/order/witness mappings,
   planted wrong mappings, then both saved battles exercised in a browser.
+  Live target-preference check (2026-11-01): "I agree with the proposed live verification
+  method" — delayed/stale replies, cancellation, ownership and independent progress
+  offline, then a bounded fresh 1x probe of two eligible target preferences and their
+  dispatched orders/public target readings. Existing cumulative $5 cap; no strength claim.
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check
