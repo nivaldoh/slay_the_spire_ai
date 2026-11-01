@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (factory efficiency): "consuming time from my system during an automated process
+  is fine, and is very different from consuming time from myself as a reviewer, which is the
+  part that matters the most." The owner asked to put this distinction in the factory's
+  definition so it is remembered. Applied: [workflow.md](workflow.md) makes reducing the
+  owner's attention and manual review work the main efficiency goal, separate from machine runtime.
 - 2026-10-31 (evening, Anthropic provider): "Implement docs/anthropic-provider-plan.md." The
   owner's key is "scoped to 'Organization'" and needs an `anthropic-workspace-id` header; "It
   expires on April 1st 2027 and has a budget of $200 that we will use very carefully."

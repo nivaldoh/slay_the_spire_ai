@@ -2,6 +2,12 @@
 
 Agents do most of the work; the owner keeps the judgement: what to build, what "correct"
 means, what a result means. The owner reads short cards and short reports, not code.
+Owner, 2026-10-31: the factory's main efficiency goal is to reduce the owner's attention
+and manual review work. Machine runtime and owner review time are separate costs. More
+automated work is worthwhile when it reduces the owner's workload while preserving
+correctness; a longer automated check is not by itself a problem. Assess the factory by
+how much review and intervention it still requires from the owner.
+
 Owner, 2026-10-31: manual review is unavailable for now, and essentially the entire codebase
 has not been manually reviewed. The factory must work more independently and reliably;
 its own process and automated checks may contain errors too.
