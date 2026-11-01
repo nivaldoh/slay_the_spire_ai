@@ -9,7 +9,7 @@ import sys
 import pytest
 from spire_messages import combat_message
 
-from gameai.ledger import Ledger
+from gameai.ledger import BudgetExhausted, Ledger
 from spire.__main__ import main
 from spire.fullrun import export, play
 from spire.fullrun.llm import LLMPolicy
@@ -214,7 +214,7 @@ def test_new_traces_keep_retry_prompts_reasoning_and_failed_requests(tmp_path):
         event("policy_failure", failure=failure.value.failure)
 
     def broke(policy, event):
-        with pytest.raises(Exception, match="Spent"):
+        with pytest.raises(BudgetExhausted, match="Spent"):
             play._decide(combat_message(), policy, "s", 1, {"policy_calls": 0}, event)
 
     job = make_job(tmp_path, [

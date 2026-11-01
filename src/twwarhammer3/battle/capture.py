@@ -99,8 +99,12 @@ class PassiveCapture:
                             windows_path(self.bridge / "observation.json"), self.job, battle,
                         ], capture_output=True, text=True, timeout=6)
                         captured = json.loads(process.stdout)
-                    except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
-                        captured = {"status": "capture_failed", "error": str(exc)}
+                        if not isinstance(captured, dict):
+                            captured = {"status": "capture_failed",
+                                        "error": "Capture output must be a JSON object"}
+                    except Exception as exc:
+                        captured = {"status": "capture_failed",
+                                    "error": f"{type(exc).__name__}: {exc}"}
                     write_json(self.bridge / f"capture-{battle}-{trigger}.json",
                                {**captured, "job": self.job, "battle": battle, "trigger": trigger})
             except (OSError, ValueError):

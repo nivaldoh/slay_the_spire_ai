@@ -19,3 +19,35 @@ jobs:
           version: "0.12.5"
       - run: uv sync --locked
       - run: uv run --locked python scripts/check.py
+
+  # Pattern: pytorch/pytorch .github/workflows/lint.yml test_collect_env matrix.
+  # JUDGEMENT?: Optional CI — Codex, 2026-10-31: add train/llm CPU jobs so optional
+  # tests execute on PRs; default-only CI skips them. These jobs do not test CUDA hardware.
+  model-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        extra: [train, llm]
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      GAMEAI_TEST_WINDOWS: "0"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
+        with:
+          version: "0.12.5"
+      - run: uv sync --locked --extra "${{ matrix.extra }}"
+      - name: Require the selected dependencies
+        run: |
+          uv run --locked --extra "${{ matrix.extra }}" python -c "import torch; assert not torch.cuda.is_available()"
+          if [ "${{ matrix.extra }}" = "llm" ]; then
+            uv run --locked --extra llm python -c "import transformers, peft, accelerate, safetensors"
+          fi
+      - run: uv run --locked --extra "${{ matrix.extra }}" python scripts/check.py

@@ -7,9 +7,9 @@ import signal
 import time
 from contextlib import nullcontext
 
+import combat_evidence as evidence_fixtures
 import pytest
-import test_evidence
-import test_rollout_lifecycle
+from combat_support import harness
 
 from gameai import provenance
 from gameai.provenance import REPO_ROOT
@@ -23,7 +23,7 @@ SCRIPT = REPO_ROOT / "scripts/inventory_scenarios.py"
 spec = importlib.util.spec_from_file_location("inventory_scenarios", SCRIPT)
 inventory = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(inventory)
-runtime_harness = test_rollout_lifecycle.harness
+runtime_harness = harness
 REAL_REFERENCE = REPO_ROOT / "runs/first-combat/baseline-heuristic-settled-20261011"
 
 
@@ -32,7 +32,7 @@ def sha(value):
 
 
 def combat(seed):
-    value = test_evidence.combat_message()
+    value = evidence_fixtures.combat_message()
     state = value["game_state"]
     state.update(gold=199, deck=[
         {"id": name, "upgrades": 0, "cost": 1 if name != "Bash" else 2}
@@ -312,11 +312,13 @@ def test_absolute_alarm_interrupts_blocking_collection_and_restores_handler():
     assert signal.getitimer(signal.ITIMER_REAL)[0] == 0
 
 
-def test_real_engine_v1_reference_is_eligible_and_exactly_replayable():
+def test_real_engine_v1_reference_is_eligible_and_equivalence_accepts_it():
     if not REAL_REFERENCE.exists():
         pytest.skip("Local original-engine evidence is not shipped in Git")
     reference, episode = inventory.load_reference(REAL_REFERENCE)
     assert reference["public_episode"]["combat_start_sha256"] == inventory.START_SHA256
+    # This is an acceptance control. Independent repeat trajectories are checked in
+    # test_inventory_engine_regressions.py, rather than by comparing a run to itself.
     assert inventory.equivalent(episode, episode)
     assert inventory.eligibility(episode, inventory.start_context(REAL_REFERENCE))["eligible"]
 

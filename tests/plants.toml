@@ -10,6 +10,96 @@
 # copies those from the main checkout into its scratch worktree.
 
 [[plant]]
+id = "provenance-allows-dirty-source"
+guards = "Uncommitted scoped source cannot be attributed to HEAD"
+file = "src/gameai/provenance.py"
+old = "    if status:\n        raise ValueError"
+new = "    if False:\n        raise ValueError"
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-ignores-untracked-source"
+guards = "New untracked source also prevents attribution to HEAD"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--untracked-files=no", "--", *paths)'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-checks-only-first-scope-entry"
+guards = "Standalone dependency files after source directories also prevent attribution"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--", *paths[:1])'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 independent source-attribution test review"
+
+[[plant]]
+id = "provenance-ignores-caller-scope"
+guards = "Other-game edits outside an explicit source scope do not block attribution"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--", *SOURCE_PATHS)'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-returns-wrong-revision"
+guards = "Clean source records the actual committed revision"
+file = "src/gameai/provenance.py"
+old = 'return git("rev-parse", "HEAD").strip()'
+new = 'return "0" * 40'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-fixed-hash"
+guards = "Source fingerprints depend on file bytes"
+file = "src/gameai/provenance.py"
+old = 'return hashlib.file_digest(file, "sha256").hexdigest()'
+new = 'return "0" * 64'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "ledger-ignores-earlier-job-charges"
+guards = "Earlier jobs' charges retain their share of the selected ledger's total cap"
+file = "src/gameai/ledger.py"
+old = 'self.spent = sum(_charge_amount(json.loads(line)["usd"]) for line in lines)'
+new = 'self.spent = 0.0'
+tests = ["tests/gameai/test_ledger.py"]
+source = "2026-10-31 retained-budget test audit"
+
+[[plant]]
+id = "ledger-reservations-ignore-spent"
+guards = "Reservations fit only in the allowance left after earlier charges"
+file = "src/gameai/ledger.py"
+old = "if self.spent + self.held + usd > self.budget:"
+new = "if self.held + usd > self.budget:"
+tests = ["tests/gameai/test_ledger.py"]
+source = "2026-10-31 retained-budget test audit"
+
+[[plant]]
+id = "checkpoint-injection-timing-raises-wrong-error"
+guards = "Invalid declared injection timing is a parameter error, not a missing-key failure"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '''raise ValueError("the injection's declared times do not follow the grid rule")'''
+new = '''raise KeyError("the injection's declared times do not follow the grid rule")'''
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py::test_step_run_injection_refusals_use_the_contract_error"]
+source = "2026-10-31 negative-test exception audit"
+
+[[plant]]
+id = "sampling-score-mismatch-raises-wrong-error"
+guards = "A score/choice count mismatch is reported as a protocol failure"
+file = "src/spire/language/sampling.py"
+old = '''raise ProtocolError("Candidate scores differ from legal choices or are nonfinite")'''
+new = '''raise KeyError("Candidate scores differ from legal choices or are nonfinite")'''
+tests = ["tests/language/test_language_sampling.py::test_sampler_rejects_score_count_mismatch_as_a_protocol_error"]
+source = "2026-10-31 negative-test exception audit"
+
+[[plant]]
 id = "ledger-ignores-must-exist"
 guards = "Play commands refuse a missing ledger file"
 file = "src/gameai/ledger.py"
@@ -1315,6 +1405,167 @@ new = "        if observation.get(\"awaiting_orders\"):"
 tests = ["tests/twwarhammer3/test_wh3_play.py"]
 source = "2026-10-31 run, B4 speed reading"
 
+[[plant]]
+id = "model-ask-drops-uncaptured-transport-reraise"
+guards = "A transport error without response metadata stays an APIError and releases its reservation"
+file = "src/gameai/llm.py"
+old = "                    if not hasattr(error, \"attempt\"):\n                        raise\n"
+new = "                    if not hasattr(error, \"attempt\"):\n                        pass\n"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "mailbox-gives-up-on-transient-publish-lock"
+guards = "Temporary replacement locks retain whole prior content until the new message is published"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "            except PermissionError:\n                # The game holds the file open for a moment while reading it.\n                time.sleep(0.05 * (attempt + 1))\n"
+new = "            except PermissionError:\n                raise\n"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_transient_publish_lock_keeps_prior_content_until_whole_session_is_replaced"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "mailbox-hides-persistent-publish-lock"
+guards = "An unrecoverable replacement failure remains visible and never claims successful publication"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "\n        os.replace(temporary, path)\n"
+new = "\n        return\n"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_persistent_publish_lock_propagates_failure_and_preserves_prior_content"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "model-uncertain-charge-is-only-one-third"
+guards = "Every uncertain attempt consumes its reserved share"
+file = "src/gameai/llm.py"
+old = "usd = reservation * attempts"
+new = "usd = reservation * attempts / TRANSPORT_ATTEMPTS"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 independent uncertain-spend test review"
+
+[[plant]]
+id = "model-uncertain-charge-ignores-attempt-count"
+guards = "All uncertain attempts are charged, not just the first"
+file = "src/gameai/llm.py"
+old = "usd = reservation * attempts"
+new = "usd = reservation"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 independent uncertain-spend test review"
+
+[[plant]]
+id = "ledger-charge-skips-amount-validation"
+guards = "Invalid new charges cannot poison shared spending or append corrupt evidence"
+file = "src/gameai/ledger.py"
+old = "\n        _charge_amount(usd)\n"
+new = "\n        pass\n"
+tests = ["tests/gameai/test_ledger.py::test_invalid_charge_preserves_spend_holds_and_history"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "ledger-reopen-skips-amount-validation"
+guards = "Malformed historical charges stop reopening instead of weakening the retained cap"
+file = "src/gameai/ledger.py"
+old = "self.spent = sum(_charge_amount(json.loads(line)[\"usd\"]) for line in lines)"
+new = "self.spent = sum(json.loads(line)[\"usd\"] for line in lines)"
+tests = ["tests/gameai/test_ledger.py::test_invalid_prior_charge_refuses_reopen_without_rewriting_evidence"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-accepts-overcached-usage"
+guards = "Cached-token counts cannot exceed total input even when the calculated cost stays positive"
+file = "src/gameai/llm.py"
+old = "    if cached > input_tokens:\n"
+new = "    if False:\n"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-invalid-usage-charges-zero"
+guards = "Invalid billing data charges one held attempt share before stopping"
+file = "src/gameai/llm.py"
+old = "usd, cost_error = reservation, str(error)"
+new = "usd, cost_error = 0.0, str(error)"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-accepts-nonfinite-calculated-cost"
+guards = "Overflowing token-price arithmetic follows the conservative billing error path"
+file = "src/gameai/llm.py"
+old = "    if not math.isfinite(cost) or cost < 0:\n"
+new = "    if False:\n"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "capture-skips-filename-validation"
+guards = "Existing foreign or escaping capture paths cannot overwrite episode destinations"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-skips-basename-validation"
+guards = "A matching battle prefix cannot make directory traversal a valid capture basename"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if not filename.startswith(f\"still-{battle}-\"):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-skips-battle-prefix-validation"
+guards = "Existing captures from a different battle cannot enter this episode"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if Path(filename).name != filename:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-omits-failed-still-records"
+guards = "Persisted still records retain every attempted capture including failures"
+file = "src/twwarhammer3/battle/capture.py"
+old = "write_json(episode / \"stills.json\", shots)"
+new = "write_json(episode / \"stills.json\", [s for s in shots if s.get(\"status\") != \"capture_failed\"])"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_copy_keeps_failures_and_checks_battle_identity"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "coordinated-rush-never-updates-follow-posts"
+guards = "Both waiting mobile units receive follow moves after observed screen progress"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "        if waiting and enemies:\n"
+new = "        if waiting and enemies and not self.posts:\n"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_mobile_units_follow_actual_screen_progress_then_release_on_contact"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "check-ledger-omits-successful-checks"
+guards = "The saved normal-gate result retains every declared successful check, not an empty map"
+file = "scripts/check.py"
+old = "\"checks\": agreed}"
+new = "\"checks\": {name: result for name, result in agreed.items() if not result[\"passed\"]}}"
+tests = ["tests/test_check_script.py::test_normal_check_accepts_a_completed_test_report"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-duplicates-prior-failed-record"
+guards = "A rejected still retains its own identity rather than duplicating a previous failed attempt"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    shot.update(status=\"capture_failed\", error=\"Invalid capture filename\")\n                    shot.pop(\"file\", None)"
+new = "                    shot.update(status=\"capture_failed\", error=\"Invalid capture filename\")\n                    shot.pop(\"file\", None)\n                    if shots:\n                        shot = dict(shots[-1])"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_copy_keeps_failures_and_checks_battle_identity"]
+source = "2026-10-31 independent nonvacuous-assertion review"
+
+[[plant]]
+id = "policy-failure-omits-overlong-attempts"
+guards = "PolicyFailure retains every attempted reply even when invalid response text is long"
+file = "src/twwarhammer3/battle/llm.py"
+old = "\"attempts\": error.attempts}"
+new = "\"attempts\": [a for a in error.attempts if len(a.get(\"text\", \"\")) <= 10000]}"
+tests = ["tests/twwarhammer3/test_wh3_llm.py::test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure"]
+source = "2026-10-31 nonvacuous failure-attempt record audit"
 # 2026-10-31 run, B5: check.py's yes list once per base, ended runs' scratch pruned, Stop-hook log.
 
 [[plant]]
@@ -1362,6 +1613,77 @@ new = "        with open(os.devnull, \"a\", encoding=\"utf-8\") as log:"
 tests = ["tests/test_hooks.py"]
 source = "2026-10-31 run, B5 factory"
 
+[[plant]]
+id = "play-lets-recording-errors-escape"
+guards = "Malformed optional evidence cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except OSError as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-consumes-recording-interrupts"
+guards = "Optional evidence copying propagates an operator interrupt"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except BaseException as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_copying_does_not_consume_an_operator_interrupt"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-lets-imagery-errors-escape"
+guards = "Malformed optional evidence cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except OSError as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-consumes-imagery-interrupts"
+guards = "Optional evidence copying propagates an operator interrupt"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except BaseException as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_copying_does_not_consume_an_operator_interrupt"]
+source = "2026-10-31 optional-evidence finalization regression"
+
+[[plant]]
+id = "play-only-observed-recording-shape-errors"
+guards = "A deeply malformed optional sidecar cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except (AttributeError, TypeError) as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 independent optional-evidence review"
+
+[[plant]]
+id = "play-only-observed-imagery-shape-errors"
+guards = "A deeply malformed optional sidecar cannot discard the saved engine result"
+file = "src/twwarhammer3/battle/play.py"
+old = "except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "except (AttributeError, TypeError) as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_the_saved_engine_ending"]
+source = "2026-10-31 independent optional-evidence review"
+
+[[plant]]
+id = "recording-copies-before-identity-check"
+guards = "Rejected replay identity cannot create or overwrite episode evidence"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}\n        shutil.copyfile(source, episode / \"replay.jsonl\")"
+new = "        shutil.copyfile(source, episode / \"replay.jsonl\")\n        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
+source = "2026-10-31 replay-identity oracle audit"
+
+[[plant]]
+id = "recording-ignores-battle-identity"
+guards = "Rejected replay identity cannot create or overwrite episode evidence"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if header.get(\"job\") != job or header.get(\"battle\") != battle:"
+new = "if header.get(\"job\") != job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
+source = "2026-10-31 replay-identity oracle audit"
 # 2026-10-31 refusal sweep review: wrong versions that passed every test until new tests.
 
 [[plant]]
@@ -1399,3 +1721,345 @@ old = "                if not self._changed.wait(max(0.0, deadline - time.monoto
 new = "                if not self._changed.wait(self.ack_s):"
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
 source = "2026-10-31 run, refusal sweep review"
+
+[[plant]]
+id = "check-warning-cache-error-blocks-gate"
+guards = "An optional warning-display cache failure cannot block the actual gate or its report"
+file = "scripts/check.py"
+old = "    except OSError:\n        pass  # This cosmetic cache must not fail the checks or their report."
+new = "    except PermissionError:\n        pass  # This cosmetic cache must not fail the checks or their report."
+tests = ["tests/test_check_script.py::test_warning_cache_write_failure_cannot_block_passing_checks"]
+source = "2026-10-31 warning-cache failure regression"
+
+[[plant]]
+id = "capture-error-labels-recording-as-a-win"
+guards = "Capture errors preserve an engine-reported loss or draw in the saved outcome"
+file = "src/twwarhammer3/battle/play.py"
+old = "            except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "            except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}\n                result[\"status\"] = \"won\""
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_losses_and_draws"]
+source = "2026-10-31 non-winning capture outcome oracle"
+
+[[plant]]
+id = "capture-error-labels-imagery-as-a-win"
+guards = "Capture errors preserve an engine-reported loss or draw in the saved outcome"
+file = "src/twwarhammer3/battle/play.py"
+old = "            except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "            except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}\n                result[\"status\"] = \"won\""
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_losses_and_draws"]
+source = "2026-10-31 non-winning capture outcome oracle"
+
+[[plant]]
+id = "passive-capture-backend-error-reraised"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": f\"{type(exc).__name__}: {exc}\"}"
+new = "                        raise exc"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-error-reason-erased"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": f\"{type(exc).__name__}: {exc}\"}"
+new = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": str(exc)[:0]}"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-nonobject-guard-removed"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        if not isinstance(captured, dict):"
+new = "                        if False:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-deep-json-not-caught"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    except Exception as exc:"
+new = "                    except (OSError, ValueError, subprocess.TimeoutExpired) as exc:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-one-failure-stops-later-captures"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\","
+new = "                    if captured.get(\"status\") == \"capture_failed\":\n                        self.stop.set()\n                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\","
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "transport-invalid-header-rethrows"
+guards = "An invalid optional processing header preserves the completed response without resending"
+file = "src/gameai/llm.py"
+old = "                    except ValueError:\n                        processing = None"
+new = "                    except ValueError:\n                        raise"
+tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
+source = "2026-10-31 optional processing telemetry oracle"
+
+[[plant]]
+id = "transport-invalid-header-resends"
+guards = "An invalid optional processing header preserves the completed response without resending"
+file = "src/gameai/llm.py"
+old = "                    except ValueError:\n                        processing = None"
+new = "                    except ValueError:\n                        continue"
+tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
+source = "2026-10-31 optional processing telemetry oracle"
+
+[[plant]]
+id = "worker-missing-observation-guard-removed"
+guards = "A move before the first observation is rejected without publishing orders"
+file = "src/twwarhammer3/engine/worker.py"
+old = "        if observation is None:\n            return \"no observation yet\""
+new = "        if False:\n            return \"no observation yet\""
+tests = ["tests/twwarhammer3/test_wh3_worker.py::test_a_move_before_the_first_observation_is_rejected_without_touching_the_bridge"]
+source = "2026-10-31 native worker observation prerequisite oracle"
+
+[[plant]]
+id = "feint-withdrawal-dropped"
+guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+new = "            return []\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
+source = "2026-10-31 FeintFlank withdrawal identity oracle"
+
+[[plant]]
+id = "feint-withdrawal-one-rider"
+guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+new = "            return [order for unit in units[:1]\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
+source = "2026-10-31 FeintFlank withdrawal identity oracle"
+
+[[plant]]
+id = "passive-request-foreign-observation-job-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if observation.get(\"job\") != self.job or not NAME.fullmatch(battle):"
+new = "                if not NAME.fullmatch(battle):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-foreign-imagery-job-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if record.get(\"job\") != self.job or record.get(\"battle\") != battle:"
+new = "                if record.get(\"battle\") != battle:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-foreign-imagery-battle-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if record.get(\"job\") != self.job or record.get(\"battle\") != battle:"
+new = "                if record.get(\"job\") != self.job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-pending-shot-captured"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    if (not NAME.fullmatch(trigger) or key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+new = "                    if not NAME.fullmatch(trigger) or key in seen:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "pin-withdrawal-all-orders-to-pin"
+guards = "PinThenRear withdrawal orders address both eligible riders"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+new = "            return [order for unit in units\n                    for order in self.move(pin, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
+source = "2026-10-31 PinThenRear withdrawal identity oracle"
+
+[[plant]]
+id = "pin-withdrawal-all-orders-to-hammer"
+guards = "PinThenRear withdrawal orders address both eligible riders"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+new = "            return [order for unit in units\n                    for order in self.move(hammer, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
+source = "2026-10-31 PinThenRear withdrawal identity oracle"
+
+[[plant]]
+id = "passive-path-unsafe-battle-component-accepted"
+guards = "Unsafe battle and trigger components cannot write outside the bridge"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if observation.get(\"job\") != self.job or not NAME.fullmatch(battle):"
+new = "                if observation.get(\"job\") != self.job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_cannot_write_through_a_path_component"]
+source = "2026-10-31 passive capture path component ownership oracle"
+
+[[plant]]
+id = "passive-path-unsafe-trigger-component-accepted"
+guards = "Unsafe battle and trigger components cannot write outside the bridge"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    if (not NAME.fullmatch(trigger) or key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+new = "                    if (key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_cannot_write_through_a_path_component"]
+source = "2026-10-31 passive capture path component ownership oracle"
+
+[[plant]]
+id = "passive-mailbox-transient-read-errors-reraised"
+guards = "Transient missing, locked and partial mailbox reads allow a later capture"
+file = "src/twwarhammer3/battle/capture.py"
+old = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+new = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                raise"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_retries_transient_mailbox_reads"]
+source = "2026-10-31 passive mailbox read recovery oracle"
+
+[[plant]]
+id = "passive-mailbox-locked-reads-not-caught"
+guards = "Transient missing, locked and partial mailbox reads allow a later capture"
+file = "src/twwarhammer3/battle/capture.py"
+old = "            except (OSError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+new = "            except (FileNotFoundError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_retries_transient_mailbox_reads"]
+source = "2026-10-31 passive mailbox read recovery oracle"
+
+[[plant]]
+id = "passive-dedup-seen-key-loses-battle"
+guards = "Repeated successful still requests capture once and new battles remain independent"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    key = (battle, trigger)"
+new = "                    key = trigger"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle"]
+source = "2026-10-31 successful capture deduplication and battle identity oracle"
+
+[[plant]]
+id = "passive-dedup-successful-request-forgotten"
+guards = "Repeated successful still requests capture once and new battles remain independent"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\",\n                               {**captured, \"job\": self.job, \"battle\": battle, \"trigger\": trigger})"
+new = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\",\n                               {**captured, \"job\": self.job, \"battle\": battle, \"trigger\": trigger})\n                    if captured.get(\"status\") == \"captured\":\n                        seen.discard(key)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle"]
+source = "2026-10-31 successful capture deduplication and battle identity oracle"
+
+[[plant]]
+id = "capture-disabled-start"
+guards = "Disabled passive capture does not start its worker thread"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.start()"
+new = "        self.thread.start()"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 disabled passive-capture lifecycle audit"
+
+[[plant]]
+id = "capture-disabled-join"
+guards = "Disabled passive capture does not join a thread it did not start"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.join(timeout=7)"
+new = "        self.thread.join(timeout=7)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 disabled passive-capture lifecycle audit"
+
+[[plant]]
+id = "capture-disabled-join-on-error"
+guards = "Disabled capture does not join an unstarted thread while a body error unwinds"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.join(timeout=7)"
+new = "        if self.enabled or _[0] is not None:\n            self.thread.join(timeout=7)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 independent disabled-capture exceptional-exit review"
+
+[[plant]]
+id = "audit-reference-refusal-removed"
+guards = "Unscored audit reference is refused before candidate attempts"
+file = "src/twwarhammer3/battle/audit.py"
+old = "raise RuntimeError(f\"the reference {reference} has no engine ending\")"
+new = "RuntimeError(f\"the reference {reference} has no engine ending\")"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 branch-audit launcher refusal sweep"
+
+[[plant]]
+id = "audit-restore-stop-removed"
+guards = "Audit stops after the first restore failure rather than launching more candidates"
+file = "src/twwarhammer3/battle/audit.py"
+old = "raise RuntimeError(f\"{directory}: {attempt['status']} ({attempt.get('reason')})\")"
+new = "RuntimeError(f\"{directory}: {attempt['status']} ({attempt.get('reason')})\")"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 branch-audit launcher refusal sweep"
+
+[[plant]]
+id = "audit-reference-must-win"
+guards = "Scored lost and drawn audit references are admitted"
+file = "src/twwarhammer3/battle/audit.py"
+old = "not in checkpoint.SCORED"
+new = "not in (\"won\",)"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent scored-reference review and outcome classification challenge"
+
+[[plant]]
+id = "audit-gameplay-endings-stop"
+guards = "Gameplay lost and draw outcomes do not trigger restore-failure stop"
+file = "src/twwarhammer3/battle/audit.py"
+old = "if attempt[\"status\"] in STOPS:"
+new = "if attempt[\"status\"] in STOPS or attempt[\"status\"] in {\"lost\", \"draw\"}:"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent scored-reference review and outcome classification challenge"
+
+[[plant]]
+id = "audit-skips-new-reference"
+guards = "A missing rung reference is restored before probe or candidate work"
+file = "src/twwarhammer3/battle/audit.py"
+old = "checkpoint.restore_episode(record_path, step_plan(plan), reference)"
+new = "None"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-reuses-reference-directory"
+guards = "Reference creation and every candidate restore receive fresh attempt directories"
+file = "src/twwarhammer3/battle/audit.py"
+old = "reference = next_directory()"
+new = "reference = output / \"attempt-0000\""
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-probe-wrong-reference"
+guards = "Each rung probe uses the reference belonging to its record"
+file = "src/twwarhammer3/battle/audit.py"
+old = "probe = checkpoint.injection_for(reference, record, [], \"probe\", rung.get(\"tick\"))"
+new = "probe = checkpoint.injection_for(output, record, [], \"probe\", rung.get(\"tick\"))"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-injection-wrong-reference"
+guards = "Each candidate injection uses its rung reference"
+file = "src/twwarhammer3/battle/audit.py"
+old = "injection = checkpoint.injection_for(reference, record, candidate[\"orders\"], request,"
+new = "injection = checkpoint.injection_for(output, record, candidate[\"orders\"], request,"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-attempt-wrong-reference"
+guards = "Candidate restore attribution names the reference used by its rung"
+file = "src/twwarhammer3/battle/audit.py"
+old = "\"reference\": str(reference), \"candidate\": candidate[\"id\"],"
+new = "\"reference\": str(output), \"candidate\": candidate[\"id\"],"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-validates-first-reference"
+guards = "Each later supplied reference is validated from its own attempt record"
+file = "src/twwarhammer3/battle/audit.py"
+old = "json.loads((reference / \"attempt.json\").read_text())[\"status\"]"
+new = "json.loads(((Path(plan[\"rungs\"][0][\"reference\"]) if plan[\"rungs\"][0].get(\"reference\") else reference) / \"attempt.json\").read_text())[\"status\"]"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent mixed-rung reference review"

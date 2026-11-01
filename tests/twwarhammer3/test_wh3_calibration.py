@@ -59,6 +59,8 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
     obs["time_ms"] = 18000
     retreat = policy.decide(obs)
     validate_orders(retreat, obs)
+    # Rests on JUDGEMENT docs/twwarhammer3/tactic-cards.md FeintFlank withdrawal.
+    assert {order["unit"] for order in retreat} == {"f1", "f2"}
     assert policy.phase == "withdraw" and all(order["type"] == "move" for order in retreat)
 
 
@@ -245,6 +247,7 @@ def test_mobile_units_follow_actual_screen_progress_then_release_on_contact():
     obs["friendly"][0].update(z=300)
     # The old speed estimate released here, but actual contact can still be far away.
     following = [o for o in policy.decide(obs) if o["unit"] in {"f2", "f3"}]
+    assert {o["unit"] for o in following} == {"f2", "f3"}
     assert all(o["type"] == "move" and o["z"] == 275 for o in following)
     assert policy.metadata()["released_s"] == {}
     obs["friendly"][0].update(state=["melee"])
@@ -863,6 +866,8 @@ def test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned():
     policy.decide(obs)
     obs["time_ms"] = 10000
     retreat = policy.decide(obs)
+    # Rests on JUDGEMENT docs/twwarhammer3/tactic-cards.md PinThenRear withdrawal.
+    assert {order["unit"] for order in retreat} == {"f1", "f2"}
     assert policy.phase == "withdraw" and len(retreat) == 2
 
 

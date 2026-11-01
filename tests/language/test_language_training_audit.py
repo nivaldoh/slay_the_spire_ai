@@ -11,7 +11,7 @@ import pytest
 torch = pytest.importorskip("torch")
 pytest.importorskip("safetensors")
 
-import test_language_training as trainer_tests  # noqa: E402
+import language_training_support as trainer_fixtures  # noqa: E402
 
 from gameai.provenance import REPO_ROOT  # noqa: E402
 from spire.language import policy, training  # noqa: E402
@@ -24,9 +24,9 @@ SPEC = importlib.util.spec_from_file_location(
 audit = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(audit)
 REAL_VERIFY = training.verify_dataset
-toy = trainer_tests.toy
-evidence_run = trainer_tests.evidence_run
-run = trainer_tests.run
+toy = trainer_fixtures.toy
+evidence_run = trainer_fixtures.evidence_run
+run = trainer_fixtures.run
 
 
 def read(path):
@@ -71,12 +71,12 @@ def setup(tmp_path, toy, run, monkeypatch):
     ).strip()
     source = {"revision": revision, "files": audit.archived_source(revision)}
     monkeypatch.setattr(training, "_source", lambda: source)
-    monkeypatch.setattr(training, "_export", trainer_tests.REAL_EXPORT)
-    monkeypatch.setattr(policy, "create_declaration", trainer_tests.REAL_DECLARATION)
-    monkeypatch.setattr(policy, "validate_declaration", trainer_tests.REAL_VALIDATE)
+    monkeypatch.setattr(training, "_export", trainer_fixtures.REAL_EXPORT)
+    monkeypatch.setattr(policy, "create_declaration", trainer_fixtures.REAL_DECLARATION)
+    monkeypatch.setattr(policy, "validate_declaration", trainer_fixtures.REAL_VALIDATE)
     monkeypatch.setattr(policy, "BASE_FILES", {})
 
-    class ShortTokenizer(trainer_tests.Tokenizer):
+    class ShortTokenizer(trainer_fixtures.Tokenizer):
         def apply_chat_template(self, messages, **kwargs):
             return super().apply_chat_template([{"role": "user", "content": "S0"}], **kwargs)
 
@@ -118,6 +118,7 @@ def test_audit_links_real_data_checkpoints_exports_and_does_not_mutate(saved, mo
     monkeypatch.setattr(policy, "gpu_lease", lambda: pytest.fail("Auditor takes no GPU lease"))
     result = audit.audit_language_training(saved)
     assert result["valid"], result["errors"]
+    assert result["checks"]  # The public audit report promises named checks.
     assert all(result["checks"].values())
     assert result["updates"] == 3 and result["changed_adapter_elements"] > 0
     assert result["charged_tokens"] == result["committed_tokens"] == 192
