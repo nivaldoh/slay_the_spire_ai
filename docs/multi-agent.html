@@ -58,8 +58,9 @@
    may add code (the code name, drawn small under the plain label), ran: false (never ran in
    the game: striped), state (runs today / built, never run / paused), command, stories (view
    ids) and files (path prefixes: the map box a listed file belongs to). A flow with story:
-   true numbers its steps; a step's message and map are {example, key} (or literal
-   {title, text}) and are drawn beside the picture. */
+   true numbers its steps (with timed: true they keep their own times and lanes); a step's
+   message and map are {example, key} (or literal {title, text}) and are drawn beside the
+   picture. */
 
 const TRACE = "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl";
 const LUA = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua";
@@ -7195,6 +7196,10 @@ let DIAGRAM_FLAGS = null; // scripts/check.py's flags, when its ignored data fil
 <script src="how-code-works-example-job.js"></script>
 <script src="how-code-works-view-map.js"></script>
 <script src="how-code-works-view-job.js"></script>
+<script src="how-code-works-example-decision.js"></script>
+<script src="how-code-works-view-decision.js"></script>
+<script src="how-code-works-example-members.js"></script>
+<script src="how-code-works-view-members.js"></script>
 <!-- Optional: written by scripts/check.py in the main checkout only (runs/ is ignored). -->
 <script src="../runs/checks/diagram-flags.js"></script>
 <style>
@@ -8501,9 +8506,10 @@ function renderTime() {
   if (!flow) return;
   drawDots();
   $("slider").value = state.time;
-  $("time").textContent = flow.story
-    ? ""
-    : `${(state.time / 1000).toFixed(2)} s ${flow.clock === "battle time" ? "battle" : "(illustrative)"}`;
+  $("time").textContent =
+    flow.story && !flow.timed
+      ? ""
+      : `${(state.time / 1000).toFixed(2)} s ${flow.clock.startsWith("battle time") ? "battle" : "(illustrative)"}`;
   const cursor = $("cursor");
   if (cursor) {
     const x = laneX(flow, state.time);
@@ -8944,7 +8950,7 @@ function renderFlows() {
   player.style.display = flows.length ? "" : "none";
   const flow = currentFlow();
   if (!flow) return;
-  for (const id of ["slider", "speed", "time"]) $(id).hidden = Boolean(flow.story);
+  for (const id of ["slider", "speed", "time"]) $(id).hidden = Boolean(flow.story && !flow.timed);
   $("slider").min = flow.start;
   $("slider").max = flow.end;
   state.speed = flow.speed || 0.25;
@@ -9096,15 +9102,24 @@ window.addEventListener("hashchange", readHash); // the page's own writes use re
 // tabs stay as an appendix that check.py does not flag; each goes once a story replaces it.
 // Flagging them would cost a refresh each time their 28 cited files change.
 const FROZEN = ["overview", "play", "team", "multiplayer", "factory"];
-const TAB_ORDER = ["map", "job", "decision", "members", "gap", ...FROZEN];
+// JUDGEMENT?: No GaP view (Claude Code, 2026-11-01, brief step 10): Codex's graph-view
+// (src/twwarhammer3/battle/graph_view.py) already draws each recorded battle's frozen graph, so
+// the map's GaP box points at it instead. A static drawing here would duplicate it and add a
+// view to refresh; whether the map ever shows a graph rests on this.
+const TAB_ORDER = ["map", "job", "decision", "members", ...FROZEN];
 const order = (tab) => (TAB_ORDER.includes(tab.id) ? TAB_ORDER.indexOf(tab.id) : FROZEN.length);
 DIAGRAM.tabs.sort((a, b) => order(a) - order(b));
 for (const tab of DIAGRAM.tabs)
   for (const flow of tab.flows || [])
-    if (flow.story) {
+    if (flow.story && !flow.timed) {
       flow.steps.forEach((step, i) => Object.assign(step, { at: i * 1000, until: (i + 1) * 1000 }));
       Object.assign(flow, { start: 0, end: flow.steps.length * 1000 - 1, clock: "story steps" });
     }
+for (const tab of DIAGRAM.tabs)
+  for (const flow of tab.flows || [])
+    if (flow.story && flow.timed)
+      // the last step stays shown at the flow's end
+      flow.end = Math.min(flow.end, flow.steps[flow.steps.length - 1].until - 1);
 applySwitches();
 renderLegend();
 readHash();

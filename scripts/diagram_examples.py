@@ -46,6 +46,25 @@ EXAMPLES = {
         "decisions": ["r1", "r25", "r88"],
         "story": "docs/how-code-works-view-job.js",
     },
+    # One decision, end to end: request 25 (state at 79.7 s, reply in row 99, applied 83.0 s).
+    "decision": {
+        "kind": "decision",
+        "job": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020",
+        "episode": "episode-0000",
+        "results": "docs/twwarhammer3/results.csv",
+        "decisions": ["r25", "r26"],
+        "story": "docs/how-code-works-view-decision.js",
+    },
+    # Two scripted members, one army: the Team live check's probe 1 (the infantry member waits
+    # 3 s on purpose), the battle the frozen Team tab's probe flow drew.
+    "members": {
+        "kind": "members",
+        "job": "runs/twwarhammer3/team-live-20261031e/probe-1",
+        "episode": "episode",
+        "date": "2026-10-31",
+        "decisions": ["r1", "r2", "r13", "r14", "r15", "r16", "r17"],  # r5, r6: the middle
+        "story": "docs/how-code-works-view-members.js",
+    },
 }
 ROW_FIELDS = ("date", "job", "scenario", "policy", "model", "effort", "provider", "source",
               "outcome", "battle_s", "own_left", "enemy_left", "decisions", "invalid", "delay_s",
@@ -101,7 +120,236 @@ def frame_units(frame: dict, names: dict) -> list[dict]:
             if unit.get("x") is not None and unit.get("z") is not None]
 
 
+def short(text: str, limit: int) -> str:
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[:limit - 3].rstrip() + "..."
+
+
+def cited_files(story_path: str, commit: str) -> tuple[dict, list]:
+    story = payload((ROOT / story_path).read_text(encoding="utf-8"))
+    items = [story, *story["elements"], *story["wires"],
+             *(step for flow in story["flows"] for step in flow["steps"])]
+    cited = sorted({ref.split(":")[0] for item in items for ref in item.get("refs") or []
+                    if ref.startswith(("src/", "configs/", "scripts/"))})
+    files, changed = {}, []
+    for path in cited:
+        then, now = git_blob(commit, path), git_blob("HEAD", path)
+        files[path] = hashlib.sha256(then).hexdigest() if then is not None else "absent"
+        if then is None or now is None or then != now:
+            changed.append(path)
+    return files, changed
+
+
+def map_frame(frame: dict, names: dict, orders: list, note: str, source: str) -> dict:
+    units = frame_units(frame, names)
+    points = [(u["x"], u["z"]) for u in units] + [(o["x"], o["z"]) for o in orders]
+    xs, zs = [p[0] for p in points], [p[1] for p in points]
+    cx, cz = (min(xs) + max(xs)) / 2, (min(zs) + max(zs)) / 2
+    half_x = max(60, (max(xs) - min(xs)) / 2 + 30)
+    half_z = max(40, (max(zs) - min(zs)) / 2 + 30)
+    return {"time_ms": frame["time_ms"], "units": units, "orders": orders, "note": note,
+            "source": source, "bounds": [round(cx - half_x), round(cx + half_x),
+                                         round(cz - half_z), round(cz + half_z)]}
+
+
+def build_decision(recipe: dict, runs: Path) -> dict:
+    """One decision: what the model saw, the prompt's parts, the call, the reply, the request,
+    the acknowledgement and the next prompt's timing line, each from its own trace row."""
+    job, episode = runs / recipe["job"], runs / recipe["job"] / recipe["episode"]
+    manifest = json.loads((job / "manifest.json").read_text())
+    data = replay.build(episode, manifest)
+    names = {entry["id"]: label(entry) for entry in data["roster"]}
+    by_request = {d["request"].rsplit("-", 1)[-1]: d for d in data["decisions"]}
+    rows = {n: json.loads(line) for n, line in enumerate((episode / "trace.jsonl").open(), 1)}
+    first, then = (by_request[r] for r in recipe["decisions"])
+    basis, after = data["frames"][first["basis_frame"]], data["frames"][then["basis_frame"]]
+    exchange_id = first["attempts"][-1]["exchange_id"]
+    reply_row = next(n for n, r in rows.items() if r.get("kind") == "model_exchange"
+                     and any(a.get("exchange_id") == exchange_id for a in r["attempts"]))
+    next_id = then["attempts"][-1]["exchange_id"]
+    next_row = next(n for n, r in rows.items() if r.get("kind") == "model_exchange"
+                    and any(a.get("exchange_id") == next_id for a in r["attempts"]))
+    attempt = rows[reply_row]["attempts"][-1]
+    usage = attempt.get("usage") or {}
+    ack_row = first["ack_source"]["line"]
+    ack = rows[ack_row]
+    path = f"{recipe['job']}/{recipe['episode']}/trace.jsonl"
+    orders = [o["order"] for o in first["orders"]]
+    saw = []
+    for unit in frame_units(basis, names):
+        state = next((u for side in ("friendly", "enemy") for u in basis[side]
+                      if u["id"] == unit["id"]), {}).get("state") or []
+        saw.append(f"{unit['label']}: x {unit['x']}, z {unit['z']}, {unit['men']} of "
+                   f"{unit['men0']} men, {', '.join(state) or 'idle'}")
+    parts, block = [], []  # parts split at blank lines and at heading lines ("Your units:")
+    for line in rows[reply_row]["prompt"].splitlines() + [""]:
+        if (not line.strip() or (line.rstrip().endswith(":") and block)) and block:
+            head = block[0] + (" " + block[1] if block[0].endswith(":") and len(block) > 1
+                               else "")
+            parts.append(short(head, 110))
+            block = []
+        if line.strip():
+            block.append(line)
+    timing = [line for line in rows[next_row]["prompt"].splitlines()
+              if "Your last batch" in line or line.startswith("Last orders")]
+    kinds = []
+    for n in range(reply_row, next_row + 2):
+        row = rows[n]
+        kind = row.get("kind")
+        what = {"model_exchange": lambda r: f"model exchange {r['attempts'][-1]['exchange_id']}",
+                "observation": lambda r: f"state seq {r['observation']['seq']} at "
+                                         f"{seconds(r['observation']['time_ms'])}",
+                "decision": lambda r: f"decision, request {r['request'].rsplit('-r', 1)[-1]}",
+                "ack": lambda r: f"acknowledgement: applied at {seconds(r['ack']['applied_ms'])}"
+                }.get(kind, lambda r: kind)(row)
+        kinds.append(f"row {n}: {what}")
+    messages = {
+        "saw": {"title": f"What the model saw at {seconds(first['time_ms'])} (trace row "
+                         f"{basis['source']['line']})",
+                "text": "\n".join(saw), "source": f"{path} row {basis['source']['line']}"},
+        "prompt": {"title": f"The prompt, first line of each part (trace row {reply_row})",
+                   "text": "\n".join(parts[:10]), "source": f"{path} row {reply_row}"},
+        "call": {"title": f"The call (trace row {reply_row})",
+                 "text": "\n".join([
+                     f"model {attempt['actual_model']} through {attempt['provider']}, "
+                     f"backend {attempt['backend']}",
+                     f"{usage.get('input_tokens')} tokens in "
+                     f"({(usage.get('input_tokens_details') or {}).get('cached_tokens')} "
+                     f"cached), {usage.get('output_tokens')} out",
+                     f"{attempt['seconds']:.2f} s of WSL time, ${attempt['usd']:.4f}"]),
+                 "source": f"{path} row {reply_row}"},
+        "trace": {"title": f"The trace rows, written after the reply: no state between seq "
+                           f"{first['seq']} and seq {then['seq']} was read",
+                  "text": "\n".join(kinds),
+                  "source": f"{path} rows {reply_row}-{next_row + 1}"},
+        "reply": {"title": f"The model's reply (trace row {reply_row})",
+                  "text": short(attempt["text"], 420), "source": f"{path} row {reply_row}"},
+        "request": {"title": f"The request written to orders.json, shortened (trace row "
+                             f"{first['source']['line']})",
+                    "text": json.dumps({"request": "r" + first["request"].rsplit("-r", 1)[-1],
+                                        "based_on": first["seq"],
+                                        "orders": [{k: v for k, v in o.items() if v is not None}
+                                                   for o in orders]}),
+                    "source": f"{path} row {first['source']['line']} (request id shortened; "
+                              "empty fields and schema, job and battle left out)"},
+        "ack": {"title": f"The acknowledgement (trace row {ack_row})",
+                "text": "\n".join([f"applied at {seconds(ack['ack']['applied_ms'])}, based on "
+                                   f"state seq {ack['ack']['based_on']}",
+                                   "results: " + ", ".join(
+                                       f"{names.get(r['unit'], r['unit'])} "
+                                       f"{'ok' if r['ok'] else 'refused'}"
+                                       for r in ack["ack"]["results"]),
+                                   f"delay {ack['latency']['delay_ms']} ms of battle time; "
+                                   f"think {ack['latency']['think_s']} s of WSL time"]),
+                "source": f"{path} row {ack_row}"},
+        "next": {"title": f"The next prompt's timing lines (trace row {next_row})",
+                 "text": "\n".join(short(line, 200) for line in timing),
+                 "source": f"{path} row {next_row}"},
+    }
+    moves = [{"unit": o["unit"], "x": o["x"], "z": o["z"]} for o in orders if o["type"] == "move"]
+    frames = {
+        "saw": map_frame(basis, names, moves,
+                         f"What the model saw at {seconds(first['time_ms'])}: our units blue, the "
+                         "enemies our side could see red (a policy never sees the others); "
+                         "dashed: the move it ordered. x right, z up.",
+                         f"{path} row {basis['source']['line']}"),
+        "after": map_frame(after, names, [],
+                           f"The next state the model saw, at {seconds(then['time_ms'])}, when "
+                           "the order had just been applied. x right, z up.",
+                           f"{path} row {after['source']['line']}"),
+    }
+    files, changed = cited_files(recipe["story"], manifest["source_revision"])
+    with (ROOT / recipe["results"]).open(newline="") as table:
+        row = next(r for r in csv.DictReader(table) if r["job"] == Path(recipe["job"]).name
+                   and r["episode"] == recipe["episode"])
+    month = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()[int(row["date"][5:7]) - 1]
+    return {"job": Path(recipe["job"]).name, "episode": recipe["episode"], "date": row["date"],
+            "date_text": f"{int(row['date'][8:])} {month}",
+            "commit": manifest["source_revision"][:7], "outcome": row["outcome"],
+            "story": recipe["story"], "files": files, "changed_since": changed,
+            "messages": messages, "frames": frames}
+
+
+def build_members(recipe: dict, runs: Path) -> dict:
+    """Two members sharing one army: the partition, an idle poll, each member's move and the
+    alternation after, each from its own trace row (a scripted check: no model, no results row)."""
+    job, episode = runs / recipe["job"], runs / recipe["job"] / recipe["episode"]
+    manifest = json.loads((job / "manifest.json").read_text())
+    data = replay.build(episode, manifest)
+    names = {entry["id"]: label(entry) for entry in data["roster"]}
+    rows = {n: json.loads(line) for n, line in enumerate((episode / "trace.jsonl").open(), 1)}
+    by_request = {d["request"].rsplit("-", 1)[-1]: d for d in data["decisions"]}
+    path = f"{recipe['job']}/{recipe['episode']}/trace.jsonl"
+    split = next((n, r) for n, r in rows.items() if r.get("event") == "partition")
+    start = data["frames"][by_request["r1"]["basis_frame"]]
+
+    def member(request):
+        return (rows[by_request[request]["source"]["line"]].get("behavior") or {}).get("member")
+
+    def summary(request):
+        d = by_request[request]
+        orders = [o["order"] for o in d["orders"]]
+        who = member(request)
+        what = "; ".join(order_text({**o, "x": round(o["x"]), "z": round(o["z"])}
+                                    if o.get("type") == "move" else o, names) for o in orders)
+        return (f"request {request[1:]} (trace row {d['source']['line']}): "
+                + (f"{who}'s batch: {what or 'no orders'}" if who else "idle poll, no orders")
+                + (f"; applied at {seconds(d['applied_ms'])}" if d.get("applied_ms") else ""))
+
+    def member_feedback(request):  # the team's feedback row for this request's member
+        after = by_request[request]["ack_source"]["line"]
+        return next((n, r) for n, r in rows.items() if n > after and r.get("event") == "feedback"
+                    and r.get("member") == member(request))
+
+    owners = split[1]["ownership"]
+    messages = {
+        "split": {"title": f"The team's partition (trace row {split[0]})",
+                  "text": "\n".join(f"{who}: {names.get(unit, unit)}"
+                                     for who, unit in owners.items()),
+                  "source": f"{path} row {split[0]}"},
+        "idle": {"title": "Two rounds in the middle", "text": summary("r5") + "\n"
+                 + summary("r6"), "source": f"{path} rows {by_request['r5']['source']['line']} "
+                                            f"and {by_request['r6']['source']['line']}"},
+        "r2": {"title": "Cavalry's move goes alone", "text": summary("r2"),
+               "source": f"{path} row {by_request['r2']['source']['line']}"},
+        "r13": {"title": "Infantry's move, a round after it finished",
+                "text": summary("r13") + f"\nthe team's feedback to infantry (trace row "
+                        f"{member_feedback('r13')[0]}): order age "
+                        f"{member_feedback('r13')[1]['latency']['delay_ms']} ms of battle time, "
+                        f"from the state infantry decided on; think "
+                        f"{member_feedback('r13')[1]['latency']['think_s']:.1f} s",
+                "source": f"{path} rows {by_request['r13']['source']['line']} and "
+                          f"{member_feedback('r13')[0]}"},
+        "alternate": {"title": "Then the members alternate",
+                      "text": "\n".join(summary(r) for r in recipe["decisions"][3:]),
+                      "source": f"{path} decision rows"},
+    }
+    frames = {"start": map_frame(start, names, [],
+                                 f"The units at {seconds(start['time_ms'])}: ours blue, the "
+                                 "enemies our side could see red. x right, z up.",
+                                 f"{path} row {start['source']['line']}")}
+    for request, who in (("r2", "cavalry"), ("r13", "infantry")):
+        moves = [{"unit": o["order"]["unit"], "x": round(o["order"]["x"]),
+                  "z": round(o["order"]["z"])} for o in by_request[request]["orders"]]
+        frames[who] = map_frame(start, names, moves,
+                                f"The units at {seconds(start['time_ms'])}, the state both members "
+                                f"started from; dashed: {who}'s move. x right, z up.",
+                                f"{path} row {start['source']['line']}")
+    files, changed = cited_files(recipe["story"], manifest["source_revision"])
+    month = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()[int(recipe["date"][5:7]) - 1]
+    return {"job": f"{Path(recipe['job']).parent.name}/{Path(recipe['job']).name}",
+            "episode": recipe["episode"], "date": recipe["date"],
+            "date_text": f"{int(recipe['date'][8:])} {month}",
+            "commit": manifest["source_revision"][:7], "outcome": "a scripted live check",
+            "story": recipe["story"], "files": files, "changed_since": changed,
+            "messages": messages, "frames": frames}
+
+
 def build(recipe: dict, runs: Path) -> dict:
+    if recipe.get("kind") == "members":
+        return build_members(recipe, runs)
+    if recipe.get("kind") == "decision":
+        return build_decision(recipe, runs)
     job = runs / recipe["job"]
     episode = job / recipe["episode"]
     manifest = json.loads((job / "manifest.json").read_text())

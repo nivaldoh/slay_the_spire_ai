@@ -204,7 +204,7 @@ DIAGRAM.tabs.push({
       "note":
         "A play job launches the game, sets up one custom battle per episode and lets one controller order our units until the engine reports won, lost or draw. The battle never waits for the model, and a policy never sees enemies its side cannot see.",
       "command": "uv run python -m twwarhammer3 play --scenario S --policy P --output runs/...",
-      "stories": ["job"],
+      "stories": ["job", "decision", "members"],
       "files": [
         "src/twwarhammer3/__main__.py",
         "src/twwarhammer3/protocol.py",
@@ -378,7 +378,8 @@ DIAGRAM.tabs.push({
         "src/gameai/ledger.py:1",
         "src/gameai/providers.py:92",
         "docs/agreed-checks.md:75-78"
-      ]
+      ],
+      "stories": ["decision"]
     },
     {
       "id": "map.provider",
