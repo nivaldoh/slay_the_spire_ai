@@ -86,6 +86,10 @@ revisions written below are the earlier passes.
   runs/twwarhammer3/graph-live-NEW`; `--recount OUTPUT` reads saved evidence without launching.
   Live passed 3/3 at `d12be58` (`runs/twwarhammer3/graph-live-20261101-extended/`) after
   the owner approved 540 s contact; first 360 s run remains failed. Holds/firing unchecked.
+  One authored-plan follow-up at `5c02d08` passed the unchanged contact assessor and
+  pre-contact infantry attack/matching-melee audit; movement/no-order controls were not
+  rerun. Engine lost at 666.8 s; no strength claim. Raw checks/citations:
+  `runs/gap-initiation-20261101/review/live-followup/` (one battle).
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

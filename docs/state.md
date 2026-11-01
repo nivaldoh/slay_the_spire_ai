@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one actual revision fixes infantry selection, cavalry unchanged. PC now available; preparing one fresh 1x live check. [Viewer](http://localhost:8765/gap-all-20261101.html). Recorded spend $0.02744/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
+Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one fresh 1x battle at `5c02d08` passed infantry-contact/cavalry-melee criteria but lost at 666.8 s. Game closed; no strength claim. [New battle viewer](http://localhost:8765/gap-fixed-live-20261101.html). Recorded spend $0.02857/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
 
 Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
 [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
@@ -40,7 +40,7 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.02744; the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.02857; the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle

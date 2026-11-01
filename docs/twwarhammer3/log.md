@@ -29,6 +29,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: corrected plan starts combat and cavalry joins; battle still lost
+
+- One fresh 1x battle at `5c02d08`: `battle/gap-initiator-revised-01-20261101`.
+  Same frozen skills, scenario and settings; only the previously authored line selector changed.
+- Line first attack source 6.8 s, accepted 7.4 s; own matching melee 332.6 s;
+  engage run 6 completes 332.9 s. Cavalry attacks after public contact (source 333.8 s),
+  then reaches matching melee and charge run 1 completes at 383.9 s.
+- Fixed physical criteria passed once: 161 accepted attacks, 0 invalid batches. The unchanged
+  original contact assessor also passed; movement/no-order probes were not rerun.
+- Engine lost at 666.8 s, before its timer expired; no infrastructure error. Seven skill
+  failures recovered (five line deadlines, two cavalry eligibility losses); failures retained.
+- Four live model calls, three adopted goals, one rejected reply (209-character reason
+  exceeded frozen 200). Live cost $0.0011336; cumulative 27 calls/$0.0285739 of $5.
+- Raw Windows clock ratio 1.000005; speed flags 1x. Game closed; postdoctor ready, PID query empty.
+  Independent raw/register audit: `runs/gap-initiation-20261101/review/live-followup/report.txt`.
+- [New battle viewer](http://localhost:8765/gap-fixed-live-20261101.html): six raw order/ack/effect
+  browser checks passed; combined page checked six episodes/twelve graphs. Evidence in that run folder.
+- This establishes this plan's contact/charge effects once, not superiority to non-GaP control,
+  learning or general progress. No further candidate or battle is planned for this temporary fix.
+
 ## 2026-11-01: the actual author revision corrects the waiting infantry
 
 - At committed `4f0c3fc`, `initiator-revised-01` is ready: three actual Haiku calls,

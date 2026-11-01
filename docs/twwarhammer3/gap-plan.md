@@ -359,21 +359,27 @@ Revisions inherit that requirement when flags are omitted and cannot reassign th
 This temporary path check allows possible move/hold exits; it does not simulate their
 effects or guarantee every branch progresses. It rests on JUDGEMENT
 `battle/graph_initiation.py` Temporary initiation semantics. This is separate from the
-passed live target dispatch check; no new live or strength result yet.
+passed live target dispatch check; the bounded live follow-up is recorded below.
 
 The agreed offline check passed 52 cases at `4f0c3fc`, independently replayed. The bounded
 actual follow-up also completed there: `initiator-revised-01` is ready after three calls,
 no repairs, $0.0055201. Only the line selector changed from engaged to nearest; cavalry,
 authority, model settings and frozen library stayed identical to `live-revised-01`.
 Only that battle's permitted public feedback and first public views reached revision.
-This produces an inspectable corrected plan, not a gameplay result or improvement claim.
-Cards/evidence: `runs/gap-initiation-20261101/`. The one fresh diagnostic now proposed
-uses the same scenario and raw target/contact/melee witnesses at 1x; it needs a current
-PC window. The owner confirmed it on 2026-11-01: "Yes, the PC is free now. Let's finish this."
-No additional author candidate or changed benchmark/strength method is planned.
+Cards/evidence: `runs/gap-initiation-20261101/`. The owner confirmed the PC window on
+2026-11-01: "Yes, the PC is free now. Let's finish this." One fresh 1x follow-up at
+`5c02d08` passed the frozen physical criteria: infantry initiated combat, matched melee
+at 332.6 s, and cavalry joined with matching melee/charge completion at 383.9 s. The
+unchanged original contact assessor passed too; movement/control probes were not rerun.
+The engine still reported lost at 666.8 s. Four live model calls yielded three adopted
+goals and one rejected overlong reason; seven skill failures recovered. Cumulative spend
+is 27 calls/$0.0285739 of $5. This is one physical-effect pass, not evidence of superiority
+to non-GaP control or learning. Independent raw/register audit: `review/live-followup/`
+in that evidence folder. [View the completed battle](http://localhost:8765/gap-fixed-live-20261101.html).
+The game is closed. No additional author candidate or changed benchmark/strength method is planned.
 The first launcher invocation was rejected before any game/API call: its default setup
-window did not fit the declared process cap. Explicit setup240s restores the prior
-integration setting inside the unchanged1500s episode/1800s process bounds.
+window did not fit the declared process cap. Explicit setup 240 s restored the prior
+integration setting inside the unchanged 1500 s episode/1800 s process bounds.
 
 ### Authoring and revision command
 
