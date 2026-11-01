@@ -1798,8 +1798,8 @@ source = "2026-10-31 passive backend failure and recovery regression"
 id = "transport-invalid-header-rethrows"
 guards = "An invalid optional processing header preserves the completed response without resending"
 file = "src/gameai/llm.py"
-old = "                    except ValueError:\n                        processing = None"
-new = "                    except ValueError:\n                        raise"
+old = "        except ValueError:\n            processing = None"
+new = "        except ValueError:\n            raise"
 tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
 source = "2026-10-31 optional processing telemetry oracle"
 
@@ -1807,8 +1807,8 @@ source = "2026-10-31 optional processing telemetry oracle"
 id = "transport-invalid-header-resends"
 guards = "An invalid optional processing header preserves the completed response without resending"
 file = "src/gameai/llm.py"
-old = "                    except ValueError:\n                        processing = None"
-new = "                    except ValueError:\n                        continue"
+old = "                value = json.load(response)\n            break"
+new = "                value = json.load(response)\n                if record_transport:\n                    float(response.headers.get(\"openai-processing-ms\") or 0)\n            break"
 tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
 source = "2026-10-31 optional processing telemetry oracle"
 
