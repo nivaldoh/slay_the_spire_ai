@@ -1,460 +1,560 @@
 # GaP graph controllers for WH3
 
-Planning only, 2026-10-31. The owner requested a GaP research reference and a concrete plan
-for one army with several LLM controllers, then several allied armies. No implementation,
-game run or paid experiment is authorized by this page. New checks below are proposed,
-not agreed. Local source audit: `35dbeab`; external pins are in [references](#references).
+Plan only, updated with the owner's G1–G14 answers on 2026-10-31. This page authorizes no
+implementation, game run or paid experiment; every check remains proposed, not agreed.
+The owner asked for a GaP research
+reference and a concrete plan for one army with several LLM controllers, then several allied
+armies. Code read at `35dbeab`; outside sources are pinned under [References](#references).
 
-**This is worth a bounded experiment.** A graph can keep a useful battle plan running while
-models think, make recovery explicit, and let us inspect which decision led to an order.
-The interesting question is whether those properties help when units move, targets vanish
-and teammates become unavailable. A graph can also make a bad plan very reliable: strength
-must be compared with simpler controllers using the same skills and information.
+## In short
 
-Start with two controllers owning disjoint groups in one army. Reuse the existing controller
-contract and team dispatcher; build a small WH3 skill catalog around existing code. First
-prove a hand-written graph works, then let multiple LLM authors build the same kind of graph,
-then improve it between battles. Repeated attempts from a checkpoint are a later, narrower
-training tool. Native allied armies depend on their own multiplayer checks.
+GaP ([Chen et al., July 2026](https://arxiv.org/html/2607.05369v1)) has LLMs write a robot's
+policy as a graph of skills, a flowchart such as "find the can → grasp it → place it in the
+basket", which an executor runs. The LLMs improve the graph by rehearsing it in simulation.
 
-## What transfers from GaP
+It is worth a bounded experiment in WH3: a graph keeps a plan running while models think,
+makes recovery steps explicit and shows which decision led to each order. The open question
+is whether that helps when units move, targets vanish and teammates become unavailable. The
+risk is a graph that carries out a bad plan very reliably. First establish whether it works
+here; comparisons with other methods and formal learning claims come later, through the
+repo's benchmark. The owner also wants to observe how graphs improve across battles.
 
-[Chen et al., GaP](https://arxiv.org/html/2607.05369v1), July 2026, describes agents that
-compose typed skill graphs and improve them through simulation rehearsal. Its authoring
-agents are distinct from the deployed graph; a multi-agent authoring process does not by
-itself imply decentralized live control. MORSL supplies reusable robot capabilities.
-Sections 3–4 define VA and the method; Appendix E gives the rehearsal loop.
+The plan, in order:
 
-The paper calls its tasks **quasi-static** and leaves moving targets to future work.
-WH3 adds partial visibility and reacting opponents. Testing this extension would not by
-itself establish novelty or an advantage.
-[Paper, section 6](https://arxiv.org/html/2607.05369v1#S6).
+1. Plan and build a broader WH3 skill library as a separate, bounded piece of work, using
+   MORSL as a design reference. Settle its first release's scope and checks before building it.
+2. Two controllers on one army, each owning its own units, using the existing controller
+   interface and team dispatcher. Start with independent progress and observation alone.
+3. A hand-written graph, then graphs written by several LLMs, then graphs revised between
+   whole battles. Authors use a frozen, pre-built library and permitted information only.
+4. Allied armies once native multiplayer passes its own checks, starting with separate graphs.
+   Battle restoration is deferred and is not a prerequisite for this step.
 
-Keep three experiments distinguishable:
+The owner chose the initial approach for G2, G3, G6–G9, G12 and G14; alternatives remain
+possible later experiments. G4 delegates common-sense starting parameters to the implementer,
+to record and tune. G5 chooses the broader library first but leaves its boundary to separate
+planning. G11 chooses a narrow start; the exact battle family is still open. G1's research
+comparisons, G10's restoration choices and G13's benchmark design are deferred. These answers
+settle direction, not verification or permission to implement. The next planning step is the
+[skill-library scope](#the-skill-catalog), not another fourteen-question review.
 
-| Experiment | What the LLMs do | What runs during battle | Claim it can test |
+## What GaP is and what carries over
+
+A coordinator LLM splits the task and specialist LLMs write subgraphs from a skill library
+(MORSL, the Modular Open Robot Skill Library). The composed graph is type-checked and run;
+before deployment, rehearsal in simulation finds failing nodes and revises the graph. The
+task class is Variational Automation (VA): one job done reliably across many varied instances,
+such as objects of different shapes in different poses. Paper sections 3–4 define VA and the
+method; Appendix E gives the rehearsal loop.
+
+The paper calls its tasks quasi-static and leaves moving targets to future work
+([section 6](https://arxiv.org/html/2607.05369v1#S6)). WH3 adds opponents that move and react,
+and partial visibility. Testing that extension would not by itself show novelty or an
+advantage.
+
+### Three activities and later research questions
+
+"Multi-agent GaP" can mean three different things. These labels describe what runs; they
+do not require three separate studies before the first working system:
+
+| Activity | What the LLMs do | What runs during the battle | Possible later question |
 |---|---|---|---|
-| GaP-style authoring | A coordinator and specialist authors build subgraphs before battle | Frozen graphs, one per army group | Whether structured authoring produces better reusable policies |
-| Live graph controllers | Each group has its own LLM choosing bounded graph goals or parameters | Fast graph execution continues while each LLM thinks | Whether graphs help several live controllers handle change |
-| Graph improvement | Authors revise graphs using completed training attempts | The next attempt uses a new frozen version | Whether experience improves held-out performance |
+| Authoring | Before battle, a coordinator and specialist LLMs write graphs for the army groups | Frozen graphs, one per group | Whether structured authoring writes better reusable policies |
+| Live control | During battle, each group's LLM picks goals or parameters from a bounded menu | The graphs keep running while each LLM thinks | Whether graphs help several live controllers cope with change |
+| Revision | Between battles, LLMs revise the graph from finished training attempts | The next attempt's new frozen graph | Whether experience improves results on held-out battles |
 
-Only the second is necessarily several **live LLM controllers**. The first still has
-separate runtime controllers, but their authors may no longer run. Do not label these arms
-interchangeably or attribute an improvement to multi-agent execution just because multiple
-agents wrote the artifact.
+Only live control is sure to have several LLMs controlling the battle. Authoring also gives
+each group its own controller, but that controller is a frozen graph whose authors may have
+stopped. So never label one experiment as another, and never credit an improvement to live
+multi-agent control just because several LLMs wrote the graph.
 
-JUDGEMENT: G1 Research claim — Codex, 2026-10-31: separate authoring, live control and revision.
-A combined system is the alternative; attribution of any improvement rests on this split.
+Owner, 2026-10-31 (G1): "For now I guess I just want to see if it works here." Comparing
+methods for live control and observing learning across battles are later interests; more
+specific research choices wait.
+
+JUDGEMENT: G1 Research claim — deferred by the owner, 2026-10-31: separate or combined studies
+of authoring, live control and revision remain undecided. Later attribution claims rest on
+that design; the initial work establishes feasibility only.
 
 ## What already exists
 
-The source and an independent read agree on these boundaries. Historical agreed checks
-remain evidence only at the revisions and for the cases [agreed-checks.md](../agreed-checks.md)
-records; this inspection is not a new live verification.
+Read from source at `35dbeab` and confirmed by a second, independent read; this is not a new
+live check. Agreed checks on these pieces count only at the revisions and for the cases
+[agreed-checks.md](../agreed-checks.md) records.
 
-| Existing piece | Useful contract | Missing for this plan |
+| Piece | What it gives us | What this plan still needs |
 |---|---|---|
-| [controllers.py](../../src/twwarhammer3/battle/controllers.py), `controller_class`, `factories` | `decide(observation)`, `acknowledge(ack, latency)`, `metadata()`; fresh controller per episode; external `module:Class` loading | A written/type-checked contract would help; no need for a replacement framework. Paid calls and prompts are integrated for named built-ins, not automatically for external classes |
-| [team.py](../../src/twwarhammer3/battle/team.py), `TeamPolicy`, `project` | Exactly two members; copied views, ownership checks, independent completion, routed feedback | No teammate message protocol. `ModelTeam` fixes both members to the same model/effort and Knights/rest split; general configuration is not implemented |
-| [skills.py](../../src/twwarhammer3/battle/skills.py), `RULES`, `Skills` | Persistent assignments for `engage`, `shoot`, `hold`, `charge`, `move` | These return orders and phase descriptions, not a typed start/running/succeeded/failed/cancelled lifecycle |
-| [commander.py](../../src/twwarhammer3/battle/commander.py), `CommanderPolicy` | A fast skills executor continues while a model plans asynchronously | Useful scheduling reference and baseline; its whole-army assumptions need an adapter before use on a member view |
-| [play.py](../../src/twwarhammer3/battle/play.py), `_drive` | One transport writer, validation, acknowledgements, traces and ending handling | `decide` is synchronous at this boundary. A graph must yield promptly instead of waiting inside it for movement or a model |
-| [checkpoint.py](../../src/twwarhammer3/battle/checkpoint.py) | Replay reconstruction and scripted tick-specific input; `restore_episode` supports a step with at most one injected batch | No generic continuously running restored graph/team loop; no automatic Python memory restoration |
-| [worker.py](../../src/twwarhammer3/engine/worker.py) and native battle mode | Offline multiplayer plumbing | Worker control currently accepts only unqueued moves, rejecting even an explicit `queue: false`; current skills cannot be plugged in unchanged. No live native multiplayer battle established |
+| [controllers.py](../../src/twwarhammer3/battle/controllers.py) `controller_class`, `factories` | `decide(observation)`, `acknowledge(ack, latency)`, `metadata()`; a fresh controller per episode; loading an external `module:Class` | A written, type-checked contract, not a new framework. Paid calls and prompts are wired up for named built-ins only, not automatically for external classes |
+| [team.py](../../src/twwarhammer3/battle/team.py) `TeamPolicy`, `project` | Exactly two members, each with a copied view, ownership checks, independent completion and its own feedback | No teammate messages. `ModelTeam` fixes both members to one model and effort and to the Knights/rest split; nothing more general is built |
+| [skills.py](../../src/twwarhammer3/battle/skills.py) `RULES`, `Skills` | Persistent `engage`, `shoot`, `hold`, `charge` and `move` assignments | They return orders and a phase description, not a typed start/running/succeeded/failed/cancelled status |
+| [commander.py](../../src/twwarhammer3/battle/commander.py) `CommanderPolicy` | A fast skill executor keeps acting while a model plans in the background | A scheduling reference and baseline; it assumes the whole army, so a member's view needs an adapter |
+| [play.py](../../src/twwarhammer3/battle/play.py) `_drive` | One transport writer, validation, acknowledgements, traces, battle endings | `decide` is synchronous here: a graph must return promptly, not wait inside it for movement or a model |
+| [checkpoint.py](../../src/twwarhammer3/battle/checkpoint.py) | Rebuilding a battle from replay inputs, scripted input at chosen ticks; `restore_episode` runs a step with at most one injected batch | No graph or team running continuously after a restore; Python memory is not restored |
+| [worker.py](../../src/twwarhammer3/engine/worker.py), native battle mode | Offline multiplayer plumbing | Worker control accepts only unqueued moves (it rejects even an explicit `queue: false`), so current skills do not plug in. No live native multiplayer battle yet |
 
-The existing team partition, target filtering, age policy and cleanup choices remain marked
-in [multi-agent-implementation.md](multi-agent-implementation.md#choices-settled-for-now-2026-10-28).
-Any comparison using that team rests on those JUDGEMENT calls; this plan does not settle them.
+The current team's unit split, target filter, age rule and cleanup carry their own JUDGEMENT
+markers in [multi-agent-implementation.md](multi-agent-implementation.md#choices-settled-for-now-2026-10-28).
+Any comparison using that team rests on them; this plan does not settle them.
 
-## Controller design to propose
+## Controller design
 
-JUDGEMENT: G2 Integration — Codex, 2026-10-31: use the existing policy contract and two-member
-dispatcher with a WH3 graph adapter; direct GaP runtime integration is the alternative.
-The implementation steps below rest on this choice.
+Owner, 2026-10-31 (G2): "use our existing controllers and team dispatcher". Inspect the GaP
+repository for reference and ideas; implement a WH3 graph adapter through our existing
+interfaces. The pinned donor files are under [References](#references).
 
-Keep the outer controller interface independent of graphs. Document its current required
-methods, optional cleanup/event methods, exception behavior and feedback identity. A small
-Python `Protocol` may express that contract; it must not force scripts or direct LLM
-controllers to pretend to be graphs. A factory should separately select controller type,
-model, skill catalog and graph artifact, and supply the existing shared ledger/transport.
-It must still construct fresh episode state. Preserve existing controller names and behavior.
+A graph controller is one more kind of controller:
 
-Use `TeamPolicy` to own partitioning and sending orders. Each graph member receives only its
-projected view, returns ordinary orders and gets only its own feedback. A member may be a
-script, a direct LLM, a fixed graph, or an LLM planner over a graph. This permits mixed pairs
-for diagnosis without changing the transport. More than two members is a later change.
+- **Interface.** Document the contract controllers already follow (required and optional
+  methods, exception behaviour, how feedback finds its decision), perhaps as a small Python
+  `Protocol`. Scripts and direct LLM controllers must not have to pretend to be graphs.
+- **Factory.** Choose controller type, model, skill catalog and graph file separately; pass in
+  the shared ledger and transport; build fresh state each episode; keep existing names and
+  behaviour.
+- **Team.** `TeamPolicy` still splits units and sends orders; each member sees only its
+  projected view, returns ordinary orders and gets only its own feedback. A member can be a
+  script, a direct LLM, a fixed graph or an LLM steering a graph, so mixed pairs help diagnose
+  problems without touching the transport. More than two members comes later.
 
-Suggested responsibilities, created only when a step actually needs them:
+Where the code would go, each piece created only when a step needs it:
 
-| Location | Responsibility |
+| Location | Job |
 |---|---|
-| `battle/controllers.py` | Select factories and record complete controller identity; preserve budget/provider checks |
-| Proposed `battle/graph.py` | Load a declared graph, validate it, track node instances, advance ready work and yield orders |
-| `battle/skills.py` plus a small adapter | Implement approved WH3 capabilities and their observable status; keep tactics shared across baselines |
-| Existing `battle/team.py` | Unit authority, independent dispatch and feedback; graph-only dispatch guard and later explicit member factories |
-| Proposed `configs/twwarhammer3/graphs/` | Reviewed immutable graphs and skill descriptions, only for planned experiments |
-| A later offline authoring/revision entry point | Produce candidate artifacts from training evidence; never edit the running policy or scorer |
+| `battle/controllers.py` | Pick factories, record the full controller identity, keep budget and provider checks |
+| New `battle/graph.py` | Load and validate a graph, track node runs, advance ready work, return orders |
+| `battle/skills.py` plus a small adapter | Approved WH3 skills and their observable status; tactics shared with the baselines |
+| `battle/team.py` | Unit ownership, independent dispatch and feedback; a graph-only dispatch guard, later explicit member factories |
+| New `configs/twwarhammer3/graphs/` | Reviewed, immutable graphs and skill descriptions, only for planned experiments |
+| A later offline authoring/revision command | Write candidate graphs from training evidence; never edit the running policy or the scorer |
 
-Keep this code within WH3 until another game actually needs it. GaP remains an optional
-controller family, not a dependency of `hold`, `llm_rules` or ordinary team play.
+The code stays in WH3 until another game needs it. GaP stays an optional controller family:
+`hold`, `llm_rules` and ordinary team play do not depend on it.
 
-### Graph execution in a moving battle
+### Running a graph in a moving battle
 
-JUDGEMENT: G3 Execution semantics — Codex, 2026-10-31: resumable nodes, explicit data producers
-and fresh guards before dispatch; blocking super-steps are the alternative.
-Responsiveness and stale-order claims rest on the proposed semantics and their checks.
+Owner, 2026-10-31 (G3): "for the initial implementation we can stick with the independent
+progress approach." Comparing independent progress with rounds that wait for every node
+can come later. The mechanics and checks below remain proposed contracts.
 
-Each node has a kind, typed inputs/outputs and named exits. Start with approved skills,
-public-state conditions, branches and bounded loops. Each running skill returns its current
-status on later observations; waiting for contact must not stop the other member. Keep
-control edges (what runs next) separate from data edges (where an input came from).
-Give each value its producer, battle/episode, graph revision, node invocation and source
-observation sequence/time. Reject missing producers and ambiguous bindings.
+GaP advances its regular nodes in lockstep rounds ("super-steps"): the next round starts only
+when every node in the current one has finished, so a node waiting for contact holds up its
+whole round. Instead:
 
-At each call, consume feedback, refresh public conditions, advance a bounded amount of ready
-work, then yield. A model request is asynchronous; a late response must match the still-live
-invocation before it can alter a goal. An acknowledgement means an order arrived or was
-accepted; node success requires the skill's independent state witness. Track queued orders
-through their effects instead of treating queue submission as completion.
+- **Nodes resume.** A node has a kind, typed inputs and outputs, and named exits; start with
+  approved skills, public-state conditions, branches and bounded loops. A running skill
+  reports its status on each new observation, so one member's wait never stops the other.
+- **Every value has a known source.** Control edges say what runs next; data edges say where
+  an input came from. Each value records its producer, battle and episode, graph revision,
+  node run, and its source observation's sequence and time. Missing producers and ambiguous
+  bindings are rejected.
+- **`decide` returns quickly.** Each call reads feedback, refreshes public conditions,
+  advances a bounded amount of ready work and returns orders. Model requests run in the
+  background; a late reply changes a goal only if the node run that asked is still live.
+- **Acknowledged is not done.** An acknowledgement means the order arrived or was accepted. A
+  node succeeds only on its skill's witness, separate evidence from the game such as the unit
+  nearing its point. A queued order counts once it takes effect, not when queued.
+- **Recheck before sending.** On the latest view, recheck target visibility, unit ownership
+  and the skill's preconditions. Things can still change in transit, so the engine stays the
+  final legality check. Each order keeps its source observation time, so its age can be
+  measured. Deadlines and order age use battle time; model latency measurements must allow
+  for the known WSL clock drift. Battles stay unpaused at 1x.
 
-Recheck target visibility, unit authority and skill preconditions against the latest view
-before emitting an order. This cannot eliminate changes during transport: the engine remains
-the last legality check. Preserve the original observation time so freshness is measurable.
-Use battle time for deadlines and order age; use the existing clock caveats when measuring
-model latency. All battles remain unpaused at 1x.
+This needs one addition to `team.py`. `TeamPolicy._validate` checks orders against the view
+the member decided on, not the current one, so a graph checking inside its own `decide` is
+not enough. Under G3, add an optional dispatch guard for graph members:
 
-This needs a specific addition: today's `TeamPolicy._validate` checks the member's saved
-decision view, not the current dispatch view. A check inside the graph's `decide` is therefore
-insufficient. Under G3, add an optional graph dispatch guard that receives the latest
-`project()` view when the dispatcher selects a ready graph batch. On a failed precondition,
-send no orders and return local refusal feedback so the graph can reconsider. Keep the
-original source time and batch identity; do not relabel an old decision as fresh. Existing
-direct-controller validation keeps its current behavior, and that difference must be
-declared in comparisons. Test a target hiding after worker completion but before selection.
+- when the dispatcher picks a ready graph batch, the guard rechecks it on the latest
+  `project()` view;
+- if a precondition fails, nothing is sent and the graph gets local refusal feedback so it
+  can choose again;
+- the batch keeps its original source time and identity: an old decision is never relabelled
+  as fresh.
 
-JUDGEMENT: G4 Interruption policy — Codex, 2026-10-31: fresh guards can cancel/reselect a skill;
-age limits, loop limits, retry counts and fallback orders await the owner. Keeping old goals
-is the alternative; tactical behavior and any comparison rest on these parameters.
+Direct controllers keep today's validation, and comparisons must state that difference. Test
+case: a target hides after the member's worker finished but before the dispatcher picks the
+batch.
 
-Cancellation must distinguish stopping a Python task from stopping a unit's already-issued
-order. Record whether an engine cancellation/replacement was sent and acknowledged; never
-claim a cancelled graph node has stopped the unit without a witness. On battle end, record
-unsent work and ignore replies from that episode. No thread may send after a new episode
-takes ownership. A new graph version starts only between attempts in the initial design.
+Owner, 2026-10-31 (G4): "You can set some common-sense values initially." Choose and record
+starting order-age limits, loop limits, retries and fallback behaviour with the skill and
+controller contracts when implementation is authorized. Treat them as an experimental
+baseline to tune, not established best values or agreed verification thresholds; this does
+not require another owner decision for each initial value.
 
-### The WH3 skill catalog
+JUDGEMENT: G4 Baseline parameters — delegated by the owner, 2026-10-31: initial limits and
+fallbacks remain to be set and marked at their sites. Longer waits or different retries
+and fallback orders change tactics; comparisons rest on the recorded settings.
 
-MORSL's robot functions do not transfer. Its documented capability contracts do: a short
-description for the coordinator, detailed inputs, exits and examples for a specialist.
-Start by wrapping capabilities we already have, not by building a general tactics library.
+Stopping a Python task does not stop an order a unit already has: record whether a cancel or
+replacement order was sent and acknowledged, and claim a unit stopped only with a witness.
+When a battle ends, record unsent work and ignore late replies; nothing sends once a new
+episode owns the transport. In the first design, a new graph version starts only between
+attempts.
 
-JUDGEMENT: G5 Skill scope — Codex, 2026-10-31: begin with observation predicates, move and
-engage; add charge/hold/shoot only when a planned case needs them. A broad library first
-would change effort and baseline strength; the minimal delivery order rests on this scope.
+### The skill catalog
 
-For every skill record: allowed unit owners; public inputs and types; entry conditions;
-orders it can emit; running/success/failure/cancel exits; timeout and retry policy; behavior
-when a target hides, dies or routs; and a separate engine witness. Keep data lookup and
-evaluation out of the skill's policy input. Version implementation and description together.
+Owner, 2026-10-31 (G5): "We should build a broader library first", using MORSL as a
+reference, and "This is a step that will need to be tackled separately" because its
+complexity can grow without a useful stopping point. This replaces the minimal-catalog-first
+proposal. G8 then freezes the resulting pre-built library for graph authoring and revision.
 
-| Candidate | Initial contract to resolve | Evidence needed beyond acknowledgement |
+MORSL's robot code does not transfer; its organization and documentation are references:
+a short description for the coordinator, and detailed inputs, exits and examples for the
+specialist. Inspect the pinned skill bundle and authoring docs under [References](#references)
+when planning the WH3 library. Reuse existing WH3 capabilities where suitable.
+
+The separate scope plan should identify a finite first release: which capabilities the
+initial Land cases need, what existing code can supply, what needs new work, and what waits.
+It should give each included skill a contract and independent evidence of its effect, plus
+an effort bound and completion rule for the release. These details remain to be settled;
+the six entries below are a starting inventory, not the chosen boundary of the broader
+library. A small diagnostic graph can exercise part of that library without defining its
+whole scope. Do not grow the catalog merely because another tactic is imaginable.
+
+JUDGEMENT: G5 Library boundary — open after the owner's broader-first choice, 2026-10-31:
+the first release's skills, tactical depth and effort bound await separate planning.
+A larger catalog changes build effort and baseline strength; experiments rest on its scope.
+
+Each skill records:
+
+- which units may use it, and its public inputs and their types;
+- its entry conditions and the orders it may send;
+- its exits (running, succeeded, failed, cancelled) and its timeout and retry rules;
+- what it does when its target hides, dies or routs;
+- a separate engine witness for success.
+
+Data lookups and evaluation stay out of a skill's policy input; its code and description are
+versioned together.
+
+| Skill | First contract to settle | Evidence beyond an acknowledgement |
 |---|---|---|
-| `observe_contact` | Read visible enemies and friendly contact state; no orders | Known contact and non-contact cases, including a hidden target; no oracle field in routing |
-| `move_to` | Command owned units toward a public point and keep observing | Position approaches/reaches a declared region; no-order control excludes idle drift; arrival radius and deadline need agreement |
-| `engage_visible` | Engage a currently visible enemy; yield if visibility/authority changes | Correct target and contact/effect where observable; target disappearance is not proof it died |
-| `hold_area` | Stay near a point with an explicit engagement allowance | Position and movement compared with the allowance; existing `hold` may attack nearby enemies |
-| `charge_when_engaged` | Charge a visible enemy already in melee | Movement/contact and chosen target; existing `charge` is not a general flank planner or proof of a charge bonus |
-| `shoot_visible` | Use an owned ranged unit on a visible target | Firing/ammunition/target evidence, with a control for unrelated shots; no claim that the order guarantees damage |
+| `observe_contact` | Read visible enemies and friendly contact state; no orders | Known contact and no-contact cases, including a hidden target; no evaluator-only field decides a branch |
+| `move_to` | Move owned units toward a public point and keep watching | Position nears or reaches a declared region; a no-order control rules out idle drift; arrival radius and deadline need agreement |
+| `engage_visible` | Attack a visible enemy; yield if visibility or ownership changes | Right target, and contact or effect where observable; a vanished target did not necessarily die |
+| `hold_area` | Stay near a point with an explicit allowance to engage | Position and movement against the allowance; today's `hold` may attack nearby enemies |
+| `charge_when_engaged` | Charge a visible enemy already in melee | Movement, contact and chosen target; today's `charge` is not a general flank planner and does not prove a charge bonus |
+| `shoot_visible` | Fire an owned ranged unit at a visible target | Firing, ammunition and target evidence, with a control for unrelated shots; an order does not guarantee damage |
 
-Use structured references such as owned-unit IDs, visible-enemy IDs and world points, rather
-than arbitrary strings. Type checks cannot prove reachability, good tactics, visibility at
-future execution, or absence of friendly obstruction. Those remain runtime/game concerns.
+Inputs are structured references (owned-unit IDs, visible-enemy IDs, world points), not free
+strings. Type checks still cannot prove reachability, good tactics, visibility when the order
+runs, or a path clear of friendly units; those stay runtime concerns.
 
-## A concrete first battle graph
+## A first test graph
 
-Use the existing two-group setting to check machinery, not to declare a benchmark. The line
-member engages a visible opponent; the cavalry member waits for observable contact, then
-attacks an eligible visible target. While it waits, the line keeps acting. If the target
-disappears, cavalry returns to selection; if none is visible, it yields without inventing
-a target. This is intentionally close to the existing charge rule so we can isolate the
-graph from new tactical code.
+This graph tests the machinery, not strength. It uses the current team split: `cavalry` owns
+the Knights, `line` every other unit.
 
 ```text
-Line member:     select visible target -> engage -> observe -> select again
-Cavalry member:  observe contact -> eligible target? -> charge -> observe again
-                       ^                 |
-                       +---- no target --+
+line:     pick visible target -> engage -> observe -> pick again
+cavalry:  observe contact -> eligible target? -> charge -> observe again
+               ^                  |
+               +---- no target ---+
 ```
 
-Each arrow advances on a new observation or completed local work; it is not a blocking
-Python loop. Initially both members use the current allowed ally view, without messages.
-For the live LLM arm, each member's LLM chooses a target preference or goal from a bounded
-menu while the graph keeps evaluating current conditions. The army-wide authority remains
-with the declared owner; graph generation cannot reassign units or spend shared magic.
+The line engages a visible enemy. The cavalry waits for observed contact, then charges an
+eligible visible target, while the line keeps acting. If the target disappears, the cavalry
+chooses again; if none is visible, it sends nothing rather than inventing one. This is close
+to the existing charge rule, so a problem points at the graph, not at new tactics.
 
-JUDGEMENT: G6 Coordination — Codex, 2026-10-31: use existing public ally observations first;
-explicit messages or a central blackboard are alternatives. The first coordination claim
-rests on observation alone; communication requires a separate comparison and contract.
+Arrows advance on a new observation or finished local work, never in a blocking Python loop.
+At first both members see the current allowed ally view and send no messages. In the live LLM
+version, each member's LLM picks a target preference or goal from a bounded menu while the
+graph keeps checking conditions. Army-wide authority stays with its declared owner; graph
+generation cannot reassign units or spend the shared magic.
 
-This example tests conditional progress. It does not test sophisticated flanking, optimal
-timing or teamwork strength. If contact never occurs or cavalry cannot reach the target,
-the case is unsuitable for that claim; fix the experiment specification before collecting
-comparison data, rather than silently adjusting the success condition afterwards.
+Owner, 2026-10-31 (G6): "we can start with observation alone." Messages or shared notes
+remain possible later experiments, with their own information contract and comparison.
 
-## Learning between battles and checkpoint attempts
+This tests conditional progress, not flanking, timing or teamwork strength. If contact never
+happens or the cavalry cannot reach a target, the case cannot answer the question: fix the
+experiment's definition before collecting comparison data, never quietly change the success
+condition afterwards.
 
-JUDGEMENT: G7 Improvement unit — Codex, 2026-10-31: revise frozen artifacts between completed
-battles first, then between checkpoint attempts. Editing during one live battle is the
-alternative; the initial learning claim rests on the between-attempt boundary.
+## Learning between battles
 
-The proposed loop is concrete:
+Owner, 2026-10-31 (G7): "We can start with the simpler approach" and consider live graph
+edits later. Start with graph revisions between completed whole battles. Checkpoint attempts
+are deferred under G10, rather than an automatic next stage. Changing a goal within a fixed
+graph is distinct from editing the graph itself.
 
-1. Freeze a task family, skill catalog, authoring prompt, generation budget and independent
-   evaluator. Reserve development, selection and held-out families before generating graphs.
-2. A coordinator declares roles and graph connections. Specialist LLM authors receive only
-   their capability descriptions and required interfaces. Compose their outputs and run
-   structural checks. Keep failed generations and repair costs in the record.
-3. Run the candidate on the declared training battles, sequentially on this machine. Save
-   every node transition, public source observation, order, engine acknowledgement, effect
-   witness and final outcome. A graph reaching its success node cannot award itself a win.
-4. A diagnostic reader identifies candidate failures, such as an attack selected after a
-   target hid or a branch that kept cavalry idle. Distinguish missing skill, executor bug,
-   bad plan, provider failure and ordinary defeat. A causal story needs a targeted replay
-   or intervention; an LLM explanation alone is a hypothesis.
-5. Authors propose a versioned graph/parameter change. Keep the skills, evaluator and test
-   split frozen for this arm. Re-run component checks, then compare incumbent and candidate
-   on the selection set under the declared budget. Retain the incumbent if the promotion
-   rule is not met. Archive both artifacts and all failed candidates.
-6. Stop at the predeclared iteration/game-time/cost bound or plateau rule. Freeze the selected
-   graph before the held-out test. Report authoring, revisions and battle execution costs
-   separately; never keep tuning on held-out feedback.
+The loop below describes the eventual revision study. Initial work should show that the
+system can run and revise graphs, retaining evidence across attempts. Selection, held-out
+testing and claims of learning wait for the benchmark choices in G1 and G13; these steps
+do not settle those choices or authorize a battle cohort.
 
-JUDGEMENT: G8 Revision authority — Codex, 2026-10-31: authors change graph wiring/parameters,
-not skills, tests or scores in the first study; generated skill code is the alternative.
-Attributing gains to graph improvement rests on keeping the catalog fixed.
+1. **Freeze the setup:** task family, skill catalog, authoring prompt, generation budget and
+   independent evaluator. Set aside development, selection and held-out families before
+   generating any graph.
+2. **Author.** A coordinator declares roles and connections; each specialist LLM sees only its
+   skills' descriptions and required interfaces. Compose the parts and run structural checks,
+   keeping failed generations and repair costs on record.
+3. **Run training battles** one at a time on this machine, saving every node transition,
+   public source observation, order, acknowledgement, effect witness and outcome for audit.
+   Author inputs use only permitted fields and explicitly permitted outcome summaries;
+   evaluator-only evidence stays separate. A graph's success node does not count as a win.
+4. **Diagnose from permitted evidence.** A reader lists likely failures (an attack chosen
+   after its target hid, a branch that left the cavalry idle) and sorts them: missing skill, executor bug, bad plan,
+   provider failure or plain defeat. An LLM's explanation is a hypothesis; a causal claim
+   needs a targeted replay or intervention.
+5. **Revise and select.** Authors propose a new graph or parameter version; skills, evaluator
+   and splits stay frozen. Re-run component checks, then compare incumbent and candidate on
+   the selection set within budget. The incumbent stays unless the promotion rule is met.
+   Archive both and every failed candidate.
+6. **Stop and test** at the declared limit on iterations, game time or cost, or at the plateau
+   rule. Freeze the chosen graph before the held-out test, never tune on held-out results,
+   and report authoring, revision and battle costs separately.
 
-JUDGEMENT: G9 Feedback access — Codex, 2026-10-31: authors initially receive public traces
-and approved outcome diagnostics; privileged training diagnostics are a separate option.
-Information fairness and transfer claims rest on the chosen feedback boundary.
+Owner, 2026-10-31 (G8): "We can start with a frozen, pre-built skill library." Graph authors
+can revise wiring and parameters within its contracts. Skill code, tests and scoring stay
+outside their authority; generated skill code is a possible later research question.
 
-An evaluator may inspect hidden state for an agreed check, but hidden fields, replay stills
-and evaluation/setup/final blocks must not become live node inputs, messages or model context.
-Privileged checks that change a live branch can leak information even when the raw field is
-hidden. Keep such checks in the evaluator; live guards use the legal public observation.
+Owner, 2026-10-31 (G9): "stick with permitted information only." This applies to authors,
+revision feedback and live controllers. The initial design gives authors no privileged
+training diagnostics; any outcome summary supplied to them needs an explicit permitted
+definition, not a copy of evaluator-only fields.
 
-### What checkpoint restoration makes feasible
+An evaluator may read hidden state for an agreed check, but hidden fields, replay stills and
+the `evaluation`, `setup` and `final` blocks never reach live nodes, messages, graph authors
+or revision model context. Even a privileged check that only picks a live branch or tells
+an author which branch failed can leak information. Such checks stay in the evaluator;
+live guards and author feedback use only permitted information.
 
-WH3 checkpoints reconstruct the engine from replay inputs, then hand control back. They are
-different from GaP's “checkpoints,” which are postcondition checks, not saved simulations.
-The [WH3 limits](checkpoints.md#limits) include unreproduced real-time script timers and a
-fresh bridge after restore. Declared Land/siege checks do not establish arbitrary cases.
+### What checkpoints make possible
 
-| Loop | Feasibility and missing work |
+Owner, 2026-10-31 (G10): "Restoring a battle is a feature that can wait. We'll think about
+it later." This section preserves later options and known limitations; no restore adapter,
+policy-state strategy or checkpoint study is part of the initial delivery sequence.
+
+WH3 checkpoints rebuild a battle from its replay inputs and hand control back; GaP's
+"checkpoints" are postcondition checks, not saved simulations. WH3's
+[limits](checkpoints.md#limits) include unreproduced real-time script timers and a fresh
+bridge after restore, and the agreed restore checks cover only their declared Land and siege
+cases.
+
+| Loop | Status and missing work |
 |---|---|
-| New whole battles, revise between them | Simplest initial route. Still needs the graph runner, revision driver and agreed evaluation |
-| Restore one saved battle situation, try A, restore again, try B | Plausible later. Needs a restored continuous controller loop and a check for that specific situation, graph state and handover |
-| Rehearse alternatives while the original battle continues | Not supported by the current single-controller machine. Would need separate synchronized game instances, compute and a valid transfer back to an advancing state |
-| Reflect and change goals during a live battle | Possible controller extension without restoration, but consumes real battle time and is a different online adaptation experiment |
+| Play whole new battles, revise between them | Simplest, so first. Still needs the graph runner, a revision driver and an agreed evaluation |
+| Restore one situation, try A, restore again, try B | Deferred by the owner (G10). Would need a continuous controller loop after restore, and a check for that situation, the graph state and the handover |
+| Rehearse alternatives while the original battle goes on | Not supported by today's single-controller setup: needs extra synchronized game instances, compute and a valid way back into a battle that kept moving |
+| Reflect and change goals during the live battle | A controller extension needing no restore, but it costs real battle time and is a different experiment (online adaptation) |
 
-The existing `restore_episode` is a step-run helper, not a drop-in `play` for an arbitrary
-team; `checkpoint_root` currently accepts only a `hold` source. Producing tactical roots
-from an actively controlled battle needs an explicit source-run extension too. A future
-adapter must join the restored public observation stream to the normal
-policy lifecycle, suppress input before handover and preserve source time/identity. Rebuild
-may run faster before handover under the existing exception; execution after it stays 1x.
+`restore_episode` is a step-run helper, not a `play` for any team, and `checkpoint_root`
+accepts only a `hold` source; tactical starting points from an actively controlled battle need
+a source-run extension. A future adapter must feed restored public observations into the
+normal policy lifecycle, block input before the handover and keep source time and identity.
+The rebuild may run faster than 1x before the handover under the existing exception; after
+it, 1x.
 
-JUDGEMENT: G10 Restored policy state — Codex, 2026-10-31: start a fresh graph from the public
-handover view first; serialized member memory is the alternative. Checkpoint results would
-measure fresh decisions from a situation, not continuation of the original controller.
+JUDGEMENT: G10 Restored policy state — deferred by the owner, 2026-10-31: fresh graph state
+versus restored member memory remains undecided. Future checkpoint claims would measure
+fresh decisions or controller continuation according to that choice.
 
-If we later restore memory, save graph version, node invocations, skill state, model history,
-random state, pending-order identity and message state separately. Never resume an HTTP
-request as if it were part of the engine replay. Explicitly discard/reconcile pending work
-and test that a late reply from the old attempt cannot reach the new one.
+If chosen later, restoring member memory means saving each part separately: graph version,
+node runs, skill state, model history, random state, pending-order identities and message state. An HTTP
+request is never resumed as if it were part of the engine replay; pending work is discarded
+or reconciled explicitly, with a test that a late reply from the old attempt cannot reach the
+new one.
 
-Repeated branches from one source battle are correlated. Put the entire source battle and
-all its checkpoints in one data split; test transfer on different source battles. Replaying
-the same situation can help diagnose a graph, but does not by itself establish learning
-across battles. A graph that memorizes the checkpoint's timestamp is a concrete wrong result
-the held-out design must expose.
+Branches from one source battle are correlated: keep a source battle and all its checkpoints
+in one data split, and test transfer on other source battles. Replaying one situation helps
+diagnose a graph but does not show learning across battles. A wrong result the held-out
+design must expose: a graph that memorized the checkpoint's timestamp.
 
-## WH3 as a VA challenge
+## WH3 as a VA task family
 
-A WH3 analogue of VA fixes the map/mode, observation and action rules,
-available unit types and opponent family; instances vary deployment geometry, composition
-within bounds or starting battle situations. This is our proposed adaptation of VA, not
-one of the paper's robotic benchmarks.
+A WH3 version of VA fixes the map and mode, the observation and action rules, the available
+unit types and the opponent family; instances vary deployment positions, composition within
+bounds, or the starting situation. This is our adaptation, not one of the paper's benchmarks.
 
-JUDGEMENT: G11 Task family — Codex, 2026-10-31: begin with one declared Land family and bounded
-deployment variation; composition/opponent/map variation are later alternatives.
-Generalization claims rest on the exact family, distribution and held-out split.
+Owner, 2026-10-31 (G11): "We can start narrowly and consider different battle types later."
+Start with a narrow Land family; varying deployment positions is still a candidate for its
+instances, not a settled sampling procedure.
 
-Candidate families, in increasing scope: coordinate line contact with a cavalry attack;
-protect a ranged group while enemies change approach; keep cooperation working when a unit
-routs and later rallies. Start only with a case whose required state and actions are exposed
-and checked. Do not manufacture unrecorded hidden-state changes to make the task harder.
-Deployment variation needs a repeatable setup procedure; the current menu scenario alone
-does not establish that we can sample the desired distribution.
+JUDGEMENT: G11 Task family — open within the owner's narrow start, 2026-10-31: the exact Land
+case, variations, distribution and held-out split await definition. Different deployments,
+armies or opponents change difficulty; generalization claims rest on those choices.
 
-Separate familiar variations from withheld combinations, then from shifts such as an unseen
-opponent policy. Keep seeds/setup recipes, opponent identity and side explicit. Unknown-map
-generalization is a different claim from tolerance to different positions on one map.
-Winning quickly is not automatically the right counterpart of robotic throughput: WH3
-health/morale measures and outcome rules remain in the owner's
-[benchmark interview](benchmark-implementation.md#owner-interview-one-land-battle).
+Candidate families, smallest first:
 
-## Comparisons and evidence of improvement
+1. Line contact coordinated with a cavalry attack.
+2. Protecting a ranged group while enemies change their approach.
+3. Cooperation that keeps working when a unit routs and later rallies.
 
-JUDGEMENT: G12 Comparison design — Codex, 2026-10-31: match skills/information and report
-total development plus execution cost; matching only online calls is the alternative.
-Claims about graph structure versus extra computation rest on the selected controls.
+Start only with a case whose needed state and actions are exposed and checked, and do not
+invent unrecorded hidden-state changes to make it harder. Varying deployment needs a
+repeatable setup procedure; the current menu scenario alone does not show we can sample the
+positions we want.
 
-Use a staged comparison so an expensive full matrix is not required at the start:
+Hold out in stages: familiar variations, then withheld combinations, then shifts such as an
+unseen opponent policy. Record seeds or setup recipes, opponent identity and side. New
+positions on one map is a different claim from unseen maps. Winning fast is not automatically
+the counterpart of robot throughput: WH3's health and morale measures and outcome rules
+belong to the owner's [benchmark interview](benchmark-implementation.md#owner-interview-one-land-battle).
 
-| Comparison | Hold constant | What it isolates |
+## Comparisons
+
+Owner, 2026-10-31 (G12): "look at these other things too, instead of comparing only
+battle-time costs." Record authoring, revisions and failed candidates as well as battle
+calls, time and money. The eventual comparison also needs matched skills and information;
+its exact controls remain part of the later study design under G1 and G13.
+
+These are candidate later comparisons, not prerequisites for seeing whether GaP works here.
+Choose relevant ones in stages rather than committing to a full matrix now:
+
+| Comparison | Held equal | What it isolates |
 |---|---|---|
-| Hand-written graph vs ordinary skills/commander | Same skill code, state and tactical goals | Runtime correctness and cost before testing LLM authorship |
-| Direct two-member LLM team vs two live graph members | Ownership, views, models, allowed actions, helpers and total call/spend policy | The effect of a graph execution layer; report any unavoidable helper difference |
-| One author vs coordinator plus specialist authors | Skill catalog, task and aggregate generation budget | Authoring decomposition; distinct from runtime member count |
-| Initial generated graph vs revised graph | Skill catalog, runtime, selection/test splits | Benefit of between-attempt revision |
-| Fixed public-state graph vs graph with live LLM goal updates | Same authored graph and scenario distribution | Value and latency cost of live adaptation |
-| One runtime controller vs two group controllers | Whole army, aggregate resources, legal information and skills | Division of runtime control; defer until the graph layer itself works |
+| Hand-written graph vs. today's skills or commander | Skill code, state, tactical goals | Whether the runtime works, and its cost, before any LLM writes graphs |
+| Direct two-member LLM team vs. two live graph members | Ownership, views, models, allowed actions, helpers, total call and spend policy | What the graph layer adds; report any unavoidable helper difference |
+| One author vs. coordinator plus specialists | Skill catalog, task, total generation budget | Splitting the authoring, separate from how many controllers run in battle |
+| First generated graph vs. revised graph | Skill catalog, runtime, selection and test splits | What revision between attempts adds |
+| Fixed graph vs. graph with live LLM goal updates | Same authored graph and scenario distribution | Value and latency cost of live adaptation |
+| One runtime controller vs. two group controllers | Whole army, total resources, legal information, skills | Splitting runtime control; only once the graph layer works |
+| Independent progress vs. waiting rounds | Graphs, skills, information and model resources | Execution scheduling, if revisited under G3 |
+| Observation alone vs. explicit communication | Ownership, permitted information rules, skills and total resources | Messages or shared notes, if revisited under G6 |
+| Separate army graphs vs. one central graph | Armies, legal information, skills and total resources | Team architecture, after native multiplayer and if revisited under G14 |
 
-Report battle outcomes with their denominators, infrastructure/policy failures separately,
-and the agreed health/morale measures when available. Diagnostics include time from a public
-trigger to the corresponding engine effect, source-observation age at application, wrong or
-stale orders, idle intervals, cancellation failures, model calls and dollars. These explain
-behavior but do not replace the predeclared primary measure.
+Report battle outcomes with their denominators, infrastructure and policy failures
+separately, and the agreed health and morale measures once they exist. Diagnostics: time from
+a public trigger to its engine effect, source-observation age when an order applies, wrong or
+stale orders, idle time, failed cancellations, model calls and dollars. These explain
+behaviour; they do not replace the declared primary measure.
 
-JUDGEMENT: G13 Statistical plan — Codex, 2026-10-31: primary measure, sample count, meaningful
-effect, confidence method, promotion/stopping rules and failure handling remain undecided.
-A small exploratory screen is an alternative to a powered study; strength claims await this.
+Owner, 2026-10-31 (G13): "part of what we will measure in the repo's benchmark" and "we
+will think about that later." Settle the GaP study's measurement through that benchmark
+work, not by choosing a separate GaP score now.
 
-Use independent source battles as the unit for uncertainty, with paired cases where reset
-checks justify pairing. Do not count frames, nodes or repeated branches as independent
-battles. Randomize declared run order to limit time/build effects; do not quietly replace
-losses or failed generations. Choose counts from the effect worth detecting and observed
-variation, then register them before the scored run. The bounded budget must cover authoring
-and failed candidates as well as final graph execution and both games' existing ledger use.
+JUDGEMENT: G13 Statistical plan — deferred to benchmark work by the owner, 2026-10-31:
+score, sample count, meaningful effect, uncertainty, promotion/stopping and failure rules
+remain open. An exploratory screen or a powered study supports different strength claims.
 
-## Proposed checks and delivery sequence
+The unit of uncertainty is an independent source battle, paired only where reset checks
+justify it; frames, nodes and repeated branches are not independent battles. Randomize the
+declared run order to limit time and build effects, and never quietly replace losses or
+failed generations. Choose counts from the effect worth detecting and the observed variation,
+registered before the scored run. The budget must cover authoring, failed candidates, the
+battles themselves and both games' existing ledger use.
 
-Every row needs its own behavior card and owner discussion before it becomes an agreed
-verification method. The independent reference is the stated contract or engine witness,
-not a saved output from the implementation being tested. A deliberate wrong implementation
-must fail the important checks. No new entry is added to agreed-checks.md by this plan.
+## Delivery steps and proposed checks
 
-| Step and deliverable | Repeatable check and independent reference | Wrong version it must catch; limit |
+Each step needs its own behaviour card and an owner discussion before its check is agreed;
+this plan adds nothing to agreed-checks.md. A check's reference is the stated contract or an
+engine witness, never a saved output of the code under test, and a deliberately wrong
+implementation must fail the important checks.
+
+| Step | Repeatable check | Wrong version it must catch; limit |
 |---|---|---|
-| 0. Agree the smallest graph/controller/skill contract | Walk the two-member example through explicit public observations and expected transitions; pin the GaP donor files below | A graph calling an undeclared skill or treating `hold` as strict immobility; this is specification review only |
-| 1. Document the existing controller interface and add a graph skeleton | Offline adapter checks: scripts, fixed graphs and mixed members use the same lifecycle, ending and feedback rules; fake ledger tests share a single cap | A new graph type bypasses spend accounting, shares episode memory or loses a member's feedback; no tactics claim |
-| 2. Implement only approved node types and required skill adapters | Tiny hand-computed graphs for routing, typed data, no target, movement status, bounded loops and cancellation; use fresh sequence/time fixtures | Ack sets `succeeded` without movement; old output feeds a new invocation; a skill name loads arbitrary Python |
-| 3. Exercise two graphs through TeamPolicy offline | Hold one member/model future behind an event while the other emits and receives feedback; reverse roles; hide a target and change battle identity | Global graph barrier, cross-owner order, hidden-field leak, late reply in a new battle; offline concurrency is not live movement |
-| 4. Run a zero-model live graph check after agreement and a game window | Fresh launches at 1x: controlled moves with no-order controls, correct identities and engine effects; then the contact/charge example with explicit witnesses | False arrival from idle drift, target mismatch, charge branch firing before contact, fast member blocked by slow member; does not establish policy strength |
-| 5. Add multi-LLM graph authoring and live LLM members separately | Canned author replies test assembly/rejection; immutable artifact hash and budget accounting; then a bounded live smoke using the agreed checks | Author silently changes evaluator, missing capability accepted, model reply overrides wrong member; smoke is not learning evidence |
-| 6. Add between-battle revision and a small declared comparison | Replay saved training evidence into candidate selection; poison held-out inputs and scorer-write attempts; recount every attempt/cost independently | Test leakage, dropped failed generations, promotion on training-only gains; scored claim waits for G13 |
-| 7. Add checkpoint attempts only if whole-battle cost warrants them | Rerun the relevant agreed restore check; identical-action restores plus changed-order control, public handover readings and clean graph state | Matching checksums but wrong public fields, stale memory/reply, pre-handover orders; limited to checked cases |
-| 8. Extend to native allied armies after multiplayer prerequisites | Per-peer identity/authority, visible information, independent progress, order replication and common ending checks, with raw peer evidence | A locally accepted order absent at another peer, private ally data leak, cross-army control; single-client evidence cannot pass this |
+| 0. Separately scope the broader skill library and controller contract | Inspect the pinned MORSL reference; list first-release capabilities, exclusions, effort bound, contracts and proposed witnesses; walk the two-member example through explicit public observations | An open-ended tactics wish list, an undeclared skill, or treating `hold` as "never move". Planning only; exact scope remains G5 |
+| 1. Build, check and freeze that pre-built library, only after separate authorization | Offline skill contracts plus agreed live effect checks in a game window: identities, movement/contact/firing as relevant, with no-order and wrong-target controls; record delegated G4 starting values | An ack sets `succeeded` without an effect, idle drift counts as arrival, or skill scope grows without a release boundary. No strength claim |
+| 2. Document the controller interface and add the graph runner using that library | Offline lifecycle, feedback, shared budget and fresh episode state; tiny hand-computed graphs for branching, typed data, no target, bounded loops and cancelling | A graph skips spend accounting, shares episode memory, loses member feedback, uses an old node's output or loads arbitrary Python. No live-effect claim |
+| 3. Two graphs through `TeamPolicy`, offline | Hold one member's model reply behind an event while the other sends orders and gets feedback; swap roles; hide a target; change battle identity | A global graph barrier, an order for the other member's unit, a hidden-field leak, a late reply in a new battle. Offline concurrency is not live movement |
+| 4. A live graph check with no model, after agreement and in a game window | Fresh launches at 1x: controlled moves with no-order controls, right identities and engine effects; then the contact/charge example with explicit witnesses | False arrival from idle drift, wrong target, charge before contact, fast member blocked by slow one. Says nothing about policy strength |
+| 5. Multi-LLM authoring and live LLM members, added separately for diagnosis | Canned author replies test assembly and rejection; immutable library/artifact hashes and budget accounting; then a bounded live smoke using the agreed checks | An author changes a skill or evaluator; hidden diagnostics enter author context; a missing skill is accepted; a reply steers the wrong member. No separate study or learning claim required |
+| 6. Between-whole-battle revision; formal comparisons deferred to the benchmark | Replay permitted training evidence into graph revision; preserve the frozen library and count every attempt and cost. Later, once G13 is settled, test candidate selection against held-out leakage and scorer-write attempts | Hidden feedback, skill changes or dropped failed generations; later, promotion on training-only gains. Observing revisions alone establishes no learning gain |
+| 7. Native allied armies, after the multiplayer prerequisites; no restore dependency | Per-peer identity and authority, visible information, independent progress, order replication, a common ending, with raw evidence from each peer | An order accepted locally but missing at another peer; a private ally-data leak; one army controlling another. Single-client evidence cannot pass |
 
-For steps 2–3, explicitly perturb `evaluation`, hidden enemy rows, teammate private state and
-final/setup fields while holding the legal view constant. The graph's outputs must remain
-unchanged. Check that missing witnesses produce unknown/failure, never an invented success.
-For stateful nodes, test rout/rally, dead targets, a newly appearing unit and a battle ending
-while a model request is still running, against the declared ownership/reset contract.
+Checkpoint work has no delivery step for now (G10). If reopened, its proposed check would
+rerun the relevant agreed restore procedure, compare identical-action restores with a
+changed-order control, and check public handover readings and the chosen policy-state
+strategy. It must catch wrong public fields, stale memory or replies, and pre-handover orders.
 
-Preserve raw failures. Run focused offline checks while developing and `scripts/check.py`
-before each commit. Once component checks pass, the next evidence is the agreed live
-procedure, not more fixtures repeating the implementation. Do not change an agreed checker
-or its thresholds to get a pass.
+For steps 2–3, also change `evaluation`, hidden enemy rows, the teammate's private state and
+the `final` and `setup` fields while keeping the legal view fixed: the graph's output must not
+change. In steps 5–6, apply that information-boundary check to author and revision inputs too:
+changing evaluator-only evidence must not change what the authors receive. A missing witness
+gives unknown or failure, never an invented success. For nodes with
+state, test rout and rally, a dead target, a newly appearing unit and a battle ending while a
+model request is still running, against the declared ownership and reset contract.
 
-## Extending from one army to allied armies
+Once component checks pass, the next evidence is the agreed live procedure, not more fixtures
+repeating the implementation. Never change an agreed checker or its thresholds to get a pass.
 
-Keep the graph contract independent of whether a member owns a group or an army. Extend the
-authority context explicitly with match, peer, alliance, army and member identities; unit
-IDs alone are not safe across clients. One local runtime remains responsible for each
-client's order submission. Observing an allied unit never grants permission to order it.
+## From one army to allied armies
 
-JUDGEMENT: G14 Team architecture — Codex, 2026-10-31: independent graphs per army with bounded
-messages are the later candidate; a central joint graph is the alternative.
-Decentralization, communication cost and resilience claims rest on this choice.
+The graph contract stays the same whether a member owns a group or a whole army. Extend the
+ownership context explicitly with match, peer, alliance, army and member identities; unit IDs
+alone are not safe across clients. Each client's own local runtime submits its orders, and
+seeing an allied unit never grants the right to order it.
 
-A later message can say “my line is engaging enemy E,” with sender, match, source battle
-time, expiry and an allowed public target reference. It conveys a teammate report, not an
-engine fact. Messages must not wait at a global barrier or carry private orders/evaluation
-data accidentally. Deciding whether allied vision is shared, who owns army resources,
-what may be communicated and what happens on disconnection belongs to the multiplayer
-information/authority contract, not to a convenient shared Python dictionary.
+Owner, 2026-10-31 (G14): "Start with separate graphs", with a central graph as a possible
+future comparison. Communication is still a later extension under G6: separate graphs do
+not by themselves authorize messages or a shared information store.
+
+A later message might say "my line is engaging enemy E", with sender, match, source battle
+time, expiry and a public target reference: a teammate's report, not an engine fact. Messages
+never wait at a global barrier or carry private orders or evaluation data by accident.
+Whether allies share vision, who owns army-wide resources, what may be said and what happens
+on a disconnect belong in the multiplayer information and authority contract, not in a
+convenient shared Python dictionary.
 
 Follow [native-multiplayer.md](native-multiplayer.md#step-by-step-delivery): prove native
-matches and passive observations, order replication, authority and lifecycle before an LLM
-study. Current move-only support cannot establish attack/charge graph behavior. Expand and
-check each needed action before enabling it. Native allied armies come before four-client
-2v2; results must reconcile peer outcomes and report desynchronization as infrastructure
-failure. A single-client allied-AI experiment, if used, gets its own label and cannot stand
-in for several independently controlled armies.
+matches and passive observation, order replication, authority and lifecycle before any LLM
+study. Today's move-only worker cannot show attack or charge behaviour, so add and check each
+needed action before enabling it. Native allied armies come before four-client 2v2. Results must reconcile
+what each peer reports, with desyncs counted as infrastructure failures. A single-client
+experiment with an allied AI, if used, gets its own label and cannot stand in for several
+independently controlled armies.
 
-Native checkpoint restoration remains separate research: the current tool does not restore
-peer sessions, membership or synchronized handover. Start team experiments from fresh
-matches, consistent with the owner's existing preference to avoid multiplayer checkpoints.
+Native checkpoint restore is separate research: the current tool does not restore peer
+sessions, membership or a synchronized handover. Team experiments start from fresh matches,
+in line with the owner's existing preference to avoid multiplayer checkpoints.
 
-## Risks and reasons to stop or narrow the work
+## Risks and when to stop
 
-| Risk | Concrete response |
+| Risk | Response |
 |---|---|
-| Most gains come from better hand-coded tactics | Share skill code across baselines and compare with a hand-written graph and existing commander |
-| Graph waits become another source of delay | Require the independent-progress test and measure engine effect age, not merely graph throughput |
-| Success predicates reward the wrong thing | Separate public runtime guards from evaluator witnesses; challenge with wrong-target and no-effect controls |
-| Generated code bypasses authority or leaks data | Initial graphs select approved operations only. GaP imports Python scripts even during validation; type checking is not a sandbox |
-| A rigid graph cannot handle moving opponents | Test target loss, rout/rally and delayed replies; compare fixed graphs with bounded live goal updates |
-| Improvement overfits one checkpoint/opponent | Split by source battle and opponent family; freeze before held-out evaluation |
-| Rehearsal consumes excessive game time or money | Sequential bounded attempts, account for failed generation and revision; no assumed parallel simulator fleet |
-| GaP software differs from the paper | Pin inspected code/docs; distinguish structural repair from demonstrated rehearsal optimization |
-| The proposed contribution duplicates prior work | Before a thesis claim, compare with behavior trees, reactive plans, options and dynamic multi-agent graph control; current reading is not an exhaustive novelty search |
+| The broader skill library grows without a stopping point | Scope its finite first release separately (G5), with explicit exclusions, effect checks and an effort bound; freeze it before graph revision |
+| Gains come from better hand-coded tactics | Share skill code across baselines; compare with a hand-written graph and the current commander |
+| Graph waits add delay | Require the independent-progress test; measure the age of engine effects, not graph throughput |
+| Success checks reward the wrong thing | Keep public runtime guards apart from evaluator witnesses; test with wrong-target and no-effect controls |
+| Generated code bypasses ownership or leaks data | First graphs only pick approved operations. GaP imports Python scripts even while validating; type checks are not a sandbox |
+| A rigid graph cannot handle moving opponents | Test target loss, rout and rally, and late replies; compare fixed graphs with bounded live goal updates |
+| Improvement overfits one checkpoint or opponent | Split by source battle and opponent family; freeze before the held-out test |
+| Rehearsal costs too much game time or money | Bounded sequential attempts; count failed generations and revisions; no assumed fleet of parallel simulators |
+| GaP's code differs from its paper | Pin what was inspected; tell structural repair apart from demonstrated rehearsal optimization |
+| The idea duplicates prior work | Before a thesis claim, compare with behaviour trees, reactive plans, options and dynamic multi-agent graph control; the reading so far is not a full novelty search |
 
-If ordinary shared skills match the graph under the declared budget, a negative result is
-useful; it is not a reason to add complexity without a new hypothesis. If the live skill
-witnesses fail, fix or narrow those contracts before asking models to optimize over them.
-If native replication is not established, keep the result scoped to split-army control.
+Stop or narrow the work when:
+
+- plain shared skills match the graph within the declared budget: a useful negative result,
+  and no reason to add complexity without a new hypothesis;
+- the live skill witnesses fail: fix or narrow those contracts before asking models to
+  optimize over them;
+- native order replication is not established: keep results scoped to split-army control.
 
 ## References
 
-Primary sources inspected 2026-10-31; external tests and robotics results were not reproduced.
-The research collection entry is in [papers.md](../thesis/papers.md#gap-graph-as-policy-for-variational-automation).
-Source checkouts and the review/check report live under `runs/gap-plan-20261031/` (ignored).
+Primary sources read 2026-10-31; no external tests or robot results were reproduced. Research
+entry: [papers.md](../thesis/papers.md#gap-graph-as-policy-for-variational-automation). Source
+checkouts, the review and the check report are in `runs/gap-plan-20261031/` (ignored).
 
 - [Paper v1](https://arxiv.org/html/2607.05369v1), [project](https://graph-robots.github.io/gap/),
   [docs](https://graph-robots.github.io/graph-as-policy/).
-- GaP code pin: `71549e1584839337eb355c280e7b1e50c805b8c7`.
-  Use [gap/agent/multi_agent.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/agent/multi_agent.py)
-  for coordinator/subgraph assembly, validation repair and separate postcondition authoring;
-  [tests/agent/test_pipeline.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/tests/agent/test_pipeline.py)
-  for canned-response pipeline tests. Adapt the separation; do not let authors control scores.
-- [workflow.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/workflow.py),
-  [validate.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/validate.py),
-  [schema docs](https://graph-robots.github.io/graph-as-policy/reference/workflow-schema.html):
-  follow explicit graph structure and typed bindings. Unknown-tool warnings and script
-  imports in GaP are reasons to define a stricter WH3 approved-operation subset.
-- [executor.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/executor.py),
-  [executor docs](https://graph-robots.github.io/graph-as-policy/reference/executor.html),
-  [test_executor.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/tests/runtime/test_executor.py):
-  reference routing, scope and failure tests. Regular nodes complete a super-step before
-  its successors advance; cross-subgraph inputs resolve by latest producer name. WH3's
-  resumable independent members and explicit producer identities deliberately differ.
-- [GaP checkpoint docs](https://graph-robots.github.io/graph-as-policy/running/checkpoints.html):
-  postconditions checked against simulator truth. Missing sidecars may be skipped and
-  enforcement has off/warn/raise modes. WH3 verification must require the named witnesses;
-  these checks are not an engine save/restore facility.
-- [gap/benchmark/__init__.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/benchmark/__init__.py)
-  explicitly describes one-shot generation without rehearsal/refinement in that harness.
-  The inspected generation repair loop is structural repair. Do not promise a ready-made
-  implementation of the paper's full self-learning loop; map further code before reuse.
-- Open Robot Skills pin: `752dfbd96968d4d08379f8111765efbf6457800b`.
+- GaP code at `71549e1584839337eb355c280e7b1e50c805b8c7`:
+  - [gap/agent/multi_agent.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/agent/multi_agent.py):
+    coordinator and subgraph assembly, validation repair, postconditions written separately;
+    [tests/agent/test_pipeline.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/tests/agent/test_pipeline.py):
+    pipeline tests with canned replies. Adapt the separation; never let authors control scores.
+  - [workflow.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/workflow.py),
+    [validate.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/validate.py),
+    [schema docs](https://graph-robots.github.io/graph-as-policy/reference/workflow-schema.html):
+    explicit graph structure and typed bindings to follow. GaP only warns on unknown tools and
+    imports scripts, so WH3 needs a stricter list of approved operations.
+  - [executor.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/runtime/executor.py),
+    [executor docs](https://graph-robots.github.io/graph-as-policy/reference/executor.html),
+    [test_executor.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/tests/runtime/test_executor.py):
+    reference tests for routing, scope and failures. Regular nodes finish a super-step before
+    their successors advance, and cross-subgraph inputs resolve by the latest producer's name;
+    WH3's resumable members and explicit producers differ on purpose (G3).
+  - [Checkpoint docs](https://graph-robots.github.io/graph-as-policy/running/checkpoints.html):
+    postconditions checked against simulator truth; a missing sidecar may be skipped, and
+    enforcement can be off, warn or raise. WH3 checks must require their named witnesses.
+    These are not an engine save/restore.
+  - [gap/benchmark/__init__.py](https://github.com/graph-robots/graph-as-policy/blob/71549e1584839337eb355c280e7b1e50c805b8c7/gap/benchmark/__init__.py)
+    says its harness does one-shot generation without rehearsal or refinement, and the
+    code's repair loop is structural repair. Do not promise a ready-made version of the
+    paper's full self-learning loop; map more code before reusing any.
+- Open Robot Skills at `752dfbd96968d4d08379f8111765efbf6457800b`:
   [transporting-objects/SKILL.md](https://github.com/graph-robots/open-robot-skills/blob/752dfbd96968d4d08379f8111765efbf6457800b/skills/transporting-objects/SKILL.md)
-  and [authoring docs](https://graph-robots.github.io/graph-as-policy/skills/authoring-bundles.html)
-  show capability descriptions, typed inputs, named exits, allowed tools and canonical scripts.
-  Mirror the documentation pattern; robot motion/perception implementations do not apply.
-  The repositories declare Apache-2.0 licensing; preserve attribution/license notices for
-  any later copied code and inspect individual bundles and third-party terms then.
-
-The first implementation decision is G2 with the small contract in step 0. G3–G6 determine
-that slice; G7–G13 determine later research claims. G14 waits for native multiplayer.
+  and the [authoring docs](https://graph-robots.github.io/graph-as-policy/skills/authoring-bundles.html)
+  show capability descriptions, typed inputs, named exits, allowed tools and canonical
+  scripts. Mirror the documentation pattern; the robot motion and perception code does not
+  apply. Both repositories declare Apache-2.0: keep attribution and licence notices on any
+  code copied later, and check individual bundles and third-party terms then.

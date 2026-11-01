@@ -427,6 +427,19 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-31 (GaP answers G1–G14, plan only): first see whether it works in WH3; defer
+  research comparisons and benchmark scoring/statistical decisions, while keeping interest
+  in better live control and learning across battles. Use GaP as a reference and our existing
+  controllers/team dispatcher. Start with independent progress, observation-only coordination,
+  graph revisions between whole battles, a narrow Land family, and separate graphs for later
+  allied armies. Waiting rounds, messages, live graph edits, other battle types and a central
+  graph remain possible later experiments. Delegate common-sense initial limits/retries and
+  fallbacks to the implementer, to record and tune. "We should build a broader library first"
+  and tackle its scope separately, with MORSL as a reference and care over unbounded complexity;
+  start with a "frozen, pre-built skill library". "stick with permitted information only"
+  for authors as well as live controllers. Count development/revision costs as well as battle
+  costs. Battle restoration and its policy-state choice wait. "Update the plan based on these
+  points, but don't start the implementation yet." [Revised plan](twwarhammer3/gap-plan.md).
 - 2026-10-31 (GaP, plan only): add the paper to the research collection and plan graph
   controllers for one army with multiple LLMs, then multiple allied armies. Inspect GaP's
   GitHub code/docs, existing controller interfaces, WH3 skill needs, between-battle learning

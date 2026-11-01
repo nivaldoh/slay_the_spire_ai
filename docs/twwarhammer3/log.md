@@ -29,6 +29,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-10-31: record the owner's GaP plan decisions
+
+- Updated the [plan](gap-plan.md) from the owner's fourteen answers: existing controller/team
+  integration, independent progress, observation-only coordination, whole-battle revisions,
+  a frozen pre-built library, permitted information and separate graphs for allied armies.
+- Broader skill library comes first as a separately scoped workstream, using MORSL as a
+  reference; initial execution limits are delegated tuning choices. Research comparisons,
+  benchmark design and restoration remain deferred; exact library and battle scope stay open.
+- Documentation only. No implementation, game runs, API spend or new agreed checks.
+  Independent review and offline gate evidence are recorded in the commit and
+  `runs/gap-owner-decisions-20261031/`. GaP behaviour and learning remain unverified.
+
 ## 2026-10-31: keep passive capture alive after malformed backend output
 
 - A JSON list or deeply nested JSON raised in the passive worker before failure metadata
