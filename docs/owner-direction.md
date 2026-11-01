@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
+  They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
+  asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check
+  (`551b514`); the two transport plants in `tests/plants.toml` pointed at the moved header
+  parsing (`563483a`). Approval is not verification.
 - 2026-10-31 (factory efficiency): "consuming time from my system during an automated process
   is fine, and is very different from consuming time from myself as a reviewer, which is the
   part that matters the most." The owner asked to put this distinction in the factory's
