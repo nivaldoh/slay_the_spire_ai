@@ -371,6 +371,9 @@ Cards/evidence: `runs/gap-initiation-20261101/`. The one fresh diagnostic now pr
 uses the same scenario and raw target/contact/melee witnesses at 1x; it needs a current
 PC window. The owner confirmed it on 2026-11-01: "Yes, the PC is free now. Let's finish this."
 No additional author candidate or changed benchmark/strength method is planned.
+The first launcher invocation was rejected before any game/API call: its default setup
+window did not fit the declared process cap. Explicit setup240s restores the prior
+integration setting inside the unchanged1500s episode/1800s process bounds.
 
 ### Authoring and revision command
 
