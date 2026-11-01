@@ -842,6 +842,26 @@ def test_diagram_flags_follow_the_cited_text_not_its_line_numbers(tmp_path):
     code.unlink()
     commit_all(tmp_path, "remove")
     assert flags()["s"]["reasons"] == [f"src/pkg/mod.py is gone (cited at {cited})"]
+    # A card's refs, a status's refs ({text, refs}) and the refs of the boxes an example generated
+    # for the view (view.generated) and of that graph itself count as cited too.
+    other = tmp_path / "src/pkg/other.py"
+    other.write_text("a = 1\nb = 2\nc = 3\nd = 4\n")
+    later = commit_all(tmp_path, "other")
+    (tmp_path / "docs/how-code-works-view-c.js").write_text(view_file({
+        "id": "c", "commit": later, "reviewed": "2026-11-01",
+        "cards": {"k": {"refs": ["src/pkg/other.py:1"]}},
+        "elements": [{"id": "b", "status": {"text": "x", "refs": ["src/pkg/other.py:2"]}}],
+        "generated": {"example": "made", "key": "graph"}}))
+    made = {"made": {"graph": {"elements": [{"id": "m", "refs": ["src/pkg/other.py:3"]}],
+                               "refs": ["src/pkg/other.py:4"]}}}
+    (tmp_path / "docs/how-code-works-example-made.js").write_text(
+        f"// an example\nObject.assign(DIAGRAM_EXAMPLES, {json.dumps(made)});\n")
+    commit_all(tmp_path, "cards")
+    assert flags()["c"]["reasons"] == []
+    other.write_text("a = 10\nb = 20\nc = 30\nd = 40\n")
+    commit_all(tmp_path, "change other")
+    assert flags()["c"]["reasons"] == [f"src/pkg/other.py:{n} changed since {later}"
+                                       for n in (1, 2, 3, 4)]
 
 
 def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path):
@@ -896,6 +916,62 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
     (tmp_path / "src/pkg/a.py").write_text("x = 1\n")  # changed after the example was made
     commit_all(tmp_path, "change a")
     assert flags()["s"]["reasons"] == ["example e: src/pkg/a.py changed since the example was made"]
+    # Four more facts (versions with their values), a list of examples, and story steps that
+    # must name ids the view draws, an example generated or its flow's lanes hold.
+    battle = "src/twwarhammer3/battle/"
+    code = {f"{battle}controllers.py": 'MODEL_PROMPTS = {"llm": llm.PATH, "commander": PROMPT}\n'
+                                       'VERSIONS = {"llm": "v22", "commander": "v8"}\n',
+            f"{battle}scripted.py": 'POLICIES = {"hold": Hold, "attack_nearest": Nearest}\n',
+            f"{battle}graph_author.py": 'DESCRIPTIONS = {"owned": "x", "engage": "y"}\n'}
+    for name, text in code.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text(text)
+    stated = {"model_policies": ["llm", "commander"], "graph_ops": ["owned", "engage"],
+              "scripted_policies": ["hold", "attack_nearest"],
+              "versions": {"llm": "v22", "commander": "v8"}}
+    steps = [{"box": "cav.own", "dots": [["author>cav", "~cav>own"]],
+              "rows": ["basic", "gap.line"]},
+             {"box": "cav.sel", "dots": [{"who": "A", "path": ["author>cav", "~cav.no"]}],
+              "rows": ["gap.model"]}]
+    views = [
+        {"id": "v", "commit": commit, "reviewed": "2026-10-30", "facts": stated, "elements": []},
+        {"id": "g", "commit": commit, "reviewed": "2026-10-30", "example": ["e", "f"],
+         "elements": [{"id": "author"}], "wires": [{"id": "author>cav"}],
+         "generated": {"example": "graph", "key": "graph"},
+         "flows": [{"id": "story", "lanes": {"example": "methods", "key": "lanes"}, "steps": steps},
+                   {"id": "inline", "lanes": {"rows": [{"id": "play"}]},
+                    "steps": [{"box": "author", "rows": ["play", "gap.line"]}]}]}]
+    for view in views:
+        (tmp_path / f"docs/how-code-works-view-{view['id']}.js").write_text(view_file(view))
+    example = {"f": {"files": {"src/pkg/b.py": digest("old")}},  # e excuses b.py, f does not
+               "graph": {"graph": {"elements": [{"id": "cav.own"}], "wires": [{"id": "cav>own"}]}},
+               "methods": {"lanes": {"rows": [{"id": "basic", "header": True},
+                                              {"id": "gap.line"}]}}}
+    (tmp_path / "docs/how-code-works-example-f.js").write_text(
+        f"// examples\nObject.assign(DIAGRAM_EXAMPLES, {json.dumps(example)});\n")
+    commit_all(tmp_path, "methods")
+    assert flags()["v"]["reasons"] == []
+    assert flags()["g"] == {"flagged": True, "moved": {},
+                            "example_changed": ["src/pkg/a.py", "src/pkg/b.py"], "reasons": [
+        "example e: src/pkg/a.py changed since the example was made",
+        "example f: src/pkg/b.py changed since the example was made",
+        "flow story step 2: its box cav.sel is not in the view",
+        "flow story step 2: its wire cav.no is not in the view",
+        "flow story step 2: its row gap.model is not in the view",
+        "flow inline step 1: its row gap.line is not in the view"]}
+    edit(tmp_path, f"{battle}controllers.py", ', "commander": PROMPT', "")
+    edit(tmp_path, f"{battle}controllers.py", '"v22"', '"v23"')  # only a value changes
+    edit(tmp_path, f"{battle}scripted.py", "}", ', "rush_nearest": Rush}')
+    edit(tmp_path, f"{battle}graph_author.py", "}", ', "shoot": "z"}')
+    commit_all(tmp_path, "new names and versions")
+    assert flags()["v"]["reasons"] == [
+        f"{battle}controllers.py MODEL_PROMPTS is now ['llm']; the view says ['commander', 'llm']",
+        f"{battle}scripted.py POLICIES is now ['attack_nearest', 'hold', 'rush_nearest']; the view"
+        " says ['attack_nearest', 'hold']",
+        f"{battle}graph_author.py DESCRIPTIONS is now ['engage', 'owned', 'shoot']; the view says"
+        " ['engage', 'owned']",
+        f"{battle}controllers.py VERSIONS is now ['commander=v8', 'llm=v23']; the view says"
+        " ['commander=v8', 'llm=v22']"]
 
 
 def test_a_diagram_failure_never_changes_the_exit_code_or_the_pass_record(

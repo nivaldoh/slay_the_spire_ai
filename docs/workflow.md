@@ -149,9 +149,11 @@ markers   3 problems listed in the log, for the owner
 - "diagram" counts the views of the "How the code works" page (`docs/multi-agent.html`)
   that need a refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01): a cited
   line whose text changed (text that only moved is recorded, not flagged), a cited file gone,
-  a `src/` Python file missing from the file lists or a listed path in no map box, the
-  provider names and hidden observation keys a view states, a review older than three months,
-  and an example's cited file changed since the example was made. It reads Git objects at HEAD
+  a `src/` Python file missing from the file lists or a listed path in no map box, the names
+  a view states that differ from the code (providers, hidden observation keys, model and
+  scripted policies, graph operations, controller versions), a review older than three months,
+  a cited file of one of a view's examples changed since that example was made, and a story
+  step naming a box, wire or lane row the view lacks. It reads Git objects at HEAD
   only, writes the details to the log and to the ignored `runs/checks/diagram-flags.js` (the
   page shows them), and skips in a shallow clone or a linked worktree. An error prints "could
   not run"; it never fails the run or changes the pass record.

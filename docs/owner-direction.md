@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-01 (control methods on the page): "Find a good way to represent different army
+  control methods that we will implement. For now we have the basic one, and then GaP. We need
+  clean visuals for those too." Read as: the [page](multi-agent.html) draws each control method
+  as it is built, now the basic one (the model picks the orders at each decision) and GaP
+  (models write graphs that code plays); drawing GaP in the page itself rests on JUDGEMENT?
+  docs/multi-agent.html GaP drawn in the page.
 - 2026-11-01 (visual docs): "I like the general idea of helping me quickly understand how the
   code works in a visual, concrete, simple, intuitive way. That's by far the most important
   thing about that." Earlier (2026-10-31): make it "the main way I understand the structure of

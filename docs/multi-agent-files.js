@@ -190,6 +190,12 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/graph_initiation.py",
+   "text": "temporary pre-contact attack-path check for caller-declared initiators",
+   "box": "map.graphs",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/graph_view.py",
    "text": "recorded graph/battle inspection",
    "box": "map.graphs",

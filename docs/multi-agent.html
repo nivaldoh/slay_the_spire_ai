@@ -52,7 +52,8 @@
    docs/how-code-works-view-<id>.js, as JSON that scripts/check.py reads. A view adds:
      question (its title), takeaway (one sentence), reviewed (the date an agent last
      reviewed every claim), example (an id in DIAGRAM_EXAMPLES, or {made_up: true}),
-     facts ({providers, hidden_keys}: values it states, which check.py compares with the code),
+     facts ({providers, hidden_keys, model_policies, scripted_policies, graph_ops}: lists;
+     versions: {name: version}; the values it states, which check.py compares with the code),
      merge: true (parallel wires between the same two boxes are drawn as one).
    Any element, wire or step may carry its own commit, which its refs are read at. An element
    may add code (the code name, drawn small under the plain label), ran: false (never ran in
@@ -60,7 +61,34 @@
    ids) and files (path prefixes: the map box a listed file belongs to). A flow with story:
    true numbers its steps (with timed: true they keep their own times and lanes); a step's
    message and map are {example, key} (or literal {title, text}) and are drawn beside the
-   picture. */
+   picture.
+
+   The control-methods views (2026-11-01) add, in a view: example as a list of ids (a "real
+     battle" badge each); "elements": [] (no boxes: the canvas is hidden and the lanes sit at
+     the top); generated: {example, key}, whose {elements, wires} join the view's own before
+     drawing (a wire without an id gets "from>to"); under: sentences drawn under the picture;
+     cards: {<key>: {where, who, writes, done, status, refs, rests, note, stories}}, a method's
+     hand-written card, shown with the generated fields (calls, decisions, view_age, example)
+     of the lanes' example when its header row is clicked.
+   In a flow: lanes may be {example, key} (its other fields, such as legend, override the
+     example's); static: true draws the lanes whole over the flow's start-end, with no time
+     cursor, while untimed steps run. A step's rows: [row ids] lights those rows and dims the
+     rest; span: [from, to] shades that battle time behind them.
+   In lanes: columns: true splits the strip into Before | During | Between, and only During
+     is the clock. A row may add header: true (a bold line across: label, code, badges: [example
+     ids], card: a key in cards), who: "A", "B" or "model" (the colour of its bars, ticks and
+     marks) and empty (grey words across an empty lane). An item may add text (drawn inside
+     its bar when it fits, else just outside it on its left; label is the tooltip) and kind:
+     "wait" (one wait for a model; who "model" draws it purple) or "skill" (a skill step still
+     running, in the member's tint). ticks: [{row, at: [ms], who, label, text}]: steps that
+     finished at once (label is each tick's tooltip; text, or label when there is none, is
+     drawn once over the group when it fits between its first and last tick). marks add kind
+     "new" (filled diamond) and "resent" (open square: the same orders sent again), in the who
+     colour, with titles: [a tooltip per at]. cells: [{row, column: "before" | "between",
+     blocks: [{label, title}], text}]: one equal-width purple block per model call (not to
+     scale) with its text wrapped under them, or grey words saying why the cell is empty; the
+     row grows to hold them.
+   who: "model" also draws a busy box, a dot or a step's border in the model colour. */
 
 const TRACE = "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl";
 const LUA = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua";
@@ -7200,6 +7228,10 @@ let DIAGRAM_FLAGS = null; // scripts/check.py's flags, when its ignored data fil
 <script src="how-code-works-view-decision.js"></script>
 <script src="how-code-works-example-members.js"></script>
 <script src="how-code-works-view-members.js"></script>
+<script src="how-code-works-example-methods.js"></script>
+<script src="how-code-works-view-methods.js"></script>
+<script src="how-code-works-example-graph.js"></script>
+<script src="how-code-works-view-graph.js"></script>
 <!-- Optional: written by scripts/check.py in the main checkout only (runs/ is ignored). -->
 <script src="../runs/checks/diagram-flags.js"></script>
 <style>
@@ -7215,6 +7247,11 @@ let DIAGRAM_FLAGS = null; // scripts/check.py's flags, when its ignored data fil
   --line: #d3d9d6;
   --member-a: #0072b2;
   --member-b: #d55e00;
+  /* JUDGEMENT?: Model colour (Claude Code, 2026-11-01, control-methods spec): Okabe-Ito
+     reddish purple means "a model is working" on lane bars, side blocks, busy boxes and dots.
+     Alternative: grey (idle polls) or the status purple --outside; telling model time from
+     code time at a glance rests on it. */
+  --model: #cc79a7;
   --idle: #b9c1c5;
   --agreed: #2e7d4f;
   --tests: #2f6690;
@@ -7431,6 +7468,10 @@ svg {
   stroke: var(--member-b);
   stroke-width: 4;
 }
+.box.busy.who-model .shape {
+  stroke: var(--model);
+  stroke-width: 4;
+}
 .box.busy .shape {
   fill: #fffbea;
 }
@@ -7499,6 +7540,9 @@ svg {
 }
 .dot.who-B {
   fill: var(--member-b);
+}
+.dot.who-model {
+  fill: var(--model);
 }
 .dot.fail {
   fill: #fff;
@@ -7596,6 +7640,146 @@ svg {
 }
 .bar.engine {
   fill: #7b868c;
+}
+.bar.req.who-model {
+  fill: var(--model);
+  stroke-width: 1.5;
+}
+.bar.skill {
+  fill: #e4e7e9;
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+.bar.skill.who-A {
+  fill: #b9d8ec;
+  stroke: var(--member-a);
+}
+.bar.skill.who-B {
+  fill: #f2c6a8;
+  stroke: var(--member-b);
+}
+.bar-text {
+  font: 10.5px var(--sans);
+  fill: var(--ink);
+  text-anchor: middle;
+  pointer-events: none;
+}
+.label-back {
+  fill: #fff;
+  pointer-events: none;
+}
+.bar-text.outside {
+  fill: var(--ink-2);
+  text-anchor: end;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.tick-text {
+  font: 10.5px var(--sans);
+  fill: var(--ink-2);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.mark.resent {
+  fill: #fff;
+}
+.axis .minor {
+  stroke: var(--faint);
+}
+.lane-col {
+  font: 600 10.5px var(--sans);
+  fill: var(--muted);
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+}
+.lane-break {
+  font: 600 12px var(--sans);
+  fill: var(--faint);
+  text-anchor: middle;
+}
+.lane-who {
+  stroke: none;
+}
+.lane-empty {
+  font: italic 11px var(--sans);
+  fill: var(--muted);
+  text-anchor: middle;
+}
+.lane-header {
+  cursor: pointer;
+}
+.lane-header .bg {
+  fill: var(--page);
+}
+.lane-header .title {
+  font: 600 12.5px var(--sans);
+  fill: var(--ink);
+}
+.lane-header .code {
+  font: 10.5px var(--mono);
+  fill: var(--muted);
+}
+.lane-header.selected .bg,
+.lane-header:focus-visible .bg {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lane-header:focus {
+  outline: none;
+}
+.lane-badge rect {
+  fill: #e3f1e8;
+}
+.lane-badge text {
+  font: 600 10.5px var(--sans);
+  fill: #1f5a37;
+}
+.lane-badge.changed rect {
+  fill: #fff3d6;
+}
+.lane-badge.changed text {
+  fill: #6d4c00;
+}
+.cell-block {
+  fill: var(--model);
+  stroke: #fff;
+  stroke-width: 1;
+}
+.cell-label {
+  font: 600 10px var(--sans);
+  fill: var(--ink);
+  text-anchor: middle;
+  pointer-events: none;
+}
+.cell-text {
+  font: 10.5px var(--sans);
+  fill: var(--ink-2);
+}
+.cell-text.why {
+  fill: var(--muted);
+}
+.lane-row {
+  transition: opacity 0.2s;
+}
+.lane-row.dim {
+  opacity: 0.25;
+}
+#lane-span rect {
+  fill: #fff3c4;
+  stroke: var(--unverified);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+#under p {
+  margin: 3px 0 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
 }
 .mark {
   stroke: var(--ink-2);
@@ -7708,6 +7892,9 @@ svg {
 }
 #panel .step.who-B {
   border-color: var(--member-b);
+}
+#panel .step.who-model {
+  border-color: var(--model);
 }
 #panel .step .when {
   font: 12px var(--mono);
@@ -7901,6 +8088,10 @@ nav .frozen button {
   stroke-dasharray: 4 3;
   fill: none;
 }
+.unitmap .leader {
+  stroke: var(--muted);
+  stroke-width: 0.75;
+}
 .unitmap .scale {
   stroke: var(--ink-2);
   stroke-width: 1.5;
@@ -7920,6 +8111,30 @@ nav .frozen button {
 }
 #panel .stories button {
   margin: 2px 4px 2px 0;
+}
+/* A method's card, opened at the panel's top: compact, so it reads whole at 1366x768. */
+#panel .card {
+  font-size: 12px;
+  line-height: 1.25;
+}
+#panel .card h3 {
+  font-size: 14px;
+  margin: 2px 0;
+}
+#panel .card p,
+#panel .card ul {
+  margin: 2px 0;
+}
+#panel .card li {
+  margin: 0;
+}
+#panel .card .back {
+  float: right;
+  margin: 0 0 0 8px;
+  font-size: 12px;
+}
+#panel .card .meta {
+  min-height: 21px; /* the floated Back button's height, so it ends on this line */
 }
 </style>
 </head>
@@ -7957,6 +8172,7 @@ nav .frozen button {
     </div>
     <svg id="lanes" aria-label="Lanes"></svg>
     <div id="lane-legend"></div>
+    <div id="under"></div>
   </section>
   <aside id="panel" aria-live="polite"></aside>
 </main>
@@ -8262,7 +8478,7 @@ function drawDots() {
   layer.replaceChildren();
   document
     .querySelectorAll(".busy, .lit")
-    .forEach((node) => node.classList.remove("busy", "lit", "who-A", "who-B"));
+    .forEach((node) => node.classList.remove("busy", "lit", "who-A", "who-B", "who-model"));
   const flow = currentFlow();
   if (!flow) return;
   for (const step of activeSteps(flow, state.time)) {
@@ -8292,11 +8508,180 @@ function drawDots() {
 }
 
 // Lanes: one row per actor along the flow's clock, bars for work and white space for idle.
+// With lanes.columns the strip splits into Before | During | Between (the control-methods
+// view): only During is a clock; the side columns hold cells, which are not to scale.
 const LANE = { left: 150, right: 16, top: 26, row: 28 };
+const SIDE = { width: 130, gap: 10, right: 10 }; // a side column, its "//" break, the margin
+const COLUMN_TITLES = [
+  "BEFORE THE BATTLE",
+  "DURING THE BATTLE (battle seconds)",
+  "BETWEEN BATTLES",
+];
+const AXIS_STEPS = [250, 500, 1000, 2000, 5000, 10000, 30000, 60000];
+const MINOR_STEPS = { 2000: 1000, 5000: 1000, 10000: 5000, 30000: 10000, 60000: 10000 };
+const whoColour = (who) =>
+  who === "model" ? "var(--model)" : who ? `var(--member-${who.toLowerCase()})` : "var(--ink)";
+const seconds = (ms) => `${(ms / 1000).toFixed(1)} s`;
+let laneRows = {}; // row id: [y, height] of the lanes drawn now
+// The x range and battle window of the clock; a static flow keeps the window it was given.
+function laneStrip(flow) {
+  const width = state.tab.size[0];
+  const [start, end] = flow.window || [flow.start, flow.end];
+  if (!flow.lanes || !flow.lanes.columns)
+    return { x0: LANE.left, x1: width - LANE.right, start, end };
+  const x0 = LANE.left + SIDE.width + SIDE.gap;
+  return { x0, x1: width - SIDE.right - SIDE.width - SIDE.gap, start, end };
+}
 function laneX(flow, t) {
-  const width = state.tab.size[0] - LANE.left - LANE.right;
-  const clamped = Math.max(flow.start, Math.min(flow.end, t));
-  return LANE.left + ((clamped - flow.start) / (flow.end - flow.start)) * width;
+  const { x0, x1, start, end } = laneStrip(flow);
+  const clamped = Math.max(start, Math.min(end, t));
+  return x0 + ((clamped - start) / (end - start)) * (x1 - x0);
+}
+// JUDGEMENT?: Axis steps (Claude Code, 2026-11-01, control-methods build): labels at the
+// smallest step of AXIS_STEPS at least 80 units apart, short minor ticks under labels of 2 s
+// and more; the frozen tabs keep 250/500 ms. Alternative: the spec's "at most 8 labels", which
+// turns Two members' 0.5 s labels into 1 s; how each new lane axis reads rests on it.
+function axisSteps(flow) {
+  const { x0, x1, start, end } = laneStrip(flow);
+  if (FROZEN.includes(state.tab.id)) return [end - start > 4000 ? 500 : 250, null];
+  const major = AXIS_STEPS.find((step) => (step / (end - start)) * (x1 - x0) >= 80) ?? 60000;
+  return [major, MINOR_STEPS[major] ?? null];
+}
+// A white box behind a label drawn over lines (ticks, grid lines): 2 units either side of its
+// text, and from y0 to y1 (its text's height when not given).
+function backLabel(label, y0, y1) {
+  const box = label.getBBox();
+  const [top, bottom] = y0 == null ? [box.y + 1, box.y + box.height - 1] : [y0, y1];
+  label.before(
+    svg("rect", {
+      class: "label-back",
+      x: box.x - 2,
+      y: top,
+      width: box.width + 4,
+      height: bottom - top,
+    }),
+  );
+}
+// Words wrapped into lines no wider than `width`; returns the number of lines.
+function wrapText(parent, text, x, y, width, className) {
+  const node = svg("text", { class: className, x, y });
+  parent.append(node);
+  let line = svg("tspan", { x });
+  node.append(line);
+  let count = 1;
+  for (const word of text.split(/\s+/)) {
+    const before = line.textContent;
+    line.textContent = before ? `${before} ${word}` : word;
+    if (before && line.getComputedTextLength() > width) {
+      line.textContent = before;
+      line = svg("tspan", { x, dy: 12 }, word);
+      node.append(line);
+      count++;
+    }
+  }
+  return count;
+}
+// A badge drawn in SVG: returns its width and a function that places it.
+function laneBadge(parent, badge) {
+  const g = svg("g", { class: `lane-badge${badge.changed ? " changed" : ""}` });
+  const rect = svg("rect", { height: 14, rx: 7 });
+  const text = svg("text", {}, badge.text);
+  g.append(rect, text);
+  if (badge.title) g.append(svg("title", {}, badge.title));
+  parent.append(g);
+  const width = text.getComputedTextLength() + 14;
+  rect.setAttribute("width", width);
+  const place = (x, baseline) => {
+    Object.entries({ x, y: baseline - 10.5 }).forEach(([key, value]) =>
+      rect.setAttribute(key, value),
+    );
+    Object.entries({ x: x + 7, y: baseline }).forEach(([key, value]) =>
+      text.setAttribute(key, value),
+    );
+  };
+  return [width, place];
+}
+// A header row: a method's plain name and gist in bold, its code name small and its example
+// badges, on one line when they fit and on two otherwise. Clicking it opens the method's card.
+function drawHeader(g, row, y, width) {
+  g.classList.add("lane-header");
+  const bg = svg("rect", { class: "bg", x: 0.5, y: y + 1, width: width - 1, rx: 3 });
+  const title = svg("text", { class: "title", x: 8 }, row.label);
+  g.append(bg, title);
+  const parts = [];
+  if (row.code) {
+    const code = svg("text", { class: "code" }, row.code);
+    g.append(code);
+    parts.push([
+      code.getComputedTextLength(),
+      (x, baseline) => {
+        code.setAttribute("x", x);
+        code.setAttribute("y", baseline);
+      },
+    ]);
+  }
+  for (const badge of exampleBadges(row.badges || [])) parts.push(laneBadge(g, badge));
+  const titleWidth = title.getComputedTextLength();
+  const rest = parts.reduce((sum, [w]) => sum + w + 8, 0);
+  const one = 8 + titleWidth + 12 + rest <= width - 8;
+  const height = one ? LANE.row : LANE.row + 12;
+  bg.setAttribute("height", height - 2);
+  title.setAttribute("y", y + (one ? 18 : 16));
+  const baseline = y + (one ? 18 : 32);
+  let x = one ? 8 + titleWidth + 12 : 8;
+  for (const [w, place] of parts) {
+    place(x, baseline);
+    x += w + 8;
+  }
+  if (row.card) {
+    const id = `card:${row.card}`;
+    g.setAttribute("data-id", id);
+    if (state.selected === id) g.classList.add("selected"); // drawn again with its card open
+    g.setAttribute("tabindex", 0);
+    g.append(svg("title", {}, "Open this method's card"));
+    const open = (event) => {
+      event.stopPropagation();
+      select(id);
+    };
+    g.addEventListener("click", open);
+    g.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") open(event);
+    });
+  }
+  return height;
+}
+// A side cell: one equal-width purple block per model call, then its text wrapped under them
+// (or, with no blocks, grey words that say why the cell is empty). Everything stays in the
+// cell's column and its row; returns the row height the cell needs.
+function drawCell(g, cell, top, strip) {
+  const left = (cell.column === "between" ? strip.x1 + SIDE.gap : LANE.left) + 4;
+  const inner = SIDE.width - 8; // 4 units clear of the "//" breaks
+  const blocks = cell.blocks || [];
+  const blockWidth = (inner - 3 * (blocks.length - 1)) / blocks.length;
+  blocks.forEach((block, i) => {
+    const bx = left + i * (blockWidth + 3);
+    const rect = svg("rect", {
+      class: "cell-block",
+      x: bx,
+      y: top + 5,
+      width: blockWidth,
+      height: LANE.row - 11,
+      rx: 2,
+    });
+    rect.append(svg("title", {}, block.title || block.label));
+    const label = svg(
+      "text",
+      { class: "cell-label", x: bx + blockWidth / 2, y: top + 17 },
+      block.label,
+    );
+    g.append(rect, label);
+    if (label.getComputedTextLength() > blockWidth - 4) label.remove();
+  });
+  if (!cell.text) return LANE.row;
+  const first = blocks.length ? top + LANE.row + 5 : top + 17; // under the blocks' bottom (+22)
+  const className = `cell-text${blocks.length ? "" : " why"}`;
+  const count = wrapText(g, cell.text, left, first, inner, className);
+  return first + (count - 1) * 12 + 7 - top; // the last line's descent and a margin
 }
 function drawLanes() {
   const flow = currentFlow();
@@ -8304,60 +8689,133 @@ function drawLanes() {
   lanes.replaceChildren();
   const legend = $("lane-legend");
   legend.replaceChildren();
+  laneRows = {};
   if (!flow || !flow.lanes) {
     lanes.style.display = "none";
     return;
   }
   lanes.style.display = "";
-  const { rows, items, marks = [] } = flow.lanes;
+  lanes.style.cursor = flow.static ? "default" : "";
+  const { rows, items = [], marks = [], ticks = [], cells = [] } = flow.lanes;
+  const columns = Boolean(flow.lanes.columns);
   const width = state.tab.size[0];
-  const height = LANE.top + rows.length * LANE.row + 8;
-  lanes.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const strip = laneStrip(flow);
   const x = (t) => laneX(flow, t);
-  const rowY = Object.fromEntries(rows.map((row, i) => [row.id, LANE.top + i * LANE.row]));
+  const inWindow = (t) => t >= strip.start && t <= strip.end;
+  const rowWho = Object.fromEntries(rows.map((row) => [row.id, row.who]));
   const axis = svg("g", { class: "axis" });
-  const step = flow.end - flow.start > 4000 ? 500 : 250;
-  for (let t = Math.ceil(flow.start / step) * step; t <= flow.end; t += step) {
-    axis.append(svg("line", { x1: x(t), x2: x(t), y1: 16, y2: height - 4 }));
-    axis.append(svg("text", { x: x(t), y: 12 }, `${(t / 1000).toFixed(t % 1000 ? 1 : 0)} s`));
+  const frame = svg("g");
+  lanes.append(axis, frame, svg("g", { id: "lane-span" }));
+  // Rows first: a header row may take two lines, and a row's side cells may need more height
+  // than one row; either moves every row below it.
+  const groups = {};
+  let y = columns ? LANE.top + 14 : LANE.top;
+  for (const row of rows) {
+    const g = svg("g", { class: "lane-row", "data-row": row.id });
+    lanes.append(g);
+    groups[row.id] = g;
+    let height = row.header ? drawHeader(g, row, y, width) : LANE.row;
+    if (!row.header) {
+      g.append(svg("text", { class: "lane-label", x: 8, y: y + 17 }, row.label));
+      if (row.who) {
+        const chip = svg("rect", { class: "lane-who", x: 1, y: y + 7, width: 4, height: 14 });
+        chip.style.fill = whoColour(row.who);
+        g.append(chip);
+      }
+      for (const cell of columns ? cells : [])
+        if (cell.row === row.id) height = Math.max(height, drawCell(g, cell, y, strip));
+      g.append(
+        svg("line", {
+          class: "lane-rule",
+          x1: strip.x0,
+          x2: strip.x1,
+          y1: y + height - 1,
+          y2: y + height - 1,
+        }),
+      );
+      if (columns)
+        for (const bx of [strip.x0 - SIDE.gap / 2, strip.x1 + SIDE.gap / 2])
+          g.append(svg("text", { class: "lane-break", x: bx, y: y + 18 }, "//"));
+      if (row.empty)
+        g.append(
+          svg("text", { class: "lane-empty", x: (strip.x0 + strip.x1) / 2, y: y + 18 }, row.empty),
+        );
+    }
+    laneRows[row.id] = [y, height];
+    y += height;
   }
-  lanes.append(axis);
-  rows.forEach((row, i) => {
-    const y = LANE.top + i * LANE.row;
-    lanes.append(svg("text", { class: "lane-label", x: 8, y: y + 17 }, row.label));
-    lanes.append(
-      svg("line", {
-        class: "lane-rule",
-        x1: LANE.left,
-        x2: width - LANE.right,
-        y1: y + LANE.row - 1,
-        y2: y + LANE.row - 1,
-      }),
+  const height = y + 8;
+  const rowTop = (id) => laneRows[id][0];
+  lanes.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const [major, minor] = axisSteps(flow);
+  const labelY = columns ? LANE.top : 12;
+  for (let t = Math.ceil(strip.start / major) * major; t <= strip.end; t += major) {
+    axis.append(svg("line", { x1: x(t), x2: x(t), y1: labelY + 4, y2: height - 4 }));
+    axis.append(svg("text", { x: x(t), y: labelY }, `${(t / 1000).toFixed(t % 1000 ? 1 : 0)} s`));
+  }
+  if (minor)
+    for (let t = Math.ceil(strip.start / minor) * minor; t <= strip.end; t += minor)
+      if (t % major)
+        axis.append(
+          svg("line", { class: "minor", x1: x(t), x2: x(t), y1: labelY + 4, y2: labelY + 9 }),
+        );
+  if (columns) {
+    const centres = [
+      LANE.left + SIDE.width / 2,
+      (strip.x0 + strip.x1) / 2,
+      strip.x1 + SIDE.gap + SIDE.width / 2,
+    ];
+    COLUMN_TITLES.forEach((text, i) =>
+      frame.append(svg("text", { class: "lane-col", x: centres[i], y: 12 }, text)),
     );
-  });
-  const bar = (row, from, to, className, title) => {
-    if (from == null || to == null || to <= from) return;
+  }
+  const bar = (row, from, to, className, title, text) => {
+    if (from == null || to == null || to <= from || !laneRows[row]) return;
+    const left = x(from);
+    const barWidth = Math.max(1, x(to) - left);
     const rect = svg("rect", {
       class: `bar ${className}`,
-      x: x(from),
-      y: rowY[row] + 5,
-      width: Math.max(1, x(to) - x(from)),
+      x: left,
+      y: rowTop(row) + 5,
+      width: barWidth,
       height: LANE.row - 11,
     });
     rect.append(svg("title", {}, title));
-    lanes.append(rect);
+    groups[row].append(rect);
+    if (text) {
+      // a short label inside the bar when it fits; a bar too narrow for it gets it just
+      // outside, on its left, ending at the bar: on a line under the bars when the row has a
+      // spare line (the bars to its left keep their own labels), else level with the bar
+      const label = svg(
+        "text",
+        { class: "bar-text", x: left + barWidth / 2, y: rowTop(row) + 17.5 },
+        text,
+      );
+      groups[row].append(label);
+      if (label.getComputedTextLength() + 6 > barWidth) {
+        const spare = laneRows[row][1] >= LANE.row + 12;
+        label.classList.add("outside");
+        label.setAttribute("x", left - (spare ? 4 : 3)); // ends clear of the bar and its axis line
+        if (spare) label.setAttribute("y", rowTop(row) + LANE.row + 5);
+        backLabel(label);
+      }
+    }
   };
   for (const item of items) {
-    const who = item.who || item.row;
+    const who = item.who || rowWho[item.row] || item.row;
     if (item.input == null) {
+      const kind = item.kind === "skill" ? "skill" : "req";
       bar(
         item.row,
         item.from,
         item.to,
-        `req who-${item.who || "none"}`,
-        flow.lanes.legend
-          ? `${item.label}, ${item.from}-${item.to} ms`
-          : `${item.label}: ${item.who ? "a member's batch" : "idle poll"}, ${item.from}-${item.to} ms`,
+        `${kind} who-${item.who || rowWho[item.row] || "none"}`,
+        item.kind
+          ? item.label
+          : flow.lanes.legend
+            ? `${item.label}, ${item.from}-${item.to} ms`
+            : `${item.label}: ${item.who ? "a member's batch" : "idle poll"}, ${item.from}-${item.to} ms`,
+        item.text,
       );
       continue;
     }
@@ -8379,48 +8837,99 @@ function drawLanes() {
         "engine",
         `${item.label}: sent, until the engine applied it`,
       );
-    if (item.input === item.completed) {
+    if (item.input === item.completed && laneRows[item.row]) {
       const tick = svg("line", {
         class: "mark",
         x1: x(item.input),
         x2: x(item.input),
-        y1: rowY[item.row] + 3,
-        y2: rowY[item.row] + LANE.row - 4,
+        y1: rowTop(item.row) + 3,
+        y2: rowTop(item.row) + LANE.row - 4,
       });
-      tick.style.stroke = `var(--member-${who.toLowerCase()})`;
+      tick.style.stroke = whoColour(who);
       tick.append(svg("title", {}, `${item.label}: started and finished at once`));
-      lanes.append(tick);
+      groups[item.row].append(tick);
+    }
+  }
+  // Ticks: graph steps that finished at once. The group's label is each tick's tooltip; its
+  // text (or the label) is drawn once over the group when it fits between the first and last tick.
+  for (const group of ticks) {
+    if (!laneRows[group.row]) continue;
+    const top = rowTop(group.row);
+    const at = [].concat(group.at).filter(inWindow);
+    // the text sits above shorter ticks, so it hides none of them
+    let labelled = false;
+    const text = group.text || group.label;
+    if (text && at.length > 1) {
+      const [first, last] = [x(at[0]), x(at[at.length - 1])];
+      const label = svg("text", { class: "tick-text", x: (first + last) / 2, y: top + 11 }, text);
+      groups[group.row].append(label);
+      if (label.getComputedTextLength() + 12 > last - first) label.remove();
+      else labelled = true;
+    }
+    for (const t of at) {
+      const tick = svg("line", {
+        class: "mark tick",
+        x1: x(t),
+        x2: x(t),
+        y1: top + (labelled ? 15 : 6),
+        y2: top + LANE.row - 7,
+      });
+      tick.style.stroke = whoColour(group.who || rowWho[group.row]);
+      tick.append(
+        svg("title", {}, `${group.label || "a step that finished at once"}, ${seconds(t)}`),
+      );
+      groups[group.row].append(tick);
     }
   }
   for (const mark of marks) {
-    for (const at of [].concat(mark.at)) {
+    if (!laneRows[mark.row]) continue;
+    const colour = whoColour(mark.who || rowWho[mark.row]);
+    const own = mark.kind === "new" || mark.kind === "resent";
+    [].concat(mark.at).forEach((at, i) => {
+      if (own && !inWindow(at)) return;
       const mx = x(at);
-      const my = rowY[mark.row] + LANE.row / 2;
+      const my = rowTop(mark.row) + LANE.row / 2;
       let node;
       if (mark.kind === "applied")
         node = svg("line", { class: "mark", x1: mx, x2: mx, y1: my - 7, y2: my + 7 });
       else if (mark.kind === "discarded")
         node = svg("circle", { class: "mark discarded", cx: mx, cy: my, r: 5 });
-      else
+      else if (mark.kind === "resent") {
+        // the same orders sent again: an open square in the sender's colour
+        node = svg("rect", { class: "mark resent", x: mx - 4.5, y: my - 4.5, width: 9, height: 9 });
+        node.style.stroke = colour;
+      } else {
         node = svg("path", {
           class: "mark running",
           d: `M${mx},${my - 6} L${mx + 6},${my} L${mx},${my + 6} L${mx - 6},${my} Z`,
         });
-      node.append(svg("title", {}, `${mark.kind} at ${at} ms`));
-      lanes.append(node);
-    }
+        if (mark.kind === "new") node.style.fill = colour; // new orders applied
+      }
+      const title = (mark.titles && mark.titles[i]) || `${mark.kind} at ${at} ms`;
+      node.append(svg("title", {}, title));
+      groups[mark.row].append(node);
+    });
   }
-  lanes.append(
-    svg("line", { id: "cursor", x1: x(state.time), x2: x(state.time), y1: 16, y2: height - 2 }),
-  );
-  lanes.onclick = (event) => {
-    const box = lanes.getBoundingClientRect();
-    const sx = ((event.clientX - box.left) / box.width) * width;
-    const share = (sx - LANE.left) / (width - LANE.left - LANE.right);
-    pause();
-    setTime(flow.start + Math.max(0, Math.min(1, share)) * (flow.end - flow.start));
-    writeHash();
-  };
+  if (!flow.static)
+    lanes.append(
+      svg("line", {
+        id: "cursor",
+        x1: x(state.time),
+        x2: x(state.time),
+        y1: labelY + 4,
+        y2: height - 2,
+      }),
+    );
+  lanes.onclick = flow.static
+    ? null
+    : (event) => {
+        const box = lanes.getBoundingClientRect();
+        const sx = ((event.clientX - box.left) / box.width) * width;
+        const share = (sx - strip.x0) / (strip.x1 - strip.x0);
+        pause();
+        setTime(flow.start + Math.max(0, Math.min(1, share)) * (flow.end - flow.start));
+        writeHash();
+      };
   const entries = [
     ["think who-A", "thinking"],
     ["wait who-A", "finished, waiting to be sent"],
@@ -8439,12 +8948,51 @@ function drawLanes() {
   const kinds = new Set(marks.map((mark) => mark.kind));
   if (kinds.has("applied")) legend.append(el("span", "| tick: request applied"));
   if (kinds.has("discarded")) legend.append(el("span", "o: call discarded at cleanup"));
-  if (kinds.has("running at close"))
-    legend.append(el("span", "\u25C6: call still running at cleanup"));
+  if (kinds.has("running at close")) legend.append(el("span", "◆: call still running at cleanup"));
+  if (!flow.lanes.legend && kinds.has("new")) legend.append(el("span", "◆: new orders"));
+  if (!flow.lanes.legend && kinds.has("resent"))
+    legend.append(el("span", "▫: the same orders sent again"));
   for (const kind of kinds)
-    if (!["applied", "discarded", "running at close"].includes(kind))
-      legend.append(el("span", `\u25C6: ${kind}`));
-  legend.append(el("span", `Time axis: ${flow.clock}.`));
+    if (!["applied", "discarded", "running at close", "new", "resent"].includes(kind))
+      legend.append(el("span", `◆: ${kind}`));
+  const clock = flow.window ? flow.window[2] : flow.clock;
+  if (clock) legend.append(el("span", `Time axis: ${clock}.`));
+}
+// A step's rows light those lanes and dim the rest (a header stays lit while a row of its
+// group is lit); its span, [from, to] in battle ms, is shaded behind the lit rows: one band per
+// run of adjacent lit rows, so no dimmed row or header between them is shaded.
+function lightLanes(step) {
+  const flow = currentFlow();
+  const rows = (flow && flow.lanes && flow.lanes.rows) || [];
+  const lit = new Set((step && step.rows) || []);
+  let header = null;
+  for (const row of rows) {
+    if (row.header) header = row.id;
+    else if (lit.has(row.id) && header) lit.add(header);
+  }
+  document
+    .querySelectorAll("#lanes .lane-row")
+    .forEach((g) => g.classList.toggle("dim", lit.size > 0 && !lit.has(g.dataset.row)));
+  const span = $("lane-span");
+  if (!span) return;
+  span.replaceChildren();
+  if (!step || !step.span) return;
+  const runs = []; // [top, bottom] of each run of adjacent shaded rows
+  let run = null;
+  for (const row of rows) {
+    if (row.header || !laneRows[row.id] || (lit.size && !lit.has(row.id))) {
+      run = null;
+      continue;
+    }
+    const [top, height] = laneRows[row.id];
+    if (run) run[1] = top + height;
+    else runs.push((run = [top, top + height]));
+  }
+  const [from, to] = step.span.map((t) => laneX(flow, t));
+  for (const [top, bottom] of runs)
+    span.append(
+      svg("rect", { x: from, y: top + 1, width: Math.max(1, to - from), height: bottom - top - 2 }),
+    );
 }
 
 // Player.
@@ -8520,6 +9068,7 @@ function renderTime() {
   const key = active.map((step) => flow.steps.indexOf(step)).join(",");
   if (key !== state.nowKey) {
     state.nowKey = key;
+    lightLanes(active[0]);
     if (state.tab.question) renderStoryNow();
     else renderNow(active);
   }
@@ -8632,8 +9181,28 @@ function renderSelected(container) {
 }
 // The new views (2026-11-01). An example lives in DIAGRAM_EXAMPLES[id], written by
 // scripts/diagram_examples.py; a step's message or map names {example, key} or carries text.
-const exampleOf = (tab) =>
-  tab.example && typeof tab.example === "string" ? DIAGRAM_EXAMPLES[tab.example] : null;
+const exampleIds = (tab) =>
+  Array.isArray(tab.example) ? tab.example : typeof tab.example === "string" ? [tab.example] : [];
+// "real battle, <date>" per example, then one "code changed since" naming the changed files
+// (with the example's id when there are several); `extra` adds check.py's changed files.
+function exampleBadges(ids, extra = []) {
+  const loaded = ids.filter((id) => DIAGRAM_EXAMPLES[id]);
+  if (!loaded.length) return [];
+  const badges = loaded.map((id) => ({ text: `real battle, ${DIAGRAM_EXAMPLES[id].date_text}` }));
+  const changed = loaded.flatMap((id) =>
+    (DIAGRAM_EXAMPLES[id].changed_since || []).map((file) =>
+      loaded.length > 1 ? `${file} (${id})` : file,
+    ),
+  );
+  const files = [...new Set([...changed, ...extra])];
+  if (files.length)
+    badges.push({
+      text: "code changed since",
+      changed: true,
+      title: `Changed since the battle: ${files.join(", ")}`,
+    });
+  return badges;
+}
 function resolve(ref, table) {
   if (!ref) return null;
   if (!ref.example) return ref;
@@ -8642,6 +9211,115 @@ function resolve(ref, table) {
 }
 function flagsOf(tab) {
   return (DIAGRAM_FLAGS && DIAGRAM_FLAGS.views && DIAGRAM_FLAGS.views[tab.id]) || null;
+}
+// Unit-map labels. A label sits beside its marker: right, or left near the map's right edge.
+// Units whose labels would run into another unit's label or marker form a cluster, and the
+// cluster's labels stand in a column beside it, top to bottom in the markers' order, each
+// joined to its marker by a thin leader line. The column takes the left side when the right
+// one hits a marker, a label, an order line or the map's edge and the left one does not. The
+// job, decision and members views keep the older rule (labels nudged down 11 units apart), so
+// their pictures stay as reviewed; a label there still covers a marker (job step 6, decision
+// step 7).
+const NUDGED_MAP_TABS = ["job", "decision", "members"];
+let labelContext = null; // a canvas that measures a label before it is drawn
+function labelWidth(text) {
+  labelContext = labelContext || document.createElement("canvas").getContext("2d");
+  const sans = getComputedStyle(document.documentElement).getPropertyValue("--sans");
+  labelContext.font = `600 10.5px ${sans}`; // as .unit text
+  return labelContext.measureText(text).width;
+}
+function nudgedLabels(points, W) {
+  const places = points.map((p) => {
+    const right = p.x < W - 90;
+    return { x: p.x + (right ? 8 : -8), y: p.y + 4, anchor: right ? "start" : "end" };
+  });
+  const placed = []; // label positions, nudged apart when units stand close together
+  for (const i of points.map((_, i) => i).sort((a, b) => points[a].y - points[b].y)) {
+    const right = places[i].anchor === "start";
+    let y = places[i].y;
+    for (const other of placed)
+      if (
+        other.right === right &&
+        Math.abs(other.x - points[i].x) < 80 &&
+        Math.abs(other.y - y) < 11
+      )
+        y = other.y + 11;
+    placed.push({ right, x: points[i].x, y });
+    places[i].y = y;
+  }
+  return places;
+}
+function orderLines(map, px, pz) {
+  return (map.orders || []).flatMap((order) => {
+    const unit = map.units.find((u) => u.id === order.unit);
+    return unit ? [[px(unit.x), pz(unit.z), px(order.x), pz(order.z)]] : [];
+  });
+}
+function columnLabels(points, W, H, lines) {
+  const box = (place, w) => {
+    const x0 = place.anchor === "start" ? place.x : place.x - w;
+    return { x0, x1: x0 + w, y0: place.y - 9, y1: place.y + 3 };
+  };
+  const marker = (p) => ({ x0: p.x - 6.5, x1: p.x + 6.5, y0: p.y - 6.5, y1: p.y + 6.5 });
+  const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  const inside = (b) => b.x0 >= 2 && b.x1 <= W - 2 && b.y0 >= 2 && b.y1 <= H - 14; // over the scale
+  const beside = (p, anchor) => ({ x: p.x + (anchor === "start" ? 8 : -8), y: p.y + 4, anchor });
+  const places = points.map((p) => beside(p, p.x < W - 90 ? "start" : "end"));
+  const group = points.map((_, i) => i);
+  const root = (i) => (group[i] === i ? i : (group[i] = root(group[i])));
+  points.forEach((p, i) =>
+    points.forEach((q, j) => {
+      const own = box(places[i], p.w);
+      if (i !== j && (hit(own, marker(q)) || hit(own, box(places[j], q.w))))
+        group[root(i)] = root(j);
+    }),
+  );
+  const clusters = {};
+  points.forEach((_, i) => (clusters[root(i)] = clusters[root(i)] || []).push(i));
+  const taken = []; // label boxes already placed in columns
+  // an order line crosses a box when one of its points, 2 units apart, falls in it
+  const crosses = (b, [ax, ay, bx, by]) => {
+    const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 2);
+    for (let k = 0; k <= n; k++) {
+      const [x, y] = [ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n];
+      if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return true;
+    }
+    return false;
+  };
+  const clear = (b, own) =>
+    inside(b) &&
+    points.every((q, j) => own.includes(j) || !hit(b, marker(q))) &&
+    taken.every((t) => !hit(b, t)) &&
+    lines.every((line) => !crosses(b, line));
+  for (const members of Object.values(clusters).filter((c) => c.length > 1)) {
+    members.sort((a, b) => points[a].y - points[b].y || points[a].x - points[b].x);
+    const xs = members.map((i) => points[i].x);
+    const middle = members.reduce((sum, i) => sum + points[i].y, 0) / members.length;
+    const span = (members.length - 1) * 12;
+    const first = Math.max(12, Math.min(H - 18 - span, middle - span / 2 + 4));
+    const column = (anchor, x) =>
+      members.map((i, k) => ({ x, y: first + k * 12, anchor, leader: true }));
+    const fits = (col) => col.every((place, k) => clear(box(place, points[members[k]].w), members));
+    const right = column("start", Math.max(...xs) + 14);
+    const left = column("end", Math.min(...xs) - 14);
+    const col = fits(right) || !fits(left) ? right : left;
+    col.forEach((place, k) => {
+      places[members[k]] = place;
+      taken.push(box(place, points[members[k]].w));
+    });
+  }
+  // a lone label that hits a column, an order line or the map's edge moves to its marker's
+  // other side when that side is clear of markers, other labels, order lines and the edge
+  for (const members of Object.values(clusters).filter((c) => c.length === 1)) {
+    const i = members[0];
+    if (clear(box(places[i], points[i].w), members)) continue;
+    const other = beside(points[i], places[i].anchor === "start" ? "end" : "start");
+    const flipped = box(other, points[i].w);
+    const labels = places.every((p, j) => j === i || !hit(flipped, box(p, points[j].w)));
+    if (clear(flipped, members) && labels) places[i] = other;
+    taken.push(box(places[i], points[i].w));
+  }
+  return places;
 }
 function drawUnitMap(map) {
   const [x0, x1, z0, z1] = map.bounds || map.example.bounds;
@@ -8668,21 +9346,26 @@ function drawUnitMap(map) {
         svg("circle", { class: "order", cx: px(order.x), cy: pz(order.z), r: 4 }),
       );
   }
-  const placed = []; // label positions, nudged apart when units stand close together
-  for (const unit of [...map.units].sort((a, b) => pz(a.z) - pz(b.z))) {
-    const right = px(unit.x) < W - 90;
-    let y = pz(unit.z) + 4;
-    for (const other of placed)
-      if (
-        other.right === right &&
-        Math.abs(other.x - px(unit.x)) < 80 &&
-        Math.abs(other.y - y) < 11
-      )
-        y = other.y + 11;
-    placed.push({ right, x: px(unit.x), y });
-    unit.labelY = y;
-  }
-  for (const unit of map.units) {
+  const points = map.units.map((unit) => ({
+    x: px(unit.x),
+    y: pz(unit.z),
+    w: labelWidth(unit.label),
+  }));
+  const places = NUDGED_MAP_TABS.includes(state.tab.id)
+    ? nudgedLabels(points, W)
+    : columnLabels(points, W, H, orderLines(map, px, pz));
+  for (const [i, place] of places.entries())
+    if (place.leader)
+      node.append(
+        svg("line", {
+          class: "leader",
+          x1: points[i].x,
+          y1: points[i].y,
+          x2: place.x + (place.anchor === "start" ? -2 : 2),
+          y2: place.y - 3.5,
+        }),
+      );
+  map.units.forEach((unit, i) => {
     const g = svg("g", { class: `unit ${unit.side}${unit.routing ? " routing" : ""}` });
     const size = 9;
     g.append(
@@ -8694,21 +9377,11 @@ function drawUnitMap(map) {
         transform: `rotate(${unit.bearing || 0} ${px(unit.x)} ${pz(unit.z)})`,
       }),
     );
-    const right = px(unit.x) < W - 90;
-    g.append(
-      svg(
-        "text",
-        {
-          x: px(unit.x) + (right ? 8 : -8),
-          y: unit.labelY,
-          "text-anchor": right ? "start" : "end",
-        },
-        unit.label,
-      ),
-    );
+    const { x, y, anchor } = places[i];
+    g.append(svg("text", { x, y, "text-anchor": anchor }, unit.label));
     g.append(svg("title", {}, `${unit.label}: ${unit.men} of ${unit.men0} men`));
     node.append(g);
-  }
+  });
   const bar = 100 * scale; // a 100 m scale bar
   node.append(
     svg("line", { class: "scale", x1: 8, x2: 8 + bar, y1: H - 8, y2: H - 8 }),
@@ -8730,16 +9403,18 @@ function renderStoryNow() {
   const index = flow.steps.indexOf(step);
   const caption = el("div", null, "caption");
   caption.append(el("div", `Step ${index + 1} of ${flow.steps.length}`, "count"));
-  caption.append(el("p", step.caption));
+  // an open method card takes the panel's top; the step's caption, message and map wait for Back
+  const carded = typeof state.selected === "string" && state.selected.startsWith("card:");
+  if (!carded) caption.append(el("p", step.caption));
   holder.append(caption);
-  const message = resolve(step.message, "messages");
+  const message = !carded && resolve(step.message, "messages");
   if (message) {
     const box = el("div", null, "message");
     box.append(el("div", message.title || "", "title"), el("pre", message.text));
     if (!step.map) box.classList.add("tall"); // no map below it: room for the whole message
     holder.append(box);
   }
-  const map = resolve(step.map, "frames");
+  const map = !carded && resolve(step.map, "frames");
   if (map) {
     const box = el("div", null, "unitmap");
     box.append(drawUnitMap(map), el("p", map.note || "", "note"));
@@ -8753,6 +9428,70 @@ function renderStoryNow() {
   for (const part of [message, map])
     if (part && part.source) sources.append(el("p", `Example: ${part.source}`, "meta"));
   holder.append(sources);
+}
+function storyButtons(ids) {
+  const stories = el("div", null, "stories");
+  stories.append(el("b", "Stories: "));
+  for (const id of ids) {
+    const tab = tabById(id);
+    if (!tab) continue;
+    const open = el("button", tab.question || tab.title);
+    open.addEventListener("click", () => openTab(id));
+    stories.append(open);
+  }
+  return stories;
+}
+// A method's card (the control-methods view), opened from its header row: the view's
+// hand-written fields (cards[key]), then those scripts/diagram_examples.py wrote from the
+// example battle into the example its lanes come from.
+const CARD_FIELDS = [
+  ["where", "Where the model sits"],
+  ["who", "Who picks each order during the battle"],
+  ["writes", "What a model writes"],
+  ["done", "When an order counts as done"],
+  ["calls", "Model calls before / during / between battles"],
+  ["decisions", "Decisions and orders in the example"],
+  ["view_age", "How old the view is when its orders apply"],
+  ["example", "Example battle"],
+];
+function renderCard(container, key) {
+  const flow = currentFlow();
+  const hand = (state.tab.cards || {})[key] || {};
+  const example = flow && DIAGRAM_EXAMPLES[flow.lanesExample];
+  const made = (example && example.cards && example.cards[key]) || {};
+  const row = ((flow && flow.lanes && flow.lanes.rows) || []).find((r) => r.card === key);
+  const commit = hand.commit || state.tab.commit;
+  // the method's name and gist (its where and calls, after " · " in the row, are fields below;
+  // its code name stays on the row), then its example badges
+  container.append(el("h3", row ? row.label.split(" \u00b7 ")[0] : key));
+  const meta = el("p", null, "meta");
+  for (const badge of exampleBadges((row && row.badges) || [])) {
+    // the panel's badges are amber by default and green when "measured"
+    const span = el("span", badge.text, badge.changed ? "badge" : "badge measured");
+    if (badge.title) span.title = badge.title;
+    meta.append(span, " ");
+  }
+  if (meta.childNodes.length) container.append(meta);
+  for (const [field, title] of CARD_FIELDS) {
+    const value = hand[field] ?? made[field];
+    if (value == null) continue;
+    const line = el("p", null, "kv");
+    line.append(el("b", `${title}: `));
+    if (!Array.isArray(value)) line.append(value);
+    container.append(line);
+    if (Array.isArray(value)) {
+      const list = el("ul");
+      for (const text of value) list.append(el("li", text));
+      container.append(list);
+    }
+  }
+  if (hand.status) container.append(statusBlock(hand.status, commit));
+  if (hand.note) container.append(el("p", hand.note, "hint"));
+  if (hand.stories && hand.stories.length) container.append(storyButtons(hand.stories));
+  if (hand.rests) container.append(restsList(hand.rests, commit));
+  const sources = el("div", null, "sources");
+  sources.append(el("h4", "Sources"), refList(hand.refs, commit));
+  container.append(sources);
 }
 function renderBoxDetails(container, e) {
   container.append(el("h3", e.label));
@@ -8769,18 +9508,7 @@ function renderBoxDetails(container, e) {
     command.append(el("code", e.command));
     container.append(command);
   }
-  if (e.stories && e.stories.length) {
-    const stories = el("div", null, "stories");
-    stories.append(el("b", "Stories: "));
-    for (const id of e.stories) {
-      const tab = tabById(id);
-      if (!tab) continue;
-      const open = el("button", tab.question || tab.title);
-      open.addEventListener("click", () => openTab(id));
-      stories.append(open);
-    }
-    container.append(stories);
-  }
+  if (e.stories && e.stories.length) container.append(storyButtons(e.stories));
   const files = DIAGRAM_FILES.files.filter((file) => file.box === e.id);
   if (files.length) {
     container.append(el("h4", `Files (${files.length})`));
@@ -8805,13 +9533,24 @@ function renderViewPanel() {
   const panel = $("panel");
   const tab = state.tab;
   const flow = currentFlow();
+  const id = state.selected;
+  const card = typeof id === "string" && id.startsWith("card:") ? id.slice(5) : null;
+  const item = boxes[id] || wires[id];
+  // A method's card opens at the top of the panel, with its Back button, above the step
+  // (whose message and map wait until Back), so it reads without scrolling.
+  if (card) {
+    const holder = el("div", null, "card");
+    renderCard(holder, card);
+    const back = el("button", "Back", "back");
+    back.addEventListener("click", () => select(null));
+    holder.querySelector("h3").after(back); // beside the badges, under the name
+    panel.append(holder);
+  }
   if (flow) {
     const now = el("div");
     now.id = "now";
     panel.append(now);
   }
-  const id = state.selected;
-  const item = boxes[id] || wires[id];
   if (item && boxes[id]) {
     renderBoxDetails(panel, item);
   } else if (item) {
@@ -8820,7 +9559,7 @@ function renderViewPanel() {
     const sources = el("div", null, "sources");
     sources.append(refList(item.refs, item.commit || tab.commit));
     panel.append(sources);
-  } else if (!flow) {
+  } else if (!flow && !card) {
     panel.append(el("p", tab.summary));
     panel.append(el("p", "Click a box for what it does, its files and its stories.", "hint"));
   }
@@ -8970,6 +9709,7 @@ function renderLegend() {
     "span",
     "Shapes: square process, round agent, folded file, pill outside service; striped: never ran in the game.",
   );
+  shapes.id = "shapes";
   legend.append(shapes);
   const toggle = (text, key, redraw) => {
     const label = el("label");
@@ -9026,19 +9766,12 @@ function renderAll(stepIndex) {
   $("takeaway").textContent = tab.takeaway || "";
   const badges = $("badges");
   badges.replaceChildren();
-  const example = exampleOf(tab);
   const flags = flagsOf(tab);
   if (tab.example && tab.example.made_up) badges.append(el("span", "made up", "badge madeup"));
-  if (example) {
-    badges.append(el("span", `real battle, ${example.date_text}`, "badge"));
-    const changed = [
-      ...new Set([...(example.changed_since || []), ...((flags && flags.example_changed) || [])]),
-    ];
-    if (changed.length) {
-      const badge = el("span", "code changed since", "badge changed");
-      badge.title = `Changed since the battle: ${changed.join(", ")}`;
-      badges.append(badge);
-    }
+  for (const badge of exampleBadges(exampleIds(tab), (flags && flags.example_changed) || [])) {
+    const span = el("span", badge.text, badge.changed ? "badge changed" : "badge");
+    if (badge.title) span.title = badge.title;
+    badges.append(span);
   }
   const banner =
     flags && flags.flagged
@@ -9046,6 +9779,12 @@ function renderAll(stepIndex) {
       : tab.banner;
   $("banner").hidden = !banner;
   $("banner").textContent = banner || "";
+  // a lanes-only view (no boxes) hides the canvas, so its lanes sit at the top
+  const lanesOnly = !tab.elements.length;
+  $("canvas").style.display = lanesOnly ? "none" : "";
+  $("shapes").style.display = lanesOnly ? "none" : "";
+  const under = $("under");
+  under.replaceChildren(...[].concat(tab.under || []).map((text) => el("p", text)));
   renderFlows();
   drawCanvas();
   drawLanes();
@@ -9102,13 +9841,41 @@ window.addEventListener("hashchange", readHash); // the page's own writes use re
 // tabs stay as an appendix that check.py does not flag; each goes once a story replaces it.
 // Flagging them would cost a refresh each time their 28 cited files change.
 const FROZEN = ["overview", "play", "team", "multiplayer", "factory"];
-// JUDGEMENT?: No GaP view (Claude Code, 2026-11-01, brief step 10): Codex's graph-view
-// (src/twwarhammer3/battle/graph_view.py) already draws each recorded battle's frozen graph, so
-// the map's GaP box points at it instead. A static drawing here would duplicate it and add a
-// view to refresh; whether the map ever shows a graph rests on this.
-const TAB_ORDER = ["map", "job", "decision", "members", ...FROZEN];
+// JUDGEMENT?: GaP drawn in the page (Claude Code, 2026-11-01, control-methods spec): One graph
+// battle draws a battle's graphs, generated, hiding unrun steps and untaken exits and listing
+// them. Alternatives: graph-view only, or faint untaken exits; the graph story rests on it.
+// It replaces the "No GaP view" marker, a change the owner's words of 2026-11-01 allow: "Find a
+// good way to represent different army control methods that we will implement. For now we have
+// the basic one, and then GaP. We need clean visuals for those too." Codex's graph-view
+// (src/twwarhammer3/battle/graph_view.py) stays the full replay of a recorded battle.
+const TAB_ORDER = ["map", "job", "methods", "decision", "members", "graph", ...FROZEN];
 const order = (tab) => (TAB_ORDER.includes(tab.id) ? TAB_ORDER.indexOf(tab.id) : FROZEN.length);
 DIAGRAM.tabs.sort((a, b) => order(a) - order(b));
+// Views made partly by scripts: generated boxes and wires join the hand-written ones (a wire
+// without an id gets "from>to"), and a flow's lanes may be {example, key}, whose other fields
+// (such as legend) override the example's. A static flow keeps its battle window for the lanes.
+for (const tab of DIAGRAM.tabs) {
+  tab.elements ??= [];
+  tab.wires ??= [];
+  tab.bands ??= [];
+  tab.size ??= [1000, 0];
+  const made = tab.generated && (DIAGRAM_EXAMPLES[tab.generated.example] || {})[tab.generated.key];
+  if (made) {
+    const ids = new Set([...tab.elements, ...tab.wires].map((item) => item.id));
+    const madeWires = (made.wires || []).map((w) => ({ id: `${w.from}>${w.to}`, ...w }));
+    tab.elements = [...tab.elements, ...(made.elements || []).filter((e) => !ids.has(e.id))];
+    tab.wires = [...tab.wires, ...madeWires.filter((w) => !ids.has(w.id))];
+  }
+  for (const flow of tab.flows || []) {
+    if (flow.lanes && flow.lanes.example) {
+      const { example, key, ...extra } = flow.lanes;
+      const lanes = (DIAGRAM_EXAMPLES[example] || {})[key];
+      flow.lanesExample = example;
+      flow.lanes = lanes ? { ...lanes, ...extra } : null;
+    }
+    if (flow.static) flow.window = [flow.start, flow.end, flow.clock];
+  }
+}
 for (const tab of DIAGRAM.tabs)
   for (const flow of tab.flows || [])
     if (flow.story && !flow.timed) {

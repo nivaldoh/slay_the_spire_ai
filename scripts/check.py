@@ -37,11 +37,16 @@ owner changes markers, so they never fail.
 "diagram" counts the views of the "How the code works" page (docs/multi-agent.html, plan
 docs/how-code-works-plan.md section 6; the owner's yes, 2026-11-01) that need a refresh, from Git
 objects at HEAD: a line a view cites whose text changed, indentation aside (the same text found
-elsewhere counts as moved, recorded, not flagged), cited text that cannot be read, a cited file
-gone, a `src/` Python file missing from the file lists (the WH3 README's Code map section and
-docs/spire/AGENTS.md's Layout section) or a listed path in no map box or not in the repo, the
-provider names and hidden observation keys a view states, a review older than three months, and
-an example's cited file changed since the example was made. Details go to the log and to the
+elsewhere counts as moved, recorded, not flagged; cited are the refs of the view, its boxes,
+wires, notes, cards and steps, of their statuses and of the boxes and wires an example generated
+for the view, each read at its own commit or the view's), cited text that cannot be read, a cited
+file gone, a `src/` Python file missing from the file lists (the WH3 README's Code map section
+and docs/spire/AGENTS.md's Layout section) or a listed path in no map box or not in the repo, the
+names a view states (providers, hidden observation keys, model and scripted policies, graph
+operations; controller versions with their values) that differ from the code, a review older
+than three months, a cited file of any of a view's examples changed since that example was made,
+and a story step whose box, wire or lane row is not in the view (its own, those an example
+generated for it, or its flow's lanes, inline or an example's). Details go to the log and to the
 ignored runs/checks/diagram-flags.js, which the page reads. It skips in a shallow clone (no old
 commits) and in a linked worktree (its page data is not the main checkout's); any error prints
 "could not run" and never changes the exit code or the pass record.
@@ -657,7 +662,8 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                          if not line.startswith(("//", '"use strict"')))
         return json.loads(body[body.index("{"):body.rindex("}") + 1])
 
-    def literal(path: str, name: str) -> list | None:  # a constant's keys or items, by ast
+    def literal(path: str, name: str, values: bool = False) -> list | None:
+        # A constant's keys or items, by ast; with `values`, a dict's "key=value" items.
         for node in ast.parse(text(rev, path) or "").body:
             targets = node.targets if isinstance(node, ast.Assign) else (
                 [node.target] if isinstance(node, ast.AnnAssign) else [])
@@ -665,6 +671,8 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                 value = node.value
                 if isinstance(value, ast.Call) and value.args:  # frozenset({...}), tuple([...])
                     value = value.args[0]
+                if isinstance(value, ast.Dict) and values:
+                    return sorted(f"{key}={item}" for key, item in ast.literal_eval(value).items())
                 if isinstance(value, ast.Dict):
                     return sorted(ast.literal_eval(key) for key in value.keys)
                 return sorted(ast.literal_eval(value))
@@ -681,30 +689,51 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
             if name.startswith(DIAGRAM_EXAMPLE) and name.endswith(".js"):
                 examples.update(payload(text(rev, name)))
         day = date.fromisoformat(today) if today else date.today()
-        facts = {"providers": ("src/gameai/providers.py", "PROVIDERS"),
-                 "hidden_keys": ("src/twwarhammer3/protocol.py", "HIDDEN_KEYS")}
+        battle = "src/twwarhammer3/battle/"
+        # fact: (file, constant, values), values: a dict compared key by key and value by value
+        facts = {"providers": ("src/gameai/providers.py", "PROVIDERS", False),
+                 "hidden_keys": ("src/twwarhammer3/protocol.py", "HIDDEN_KEYS", False),
+                 "model_policies": (f"{battle}controllers.py", "MODEL_PROMPTS", False),
+                 "scripted_policies": (f"{battle}scripted.py", "POLICIES", False),
+                 "graph_ops": (f"{battle}graph_author.py", "DESCRIPTIONS", False),
+                 # JUDGEMENT?: Whole versions — Claude Code, 2026-11-01, final-spec
+                 # viewer_changes: a view states VERSIONS whole, so any controller's new version
+                 # flags it, drawn or not. Comparing only the stated names would flag less; the
+                 # methods card's "on main" versions rest on it.
+                 "versions": (f"{battle}controllers.py", "VERSIONS", True)}
         result: dict = {"revision": rev, "date": day.isoformat(), "views": {}}
         for view in views:
             reasons: list[str] = []
             moved: dict[str, str] = {}
             if (day - date.fromisoformat(view["reviewed"])).days > DIAGRAM_REVIEW_DAYS:
                 reasons.append(f"not reviewed since {view['reviewed']}, over three months")
-            for fact, (path, name) in facts.items():
+            for fact, (path, name, values) in facts.items():
                 stated = view.get("facts", {}).get(fact)
                 if stated is None:
                     continue
+                if values:  # stated as a dict too
+                    stated = [f"{key}={item}" for key, item in stated.items()]
                 try:
-                    found = literal(path, name)
+                    found = literal(path, name, values)
                 except (SyntaxError, ValueError) as exc:
                     reasons.append(f"cannot read {name} from {path}: {exc}")
                     continue
                 if sorted(stated) != found:
                     reasons.append(f"{path} {name} is now {found}; the view says {sorted(stated)}")
+            # Cited: the refs of the view, its boxes, wires, notes, cards and flow steps, those of
+            # each one's status ({text, refs}) and those of the boxes and wires an example
+            # generated for it (view.generated), each read at its item's commit, else the view's.
+            generated = view.get("generated") or {}
+            made = examples.get(generated.get("example"), {}).get(generated.get("key")) or {}
             items = [view, *view.get("elements", []), *view.get("wires", []),
-                     *view.get("notes", []),
+                     *view.get("notes", []), *view.get("cards", {}).values(),
+                     *made.get("elements", []), *made.get("wires", []), made,
                      *(step for flow in view.get("flows", []) for step in flow["steps"])]
             cited = sorted({(item.get("commit") or view["commit"], ref)
-                            for item in items for ref in item.get("refs") or []
+                            for item in items
+                            for ref in [*(item.get("refs") or []),
+                                        *(item["status"].get("refs") or []
+                                          if isinstance(item.get("status"), dict) else [])]
                             if not ref.startswith("runs/")})
             for commit, ref in cited:
                 match = DIAGRAM_REF.match(ref)
@@ -735,17 +764,41 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
             # a story is flagged only for cited files changed after its example was made;
             # changed_since keeps the "code changed since" badge. Flagging every change since
             # the battle would keep the story flagged until a new battle runs.
-            changed: list[str] = []
-            example = examples.get(view.get("example")) if isinstance(view.get("example"),
-                                                                        str) else None
+            changed: set[str] = set()
+            named = view.get("example")  # an id, a list of ids or {made_up: true}
+            named = [named] if isinstance(named, str) else named if isinstance(named, list) else []
+            example = [(name, examples[name]) for name in named if name in examples]
             if example:
-                for path, digest in sorted(example["files"].items()):
-                    data = show(rev, path)
-                    if data is None or hashlib.sha256(data).hexdigest() != digest:
-                        changed.append(path)
-                for path in sorted(set(changed) - set(example.get("changed_since", []))):
-                    reasons.append(f"example {view['example']}: {path} changed since the example"
-                                   " was made")
+                for name, one in example:
+                    mine = set()
+                    for path, digest in one["files"].items():
+                        data = show(rev, path)
+                        if data is None or hashlib.sha256(data).hexdigest() != digest:
+                            mine.add(path)
+                    changed |= mine
+                    for path in sorted(mine - set(one.get("changed_since", []))):
+                        reasons.append(f"example {name}: {path} changed since the example"
+                                       " was made")
+            # A step must name ids the view has: its own boxes and wires, those an example
+            # generated (view.generated) and its flow's lane rows, inline or an example's.
+            have = {"box": {item.get("id") for item in [*view.get("elements", []),
+                                                         *made.get("elements", [])]},
+                    "wire": {item.get("id") for item in [*view.get("wires", []),
+                                                          *made.get("wires", [])]}}
+            for flow in view.get("flows", []):
+                lanes = flow.get("lanes") or {}
+                if "example" in lanes:  # {example, key}
+                    lanes = examples.get(lanes["example"], {}).get(lanes["key"]) or {}
+                have["row"] = {row.get("id") for row in lanes.get("rows", [])}
+                for number, step in enumerate(flow["steps"], 1):
+                    ids = [("box", step["box"])] if step.get("box") else []
+                    ids += [("wire", wire.lstrip("~")) for dot in step.get("dots", [])
+                            for wire in (dot if isinstance(dot, list) else dot.get("path", []))]
+                    ids += [("row", row) for row in step.get("rows", [])]
+                    for kind, name in dict.fromkeys(ids):
+                        if name not in have[kind]:
+                            reasons.append(f"flow {flow.get('id')} step {number}: its {kind}"
+                                           f" {name} is not in the view")
             if view["id"] == "map":
                 listed = {}
                 for page, heading in DIAGRAM_LISTS.items():
@@ -764,7 +817,7 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                         reasons.append(f"{len(count)} {what}: {', '.join(count[:5])}"
                                        + (" ..." if len(count) > 5 else ""))
             result["views"][view["id"]] = {"flagged": bool(reasons), "reasons": reasons,
-                                           "moved": moved, "example_changed": changed}
+                                           "moved": moved, "example_changed": sorted(changed)}
         return result
     finally:
         cat.stdin.close()
