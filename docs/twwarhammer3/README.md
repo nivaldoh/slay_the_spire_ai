@@ -164,6 +164,7 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    rush_nearest), team.py (two scripted members sharing one army),
                    configured.py (JSON controller composition), graph.py (resumable graph
                    nodes), skill_contracts.py (typed skills and public effect witnesses),
+                   graph_author.py (offline multi-LLM authoring and whole-battle revision),
                    calibration.py (disclosed scenario diagnostics),
                    cards.py (tactic cards: foils, witness, admission rule, board and
                    verdict; backs `card`), capture.py (1 Hz replay recorder and stills),

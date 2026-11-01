@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from gameai.provenance import write_json
+from gameai.provenance import REPO_ROOT, write_json
 from gameai.providers import PROVIDERS, get_provider
 from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
@@ -182,6 +182,20 @@ def main() -> int:
     play.add_argument("--show", action="store_true",
                       help="show each model reply in the game's advisor window")
     play.add_argument("--output", type=Path, required=True)
+
+    author = commands.add_parser("graph-author", help="Author or revise a frozen graph team")
+    author.add_argument("--template", type=Path,
+                        default=REPO_ROOT / "configs/twwarhammer3/graphs/contact-team.json")
+    author.add_argument("--task", required=True, help="public task; no privileged diagnostics")
+    author.add_argument("--output", type=Path, required=True, help="new artifact directory")
+    author.add_argument("--previous", type=Path, help="previous ready artifact, for revision")
+    author.add_argument("--evidence", type=Path, help="completed episode that ran --previous")
+    author.add_argument("--provider", choices=PROVIDERS, default="anthropic")
+    author.add_argument("--model", default=None, help="default: provider's default model")
+    author.add_argument("--effort", default="low")
+    author.add_argument("--budget-usd", type=float, required=True,
+                        help="cumulative selected-ledger cap, including previous jobs")
+    author.add_argument("--ledger", type=Path, help="default: provider's WH3 ledger")
 
     digest = commands.add_parser("digest", help="Summarise a job or one episode's trace")
     digest.add_argument("path", type=Path, help="job directory or job/episode-NNNN")
@@ -394,6 +408,29 @@ def main() -> int:
             time.sleep(0.5)
         print("menu request timed out before completion", file=sys.stderr)
         return 1
+
+    if args.command == "graph-author":
+        from gameai.ledger import BudgetExhausted, Ledger
+        from gameai.llm import APIError, InvalidReply
+        from gameai.provenance import committed_revision
+        from twwarhammer3.battle import graph_author
+        from twwarhammer3.battle.play import SOURCES
+
+        try:
+            committed_revision("attributable graph authoring", SOURCES)
+            if args.provider == "openrouter" and args.budget_usd > 50:
+                raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
+            ledger = Ledger(args.ledger or LEDGERS[args.provider], args.budget_usd, must_exist=True)
+            manifest = graph_author.generate(
+                args.template, args.task, args.output, ledger,
+                model=args.model or next(iter(get_provider(args.provider).prices)),
+                effort=args.effort, provider=args.provider,
+                previous=args.previous, evidence=args.evidence)
+        except (ValueError, OSError, BudgetExhausted, APIError, InvalidReply) as exc:
+            parser.error(str(exc))
+        print(json.dumps({"output": str(args.output), "status": manifest["status"],
+                          "totals": manifest["totals"]}))
+        return 0
 
     if args.command == "play":
         from twwarhammer3.battle.controllers import factories, rotation

@@ -13,7 +13,22 @@ def factory(path, config, *, ledger=None):
     from twwarhammer3.battle import controllers
 
     path = Path(path).resolve()
-    spec = json.loads(path.read_text())
+    artifact = None
+    manifest = path / "manifest.json" if path.is_dir() else path.parent / "manifest.json"
+    if path.is_dir() and not manifest.is_file():
+        raise ValueError("controller artifact needs manifest.json")
+    if (path.is_dir() or path.name == "controller.json") and manifest.is_file():
+        from twwarhammer3.battle import graph_author
+
+        metadata = json.loads(manifest.read_text())
+        if (path.is_dir() or metadata.get("artifact_type") == graph_author.ARTIFACT_TYPE
+                or str(metadata.get("version", "")).startswith(f"{graph_author.ARTIFACT_TYPE}-")):
+            spec, artifact = graph_author.load_artifact(manifest.parent)
+            path = manifest.parent / "controller.json"
+        else:
+            spec = json.loads(path.read_text())
+    else:
+        spec = json.loads(path.read_text())
     leaves = set()
 
     def prepare(node):
@@ -115,6 +130,8 @@ def factory(path, config, *, ledger=None):
                 for name, member in policy.members.items()}
         policy.card["paid_calls"] = bool(models)
         policy.card["model_prompts"] = deepcopy(prompts)
+        if artifact is not None:
+            policy.card["artifact"] = dict(artifact)
         return policy
 
     return make

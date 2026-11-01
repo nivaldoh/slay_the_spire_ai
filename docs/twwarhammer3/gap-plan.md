@@ -303,6 +303,52 @@ Recount also checks fresh battle identities, ownership, acknowledgements, cleanu
 Its launch geometry and wall caps rest on JUDGEMENT `check_wh3_graph.py` Probe bounds.
 This does not check live holding/firing, a charge bonus, tactical strength or learning.
 
+### Authoring and revision command
+
+`graph-author` runs one coordinator and one specialist per member, using the existing
+provider transport and one shared ledger. The first release authors two-graph teams;
+ordinary runtime composition still accepts graphs, scripts and direct model members.
+The coordinator receives the public task, fixed ownership and skill summaries. Each
+specialist receives the detailed frozen library and its own prior graph and permitted
+feedback. Model replies contain graph JSON; they cannot change Python skills or ownership.
+
+```bash
+uv run --locked python -m twwarhammer3 graph-author \
+  --task 'The line engages visible enemies; cavalry waits for contact then charges.' \
+  --provider anthropic --model claude-haiku-5-5 --budget-usd 5 \
+  --output runs/twwarhammer3/gap/initial
+uv run --locked python -m twwarhammer3 play --policy configured \
+  --controller-config runs/twwarhammer3/gap/initial --episodes 1 \
+  --scenario emp-knights-emp-swordsmen --output runs/twwarhammer3/battle/gap-initial
+uv run --locked python -m twwarhammer3 graph-author \
+  --task 'The line engages visible enemies; cavalry waits for contact then charges.' \
+  --provider anthropic --model claude-haiku-5-5 --budget-usd 5 \
+  --previous runs/twwarhammer3/gap/initial \
+  --evidence runs/twwarhammer3/battle/gap-initial/episode-0000 \
+  --output runs/twwarhammer3/gap/revised
+```
+
+The budget is the selected provider ledger's cumulative cap, not a fresh allowance per
+command. The default is the existing WH3 ledger; a missing ledger is refused. Paid CLI
+authoring requires committed runtime sources. Initial generation and revision each write a
+new directory: `controller.json`, a manifest, prompt/schema snapshots and model exchanges
+containing every attempt, rejected reply and cost. A failed generation stays failed;
+neither its existence nor a successful graph compilation means a battle was won.
+
+Use the artifact directory as `--controller-config`. Both directory and generated-file
+loading check readiness, controller bytes, authority and the frozen library before building
+fresh episode state. Revision also checks that the completed whole battle ran the parent
+candidate and its library. Changed or partial artifacts are refused. No running graph is
+edited, no candidate is promoted automatically, and no scorer or held-out set is selected.
+
+Revision context uses only projected member input views, own ordinary orders and own
+acknowledgements. The coordinator gets no battle evidence. Hidden result/evaluator/setup
+fields, teammate orders/queues and teammate feedback stay out of specialist context.
+An engine ending gates whether the evidence is complete; its outcome and private diagnostics
+never reach the authors. Source file hashes and retained/truncated counts stay in the audit
+manifest. The context and repair limits rest on JUDGEMENT `battle/graph_author.py` Author limits.
+New artifacts may be unchanged; a revision is not evidence of learning or improvement.
+
 ## A first test graph
 
 This graph tests the machinery, not strength. It uses the current team split: `cavalry` owns

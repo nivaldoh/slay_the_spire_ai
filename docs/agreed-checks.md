@@ -21,8 +21,9 @@ revisions written below are the earlier passes.
   wrong implementations. Initial component command: `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_graph.py tests/twwarhammer3/test_wh3_graph_configured.py
   tests/twwarhammer3/team/test_wh3_graph_team.py
-  tests/twwarhammer3/graph/test_wh3_graph_live_check.py`. Runtime part passed 35 cases at
-  `ff5e4ea`; author/revision cases still follow. Live checker component cases are not effects.
+  tests/twwarhammer3/graph/test_wh3_graph_live_check.py
+  tests/twwarhammer3/graph/test_wh3_graph_author.py`. Runtime part passed 35 cases at
+  `ff5e4ea`; author/revision component cases do not establish learning or live effects.
   Live method: fresh 1x attempts, movement with no-order controls, then contact/charge
   with public target and melee witnesses. PC available tonight. No strength/learning claim.
   Command: `uv run --locked python tests/twwarhammer3/graph/check_wh3_graph.py --output

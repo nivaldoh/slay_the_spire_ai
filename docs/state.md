@@ -6,8 +6,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) live check next: three fresh 1x probes, $0, 30-minute cap.
-Then authoring/revision; Anthropic cap $5. PC available tonight; `runs/gap-implementation-20261031/brief.md`.
+Codex: [GaP](twwarhammer3/gap-plan.md): live move/control passed; contact cap expired before arrival.
+Author/revision built, final gates then bounded Haiku smoke ($5). Contact extension awaits owner; `runs/gap-implementation-20261031/brief.md`.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
 Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.

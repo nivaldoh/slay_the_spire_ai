@@ -29,6 +29,32 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: add multi-LLM graph authoring and whole-battle revision
+
+- Built `wh3-graph-author-v1`: one coordinator and two specialists, frozen skill library,
+  per-member public revision evidence and new immutable artifacts. Directory and generated
+  file loading check readiness and library/controller pins before a battle. Other control
+  methods keep their existing factories and dispatcher.
+- 88 focused cases passed (25 new, 63 existing CLI/factory cases). Refusal sweep initially
+  caught 8/16, then 16/16 after input and source-context regressions. Independent review found
+  a missing-pin loader bypass; fixed, final review: no findings. Whole gate: commit message.
+- One JUDGEMENT marker: author context/repair limits. Evidence/card/review:
+  `runs/gap-implementation-20261031/` (including `author-review/` and refusal sweep logs).
+  No real model call yet; the planned Haiku initial/revision smoke stays within $5 cumulative.
+  Component evidence establishes no policy strength or learning.
+
+## 2026-11-01: first graph live check — movement passes, contact stops before arrival
+
+- Three fresh probes at `7c29d35`, all closed with no remaining game PIDs:
+  `runs/twwarhammer3/graph-live-20261101/`. Overall check failed; no engine battle outcomes.
+- No-order control passed (155.7 s of exposure, no arrival). Graph move passed: ack 10.7 s,
+  arrival 32.9 s, 22.5 s after waypoint creation. Windows-clock ratios 1.000042 and 1.000022.
+- Contact probe: line first melee at 336.8 s, cavalry attack source at 341 s, correct visible
+  already-engaged target `e2`. Cavalry still approached when the 360 s wall cap stopped the
+  probe (last battle reading 361.1 s); no own melee witness or charge completion observed.
+- Contact/charge remains unverified. Asked the owner about a 540 s contact cap and a fresh
+  rerun with identical effect criteria; no rerun before that answer. $0; no paid calls.
+
 ## 2026-11-01: add the initial graph live checker
 
 - Added the agreed three-launch method: no-order control, graph movement, then independent
