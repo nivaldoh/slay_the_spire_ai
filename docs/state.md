@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) live probe passed; two v3 plans lost at the timer without orders. [Viewer](http://localhost:8765/gap-all-20261101.html); progress-check method proposed. No game runs; $0.02192 of $5 spent. `runs/gap-continuation-20261101/`; author-progress check proposed, benchmark choices deferred.
+Codex: [GaP](twwarhammer3/gap-plan.md) live probe passed; two v3 plans lost at the timer without orders. [Viewer](http://localhost:8765/gap-all-20261101.html). Authoring blocked on progress-check agreement; public-input example reviewed. No game runs; $0.02192 of $5 spent. `runs/gap-continuation-20261101/handoff.md`; benchmark choices deferred.
 
 Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
 [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
