@@ -143,13 +143,15 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "A battle plan written as a graph of steps, each pointing to the next by outcome; a model can write or revise one offline, and an optional model can suggest a visible target while it runs (not yet run live). graph-view draws a recorded battle's graph and orders, with no game or model call.",
+        "A battle plan written as a graph of steps, each pointing to the next by outcome; a model can write or revise one offline, and an optional model can suggest a visible target while it runs (one live probe and one battle so far). A temporary check rejects a written graph whose named initiator cannot attack before contact. graph-view draws a recorded battle's graph and orders, with no game or model call.",
       "command":
         "twwarhammer3 play --policy configured --controller-config FILE ...; to look: twwarhammer3 graph-view JOB --output runs/twwarhammer3/reports/NAME.html",
+      "stories": ["methods", "graph", "members"],
       "files": [
         "src/twwarhammer3/battle/graph.py",
         "src/twwarhammer3/battle/graph_author.py",
         "src/twwarhammer3/battle/graph_goals.py",
+        "src/twwarhammer3/battle/graph_initiation.py",
         "src/twwarhammer3/battle/graph_view.py",
         "src/twwarhammer3/battle/graph_view_assets/",
         "src/twwarhammer3/battle/skill_contracts.py",
@@ -157,19 +159,23 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/graph_goal_prompt.md"
       ],
       "status":
-        "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:52, 67); target preferences agreed, live not yet run (docs/agreed-checks.md:18, 38); viewer passed at b8f8cb7 (docs/agreed-checks.md:39, 49)",
-      "commit": "87518f9",
+        "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:72-88); target hints passed at 87518f9, one probe (docs/agreed-checks.md:34-58); agreed offline checks: viewer passed at b8f8cb7 (docs/agreed-checks.md:59-71), initiation check passed at 4f0c3fc (docs/agreed-checks.md:18-33)",
+      "commit": "ad43a37",
       "refs": [
         "src/twwarhammer3/battle/graph.py:1-6",
         "src/twwarhammer3/battle/graph_author.py:1",
         "src/twwarhammer3/battle/graph_goals.py:1",
+        "src/twwarhammer3/battle/graph_initiation.py:1-5",
         "src/twwarhammer3/battle/graph_view.py:1-5",
         "docs/twwarhammer3/gap-plan.md:314-318",
-        "docs/twwarhammer3/gap-plan.md:359-361",
-        "docs/twwarhammer3/gap-plan.md:393-404",
-        "docs/agreed-checks.md:18-38",
-        "docs/agreed-checks.md:39-51",
-        "docs/agreed-checks.md:52-68"
+        "docs/twwarhammer3/gap-plan.md:349-352",
+        "docs/twwarhammer3/gap-plan.md:369-376",
+        "docs/twwarhammer3/gap-plan.md:403-405",
+        "docs/twwarhammer3/gap-plan.md:437-448",
+        "docs/agreed-checks.md:18-33",
+        "docs/agreed-checks.md:34-58",
+        "docs/agreed-checks.md:59-71",
+        "docs/agreed-checks.md:72-88"
       ]
     },
     {
@@ -204,7 +210,7 @@ DIAGRAM.tabs.push({
       "note":
         "A play job launches the game, sets up one custom battle per episode and lets one controller order our units until the engine reports won, lost or draw. The battle never waits for the model, and a policy never sees enemies its side cannot see.",
       "command": "uv run python -m twwarhammer3 play --scenario S --policy P --output runs/...",
-      "stories": ["job", "decision", "members"],
+      "stories": ["job", "methods", "decision", "members"],
       "files": [
         "src/twwarhammer3/__main__.py",
         "src/twwarhammer3/protocol.py",

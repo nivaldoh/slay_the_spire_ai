@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: control methods drawn on the "How the code works" page
+
+Claude Code, $0, no game. Owner's goal: "Find a good way to represent different army control
+methods that we will implement. For now we have the basic one, and then GaP. We need clean
+visuals for those too."
+- New tab "Control methods": one row group per method on one battle clock, with columns before,
+  during and between battles; model calls purple; a card per method (where, who, what it writes,
+  when it is done, calls, decisions, view age, example). Basic: knights3 (`llm_rules`, lost at
+  335.2 s); GaP: `gap-initial-02-20261101` (lost at 618.2 s). One battle each, different code
+  versions: no strength claim.
+- New tab "One graph battle": the graphs that battle ran, drawn from its record (only steps that
+  ran and exits taken, with counts); 8 steps from authoring to the cavalry's melee at 386.3 s.
+- `diagram_examples.py` recipes `methods` and `graph` recompute every stated count and refuse a
+  mismatch. `check.py` diagram flags also compare policy names, graph operations and controller
+  versions with the code, read card, status and generated refs, flag each listed example's changed
+  cited files and check story step ids; 13 plants.
+- Five agent reviewers found 21 problems (2 wrong claims, 8 misleading, 3 rule breaks, 7 bugs,
+  1 unsupported count); a skeptic confirmed each; all fixed and rechecked. Unverified: whether
+  the views teach; your look. 15 new `JUDGEMENT?:` markers (colour, window, layout, examples);
+  "GaP drawn in the page" replaces "No GaP view".
+
 ## 2026-11-01: corrected plan starts combat and cavalry joins; battle still lost
 
 - One fresh 1x battle at `5c02d08`: `battle/gap-initiator-revised-01-20261101`.

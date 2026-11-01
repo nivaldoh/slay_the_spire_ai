@@ -16,7 +16,7 @@ team also failed in between, on a UI stat and on WSL clock jumps); b52, an unuse
 compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 Built (Claude Code, 2026-11-01 night): the "How the code works" [plan](how-code-works-plan.md)'s pilot (map, play-job story, `check.py` flags; merge `c471b45`)
-and step 4 (two stories; merge `45c2a39`), reviewed by agents; quiz not passed (n=1). Your look waits: `runs/how-code-works-20261101/handoff.md`. $0.
+and step 4 (two stories; merge `45c2a39`), reviewed by agents; quiz not passed (n=1). Your look waits: `runs/how-code-works-20261101/handoff.md`. Then (11-01 afternoon) two tabs, "Control methods" (basic vs GaP on one battle clock) and "One graph battle" ([log](twwarhammer3/log.md#2026-11-01-control-methods-drawn-on-the-how-the-code-works-page)); reviewed by agents, no quiz, your look waits (`runs/control-methods-20261101/handoff.md`). $0.
 
 Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; no battle or run yet.
 

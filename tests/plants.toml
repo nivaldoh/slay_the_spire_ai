@@ -2153,3 +2153,120 @@ old = "    return DIAGRAM_ENTRY.findall(text[start.end():end if end > 0 else len
 new = "    return DIAGRAM_ENTRY.findall(text)"
 tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
 source = "2026-11-01 How the code works review"
+
+[[plant]]
+id = "diagram-example-list-ignored"
+guards = "A view's example may be a list; each listed example's cited files are checked"
+file = "scripts/check.py"
+old = "            named = [named] if isinstance(named, str) else named if isinstance(named, list) else []"
+new = "            named = [named] if isinstance(named, str) else []"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-example-changed-since-pooled"
+guards = "Each listed example excuses only its own changed_since files"
+file = "scripts/check.py"
+old = "                    for path in sorted(mine - set(one.get(\"changed_since\", []))):"
+new = "                    for path in sorted(mine - {p for _, o in example for p in o.get(\"changed_since\", [])}):"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-graph-ops-fact-unread"
+guards = "A view's model_policies, scripted_policies, graph_ops and versions are compared with the code"
+file = "scripts/check.py"
+old = "                 \"graph_ops\": (f\"{battle}graph_author.py\", \"DESCRIPTIONS\", False),\n"
+new = ""
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-versions-keys-only"
+guards = "VERSIONS is compared as a dict: a changed version flags the view"
+file = "scripts/check.py"
+old = "\"versions\": (f\"{battle}controllers.py\", \"VERSIONS\", True)}"
+new = "\"versions\": (f\"{battle}controllers.py\", \"VERSIONS\", False)}"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-box-unchecked"
+guards = "A story step whose box the view lacks flags the view"
+file = "scripts/check.py"
+old = "ids = [(\"box\", step[\"box\"])] if step.get(\"box\") else []"
+new = "ids = []"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-backward-wire-flagged"
+guards = "A dot's ~wire (run backwards) names that wire"
+file = "scripts/check.py"
+old = "ids += [(\"wire\", wire.lstrip(\"~\"))"
+new = "ids += [(\"wire\", wire)"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-object-dots-skipped"
+guards = "A {path, who} dot's wires are checked like a plain path's"
+file = "scripts/check.py"
+old = "for wire in (dot if isinstance(dot, list) else dot.get(\"path\", []))]"
+new = "for wire in (dot if isinstance(dot, list) else [])]"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-generated-ignored"
+guards = "Boxes and wires an example generated (view.generated) count as the view's"
+file = "scripts/check.py"
+old = "            made = examples.get(generated.get(\"example\"), {}).get(generated.get(\"key\")) or {}"
+new = "            made = {}"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-lanes-unresolved"
+guards = "A flow's lanes given as {example, key} are read from that example"
+file = "scripts/check.py"
+old = "                if \"example\" in lanes:  # {example, key}\n"
+new = "                if False:\n"
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-step-rows-unchecked"
+guards = "A story step whose lane rows its flow lacks flags the view"
+file = "scripts/check.py"
+old = "                    ids += [(\"row\", row) for row in step.get(\"rows\", [])]\n"
+new = ""
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 control-methods build"
+
+[[plant]]
+id = "diagram-card-refs-unread"
+guards = "A card's refs count as cited: a changed line a card cites flags the view"
+file = "scripts/check.py"
+old = "*view.get(\"notes\", []), *view.get(\"cards\", {}).values(),"
+new = "*view.get(\"notes\", []),"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 control-methods review"
+
+[[plant]]
+id = "diagram-status-refs-unread"
+guards = "A status's refs ({text, refs}) count as cited"
+file = "scripts/check.py"
+old = "if isinstance(item.get(\"status\"), dict) else [])]"
+new = "if False else [])]"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 control-methods review"
+
+[[plant]]
+id = "diagram-generated-refs-unread"
+guards = "The refs of the boxes and wires an example generated for a view, and its graph's, count as cited"
+file = "scripts/check.py"
+old = "                     *made.get(\"elements\", []), *made.get(\"wires\", []), made,\n"
+new = ""
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 control-methods review"
