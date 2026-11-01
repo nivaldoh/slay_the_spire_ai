@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: add live target-preference controllers, checked offline
+
+- Added optional `graph_llm` leaves: a background model chooses a public target or none;
+  each fixed graph and teammate continues. Only a later eligible selection uses the hint.
+  An active skill keeps its target. Requests/hints retain controller, graph, battle,
+  ownership, goal-run and source identities; stale/closed replies cannot steer orders.
+- Mixed controllers/rotations share the job ledger; cleanup retains exchanges and costs.
+  A new opt-in transport timeout keeps existing callers' default. Limits rest on
+  JUDGEMENT `graph_goals.py` G4 Goal limits; the example has its own marked model/call cap.
+- Author v3 preserves model authority in graph templates and freezes the updated source;
+  old artifacts remain pinned to their original library. Viewer shows hint use/source rows.
+- Offline checks: 372 focused cases, both saved battles in the existing browser check,
+  and 2 synthetic goal-view browser cases passed. Guard sweeps initially caught 2/5 and
+  6/18; added regressions catch 5/5 and 18/18. Separate expired-scope and blocking-wait
+  plants fail. Raw outputs/review/exit gate: `runs/gap-continuation-20261101/`.
+- No new game/API calls; original Anthropic spend remains $0.0130393 of $5. Proposed live
+  steering check awaits the owner. This feature, live holding/firing, tactical strength
+  and learning remain unverified. Viewer agreed method passed at `b8f8cb7`.
+
 ## 2026-11-01: inspect recorded GaP graphs and their battle execution
 
 - Added offline `graph-view`: frozen member graphs, active/ready nodes, public positions,

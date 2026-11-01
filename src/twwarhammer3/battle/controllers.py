@@ -140,6 +140,11 @@ def card(name: str, policy, config: dict) -> dict:
         result["kind"] = "composed"
         if getattr(policy, "card", {}).get("paid_calls"):
             result["cost_source"] = "WH3 ledger"
+    if name == "graph_llm":  # a configured leaf, not a standalone policy without graph data
+        api = policy.api
+        result.update(kind="graph_with_model", version=policy.card["goal_version"],
+                      model=api.name, effort=api.effort, provider=api.provider,
+                      routing=routing(api.provider, api.name), cost_source="WH3 ledger")
     if path:
         revision = subprocess.run(["git", "-C", str(Path(path).parent), "rev-parse", "HEAD"],
                                   capture_output=True, text=True)

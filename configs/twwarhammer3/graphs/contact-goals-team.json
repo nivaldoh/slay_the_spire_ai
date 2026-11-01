@@ -1,0 +1,28 @@
+{
+  "type": "team",
+  "army_owner": "line",
+  "members": {
+    "line": {
+      "unit_types": null,
+      "controller": {
+        "type": "graph_llm",
+        "graph": "contact-line.json",
+        "model": "claude-haiku-5-5",
+        "effort": "low",
+        "task": "Prefer a useful visible enemy for the line to engage.",
+        "max_requests": 2
+      }
+    },
+    "cavalry": {
+      "unit_types": ["wh_main_emp_cav_empire_knights"],
+      "controller": {
+        "type": "graph_llm",
+        "graph": "contact-cavalry.json",
+        "model": "claude-haiku-5-5",
+        "effort": "low",
+        "task": "Prefer a visible engaged enemy for the cavalry to charge.",
+        "max_requests": 2
+      }
+    }
+  }
+}

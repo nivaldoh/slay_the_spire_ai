@@ -14,7 +14,7 @@ from twwarhammer3.battle import graph, replay
 ASSETS = Path(__file__).with_name("graph_view_assets")
 NODE_EVENTS = frozenset(("started", "transition", "cancelled", "closed", "exhausted"))
 EVENT_FIELDS = ("node", "node_run", "op", "status", "successor", "inputs", "outputs",
-                "input_sources", "witness", "reason", "unsent_node")
+                "input_sources", "witness", "reason", "unsent_node", "selection")
 SOURCE_FIELDS = ("battle", "seq", "time_ms")
 ORDER_FIELDS = ("unit", "type", "target", "x", "z", "mode", "run", "queue", "facing", "width")
 
@@ -33,11 +33,12 @@ def collect_episode(episode):
     members = (configuration["members"] if configuration["type"] == "team"
                else {"army": {"controller": configuration}})
     graphs = {name: member["controller"]["graph"] for name, member in members.items()
-              if member["controller"].get("type") == "graph"}
+              if member["controller"].get("type") in ("graph", "graph_llm")}
     for spec in graphs.values():
         graph.validate(spec)
     identities = {name: graph.digest(spec) for name, spec in graphs.items()}
     events, frames, runs, requests, published = [], [], {}, {}, {}
+    goals = {}
     battle, latest_ms = result.get("battle"), None
     rows = list(replay.records(episode / "trace.jsonl"))
     observations = {row["observation"]["seq"]: row["observation"] for _, row in rows
@@ -76,6 +77,9 @@ def collect_episode(episode):
         if kind == "team":
             member = record.get("member", "army")
             value = record.get("record") if record.get("event") == "member_event" else record
+            if isinstance(value, dict) and value.get("event") == "goal_adopted":
+                source = value.get("source") or {}
+                goals[member, source.get("controller"), source.get("node_run")] = (value, line)
             if not isinstance(value, dict) or value.get("event") not in NODE_EVENTS:
                 continue
             if member not in graphs or value.get("graph_sha256") != identities[member]:
@@ -90,6 +94,29 @@ def collect_episode(episode):
                     fail(line, "node event has no public source observation")
                 continue
             data = fields(value, EVENT_FIELDS)
+            if selection := value.get("selection"):
+                hint = selection.get("preference") or {}
+                goal_source = hint.get("source") or {}
+                goal, goal_line = goals.get((member, goal_source.get("controller"),
+                                            goal_source.get("node_run")), ({}, None))
+                goal_view = observations.get(goal_source.get("seq")) or {}
+                member_card = (disclosure.get("member_controllers", {}).get(member, {}).get(
+                    "disclosure") or {}) if member != "army" else disclosure
+                if (not goal or graphs[member]["nodes"][node]["op"] != "select_target"
+                        or goal_source.get("producer") != "goal_request"
+                        or goal_source.get("controller") != member_card.get("goal_controller")
+                        or goal_source.get("graph_sha256") != identities[member]
+                        or goal_source.get("battle") != battle
+                        or fields(goal_source, SOURCE_FIELDS) != fields(goal_view, SOURCE_FIELDS)
+                        or hint.get("target") != goal.get("target")
+                        or hint.get("reason") != goal.get("reason")
+                        or goal_source != goal.get("source")
+                        or type(selection.get("used")) is not bool
+                        or (selection["used"] and value.get("outputs", {}).get("target")
+                            != hint.get("target"))):
+                    fail(line, "selection preference does not match its recorded goal producer")
+                data["selection"] = {"preference": hint, "used": selection["used"],
+                                     "goal_line": goal_line}
             data["op"] = graphs[member]["nodes"][node]["op"]
             key = (member, node, value.get("node_run"))
             if value["event"] == "started":

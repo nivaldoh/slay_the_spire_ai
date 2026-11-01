@@ -25,7 +25,9 @@ revisions written below are the earlier passes.
   Browser cases must use raw trace/result records, not the collector's JSON as their reference.
   The view must distinguish source and collection times, ready and started nodes, and
   acceptance and completion. No interpolation or inferred missing effects. Evidence:
-  `runs/gap-continuation-20261101/`; checked revisions are recorded after the first commit.
+  `runs/gap-continuation-20261101/`; passed at `b8f8cb7` in a clean checkout (31 reader
+  cases, both recorded battles in a browser, plus wrong-member and ack-as-completion
+  plants). Exact source/HTML hashes: `viewer-check-at-revision.json` there.
 - WH3 initial GaP (agreed 2026-10-31): offline graph typing, branches/loops,
   effect-based completion, independent team progress, stale targets, public information
   boundaries, fresh episodes and canned multi-LLM author/revision replies, with planted

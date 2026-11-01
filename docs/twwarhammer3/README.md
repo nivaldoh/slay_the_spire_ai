@@ -165,6 +165,7 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    rush_nearest), team.py (two scripted members sharing one army),
                    configured.py (JSON controller composition), graph.py (resumable graph
                    nodes), skill_contracts.py (typed skills and public effect witnesses),
+                   graph_goals.py (background model target preferences over fixed graphs),
                    graph_author.py (offline multi-LLM authoring and whole-battle revision),
                    graph_view.py and graph_view_assets/ (recorded graph/battle inspection),
                    calibration.py (disclosed scenario diagnostics),

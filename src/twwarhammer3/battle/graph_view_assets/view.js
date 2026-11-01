@@ -359,6 +359,12 @@ function seek(value, eventIndex = null) {
               .join("; ")
           : e.reason || "The node record is shown below."
     : "Use the time slider or event arrows.";
+  if (e?.selection) {
+    const { preference, used, goal_line } = e.selection;
+    $("evidence").textContent +=
+      ` Model preference ${preference.target}: ${used ? "used within this node's eligible targets" : "ineligible here; graph fallback used"}.` +
+      ` Goal ${preference.source.node_run}, observation ${preference.source.seq} at ${clock(preference.source.time_ms)}, trace row ${goal_line}.`;
+  }
   $("record").textContent = e ? JSON.stringify(e, null, 2) : "";
   graph(stateAt());
   map();

@@ -309,6 +309,35 @@ Recount also checks fresh battle identities, ownership, acknowledgements, cleanu
 Its launch geometry and wall caps rest on JUDGEMENT `check_wh3_graph.py` Probe bounds.
 This does not check live holding/firing, a charge bonus, tactical strength or learning.
 
+### Live target preferences
+
+The optional `graph_llm` controller asks a model for one visible target ID or `none` while
+its fixed graph keeps running. A preference only affects a later `select_target` node,
+within that node's current eligible set. Otherwise the graph uses its existing nearest
+target. An active skill keeps its target until its own witness, deadline or refusal.
+The model cannot edit graphs or skills, send orders, reassign units or read hidden state.
+
+Each request has a separate goal-run identity, controller UUID, graph hash, battle,
+owned-unit context and public source observation. The caller adopts replies; model workers
+only ask and parse. Close, source expiry, ownership changes and stale targets discard
+replies. New episodes construct fresh controllers. Mixed graph/model teams and root policy
+rotations share the job's Ledger. Exchanges and charges remain recorded during cleanup.
+Scheduling, expiry and network limits rest on JUDGEMENT `graph_goals.py` G4 Goal limits;
+the opt-in network timeout applies to each read, not the whole request's wall duration.
+
+`configs/twwarhammer3/graphs/contact-goals-team.json` uses the existing two contact graphs.
+JUDGEMENT: Goal example — Codex, 2026-11-01, G4 delegated starting values: Haiku 5.5,
+low effort and at most two goal requests per member per episode. Other models or caps
+change cost and opportunities to steer; this is a bounded example, not a comparison.
+Use it with `play --policy configured --controller-config PATH --provider anthropic
+--budget-usd 5`, adding normal scenario/output arguments. A missing ledger is refused;
+the cap includes prior jobs. This example has not run live.
+
+The proposed check covers delayed/stale replies, cancellation, eligibility, independent
+team progress, shared budgets and trace provenance with canned models and planted errors,
+then a bounded fresh 1x two-target dispatch probe. The owner's answer on that new method
+is pending; the feature is unverified and no dependent live probe has run.
+
 ### Authoring and revision command
 
 `graph-author` runs one coordinator and one specialist per member, using the existing
@@ -317,6 +346,9 @@ ordinary runtime composition still accepts graphs, scripts and direct model memb
 The coordinator receives the public task, fixed ownership and skill summaries. Each
 specialist receives the detailed frozen library and its own prior graph and permitted
 feedback. Model replies contain graph JSON; they cannot change Python skills or ownership.
+Author v3 also accepts `graph_llm` templates and preserves their model/task/request limits;
+authors can only replace their graphs. Older artifacts remain immutable and require their
+original library/revision; they are not silently accepted under the changed source pin.
 
 ```bash
 uv run --locked python -m twwarhammer3 graph-author \

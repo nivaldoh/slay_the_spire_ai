@@ -131,10 +131,12 @@ def usage_cost(model: str, usage: dict, provider: str = "openai") -> float:
 
 
 def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
-         record_transport: bool = False, provider: str = "openai") -> dict:
+         record_transport: bool = False, provider: str = "openai",
+         timeout_s: float | None = None) -> dict:
     """One API call; retries only transient transport and service errors. An Anthropic
     request is translated before the first attempt (a ValueError then sends nothing) and its
-    reply after the read, outside the retries, so a translation can never resend a call."""
+    reply after the read, outside the retries, so a translation can never resend a call.
+    timeout_s selects the per-read limit; omitted calls keep the marked shared default."""
     url = get_provider(provider).url
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     if provider == "openrouter":
@@ -151,7 +153,8 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
     for attempt in range(1, attempts + 1):
         try:
             request = urllib.request.Request(url, data=data, headers=headers)
-            with urllib.request.urlopen(request, timeout=READ_TIMEOUT_S) as response:
+            with urllib.request.urlopen(request, timeout=(
+                    READ_TIMEOUT_S if timeout_s is None else timeout_s)) as response:
                 value = json.load(response)
             break
         except urllib.error.HTTPError as error:

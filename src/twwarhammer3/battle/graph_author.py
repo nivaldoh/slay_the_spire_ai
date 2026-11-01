@@ -13,12 +13,12 @@ from pathlib import Path
 
 from gameai.llm import Model, api_key, check_fields, post
 from gameai.provenance import git, sha256, write_json
-from twwarhammer3.battle import configured, graph, skills, team
+from twwarhammer3.battle import configured, graph, graph_goals, skills, team
 from twwarhammer3.battle import skill_contracts as catalog
 from twwarhammer3.battle.llm import MAX_OUTPUT_TOKENS
 
 ARTIFACT_TYPE = "wh3-graph-author"
-VERSION = f"{ARTIFACT_TYPE}-v2"
+VERSION = f"{ARTIFACT_TYPE}-v3"
 # JUDGEMENT: Author limits — Codex, 2026-11-01: one repair, latest 12 views/orders/acks
 # per member and 2000 characters per coordinator task. More history or attempts changes
 # what authors can learn and spend; this is a bounded baseline, not a learning study.
@@ -44,6 +44,8 @@ Specialists return a JSON object with graph_json, a string containing the graph 
 Use only the listed operations. Graphs have version, entry, and a nodes object.
 Set the graph's version to library.graph_version.
 Each node has op, inputs and next, covering every named exit; end has empty inputs/next.
+graph_llm members need a select_target node; their background model can only prefer an
+eligible target at a future selection. It cannot edit the graph or interrupt a skill.
 Inputs are typed literals or {"ref":"producer.field"}; every path must run that producer
 successfully before consuming it. Repeated consumers need a new producer run, so recovery
 loops should return through owned and select_target. Target modes are nearest or engaged.
@@ -82,28 +84,35 @@ def frozen_library():
             "parameters": {"arrival_m": catalog.ARRIVAL_M, "timeout_ms": catalog.TIMEOUT_MS,
                            "retry_ms": catalog.REPEAT_MS, "hold_engage_m": skills.ENGAGE_M,
                            "max_visits": graph.MAX_VISITS, "max_age_ms": graph.MAX_AGE_MS},
+            # Rests on JUDGEMENT graph_goals.py G4 Goal limits; plain graphs have no model hint.
+            "goal_context": {"version": graph_goals.VERSION,
+                             "description": "graph_llm may supply a preferred target; selection"
+                             " uses it only when currently eligible, else nearest as before.",
+                             "query_ms": graph_goals.QUERY_MS, "hint_ms": graph_goals.HINT_MS,
+                             "prompt_sha256": sha256(graph_goals.PROMPT_PATH)},
             "sources": {name: sha256(Path(module.__file__)) for name, module in (
                 ("catalog", catalog), ("tactics", skills),
-                ("runtime", graph), ("projection", team))}}
+                ("runtime", graph), ("projection", team), ("goals", graph_goals))}}
 
 
-def load_template(path):
+def load_template(path, *, provider="anthropic"):
     """The first authoring release handles two graph members; runtime composition stays general."""
     raw = json.loads(Path(path).read_text())
     if (not isinstance(raw, dict) or raw.get("type") != "team"
             or not isinstance(raw.get("members"), dict) or len(raw["members"]) != 2 or any(
-        member.get("controller", {}).get("type") != "graph" for member in raw["members"].values()
+        member.get("controller", {}).get("type") not in ("graph", "graph_llm")
+        for member in raw["members"].values()
     )):
         raise ValueError("authoring needs a two-graph team template")
-    config = {}
-    configured.factory(path, config)  # resolves/fixes data; no instances or model leaves
+    config = {"provider": provider}
+    configured.load(path, config)  # data only, including goal-model settings; no credentials
     return config["controller_spec"]
 
 
 def authority(composition):
     value = deepcopy(composition)
     for member in value["members"].values():
-        member["controller"] = {"type": "graph"}
+        member["controller"].pop("graph", None)
     return value
 
 
@@ -128,7 +137,9 @@ def load_artifact(directory, library=None):
     if manifest.get("authority") != authority(candidate):
         raise ValueError("candidate authority differs from its frozen manifest")
     for member in candidate["members"].values():
-        graph.validate(member["controller"]["graph"])
+        spec = member["controller"]
+        (graph_goals.validate_graph if spec["type"] == "graph_llm" else graph.validate)(
+            spec["graph"])
     return candidate, {"directory": str(directory.resolve()), "controller_sha256": digest,
                        "library_sha256": manifest["library_sha256"]}
 
@@ -225,7 +236,7 @@ def coordinator_schema(names):
 def generate(template_path, task, output, ledger, *, model, effort="low", provider="anthropic",
              previous=None, evidence=None, send=None):
     """A new immutable candidate; a caller explicitly chooses whether a later job runs it."""
-    template, library = load_template(template_path), frozen_library()
+    template, library = load_template(template_path, provider=provider), frozen_library()
     if not isinstance(task, str) or not task.strip():
         raise ValueError("a public task is required")
     if bool(previous) != bool(evidence):
@@ -291,18 +302,21 @@ def generate(template_path, task, output, ledger, *, model, effort="low", provid
                     schema, parse_tasks)
         candidate = deepcopy(template)
 
-        def parse_graph(text):
+        def parse_graph(text, *, live_goals=False):
             value = check_fields(json.loads(text), GRAPH_REPLY)
-            return graph.validate(json.loads(value["graph_json"]))
+            validator = graph_goals.validate_graph if live_goals else graph.validate
+            return validator(json.loads(value["graph_json"]))
 
         for name in names:
+            live_goals = candidate["members"][name]["controller"]["type"] == "graph_llm"
             spec = ask(name, {"role": "specialist", "member": name, "task": tasks[name],
                        "library": library, "ownership": authority(template)["members"][name],
                        "previous_graph": parent["members"][name]["controller"]["graph"]
                        if parent else None, "public_feedback": feedback.get(name),
                        "reply": "Return graph_json containing the complete graph JSON."},
-                       GRAPH_REPLY, parse_graph)
-            candidate["members"][name]["controller"] = {"type": "graph", "graph": spec}
+                       GRAPH_REPLY, partial(parse_graph, live_goals=live_goals))
+            controller = candidate["members"][name]["controller"]
+            controller["graph"] = spec
         write_json(output / "controller.json", candidate)
         manifest.update(status="ready", controller_sha256=sha256(output / "controller.json"),
                         graphs={n: graph.digest(m["controller"]["graph"])

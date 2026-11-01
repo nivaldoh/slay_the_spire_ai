@@ -2,14 +2,18 @@
 
 import json
 from copy import deepcopy
+from functools import partial
 from pathlib import Path
 from threading import Event
 
-from gameai.llm import APIError
-from twwarhammer3.battle import graph, team
+from gameai.ledger import Ledger
+from gameai.llm import APIError, Model, api_key, post
+from gameai.providers import get_provider, routing, validate
+from twwarhammer3.battle import graph, graph_goals, team
 
 
-def factory(path, config, *, ledger=None):
+def load(path, config):
+    """Resolve and validate data without credentials, budgets, models or game access."""
     from twwarhammer3.battle import controllers
 
     path = Path(path).resolve()
@@ -29,19 +33,40 @@ def factory(path, config, *, ledger=None):
             spec = json.loads(path.read_text())
     else:
         spec = json.loads(path.read_text())
-    leaves = set()
+    leaves, goal_models = set(), set()
 
     def prepare(node):
         if not isinstance(node, dict) or not isinstance(node.get("type"), str):
             raise ValueError("controller needs a type")
         kind = node["type"]
-        if kind == "graph":
-            if set(node) != {"type", "graph"}:
+        if kind in ("graph", "graph_llm"):
+            allowed = {"type", "graph"}
+            if kind == "graph_llm":
+                allowed |= {"model", "effort", "task", "max_requests"}
+            if set(node) - allowed or not {"type", "graph"} <= set(node):
                 raise ValueError("graph controller needs type and graph")
             value = node["graph"]
             if isinstance(value, str):
                 value = json.loads((path.parent / value).read_text())
-            return {"type": kind, "graph": graph.validate(value)}
+            result = {"type": kind, "graph": graph.validate(value)}
+            if kind == "graph_llm":
+                graph_goals.validate_graph(value)
+                provider = config.get("provider", "openai")
+                model = node.get("model", config.get("model")
+                                 or next(iter(get_provider(provider).prices)))
+                effort = node.get("effort", config.get("effort") or "low")
+                if not isinstance(model, str) or not isinstance(effort, str):
+                    raise ValueError("goal model and effort must be text")
+                validate(provider, model, effort)
+                limit = node.get("max_requests")
+                if limit is not None and (type(limit) is not int or limit <= 0):
+                    raise ValueError("max_requests must be positive or null")
+                if not isinstance(node.get("task", ""), str):
+                    raise ValueError("goal task must be text")
+                result.update(model=model, effort=effort, task=node.get("task", ""),
+                              max_requests=limit)
+                goal_models.add((model, effort))
+            return result
         if kind == "team":
             if set(node) - {"type", "members", "army_owner", "max_age_ms"}:
                 raise ValueError("unknown team settings")
@@ -83,19 +108,48 @@ def factory(path, config, *, ledger=None):
         return {"type": kind}
 
     frozen = prepare(spec)
-    makers = controllers.factories({**config, "policy": ",".join(sorted(leaves))},
-                                   _ledger=ledger) if leaves else {}
     config["controller_spec"] = deepcopy(frozen)
+    return frozen, leaves, goal_models, artifact
+
+
+def factory(path, config, *, ledger=None):
+    from twwarhammer3.battle import controllers
+
+    frozen, leaves, goal_models, artifact = load(path, config)
     models = {name for name in leaves
               if controllers.policy_parts(name, config)[0] in controllers.MODEL_POLICIES}
+    provider = config.get("provider", "openai")
+    if models or goal_models:
+        if config.get("budget_usd") is None:
+            raise ValueError("model controllers require --budget-usd")
+        if provider == "openrouter" and config["budget_usd"] > 50:
+            raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
+        if ledger is None:
+            ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
+    makers = controllers.factories({**config, "policy": ",".join(sorted(leaves))},
+                                   _ledger=ledger) if leaves else {}
     prompts = {
         name: controllers.MODEL_PROMPTS[controllers.policy_parts(name, config)[0]].read_text()
         for name in sorted(models)}
+    goal_send = None
+    if goal_models:
+        goal_send = partial(post, api_key(provider), attempts=1, provider=provider,
+                            record_transport=True, timeout_s=graph_goals.READ_TIMEOUT_S)
+        prompts.update({f"graph_llm@{model}/{effort}": graph_goals.PROMPT_PATH.read_text()
+                        for model, effort in sorted(goal_models)})
+        config.setdefault("model_routing", {}).update({
+            model: routing(provider, model) for model, _ in goal_models})
 
     def build(node, stop=None):
         kind = node["type"]
         if kind == "graph":
             return graph.GraphPolicy(node["graph"])
+        if kind == "graph_llm":
+            api = Model(node["model"], node["effort"], ledger, send=goal_send, provider=provider,
+                        instructions=prompts[f"graph_llm@{node['model']}/{node['effort']}"],
+                        max_output_tokens=graph_goals.MAX_OUTPUT_TOKENS, record_exchanges=True)
+            return graph_goals.GraphGoals(node["graph"], api, task=node["task"], stop=stop,
+                                          max_requests=node["max_requests"])
         if kind == "team":
             stop = Event()
             return team.TeamPolicy({name: (tuple(member["unit_types"]) if member["unit_types"]
@@ -128,7 +182,7 @@ def factory(path, config, *, ledger=None):
                 name: controllers.card(frozen["members"][name]["controller"]["type"],
                                        member.policy, config)
                 for name, member in policy.members.items()}
-        policy.card["paid_calls"] = bool(models)
+        policy.card["paid_calls"] = bool(models or goal_models)
         policy.card["model_prompts"] = deepcopy(prompts)
         if artifact is not None:
             policy.card["artifact"] = dict(artifact)

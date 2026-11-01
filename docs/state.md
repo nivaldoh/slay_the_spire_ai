@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) continues: [graph viewer](http://localhost:8765/gap-20261101.html) built; live target preferences next.
+Codex: [GaP](twwarhammer3/gap-plan.md) continues: [graph viewer](http://localhost:8765/gap-20261101.html) checked; target preferences built offline, awaiting live-check agreement.
 No game runs; $0.01304 of $5 spent. `runs/gap-continuation-20261101/brief.md`; benchmark choices deferred.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.

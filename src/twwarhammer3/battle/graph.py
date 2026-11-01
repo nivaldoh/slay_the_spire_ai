@@ -107,7 +107,7 @@ class GraphPolicy:
 
     timing = "asynchronous"
 
-    def __init__(self, spec):
+    def __init__(self, spec, *, target_preference=None):
         self.spec = validate(spec)
         self.revision = digest(self.spec)
         self.card = {"graph": self.spec, "graph_sha256": self.revision,
@@ -122,6 +122,7 @@ class GraphPolicy:
         self.closed = False
         self.behavior = {"type": "graph", "graph_sha256": self.revision}
         self.source = None
+        self.target_preference = target_preference
 
     def _event(self, event, **fields):
         self.events.append({"event": event, "graph_sha256": self.revision,
@@ -147,14 +148,14 @@ class GraphPolicy:
                 result[key] = deepcopy(value)
         return result, sources
 
-    def _finish(self, status, outputs=None, witness=None):
+    def _finish(self, status, outputs=None, witness=None, **context):
         for key, value in (outputs or {}).items():
             self.values[f"{self.node}.{key}"] = {
                 "value": deepcopy(value), "producer": self.node,
                 "node_run": self.visits[self.node], "graph_sha256": self.revision,
                 **self.source}
         self._event("transition", status=status, outputs=outputs or {}, witness=witness,
-                    successor=self.spec["nodes"][self.node]["next"][status])
+                    successor=self.spec["nodes"][self.node]["next"][status], **context)
         self.behavior.update(status=status, witness=witness)
         self.node = self.spec["nodes"][self.node]["next"][status]
         self.run = None
@@ -212,8 +213,15 @@ class GraphPolicy:
                 # Initial graph behavior rests on this delegated baseline.
                 target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units),
                                                      e["id"]), default=None) if units else None
+                hint = self.target_preference(view) if self.target_preference else None
+                preferred = next((e for e in enemies if hint and e["id"] == hint["target"]), None)
+                if preferred is not None and units:
+                    target = preferred
+                context = ({"selection": {"preference": hint,
+                                          "used": preferred is not None and bool(units)}}
+                           if hint else {})
                 self._finish("succeeded" if target else "empty",
-                             {"target": target["id"]} if target else {})
+                             {"target": target["id"]} if target else {}, **context)
                 return []
         status, orders, witness = self.run.tick(view)
         if status != "running":
