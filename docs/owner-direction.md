@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (evening, Anthropic provider): "Implement docs/anthropic-provider-plan.md." The
+  owner's key is "scoped to 'Organization'" and needs an `anthropic-workspace-id` header; "It
+  expires on April 1st 2027 and has a budget of $200 that we will use very carefully."
+  Five of the plan's six recommendations were implemented as written; the key's budget stands
+  in for recommendation 4's workspace spend limit ([plan](anthropic-provider-plan.md)).
 - 2026-10-31 (02:10, long autonomous run, the owner's words): "We don't have an actual
   cutoff. We should have a lot of work ahead such that you can just keep running without a
   time limit, until every reasonable task involves a pending decision from me. I can review

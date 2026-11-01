@@ -63,7 +63,7 @@ uv run pytest tests/spire/test_protocol.py -k <pattern>
 uv run python -m spire doctor      # read-only runtime check
 uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-0000 [--picks | --floor N]
 uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished run, stall or job end
-uv run python -m spire spend       # Spire OpenAI ledger total; --provider openrouter for OpenRouter
+uv run python -m spire spend       # Spire OpenAI ledger total; --provider openrouter|anthropic
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
 uv run python -m spire export runs/fullrun/<job> ... --output runs/fullrun-exports/<name>
 ```
@@ -131,6 +131,6 @@ Spire jobs live in `runs/<track>/<job>/`. Compact first-combat results are commi
 commit the register with that entry.
 
 The OpenAI ledger is `runs/llm-spend.jsonl`; OpenRouter uses
-`runs/spire-openrouter-spend.jsonl` (`spire play --provider openrouter`). The shared
-OpenRouter allowance, credential settings, budget accounting and missing-ledger rules in
+`runs/spire-openrouter-spend.jsonl` (`spire play --provider openrouter`) and Anthropic
+`runs/spire-anthropic-spend.jsonl`. The shared OpenRouter and Anthropic allowances, credential settings, budget accounting and missing-ledger rules in
 [the root guidance](../../AGENTS.md#evidence) apply. Never move or reset a ledger.

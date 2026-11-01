@@ -17,6 +17,8 @@ compare-peers fixes and the 10-30 factory items merged; branches and decisions i
 Built (Claude Code, 2026-10-31): [multi-agent.html](multi-agent.html), the animated diagram (claims checked
 at `21f6204`); owner: "looks good", detailed review later (2026-10-31). Step 6 (measured replay) merged.
 
+Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; no battle or run yet.
+
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
@@ -38,7 +40,7 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0; the key has spent $0.02 of its $200 for both games (the smoke's own ledger). A new paid cohort needs a bounded plan.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
@@ -68,15 +70,13 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 ## Known issues
 
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
-- Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowance are kept by hand. Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
+- Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: what the key returns at its limit is untested. Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in
   `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - WH3 readers differ on 3 timer wins, 8 controller failures and 5 wall caps of 642 rows; `cards.benchmark_outcome` v1 maps the outcome table, no reader uses it yet. Register/`stats` also have blank benchmark versions and commit grouping.
 - Since `1cc4582` each observation's `speed` is the engine's `current_battle_speed()` (one probe: 440/440 read 1); a slowed battle was never tried. `awaiting_orders` stays false (the mod never waits). Pauses run no script: the Windows-clock line (b51) covers them.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
-- Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23;
-  [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before
-  more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
+- Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23; [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
 - Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; another session's `test-quality-audit` branch changes it) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
 - Spire's Workshop mod pins still block a run when a mod updates.
 

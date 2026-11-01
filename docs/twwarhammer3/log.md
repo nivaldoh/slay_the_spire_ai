@@ -44,6 +44,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: Anthropic provider added
+
+Claude Code, under the owner's "Implement docs/anthropic-provider-plan.md"; no game.
+`--provider anthropic` (both games) sends the Responses-shaped request to Anthropic's Messages
+API through a translation in `gameai/llm.py` `post()`; Haiku 5.5, Sonnet 5.5 and Opus 5.5 at
+low to max ([controllers](controllers.md#anthropic)). Ledgers `runs/twwarhammer3/anthropic-spend.jsonl`
+and `runs/spire-anthropic-spend.jsonl` (created empty). The owner's key file held 10 bytes of
+terminal escape codes before the key (HTTP 400, empty body; `runs/anthropic-provider/key-file-fix.md`);
+stripped, and `api_key()` now refuses unprintable keys. The key is not scoped to a workspace: `GAMEAI_ANTHROPIC_WORKSPACE_ID` is
+required. Reviewer round 1 found 529 resent for every provider, a docstring claiming an unrun
+live check, a bundled marker and four uncaught wrong versions; all fixed, the plants now fail.
+Paid smoke at `551b514` (`runs/anthropic-smoke/`, own ledger, $0.25 cap): $0.0211, 18 calls.
+The Models API flags match `providers.py` (efforts low to max on all three; thinking off only
+on Haiku `disabled`, Sonnet `between_tools`). All 15 model × effort calls (Spire schema, 256
+tokens, no resends) returned 200 and completed in 1.0-3.0 s (WSL wall time); on that trivial prompt only
+Haiku `max`, Sonnet `max` and Opus `xhigh`/`max` reported thinking tokens (36-185). One Haiku
+`high` ask per game schema passed `json.loads` and the schema's field check on its first attempt
+(Spire, WH3 `llm`, `commander`; real system prompts, synthetic situations, 2.1-5.9 s); not the
+games' own parsers. Both WH3 ones returned a summary where the exporters look. All 18 ledger
+rows equal list price × reported usage (recomputed by the rerun reviewer). Not shown: cut-off
+replies (none occurred), refusals, 529s, latency under load, gameplay, and Anthropic's own
+usage figures: `runs/anthropic-smoke/usage_compare.py` (free admin reads) found no rows in
+the usage or cost report 10.5 minutes after the last call; rerun it a day later, as the plan says.
+
 ## 2026-10-31: multi-agent diagram page, measured replay (plan step 6)
 
 Claude Code, $0, no game; built on a branch, since the plan makes the replay mode a separate

@@ -13,6 +13,9 @@ runs/
                       <job>.log.
   spire-openrouter-spend.jsonl  Slay the Spire's OpenRouter ledger (`spire play --provider
                       openrouter`); independent of the OpenAI cap
+  spire-anthropic-spend.jsonl  Slay the Spire's Anthropic ledger (`spire play --provider
+                      anthropic`); with WH3's, under the Anthropic key's $200 budget
+  anthropic-provider/ 2026-10-31 plan research and reviews; anthropic-smoke/ its paid smoke
   fullrun-exports/    `spire export` datasets: decisions.jsonl, sources.json, datacard.md
   sft/                `python -m gameai.sft` datasets (both games) and their smoke-test
                       outputs; tokenizers/ holds pinned tokenizer files of student models
@@ -24,6 +27,7 @@ runs/
   twwarhammer3/       Total War: WARHAMMER III
     llm-spend.jsonl   WH3 OpenAI spend ledger
     openrouter-spend.jsonl  WH3 OpenRouter spend ledger; independent of the OpenAI cap
+    anthropic-spend.jsonl   WH3 Anthropic spend ledger (`--provider anthropic`)
     battle/           One directory per `twwarhammer3 play` job. A job started by hand has
                       <job>.log beside it; a queued job (scripts/wh3_queue.py) usually logs
                       to its plan's .log under calibration/ instead.

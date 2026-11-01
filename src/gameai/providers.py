@@ -8,7 +8,8 @@ usage.cost. Reasoning efforts are per model, each accepted by one live schema ca
 2026-10-16: OpenAI's lists come from the API's own unsupported-value errors, OpenRouter's
 from the catalogue's supported_efforts. A model whose catalogue entry lists none is on/off:
 "none" and "medium" (OpenRouter's level for reasoning enabled). Anthropic's prices and
-efforts are from its pricing and effort pages, read 2026-10-31.
+efforts are from its pricing and effort pages, read 2026-10-31; each effort was accepted by
+one live schema call that day (docs/twwarhammer3/log.md, Anthropic provider added).
 """
 
 from dataclasses import dataclass

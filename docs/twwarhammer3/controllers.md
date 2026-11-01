@@ -226,7 +226,8 @@ measures latency and cost, not strength.
 
 The shared `gameai.llm.Model` supports direct OpenAI (the default) and OpenRouter's
 [stateless Responses endpoint](https://openrouter.ai/docs/api_reference/responses/overview).
-The WH3 CLI selects one gateway per job with `--provider openai|openrouter`; separate
+The WH3 CLI selects one gateway per job with `--provider openai|openrouter|anthropic`
+([Anthropic](#anthropic)); separate
 jobs can appear in the same report. Prompts, history, schemas and action validation
 stay in the game policies. No SDK dependency or provider inheritance hierarchy is needed.
 `gameai/providers.py` holds endpoints, credential variable names, prices and settings;
@@ -333,6 +334,44 @@ On 2026-10-16, after the smoke checks and this battle, the OpenRouter ledger hel
 $0.43000489, below that battle's $3 cumulative cap (current totals:
 [state](../state.md#total-war-warhammer-iii));
 [review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
+
+## Anthropic
+
+Added 2026-10-31 from [the plan](../anthropic-provider-plan.md); no battle has used it.
+Every declared effort passed one live schema call ($0.02 in total;
+[smoke](log.md#2026-10-31-anthropic-provider-added)).
+`--provider anthropic` sends each request to Anthropic's Messages API. `gameai/llm.py`
+`post()` translates the request and the reply to and from the Responses shape, so
+prompts, schemas, records, exporters and cards are unchanged. The official SDK is not
+used: one pinned API version (`2026-10-21`) and every attempt visible to the ledger.
+
+| Model ID | Input | Output | Declared efforts |
+|---|---:|---:|---|
+| `claude-haiku-5-5` (the default) | $0.10 | $0.50 | low, medium, high, xhigh, max |
+| `claude-sonnet-5-5` | $2.00 | $10.00 | low, medium, high, xhigh, max |
+| `claude-opus-5-5` | $4.00 | $20.00 | low, medium, high, xhigh, max |
+
+Prices are USD per million tokens (list prices read 2026-10-31). Haiku's hold up to 100,000
+prompt tokens and are five times higher above, so a Haiku request over 100,000 bytes is
+refused before sending. Requests leave thinking adaptive (no thinking tokens in 11 of 15
+smoke calls); no `none` mode is declared, though Haiku (`disabled`) and Sonnet
+(`between_tools`) can turn thinking off at high effort or below (rests on JUDGEMENT
+`providers.py` Anthropic efforts). With
+recorded exchanges the request asks for thinking summaries, which land where OpenAI's do.
+A refusal is re-asked as an invalid reply; `fallbacks` (another model answering) is never
+sent. Judgement calls are marked in `providers.py` and `llm.py`.
+
+Credentials: `GAMEAI_ANTHROPIC_API_KEY` or the file named by `GAMEAI_ANTHROPIC_API_KEY_FILE`
+(the owner's is `~/.config/anthropic-api/api_key`, mode `0600`), plus
+`GAMEAI_ANTHROPIC_WORKSPACE_ID`: the owner's key is not scoped to one workspace, so every
+request names one (the Default workspace's ID, from the List Workspaces admin call,
+`runs/anthropic-provider/list_workspaces.log`; the Console's Workspaces page shows it too). Both
+are checked before a game launches. The code never reads `ANTHROPIC_API_KEY`, which Claude
+Code can bill its own use to. The key has a $200 budget for both games and expires
+2027-04-01. Ledgers: `runs/twwarhammer3/anthropic-spend.jsonl` and Spire's
+`runs/spire-anthropic-spend.jsonl`; keep their total under the key's budget, since what a
+call returns once the key's budget is spent is undocumented and untested (a 400 counts as
+the model failing in WH3).
 
 ## Candidate changes for the next version
 

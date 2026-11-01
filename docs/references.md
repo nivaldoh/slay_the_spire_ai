@@ -27,6 +27,44 @@ The [WH3 GaP plan](twwarhammer3/gap-plan.md#references) links each donor file an
 what to mirror or change. Research entry: [papers](thesis/papers.md#gap-graph-as-policy-for-variational-automation).
 Code/docs inspection only; no robotics results reproduced or WH3 GaP behavior verified.
 
+## Anthropic provider (2026-10-31)
+
+Live Anthropic docs behind `gameai/providers.py` `ANTHROPIC` and the Messages translation in
+`gameai/llm.py` ([plan](anthropic-provider-plan.md)). "Checked" here: the planning agents
+read the page and the implementing session re-fetched it on 2026-10-31 for the facts used.
+- [Versioning](https://platform.claude.com/docs/en/api/versioning): `2026-10-21` is the
+  latest; for Messages it only refuses `temperature`/`top_p`/`top_k` and two citation and
+  document shapes. *Checked.*
+- [Authentication](https://platform.claude.com/docs/en/manage-claude/authentication):
+  `Authorization: Bearer` (`x-api-key` legacy); a key not scoped to a workspace must send
+  `anthropic-workspace-id` on every request, else HTTP 400. *Checked.*
+- [Messages reference](https://platform.claude.com/docs/en/api/messages/create): request
+  `output_config` {effort, format} and `thinking` {adaptive, display}; reply `stop_reason`
+  values and `usage`, whose `input_tokens` excludes cache reads and writes and whose
+  `output_tokens_details.thinking_tokens` is part of `output_tokens`. *Checked.*
+- [Structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs):
+  `output_config.format = {type: json_schema, schema}`; limits of 16 union-typed and 24
+  optional parameters; enum capitalization not guaranteed; grammars cached 24 h. *Checked.*
+- [Errors](https://platform.claude.com/docs/en/api/errors) and
+  [rate limits](https://platform.claude.com/docs/en/api/rate-limits): 529 overloaded; an
+  organization or workspace spend limit you set returns 400; the tier spend cap returns 429
+  `enforced_spend_limit_reached`; a per-key budget is not documented there. *Checked*
+  (rate limits: *read*).
+- [Pricing](https://platform.claude.com/docs/en/about-claude/pricing): Haiku 5.5 $0.10 /
+  $0.01 / $0.50 per M input / cache-read / output tokens up to 100,000 prompt tokens (five
+  times above), Sonnet 5.5 $2 / $0.10 / $10, Opus 5.5 $4 / $0.20 / $20. *Checked.*
+- [Effort](https://platform.claude.com/docs/en/build-with-claude/effort),
+  [thinking](https://platform.claude.com/docs/en/build-with-claude/thinking),
+  [prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+  (opt-in), [refusals and fallbacks](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback),
+  [Models API](https://platform.claude.com/docs/en/api/models/retrieve). *Read.*
+- [Claude Code and `ANTHROPIC_API_KEY`](https://code.claude.com/docs/en/iam): why the repo
+  reads only `GAMEAI_ANTHROPIC_*` variables. *Read.*
+- [Commercial Terms](https://www.anthropic.com/legal/commercial-terms) §D.4 and the
+  [Usage Policy](https://www.anthropic.com/legal/aup) (effective 2026-11-12): no training of
+  competing models; no training on outputs ("model scraping" or "model distillation")
+  without prior authorization. *Checked* (the rerun reviewer re-fetched both, 2026-10-31).
+
 Each entry ends with its status:
 - **checked**: a second agent re-fetched the page and confirmed the quotes or facts we use;
 - **read**: one agent read it; not re-checked;

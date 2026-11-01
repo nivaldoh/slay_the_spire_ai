@@ -181,7 +181,7 @@ configs/twwarhammer3/
 
 ```bash
 # Play: a new --output, a clean source scope; model policies need --budget-usd, the
-# ledger's cumulative cap ($52 OpenAI; the OpenRouter allowance is $50 across both games)
+# ledger's cumulative cap ($52 OpenAI; OpenRouter $50 and Anthropic $200 across both games)
 uv run python -m twwarhammer3 play --policy llm --budget-usd USD --scenario random --seed N \
     --output runs/twwarhammer3/battle/llm-luna-vN-rand-N-YYYYMMDD
 uv run python -m twwarhammer3 play --policy commander --budget-usd USD --scenario kho5-dwf5 \
@@ -200,7 +200,7 @@ uv run python -m twwarhammer3 stats                       # results.csv by scena
 uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # board; add paths for a verdict
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
 uv run python -m twwarhammer3 export JOB [JOB ...] --output runs/twwarhammer3/exports/NAME
-uv run python -m twwarhammer3 spend                       # runs/twwarhammer3/llm-spend.jsonl
+uv run python -m twwarhammer3 spend                       # OpenAI; --provider for the others
 # Runtime and probes
 uv run python -m twwarhammer3 doctor                      # read-only: pins, preferences, game
 uv run python -m twwarhammer3 launch                      # build, install, run until Ctrl-C
@@ -224,6 +224,9 @@ uv run --locked --extra llm python -m twwarhammer3 rl PHASE PLAN --output ...  #
 - `--provider openrouter` selects GLM-5.3 by default and the separate OpenRouter ledger.
   Models/efforts and key-file setup: [OpenRouter](controllers.md#openrouter).
   `spend --provider openrouter` prints that ledger.
+- `--provider anthropic` selects Claude Haiku 5.5 by default and
+  `runs/twwarhammer3/anthropic-spend.jsonl`. Models, key file and the workspace variable:
+  [Anthropic](controllers.md#anthropic). Unplayed in battle.
 - Comma-separated `--policy` names rotate in an order drawn from `--rotation-seed`;
   `--delay-seconds 0,6,10` crosses them with observation-age arms; `--episodes` defaults
   to one per combination. `--policy package.module:Class` loads an outside controller

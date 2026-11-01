@@ -229,7 +229,11 @@ By default the builder keeps only `openrouter` rows (open-weight models). Rows p
 by OpenAI models are dropped and counted: whether their outputs may train a model is the
 owner's open decision. A lone `--provider` replaces the default, so `--provider openai`
 alone keeps only OpenAI rows; `--provider openai --provider openrouter` adds them to the
-open-weight rows. Do not include them before that decision. Every dataset's
+open-weight rows. Do not include them before that decision. Anthropic rows are dropped
+the same way; its Commercial Terms (§D.4) bar using the API "to train competing AI
+models", and its Usage Policy (effective 2026-11-12) bars using outputs "to train an AI
+model (e.g., "model scraping" or "model distillation") without prior authorization
+from Anthropic" (both read 2026-10-31). Every dataset's
 `datacard.md` repeats this. The question is narrower than a ban: OpenAI's terms of use bar
 using output "to develop models that compete with OpenAI" (the 2024-12-11 revision, read
 through search results on 2026-10-21; the policy pages refused automated fetches, and the
@@ -253,7 +257,7 @@ legal advice.
 
 ## Reasoning
 
-Exports keep the visible reasoning of each attempt. OpenAI returns summaries
+Exports keep the visible reasoning of each attempt. OpenAI and Anthropic return summaries
 (`summary_text`); open-weight models through OpenRouter return the reasoning itself
 (`reasoning_text`). With `--reasoning`, the assistant message gets `reasoning_content`, the
 concatenated `reasoning_text` parts of the target attempt; summaries are never used. It

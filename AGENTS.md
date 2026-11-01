@@ -155,12 +155,12 @@ orders. Only an engine-reported won, lost or draw is a gameplay outcome.
 ## Evidence
 
 Run evidence stays out of Git ([runs/README.md](runs/README.md): layout and ledger paths).
-A job's `--budget-usd` caps its selected ledger's total, earlier jobs included. The owner's $50
-OpenRouter allowance covers both games: leave room for the total in
-`runs/spire-openrouter-spend.jsonl` too (`uv run python -m spire spend --provider openrouter`).
-Never move or reset a ledger. A play command refuses a ledger file that does not exist (a
-mistyped path or a job started from a worktree would count from $0): create it deliberately for
-a new ledger.
+A job's `--budget-usd` caps its selected ledger's total, earlier jobs included. Two allowances
+cover both games, so leave room for the other game's ledger (`<game> spend --provider P`): the
+owner's $50 on OpenRouter and the Anthropic key's $200 (keep both ledgers under it; the key's
+own limit error is untested). Never move or reset a ledger. A play command refuses a ledger
+file that does not exist (a mistyped path or a job started from a worktree would count from $0):
+create it deliberately for a new ledger.
 
 Each WH3 `play` appends one row per episode to `docs/twwarhammer3/results.csv`. Log every
 version in `docs/twwarhammer3/log.md` and commit the register with that entry. Update

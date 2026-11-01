@@ -35,9 +35,14 @@ the prompt and memory, not weight training.
   $50 OpenRouter allowance with WH3's file
   ([controllers.md](../../twwarhammer3/controllers.md#openrouter)), so `--budget-usd` must
   leave room for that file's total; `spire spend --provider openrouter` totals it.
+  Anthropic calls go to `runs/spire-anthropic-spend.jsonl`, whose total with WH3's
+  Anthropic file stays under the key's $200 budget
+  ([controllers.md](../../twwarhammer3/controllers.md#anthropic)).
 - Key: `gameai.llm` reads it, for both games, from `OPENAI_API_KEY` or the file named by
   `SPIRE_OPENAI_KEY_FILE`; for OpenRouter, from `OPENROUTER_API_KEY` or the file named by
-  `OPENROUTER_API_KEY_FILE`. It is never logged; evidence records only response IDs and
+  `OPENROUTER_API_KEY_FILE`; for Anthropic, from `GAMEAI_ANTHROPIC_API_KEY` or the file
+  named by `GAMEAI_ANTHROPIC_API_KEY_FILE`, with `GAMEAI_ANTHROPIC_WORKSPACE_ID`. It is
+  never logged; evidence records only response IDs and
   usage.
 - Engine: the pinned original game, one fresh JVM per run, `START IRONCLAD 0 <seed>`. The
   run ends only on the engine's death or victory screen, or at a declared action or time
