@@ -13,38 +13,76 @@ track: [full runs](fullrun/README.md), [first combat](first-combat/README.md) or
 
 ## Layout
 
-```
-src/spire/         Slay the Spire 1
-  __main__.py      CLI: doctor, play, digest, watch, spend, stats, export (full runs);
-                   rollout, evaluate, train, report (first combat)
-  protocol.py      Decision/Action types, the error taxonomy and the first-combat
-                   observation contract (frozen)
-  policies.py      Scripted first-combat policies: random, starter heuristic, end turn (frozen)
-  decisions.py     Public full-game boundary: labeled choices on every in-game screen
-  engine/          Real-game plumbing for every track: Windows runtime, relay bridge, doctor,
-                   and the Windows-side windows_relay.py
-  fullrun/         Full-run track: play.py (complete-run loop for any policy), llm.py
-                   (prompt, memory and replies: the tuning surface), digest.py (trace
-                   summaries and mistake flags), watch.py (job events), stats.py (the
-                   results register), export.py (offline model-request datasets)
-  openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError):
-                   tasks and seed splits, env backends, Tinker policy, rewards, rollout,
-                   GRPO, dynamics
-  combat/          First-combat benchmark: rollout, suites (evaluation), catalogs,
-                   evidence audits
-  ppo/             Actor-critic and the budgeted, resumable PPO runner
-  language/        Local Qwen LoRA: demonstrations, SFT, frozen policy, evaluation,
-                   sampling, REINFORCE
-configs/llm/      Full-run system prompt and enemy rules notes (the tuning surface)
-configs/suites/   First-combat suite and catalog declarations
-scripts/          First-combat inventory, audits, dataset export, training drivers and plots
-tests/spire/      Decision and protocol tests
-tests/            Legacy Spire suites: combat/, engine/, fullrun/, language/, ppo/,
-                  openweight/; fixtures/ holds engine transitions
-docs/spire/       integration.md, approaches.md and one folder per track:
-                  fullrun/, first-combat/, open-weight/
-runs/             Spire evidence: fullrun/, fullrun-exports/, first-combat/, research-notes/
-```
+One file per line, as in the [WH3 Code map](../twwarhammer3/README.md#code-map); a path
+ending in `/` covers the files below it.
+
+`src/spire/`, Slay the Spire 1:
+- `src/spire/__main__.py`: CLI: doctor, play, digest, watch, spend, stats, export (full
+  runs); rollout, evaluate, train, report (first combat)
+- `src/spire/protocol.py`: Decision/Action types, the error taxonomy and the first-combat
+  observation contract (frozen)
+- `src/spire/policies.py`: scripted first-combat policies: random, starter heuristic, end
+  turn (frozen)
+- `src/spire/decisions.py`: public full-game boundary: labeled choices on every in-game screen
+
+`src/spire/engine/`, real-game plumbing for every track:
+- `src/spire/engine/runtime.py`: Windows game setup and process ownership from WSL
+- `src/spire/engine/bridge.py`: the relay bridge: one TCP session to CommunicationMod
+- `src/spire/engine/doctor.py`: the read-only launch check
+- `src/spire/engine/windows_relay.py`: the Windows-side relay CommunicationMod launches
+
+`src/spire/fullrun/`, the full-run track:
+- `src/spire/fullrun/play.py`: complete-run loop for any policy
+- `src/spire/fullrun/llm.py`: prompt, memory and replies: the tuning surface
+- `src/spire/fullrun/digest.py`: trace summaries and mistake flags
+- `src/spire/fullrun/watch.py`: job events
+- `src/spire/fullrun/stats.py`: the results register
+- `src/spire/fullrun/export.py`: offline model-request datasets
+
+`src/spire/openweight/`, the planned remote open-weight track (skeleton, mostly
+NotImplementedError):
+- `src/spire/openweight/tasks.py`: tasks and seed splits
+- `src/spire/openweight/env.py`: env backends
+- `src/spire/openweight/policy.py`: Tinker policy
+- `src/spire/openweight/remote.py`: Tinker transport, prices and spend
+- `src/spire/openweight/rewards.py`: rewards
+- `src/spire/openweight/rollout.py`: rollout
+- `src/spire/openweight/grpo.py`: GRPO
+- `src/spire/openweight/dynamics.py`: dynamics
+- `src/spire/openweight/evaluate.py`: every arm on the same tasks, with uncertainty
+
+`src/spire/combat/`, the first-combat benchmark:
+- `src/spire/combat/rollout.py`: rollout
+- `src/spire/combat/evaluation.py`: suites (evaluation)
+- `src/spire/combat/catalog.py`: catalogs
+- `src/spire/combat/catalog_report.py`: catalog comparisons from audits
+- `src/spire/combat/evidence.py`: evidence audits
+- `src/spire/combat/report.py`: comparisons from audited evidence
+
+`src/spire/ppo/`, actor-critic and the budgeted, resumable PPO runner:
+- `src/spire/ppo/learning.py`: actor-critic
+- `src/spire/ppo/training.py`: the budgeted, resumable PPO runner
+
+`src/spire/language/`, local Qwen LoRA:
+- `src/spire/language/demonstrations.py`: demonstrations
+- `src/spire/language/training.py`: SFT
+- `src/spire/language/policy.py`: frozen policy
+- `src/spire/language/evaluation.py`: evaluation
+- `src/spire/language/sampling.py`: sampling
+- `src/spire/language/rl.py`: REINFORCE
+
+Outside `src/`:
+- `configs/llm/`: full-run system prompt and enemy rules notes (the tuning surface)
+- `configs/suites/`: first-combat suite and catalog declarations
+- `tests/spire/`: decision and protocol tests
+- `tests/combat/`, `tests/engine/`, `tests/fullrun/`, `tests/language/`, `tests/ppo/`,
+  `tests/openweight/`: legacy Spire suites; `tests/fixtures/` holds engine transitions
+- `docs/spire/`: integration.md, approaches.md and one folder per track: fullrun/,
+  first-combat/, open-weight/
+Spire evidence is under `runs/`: fullrun/, fullrun-exports/, first-combat/, research-notes/.
+
+Spire's scripts (first-combat inventory, audits, dataset export, training drivers and plots)
+are listed with the others in the [WH3 Code map](../twwarhammer3/README.md#code-map).
 
 Spire predates the per-game directory convention; keep these legacy paths.
 `src/spire/protocol.py` and `src/spire/policies.py` stay byte-stable: demonstration export
