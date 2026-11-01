@@ -47,6 +47,46 @@ benchmark harness revision, G1 and G2 the calibration stages.
   683 API calls, $0, no game. Your look and stop-or-continue wait:
   `runs/how-code-works-20261101/handoff.md`.
 
+## 2026-11-01: live-author integration preserves a stalled plan through revision
+
+- At frozen `87518f9`, author v3 produced `gap-20261101/live-initial-01` in 3 calls,
+  no repairs, $0.0023761. The coordinator assigned already-engaged targets to the line;
+  cavalry also waited for contact. Structural readiness did not establish the requested task.
+- The fresh initial whole battle lost at its time limit, 1205.2 s, with 0 orders,
+  0 runtime goal/model calls and 0 invalid/errors. Its public feedback alone reached
+  `live-revised-01`: 3 calls, no repairs, $0.005348; authority/library/parent pins matched.
+- Revision left the line graph unchanged and changed only cavalry's successful-charge
+  exit from end to owned. That edge was never reached in the initial battle.
+  The fresh revised whole battle also lost at 1205.2 s with no orders or live model calls.
+- Raw jobs: `battle/gap-live-{initial,revised}-01-20261101`; artifacts are immutable.
+  These are generated-plan task misses, not infrastructure failures or evidence of
+  active live-goal integration. No strength, causal improvement or learning claim.
+- Cumulative Anthropic ledger: $0.0219202 of $5, including the earlier dispatch probe.
+  Independent audit: `runs/gap-continuation-20261101/review/integration02/`.
+- Viewer now exposes engaged-only selection and explicit node limits from recorded graphs.
+  Its raw-mode regression failed before the fix; 2 recorded browser cases, 31 reader cases
+  and wrong-mode/wrong-time-unit plants passed review in `review/view-options/` there.
+  Proposed next authoring check: public-state progress for a declared initiator; owner answer pending.
+
+## 2026-11-01: live target preferences pass the agreed dispatch check
+
+- Owner agreed the proposed live method; recorded/frozen at `87518f9`, runtime unchanged
+  from `8ad194e`. The original checker was used without changing its criteria after agreement.
+- Clean-checkout component command: 54 passed. One fresh live diagnostic passed: both
+  Haiku members chose e1 then e3, with graph selection, accepted owned attacks and later
+  public target readings. Cavalry readbacks: 13.4/43.7 s; line: 13.7/44.0 s.
+- Recorded 56 accepted attack batches, 0 invalid, 282 samples at engine speed 1;
+  Windows-clock ratio 1.0000201. Shutdown recorded no remaining game process.
+  Diagnostic cutoff at 90.5 battle seconds: no gameplay outcome or skill-completion claim.
+- Four real calls cost $0.0011568; cumulative ledger after the probe was $0.0141961 of $5.
+  Independent recount matched raw requests, sources, orders, acknowledgements, readbacks,
+  charges and cleanup: `runs/gap-continuation-20261101/review/live01/report.txt`.
+- Raw evidence: `runs/twwarhammer3/graph-goals-live-20261101-01/`; checker/source hashes
+  retained. Viewer now includes this episode (`reports/gap-live-20261101.html`), with
+  four actual hint/order/ack browser cases passed. No strength or learning comparison.
+- Next: the planned author-v3/full-battle/revision integration with live-goal members,
+  preserving the existing task, scenario, immutable artifacts and cumulative cap.
+
 ## 2026-11-01: add live target-preference controllers, checked offline
 
 - Added optional `graph_llm` leaves: a background model chooses a public target or none;

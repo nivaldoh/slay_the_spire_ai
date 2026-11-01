@@ -35,7 +35,11 @@ revisions written below are the earlier passes.
   `4c992d383a9c0484b1a975e9a87c3484aa77c180486fd6300624a06cca43ac26`.
   Bounds rest on JUDGEMENT Goal probe bounds in that script/card. The conservative
   transient-target rejection can fail a valid run; failure alone is not a runtime bug.
-  Component/checker evidence: `runs/gap-continuation-20261101/`; live not yet run.
+  Passed at `87518f9`: 54 component cases in a clean checkout and one live probe, with
+  four target dispatch/readback witnesses, zero invalid orders and clean shutdown.
+  Probe: `runs/twwarhammer3/graph-goals-live-20261101-01/`; independent recount in
+  `runs/gap-continuation-20261101/review/live01/`. Diagnostic truncation is not a gameplay
+  outcome; this establishes no strength, learning or live skill-completion claim.
 - WH3 GaP execution viewer (agreed 2026-11-01, owner: "Use this check"): compare graph
   identity, node transitions, ordinary orders, acknowledgements and completion witnesses
   against raw configuration/trace rows; plant wrong mappings, then exercise both saved

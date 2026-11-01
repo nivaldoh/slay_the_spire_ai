@@ -6,8 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md) continues: target-preference live check agreed; preparing its fixed revision. [Viewer](http://localhost:8765/gap-20261101.html).
-No game runs; $0.01304 of $5 spent. `runs/gap-continuation-20261101/brief.md`; benchmark choices deferred.
+Codex: [GaP](twwarhammer3/gap-plan.md) live probe passed; two v3 plans lost at the timer without orders. [Viewer](http://localhost:8765/gap-all-20261101.html); progress-check method proposed. No game runs; $0.02192 of $5 spent. `runs/gap-continuation-20261101/`; author-progress check proposed, benchmark choices deferred.
 
 Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
 [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
@@ -41,8 +40,7 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.01304;
-  the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.02192; the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle

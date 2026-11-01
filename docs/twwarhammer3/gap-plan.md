@@ -336,8 +336,18 @@ the cap includes prior jobs. This example has not run live.
 The owner agreed the live verification method on 2026-11-01: "I agree with the proposed
 live verification method." It covers delayed/stale replies, cancellation, eligibility, independent
 team progress, shared budgets and trace provenance with canned models and planted errors,
-then a bounded fresh 1x two-target dispatch probe. The feature remains unverified until
-that check passes at a recorded revision; no dependent live probe has run yet.
+then a bounded fresh 1x two-target dispatch probe. It passed at `87518f9`: 54 component
+cases and one live diagnostic with four model-target dispatch/readback witnesses. This
+verifies those cases, not tactical strength or learning. Evidence is in
+[agreed checks](../agreed-checks.md).
+
+The live-author integration exposed a task miss: the initial coordinator made the line
+wait for an already-engaged enemy, while cavalry also waited for contact. Both the first
+and revised whole battles lost at the timer without orders or live model requests;
+revision left the line's restriction unchanged. The software path and artifact/public
+feedback checks passed, but those generated graphs did not initiate engagement.
+An offline public-starting-state progress check for a declared initiator is proposed;
+the owner's answer is pending. This is separate from the passed live target dispatch check.
 
 ### Authoring and revision command
 

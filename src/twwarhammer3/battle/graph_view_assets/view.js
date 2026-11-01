@@ -13,6 +13,11 @@ const labels = {
   hold: "Hold near point",
   end: "End graph",
 };
+function nodeLabel(node) {
+  return node.op === "select_target" && node.mode === "engaged"
+    ? "Choose enemy in melee"
+    : labels[node.op] || node.op;
+}
 const clock = (ms) =>
   `${Math.floor(ms / 60000)}:${((Math.floor(ms / 100) / 10) % 60).toFixed(1).padStart(4, "0")}`;
 const ns = "http://www.w3.org/2000/svg";
@@ -34,7 +39,8 @@ let episode,
   animation = null,
   previousTick;
 function caption(e) {
-  const name = labels[e.op] || labels[episode.graphs[e.member].nodes[e.node]?.op] || e.node;
+  const definition = episode.graphs[e.member].nodes[e.node];
+  const name = definition ? nodeLabel(definition) : labels[e.op] || e.node;
   if (e.kind === "orders")
     return `${e.orders.length} order${e.orders.length === 1 ? "" : "s"} dispatched`;
   if (e.kind === "ack") {
@@ -153,10 +159,13 @@ function graph(state) {
       "data-state": status,
     });
     g.append(svg("rect", { x, y, width: 245, height: 48, rx: 7 }));
-    g.append(svg("text", { x: x + 12, y: y + 20 }, labels[node.op] || node.op));
+    g.append(svg("text", { x: x + 12, y: y + 20 }, nodeLabel(node)));
+    const parameters = ["mode", "timeout_ms", "max_visits"]
+      .filter((field) => Object.hasOwn(node, field))
+      .map((field) => `${field}=${node[field]}`);
     const full = `${name} · ${Object.entries(node.next)
       .map(([exit, next]) => `${exit} → ${next}`)
-      .join("; ")}`;
+      .join("; ")}${parameters.length ? ` [${parameters.join(", ")}]` : ""}`;
     const note = svg("text", { x: x + 12, y: y + 37, class: "id" }, full);
     g.append(svg("title", {}, full));
     g.append(note);
@@ -173,9 +182,9 @@ function graph(state) {
     state.status === "waiting"
       ? "No graph start recorded yet."
       : state.status === "ready"
-        ? `${labels[spec.nodes[state.last.node].op]}: ${state.last.status}. Next: ${state.node}; not started yet.`
+        ? `${nodeLabel(spec.nodes[state.last.node])}: ${state.last.status}. Next: ${state.node}; not started yet.`
         : state.status === "running"
-          ? `${labels[spec.nodes[state.node].op]} is running (node run ${state.run}).`
+          ? `${nodeLabel(spec.nodes[state.node])} is running (node run ${state.run}).`
           : `${state.status}. This graph state does not mean its units have stopped.`;
 }
 function frameAt() {
@@ -359,6 +368,9 @@ function seek(value, eventIndex = null) {
               .join("; ")
           : e.reason || "The node record is shown below."
     : "Use the time slider or event arrows.";
+  if (e?.op === "select_target" && episode.graphs[member].nodes[e.node].mode === "engaged") {
+    $("evidence").textContent += " Only active visible enemies already in melee are eligible.";
+  }
   if (e?.selection) {
     const { preference, used, goal_line } = e.selection;
     $("evidence").textContent +=

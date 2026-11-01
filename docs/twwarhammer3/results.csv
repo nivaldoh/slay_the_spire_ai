@@ -644,3 +644,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-31,speed-probe-20261031,episode-0000,emp-knights-emp-swordsmen,attack_nearest,,,,5067ba5,realtime,1.0,0.0,lost,504,0.24,0.33,1635,0,0.31,0,classic,,,,,0.0,0.33,0.0,engine_result,
 2026-11-01,gap-initial-02-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,d6dfe92,realtime,1.0,0.0,lost,618,0.32,0.61,2016,0,0.61,0,classic,,,,,0.0,0.567,0.0,engine_result,
 2026-11-01,gap-revised-01-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,d6dfe92,realtime,1.0,0.0,lost,461,0.69,0.82,1507,0,0.6,0,classic,,,,,0.0,0.819,0.0,engine_result,
+2026-11-01,gap-live-initial-01-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,87518f9,realtime,1.0,0.0,lost,1205,1.0,1.0,3936,0,0.61,0,classic,,,,,1.0,1.0,0.0,time_limit,
+2026-11-01,gap-live-revised-01-20261101,episode-0000,emp-knights-emp-swordsmen,configured,,,,87518f9,realtime,1.0,0.0,lost,1205,1.0,1.0,3938,0,0.61,0,classic,,,,,1.0,1.0,0.0,time_limit,
