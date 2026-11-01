@@ -114,6 +114,33 @@ def test_multi_llm_artifact_loads_with_frozen_library_and_counts_every_call(tmp_
             policy.close()
 
 
+def test_author_library_supplies_literal_shapes_and_node_option_placement(tmp_path):
+    send = Canned(replies())
+    author(tmp_path, send)
+    library = json.loads(send.requests[1]["input"][0]["content"])["library"]
+    assert library["types"]["point"]["required"] == ["x", "z"]
+    assert library["types"]["point"]["properties"] == {
+        "x": {"type": "number"}, "z": {"type": "number"}}
+    assert library["types"]["point"]["additionalProperties"] is False
+    assert library["node_options"]["mode"] == {
+        "operation": "select_target", "values": ["nearest", "engaged"], "location": "node"}
+    assert "no named current_post" in graph_author.INSTRUCTIONS
+
+
+@pytest.mark.parametrize("wrong", ["named_post", "mode_in_inputs"])
+def test_real_author_type_mistakes_remain_invalid(wrong):
+    spec = deepcopy(END)
+    spec["entry"] = "act"
+    spec["nodes"]["act"] = {"op": "move", "inputs": {
+        "units": ["u"], "point": "current_post"},
+        "next": {"succeeded": "end", "failed": "end", "cancelled": "end"}}
+    if wrong == "mode_in_inputs":
+        spec["nodes"]["act"] = {"op": "select_target", "inputs": {
+            "units": ["u"], "mode": "engaged"}, "next": {"succeeded": "end", "empty": "end"}}
+    with pytest.raises(ValueError, match="invalid point literal|input fields"):
+        graph.validate(spec)
+
+
 def test_revision_changes_graphs_from_only_permitted_member_evidence(tmp_path):
     author(tmp_path / "initial", Canned(replies()))
     previous = tmp_path / "initial/artifact"

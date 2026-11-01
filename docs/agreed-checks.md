@@ -28,6 +28,8 @@ revisions written below are the earlier passes.
   with public target and melee witnesses. PC available tonight. No strength/learning claim.
   Command: `uv run --locked python tests/twwarhammer3/graph/check_wh3_graph.py --output
   runs/twwarhammer3/graph-live-NEW`; `--recount OUTPUT` reads saved evidence without launching.
+  Live passed 3/3 at `d12be58` (`runs/twwarhammer3/graph-live-20261101-extended/`) after
+  the owner approved 540 s contact; first 360 s run remains failed. Holds/firing unchecked.
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

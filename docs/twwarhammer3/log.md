@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: live effects pass; first Haiku generation finds missing interface detail
+
+- Extended live check passed 3/3 fresh probes at `d12be58`:
+  `runs/twwarhammer3/graph-live-20261101-extended/`; independent recount agrees. Control
+  covered 155.7 s without arrival; move arrived at 32.9 s, 22.5 s after waypoint creation;
+  cavalry contacted selected `e2` at 390.5 s after accepted orders to an already-engaged
+  visible target. All 23 cavalry batches accepted; all probes cleaned up. The contact
+  battle lost at 441.2 s. This establishes the declared effects, not tactical strength.
+- First author invocation stopped before a call because this shell lacked credentials;
+  preserved in `gap-20261101/initial/`. Restored the documented key-file/workspace settings
+  without reading the key. `initial-01/` then made 4 Haiku calls, costing $0.0040196:
+  coordinator and line accepted, cavalry rejected for mode placement and an invented post.
+- Author v2 now supplies literal input shapes and node-option placement, and explains that
+  no named `current_post` exists. Validator, executor and repair limit stay unchanged.
+  The new actual-prompt regression failed before the fix; 28 author cases pass. Independent
+  review wording finding fixed; final no findings. Whole gate: commit message. A bounded
+  fresh generation retry and between-battle revision still follow, within the same $5 cap.
+
 ## 2026-11-01: extend the contact observation window at the owner's approval
 
 - Owner: "Yes, extend the contact limit and rerun", approving 360→540 s after the first

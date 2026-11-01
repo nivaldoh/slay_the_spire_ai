@@ -18,7 +18,7 @@ from twwarhammer3.battle import skill_contracts as catalog
 from twwarhammer3.battle.llm import MAX_OUTPUT_TOKENS
 
 ARTIFACT_TYPE = "wh3-graph-author"
-VERSION = f"{ARTIFACT_TYPE}-v1"
+VERSION = f"{ARTIFACT_TYPE}-v2"
 # JUDGEMENT: Author limits — Codex, 2026-11-01: one repair, latest 12 views/orders/acks
 # per member and 2000 characters per coordinator task. More history or attempts changes
 # what authors can learn and spend; this is a bounded baseline, not a learning study.
@@ -31,7 +31,7 @@ DESCRIPTIONS = {
     "select_target": "Nearest visible active enemy to selected units; mode engaged requires melee.",
     "contact": "Branch yes if any visible friend, ally or enemy is in melee, else no.",
     "move": "Move selected units to a world point; success requires public arrival, not an ack.",
-    "hold": "Keep a post, allowing nearby melee; complete at post after the retry interval.",
+    "hold": "Hold a supplied world point; allow melee. Complete at post after the retry interval.",
     "engage": "Attack only the chosen visible enemy; success is own melee with that target.",
     "charge": "Chosen enemy must already be in melee; success is own melee with it, not a bonus.",
     "shoot": "Visible target and ammo required; ammo decreases between readings of that target.",
@@ -47,6 +47,10 @@ Each node has op, inputs and next, covering every named exit; end has empty inpu
 Inputs are typed literals or {"ref":"producer.field"}; every path must run that producer
 successfully before consuming it. Repeated consumers need a new producer run, so recovery
 loops should return through owned and select_target. Target modes are nearest or engaged.
+Put select_target's mode at the node, alongside op/inputs/next, never inside inputs.
+Points are literal objects with numeric x and z. There is no named current_post or
+unit-position lookup. If no point is supplied, wait through observation branches
+without move/hold orders; do not invent a post. See library.types and node_options.
 Optional node fields are timeout_ms and max_visits, both positive integers. No scripts,
 imports, expressions, arbitrary tools, unit reassignment, scorer edits or live graph edits.
 One transition advances per new observation. Attack targets can hide, die or rout; failures
@@ -64,6 +68,16 @@ ACK_FIELDS = ("request", "based_on", "applied_ms", "accepted", "validation_error
 def frozen_library():
     return {"version": catalog.VERSION, "graph_version": graph.VERSION,
             "contracts": deepcopy(catalog.CONTRACTS),
+            "types": {
+                "units": {"type": "array", "items": {"type": "string"},
+                          "minItems": 1, "uniqueItems": True},
+                "target": {"type": "string", "minLength": 1,
+                           "description": "Currently visible enemy ID"},
+                "point": {"type": "object", "properties": {
+                    "x": {"type": "number"}, "z": {"type": "number"}},
+                    "required": ["x", "z"], "additionalProperties": False}},
+            "node_options": {"mode": {"operation": "select_target",
+                                     "values": ["nearest", "engaged"], "location": "node"}},
             "descriptions": dict(DESCRIPTIONS),
             "parameters": {"arrival_m": catalog.ARRIVAL_M, "timeout_ms": catalog.TIMEOUT_MS,
                            "retry_ms": catalog.REPEAT_MS, "hold_engage_m": skills.ENGAGE_M,

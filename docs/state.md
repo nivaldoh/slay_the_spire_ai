@@ -6,9 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: [GaP](twwarhammer3/gap-plan.md): live move/control passed; contact cap expired before arrival.
-Author/revision built; contact extension to 540 s approved, fresh three-probe check next (30 min, $0).
-Then bounded Haiku smoke ($5); `runs/gap-implementation-20261031/brief.md`.
+Codex: [GaP](twwarhammer3/gap-plan.md) live effects passed 3/3 at `d12be58`; first run preserved.
+Haiku v1 generation rejected malformed point/mode; v2 clarifies types. Next: generation/revision.
+Spent $0.00402 of $5; `runs/gap-implementation-20261031/brief.md`.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
 Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.
