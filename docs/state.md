@@ -9,18 +9,15 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 Codex: [GaP](twwarhammer3/gap-plan.md) continues: target-preference live check agreed; preparing its fixed revision. [Viewer](http://localhost:8765/gap-20261101.html).
 No game runs; $0.01304 of $5 spent. `runs/gap-continuation-20261101/brief.md`; benchmark choices deferred.
 
-Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
-Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.
+Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
 [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
 
 Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb137` (Land and
 team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer,
 compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
-Built (Claude Code, 2026-10-31): [multi-agent.html](multi-agent.html), the animated diagram (claims checked
-at `21f6204`). Owner 2026-11-01: it becomes a whole-repo "How the code works" map with short stories
-([plan](how-code-works-plan.md), answered). Claude Code builds its pilot tonight (2026-11-01) in
-`../slay_the_spire_ai-howcode`, branch `how-code-works`; $0, no game; `runs/how-code-works-20261101/`.
+Built (Claude Code, 2026-11-01 night): the "How the code works" [plan](how-code-works-plan.md)'s pilot (map, play-job story, `check.py` flags; merge `c471b45`)
+and step 4 (two stories; merge `45c2a39`), reviewed by agents; quiz not passed (n=1). Your look waits: `runs/how-code-works-20261101/handoff.md`. $0.
 
 Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; no battle or run yet.
 
@@ -29,7 +26,7 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push to `main` and each pull request (results: `gh run list`).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; nine
+**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; eight
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
@@ -82,7 +79,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 - Since `1cc4582` each observation's `speed` is the engine's `current_battle_speed()` (one probe: 440/440 read 1); a slowed battle was never tried. `awaiting_orders` stays false (the mod never waits). Pauses run no script: the Windows-clock line (b51) covers them.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23; [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
-- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; another session's `test-quality-audit` branch changes it) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
+- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; PR #1 changed it) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
 - Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
@@ -121,5 +118,5 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
 - `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes).
 - `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`f3bcd97`): agreed-check drafts;
-  `gate-xdist` (`668940e`): check.py on xdist workers; `test-quality-audit`: another session's.
+  `gate-xdist` (`668940e`): check.py on xdist workers.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

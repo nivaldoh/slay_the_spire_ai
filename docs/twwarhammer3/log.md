@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: the "How the code works" page: map, three stories, flags (merged)
+
+- Plan [how-code-works-plan.md](../how-code-works-plan.md) (answers 1a, 2a, 3a), merged as
+  `c471b45` (pilot) and `45c2a39` (plan step 4): `multi-agent.html` opens on a 12-box map of the
+  repo; stories "One play job", "One decision" and "Two members, one army" on recorded battles
+  (knights3 at `b7e2dd1`, team probe 1 at `96bb137`); the five 10-31 tabs are frozen. File lists
+  one per line (the WH3 README Code map, the Spire Layout); scripts write them and the battle
+  excerpts into `docs/` and regenerate identically.
+- `check.py` prints `diagram   N views flagged` (0 at `45c2a39`); 3 tests, 10 plants, 12 planted
+  wrong versions caught. Five agent reviews found 23 wrong claims, 7 unsupported or misdirected,
+  4 picture or rule failures and 4 flagging holes; all fixed.
+- Quiz (n=1, unverified): with pictures 5/5 on the old tab and the new story; without pictures
+  5/5, 5/5, 4/5 (old) and 3/5 (new): neither passes the plan's 2-of-5 control bar.
+- Three-week replay (1014 commits): 1-2 of 2 views flagged each week, mostly by new `src/` files
+  and example files; no cited line's text changed. One measured refresh: 50 calls. All work
+  683 API calls, $0, no game. Your look and stop-or-continue wait:
+  `runs/how-code-works-20261101/handoff.md`.
+
 ## 2026-11-01: add live target-preference controllers, checked offline
 
 - Added optional `graph_llm` leaves: a background model chooses a public target or none;
