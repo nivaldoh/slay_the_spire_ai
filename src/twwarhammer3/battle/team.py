@@ -265,6 +265,13 @@ class TeamPolicy:
         member.future = None
         self._event("completed", name, orders=member.ready["orders"],
                     started=member.ready["started"], completed=member.ready["completed"])
+        self._member_events(name)
+
+    def _member_events(self, name):
+        drain = getattr(self.members[name].policy, "drain_events", None)
+        if drain is not None:
+            self.events.extend({"event": "member_event", "member": name, "record": record}
+                               for record in drain())
 
     def _validate(self, member, observation):
         if (self.max_age_ms is not None
@@ -274,6 +281,11 @@ class TeamPolicy:
         # basis: its units, and the army only for the army owner. The engine refuses each
         # order the battle has made stale since.
         validate_orders(member.ready["orders"], member.ready["view"])
+        guard = getattr(member.policy, "dispatch_guard", None)
+        if guard is not None:
+            latest = project(observation, member.units,
+                             army=member is self.members.get(self.army_owner))
+            guard(member.ready["orders"], latest)
 
     def _feedback(self, name, ack, source):
         member = self.members[name]
@@ -292,6 +304,7 @@ class TeamPolicy:
         member.ready = member.call = None
         try:
             member.policy.acknowledge(deepcopy(ack), dict(latency))
+            self._member_events(name)
         except Exception as exc:
             raise PolicyFailure(f"team {name} acknowledge: {exc}",
                                 failure={"member": name, "method": "acknowledge"}) from exc
@@ -368,6 +381,7 @@ class TeamPolicy:
                 close = getattr(member.policy, "close", None)
                 if close:
                     close()
+                self._member_events(name)
             except Exception as exc:
                 self._event("close_failed", name, error=str(exc))
                 failures.append(exc)

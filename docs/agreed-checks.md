@@ -15,6 +15,15 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 initial GaP (agreed 2026-10-31): offline graph typing, branches/loops,
+  effect-based completion, independent team progress, stale targets, public information
+  boundaries, fresh episodes and canned multi-LLM author/revision replies, with planted
+  wrong implementations. Initial component command: `uv run --locked pytest -ra
+  tests/twwarhammer3/test_wh3_graph.py tests/twwarhammer3/test_wh3_graph_configured.py
+  tests/twwarhammer3/team/test_wh3_graph_team.py`. No pass at a committed revision yet;
+  author/revision cases and the live movement/contact/charge check are still being built.
+  Live method: fresh 1x attempts, movement with no-order controls, then contact/charge
+  with public target and melee witnesses. PC available tonight. No strength/learning claim.
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

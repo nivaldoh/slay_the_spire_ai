@@ -144,11 +144,13 @@ def main() -> int:
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
     play.add_argument("--policy", default="llm",
-                      help=f"{', '.join(sorted(BUILTINS.keys() | MODEL_POLICIES))} or"
+                      help=f"{', '.join(sorted(BUILTINS.keys() | MODEL_POLICIES))}, configured or"
                       " package.module:Class; comma-separated names rotate; a model policy"
                       " takes its own model and effort as NAME@MODEL or NAME@MODEL/EFFORT")
     play.add_argument("--provider", default="openai", choices=PROVIDERS,
                       help="API gateway for every model controller in this job")
+    play.add_argument("--controller-config", type=Path,
+                      help="JSON controller composition for --policy configured")
     play.add_argument("--model", default=None,
                       help="model for policies without @MODEL; default: gpt-6-luna (OpenAI),"
                       " z-ai/glm-5.3 (OpenRouter), claude-haiku-5-5 (Anthropic)")
@@ -399,6 +401,8 @@ def main() -> int:
 
         config = {key: value for key, value in vars(args).items()
                   if key not in ("command", "output")}
+        if config.get("controller_config"):
+            config["controller_config"] = str(config["controller_config"].resolve())
         config["model"] = args.model or next(iter(get_provider(args.provider).prices))
         config.update(ledger=str(LEDGERS[args.provider]), results=str(RESULTS_PATH))
         try:

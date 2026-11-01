@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: initial GaP runtime and interchangeable controller composition
+
+- Built the owner-approved bounded library over existing tactics, typed JSON graphs,
+  public effect witnesses and independently dispatched graph members. `configured` composes
+  graphs, scripts and direct models; one shared ledger covers mixed rotations and members.
+  Hand-written contact/charge graphs are in `configs/twwarhammer3/graphs/`.
+- Offline: 179 focused cases passed (including existing controller/team/play cases).
+  Removing graph refusals initially exposed three missing cases; the added cases catch all
+  six removals. Ack-as-success and skipping fresh dispatch each fail their named regression.
+  Independent review found five bugs (budget, deadline, terminal no-op, cleanup retry,
+  unrelated-shot witness); all fixed, third review: no findings. Exit gate: commit message.
+- Added three delegated G4 JUDGEMENT markers (skill limits, graph limits, target choice).
+  Existing ownership/projection choices remain marked. Evidence:
+  `runs/gap-implementation-20261031/`. $0; zero live battles so far. Component checks do not
+  establish live effects or strength. Author/revision tools and live feasibility still follow.
+
 ## 2026-10-31: record the owner's GaP plan decisions
 
 - Updated the [plan](gap-plan.md) from the owner's fourteen answers: existing controller/team

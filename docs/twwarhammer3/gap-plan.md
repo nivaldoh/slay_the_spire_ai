@@ -1,7 +1,8 @@
 # GaP graph controllers for WH3
 
-Plan only, updated with the owner's G1–G14 answers on 2026-10-31. This page authorizes no
-implementation, game run or paid experiment; every check remains proposed, not agreed.
+Implementation authorized 2026-10-31: bounded existing-tactic library, interchangeable
+controllers and initial offline/live checks; up to $5 using cheap Anthropic calls.
+The owner approved the scope and check method; benchmark comparisons stay deferred.
 The owner asked for a GaP research
 reference and a concrete plan for one army with several LLM controllers, then several allied
 armies. Code read at `35dbeab`; outside sources are pinned under [References](#references).
@@ -34,9 +35,9 @@ The owner chose the initial approach for G2, G3, G6–G9, G12 and G14; alternati
 possible later experiments. G4 delegates common-sense starting parameters to the implementer,
 to record and tune. G5 chooses the broader library first but leaves its boundary to separate
 planning. G11 chooses a narrow start; the exact battle family is still open. G1's research
-comparisons, G10's restoration choices and G13's benchmark design are deferred. These answers
-settle direction, not verification or permission to implement. The next planning step is the
-[skill-library scope](#the-skill-catalog), not another fourteen-question review.
+comparisons, G10's restoration choices and G13's benchmark design are deferred. These were
+planning answers; subsequent implementation authorization, G5 scope and check agreement are
+recorded under [First release](#first-release-approved-scope-2026-10-31).
 
 ## What GaP is and what carries over
 
@@ -236,6 +237,59 @@ versioned together.
 Inputs are structured references (owned-unit IDs, visible-enemy IDs, world points), not free
 strings. Type checks still cannot prove reachability, good tactics, visibility when the order
 runs, or a path clear of friendly units; those stay runtime concerns.
+
+### First release: approved scope, 2026-10-31
+
+The owner answered "Use this bounded scope": the five existing tactics plus contact and
+target selection, with public-state statuses. This settles G5 for the initial release;
+the earlier open marker records the planning state before that answer. No new flanking,
+formation, spell, purchase, multiplayer or restore skills belong to this release.
+Bound: one adapter over existing tactics, one graph runner and the checks below; extend
+only to fix a demonstrated contract failure. Freeze library source and descriptions before
+model authoring. Delivery ends after authoring/revision and a bounded feasibility check,
+without selecting a benchmark score, promotion rule or claiming learning.
+
+| Operation | Inputs and exits | Public witness / limit |
+|---|---|---|
+| `owned` | none; succeeded/empty; outputs owned active unit IDs | Full own-unit list minus destroyed, routing or shattered units |
+| `select_target` | owned IDs; succeeded/empty; outputs one visible target ID | Nearest eligible visible enemy; `engaged` mode requires enemy melee state |
+| `contact` | none; yes/no | Any visible friendly, ally or enemy in melee; hidden enemies cannot trigger it |
+| `move` | owned IDs, point; succeeded/failed/cancelled | All selected units inside the existing tactic's arrival radius |
+| `hold` | owned IDs, point; same exits | At post after the retry interval; may engage nearby enemies, never means immobility |
+| `engage` | owned IDs, visible target; same exits | All selected units observed in melee with that target |
+| `charge` | same | Target already in melee before dispatch, then own melee with it; no charge-bonus claim |
+| `shoot` | same, with ammunition | Ammo decreases between consecutive readings of the selected target; no damage attribution |
+
+The adapter pins attack target identity rather than substituting another target. An absent,
+dead, routing or shattered target fails; rout of an owned unit also fails, then a later
+`owned` node can include it after rally. New owned units join at the next selection.
+Acceptance never completes a skill. A local cancellation sends no halt and claims no stop.
+Missing effects fail at the battle-time deadline. Parameters rest on JUDGEMENT
+`battle/skill_contracts.py` G4 Skill limits and `battle/graph.py` G4 Graph limits.
+These are component contracts until the live check passes at a recorded revision.
+
+Controller composition uses `play --policy configured --controller-config FILE`.
+The file contains `{ "type": "graph", "graph": GRAPH_OR_RELATIVE_PATH }`, a leaf such as
+`{ "type": "hold" }` or `{ "type": "llm_rules@claude-haiku-5-5/low" }`, or a `team` with
+exactly two named `members`. Each member supplies `unit_types` (list, or null for the rest)
+and `controller`; optional `army_owner` names one member. The provider and ledger are the
+job's. Resolved graphs, prompts, member identities and source hashes are recorded; instances
+are fresh per episode. Configured controllers remain optional; existing policy names work.
+Ownership, visibility filtering and feedback rest on JUDGEMENT in
+[multi-agent-implementation.md](multi-agent-implementation.md#choices-settled-for-now-2026-10-28).
+
+Graphs have `version: wh3-graph-v1`, `entry` and named `nodes`. Each node declares `op`,
+`inputs` and a `next` map covering every exit; `end` has no successors. Inputs are typed
+literals or `{ "ref": "producer.field" }`. Every input path must execute its producer
+successfully. Repeating a consumer requires a new producer run; stale values fail explicitly.
+There is one active node per member and one transition per new observation. Branches and
+bounded loops therefore yield to the dispatcher. Every transition logs battle identity
+(the episode identity), graph hash, node run, public observation and input provenance.
+Orders keep their original source sequence/time; the optional dispatch guard rechecks the
+latest projected view. Direct controllers keep their existing validation behavior.
+The hand-written example is `configs/twwarhammer3/graphs/contact-team.json`; it composes
+`contact-line.json` and `contact-cavalry.json` with the existing Knights/rest split.
+To replace a member's graph with a script or direct model, change only its `controller`.
 
 ## A first test graph
 

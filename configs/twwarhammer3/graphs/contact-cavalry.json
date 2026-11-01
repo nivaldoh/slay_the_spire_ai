@@ -1,0 +1,51 @@
+{
+  "version": "wh3-graph-v1",
+  "entry": "owned",
+  "nodes": {
+    "owned": {
+      "op": "owned",
+      "inputs": {},
+      "next": {
+        "succeeded": "contact",
+        "empty": "owned"
+      }
+    },
+    "contact": {
+      "op": "contact",
+      "inputs": {},
+      "next": {
+        "yes": "target",
+        "no": "owned"
+      }
+    },
+    "target": {
+      "op": "select_target",
+      "mode": "engaged",
+      "inputs": {
+        "units": {
+          "ref": "owned.units"
+        }
+      },
+      "next": {
+        "succeeded": "charge",
+        "empty": "owned"
+      }
+    },
+    "charge": {
+      "op": "charge",
+      "inputs": {
+        "units": {
+          "ref": "owned.units"
+        },
+        "target": {
+          "ref": "target.target"
+        }
+      },
+      "next": {
+        "succeeded": "owned",
+        "failed": "owned",
+        "cancelled": "owned"
+      }
+    }
+  }
+}

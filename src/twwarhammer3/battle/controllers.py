@@ -13,6 +13,7 @@ import secrets
 import subprocess
 from functools import partial
 from pathlib import Path
+from typing import Protocol
 
 from gameai.ledger import Ledger
 from gameai.llm import api_key, post
@@ -29,6 +30,24 @@ MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PA
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
 VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2",
             "team_llm_rules": "v22+t2"}
+
+
+class Controller(Protocol):
+    """Existing battle controller contract, shared by scripts, models and graphs.
+
+    decide returns ordinary orders for this view; acknowledge receives only this
+    decision's feedback. Neither method writes the transport. metadata is JSON data.
+    A fresh instance owns each episode. Exceptions follow play.policy_call's taxonomy;
+    acceptance is delivery evidence, never a gameplay effect. Optional close stops new
+    work; drain_events/drain_exchanges expose audit records. A team may call decide in
+    a worker, but never overlaps it with this instance's feedback. An optional
+    dispatch_guard(orders, latest_view) raises IllegalActionError for stale work;
+    its checks must not relabel the source snapshot as fresh.
+    """
+
+    def decide(self, observation: dict) -> list[dict]: ...
+    def acknowledge(self, ack: dict, latency: dict) -> None: ...
+    def metadata(self) -> dict: ...
 
 
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
@@ -62,7 +81,10 @@ def rotation(config: dict) -> list[dict]:
             model = None if name.endswith("@") else model
             effort = None if name.endswith("/") else effort
             validate(provider, model, effort)
-        if base not in BUILTINS and base not in MODEL_POLICIES:
+        if base == "configured":
+            if not config.get("controller_config"):
+                raise ValueError("configured policy requires --controller-config")
+        elif base not in BUILTINS and base not in MODEL_POLICIES:
             controller_class(name)  # fail before launching on an invalid import
     trials = [{"policy": name, "delay_ms": round(delay * 1000)}
               for name in names for delay in delays]
@@ -114,6 +136,10 @@ def card(name: str, policy, config: dict) -> dict:
     if model:
         provider = config.get("provider", "openai")
         result.update(provider=provider, routing=routing(provider, model))
+    if name == "configured":
+        result["kind"] = "composed"
+        if getattr(policy, "card", {}).get("paid_calls"):
+            result["cost_source"] = "WH3 ledger"
     if path:
         revision = subprocess.run(["git", "-C", str(Path(path).parent), "rev-parse", "HEAD"],
                                   capture_output=True, text=True)
@@ -121,11 +147,12 @@ def card(name: str, policy, config: dict) -> dict:
     return result
 
 
-def factories(config: dict) -> dict:
+def factories(config: dict, *, _ledger=None) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
     models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
+    ledger = _ledger
     if models:
         if config.get("budget_usd") is None:
             raise ValueError("model controllers require --budget-usd")
@@ -137,7 +164,8 @@ def factories(config: dict) -> dict:
                                    for name in sorted(models)}
         if provider == "openrouter" and config["budget_usd"] > 50:
             raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
-        ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
+        if ledger is None:
+            ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
         send = partial(post, api_key(provider), provider=provider, record_transport=True)
         for name in models:
             base, model, effort = parts[name]
@@ -146,5 +174,10 @@ def factories(config: dict) -> dict:
             makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
                                    system_prompt=MODEL_PROMPTS[base].read_text())
     for name in parts.keys() - models:
-        makers[name] = controller_class(name)
+        if name == "configured":
+            from twwarhammer3.battle.configured import factory
+
+            makers[name] = factory(config["controller_config"], config, ledger=ledger)
+        else:
+            makers[name] = controller_class(name)
     return makers

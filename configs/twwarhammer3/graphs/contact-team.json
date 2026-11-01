@@ -1,0 +1,22 @@
+{
+  "type": "team",
+  "army_owner": "line",
+  "members": {
+    "line": {
+      "unit_types": null,
+      "controller": {
+        "type": "graph",
+        "graph": "contact-line.json"
+      }
+    },
+    "cavalry": {
+      "unit_types": [
+        "wh_main_emp_cav_empire_knights"
+      ],
+      "controller": {
+        "type": "graph",
+        "graph": "contact-cavalry.json"
+      }
+    }
+  }
+}

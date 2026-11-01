@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (GaP): implement the existing plan autonomously; initial minimal implementation,
+  interchangeable battle controllers, clean code and proper tests. Up to $5 in paid calls,
+  using a cheap Anthropic model. Approved first library: existing move/hold/engage/shoot/charge
+  tactics with public-state statuses, contact and target selection; no new formation or
+  flanking tactics. Agreed offline typing/lifecycle/concurrency/boundary checks with planted
+  wrong versions, canned author/revision replies, then live movement and contact/charge at
+  1x without strength claims. PC available tonight. Benchmark and restore choices deferred.
+  Follow-up: "Include graph authoring and between-battle revision now."
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check
