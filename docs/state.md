@@ -1,13 +1,13 @@
 # Project state
 
-Updated 2026-10-31: what runs, where each game stands, what comes next. Status only:
+Updated 2026-11-01: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 
-Codex: initial [GaP](twwarhammer3/gap-plan.md), bounded library, interchangeable controllers
-and agreed offline/live checks. PC available tonight, Anthropic cap $5; `runs/gap-implementation-20261031/brief.md`.
+Codex: [GaP](twwarhammer3/gap-plan.md) live check next: three fresh 1x probes, $0, 30-minute cap.
+Then authoring/revision; Anthropic cap $5. PC available tonight; `runs/gap-implementation-20261031/brief.md`.
 
 Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); paused at the owner's request (2026-10-31); check-edit/CI decisions wait.
 Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.

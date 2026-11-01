@@ -20,10 +20,13 @@ revisions written below are the earlier passes.
   boundaries, fresh episodes and canned multi-LLM author/revision replies, with planted
   wrong implementations. Initial component command: `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_graph.py tests/twwarhammer3/test_wh3_graph_configured.py
-  tests/twwarhammer3/team/test_wh3_graph_team.py`. No pass at a committed revision yet;
-  author/revision cases and the live movement/contact/charge check are still being built.
+  tests/twwarhammer3/team/test_wh3_graph_team.py
+  tests/twwarhammer3/graph/test_wh3_graph_live_check.py`. Runtime part passed 35 cases at
+  `ff5e4ea`; author/revision cases still follow. Live checker component cases are not effects.
   Live method: fresh 1x attempts, movement with no-order controls, then contact/charge
   with public target and melee witnesses. PC available tonight. No strength/learning claim.
+  Command: `uv run --locked python tests/twwarhammer3/graph/check_wh3_graph.py --output
+  runs/twwarhammer3/graph-live-NEW`; `--recount OUTPUT` reads saved evidence without launching.
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

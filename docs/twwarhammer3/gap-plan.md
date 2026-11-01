@@ -291,6 +291,18 @@ The hand-written example is `configs/twwarhammer3/graphs/contact-team.json`; it 
 `contact-line.json` and `contact-cavalry.json` with the existing Knights/rest split.
 To replace a member's graph with a script or direct model, change only its `controller`.
 
+The initial live check is `tests/twwarhammer3/graph/check_wh3_graph.py`: three fresh
+launches on the existing `emp-knights-emp-swordsmen` diagnostic. First the cavalry gets
+no orders, then a graph moves it forward to a waypoint, then the two hand-written graphs
+engage and charge. Raw positions must establish arrival after an accepted move and no
+arrival in the control. A cavalry attack must name an enemy already in melee in its
+source view; later raw melee must name that same target. Graph completions must match
+those raw witnesses. The control must cover the move's actual time to arrival.
+Recount also checks fresh battle identities, ownership, acknowledgements, cleanup and
+1x through the engine speed flag plus the owner's whole-interval Windows-clock band.
+Its launch geometry and wall caps rest on JUDGEMENT `check_wh3_graph.py` Probe bounds.
+This does not check live holding/firing, a charge bonus, tactical strength or learning.
+
 ## A first test graph
 
 This graph tests the machinery, not strength. It uses the current team split: `cavalry` owns

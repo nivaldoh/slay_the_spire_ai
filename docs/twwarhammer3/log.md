@@ -29,6 +29,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: add the initial graph live checker
+
+- Added the agreed three-launch method: no-order control, graph movement, then independent
+  line/cavalry contact and charge. Recount requires raw engine effects after matched
+  acknowledgements and agreement between node completions and those raw witnesses.
+- 28 hand-computed component cases pass, including idle drift, wrong target, pre-contact
+  charge, rejected acknowledgement, missing effect and premature completion. Independent
+  review found and fixed clock, battle identity, control-duration and pre-delivery arrival
+  gaps; final review
+  and exit gate: commit message; evidence `runs/gap-implementation-20261031/`.
+- Added one JUDGEMENT marker for probe geometry and bounds. No game launched or model called
+  by this change; live effects, holding/firing and strength remain unverified.
+
 ## 2026-11-01: initial GaP runtime and interchangeable controller composition
 
 - Built the owner-approved bounded library over existing tactics, typed JSON graphs,
