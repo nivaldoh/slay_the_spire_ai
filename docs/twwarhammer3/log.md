@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: the actual author revision corrects the waiting infantry
+
+- At committed `4f0c3fc`, `initiator-revised-01` is ready: three actual Haiku calls,
+  no parse repairs, $0.0055201. Same task, library, ownership and live-goal settings.
+- Exact graph change from `live-revised-01`: line select.mode engaged to nearest.
+  Cavalry is identical. Its first public line view supplies an owned f1-to-e2 attack
+  route; this is a starting-state check, not engine contact or a new gameplay result.
+- Parent/episode files retain their hashes. Only permitted member feedback and first
+  public views reached authoring; coordinator saw no battle evidence.
+- The agreed command passed 52 cases on clean tracked `4f0c3fc`; independent replay
+  matched. Before commit, the exact feature tree's full gate passed 2551, skipped 43
+  (40 torch, 3 Windows opt-in), Ruff clean; one informational code-map citation flag.
+- Cumulative WH3 Anthropic ledger: 23 calls, $0.0274403/$5; original 20-row prefix intact.
+  Independent audit: `runs/gap-initiation-20261101/review/author-followup/report.txt`.
+- Later docs-only gate hit an unchanged worker lease timeout; its isolated case passed.
+  Failure/recheck: `runs/gap-initiation-20261101/`; worker code/tests were not edited.
+- No new battle, learning or strength result. One fresh 1x diagnostic waits for a current
+  PC window; the owner's answer is pending. No second author candidate planned.
+
 ## 2026-11-01: temporary author-initiation check catches circular waiting
 
 - Owner approved temporarily: infantry must have a way to start combat; cavalry may wait.
@@ -46,7 +65,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   caught. Independent final report: `runs/gap-initiation-20261101/review/report-final.txt`.
 - Semantics rest on JUDGEMENT `graph_initiation.py` Temporary initiation semantics:
   possible move/hold exits do not prove effects, universal progress, learning or strength.
-  Full gate/pinned-revision pass pending; no new game or paid call in this implementation.
+  The later pinned pass and actual author follow-up are recorded above; no live effects claimed.
 - Next: one actual revision of the stalled plan with this check and the original task,
   library/settings and cumulative $5 cap; stop on failure. A live rerun needs a current PC window.
 

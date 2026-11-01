@@ -361,13 +361,16 @@ effects or guarantee every branch progresses. It rests on JUDGEMENT
 `battle/graph_initiation.py` Temporary initiation semantics. This is separate from the
 passed live target dispatch check; no new live or strength result yet.
 
-Bounded follow-up after the check's committed offline pass: one new revision of the
-existing `live-revised-01`, using that battle's public evidence and first public views,
-the same task, frozen library, authority and Haiku settings, within the cumulative $5.
-Use only the existing repair allowance; retain a failure and stop rather than generate
-another candidate. This produces an inspectable corrected plan, not a gameplay result.
-Card: `runs/gap-initiation-20261101/author-followup-card.md`. A live rerun needs a current
-PC window; the earlier availability was overnight.
+The agreed offline check passed 52 cases at `4f0c3fc`, independently replayed. The bounded
+actual follow-up also completed there: `initiator-revised-01` is ready after three calls,
+no repairs, $0.0055201. Only the line selector changed from engaged to nearest; cavalry,
+authority, model settings and frozen library stayed identical to `live-revised-01`.
+Only that battle's permitted public feedback and first public views reached revision.
+This produces an inspectable corrected plan, not a gameplay result or improvement claim.
+Cards/evidence: `runs/gap-initiation-20261101/`. The one fresh diagnostic now proposed
+uses the same scenario and raw target/contact/melee witnesses at 1x; it needs a current
+PC window (the earlier availability was overnight). The owner's availability answer is pending.
+No additional author candidate or changed benchmark/strength method is planned.
 
 ### Authoring and revision command
 
