@@ -2063,3 +2063,39 @@ old = "json.loads((reference / \"attempt.json\").read_text())[\"status\"]"
 new = "json.loads(((Path(plan[\"rungs\"][0][\"reference\"]) if plan[\"rungs\"][0].get(\"reference\") else reference) / \"attempt.json\").read_text())[\"status\"]"
 tests = ["tests/twwarhammer3/test_wh3_audit.py"]
 source = "2026-10-31 independent mixed-rung reference review"
+
+[[plant]]
+id = "diagram-flags-moved-text-as-changed"
+guards = "Cited text that only moved is recorded as moved, not flagged"
+file = "scripts/check.py"
+old = "                if hits and any(old):"
+new = "                if False:"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 How the code works pilot"
+
+[[plant]]
+id = "diagram-flags-never-see-changed-text"
+guards = "Changed cited text flags its view"
+file = "scripts/check.py"
+old = "                if not old or new[first - 1:last] == old:"
+new = "                if True:"
+tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
+source = "2026-11-01 How the code works pilot"
+
+[[plant]]
+id = "diagram-flags-skip-missing-list-entries"
+guards = "src/ Python files missing from the file lists flag the map"
+file = "scripts/check.py"
+old = 'and not n.endswith("__init__.py") and n not in listed]'
+new = 'and not n.endswith("__init__.py") and False]'
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 How the code works pilot"
+
+[[plant]]
+id = "diagram-error-reaches-the-exit-code"
+guards = "Any diagram error prints one line and never changes the exit code or the pass record"
+file = "scripts/check.py"
+old = "    except Exception as exc:\n        diagram = None"
+new = "    except OSError as exc:\n        diagram = None"
+tests = ["tests/test_check_script.py::test_a_diagram_failure_never_changes_the_exit_code_or_the_pass_record"]
+source = "2026-11-01 How the code works pilot"

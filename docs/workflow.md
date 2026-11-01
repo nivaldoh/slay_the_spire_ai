@@ -146,6 +146,15 @@ markers   3 problems listed in the log, for the owner
   carry one, in log history, no date, a "rests on" pointing nowhere), listed in the log; the
   untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
   markers, so they never fail the run.
+- "diagram" counts the views of the "How the code works" page (`docs/multi-agent.html`)
+  that need a refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01): a cited
+  line whose text changed (text that only moved is recorded, not flagged), a cited file gone,
+  a `src/` Python file missing from the file lists or a listed path in no map box, the
+  provider names and hidden observation keys a view states, a review older than three months,
+  and an example's cited file changed since the example was made. It reads Git objects at HEAD
+  only, writes the details to the log and to the ignored `runs/checks/diagram-flags.js` (the
+  page shows them), and skips in a shallow clone or a linked worktree. An error prints "could
+  not run"; it never fails the run or changes the pass record.
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
   run only when a change touches what they cover. The full offline suite always runs
   (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.

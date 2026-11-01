@@ -795,3 +795,97 @@ def test_warning_cache_write_failure_cannot_block_passing_checks(repo, monkeypat
     assert f"== needs your yes, every item\n{item}" in log
     record = json.loads((repo / check.CHECKED).read_text())
     assert record["tree"] == check.tree_content(repo)
+
+
+# The "How the code works" flags (check.py's diagram_flags; plan docs/how-code-works-plan.md
+# section 6). A view file is JSON inside the page's call, as the page's view files are.
+def view_file(view):
+    return f'"use strict";\n// a view\nDIAGRAM.tabs.push({json.dumps(view, indent=1)});\n'
+
+
+def commit_all(root, message):
+    git(root, "add", "-A")
+    git(root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", message)
+    return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, check=True,
+                          capture_output=True, text=True).stdout.strip()
+
+
+def test_diagram_flags_follow_the_cited_text_not_its_line_numbers(tmp_path):
+    git(tmp_path, "init", "-q")
+    (tmp_path / "src/pkg").mkdir(parents=True)
+    code = tmp_path / "src/pkg/mod.py"
+    code.write_text("def f():\n    return 1\n")
+    cited = commit_all(tmp_path, "code")
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs/how-code-works-view-s.js").write_text(view_file({
+        "id": "s", "commit": cited, "reviewed": "2026-11-01",
+        "elements": [{"id": "a", "refs": ["src/pkg/mod.py:1-2", "runs/local/evidence.txt"]}]}))
+    commit_all(tmp_path, "view")
+    flags = lambda: check.diagram_flags(tmp_path, today="2026-11-02")["views"]["s"]  # noqa: E731
+    assert flags() == {"flagged": False, "reasons": [], "moved": {}, "example_changed": []}
+    code.write_text("import os\n\n\ndef f():\n    return 1\n")  # moved, not changed
+    commit_all(tmp_path, "move")
+    moved = flags()
+    assert not moved["flagged"] and moved["moved"] == {"src/pkg/mod.py:1-2": "src/pkg/mod.py:4-5"}
+    code.write_text("import os\n\n\ndef f():\n    return 2\n")
+    commit_all(tmp_path, "change")
+    assert flags()["reasons"] == [f"src/pkg/mod.py:1-2 changed since {cited}"]
+    code.unlink()
+    commit_all(tmp_path, "remove")
+    assert flags()["reasons"] == [f"src/pkg/mod.py is gone (cited at {cited})"]
+
+
+def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path):
+    git(tmp_path, "init", "-q")
+    files = {
+        "src/pkg/a.py": "", "src/pkg/b.py": "", "src/pkg/__init__.py": "",
+        "src/gameai/providers.py": 'PROVIDERS = {"openai": A, "openrouter": B}\n',
+        "src/twwarhammer3/protocol.py": 'HIDDEN_KEYS = ("evaluation", "final")\n',
+        "docs/twwarhammer3/README.md": "## Code map\n\n- `src/pkg/a.py`: does a,\n"
+                                       "  over two lines\n"
+                                       "- `src/gameai/providers.py`: routes\n"
+                                       "- `src/twwarhammer3/protocol.py`: the protocol\n"
+                                       "- `src/old.py`: gone\n",
+    }
+    for name, text in files.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text(text)
+    commit = commit_all(tmp_path, "code")
+    owned = ["src/pkg/", "src/gameai/", "src/old.py"]
+    map_view = {"id": "map", "commit": commit, "reviewed": "2026-07-01",
+                "facts": {"providers": ["openai", "openrouter", "anthropic"]},
+                "elements": [{"id": "m.box", "files": owned}]}
+    story = {"id": "s", "commit": commit, "reviewed": "2026-10-30",
+             "facts": {"hidden_keys": ["final", "evaluation"]}, "elements": []}
+    for view in (map_view, story):
+        (tmp_path / f"docs/how-code-works-view-{view['id']}.js").write_text(view_file(view))
+    commit_all(tmp_path, "views")
+    views = check.diagram_flags(tmp_path, today="2026-11-01")["views"]
+    assert views["s"]["flagged"] is False
+    assert views["map"]["reasons"] == [
+        "not reviewed since 2026-07-01, over three months",
+        "src/gameai/providers.py PROVIDERS is now ['openai', 'openrouter']; the view says "
+        "['anthropic', 'openai', 'openrouter']",
+        "1 src/ Python files missing from the file lists: src/pkg/b.py",
+        "1 listed paths in no map box: src/twwarhammer3/protocol.py",
+        "1 listed paths not in the repo: src/old.py"]
+
+
+def test_a_diagram_failure_never_changes_the_exit_code_or_the_pass_record(
+        repo, monkeypatch, capsys):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n")
+
+    def broken(*args, **kwargs):
+        raise RuntimeError("no such view")
+
+    monkeypatch.setattr(check, "diagram_flags", broken)
+    assert run_main(repo, monkeypatch) == 0
+    assert "\ndiagram   could not run: no such view" in capsys.readouterr().out
+    assert json.loads((repo / check.CHECKED).read_text())["tree"] == check.tree_content(repo)
+    assert not (repo / check.DIAGRAM_DATA).exists()
+    monkeypatch.undo()
+    assert run_main(repo, monkeypatch) == 0  # unbroken: a count and the page's ignored data file
+    assert "\ndiagram   0 views flagged, see the log" in capsys.readouterr().out
+    assert (repo / check.DIAGRAM_DATA).read_text().startswith("DIAGRAM_FLAGS = {")
