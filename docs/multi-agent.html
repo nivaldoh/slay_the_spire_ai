@@ -8789,7 +8789,10 @@ function renderBoxDetails(container, e) {
   }
   container.append(statusBlock(e.status, e.commit || state.tab.commit));
   const sources = el("div", null, "sources");
-  sources.append(el("h4", "Sources"), refList(e.refs, e.commit || state.tab.commit));
+  sources.append(
+    el("h4", e.commit ? `Sources, read at ${e.commit}` : "Sources"),
+    refList(e.refs, e.commit || state.tab.commit),
+  );
   container.append(sources);
 }
 function renderViewPanel() {

@@ -143,7 +143,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "A battle plan written as a graph of steps, each pointing to the next by outcome. A model can write or revise a graph offline; target suggestions while it runs were built offline. Codex's graph view draws each recorded battle's graph and orders.",
+        "A battle plan written as a graph of steps, each pointing to the next by outcome; a model can write or revise one offline, and an optional model can suggest a visible target while it runs (not yet run live). graph-view draws a recorded battle's graph and orders, with no game or model call.",
       "command":
         "twwarhammer3 play --policy configured --controller-config FILE ...; to look: twwarhammer3 graph-view JOB --output runs/twwarhammer3/reports/NAME.html",
       "files": [
@@ -157,15 +157,19 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/graph_goal_prompt.md"
       ],
       "status":
-        "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:31)",
+        "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:52, 67); target preferences agreed, live not yet run (docs/agreed-checks.md:18, 38); viewer passed at b8f8cb7 (docs/agreed-checks.md:39, 49)",
+      "commit": "87518f9",
       "refs": [
-        "src/twwarhammer3/battle/graph.py:1",
+        "src/twwarhammer3/battle/graph.py:1-6",
         "src/twwarhammer3/battle/graph_author.py:1",
         "src/twwarhammer3/battle/graph_goals.py:1",
-        "docs/agreed-checks.md:31-47",
-        "docs/twwarhammer3/gap-plan.md:358-360",
-        "docs/twwarhammer3/gap-plan.md:396-398",
-        "docs/state.md:9"
+        "src/twwarhammer3/battle/graph_view.py:1-5",
+        "docs/twwarhammer3/gap-plan.md:314-318",
+        "docs/twwarhammer3/gap-plan.md:359-361",
+        "docs/twwarhammer3/gap-plan.md:393-404",
+        "docs/agreed-checks.md:18-38",
+        "docs/agreed-checks.md:39-51",
+        "docs/agreed-checks.md:52-68"
       ]
     },
     {
