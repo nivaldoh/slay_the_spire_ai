@@ -26,16 +26,17 @@ from twwarhammer3.engine.runtime import (
     running_pids,
 )
 
-# JUDGEMENT: Probe bounds — Codex, 2026-11-01: 5 s settling, 60 m forward, 165/360 s
-# wall caps in the existing Knights/Swordsmen case. Other geometry or bounds change
-# which effects this feasibility check can see; no benchmark family is selected.
+# JUDGEMENT: Probe bounds — Codex, 2026-11-01: 5 s settling, 60 m forward, 165 s move/control.
+# Owner approved 540 s contact on 2026-11-01 after the first cutoff. Other geometry/bounds
+# change which effects this feasibility check can see; no benchmark family is selected.
 SETTLE_MS = 5000
 MOVE_M = 60
-WALL_LIMITS = {"control": 165, "move": 165, "contact": 360}
+WALL_LIMITS = {"control": 165, "move": 165, "contact": 540}
 COMPOSITION = REPO_ROOT / "configs/twwarhammer3/graphs/contact-team.json"
 CONFIG = {"speed": 1, "pause": False, "observe_ms": 1000, "tick_ms": 250,
           "record_replay": True, "stills": False, "interval_ms": 0, "delay_ms": 0,
-          "start_timeout": 240, "observation_timeout": 10, "run_timeout": 600}
+          "start_timeout": 240, "observation_timeout": 10,
+          "run_timeout": 900}  # frontend/loading plus the contact window and cleanup
 
 
 def waypoint(observation):

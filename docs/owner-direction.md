@@ -12,7 +12,9 @@ Both games:
   flanking tactics. Agreed offline typing/lifecycle/concurrency/boundary checks with planted
   wrong versions, canned author/revision replies, then live movement and contact/charge at
   1x without strength claims. PC available tonight. Benchmark and restore choices deferred.
-  Follow-up: "Include graph authoring and between-battle revision now."
+  Follow-up (2026-11-01): "Include graph authoring and between-battle revision now."
+  Also approved extending the contact check from 360 to 540 seconds and a fresh rerun,
+  preserving the failed run and every effect criterion: "Yes, extend the contact limit and rerun."
 - 2026-10-31 (late, Anthropic provider's three "needs your yes" items): "I agree with all 3."
   They were: `test_wh3_cli.py`'s ledger test parametrized over OpenRouter and Anthropic (its
   asserts compare with the parameter); `test_spire_cli.py`'s play test gaining a spend check

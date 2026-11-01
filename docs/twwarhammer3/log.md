@@ -29,6 +29,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: extend the contact observation window at the owner's approval
+
+- Owner: "Yes, extend the contact limit and rerun", approving 360→540 s after the first
+  probe ended before arrival. Preserved that failed run; every effect, identity and clock
+  criterion stays the same. Supervisor allowance increased to contain the longer window.
+- Same three fresh probes, no new scenario or tactics, $0, total cap 30 minutes. Existing
+  component cases, independent review and exit gate: commit message. Rerun still follows.
+
 ## 2026-11-01: add multi-LLM graph authoring and whole-battle revision
 
 - Built `wh3-graph-author-v1`: one coordinator and two specialists, frozen skill library,
