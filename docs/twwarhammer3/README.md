@@ -131,57 +131,136 @@ through it, and every order enters through it.
 
 ## Code map
 
-Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup).
+Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup). One file per line since
+2026-11-01: a line starting `` - `path`: `` says what that file does, and a path ending in `/`
+covers the files below it. `scripts/diagram_files.py` reads these lines into the "How the
+code works" page (`docs/multi-agent.html`), and `scripts/check.py` flags `src/` Python files
+missing here. The Spire list is in [docs/spire/AGENTS.md](../spire/AGENTS.md#layout).
 
-```
-src/twwarhammer3/  Total War: WARHAMMER III custom battles
-  __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, card, stats, report, export, spend (jobs and offline evidence);
-                   coordinator, worker, compare-peers (native multiplayer)
-  protocol.py      Order types and validation, the error taxonomy; observations stay dicts;
-                   it changes freely (Spire's protocol.py is byte-stable)
-  engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
-                   (PFH5), mailbox (bridge files; its docstring is the observation
-                   reference), doctor, windows_capture.py (passive stills, Windows Python),
-                   checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
-                   link.py and worker.py (native multiplayer: the coordinator's link and
-                   the per-client worker); runtime.py and gameai/windows.py pick WSL or
-                   native Windows paths at import
-  mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
-                   UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
-  assets/          The blank startup clip and its MIT license
-  battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
-                   setup.py (scenarios with `base` inheritance, lobby steps, benchmark
-                   checks; its docstring is the scenario field reference), checkpoint.py
-                   (battle checkpoints: save, fast checked rebuild, live handover; the
-                   checkpoint-RL step run, library records and attempt statuses),
-                   candidates.py, audit.py, rl.py, confirm.py (checkpoint RL: the public
-                   candidate set, branch audits, tasks/methods/evaluation, closed loop),
-                   controllers.py
-                   (policy names, model prompts, rotation, outside controllers), llm.py
-                   (direct API-model controller: llm, llm_rules), commander.py
-                   (asynchronous API model over skills), skills.py (per-unit skill
-                   executor, probe_abilities), scripted.py (hold, attack_nearest,
-                   rush_nearest), team.py (two scripted members sharing one army),
-                   configured.py (JSON controller composition), graph.py (resumable graph
-                   nodes), skill_contracts.py (typed skills and public effect witnesses),
-                   graph_goals.py (background model target preferences over fixed graphs),
-                   graph_author.py (offline multi-LLM authoring and whole-battle revision),
-                   graph_view.py and graph_view_assets/ (recorded graph/battle inspection),
-                   calibration.py (disclosed scenario diagnostics),
-                   cards.py (tactic cards: foils, witness, admission rule, board and
-                   verdict; backs `card`), capture.py (1 Hz replay recorder and stills),
-                   export.py (offline model decisions, exchanges and provenance),
-                   digest.py (trace summaries), watch.py (follow a job), stats.py
-                   (results register), report.py (paired statistics), report_html.py,
-                   replay.py and report_assets/ (the offline HTML report and its replay),
-                   peers.py (native multiplayer: what two clients observed, compared)
-configs/twwarhammer3/
-                   system_prompt.md (llm), rules_prompt.md (llm_rules),
-                   commander_prompt.md, scenarios.json, custom_battle.json (random draws),
-                   report_notes.json (the report's scenario, unit and highlight text),
-                   benchmark_jobs.json (the jobs the report and export read)
-```
+JUDGEMENT?: One file per line, full paths (Claude Code, 2026-11-01): chosen so a script reads
+the list exactly; the old grouped prose gave 36 of 49 files a description. The page's file
+lists and check.py's "missing from the Code map" flag rest on this format.
+
+`src/twwarhammer3/`, Total War: WARHAMMER III custom battles:
+- `src/twwarhammer3/__main__.py`: CLI: doctor, pack, launch, menu (runtime and UI probes);
+  play, digest, watch, card, stats, report, export, spend (jobs and offline evidence);
+  graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker,
+  compare-peers (native multiplayer)
+- `src/twwarhammer3/protocol.py`: order types and validation, the error taxonomy;
+  observations stay dicts; it changes freely (Spire's protocol.py is byte-stable)
+
+`src/twwarhammer3/engine/`, the game runtime:
+- `src/twwarhammer3/engine/runtime.py`: pins, pack build, mod list, launch; it and
+  `src/gameai/windows.py` pick WSL or native Windows paths at import
+- `src/twwarhammer3/engine/startup.py`: the startup video skip
+- `src/twwarhammer3/engine/pack.py`: PFH5 packs: build the mod pack, list and extract
+  vanilla packs
+- `src/twwarhammer3/engine/mailbox.py`: the bridge files; its docstring is the observation
+  reference
+- `src/twwarhammer3/engine/doctor.py`: the read-only launch check (`doctor`)
+- `src/twwarhammer3/engine/windows_capture.py`: passive stills, run by Windows Python
+- `src/twwarhammer3/engine/checkpoint_agent.js`: the checkpoint Frida agent
+- `src/twwarhammer3/engine/checkpoint_frida.py`: runs the checkpoint Frida agent in the
+  owned game (Windows side)
+- `src/twwarhammer3/engine/link.py`: native multiplayer: the coordinator's link
+- `src/twwarhammer3/engine/worker.py`: native multiplayer: the per-client worker
+
+`src/twwarhammer3/mod/`, Lua scripts packed into the game:
+- `src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua`: the battle script:
+  publishes observations, applies orders
+- `src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua`: frontend menus
+- `src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua`: UI steps
+- `src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_json.lua`: JSON
+- `src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_imagery.lua`: the stills camera
+- `src/twwarhammer3/assets/`: the blank startup clip and its MIT license
+
+`src/twwarhammer3/battle/`, jobs and controllers:
+- `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
+- `src/twwarhammer3/battle/setup.py`: scenarios with `base` inheritance, lobby steps,
+  benchmark checks; its docstring is the scenario field reference
+- `src/twwarhammer3/battle/controllers.py`: policy names, model prompts, rotation, outside
+  controllers
+- `src/twwarhammer3/battle/llm.py`: direct API-model controller: llm, llm_rules
+- `src/twwarhammer3/battle/commander.py`: asynchronous API model over skills
+- `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
+- `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
+- `src/twwarhammer3/battle/team.py`: two independent members sharing one army and one mailbox
+- `src/twwarhammer3/battle/configured.py`: JSON controller composition
+- `src/twwarhammer3/battle/graph.py`: resumable graph nodes
+- `src/twwarhammer3/battle/skill_contracts.py`: typed skills and public effect witnesses
+- `src/twwarhammer3/battle/graph_goals.py`: background model target preferences over fixed
+  graphs
+- `src/twwarhammer3/battle/graph_author.py`: offline multi-LLM authoring and whole-battle
+  revision
+- `src/twwarhammer3/battle/graph_view.py`: recorded graph/battle inspection
+- `src/twwarhammer3/battle/graph_view_assets/`: the graph view's page, script and style
+- `src/twwarhammer3/battle/checkpoint.py`: battle checkpoints: save, fast checked rebuild,
+  live handover; the checkpoint-RL step run, library records and attempt statuses
+- `src/twwarhammer3/battle/candidates.py`: checkpoint RL: the public candidate set
+- `src/twwarhammer3/battle/audit.py`: checkpoint RL: branch audits
+- `src/twwarhammer3/battle/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
+- `src/twwarhammer3/battle/confirm.py`: checkpoint RL: the closed loop
+- `src/twwarhammer3/battle/calibration.py`: disclosed scenario diagnostics
+- `src/twwarhammer3/battle/cards.py`: tactic cards: foils, witness, admission rule, board and
+  verdict; backs `card`
+- `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
+- `src/twwarhammer3/battle/export.py`: offline model decisions, exchanges and provenance
+- `src/twwarhammer3/battle/digest.py`: trace summaries
+- `src/twwarhammer3/battle/watch.py`: follow a job
+- `src/twwarhammer3/battle/stats.py`: results register
+- `src/twwarhammer3/battle/report.py`: paired statistics
+- `src/twwarhammer3/battle/report_html.py`: the offline HTML report
+- `src/twwarhammer3/battle/replay.py`: the report's replay: public recorded frames and events
+- `src/twwarhammer3/battle/report_assets/`: the report's page, script, style and replay
+- `src/twwarhammer3/battle/peers.py`: native multiplayer: what two clients observed, compared
+
+`configs/twwarhammer3/`:
+- `configs/twwarhammer3/system_prompt.md`: the llm prompt
+- `configs/twwarhammer3/rules_prompt.md`: the llm_rules prompt
+- `configs/twwarhammer3/commander_prompt.md`: the commander prompt
+- `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
+- `configs/twwarhammer3/graphs/`: graph controller files
+- `configs/twwarhammer3/scenarios.json`: declared scenarios
+- `configs/twwarhammer3/custom_battle.json`: random draws
+- `configs/twwarhammer3/report_notes.json`: the report's scenario, unit and highlight text
+- `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read
+
+`src/gameai/`, game-neutral code both games import:
+- `src/gameai/llm.py`: model API calls for any game: transport, spend and the reply-retry loop
+- `src/gameai/providers.py`: declared model routes (OpenAI, OpenRouter, Anthropic)
+- `src/gameai/ledger.py`: append-only spend ledgers with a hard budget
+- `src/gameai/provenance.py`: source provenance for attributable evidence
+- `src/gameai/sft.py`: supervised fine-tuning datasets from both games' decision exports
+- `src/gameai/lm.py`: candidate scoring with local language models (WH3 checkpoint RL)
+- `src/gameai/windows.py`: Windows game processes owned from WSL or native Windows Python:
+  one controller lock, a supervised launch, probes
+- `src/gameai/windows_game.py`: owns one Windows game process and stops it on controller EOF
+  or a hard time limit
+
+`scripts/`:
+- `scripts/check.py`: the exit gate: Ruff, the whole offline suite and risky-edit warnings
+- `scripts/githooks/pre-commit`: refuses a commit unless check.py passed on this tree
+- `scripts/hooks/pre_bash.py`: Claude Code hook: refuses `ruff format` and HEAD moves while
+  a WH3 queue runs
+- `scripts/hooks/stop_check.py`: Stop hook: runs check.py when the tree changed since its
+  last pass
+- `scripts/wh3_queue.py`: runs a frozen plan of `twwarhammer3 play` jobs one at a time
+- `scripts/wh3_db.py`: reads rows of a WH3 database table from the game's db.pack
+- `scripts/refusal_sweep.py`: removes one refusal at a time and lists those no test catches
+- `scripts/diagram_replay.py`: one recorded team episode as a measured flow for the page
+- `scripts/diagram_files.py`: the page's file lists, from these lists and the map's boxes
+- `scripts/diagram_examples.py`: small excerpts of a recorded battle for the page's stories
+- `scripts/sft_smoke.py`: a minimal local LoRA fine-tuning smoke test (CUDA only)
+- `scripts/inventory_scenarios.py`: Spire first combat: the development inventory
+- `scripts/audit_language_training.py`: Spire first combat: audit of saved SFT evidence
+- `scripts/audit_ppo_training.py`: Spire first combat: audit of saved PPO evidence
+- `scripts/export_relabel_datasets.py`: Spire first combat: heuristic-relabel datasets
+- `scripts/offline_agreement.py`: Spire first combat: a frozen language policy's agreement
+  with heuristic labels
+- `scripts/plot_results.py`: Spire first combat: plots of saved reports and PPO diagnostics
+- `scripts/train_language.py`: Spire first combat: one local SFT job
+- `scripts/train_language_rl.py`: Spire first combat: one outcome-based language
+  post-training job
 
 ## Commands
 

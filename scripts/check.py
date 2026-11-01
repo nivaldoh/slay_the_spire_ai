@@ -34,6 +34,18 @@ when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-
 Last, "markers" counts the marker problems listed in the log (docs/judgement.md); only the
 owner changes markers, so they never fail.
 
+"diagram" counts the views of the "How the code works" page (docs/multi-agent.html, plan
+docs/how-code-works-plan.md section 6; the owner's yes, 2026-11-01) that need a refresh, from Git
+objects at HEAD: a line a view cites whose text changed, indentation aside (the same text found
+elsewhere counts as moved, recorded, not flagged), cited text that cannot be read, a cited file
+gone, a `src/` Python file missing from the file lists (the WH3 README's Code map section and
+docs/spire/AGENTS.md's Layout section) or a listed path in no map box or not in the repo, the
+provider names and hidden observation keys a view states, a review older than three months, and
+an example's cited file changed since the example was made. Details go to the log and to the
+ignored runs/checks/diagram-flags.js, which the page reads. It skips in a shallow clone (no old
+commits) and in a linked worktree (its page data is not the main checkout's); any error prints
+"could not run" and never changes the exit code or the pass record.
+
 `--plants` instead replays tests/plants.toml, the planted wrong versions the named tests must
 catch, in a scratch worktree at HEAD, one at a time and without bytecode: each line says caught,
 MISSED, HANG (counted caught, as in scripts/refusal_sweep.py) or stale (its text is gone), after
@@ -591,6 +603,174 @@ def skip_reasons(output: str) -> str:
     return "; ".join(f"{n} {reason}" for reason, n in reasons.most_common()) or "none"
 
 
+DIAGRAM_VIEW = "docs/how-code-works-view-"  # one hand-written view per file: <id>.js
+DIAGRAM_EXAMPLE = "docs/how-code-works-example-"  # written by scripts/diagram_examples.py
+DIAGRAM_LISTS = {"docs/twwarhammer3/README.md": "## Code map", "docs/spire/AGENTS.md": "## Layout"}
+DIAGRAM_ENTRY = re.compile(r"^- `([^`\s]+)`: (.+(?:\n  \S.*)*)", re.M)  # one file per line
+DIAGRAM_REF = re.compile(r"^([^\s:]+)(?::(\d+)(?:-(\d+))?)?$")
+DIAGRAM_DATA = "runs/checks/diagram-flags.js"
+# JUDGEMENT?: Review age — Claude Code, 2026-11-01, plan default 4 ("for example, three
+# months", Software Engineering at Google ch. 10): 92 days. A shorter floor flags quiet views
+# sooner and costs more refreshes; the "not reviewed" flags rest on it.
+DIAGRAM_REVIEW_DAYS = 92
+
+
+def file_list(text: str, heading: str) -> list[tuple[str, str]]:
+    """The (path, description) lines of one list: its heading's section only."""
+    start = re.search(rf"^{re.escape(heading)}\n", text, re.M)
+    if not start:
+        return []
+    end = text.find("\n## ", start.end())
+    return DIAGRAM_ENTRY.findall(text[start.end():end if end > 0 else len(text)])
+
+
+def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
+                  today: str | None = None) -> dict:
+    """Flag the page's views from Git objects at `rev` (docstring above). `views` replaces the
+    committed ones (the three-week replay re-anchors them); `today` is an ISO date."""
+    import ast  # loaded here: the hooks import this module for tree_content alone
+    from datetime import date
+
+    cat = subprocess.Popen(["git", "cat-file", "--batch"], cwd=root, stdin=subprocess.PIPE,
+                           stdout=subprocess.PIPE)
+    blobs: dict[str, bytes | None] = {}
+
+    def show(commit: str, path: str) -> bytes | None:
+        key = f"{commit}:{path}"
+        if key not in blobs:
+            cat.stdin.write(key.encode() + b"\n")
+            cat.stdin.flush()
+            header = cat.stdout.readline().split()
+            if header[-1] in (b"missing", b"ambiguous"):
+                blobs[key] = None
+            else:
+                blobs[key] = cat.stdout.read(int(header[2]))
+                cat.stdout.read(1)
+        return blobs[key]
+
+    def text(commit: str, path: str) -> str | None:
+        data = show(commit, path)
+        return None if data is None else data.decode("utf-8", "replace")
+
+    def payload(source: str) -> dict:  # the JSON object a page data file passes to its call
+        body = "\n".join(line for line in source.splitlines()
+                         if not line.startswith(("//", '"use strict"')))
+        return json.loads(body[body.index("{"):body.rindex("}") + 1])
+
+    def literal(path: str, name: str) -> list | None:  # a constant's keys or items, by ast
+        for node in ast.parse(text(rev, path) or "").body:
+            targets = node.targets if isinstance(node, ast.Assign) else (
+                [node.target] if isinstance(node, ast.AnnAssign) else [])
+            if any(isinstance(target, ast.Name) and target.id == name for target in targets):
+                value = node.value
+                if isinstance(value, ast.Call) and value.args:  # frozenset({...}), tuple([...])
+                    value = value.args[0]
+                if isinstance(value, ast.Dict):
+                    return sorted(ast.literal_eval(key) for key in value.keys)
+                return sorted(ast.literal_eval(value))
+        return None
+
+    try:
+        names = git(root, "ls-tree", "-r", "--name-only", rev).splitlines()
+        present = set(names)
+        if views is None:
+            views = [payload(text(rev, name)) for name in names
+                     if name.startswith(DIAGRAM_VIEW) and name.endswith(".js")]
+        examples: dict = {}
+        for name in names:
+            if name.startswith(DIAGRAM_EXAMPLE) and name.endswith(".js"):
+                examples.update(payload(text(rev, name)))
+        day = date.fromisoformat(today) if today else date.today()
+        facts = {"providers": ("src/gameai/providers.py", "PROVIDERS"),
+                 "hidden_keys": ("src/twwarhammer3/protocol.py", "HIDDEN_KEYS")}
+        result: dict = {"revision": rev, "date": day.isoformat(), "views": {}}
+        for view in views:
+            reasons: list[str] = []
+            moved: dict[str, str] = {}
+            if (day - date.fromisoformat(view["reviewed"])).days > DIAGRAM_REVIEW_DAYS:
+                reasons.append(f"not reviewed since {view['reviewed']}, over three months")
+            for fact, (path, name) in facts.items():
+                stated = view.get("facts", {}).get(fact)
+                if stated is None:
+                    continue
+                try:
+                    found = literal(path, name)
+                except (SyntaxError, ValueError) as exc:
+                    reasons.append(f"cannot read {name} from {path}: {exc}")
+                    continue
+                if sorted(stated) != found:
+                    reasons.append(f"{path} {name} is now {found}; the view says {sorted(stated)}")
+            items = [view, *view.get("elements", []), *view.get("wires", []),
+                     *view.get("notes", []),
+                     *(step for flow in view.get("flows", []) for step in flow["steps"])]
+            cited = sorted({(item.get("commit") or view["commit"], ref)
+                            for item in items for ref in item.get("refs") or []
+                            if not ref.startswith("runs/")})
+            for commit, ref in cited:
+                match = DIAGRAM_REF.match(ref)
+                path = match[1] if match else ref.split()[0]
+                if path not in present and not any(n.startswith(path.rstrip("/") + "/")
+                                                   for n in names):
+                    reasons.append(f"{path} is gone (cited at {commit})")
+                    continue
+                if not match or not match[2]:
+                    continue  # a whole file: only its existence is checked
+                first, last = int(match[2]), int(match[3] or match[2])
+                old = [line.strip() for line in (text(commit, path) or "").splitlines()
+                       [first - 1:last]]
+                new = [line.strip() for line in (text(rev, path) or "").splitlines()]
+                if not old:
+                    reasons.append(f"cannot read {ref} at {commit}")
+                    continue
+                if new[first - 1:last] == old:
+                    continue
+                hits = [i for i in range(len(new) - len(old) + 1)
+                        if new[i:i + len(old)] == old]
+                if hits and any(old):
+                    end = f"-{hits[0] + len(old)}" if last > first else ""
+                    moved[ref] = f"{path}:{hits[0] + 1}{end}"
+                else:
+                    reasons.append(f"{ref} changed since {commit}")
+            # JUDGEMENT?: Example flags — Claude Code, 2026-11-01, plan section 3 and default 3:
+            # a story is flagged only for cited files changed after its example was made;
+            # changed_since keeps the "code changed since" badge. Flagging every change since
+            # the battle would keep the story flagged until a new battle runs.
+            changed: list[str] = []
+            example = examples.get(view.get("example")) if isinstance(view.get("example"),
+                                                                        str) else None
+            if example:
+                for path, digest in sorted(example["files"].items()):
+                    data = show(rev, path)
+                    if data is None or hashlib.sha256(data).hexdigest() != digest:
+                        changed.append(path)
+                for path in sorted(set(changed) - set(example.get("changed_since", []))):
+                    reasons.append(f"example {view['example']}: {path} changed since the example"
+                                   " was made")
+            if view["id"] == "map":
+                listed = {}
+                for page, heading in DIAGRAM_LISTS.items():
+                    listed.update(file_list(text(rev, page) or "", heading))
+                owners = [prefix for box in view["elements"] for prefix in box.get("files", [])]
+                missing = [n for n in names if n.startswith("src/") and n.endswith(".py")
+                           and not n.endswith("__init__.py") and n not in listed]
+                unboxed = [path for path in listed
+                           if not any(path.startswith(prefix) for prefix in owners)]
+                stale = [path for path in listed if path not in present
+                         and not any(n.startswith(path) for n in names if path.endswith("/"))]
+                for count, what in ((missing, "src/ Python files missing from the file lists"),
+                                    (unboxed, "listed paths in no map box"),
+                                    (stale, "listed paths not in the repo")):
+                    if count:
+                        reasons.append(f"{len(count)} {what}: {', '.join(count[:5])}"
+                                       + (" ..." if len(count) > 5 else ""))
+            result["views"][view["id"]] = {"flagged": bool(reasons), "reasons": reasons,
+                                           "moved": moved, "example_changed": changed}
+        return result
+    finally:
+        cat.stdin.close()
+        cat.wait()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--base", help="revision the warnings compare with "
@@ -688,6 +868,19 @@ def main() -> int:
                          " list every item)")
     shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
     shown += [f"worktree  {line}" for line in linked_worktree(ROOT)]
+    diagram = None
+    try:  # never changes the exit code or the pass record
+        if git(ROOT, "rev-parse", "--is-shallow-repository").strip() == "true":
+            shown.append("diagram   skipped: a shallow clone has no old commits")
+        elif linked_worktree(ROOT):
+            shown.append("diagram   skipped: a linked worktree; run it in the main checkout")
+        else:
+            diagram = diagram_flags(ROOT)
+            flagged = sum(view["flagged"] for view in diagram["views"].values())
+            shown.append(f"diagram   {flagged} views flagged, see the log")
+    except Exception as exc:
+        diagram = None
+        shown.append(f"diagram   could not run: {textwrap.shorten(str(exc), 120)}")
     unchanged = tree_content(ROOT) == content
     if passed and not unchanged:
         shown.append("record    none: files changed while it ran, so a commit stays refused; "
@@ -706,6 +899,7 @@ def main() -> int:
             "checks": agreed}) + "\n")
     log.write_text("\n".join([*shown, "", "== needs your yes, every item", *yes, "",
                               "== marker problems", *problems, "",
+                              "== diagram flags", json.dumps(diagram, indent=1), "",
                               "== git status --porcelain", *status, "",
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")
@@ -717,6 +911,11 @@ def main() -> int:
         record.unlink(missing_ok=True)
     if passed:
         shutil.rmtree(scratch, ignore_errors=True)
+    if diagram is not None:  # the page's optional flags file, written after the record
+        try:
+            (ROOT / DIAGRAM_DATA).write_text(f"DIAGRAM_FLAGS = {json.dumps(diagram)};\n")
+        except OSError as exc:
+            print(f"diagram   could not write {DIAGRAM_DATA}: {exc}")
     return 0 if passed else 1
 
 

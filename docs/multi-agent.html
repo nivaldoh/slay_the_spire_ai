@@ -1,12 +1,14 @@
 <!doctype html>
-<!-- How the multi-agent parts connect, as an animated diagram. Open it in a local browser:
-     paste \\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html into
-     the address bar. Plan: runs/multi-agent-diagram-20261031/plan.md (local, not in Git). -->
+<!-- How the code works: a map of the whole repo and short stories built on real battles, plus
+     the five multi-agent tabs of 2026-10-31, frozen. Open it in a local browser: paste
+     \\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html into the
+     address bar. Plan: docs/how-code-works-plan.md. Each new view's hand-written data is its own
+     file, docs/how-code-works-view-<id>.js; scripts write the file lists and the examples. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi-agent parts</title>
+<title>How the code works</title>
 <script>
 "use strict";
 /* Every claim the page draws, as plain data. The viewer further down reads only DIAGRAM.
@@ -43,7 +45,21 @@
      completed, sent, applied} for a member call (thinking, waiting to be sent, sent until the
      engine applied it; null: not reached, its bar runs to `until` or the flow's end);
      marks: {row, kind, at}. legend: a sentence that replaces the team legend under the lanes,
-     for flows whose bars mean something else. */
+     for flows whose bars mean something else.
+
+   The tabs above are the five of 2026-10-31, frozen (FROZEN in the viewer). The new views
+   (docs/how-code-works-plan.md, 2026-11-01) each live in their own file,
+   docs/how-code-works-view-<id>.js, as JSON that scripts/check.py reads. A view adds:
+     question (its title), takeaway (one sentence), reviewed (the date an agent last
+     reviewed every claim), example (an id in DIAGRAM_EXAMPLES, or {made_up: true}),
+     facts ({providers, hidden_keys}: values it states, which check.py compares with the code),
+     merge: true (parallel wires between the same two boxes are drawn as one).
+   Any element, wire or step may carry its own commit, which its refs are read at. An element
+   may add code (the code name, drawn small under the plain label), ran: false (never ran in
+   the game: striped), state (runs today / built, never run / paused), command, stories (view
+   ids) and files (path prefixes: the map box a listed file belongs to). A flow with story:
+   true numbers its steps; a step's message and map are {example, key} (or literal
+   {title, text}) and are drawn beside the picture. */
 
 const TRACE = "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl";
 const LUA = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua";
@@ -555,15 +571,21 @@ const DIAGRAM = {
         {
           id: "ov.api",
           label: "Model provider API",
-          sub: "OpenAI or OpenRouter",
+          sub: "OpenAI, OpenRouter or Anthropic",
           kind: "outside service",
           where: "cloud API",
           x: 730,
           y: 376,
           w: 220,
           h: 56,
-          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
-          refs: ["docs/twwarhammer3/README.md:223-225", "src/gameai/llm.py:200"],
+          commit: "7bf32e6",
+          status:
+            "outside our code: the provider APIs; providers.py names OpenAI, OpenRouter and Anthropic (src/gameai/providers.py:92)",
+          refs: [
+            "src/gameai/providers.py:92",
+            "docs/twwarhammer3/README.md:231-236",
+            "src/gameai/llm.py:328",
+          ],
         },
       ],
       wires: [
@@ -1017,7 +1039,7 @@ const DIAGRAM = {
         {
           id: "team.api",
           label: "provider API",
-          sub: "OpenAI or OpenRouter",
+          sub: "OpenAI, OpenRouter or Anthropic",
           only: "model",
           kind: "outside service",
           where: "cloud API",
@@ -1025,10 +1047,13 @@ const DIAGRAM = {
           y: 566,
           w: 200,
           h: 56,
-          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
+          commit: "7bf32e6",
+          status:
+            "outside our code: the provider APIs; providers.py names OpenAI, OpenRouter and Anthropic (src/gameai/providers.py:92)",
           refs: [
-            "docs/twwarhammer3/README.md:223-225",
-            "docs/twwarhammer3/multi-agent-implementation.md:238",
+            "src/gameai/providers.py:92",
+            "docs/twwarhammer3/README.md:231-236",
+            "docs/twwarhammer3/multi-agent-implementation.md:242",
             "docs/twwarhammer3/team-structures.md:112-115",
           ],
           note: "Whether the pinned backend serves two calls at once is unchecked: its record is calls made one at a time.",
@@ -5989,16 +6014,19 @@ const DIAGRAM = {
         {
           id: "play.api",
           label: "provider API",
-          sub: "OpenAI or OpenRouter",
+          sub: "OpenAI, OpenRouter or Anthropic",
           kind: "outside service",
           where: "cloud API",
           x: 1150,
           y: 626,
           w: 230,
           h: 52,
-          status: "outside our code: the provider APIs (docs/twwarhammer3/README.md:223)",
+          commit: "7bf32e6",
+          status:
+            "outside our code: the provider APIs; providers.py names OpenAI, OpenRouter and Anthropic (src/gameai/providers.py:92)",
           refs: [
-            "docs/twwarhammer3/README.md:223-225",
+            "src/gameai/providers.py:92",
+            "docs/twwarhammer3/README.md:231-236",
             "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/manifest.json",
           ],
           note: "The recorded episode used OpenRouter, pinned to one backend (Decart) for GLM 5.3.",
@@ -7157,6 +7185,18 @@ const DIAGRAM = {
 </script>
 <!-- A measured flow generated from a recorded episode by scripts/diagram_replay.py. -->
 <script src="multi-agent-replay.js"></script>
+<script>
+"use strict";
+const DIAGRAM_FILES = { from: "", revision: "", files: [] }; // scripts/diagram_files.py
+const DIAGRAM_EXAMPLES = {}; // scripts/diagram_examples.py
+let DIAGRAM_FLAGS = null; // scripts/check.py's flags, when its ignored data file exists
+</script>
+<script src="multi-agent-files.js"></script>
+<script src="how-code-works-example-job.js"></script>
+<script src="how-code-works-view-map.js"></script>
+<script src="how-code-works-view-job.js"></script>
+<!-- Optional: written by scripts/check.py in the main checkout only (runs/ is ignored). -->
+<script src="../runs/checks/diagram-flags.js"></script>
 <style>
 /* Light colours and type as the WH3 report has (report_assets/report.css). Member A is
    Okabe-Ito blue and member B vermillion everywhere on this page; dashes mean planned. */
@@ -7268,8 +7308,12 @@ main {
   gap: 5px;
 }
 #legend label {
-  margin-left: auto;
   cursor: pointer;
+}
+#legend .switches {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 14px;
 }
 .chip {
   width: 10px;
@@ -7683,18 +7727,212 @@ svg {
   color: var(--muted);
   font-size: 12.5px;
 }
+/* How the code works (2026-11-01): the map and the stories. Colour shows place (the bands)
+   and role; status colours and sources sit behind the two switches. */
+body.sure-off .box .pip,
+body.sure-off #legend .statuses,
+body.sure-off #panel .status-block {
+  display: none;
+}
+body.sources-off #panel .refs,
+body.sources-off #panel .rests,
+body.sources-off #panel .sources,
+body.sources-off .box .nosource {
+  display: none;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+nav {
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+nav .group {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+nav .frozen {
+  flex-basis: 100%;
+  margin-top: 2px;
+}
+nav .frozen span {
+  font: 12px var(--sans);
+  color: var(--muted);
+  padding: 0 6px 4px 0;
+}
+nav .frozen button {
+  padding: 2px 10px;
+  font: 600 12px var(--sans);
+}
+#heading {
+  margin: 0 0 6px;
+}
+#heading h2 {
+  display: inline;
+  font: 600 20px/1.25 var(--serif);
+  margin: 0 10px 0 0;
+}
+#heading p {
+  margin: 3px 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+.badge {
+  display: inline-block;
+  font: 600 11.5px var(--sans);
+  padding: 1px 8px;
+  margin-right: 5px;
+  border-radius: 9px;
+  background: #e3f1e8;
+  color: #1f5a37;
+  vertical-align: 2px;
+}
+.badge.changed {
+  background: #fff3d6;
+  color: #6d4c00;
+}
+.badge.madeup {
+  background: #eceff1;
+  color: var(--ink-2);
+}
+.box .code {
+  font: 10.5px var(--mono);
+  fill: var(--muted);
+  text-anchor: middle;
+}
+.box .unran-note {
+  font: 600 10px var(--sans);
+  fill: var(--ink-2);
+}
+.box.unran .shape {
+  fill: url(#unran);
+}
+.wire .line.loop {
+  fill: none;
+}
+#panel .caption {
+  border-left: 4px solid var(--ink);
+  padding: 4px 0 6px 12px;
+  margin: 4px 0 10px;
+}
+#panel .caption .count {
+  font: 600 12px var(--sans);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+#panel .caption p {
+  font: 19px/1.35 var(--serif);
+  margin: 2px 0 0;
+}
+#panel .message {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 4px;
+  margin: 0 0 10px;
+}
+#panel .message .title {
+  font: 600 11.5px var(--sans);
+  color: var(--muted);
+  padding: 4px 8px 0;
+}
+#panel .message pre {
+  font: 11.5px/1.4 var(--mono);
+  margin: 0;
+  padding: 3px 8px 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 170px;
+  overflow-y: auto;
+}
+#panel .unitmap {
+  margin: 0 0 8px;
+}
+#panel .unitmap svg {
+  border: 1px solid var(--line);
+  background: #f6f4ec;
+}
+#panel .unitmap .note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 2px 0 0;
+}
+.unit.friendly rect {
+  fill: var(--member-a);
+}
+.unit.enemy rect {
+  fill: var(--missing);
+}
+.unit.routing rect {
+  fill: #fff;
+  stroke-width: 2;
+}
+.unit.friendly.routing rect {
+  stroke: var(--member-a);
+}
+.unit.enemy.routing rect {
+  stroke: var(--missing);
+}
+#panel .message.tall pre {
+  max-height: 340px;
+}
+#panel code {
+  font: 12px var(--mono);
+}
+.unit text {
+  font: 600 10.5px var(--sans);
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: #f6f4ec;
+  stroke-width: 3px;
+}
+.unitmap .order {
+  stroke: var(--member-a);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 3;
+  fill: none;
+}
+.unitmap .scale {
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.unitmap .scale-text {
+  font: 10px var(--sans);
+  fill: var(--ink-2);
+}
+#panel .files {
+  list-style: none;
+  padding-left: 0;
+  font-size: 12.5px;
+}
+#panel .files code {
+  font: 11.5px var(--mono);
+  word-break: break-all;
+}
+#panel .stories button {
+  margin: 2px 4px 2px 0;
+}
 </style>
 </head>
 <body>
 <header>
-  <h1>Multi-agent parts</h1>
-  <p>How the WH3 battle code's agents, threads, files and services connect. Pick a tab, play a
-    flow or step through it with the arrow keys, and click any box or wire for its source. Every
-    claim cites a line at the commit named in the side panel.</p>
+  <h1>How the code works</h1>
+  <p>A map of the whole repo, and short stories built on real battles. Click a box for what it
+    does and its files; step through a story with the arrow keys. Reviewed by an agent, not
+    verified.</p>
 </header>
 <nav id="tabs" role="tablist"></nav>
 <main>
   <section id="stage">
+    <div id="heading" hidden>
+      <h2 id="question"></h2>
+      <span id="badges"></span>
+      <p id="takeaway"></p>
+    </div>
     <div id="legend"></div>
     <p id="banner" hidden></p>
     <svg id="canvas" role="img" aria-label="Diagram"></svg>
@@ -7769,7 +8007,9 @@ const state = {
   time: 0,
   playing: false,
   speed: 0.25,
-  planned: true,
+  planned: false,
+  sure: false,
+  sources: false,
   selected: null,
   loop: null,
   lastTick: null,
@@ -7812,6 +8052,13 @@ function edge(b, px, py) {
   return [cx + dx * scale, cy + dy * scale];
 }
 function wirePath(w) {
+  const r = (v) => v.toFixed(1);
+  if (w.from === w.to) {
+    // A self-loop (a GaP step that stays where it is): a curve above the box's top edge.
+    const b = boxes[w.from];
+    const cx = b.x + b.w / 2;
+    return `M${r(cx - 16)},${b.y} C${r(cx - 34)},${b.y - 40} ${r(cx + 34)},${b.y - 40} ${r(cx + 16)},${b.y}`;
+  }
   const [ax, ay] = centre(boxes[w.from]);
   const [bx, by] = centre(boxes[w.to]);
   const length = Math.hypot(bx - ax, by - ay) || 1;
@@ -7820,7 +8067,6 @@ function wirePath(w) {
   const qy = (ay + by) / 2 + ((bx - ax) / length) * bend;
   const [sx, sy] = edge(boxes[w.from], qx, qy);
   const [ex, ey] = edge(boxes[w.to], qx, qy);
-  const r = (v) => v.toFixed(1);
   return `M${r(sx)},${r(sy)} Q${r(qx)},${r(qy)} ${r(ex)},${r(ey)}`;
 }
 
@@ -7844,17 +8090,28 @@ function shape(e) {
 
 function drawBox(e) {
   const g = svg("g", {
-    class: `box k-${e.kind.replace(/\s+/g, "-")} s-${statusKind(e.status)}`,
+    class: `box k-${e.kind.replace(/\s+/g, "-")} s-${statusKind(e.status)}${e.ran === false ? " unran" : ""}`,
     "data-id": e.id,
     tabindex: 0,
   });
   g.append(svg("title", {}, `${e.label}: ${e.note || e.sub || ""}`), ...shape(e));
   const cx = e.x + e.w / 2;
-  g.append(svg("text", { class: "label", x: cx, y: e.y + e.h / 2 + (e.sub ? -2 : 5) }, e.label));
-  if (e.sub) g.append(svg("text", { class: "sub", x: cx, y: e.y + e.h / 2 + 14 }, e.sub));
+  const rows = [
+    ["label", e.label],
+    ["sub", e.sub],
+    ["code", e.code],
+  ].filter(([, text]) => text);
+  const top = e.y + e.h / 2 - ((rows.length - 1) * 14) / 2 + 4;
+  rows.forEach(([kind, text], i) =>
+    g.append(svg("text", { class: kind, x: cx, y: top + i * 14 }, text)),
+  );
   g.append(svg("circle", { class: "pip", cx: e.x + e.w - 9, cy: e.y + 9, r: 4.5 }));
   if (!(e.refs || []).length)
     g.append(svg("text", { class: "nosource", x: e.x + 6, y: e.y + e.h + 12 }, "no source"));
+  if (e.ran === false)
+    g.append(
+      svg("text", { class: "unran-note", x: e.x + 4, y: e.y + e.h + 12 }, "never ran in the game"),
+    );
   const pick = (event) => {
     event.stopPropagation();
     const opens = state.tab.opensTabs || state.selected === e.id;
@@ -7893,6 +8150,16 @@ function drawCanvas() {
     marker.append(head);
     defs.append(marker);
   }
+  const stripes = svg("pattern", {
+    id: "unran",
+    width: 8,
+    height: 8,
+    patternUnits: "userSpaceOnUse",
+    patternTransform: "rotate(45)",
+  });
+  stripes.append(svg("rect", { width: 8, height: 8, fill: "#ffffff" }));
+  stripes.append(svg("rect", { width: 3, height: 8, fill: "#e4e7e9" }));
+  defs.append(stripes);
   canvas.append(defs);
   for (const band of tab.bands) {
     const g = svg("g", { class: "band" });
@@ -7914,26 +8181,46 @@ function drawCanvas() {
   const labelLayer = svg("g");
   const boxLayer = svg("g");
   canvas.append(wireLayer, boxLayer, labelLayer, svg("g", { id: "dots" }));
+  const shown = [];
+  const byEnds = {};
   for (const item of tab.wires) {
     const w = merged(item);
     if (!visible(w) || !boxes[w.from] || !boxes[w.to]) continue;
     wires[w.id] = w;
+    const ends = `${w.from}>${w.to}`;
+    if (tab.merge && byEnds[ends]) {
+      byEnds[ends].push(w); // a parallel exit: drawn once, its label joined to the first's
+      continue;
+    }
+    byEnds[ends] = [w];
+    shown.push(w);
+  }
+  for (const w of shown) {
+    const group = byEnds[`${w.from}>${w.to}`];
+    const label = group
+      .map((x) => x.label)
+      .filter(Boolean)
+      .join(" / ");
     const kind = statusKind(w.status);
     const d = wirePath(w);
     const g = svg("g", { class: `wire s-${kind}`, "data-id": w.id });
     const arrow = kind === "planned" || kind === "outside" ? kind : "built";
-    const line = svg("path", { class: "line", d, "marker-end": `url(#arrow-${arrow})` });
+    const line = svg("path", {
+      class: `line${w.from === w.to ? " loop" : ""}`,
+      d,
+      "marker-end": `url(#arrow-${arrow})`,
+    });
     g.append(svg("title", {}, w.payload), svg("path", { class: "hit", d }), line);
     g.addEventListener("click", (event) => {
       event.stopPropagation();
       select(w.id);
     });
     wireLayer.append(g);
-    lines[w.id] = line;
-    if (w.label) {
+    for (const x of group) lines[x.id] = line;
+    if (label) {
       const middle = line.getPointAtLength(line.getTotalLength() / 2);
       labelLayer.append(
-        svg("text", { class: `wire-label s-${kind}`, x: middle.x, y: middle.y + 4 }, w.label),
+        svg("text", { class: `wire-label s-${kind}`, x: middle.x, y: middle.y + 4 }, label),
       );
     }
   }
@@ -8214,8 +8501,9 @@ function renderTime() {
   if (!flow) return;
   drawDots();
   $("slider").value = state.time;
-  $("time").textContent =
-    `${(state.time / 1000).toFixed(2)} s ${flow.clock === "battle time" ? "battle" : "(illustrative)"}`;
+  $("time").textContent = flow.story
+    ? ""
+    : `${(state.time / 1000).toFixed(2)} s ${flow.clock === "battle time" ? "battle" : "(illustrative)"}`;
   const cursor = $("cursor");
   if (cursor) {
     const x = laneX(flow, state.time);
@@ -8226,7 +8514,8 @@ function renderTime() {
   const key = active.map((step) => flow.steps.indexOf(step)).join(",");
   if (key !== state.nowKey) {
     state.nowKey = key;
-    renderNow(active);
+    if (state.tab.question) renderStoryNow();
+    else renderNow(active);
   }
 }
 
@@ -8266,7 +8555,7 @@ function restsList(rests, commit) {
 }
 function statusBlock(status, commit) {
   const kind = statusKind(status);
-  const wrap = el("div");
+  const wrap = el("div", null, "status-block");
   const line = el("div", null, "status");
   line.append(
     el("span", null, `chip ${kind}`),
@@ -8299,8 +8588,8 @@ function renderNow(active) {
       ? `${step.until} ms, repeating every ${step.every} ms`
       : `${step.until} ms`;
     div.append(el("div", `${step.at} to ${until}`, "when"), el("p", step.caption));
-    div.append(refList(step.refs, state.tab.commit));
-    if (step.rests) div.append(restsList(step.rests, state.tab.commit));
+    div.append(refList(step.refs, step.commit || state.tab.commit));
+    if (step.rests) div.append(restsList(step.rests, step.commit || state.tab.commit));
     now.append(div);
   }
 }
@@ -8308,7 +8597,7 @@ function renderSelected(container) {
   const id = state.selected;
   const item = boxes[id] || wires[id];
   if (!item) return false;
-  const commit = state.tab.commit;
+  const commit = item.commit || state.tab.commit;
   const isWire = Boolean(wires[id]);
   container.append(
     el("h3", isWire ? `${boxes[item.from].label} \u2192 ${boxes[item.to].label}` : item.label),
@@ -8335,10 +8624,225 @@ function renderSelected(container) {
   }
   return true;
 }
+// The new views (2026-11-01). An example lives in DIAGRAM_EXAMPLES[id], written by
+// scripts/diagram_examples.py; a step's message or map names {example, key} or carries text.
+const exampleOf = (tab) =>
+  tab.example && typeof tab.example === "string" ? DIAGRAM_EXAMPLES[tab.example] : null;
+function resolve(ref, table) {
+  if (!ref) return null;
+  if (!ref.example) return ref;
+  const example = DIAGRAM_EXAMPLES[ref.example];
+  return example ? { ...example[table][ref.key], key: ref.key, example } : null;
+}
+function flagsOf(tab) {
+  return (DIAGRAM_FLAGS && DIAGRAM_FLAGS.views && DIAGRAM_FLAGS.views[tab.id]) || null;
+}
+function drawUnitMap(map) {
+  const [x0, x1, z0, z1] = map.bounds || map.example.bounds;
+  const W = 324;
+  const H = 180;
+  const pad = 16;
+  const scale = Math.min((W - 2 * pad) / (x1 - x0), (H - 2 * pad) / (z1 - z0));
+  const ox = pad + (W - 2 * pad - (x1 - x0) * scale) / 2;
+  const oz = pad + (H - 2 * pad - (z1 - z0) * scale) / 2;
+  const px = (x) => ox + (x - x0) * scale;
+  const pz = (z) => H - oz - (z - z0) * scale; // z grows up, as on the game's map
+  const node = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Unit map" });
+  for (const order of map.orders || []) {
+    const unit = map.units.find((u) => u.id === order.unit);
+    if (unit)
+      node.append(
+        svg("line", {
+          class: "order",
+          x1: px(unit.x),
+          y1: pz(unit.z),
+          x2: px(order.x),
+          y2: pz(order.z),
+        }),
+        svg("circle", { class: "order", cx: px(order.x), cy: pz(order.z), r: 4 }),
+      );
+  }
+  const placed = []; // label positions, nudged apart when units stand close together
+  for (const unit of [...map.units].sort((a, b) => pz(a.z) - pz(b.z))) {
+    const right = px(unit.x) < W - 90;
+    let y = pz(unit.z) + 4;
+    for (const other of placed)
+      if (
+        other.right === right &&
+        Math.abs(other.x - px(unit.x)) < 80 &&
+        Math.abs(other.y - y) < 11
+      )
+        y = other.y + 11;
+    placed.push({ right, x: px(unit.x), y });
+    unit.labelY = y;
+  }
+  for (const unit of map.units) {
+    const g = svg("g", { class: `unit ${unit.side}${unit.routing ? " routing" : ""}` });
+    const size = 9;
+    g.append(
+      svg("rect", {
+        x: px(unit.x) - size / 2,
+        y: pz(unit.z) - size / 2,
+        width: size,
+        height: size,
+        transform: `rotate(${unit.bearing || 0} ${px(unit.x)} ${pz(unit.z)})`,
+      }),
+    );
+    const right = px(unit.x) < W - 90;
+    g.append(
+      svg(
+        "text",
+        {
+          x: px(unit.x) + (right ? 8 : -8),
+          y: unit.labelY,
+          "text-anchor": right ? "start" : "end",
+        },
+        unit.label,
+      ),
+    );
+    g.append(svg("title", {}, `${unit.label}: ${unit.men} of ${unit.men0} men`));
+    node.append(g);
+  }
+  const bar = 100 * scale; // a 100 m scale bar
+  node.append(
+    svg("line", { class: "scale", x1: 8, x2: 8 + bar, y1: H - 8, y2: H - 8 }),
+    svg("text", { class: "scale-text", x: 12 + bar, y: H - 5 }, "100 m"),
+  );
+  return node;
+}
+function renderStoryNow() {
+  const holder = $("now");
+  if (!holder) return;
+  holder.replaceChildren();
+  const flow = currentFlow();
+  const active = activeSteps(flow, state.time);
+  const step = active[0];
+  if (!step) {
+    holder.append(el("p", "Press Play or the right arrow to start.", "hint"));
+    return;
+  }
+  const index = flow.steps.indexOf(step);
+  const caption = el("div", null, "caption");
+  caption.append(el("div", `Step ${index + 1} of ${flow.steps.length}`, "count"));
+  caption.append(el("p", step.caption));
+  holder.append(caption);
+  const message = resolve(step.message, "messages");
+  if (message) {
+    const box = el("div", null, "message");
+    box.append(el("div", message.title || "", "title"), el("pre", message.text));
+    if (!step.map) box.classList.add("tall"); // no map below it: room for the whole message
+    holder.append(box);
+  }
+  const map = resolve(step.map, "frames");
+  if (map) {
+    const box = el("div", null, "unitmap");
+    box.append(drawUnitMap(map), el("p", map.note || "", "note"));
+    holder.append(box);
+  }
+  const sources = el("div", null, "sources");
+  sources.append(
+    el("h4", "Sources for this step"),
+    refList(step.refs, step.commit || state.tab.commit),
+  );
+  for (const part of [message, map])
+    if (part && part.source) sources.append(el("p", `Example: ${part.source}`, "meta"));
+  holder.append(sources);
+}
+function renderBoxDetails(container, e) {
+  container.append(el("h3", e.label));
+  if (e.code) container.append(el("p", e.code, "meta"));
+  if (e.state) {
+    const word = el("p", null, "kv");
+    word.append(el("b", "Status: "), e.state);
+    container.append(word);
+  }
+  if (e.note) container.append(el("p", e.note));
+  if (e.command) {
+    const command = el("p", null, "kv");
+    command.append(el("b", "Started by: "));
+    command.append(el("code", e.command));
+    container.append(command);
+  }
+  if (e.stories && e.stories.length) {
+    const stories = el("div", null, "stories");
+    stories.append(el("b", "Stories: "));
+    for (const id of e.stories) {
+      const tab = tabById(id);
+      if (!tab) continue;
+      const open = el("button", tab.question || tab.title);
+      open.addEventListener("click", () => openTab(id));
+      stories.append(open);
+    }
+    container.append(stories);
+  }
+  const files = DIAGRAM_FILES.files.filter((file) => file.box === e.id);
+  if (files.length) {
+    container.append(el("h4", `Files (${files.length})`));
+    const list = el("ul", null, "files");
+    for (const file of files) {
+      const item = el("li");
+      item.append(el("code", file.path), ` ${file.text}`);
+      list.append(item);
+    }
+    container.append(list);
+    container.append(el("p", `From the file lists in ${DIAGRAM_FILES.from}.`, "meta"));
+  }
+  container.append(statusBlock(e.status, e.commit || state.tab.commit));
+  const sources = el("div", null, "sources");
+  sources.append(
+    el("h4", e.commit ? `Sources, read at ${e.commit}` : "Sources"),
+    refList(e.refs, e.commit || state.tab.commit),
+  );
+  container.append(sources);
+}
+function renderViewPanel() {
+  const panel = $("panel");
+  const tab = state.tab;
+  const flow = currentFlow();
+  if (flow) {
+    const now = el("div");
+    now.id = "now";
+    panel.append(now);
+  }
+  const id = state.selected;
+  const item = boxes[id] || wires[id];
+  if (item && boxes[id]) {
+    renderBoxDetails(panel, item);
+  } else if (item) {
+    panel.append(el("h3", `${boxes[item.from].label} \u2192 ${boxes[item.to].label}`));
+    if (item.payload) panel.append(el("p", item.payload));
+    const sources = el("div", null, "sources");
+    sources.append(refList(item.refs, item.commit || tab.commit));
+    panel.append(sources);
+  } else if (!flow) {
+    panel.append(el("p", tab.summary));
+    panel.append(el("p", "Click a box for what it does, its files and its stories.", "hint"));
+  }
+  if (item) {
+    const back = el("button", "Back");
+    back.addEventListener("click", () => select(null));
+    panel.append(back);
+  }
+  const about = el("div", null, "sources");
+  about.append(el("h4", "About this view"));
+  const meta = el("p", null, "meta");
+  const commit = el("a", tab.commit);
+  commit.href = `${DIAGRAM.repo}/tree/${tab.commit}`;
+  commit.target = "_blank";
+  commit.rel = "noopener";
+  meta.append(`Reviewed by an agent on ${tab.reviewed}, against the code at `, commit, ".");
+  about.append(meta);
+  const flags = flagsOf(tab);
+  if (flags) for (const reason of flags.reasons || []) about.append(el("p", reason, "rests"));
+  panel.append(about);
+  state.nowKey = null;
+  if (flow) renderTime();
+}
 function renderPanel() {
   const panel = $("panel");
   panel.replaceChildren();
   const tab = state.tab;
+  if (tab.question) return renderViewPanel();
   const flow = currentFlow();
   panel.append(el("h2", tab.title));
   const meta = el("p", null, "meta");
@@ -8376,9 +8880,12 @@ function renderPanel() {
     if (tab.opensTabs)
       for (const e of tab.elements) {
         const div = el("div", null, "step");
-        div.append(el("p", `${e.label}: ${e.sub || ""}`), statusBlock(e.status, tab.commit));
+        div.append(
+          el("p", `${e.label}: ${e.sub || ""}`),
+          statusBlock(e.status, e.commit || tab.commit),
+        );
         if (e.note) div.append(el("p", e.note));
-        div.append(refList(e.refs, tab.commit));
+        div.append(refList(e.refs, e.commit || tab.commit));
         panel.append(div);
       }
     for (const note of tab.notes || []) {
@@ -8411,13 +8918,17 @@ function select(id) {
 function renderTabs() {
   const nav = $("tabs");
   nav.replaceChildren();
+  const views = el("div", null, "group");
+  const frozen = el("div", null, "group frozen");
+  frozen.append(el("span", "Frozen 31 Oct:"));
   for (const tab of DIAGRAM.tabs) {
     const button = el("button", tab.title);
     button.setAttribute("role", "tab");
     button.setAttribute("aria-selected", String(tab === state.tab));
     button.addEventListener("click", () => openTab(tab.id));
-    nav.append(button);
+    (FROZEN.includes(tab.id) ? frozen : views).append(button);
   }
+  nav.append(views, frozen);
 }
 function renderFlows() {
   const flows = state.tab.flows || [];
@@ -8433,6 +8944,7 @@ function renderFlows() {
   player.style.display = flows.length ? "" : "none";
   const flow = currentFlow();
   if (!flow) return;
+  for (const id of ["slider", "speed", "time"]) $(id).hidden = Boolean(flow.story);
   $("slider").min = flow.start;
   $("slider").max = flow.end;
   state.speed = flow.speed || 0.25;
@@ -8441,27 +8953,46 @@ function renderFlows() {
 function renderLegend() {
   const legend = $("legend");
   legend.replaceChildren();
+  const statuses = el("span", null, "statuses");
   for (const [kind, , text] of STATUSES) {
     const item = el("span");
     item.append(el("span", null, `chip ${kind}`), text);
-    legend.append(item);
+    statuses.append(item);
   }
+  legend.append(statuses);
   const shapes = el(
     "span",
-    "Shapes: square corners process, side stripe thread, round agent, folded corner file, pill outside service or person; dashed and faded: planned.",
+    "Shapes: square process, round agent, folded file, pill outside service; striped: never ran in the game.",
   );
   legend.append(shapes);
-  const label = el("label");
-  const box = el("input");
-  box.type = "checkbox";
-  box.checked = state.planned;
-  box.addEventListener("change", () => {
-    state.planned = box.checked;
-    drawCanvas();
-    drawDots();
-  });
-  label.append(box, " show planned");
-  legend.append(label);
+  const toggle = (text, key, redraw) => {
+    const label = el("label");
+    const box = el("input");
+    box.type = "checkbox";
+    box.checked = state[key];
+    box.addEventListener("change", () => {
+      state[key] = box.checked;
+      box.blur(); // the arrow keys step the story again
+      applySwitches();
+      if (redraw) {
+        drawCanvas();
+        drawDots();
+      }
+    });
+    label.append(box, ` ${text}`);
+    return label;
+  };
+  const switches = el("span", null, "switches");
+  switches.append(
+    toggle("How sure is this?", "sure", false),
+    toggle("Sources", "sources", false),
+    toggle("show planned", "planned", true),
+  );
+  legend.append(switches);
+}
+function applySwitches() {
+  document.body.classList.toggle("sure-off", !state.sure);
+  document.body.classList.toggle("sources-off", !state.sources);
 }
 function openTab(id, flowId, stepIndex) {
   pause();
@@ -8483,8 +9014,32 @@ function renderAll(stepIndex) {
     state.time = times[stepIndex ?? 0] ?? flow.start;
   }
   renderTabs();
-  $("banner").hidden = !state.tab.banner;
-  $("banner").textContent = state.tab.banner || "";
+  const tab = state.tab;
+  $("heading").hidden = !tab.question;
+  $("question").textContent = tab.question || "";
+  $("takeaway").textContent = tab.takeaway || "";
+  const badges = $("badges");
+  badges.replaceChildren();
+  const example = exampleOf(tab);
+  const flags = flagsOf(tab);
+  if (tab.example && tab.example.made_up) badges.append(el("span", "made up", "badge madeup"));
+  if (example) {
+    badges.append(el("span", `real battle, ${example.date_text}`, "badge"));
+    const changed = [
+      ...new Set([...(example.changed_since || []), ...((flags && flags.example_changed) || [])]),
+    ];
+    if (changed.length) {
+      const badge = el("span", "code changed since", "badge changed");
+      badge.title = `Changed since the battle: ${changed.join(", ")}`;
+      badges.append(badge);
+    }
+  }
+  const banner =
+    flags && flags.flagged
+      ? `Out of date: ${flags.reasons.length} ${flags.reasons.length === 1 ? "flag" : "flags"} from check.py on ${DIAGRAM_FLAGS.date}; turn on Sources to see them.`
+      : tab.banner;
+  $("banner").hidden = !banner;
+  $("banner").textContent = banner || "";
   renderFlows();
   drawCanvas();
   drawLanes();
@@ -8537,8 +9092,20 @@ document.addEventListener("keydown", (event) => {
   }
 });
 window.addEventListener("hashchange", readHash); // the page's own writes use replaceState
-const TAB_ORDER = ["overview", "play", "team", "multiplayer", "factory"];
-DIAGRAM.tabs.sort((a, b) => TAB_ORDER.indexOf(a.id) - TAB_ORDER.indexOf(b.id));
+// JUDGEMENT?: Frozen tabs (Claude Code, 2026-11-01, plan decision 1a): the five 2026-10-31
+// tabs stay as an appendix that check.py does not flag; each goes once a story replaces it.
+// Flagging them would cost a refresh each time their 28 cited files change.
+const FROZEN = ["overview", "play", "team", "multiplayer", "factory"];
+const TAB_ORDER = ["map", "job", "decision", "members", "gap", ...FROZEN];
+const order = (tab) => (TAB_ORDER.includes(tab.id) ? TAB_ORDER.indexOf(tab.id) : FROZEN.length);
+DIAGRAM.tabs.sort((a, b) => order(a) - order(b));
+for (const tab of DIAGRAM.tabs)
+  for (const flow of tab.flows || [])
+    if (flow.story) {
+      flow.steps.forEach((step, i) => Object.assign(step, { at: i * 1000, until: (i + 1) * 1000 }));
+      Object.assign(flow, { start: 0, end: flow.steps.length * 1000 - 1, clock: "story steps" });
+    }
+applySwitches();
 renderLegend();
 readHash();
 </script>
