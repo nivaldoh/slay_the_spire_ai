@@ -8,7 +8,7 @@ DIAGRAM.tabs.push({
   "title": "Two members, one army",
   "question": "How do two members share one army?",
   "takeaway":
-    "Each member thinks about its own units on its own clock, and each request carries one member's batch, so neither waits for the other.",
+    "Each member thinks about its own units on its own clock, and each request carries at most one member's batch, so neither waits for the other.",
   "summary":
     "Probe 1 of the scripted team's live check on 31 Oct: the infantry member waits 3 s on purpose.",
   "commit": "7bf32e6",
@@ -51,8 +51,8 @@ DIAGRAM.tabs.push({
     },
     {
       "id": "m.obs",
-      "label": "observation.json",
-      "code": "one slot, overwritten",
+      "label": "State file",
+      "code": "observation.json",
       "kind": "file",
       "where": "Windows game",
       "x": 560,
@@ -65,8 +65,8 @@ DIAGRAM.tabs.push({
     },
     {
       "id": "m.orders",
-      "label": "orders.json",
-      "code": "one request at a time",
+      "label": "Orders file",
+      "code": "orders.json",
       "kind": "file",
       "where": "Windows game",
       "x": 40,
@@ -88,11 +88,13 @@ DIAGRAM.tabs.push({
       "w": 200,
       "h": 56,
       "note": "The only mailbox writer: one request at a time, whoever's batch it carries.",
-      "status": "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48)",
+      "status":
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "src/twwarhammer3/battle/play.py:662-663",
         "src/twwarhammer3/battle/play.py:724",
-        "src/twwarhammer3/battle/team.py:9-11"
+        "src/twwarhammer3/battle/team.py:9-11",
+        "docs/twwarhammer3/log.md:577-579"
       ]
     },
     {
@@ -107,12 +109,14 @@ DIAGRAM.tabs.push({
       "h": 56,
       "note":
         "Splits the units by type, runs one call per member on two threads, and sends the oldest finished batch; no member waits for the other.",
-      "status": "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48)",
+      "status":
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "src/twwarhammer3/battle/team.py:126-127",
         "src/twwarhammer3/battle/team.py:142",
         "src/twwarhammer3/battle/team.py:205-230",
-        "src/twwarhammer3/battle/team.py:312-344"
+        "src/twwarhammer3/battle/team.py:312-344",
+        "docs/twwarhammer3/log.md:577-579"
       ]
     },
     {
@@ -126,8 +130,13 @@ DIAGRAM.tabs.push({
       "w": 170,
       "h": 52,
       "note": "In the probe: one 20 m move, at once.",
-      "status": "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48)",
-      "refs": ["src/twwarhammer3/battle/team.py:1-8", "tests/twwarhammer3/team/check_wh3_team.py:1"]
+      "status":
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+      "refs": [
+        "docs/twwarhammer3/log.md:577-579",
+        "src/twwarhammer3/battle/team.py:462-478",
+        "src/twwarhammer3/battle/team.py:487-493"
+      ]
     },
     {
       "id": "m.B",
@@ -140,8 +149,13 @@ DIAGRAM.tabs.push({
       "w": 170,
       "h": 52,
       "note": "In the probe: waits 3 s, then one move.",
-      "status": "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48)",
-      "refs": ["src/twwarhammer3/battle/team.py:1-8", "tests/twwarhammer3/team/check_wh3_team.py:1"]
+      "status":
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+      "refs": [
+        "docs/twwarhammer3/log.md:577-579",
+        "src/twwarhammer3/battle/team.py:462-478",
+        "src/twwarhammer3/battle/team.py:487-493"
+      ]
     }
   ],
   "wires": [
@@ -167,7 +181,7 @@ DIAGRAM.tabs.push({
       "to": "m.team",
       "label": "decide",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:662-663", "src/twwarhammer3/battle/team.py:312"],
+      "refs": ["src/twwarhammer3/battle/play.py:680", "src/twwarhammer3/battle/team.py:312"],
       "bend": -16
     },
     {
@@ -241,7 +255,8 @@ DIAGRAM.tabs.push({
       "title": "Two members, one army",
       "story": true,
       "timed": true,
-      "clock": "battle time",
+      "clock":
+        "battle time; steps inside one 300 ms round are spaced for legibility, and the members' calls are WSL times fitted to battle time",
       "start": 5300,
       "end": 10400,
       "speed": 0.25,
@@ -267,113 +282,113 @@ DIAGRAM.tabs.push({
         "items": [
           {
             "row": "play",
-            "label": "r1",
+            "label": "request 1",
             "from": 5300,
             "to": 5600
           },
           {
             "row": "play",
-            "label": "r2",
+            "label": "request 2",
             "who": "A",
             "from": 5600,
             "to": 5900
           },
           {
             "row": "play",
-            "label": "r3",
+            "label": "request 3",
             "from": 5900,
             "to": 6200
           },
           {
             "row": "play",
-            "label": "r4",
+            "label": "request 4",
             "who": "A",
             "from": 6200,
             "to": 6500
           },
           {
             "row": "play",
-            "label": "r5",
+            "label": "request 5",
             "from": 6500,
             "to": 6800
           },
           {
             "row": "play",
-            "label": "r6",
+            "label": "request 6",
             "who": "A",
             "from": 6800,
             "to": 7100
           },
           {
             "row": "play",
-            "label": "r7",
+            "label": "request 7",
             "from": 7100,
             "to": 7400
           },
           {
             "row": "play",
-            "label": "r8",
+            "label": "request 8",
             "who": "A",
             "from": 7400,
             "to": 7700
           },
           {
             "row": "play",
-            "label": "r9",
+            "label": "request 9",
             "from": 7700,
             "to": 8000
           },
           {
             "row": "play",
-            "label": "r10",
+            "label": "request 10",
             "who": "A",
             "from": 8000,
             "to": 8300
           },
           {
             "row": "play",
-            "label": "r11",
+            "label": "request 11",
             "from": 8300,
             "to": 8600
           },
           {
             "row": "play",
-            "label": "r12",
+            "label": "request 12",
             "who": "A",
             "from": 8600,
             "to": 8900
           },
           {
             "row": "play",
-            "label": "r13",
+            "label": "request 13",
             "who": "B",
             "from": 8900,
             "to": 9200
           },
           {
             "row": "play",
-            "label": "r14",
+            "label": "request 14",
             "who": "A",
             "from": 9200,
             "to": 9500
           },
           {
             "row": "play",
-            "label": "r15",
+            "label": "request 15",
             "who": "B",
             "from": 9500,
             "to": 9800
           },
           {
             "row": "play",
-            "label": "r16",
+            "label": "request 16",
             "who": "A",
             "from": 9800,
             "to": 10100
           },
           {
             "row": "play",
-            "label": "r17",
+            "label": "request 17",
             "who": "B",
             "from": 10100,
             "to": 10400
@@ -514,7 +529,8 @@ DIAGRAM.tabs.push({
           "who": "B",
           "refs": [
             "src/twwarhammer3/battle/team.py:325-333",
-            "tests/twwarhammer3/team/check_wh3_team.py:1"
+            "src/twwarhammer3/battle/team.py:462-478",
+            "src/twwarhammer3/battle/team.py:487-493"
           ]
         },
         {
@@ -562,7 +578,8 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/team.py:337-339",
             "src/twwarhammer3/battle/team.py:346-348"
-          ]
+          ],
+          "every": 300
         },
         {
           "at": 8600,
@@ -572,13 +589,13 @@ DIAGRAM.tabs.push({
           "dots": [["m.B>team"]],
           "box": "m.B",
           "who": "B",
-          "refs": ["src/twwarhammer3/battle/team.py:340-341"]
+          "refs": ["src/twwarhammer3/battle/team.py:339-341"]
         },
         {
           "at": 8900,
           "until": 9500,
           "caption":
-            "Infantry's move goes as request 13, applied at 9.2 s: 3.9 s after the state it was based on.",
+            "Infantry's move goes as request 13, applied at 9.2 s: 3.9 s after the state infantry decided on.",
           "dots": [["m.team>play", "m.play>orders", "m.orders>game"]],
           "box": "m.B",
           "who": "B",
@@ -599,7 +616,7 @@ DIAGRAM.tabs.push({
           "at": 9500,
           "until": 10400,
           "caption":
-            "From then on the members take turns: every request carries one member's batch, so neither waits.",
+            "From then on the members take turns: each request carries one member's batch, so neither waits for the other.",
           "dots": [["m.team>play"]],
           "box": "m.team",
           "message": {

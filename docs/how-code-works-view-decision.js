@@ -44,8 +44,8 @@ DIAGRAM.tabs.push({
   "elements": [
     {
       "id": "d.orders",
-      "label": "orders.json",
-      "code": "one request at a time",
+      "label": "Orders file",
+      "code": "orders.json",
       "kind": "file",
       "where": "Windows game",
       "x": 50,
@@ -80,19 +80,21 @@ DIAGRAM.tabs.push({
     },
     {
       "id": "d.obs",
-      "label": "observation.json",
-      "code": "one slot, overwritten",
+      "label": "State file",
+      "code": "observation.json",
       "kind": "file",
       "where": "Windows game",
       "x": 630,
       "y": 34,
       "w": 220,
       "h": 60,
-      "note": "The newest state only: our units, and enemy units while our side can see them.",
+      "note":
+        "The newest state only: our units, enemy units while our side can see them, and hidden totals that the play loop strips before a policy sees them.",
       "status": "built, component tests only",
       "refs": [
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289",
+        "src/twwarhammer3/engine/mailbox.py:91-92"
       ]
     },
     {
@@ -125,7 +127,7 @@ DIAGRAM.tabs.push({
       "w": 220,
       "h": 64,
       "note":
-        "Removes the hidden keys (evaluation, final, setup, native) before a policy sees the state.",
+        "Today's code removes the hidden keys (evaluation, final, setup, native) before a policy sees the state; on 20 Oct an inline filter removed the first three.",
       "status": "built, component tests only",
       "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/protocol.py:45"]
     },
@@ -160,24 +162,9 @@ DIAGRAM.tabs.push({
       "w": 220,
       "h": 64,
       "note":
-        "Holds the call's worst-case cost in the spend ledger until it returns, then sends it.",
+        "Checks the call's worst-case cost against the budget, then sends it; since 21 Oct (commit e554dd5) it also holds that cost in the ledger until the call returns.",
       "status": "built, component tests only",
       "refs": ["src/gameai/llm.py:352", "src/gameai/llm.py:376-378", "src/gameai/llm.py:469"]
-    },
-    {
-      "id": "d.trace",
-      "label": "Episode trace",
-      "code": "trace.jsonl",
-      "kind": "file",
-      "where": "WSL Python",
-      "x": 50,
-      "y": 230,
-      "w": 200,
-      "h": 56,
-      "note":
-        "Every state the model decided from, every model exchange, decision and acknowledgement.",
-      "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:274", "src/twwarhammer3/battle/play.py:718-728"]
     },
     {
       "id": "d.provider",
@@ -275,14 +262,6 @@ DIAGRAM.tabs.push({
       "refs": ["src/twwarhammer3/battle/llm.py:615"]
     },
     {
-      "id": "d.play>trace",
-      "from": "d.play",
-      "to": "d.trace",
-      "label": "rows",
-      "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:718-728"]
-    },
-    {
       "id": "d.play>orders",
       "from": "d.play",
       "to": "d.orders",
@@ -311,7 +290,7 @@ DIAGRAM.tabs.push({
       "steps": [
         {
           "caption":
-            "At 79.7 s the battle script writes what our side can see; the play loop reads it within 0.1 s.",
+            "At 79.7 s the battle script writes the state, hidden totals included; the play loop reads it within 0.1 s.",
           "dots": [["d.battle>obs", "d.obs>play"]],
           "box": "d.play",
           "message": {
@@ -375,19 +354,23 @@ DIAGRAM.tabs.push({
           "refs": ["src/gameai/llm.py:469", "src/twwarhammer3/battle/llm.py:615"]
         },
         {
-          "caption": "The play loop logs request 25, based on the 79.7 s state, in the trace.",
-          "dots": [["d.policy>play", "d.play>trace"]],
-          "box": "d.trace",
+          "caption":
+            "The play loop writes request 25, based on the 79.7 s state, to orders.json, then logs it.",
+          "dots": [["d.policy>play", "d.play>orders"]],
+          "box": "d.orders",
           "message": {
             "example": "decision",
             "key": "request"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:718-728"]
+          "refs": [
+            "src/twwarhammer3/battle/play.py:724-728",
+            "src/twwarhammer3/engine/mailbox.py:212"
+          ]
         },
         {
           "caption":
-            "Request 25 reaches the battle script and is applied at 83.0 s, 3.3 s after the state the model saw.",
-          "dots": [["d.play>orders", "d.orders>battle"]],
+            "The battle script applies request 25 at 83.0 s, 3.3 s after the state the model saw.",
+          "dots": [["d.orders>battle"]],
           "box": "d.battle",
           "message": {
             "example": "decision",
@@ -405,7 +388,7 @@ DIAGRAM.tabs.push({
         },
         {
           "caption":
-            "The next prompt tells the model its last order arrived 3.3 s late, so it expects a similar delay.",
+            "The next prompt tells the model its last order arrived 3.3 s late, and to expect a similar delay.",
           "dots": [["d.obs>play", "d.play>public", "d.public>policy"]],
           "box": "d.policy",
           "message": {

@@ -35,16 +35,16 @@ Object.assign(DIAGRAM_EXAMPLES, {
    },
    "prompt": {
     "title": "The prompt, first line of each part (trace row 99)",
-    "text": "Battle notes: Battle 75 s. Trigger: charge f2 only when f1 is within ~60 m of the enemy line. f1 still 339...\nRecent decisions, oldest first: 57 s: no new orders (f2 is nearly at the staging point and f1 is still ~400...\nTiming: battle time 80 s, 1125 s left, speed 1. Your last batch was issued to the engine 4.8 s after the st...\nLast orders: f2 #1 issued.\nTerrain samples: first cell centre (-496,-496), columns increase x and rows increase z by 32 m. '.' = 16 m...",
+    "text": "Battle notes: Battle 75 s. Trigger: charge f2 only when f1 is within ~60 m of the enemy line. f1 still 339...\nRecent decisions, oldest first: 57 s: no new orders (f2 is nearly at the staging point and f1 is still ~400...\nTiming: battle time 80 s, 1125 s left, speed 1. Your last batch was issued to the engine 4.8 s after the st...\nLast orders: f2 #1 issued.\nTerrain samples: first cell centre (-496,-496), columns increase x and rows increase z by 32 m. '.' = 16 m...\nYour units: - f1 swordsmen (infantry) at (-18, -89) facing 318, 90/90 men, hp 100%, walk 1.5 run 3.0, activ...\nVisible enemies: - e1 swordsmen (infantry) at (-240, 135) facing 168, 90/90 men, hp 100%, walk 1.5 run 3.0,...",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 99"
    },
    "call": {
     "title": "The call (trace row 99)",
-    "text": "model z-ai/glm-5.3 through openrouter, backend Decart\n2550 tokens in (1344 cached), 475 out\n2.79 s, $0.0025",
+    "text": "model z-ai/glm-5.3 through openrouter, backend Decart\n2550 tokens in (1344 cached), 475 out\n2.79 s of WSL time, $0.0025",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 99"
    },
    "trace": {
-    "title": "What the trace recorded meanwhile",
+    "title": "The trace rows, written after the reply: no state between seq 70 and seq 73 was read",
     "text": "row 99: model exchange m25\nrow 100: state seq 70 at 79.7 s\nrow 101: decision, request 25\nrow 102: acknowledgement: applied at 83.0 s\nrow 103: model exchange m26\nrow 104: state seq 73 at 83.0 s",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl rows 99-104"
    },
@@ -54,13 +54,13 @@ Object.assign(DIAGRAM_EXAMPLES, {
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 99"
    },
    "request": {
-    "title": "The request written to orders.json (trace row 101)",
+    "title": "The request written to orders.json, shortened (trace row 101)",
     "text": "{\"request\": \"r25\", \"based_on\": 70, \"orders\": [{\"queue\": false, \"run\": true, \"type\": \"move\", \"unit\": \"f2\", \"x\": -380, \"z\": 40}]}",
-    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 101 (request id shortened)"
+    "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 101 (request id shortened; empty fields and schema, job and battle left out)"
    },
    "ack": {
     "title": "The acknowledgement (trace row 102)",
-    "text": "applied at 83.0 s, based on state seq 70\nresults: Knights (f2) ok\ndelay 3300 ms of battle time; think 2.798 s",
+    "text": "applied at 83.0 s, based on state seq 70\nresults: Knights (f2) ok\ndelay 3300 ms of battle time; think 2.798 s of WSL time",
     "source": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl row 102"
    },
    "next": {

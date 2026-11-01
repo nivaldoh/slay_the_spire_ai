@@ -8509,7 +8509,7 @@ function renderTime() {
   $("time").textContent =
     flow.story && !flow.timed
       ? ""
-      : `${(state.time / 1000).toFixed(2)} s ${flow.clock === "battle time" ? "battle" : "(illustrative)"}`;
+      : `${(state.time / 1000).toFixed(2)} s ${flow.clock.startsWith("battle time") ? "battle" : "(illustrative)"}`;
   const cursor = $("cursor");
   if (cursor) {
     const x = laneX(flow, state.time);
@@ -9115,6 +9115,11 @@ for (const tab of DIAGRAM.tabs)
       flow.steps.forEach((step, i) => Object.assign(step, { at: i * 1000, until: (i + 1) * 1000 }));
       Object.assign(flow, { start: 0, end: flow.steps.length * 1000 - 1, clock: "story steps" });
     }
+for (const tab of DIAGRAM.tabs)
+  for (const flow of tab.flows || [])
+    if (flow.story && flow.timed)
+      // the last step stays shown at the flow's end
+      flow.end = Math.min(flow.end, flow.steps[flow.steps.length - 1].until - 1);
 applySwitches();
 renderLegend();
 readHash();

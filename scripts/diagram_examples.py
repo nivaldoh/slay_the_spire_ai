@@ -62,7 +62,7 @@ EXAMPLES = {
         "job": "runs/twwarhammer3/team-live-20261031e/probe-1",
         "episode": "episode",
         "date": "2026-10-31",
-        "decisions": ["r1", "r2", "r13", "r14", "r15", "r16", "r17"],
+        "decisions": ["r1", "r2", "r13", "r14", "r15", "r16", "r17"],  # r5, r6: the middle
         "story": "docs/how-code-works-view-members.js",
     },
 }
@@ -181,12 +181,15 @@ def build_decision(recipe: dict, runs: Path) -> dict:
                       if u["id"] == unit["id"]), {}).get("state") or []
         saw.append(f"{unit['label']}: x {unit['x']}, z {unit['z']}, {unit['men']} of "
                    f"{unit['men0']} men, {', '.join(state) or 'idle'}")
-    parts = []  # each part's first line, and its second when the first is only a heading
-    for part in rows[reply_row]["prompt"].split("\n\n"):
-        lines = [line for line in part.splitlines() if line.strip()]
-        if lines:
-            head = lines[0] + (" " + lines[1] if lines[0].endswith(":") and len(lines) > 1 else "")
+    parts, block = [], []  # parts split at blank lines and at heading lines ("Your units:")
+    for line in rows[reply_row]["prompt"].splitlines() + [""]:
+        if (not line.strip() or (line.rstrip().endswith(":") and block)) and block:
+            head = block[0] + (" " + block[1] if block[0].endswith(":") and len(block) > 1
+                               else "")
             parts.append(short(head, 110))
+            block = []
+        if line.strip():
+            block.append(line)
     timing = [line for line in rows[next_row]["prompt"].splitlines()
               if "Your last batch" in line or line.startswith("Last orders")]
     kinds = []
@@ -205,7 +208,7 @@ def build_decision(recipe: dict, runs: Path) -> dict:
                          f"{basis['source']['line']})",
                 "text": "\n".join(saw), "source": f"{path} row {basis['source']['line']}"},
         "prompt": {"title": f"The prompt, first line of each part (trace row {reply_row})",
-                   "text": "\n".join(parts[:9]), "source": f"{path} row {reply_row}"},
+                   "text": "\n".join(parts[:10]), "source": f"{path} row {reply_row}"},
         "call": {"title": f"The call (trace row {reply_row})",
                  "text": "\n".join([
                      f"model {attempt['actual_model']} through {attempt['provider']}, "
@@ -213,19 +216,22 @@ def build_decision(recipe: dict, runs: Path) -> dict:
                      f"{usage.get('input_tokens')} tokens in "
                      f"({(usage.get('input_tokens_details') or {}).get('cached_tokens')} "
                      f"cached), {usage.get('output_tokens')} out",
-                     f"{attempt['seconds']:.2f} s, ${attempt['usd']:.4f}"]),
+                     f"{attempt['seconds']:.2f} s of WSL time, ${attempt['usd']:.4f}"]),
                  "source": f"{path} row {reply_row}"},
-        "trace": {"title": "What the trace recorded meanwhile", "text": "\n".join(kinds),
+        "trace": {"title": f"The trace rows, written after the reply: no state between seq "
+                           f"{first['seq']} and seq {then['seq']} was read",
+                  "text": "\n".join(kinds),
                   "source": f"{path} rows {reply_row}-{next_row + 1}"},
         "reply": {"title": f"The model's reply (trace row {reply_row})",
                   "text": short(attempt["text"], 420), "source": f"{path} row {reply_row}"},
-        "request": {"title": f"The request written to orders.json (trace row "
+        "request": {"title": f"The request written to orders.json, shortened (trace row "
                              f"{first['source']['line']})",
                     "text": json.dumps({"request": "r" + first["request"].rsplit("-r", 1)[-1],
                                         "based_on": first["seq"],
                                         "orders": [{k: v for k, v in o.items() if v is not None}
                                                    for o in orders]}),
-                    "source": f"{path} row {first['source']['line']} (request id shortened)"},
+                    "source": f"{path} row {first['source']['line']} (request id shortened; "
+                              "empty fields and schema, job and battle left out)"},
         "ack": {"title": f"The acknowledgement (trace row {ack_row})",
                 "text": "\n".join([f"applied at {seconds(ack['ack']['applied_ms'])}, based on "
                                    f"state seq {ack['ack']['based_on']}",
@@ -234,7 +240,7 @@ def build_decision(recipe: dict, runs: Path) -> dict:
                                        f"{'ok' if r['ok'] else 'refused'}"
                                        for r in ack["ack"]["results"]),
                                    f"delay {ack['latency']['delay_ms']} ms of battle time; "
-                                   f"think {ack['latency']['think_s']} s"]),
+                                   f"think {ack['latency']['think_s']} s of WSL time"]),
                 "source": f"{path} row {ack_row}"},
         "next": {"title": f"The next prompt's timing lines (trace row {next_row})",
                  "text": "\n".join(short(line, 200) for line in timing),
@@ -301,8 +307,9 @@ def build_members(recipe: dict, runs: Path) -> dict:
                   "text": "\n".join(f"{who}: {names.get(unit, unit)}"
                                      for who, unit in owners.items()),
                   "source": f"{path} row {split[0]}"},
-        "idle": {"title": "The first request", "text": summary("r1"),
-                 "source": f"{path} row {by_request['r1']['source']['line']}"},
+        "idle": {"title": "Two rounds in the middle", "text": summary("r5") + "\n"
+                 + summary("r6"), "source": f"{path} rows {by_request['r5']['source']['line']} "
+                                            f"and {by_request['r6']['source']['line']}"},
         "r2": {"title": "Cavalry's move goes alone", "text": summary("r2"),
                "source": f"{path} row {by_request['r2']['source']['line']}"},
         "r13": {"title": "Infantry's move, a round after it finished",

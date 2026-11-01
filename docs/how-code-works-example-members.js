@@ -26,9 +26,9 @@ Object.assign(DIAGRAM_EXAMPLES, {
     "source": "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl row 3"
    },
    "idle": {
-    "title": "The first request",
-    "text": "request 1 (trace row 7): idle poll, no orders; applied at 5.6 s",
-    "source": "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl row 7"
+    "title": "Two rounds in the middle",
+    "text": "request 5 (trace row 25): idle poll, no orders; applied at 6.8 s\nrequest 6 (trace row 29): cavalry's batch: no orders; applied at 7.1 s",
+    "source": "runs/twwarhammer3/team-live-20261031e/probe-1/episode/trace.jsonl rows 25 and 29"
    },
    "r2": {
     "title": "Cavalry's move goes alone",
