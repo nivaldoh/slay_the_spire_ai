@@ -55,7 +55,8 @@ def _legacy_retry_supported(revision: str, source_hash: str) -> bool:
 def _new_record(prompt, line: int | None, behavior: dict) -> dict:
     return {"user_prompt": prompt, "prompt_trace_line": line, "attempts": [], "error": None,
             "decision_metadata": {}, "execution": [], "issues": [],
-            "model": behavior.get("model"), "effort": behavior.get("effort")}
+            "model": behavior.get("model"), "effort": behavior.get("effort"),
+            "member": behavior.get("member")}  # a team member's name; None for one controller
 
 
 def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
@@ -121,16 +122,20 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
                     records.append(pending)
                 invalid = None
     # New traces retain requests that failed, or completed after the last executor tick.
+    # A team's members number their exchanges alike (m1, m2, ...): match within a member.
     claimed = set()
     for line, exchange in exchanges:
-        matches = [r for r in records if any(a.get("exchange_id") == exchange["id"]
-                                             for a in r["attempts"])]
+        member = exchange.get("member")
+        mine = [r for r in records if r["member"] == member]
+        matches = [r for r in mine if any(a.get("exchange_id") == exchange["id"]
+                                          for a in r["attempts"])]
         if not matches:
-            matches = [r for r in records if id(r) not in claimed
+            matches = [r for r in mine if id(r) not in claimed
                        and r["user_prompt"] == exchange["prompt"]]
         if len(matches) > 1:
             raise ValueError(f"{trace}:{line}: ambiguous model exchange {exchange['id']}")
-        record = matches[0] if matches else _new_record(exchange["prompt"], line, {})
+        record = (matches[0] if matches
+                  else _new_record(exchange["prompt"], line, {"member": member}))
         if not matches:
             records.append(record)
         claimed.add(id(record))
@@ -268,9 +273,6 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
     if base not in MODEL_POLICIES:
         inventory["excluded"] = "not a built-in model controller"
         return [], inventory
-    if base == "team_llm_rules":  # its exchanges need member identity in the export first
-        inventory["excluded"] = "a model team, not exported yet"
-        return [], inventory
     trace = episode / "trace.jsonl"
     files[str(trace)] = sha256(trace)
     system, system_hash = _prompt(job, base, manifest, files)
@@ -300,7 +302,7 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
             record["issues"].append("reply_not_recorded")
         record.update(
             schema_version=SCHEMA_VERSION, game="twwarhammer3", group=group, split=split,
-            decision_index=index, policy=base,
+            decision_index=index, policy=base, member=record.pop("member"),
             model=record["model"] or model, effort=record["effort"] or effort,
             provider=result.get("card", {}).get("provider") or
             manifest["config"].get("provider", "openai"),

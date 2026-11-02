@@ -46,6 +46,22 @@ Recorded Windows ratios1.0000; not an independent NTFS recount. Raw evidence/rep
 `runs/benchmark-initial-20261102/`; [runbook](benchmark-initial.md#first-screen-2026-11-02).
 No controller-strength, winnability, cavalry-advantage or generalisation claim. No new run.
 
+## 2026-11-02: direct model-team report/export integration and first comparison plan
+
+Integrate owner-approved `wh3-team-report` (5dcdac9/e5effd0): report uses member-source
+ages and failures; report/export match exchange IDs within each member. This keeps the
+existing single-controller path and does not change controllers, prompts or scoring.
+Independent review found ID-less failed replies duplicated between decision metadata
+and exchanges; the new regression fails first (member: 3 vs 2 attempts; single passes),
+then passes with member identity retained. Four original plants caught independently.
+Focused reader/team/outcome cases: 147 passed. Offline gate: Ruff clean, 2653 passed,
+69 skipped in the isolated checkout; skipped local evidence is not a main-tree pass.
+Evidence and review: `runs/team-initial-20261102/`. Live model teams remain unverified.
+Owner agreed one fresh team and one fresh single battle on `emp5-emp5`, cheap Anthropic,
+1x, $3 cumulative existing WH3 ledger, failures retained; compare outcome, final condition,
+cost, calls and source ages. The team smoke is the team arm. No strength claim at n=1/arm.
+Concurrency probe and live seven-point check are pending; no paid call for this slice yet.
+
 ## 2026-11-02: add two enemy Swordsmen; obtain health from the engine
 
 Owner: add two enemy Swordsmen to make the standing-army battle harder. Version5:

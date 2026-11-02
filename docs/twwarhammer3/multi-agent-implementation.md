@@ -91,8 +91,8 @@ first waits 3 s on a stop event that cleanup can wake.
   `members`), and `polls` keeps the dispatcher's own. The card says `asynchronous`; `digest`
   and `watch` label member lines and show a member's prompt at its source time; `digest`
   measures a member's delay from that source and labels evidence recorded before `team-v2`
-  (no `polls`) as dispatcher polls. `report`
-  refuses team episodes and `export` excludes them until they read member records.
+  (no `polls`) as dispatcher polls. `report` and `export` read member records (2026-10-31;
+  before, they refused or excluded team episodes).
 - **Clock.** Team times use the wall clock, as `play.py`'s think times do: WSL's monotonic
   clock ran 0-11% slow ([benchmark](benchmark.md)), the wall clock is stepped about 1 s every
   32 s, and this Python's thread timeouts follow the wall clock: 15 timed 3 s waits
@@ -232,16 +232,23 @@ result. The live check passed at the rebased `3adbaa4`, so `wh3-model-team` merg
 2026-10-27). Before the first team battle:
 1. `report` and `export` read member records: order ages from each member's source time,
    calls and forfeits from team events, exchanges keyed by member (both members number theirs
-   `m1`, `m2`, ...). 2026-10-31: `report` does so on branch `wh3-team-report` (it replaces one
-   agreed-test assertion: needs your yes); `export` still excludes teams. On `main` since
+   `m1`, `m2`, ...). Owner approved `wh3-team-report` on 2026-11-02, including its changed
+   export assertion; both report and export now read member records. On `main` since
    `56d3937`: the card board leaves team episodes off (JUDGEMENT Team rows in `cards.py`) and
    each member's record in `result.json` says `running_at_close`.
-2. An agreed check for `team_llm_rules`: proposed, `team/test_wh3_model_team.py` plus a
-   written pass list for the first paid battle (drafted 2026-10-31:
-   `runs/overnight-20261031/b3/team-check-card.md`).
+2. The owner agreed `team/test_wh3_model_team.py` and the first paid battle's pass list
+   on 2026-11-02 (`runs/overnight-20261031/b3/team-check-card.md`): ownership, member views,
+   independent progress, member-source ages, charges/exchanges, engine ending and 1x.
 3. A check that the pinned backend serves two calls at once (it has only served one).
 
-Then, with the owner's go-ahead and budget, one paid `team_llm_rules` battle on the Land
-Battle, as its own job. Messages and
+The owner chose `emp5-emp5` for this first test on 2026-11-02, using cheap Anthropic calls.
+In this thread the owner also agreed the initial comparison: one fresh team battle and one
+fresh `llm_rules` battle with the same Haiku model/effort, scenario and setup at unpaused 1x.
+The team test is the team arm. Compare engine outcome, final condition, charged cost, calls
+and source order ages; keep failures and make no strength claim at one battle per arm.
+The existing WH3 Anthropic ledger has a $3 cumulative cap, including earlier spend and the
+concurrency probe. Stop on a failed team check, two failed launches, a build mismatch or
+budget exhaustion. Card and recount artifacts: `runs/team-initial-20261102/`.
+Messages and
 teams beyond one army stay deferred: [plan §4](multi-agent-plan.md#communication) and
 [§9-§10](multi-agent-plan.md#9-stages).

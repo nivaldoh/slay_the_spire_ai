@@ -3148,3 +3148,49 @@ old = "        elif path in TRACKED and path not in CHANGED and resolved not in 
 new = ""
 tests = ["tests/test_doc_links.py::test_a_committed_page_linking_to_an_untracked_file_fails"]
 source = "2026-11-02: CI failed at 8211df9 on a link to an untracked page while check.py passed"
+# 2026-10-31 run, B3: report reads team member records (branch wh3-team-report).
+
+[[plant]]
+id = "team-ages-from-the-dispatcher"
+guards = "report reads team member records"
+file = "src/twwarhammer3/battle/report.py"
+old = "    team = \"members\" in ((result.get(\"card\") or {}).get(\"disclosure\") or {})"
+new = "    team = False"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team records"
+
+[[plant]]
+id = "exchanges-keyed-by-id-only"
+guards = "report reads team member records"
+file = "src/twwarhammer3/battle/report.py"
+old = "                    exchanges[event.get(\"member\"), event[\"id\"]] = event.get(\"attempts\") or []"
+new = "                    exchanges[None, event[\"id\"]] = event.get(\"attempts\") or []"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team records"
+
+[[plant]]
+id = "export-excludes-teams-again"
+guards = "export reads team member records"
+file = "src/twwarhammer3/battle/export.py"
+old = "    trace = episode / \"trace.jsonl\"\n    files[str(trace)] = sha256(trace)"
+new = "    if base == \"team_llm_rules\":\n        inventory[\"excluded\"] = \"a model team, not exported yet\"\n        return [], inventory\n    trace = episode / \"trace.jsonl\"\n    files[str(trace)] = sha256(trace)"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team export"
+
+[[plant]]
+id = "export-matches-exchanges-across-members"
+guards = "export reads team member records"
+file = "src/twwarhammer3/battle/export.py"
+old = "        mine = [r for r in records if r[\"member\"] == member]"
+new = "        mine = records"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team export"
+
+[[plant]]
+id = "report-member-metadata-loses-exchange-identity"
+guards = "An ID-less member reply is counted once when decision metadata repeats its exchange"
+file = "src/twwarhammer3/battle/report.py"
+old = 'attempts.extend({**attempt, "member": meta.get("member")} for attempt'
+new = 'attempts.extend({**attempt, "member": None} for attempt'
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_an_idless_failed_reply_once_when_metadata_repeats_its_exchange"]
+source = "2026-11-02 initial one-army team integration review"

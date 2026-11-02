@@ -125,6 +125,22 @@ revisions written below are the earlier passes.
   pre-contact infantry attack/matching-melee audit; movement/no-order controls were not
   rerun. Engine lost at 666.8 s; no strength claim. Raw checks/citations:
   `runs/gap-initiation-20261101/review/live-followup/` (one battle).
+- WH3 direct model team (agreed 2026-11-02): component command `uv run --locked pytest -ra
+  tests/twwarhammer3/team/test_wh3_model_team.py
+  tests/twwarhammer3/team/test_wh3_team.py
+  tests/twwarhammer3/test_wh3_benchmark_outcome.py`. The draft's engine-outcome test filename
+  does not exist; the current outcome-table cases live in this benchmark-outcome file.
+  The owner approved the report/export
+  assertion change and the seven-point pass list in
+  `runs/overnight-20261031/b3/team-check-card.md`: each member orders only its partition;
+  prompts contain its own units and public allies, never private observation sections;
+  one member's batch is acknowledged while the other's call runs; order ages use the
+  member's source; ledger/result/exchange accounting reconciles, including running-at-close
+  costs; engine ending retained or member failure identified; Windows-clock ratio within
+  0.99–1.01. Catch unauthorized ownership and dispatcher-age plants offline.
+  First live case: one fresh `emp5-emp5` battle with two cheap Anthropic members at unpaused
+  1x. Not yet passed; no strength claim. Initial team/single comparison separately agreed
+  in [the implementation plan](twwarhammer3/multi-agent-implementation.md#next).
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

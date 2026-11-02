@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-02 (initial one-army model-team comparison): active goal, "Complete the initial
+  test and comparison for the one army multi-agent feature". Owner chose "Agree to this
+  initial comparison": one fresh team battle and one fresh single-controller battle on
+  `emp5-emp5`, same cheap Anthropic model at 1x; compare engine outcome, final condition,
+  cost, calls and order age, retain failures, and keep the existing WH3 Anthropic ledger
+  below $3 cumulative including earlier spend. The approved team test is the team arm;
+  no strength claim from one battle per arm. Card: `runs/team-initial-20261102/card.md`.
 - 2026-11-02 (initial WH3 benchmark follow-up): "We should add 2 swordsmen to the enemy side
   to make it more challenging" after observing the standing army win. Version5 selects six
   enemy Swordsmen plus Great Cannon, still attacking; our five units stay unchanged.

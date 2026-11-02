@@ -6,6 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
+Codex: initial one-army model-team test and agreed one-team/one-single comparison on
+`emp5-emp5`; isolated checkout, $3 cumulative Anthropic cap. Card: `runs/team-initial-20261102/card.md`.
+
 Codex: [initial mirror benchmark](twwarhammer3/benchmark-initial.md) implemented and checked
 at `b1136e8`, version5: six enemy Swordsmen + Cannon; native health. Three scripted and
 five Haiku attempts completed, all losses. No game runs; no strength/winnability claim.
