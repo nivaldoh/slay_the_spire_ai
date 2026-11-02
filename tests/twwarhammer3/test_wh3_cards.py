@@ -233,3 +233,28 @@ def test_a_team_episode_is_left_off_the_board_and_counted(tmp_path):
     assert [row["controller"] for row in rows] == ["attack_nearest"] and skipped == 0
     assert teams == ["job-t1/episode-0001"]
     assert "1 team episodes left off" in board("chariot", [job])
+
+
+def test_no_cycle_wins_count_only_wins_whose_replay_shows_zero_cycles(tmp_path):
+    # The board's "no-cycle wins" header: wins with zero cycles. A win without a replay has no
+    # cycle count and is not one (tactic-cards.md, b39: it once read as a no-cycle win).
+    frames = [_frame(second, 10 <= second <= 20 or 40 <= second <= 50) for second in range(60)]
+    attack = [{"kind": "decision", "request": "r1",
+               "orders": [{"unit": "f1", "type": "attack", "target": "e1"}]},
+              {"kind": "ack", "request": "r1",
+               "ack": {"applied_ms": 12000, "results": [{"index": 1, "ok": True}]}}]
+    launches = []
+    for name, status, replayed in [("l1", "won", True), ("l2", "lost", True),
+                                   ("l3", "lost", True), ("l4", "won", False)]:
+        job = _job(tmp_path, name, [_episode(0, "attack_nearest", status)])
+        episode = job / "episode-0000"
+        episode.mkdir()
+        (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in attack))
+        if replayed:  # two engagements, no move: zero cycles
+            (episode / "replay.jsonl").write_text(
+                "".join(json.dumps(f) + "\n" for f in frames))
+        launches.append(job)
+    header, row = board("chariot", launches).splitlines()[2:4]
+    assert header.split()[-10:-8] == ["no-cycle", "wins"] and row.startswith("attack_nearest ")
+    # Like the header, the row ends: no-cycle wins, battle s, age p50/p90 s, info proxy s.
+    assert row.split()[-4] == "1"

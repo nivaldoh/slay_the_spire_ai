@@ -231,3 +231,11 @@ def test_a_purchase_after_a_unit_ability_or_toggle_in_the_same_batch_validates()
         {"unit": "army", "type": "reinforce", "reinforcement": "marauders", "zone": 14},
         {"unit": "army", "type": "build", "slot": "s1", "option": "barricade_trap"},
     ], state)
+
+
+def test_a_zero_move_width_is_refused():
+    # protocol.validate_orders's own error: "width must be a positive number or null"; zero is
+    # not positive.
+    with pytest.raises(protocol.IllegalActionError, match="width must be a positive number"):
+        protocol.validate_orders([{"unit": "f1", "type": "move", "x": 0, "z": 1, "width": 0}],
+                                 capable_observation())

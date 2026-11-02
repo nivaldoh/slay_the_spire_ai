@@ -139,3 +139,30 @@ def test_a_row_records_the_mean_order_delay_in_seconds(tmp_path):
     # Rests on JUDGEMENT src/twwarhammer3/battle/play.py Delay: delay_s is the mean of
     # delays_ms (a median would give 0.8).
     assert stats.row(job, job / "episode-0000")["delay_s"] == 0.83
+
+
+def test_a_row_writes_the_date_short_source_and_seconds_columns_at_the_registers_precision(
+        tmp_path):
+    # Hand-worked against the committed register's format (docs/twwarhammer3/results.csv, e.g.
+    # "2026-10-13,llm-luna-v1-20261013,...,b615830,realtime,1.0,5.0,won,446,,,44,0,4.23,0.0124"):
+    # the manifest's date, a 7-character revision, seconds, whole battle seconds, delays to
+    # 0.01 s and dollars to 0.0001.
+    job = tmp_path / "llm-luna-v1-20261013"
+    (job / "episode-0000").mkdir(parents=True)
+    (job / "manifest.json").write_text(json.dumps({
+        "created_at": "2026-10-13T21:04:05.123456+00:00",
+        "source_revision": "b6158303f5a6c1e2d9b8a7f6e5d4c3b2a1f0e9d8",
+        "config": {"policy": "llm", "model": "gpt-6-luna", "effort": "low",
+                   "scenario": "kho5-dwf5", "speed": 1.0, "pause": False, "interval_ms": 2500}}))
+    (job / "episode-0000/result.json").write_text(json.dumps({
+        "episode": "episode-0000", "status": "won", "policy": "llm", "decisions": 44,
+        "invalid": 0, "delays_ms": [8000, 9880], "delay_ms": 0, "battle_ms": 445600,
+        "llm": {"calls": 44, "usd": 0.012449}}))
+    row = stats.row(job, job / "episode-0000")
+    assert {key: row[key] for key in ("date", "source", "interval_s", "battle_s", "delay_s",
+                                      "usd")} == {
+        "date": "2026-10-13", "source": "b615830", "interval_s": 2.5,
+        "battle_s": 446,  # 445.6 s to the nearest second
+        "delay_s": 8.94,  # (8000 + 9880) / 2 ms
+        "usd": 0.0124,  # 0.012449 to four places
+    }

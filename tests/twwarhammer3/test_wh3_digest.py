@@ -158,3 +158,25 @@ def test_a_quiet_engine_no_op_is_left_out_but_a_local_refusal_is_shown(tmp_path)
     lines = digest(tmp_path / "episode-0000").splitlines()
     assert [line.strip() for line in lines if "feedback" in line] == [
         "line-2: local feedback; worker 0.250s; member reply expired before dispatch"]
+
+
+def test_a_decision_line_shows_each_sides_tickets_and_the_goal(tmp_path):
+    # digest.py's docstring and battle-types.md: decision lines add tickets where the battle
+    # type has them; mode_section in twwarhammer3_battle.lua writes one {side, tickets, per_s,
+    # score} row per side and tickets_goal (conquest counts up to it).
+    seen = observation(1000)
+    seen["mode"] = {
+        "type": "conquest", "role": "attacker", "timeout_winner": "enemy",
+        "capture_points": [{"id": "c1", "key": "capture_point_major", "name": "Centre",
+                            "x": 0.0, "z": 0.0, "holder": "us", "contested": False,
+                            "locked": False, "percent": 100, "victory": True}],
+        # Kill scores differ from tickets, as in recorded conquest traces.
+        "tickets": [{"side": "us", "tickets": 183, "per_s": 1, "score": 3427},
+                    {"side": "enemy", "tickets": 40, "per_s": 0, "score": 1219}],
+        "tickets_goal": 600}
+    write_episode(tmp_path / "episode-0000", [
+        {"kind": "observation", "observation": seen}, decision(1, reason="Hold the point.")])
+    line = digest(tmp_path / "episode-0000").splitlines()[1]
+    assert "tickets" in line
+    tickets = line.split("tickets", 1)[1]
+    assert "us 183" in tickets and "enemy 40" in tickets and "600" in tickets

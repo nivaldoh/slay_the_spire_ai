@@ -2490,3 +2490,49 @@ old = 'or record["source"] != "engine":'
 new = 'or record["source"] == "engine":'
 tests = ["tests/twwarhammer3/test_wh3_digest.py"]
 source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "mailbox-menu-request-never-published"
+guards = "A Mailbox menu request reaches the frontend and battle Lua and completes under the id write_menu returned"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '''self._publish("menu.json", {"schema": SCHEMA, "job": self.job,
+                                    "request": request, "steps": steps})'''
+new = "pass"
+tests = ["tests/twwarhammer3/test_wh3_ui_requests.py::test_a_mailbox_menu_request_runs_its_steps_and_reports_under_the_returned_id"]
+source = "2026-11-02 cleanup, WH3 mutants batch"
+
+[[plant]]
+id = "protocol-accepts-zero-width"
+guards = "A move width must be positive: zero is refused"
+file = "src/twwarhammer3/protocol.py"
+old = 'not _finite(order["width"]) or order["width"] <= 0'
+new = 'not _finite(order["width"]) or order["width"] < 0'
+tests = ["tests/twwarhammer3/test_wh3_protocol.py::test_a_zero_move_width_is_refused"]
+source = "2026-11-02 cleanup, WH3 mutants batch"
+
+[[plant]]
+id = "stats-row-interval-in-ms"
+guards = "The register's interval_s is the decision interval in seconds"
+file = "src/twwarhammer3/battle/stats.py"
+old = '"interval_s": config.get("interval_ms", 0) / 1000,'
+new = '"interval_s": config.get("interval_ms", 0),'
+tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_row_writes_the_date_short_source_and_seconds_columns_at_the_registers_precision"]
+source = "2026-11-02 cleanup, WH3 mutants batch"
+
+[[plant]]
+id = "digest-drops-tickets"
+guards = "Digest decision lines show each side's tickets and the goal"
+file = "src/twwarhammer3/battle/digest.py"
+old = '    if mode.get("tickets"):'
+new = "    if False:"
+tests = ["tests/twwarhammer3/test_wh3_digest.py::test_a_decision_line_shows_each_sides_tickets_and_the_goal"]
+source = "2026-11-02 cleanup, WH3 mutants batch"
+
+[[plant]]
+id = "cards-counts-no-cycle-losses"
+guards = "The card board's no-cycle wins column counts only wins whose replay shows zero cycles"
+file = "src/twwarhammer3/battle/cards.py"
+old = 'bare = sum(row["outcome"] == "won" and row["cycles"] == 0'
+new = 'bare = sum(row["outcome"] != "won" and row["cycles"] == 0'
+tests = ["tests/twwarhammer3/test_wh3_cards.py::test_no_cycle_wins_count_only_wins_whose_replay_shows_zero_cycles"]
+source = "2026-11-02 cleanup, WH3 mutants batch"

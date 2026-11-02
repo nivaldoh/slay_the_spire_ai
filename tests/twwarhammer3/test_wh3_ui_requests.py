@@ -242,3 +242,16 @@ def test_invalid_ui_actions_cannot_report_success_or_run_required_successors(tmp
         assert f"menu {request}: failed" in driver.log
         assert f"menu {request}: done" not in driver.log
         assert error in driver.log
+
+
+@pytest.mark.parametrize("mode", ["frontend", "battle"])
+def test_a_mailbox_menu_request_runs_its_steps_and_reports_under_the_returned_id(tmp_path, mode):
+    # engine/mailbox.py: menu.json carries job, request and steps; each consumer logs
+    # "menu <request>: done|failed", which play.start_frontend and the menu command match
+    # against the id write_menu returned.
+    driver = MenuDriver(tmp_path, mode)
+    request = Mailbox(tmp_path, job="current").write_menu([command("First()"),
+                                                           command("Second()")])
+    driver.tick(4)
+    assert driver.calls == ["First()", "Second()"]
+    assert f"menu {request}: done" in driver.log
