@@ -496,3 +496,20 @@ def test_an_export_needs_a_job_or_episode(tmp_path):
         export.export_traces([], tmp_path / "export")
     with pytest.raises(ValueError, match="not a WH3 job or episode"):
         export.export_traces([tmp_path / "nothing"], tmp_path / "export")
+
+
+def test_a_retry_is_not_reconstructed_from_source_that_differs_from_the_recorded_hash(
+        tmp_path, monkeypatch):
+    # Every renderer fragment is there, but this is not the llm.py the job recorded.
+    export._legacy_retry_supported.cache_clear()
+    monkeypatch.setattr(export.subprocess, "run", lambda *a, **kw:
+                        SimpleNamespace(returncode=0, stdout=(LEGACY + "\n# edited").encode()))
+    job = make_job(tmp_path, [decision("r1", attempts=[attempt(error="bad"), attempt()])],
+                   legacy=True)
+    try:
+        export.export_traces([job], tmp_path / "export")
+    finally:
+        export._legacy_retry_supported.cache_clear()
+    row, = read_export(tmp_path / "export")
+    assert row["attempts"][1]["user_prompt"] is None
+    assert "missing_retry_prompt" in row["issues"]

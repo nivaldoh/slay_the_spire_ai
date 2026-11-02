@@ -109,3 +109,21 @@ def test_evaluation_orderings_are_distinct_seeded_and_never_drawn_for_training()
     assert copy.deepcopy(drawn[:4]) == cand.training_orderings(3, "task", 0, 4, three)
     with pytest.raises(ValueError):
         cand.evaluation_orderings(1, "task")
+
+
+def test_fall_back_and_charge_use_the_nearest_of_several_enemies_and_a_ranged_hero_no_charge():
+    # Rests on JUDGEMENT src/twwarhammer3/battle/candidates.py candidate_set (fall_back_m 60).
+    # checkpoint-rl-plan.md decision 3: away from / attack on the unit's nearest visible enemy;
+    # a charge only for those classes with range 0. The mod reports ranged cavalry as
+    # missile_cavalry, so of the charge classes only a lord, hero or monster has a range.
+    near = context()
+    near["enemy"].append({"id": "e2", "class": "infantry", "men": 80, "x": -200, "z": 0,
+                          "state": []})
+    near["enemy_roster"].append({"id": "e2", "type": "wh_main_grn_inf_orc_boyz"})
+    near["friendly"].append({"id": "f3", "class": "hero", "range": 120, "ammo": 0,
+                             "men": 1, "x": 0, "z": 100, "state": ["idle"]})
+    listed = {c["id"]: c["orders"] for c in cand.candidates(near)["candidates"]}
+    assert listed["fall_back_f2"] == [{"unit": "f2", "type": "move", "x": -50.0, "z": 0.0,
+                                       "run": False}]
+    assert listed["charge_f1"] == [{"unit": "f1", "type": "attack", "target": "e1", "run": True}]
+    assert "charge_f3" not in listed

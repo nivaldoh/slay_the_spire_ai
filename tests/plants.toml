@@ -2409,3 +2409,84 @@ old = "            self.close()\n            if isinstance(exc, Exception)"
 new = "            if isinstance(exc, Exception)"
 tests = ["tests/gameai/test_windows.py::test_a_failed_startup_stops_the_supervisor_and_reports_its_stderr"]
 source = "2026-11-02 cleanup survey (owned-game-startup-failure-test)"
+
+[[plant]]
+id = "play-counts-refused-purchases"
+guards = "Only builds and reinforcements the engine accepted count toward the objectives"
+file = "src/twwarhammer3/battle/play.py"
+old = 'if item.get("ok") and kind in ("build", "reinforce") and "objectives" in result:'
+new = 'if kind in ("build", "reinforce") and "objectives" in result:'
+tests = ["tests/twwarhammer3/test_wh3_play.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "replay-repeats-first-contact"
+guards = "state_events reports the first melee contact once"
+file = "src/twwarhammer3/battle/replay.py"
+old = "                    contact = True"
+new = "                    contact = False"
+tests = ["tests/twwarhammer3/test_wh3_replay.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "replay-onset-counts-the-applied-frame"
+guards = "A queued attack's onset skips the frame taken at applied_ms (replay.onset)"
+file = "src/twwarhammer3/battle/replay.py"
+old = 'if applied < frame["time_ms"] <= end'
+new = 'if applied <= frame["time_ms"] <= end'
+tests = ["tests/twwarhammer3/test_wh3_replay.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "replay-roster-ignores-protected-types"
+guards = "replay.build marks the scenario's protected types in the roster (rout key events)"
+file = "src/twwarhammer3/battle/replay.py"
+old = '"protected": unit.get("type") in scenario.get("protected", [])}'
+new = '"protected": False}'
+tests = ["tests/twwarhammer3/test_wh3_replay.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "export-retry-ignores-recorded-hash"
+guards = "Retry prompts are rebuilt only from the llm.py whose hash the job recorded"
+file = "src/twwarhammer3/battle/export.py"
+old = "if source.returncode or hashlib.sha256(source.stdout).hexdigest() != source_hash:"
+new = "if source.returncode:"
+tests = ["tests/twwarhammer3/test_wh3_export.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "link-lease-without-owner-check"
+guards = "A lease generation is honoured only for the client whose hello made it"
+file = "src/twwarhammer3/engine/link.py"
+old = 'return lease if lease and lease["client"] == client else None'
+new = "return lease"
+tests = ["tests/twwarhammer3/test_wh3_link.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "stats-row-drops-delays"
+guards = "The register's delay_s is the mean of the episode's delays_ms in seconds"
+file = "src/twwarhammer3/battle/stats.py"
+old = 'delays = result.get("delays_ms") or []'
+new = "delays = []"
+tests = ["tests/twwarhammer3/test_wh3_stats.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "candidates-fall-back-from-farthest-enemy"
+guards = "fall_back moves away from the nearest visible enemy (checkpoint-rl-plan.md decision 3)"
+file = "src/twwarhammer3/battle/candidates.py"
+old = "nearest = min(enemies, key=lambda enemy: distance(unit, enemy))\n            x, z"
+new = "nearest = max(enemies, key=lambda enemy: distance(unit, enemy))\n            x, z"
+tests = ["tests/twwarhammer3/test_wh3_candidates.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"
+
+[[plant]]
+id = "digest-shows-engine-no-ops"
+guards = "The digest leaves out quiet engine no-op team feedback and shows local refusals"
+file = "src/twwarhammer3/battle/digest.py"
+old = 'or record["source"] != "engine":'
+new = 'or record["source"] == "engine":'
+tests = ["tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-11-02 cleanup, WH3 tests batch 2"

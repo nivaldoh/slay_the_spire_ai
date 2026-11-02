@@ -522,3 +522,16 @@ def test_an_accepted_event_is_sent_even_when_it_fills_a_request(coordinator, mon
     spool(room // 2, room - room // 2 - 1)  # one byte more: two requests
     assert sent() == [1, 2, 3, 4, 5]
     assert sent() == [1, 2, 3, 4, 5, 6] and stops == []
+
+
+def test_a_client_using_another_clients_or_an_unknown_generation_gets_409(coordinator):
+    # Each lease generation belongs to the client whose hello made it.
+    b = worker(coordinator, "B")
+    b.hello()
+    coordinator.submit("B", {"orders": "for b"})
+    for generation in (b.generation, "0" * 16):
+        for method, path, fields in every_request(generation)[1:]:
+            status, reply = call(coordinator, method, path, **fields)  # A's own token
+            assert (status, reply.get("error")) == (409, "unknown generation"), (generation, path)
+    assert not (coordinator.directory / "events-A.jsonl").exists()
+    assert b.next_command() == {"seq": 1, "body": {"orders": "for b"}}

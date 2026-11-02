@@ -963,3 +963,32 @@ def test_an_interrupt_during_cleanup_still_writes_the_record_and_then_stops(tmp_
     result = json.loads((tmp_path / "e/result.json").read_text())
     assert result["status"] == "interrupted" and result["engine_ending"]["result"] == "won"
     assert result["error"] == "controller close: interrupted"
+
+
+def test_only_accepted_purchases_count_and_each_reinforcement_counts_by_type(tmp_path):
+    # test_acknowledged_builds_and_reinforcements_are_counted acknowledges every order; here a
+    # move is accepted too and the second reinforcement is refused. stats writes
+    # reinforcements_by_type to the register.
+    class Buyer(Hold):
+        def decide(self, observation):
+            return [{"unit": "f1", "type": "move", "x": 0, "z": 10},
+                    {"unit": "army", "type": "build", "slot": "s1", "option": "tower_1"},
+                    {"unit": "army", "type": "reinforce", "reinforcement": "hounds", "zone": 6},
+                    {"unit": "army", "type": "reinforce", "reinforcement": "hounds", "zone": 6}]
+
+    acked = bridge_observation(2, 2000)
+    acked["orders"] = {"request": "r1", "based_on": 1, "applied_ms": 1500, "results": [
+        {"index": 1, "unit": "f1", "ok": True}, {"index": 2, "unit": "army", "ok": True},
+        {"index": 3, "unit": "army", "ok": True},
+        {"index": 4, "unit": "army", "ok": False, "error": "cannot_purchase_there"}]}
+    states = [bridge_observation(0, 0), bridge_observation(1, 1000), acked,
+              bridge_observation(3, 3000, result="lost")]
+    for state in states:
+        state["mode"] = {"supplies": 2000, "spawn_zones": [{"id": 6, "x": 0, "z": 0}],
+                         "reinforcements": [{"type": "hounds", "cost": 500}] * 2,
+                         "slots": [{"id": "s1", "usable": True,
+                                    "options": [{"name": "tower_1", "cost": 500}]}]}
+    result = play.play_episode(tmp_path / "e", CONFIG, Buyer, FakeMailbox(states),
+                               not_battle=None)
+    assert result["objectives"] == {"victory_held": None, "supplies_left": 2000, "build": 1,
+                                    "reinforce": 1, "reinforcements_by_type": {"hounds": 1}}

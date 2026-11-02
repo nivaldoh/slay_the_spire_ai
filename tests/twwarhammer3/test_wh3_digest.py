@@ -140,3 +140,21 @@ def test_an_episode_line_shows_the_engine_status_of_a_timer_win(tmp_path):
         {"status": "won", "ended_by": "time_limit", "battle_s": 1205})
     assert digest(tmp_path / "episode-0000").splitlines()[0].startswith(
         "episode-0000: won at 1205 s battle time;")
+
+
+def test_a_quiet_engine_no_op_is_left_out_but_a_local_refusal_is_shown(tmp_path):
+    # Shapes of team.py _feedback: an empty engine acknowledgement, and refused() of a member
+    # reply that expired with no orders.
+    write_episode(tmp_path / "episode-0000", [
+        {"kind": "team", "event": "feedback", "member": "cavalry", "decision": "cavalry-1",
+         "source": "engine",
+         "ack": {"request": "r2", "based_on": 2, "applied_ms": 5900, "results": []},
+         "latency": {"think_s": 0.0002, "roundtrip_s": 0.63, "source": "engine",
+                     "delay_ms": 600, "transport_overage": False}},
+        {"kind": "team", "event": "feedback", "member": "line", "decision": "line-2",
+         "source": "local",
+         "ack": {"validation_error": "member reply expired before dispatch", "results": []},
+         "latency": {"think_s": 0.25, "roundtrip_s": 1.5, "source": "local"}}])
+    lines = digest(tmp_path / "episode-0000").splitlines()
+    assert [line.strip() for line in lines if "feedback" in line] == [
+        "line-2: local feedback; worker 0.250s; member reply expired before dispatch"]

@@ -126,3 +126,16 @@ def test_a_timer_ending_keeps_the_engine_status_and_says_how_it_ended(tmp_path):
         "status": "won", "ended_by": "time_limit", "battle_ms": 1205200}))
     row = stats.row(job, job / "episode-0000")
     assert (row["outcome"], row["ended_by"], row["battle_s"]) == ("won", "time_limit", 1205)
+
+
+def test_a_row_records_the_mean_order_delay_in_seconds(tmp_path):
+    job = tmp_path / "bench-b1-20261015"
+    (job / "episode-0000").mkdir(parents=True)
+    (job / "manifest.json").write_text(json.dumps({
+        "created_at": "2026-10-15T00:00:00", "source_revision": "abc1234def",
+        "config": {"policy": "hold"}}))
+    (job / "episode-0000/result.json").write_text(json.dumps(
+        {"status": "won", "delays_ms": [400, 800, 1300]}))
+    # Rests on JUDGEMENT src/twwarhammer3/battle/play.py Delay: delay_s is the mean of
+    # delays_ms (a median would give 0.8).
+    assert stats.row(job, job / "episode-0000")["delay_s"] == 0.83

@@ -379,3 +379,74 @@ def test_longest_model_reply_needs_a_model_call_and_shows_once_the_reply_took_ef
     assert replay.order_events([scripted, model], []) == [{
         "kind": "longest_think", "time_ms": 5300, "decision": 1, "source": {"line": 9},
         "caption": "Longest model reply: 4.2 s"}]
+
+
+def test_state_events_report_the_first_contact_once_and_no_rally_without_a_rout():
+    # mark_key_events: the first contact is the only one state_events reports.
+    # test_visible_transitions_objectives_timer_and_confirmed_roster_death compares only the
+    # set of kinds, so a repeated contact or a rally without a rout passed it.
+    frames = [frame(0, [unit("f1"), unit("f2")], remaining_ms=60001),
+              frame(1000, [unit("f1", ["melee"]), unit("f2")], remaining_ms=60000),
+              frame(2000, [unit("f1"), unit("f2", ["melee"])], remaining_ms=59000)]
+    assert [(e["kind"], e["unit"], e["time_ms"]) for e in replay.state_events(frames, [])] == [
+        ("contact", "f1", 1000), ("timer", None, 1000)]
+
+
+def test_the_longest_model_reply_is_the_slowest_of_several_calls():
+    def call(time_ms, think_s):
+        return {"time_ms": time_ms, "applied_ms": time_ms + 500, "orders": [],
+                "attempts": [{"seconds": think_s}], "latency": {"think_s": think_s},
+                "source": {"line": time_ms}, "ack_source": {"line": time_ms + 1}}
+
+    events = replay.order_events([call(0, 2.0), call(5000, 4.2), call(9000, 3.1)], [])
+    assert [(e["kind"], e["decision"], e["caption"]) for e in events] == [
+        ("longest_think", 1, "Longest model reply: 4.2 s")]
+
+
+def test_a_queued_attack_onset_is_the_first_frame_after_its_orders_applied():
+    # replay.onset: the frame at applied_ms shows the battle before the orders took effect.
+    decision = {"applied_ms": 1000, "orders": [
+        item({"unit": "f1", "type": "move", "x": 0, "z": 50}),
+        item({"unit": "f1", "type": "attack", "target": "e1", "mode": "melee", "queue": True},
+             queued=True)]}
+    fighting = {"target": "e1", "states": ["melee"]}
+    frames = [frame(0, [unit("f1")], [unit("e1")]),
+              frame(1000, [unit("f1", **fighting)], [unit("e1")]),
+              frame(2000, [unit("f1", z=20)], [unit("e1")]),
+              frame(3000, [unit("f1", z=20, **fighting)], [unit("e1")])]
+    decision["steps"] = replay.order_steps(decision, frames[0], LABELS)
+    facts = replay.next_facts(0, [decision], frames, LABELS, [])
+    assert [fact["text"] for fact in facts if "Cannon" in fact["text"]] == [
+        "Knights 1 in melee with Cannon from 0:03"]
+
+
+def test_build_records_enemy_displacements_and_the_scenarios_protected_units(tmp_path):
+    # f2's type is protected by the scenario, so its rout is a key event although f1 routed
+    # first on the same side (mark_key_events); f3's later rout is not. At 1 s the mod could
+    # not read f3, so that frame has no position for it.
+    episode = tmp_path / "episode-0000"
+    episode.mkdir()
+    general = {"type": "demo_general"}
+    frames = [frame(0, [unit("f1"), unit("f2", **general), unit("f3")], [unit("e1")]),
+              frame(1000, [unit("f1", ["routing"]), unit("f2", **general),
+                           {"id": "f3", "error": "no data"}], [unit("e1", x=6, z=8)]),
+              frame(2000, [unit("f1", ["routing"]), unit("f2", ["routing"], **general),
+                           unit("f3")]),
+              frame(3000, [unit("f1", ["routing"]), unit("f2", ["routing"], **general),
+                           unit("f3", ["routing"])])]
+    records = [{"kind": "observation", "observation": frames[0]},
+               {"kind": "decision", "seq": 0, "time_ms": 0, "request": "r1", "orders": []},
+               {"kind": "ack", "request": "r1",
+                "latency": {"think_s": 0.004, "roundtrip_s": 0.01, "delay_ms": 1000},
+                "ack": {"request": "r1", "based_on": 0, "applied_ms": 1000, "results": []}},
+               *({"kind": "observation", "observation": f} for f in frames[1:])]
+    (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records))
+    data = replay.build(episode, {"config": {}, "scenario": {"protected": ["demo_general"]}})
+    moves = {move["unit"]: move for move in data["decisions"][0]["displacements"]}
+    assert sorted(moves) == ["e1", "f1", "f2"]
+    assert moves["e1"] == {"unit": "e1", "side": "enemy", "from": [0, 0], "to": [6, 8],
+                           "metres": 10.0}
+    assert {entry["id"]: entry["protected"] for entry in data["roster"]} == {
+        "f1": False, "f2": True, "f3": False, "e1": False}
+    assert [(e["unit"], e["key"]) for e in data["events"] if e["kind"] == "rout"] == [
+        ("f1", True), ("f2", True), ("f3", False)]
