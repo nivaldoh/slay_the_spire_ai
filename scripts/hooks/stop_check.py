@@ -39,7 +39,7 @@ GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl"),
                  "spire": ("play", "rollout", "train", "evaluate", "replay")}
 LIVE_CHECKERS = {"check_wh3_army_setup.py", "check_wh3_checkpoint.py",
                  "check_wh3_checkpoint_siege.py", "check_wh3_restored_episode.py",
-                 "check_wh3_team.py"}
+                 "check_wh3_team.py", "check_wh3_graph.py"}
 
 
 def git(*args: str) -> bytes:

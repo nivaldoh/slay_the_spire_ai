@@ -93,6 +93,10 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("git cherry-pick abc", True, True),
     ("git revert HEAD", True, True),
     ("git am fix.patch", True, True),
+    ("git \\\ncommit -m x", True, True),  # a backslash-newline joins the lines
+    ('echo "a\\"b"\ngit commit -m x', True, True),  # an escaped quote does not close
+    ("git commit -m x; echo it's done", True, True),  # unclosed quote: read as text
+    ('echo "it\\"s fine"\ngit status', True, False),
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked,
                                                                     tmp_path, monkeypatch):
@@ -252,6 +256,12 @@ def test_a_game_job_is_a_python_process_running_one(tmp_path):
 def test_each_wh3_game_command_is_a_game_job(tmp_path, sub):
     (tmp_path / "30").mkdir()
     (tmp_path / "30/cmdline").write_bytes(f"/v/bin/python\0-m\0twwarhammer3\0{sub}\0".encode())
+    assert stop_check.game_job_running(tmp_path)
+
+
+def test_a_python_process_running_the_queue_is_a_game_job(tmp_path):
+    (tmp_path / "40").mkdir()
+    (tmp_path / "40/cmdline").write_bytes(b"/v/bin/python\0scripts/wh3_queue.py\0plan.json\0")
     assert stop_check.game_job_running(tmp_path)
 
 
@@ -499,6 +509,7 @@ LIVE_CHECKER_SCRIPTS = [
     "tests/twwarhammer3/check_wh3_checkpoint_siege.py",
     "tests/twwarhammer3/check_wh3_restored_episode.py",
     "tests/twwarhammer3/team/check_wh3_team.py",
+    "tests/twwarhammer3/graph/check_wh3_graph.py",
 ]
 
 
@@ -516,6 +527,12 @@ def test_direct_live_checkers_are_game_jobs_except_help_and_recount(tmp_path, sc
     ]:
         cmdline.write_bytes("\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
         assert stop_check.game_job_running(tmp_path) is running
+
+
+def test_every_live_check_script_is_a_game_job():
+    # check_wh3_graph.py (added 2026-11-01) was missing from LIVE_CHECKERS.
+    names = {path.name for path in (ROOT / "tests").rglob("check_wh3_*.py")}
+    assert names == stop_check.LIVE_CHECKERS
 
 
 @pytest.mark.parametrize("flags", [

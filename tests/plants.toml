@@ -2324,3 +2324,57 @@ old = "reading = next((r[\"value\"] for r in rows if r.get(\"event\") == \"readi
 new = "reading = next((r[\"value\"] for r in reversed(rows) if r.get(\"event\") == \"reading\"), None)"
 tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_a_restore_whose_handover_reading_differs_is_a_restore_fault_without_reward"]
 source = "2026-11-02 cleanup review of the wh3-tests batch"
+
+[[plant]]
+id = "stop-hook-misses-the-graph-live-check"
+guards = "Every known direct live WH3 checker is a game job"
+file = "scripts/hooks/stop_check.py"
+old = ", \"check_wh3_graph.py\""
+new = ""
+tests = ["tests/test_hooks.py::test_every_live_check_script_is_a_game_job", "tests/test_hooks.py::test_direct_live_checkers_are_game_jobs_except_help_and_recount"]
+source = "2026-11-02 cleanup survey: check_wh3_graph.py (added 2026-11-01) was missing"
+
+[[plant]]
+id = "stop-hook-misses-the-queue"
+guards = "The Stop hook runs no check beside a running WH3 queue"
+file = "scripts/hooks/stop_check.py"
+old = "        if any(Path(arg).name == \"wh3_queue.py\" for arg in argv[1:]):\n            return True\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_python_process_running_the_queue_is_a_game_job"]
+source = "2026-11-02 cleanup survey: deleting the queue lines passed every test"
+
+[[plant]]
+id = "pre-bash-does-not-join-continued-lines"
+guards = "The Bash hook refuses HEAD moves during a queue"
+file = "scripts/hooks/pre_bash.py"
+old = "buf.append(\" \" if text[i + 1] == \"\\n\" else text[i:i + 2])"
+new = "buf.append(text[i:i + 2])"
+tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
+source = "2026-11-02 cleanup survey: no case had a backslash-newline"
+
+[[plant]]
+id = "pre-bash-ends-a-quote-at-an-escaped-quote"
+guards = "The Bash hook refuses HEAD moves during a queue"
+file = "scripts/hooks/pre_bash.py"
+old = "            if c == \"\\\\\" and quote == '\"' and i + 1 < len(text):\n                buf.append(text[i:i + 2])\n                i += 2\n                continue\n"
+new = ""
+tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
+source = "2026-11-02 cleanup survey: no case had an escaped double quote"
+
+[[plant]]
+id = "pre-bash-skips-git-in-unclosed-quote-text"
+guards = "The Bash hook refuses HEAD moves during a queue"
+file = "scripts/hooks/pre_bash.py"
+old = "            if queue and (found := GIT_TEXT.search(line)) and is_this_tree(cwd):\n                return git_reason(found.group(1))\n"
+new = ""
+tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
+source = "2026-11-02 cleanup survey: no case reached the git text fallback"
+
+[[plant]]
+id = "queue-passes-a-second-sigint"
+guards = "A stopped queue passes one SIGINT to the running job"
+file = "scripts/wh3_queue.py"
+old = "        if not stopping:\n            stopping, signalled = True, child\n            if child:\n                child.send_signal(signal.SIGINT)  # uv passes it on to play\n"
+new = "        stopping, signalled = True, child\n        if child:\n            child.send_signal(signal.SIGINT)  # uv passes it on to play\n"
+tests = ["tests/twwarhammer3/test_wh3_queue.py::test_a_second_stop_passes_no_second_sigint"]
+source = "2026-11-02 cleanup survey: dropping the guard passed every test"

@@ -182,3 +182,20 @@ def test_a_stop_while_a_job_starts_still_interrupts_it(tmp_path, head, monkeypat
 
     assert state(tmp_path)["completed"] == [{"output": str(tmp_path / "a"),
                                              "exit_code": -signal.SIGINT}]
+
+
+def test_a_second_stop_passes_no_second_sigint(tmp_path, head):
+    # The job signals the runner twice and records how many SIGINTs reached it.
+    job = [sys.executable, "-c", (
+        "import os, pathlib, signal, sys, time; got = []\n"
+        "signal.signal(signal.SIGINT, lambda *_: got.append(1))\n"
+        "os.kill(os.getppid(), signal.SIGTERM)\n"
+        "end = time.time() + 10\n"
+        "while not got and time.time() < end: time.sleep(0.01)\n"
+        "os.kill(os.getppid(), signal.SIGTERM); time.sleep(0.5)\n"
+        "pathlib.Path(sys.argv[-1] + '.signals').write_text(str(len(got)))")]
+    path = plan(tmp_path, ("a", []), ("b", []))
+
+    assert queue.run(path, job) == 130
+
+    assert (tmp_path / "a.signals").read_text() == "1"
