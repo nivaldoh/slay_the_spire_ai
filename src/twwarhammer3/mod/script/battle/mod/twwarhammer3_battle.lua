@@ -452,25 +452,28 @@ end
 
 -- Pin supported initial toggles for both armies; releasing the enemy controller returns
 -- movement/target selection to the built-in AI. Record every readback, including failures.
-local function benchmark_behaviours()
+local function benchmark_behaviours(apply)
     local evidence = {}
     for _, side in ipairs({"friendly", "enemy"}) do
         evidence[side] = {}
         for _, id in ipairs(state[side .. "_ids"]) do
             local entry = state[side][id]
             local values = {supported = {}}
-            local controller = entry.controller or entry.army:create_unit_controller()
-            if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
+            local controller = nil
+            if apply ~= false then
+                controller = entry.controller or entry.army:create_unit_controller()
+                if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
+            end
             for _, key in ipairs(BEHAVIOURS) do
                 if get(entry.unit, "can_use_behaviour", false, key) then
                     values.supported[#values.supported + 1] = key
-                    if key == "fire_at_will" or key == "skirmish" or key == "defend" then
+                    if controller and (key == "fire_at_will" or key == "skirmish" or key == "defend") then
                         controller:change_behaviour_active(key, key == "fire_at_will")
                     end
                     values[key] = get(entry.unit, "is_behaviour_active", nil, key)
                 end
             end
-            if not entry.controller then controller:release_control() end
+            if controller and not entry.controller then controller:release_control() end
             evidence[side][id] = values
         end
     end
@@ -779,6 +782,13 @@ local function observation(now)
     local player = player_army()
     local ok, section = pcall(mode_section)
     if not ok then section = {error = clean_error(section)} end
+    -- Behaviour changes issued at start apply after that callback. The first observation
+    -- must carry current flags, not the startup callback's stale synchronous readback.
+    if session.benchmark and state.setup and not state.applied
+        and not (state.setup.benchmark_behaviours or {}).error then
+        local toggles_ok, toggles = pcall(benchmark_behaviours, false)
+        state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}
+    end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
         phase = bm:get_current_phase_name(), time_ms = now, speed = battle_speed(),

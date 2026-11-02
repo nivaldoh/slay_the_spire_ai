@@ -28,6 +28,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: initial mirror benchmark, first pilot stops on stale toggle evidence
+
+Implemented at `b5ecab8`: [runbook](benchmark-initial.md), mirror-v1 profile/evaluator,
+no-retry Haiku low limits and every-planned-attempt report. Source/defaults rest on the
+marked [starter plan](benchmark-implementation.md#first-version-follow-up-2026-11-02).
+Owner agreed screenshot/arithmetic measurements; live correctness remains unverified.
+Independent review found no remaining offline findings. Gate: Ruff clean, 2582 passed,
+43 skipped (torch/opt-in Windows); `runs/benchmark-initial-20261102/check-final.txt`.
+First pilot: 1 setup failure, 0 decisions, no engine ending, $0; 2 later attempts never
+started. Both five-unit rosters/settings passed lobby readbacks. At 5300 ms, public f4
+skirmish was false but cached private setup still said true, so the setup guard stopped.
+The failed plan/report remain `runs/benchmark-initial-20261102/pilot{,.report}.json`.
+Fix: read current private toggle flags when publishing initial setup, without reissuing
+commands. Regression failed first, then 105 focused Lua/benchmark cases passed; independent
+review found no remaining findings. Final gate/new frozen pilot pending; first attempt retained.
+Game closed; no model calls, score or strength finding. Opening still shows own roster
+and full bars; complete UI measurement check remains outstanding.
+
 ## 2026-11-01: native multiplayer observer smoke, one battle
 
 Claude Code with the owner, $0, at `d499025` (no source change). The proposed observer

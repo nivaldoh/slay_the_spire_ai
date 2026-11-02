@@ -88,7 +88,9 @@ failure counts from saved records; change private fields and require identical i
 This establishes recording/arithmetic, not strength or the cavalry advantage. A green
 component suite alone is insufficient. See [agreed checks](../agreed-checks.md).
 
-Current status: implemented; focused offline checks pass and independent review found no
-remaining offline findings. The final gate and live measurement/pilot remain pending.
+Current status: implemented at `b5ecab8`; 2582 offline cases passed, 43 skipped, independent
+review found no remaining offline findings. First pilot stopped on stale startup toggle
+evidence (1 setup error; 2 attempts never started; $0). Its original report is retained.
+The readback fix has a failing-before/passing-after regression; a new pilot is pending.
 No live correctness or strength claim yet. Evidence/card:
 `runs/benchmark-initial-20261102/`.
