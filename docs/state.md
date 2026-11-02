@@ -9,7 +9,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one fresh 1x battle at `5c02d08` passed infantry-contact/cavalry-melee criteria but lost at 666.8 s. Game closed; no strength claim. [New battle viewer](http://localhost:8765/gap-fixed-live-20261101.html). Recorded spend $0.02857/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
 
 Codex testing audit: [PR #1](https://github.com/nivaldoh/slay_the_spire_ai/pull/1) merged 2026-10-31 (`0a17026`); check-edit/CI decisions wait (`runs/test-quality-20261031/`; factory assessment: `runs/factory-assessment-20261031/handoff.md`).
-[Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
+[Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke ran 2026-11-01 in one single-player battle: your orders obeyed, every card reading as expected (n=1, unverified; [log](twwarhammer3/log.md#2026-11-01-native-multiplayer-observer-smoke-one-battle)).
 
 Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb137` (Land and
 team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer,
@@ -45,7 +45,7 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
   modes, link, worker, `compare-peers`; [status](twwarhammer3/native-multiplayer.md#implementation-status)),
-  all unverified. Next: a $0 local observer smoke (proposed card), then licences/accounts. Zero live MP battles.
+  all unverified. The $0 observer smoke ran 2026-11-01 (one battle, readings as expected). Next: licences/accounts. Zero live MP battles.
 
 ## Slay the Spire
 

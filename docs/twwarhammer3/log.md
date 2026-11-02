@@ -28,6 +28,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: native multiplayer observer smoke, one battle
+
+Claude Code with the owner, $0, at `d499025` (no source change). The proposed observer
+card (`runs/wh3-native-mp-20261030/card-observer-smoke.md`): coordinator and `worker --attach`
+in WSL, `launch`, session edited to `observe`; the owner set up and played one single-player
+1v1 by hand (Herald of Khorne and 2 Bloodletters each side, 20-minute timer) at 1x.
+- Owner: every UI order was obeyed. mod.log: "loaded battle", no "inactive"; engine result won at 194.7 s.
+- `native` in 161 of 162 observations (the one without is the `Loading` placeholder): mode
+  observe, local alliance 1, local army 1, not multiplayer, not spectator, no errors; owners
+  470 own, 470 enemy, 0 allied; 3 own and 3 enemy units of the roster's types.
+- `compare-peers`: 162 observations, 0 native errors, 0 failed rows, 0 repeated times. Events
+  reach the victory countdown; the coordinator closed with no failure and removed the token.
+- Speed read 1 in 162 of 162; 191.1 s of battle time over 191.1 s of observation write times
+  (NTFS, Windows clock).
+- Owner: "The units did die rather quickly." Contact at about 138 s; each Bloodletters unit
+  went from 75 men to 0 in about 44-56 s; ours fought on with morale at or below 0 from
+  176.4 s, and no unit ever counted as routed.
+- Notes: a destroyed unit can stay in `native.units` one observation after the evaluation counts
+  it (e1 at 194.7 s). The coordinator closes on stdin EOF, so a background run must hold stdin
+  open: attempt a1 closed at once; a2 is the run.
+- Not run: the card's check of the check, so no live reading has caught a `take_control` plant.
+  Unverified (n=1, no agreed check); nothing multiplayer was tested. Evidence:
+  `runs/twwarhammer3/native-multiplayer/smoke/a2/` (mod.log copied there) and `smoke-logs/`.
+
 
 ## 2026-11-01: the code page shows WH3 only, renamed, and in the README
 

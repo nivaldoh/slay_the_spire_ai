@@ -481,6 +481,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-11-01 (native multiplayer observer smoke): "Okay, let's get this 1v1 battle out of the
+  way ... Let's do it now." The owner played the proposed observer card's battle by hand; its
+  optional check of the check was not run. Running it does not make the card an agreed check.
+  [Result](twwarhammer3/log.md#2026-11-01-native-multiplayer-observer-smoke-one-battle).
 - 2026-10-31 (GaP answers G1–G14, plan only): first see whether it works in WH3; defer
   research comparisons and benchmark scoring/statistical decisions, while keeping interest
   in better live control and learning across battles. Use GaP as a reference and our existing

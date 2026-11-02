@@ -91,11 +91,14 @@ fixed), with its Steam build and `Warhammer3.exe` sha256 equal to the pins. Othe
 coordinator refuses the hello. Then run `python -m twwarhammer3 worker ...` with `PYTHONPATH=<repo>\src`; no other
 package is needed.
 
+Observer smoke, 2026-11-01 (one single-player battle, n=1, unverified): in `observe` mode
+the owner's UI orders were obeyed and every card reading came out as expected; the card's
+check of the check was not run ([log](log.md#2026-11-01-native-multiplayer-observer-smoke-one-battle)).
+
 Blocked, and what unblocks each item:
 
 | Next item | Blocked on |
 |---|---|
-| Local passive-observer smoke (one single-player 1v1 custom battle in `observe` mode: the game opened by `launch`, its session edited to observe, `worker --attach` started, then the battle started by hand; about 10 min, an estimate; $0; proposed card, not agreed: `runs/wh3-native-mp-20261030/card-observer-smoke.md`) | A game window on the owner's PC; the owner's answer on the card |
 | Low-graphics (H1) comparison; native completed-tick collector | A game window; the collector also needs its own card |
 | Lobby automation (step 8) | Live UI dumps (game window) or owner-approved layout extraction; the owner's ruling on lobby privacy |
 | Ordinary multiplayer, one-peer move, authority and visibility checks (steps 3, 5, 7) | A second concurrent licence and Steam account; agreed checks |
