@@ -42,8 +42,14 @@ revisions written below are the earlier passes.
   Roster/settings/ending UI evidence remains separate. No health tooltip is required.
   Live procedure/commands:
   [initial runbook](twwarhammer3/benchmark-initial.md#measurement-check).
-  Not yet passed at a recorded revision. This checks recording/arithmetic, not model strength
-  or the cavalry advantage. Roster, score and limits retain their JUDGEMENT markers.
+  Passed at `b1136e8`, scenario version5: 26 component cases in a clean checkout,
+  independently challenged API-to-first-ending path, and three fresh scripted battles
+  with checked native unit identities/values, hand arithmetic and readable ending UI.
+  Five subsequent Haiku battles also passed the raw-record/ledger/ending recount.
+  Evidence: `runs/benchmark-initial-20261102/review/` and the runbook's first-screen table.
+  This checks recording/arithmetic, not model strength, winnability or the cavalry advantage.
+  Recorded clock ratios were not independently recomputed from NTFS inputs.
+  Roster, score and limits retain their JUDGEMENT markers.
 - WH3 GaP temporary author-initiation check (agreed 2026-11-01, owner: "Ok, we can proceed
   with this solution temporarily"): a caller-declared initiator must have an attack route
   before contact; waiting members remain allowed. Reject a stalled specialist reply via

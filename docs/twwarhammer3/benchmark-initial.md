@@ -70,7 +70,7 @@ pilots; this short setup interval changes when the first controller decision can
 
 Owner's subsequent "Allow and record enemy AI toggles" supersedes this attempted remedy.
 It was tested only in pilot-r3 and did not produce the required enemy toggle state.
-The active scenario version2 never acquires enemy units, so uses no handover wait;
+The active scenario (versions2 onward) never acquires enemy units, so uses no handover wait;
 the helper's earlier modes remain for their recorded regression checks. Keep errors
 from failed friendly application/readback. See the engine's
 [unitcontroller documentation](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html):
@@ -132,11 +132,49 @@ recovery, accidental retries and private-input isolation. UI stills may check ro
 settings and ending; no tooltip or numeric-health OCR is required. This checks recording
 and arithmetic, not strength or the cavalry advantage. See [agreed checks](../agreed-checks.md).
 
-Current status: version4 hold at `b9da442` won at1028 battle seconds, condition18.28,
-3357 decisions, zero invalid orders or model calls. Independent raw recount agrees.
-Windows ratio1.0000, stretch range0.9997–1.0004 over1022.7s. WGC saved both rosters/role
-and an ending frame; desktop captures failed because WH3 was in the background. Exact
-settings came from menu/engine reads. The queue stopped before its other two attempts
-because another session moved HEAD (documentation only); the owner also requested the
-new roster. The version5 free pilot/Haiku screen remains pending. No strength claim.
-Earlier failed/stopped plans stay in `runs/benchmark-initial-20261102/`.
+Passed at `b1136e8`, scenario version5: 26 agreed component cases in the clean execution
+checkout, the API getter/rounding/JSON/first-ending path independently challenged, and
+three fresh scripted battles checked against rosters/settings, native unit records and
+readable ending screens. The five Haiku attempts were also independently recounted;
+645 response IDs each match one entry in the existing ledger. This verifies the reviewed
+recording/arithmetic at that revision/profile, not task balance or controller strength.
+Clock ratios are recorded evidence; their NTFS inputs were not independently recounted.
+
+## First screen, 2026-11-02
+
+All jobs used source `b1136e8`, profile version5, game build25961564, unpaused 1x.
+Each controller started from a fresh launch. No retries or replacement battles.
+
+| Controller | Planned / engine-completed | Wins / draws / losses | Condition values |
+|---|---:|---:|---|
+| Hold | 1 / 1 | 0 / 0 / 1 | 13.10 |
+| Walk-nearest | 1 / 1 | 0 / 0 / 1 | 4.70 |
+| Run-nearest | 1 / 1 | 0 / 0 / 1 | 4.40 |
+| Haiku 5.5 low, `llm_rules` v22 | 5 / 5 | 0 / 0 / 5 | 28.40, 24.40, 5.50, 5.30, 24.30 |
+
+Haiku: 646 attempted requests, 645 returned responses (one incomplete), 640 dispatched
+decisions, zero invalid batches and zero terminal errors. Retain 28 individual engine
+order refusals (26 routing, two unreachable), one malformed-reply forfeit and one timeout.
+The timeout occurred during a call spanning the ending; its known engine loss remains.
+The incomplete reply was not repaired or salvaged; later play used a new observation.
+The report records two exchange-error events and one forfeit event; the latter describes
+the same incomplete reply. Do not sum those as three independent failures.
+
+Screen ledger debit: $0.5207731 = $0.5110642 known response usage + $0.0097089 conservative
+estimate for the timed-out request. Actual provider billing of that request is unknown.
+Cumulative WH3 ledger: $0.549347, Spire Anthropic ledger: $0, below the $2 screen cap and
+the shared key allowance. The earlier $0.02 provider smoke is outside those ledgers.
+
+Three scripted and 13 model presentation captures failed; those errors remain recorded.
+Separate passive game-window captures supplied readable ending evidence for all eight
+battles. None of these images supplies health to the evaluator or information to a policy.
+The screen is exploratory: no reliable controller ranking, cavalry advantage, generalisation
+or winnability claim. No scripted or human win is established on this version5 profile.
+
+Plans, raw traces, reports and independent checks stay in ignored local evidence:
+`runs/benchmark-initial-20261102/pilot-v5-r2*`, `model-v5*` and `review/`.
+Earlier setup failures, the stopped version2 hold, the version4 hold win, and the CLI-only
+rejection in `pilot-v5.json` remain separately attributed. The latter launched no game or
+API request. Frozen execution and the path-only launchers prevented another session's
+main-branch documentation commits from interrupting the queue; the original ledger was
+used throughout. The normal main-checkout commands above remain the public run path.

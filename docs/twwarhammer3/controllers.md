@@ -337,7 +337,8 @@ $0.43000489, below that battle's $3 cumulative cap (current totals:
 
 ## Anthropic
 
-Added 2026-10-31 from [the plan](../anthropic-provider-plan.md); no battle has used it.
+Added 2026-10-31 from [the plan](../anthropic-provider-plan.md). Haiku low subsequently
+completed five mirror-benchmark battles ([first screen](benchmark-initial.md#first-screen-2026-11-02)); all lost, with no strength claim.
 Every declared effort passed one live schema call ($0.02 in total;
 [smoke](log.md#2026-10-31-anthropic-provider-added)).
 `--provider anthropic` sends each request to Anthropic's Messages API. `gameai/llm.py`

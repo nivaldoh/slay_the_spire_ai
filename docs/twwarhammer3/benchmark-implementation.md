@@ -51,6 +51,11 @@ The [initial runbook](benchmark-initial.md) gives the implementation, commands a
 The planning-only paragraphs below record the earlier scope; they no longer prohibit
 this requested implementation/pilot. Existing JUDGEMENT defaults remain marked.
 
+Status, 2026-11-02: initial implementation and recording/arithmetic check completed at
+`b1136e8`, profile version5. Three free scripts and five Haiku attempts completed; all
+lost. Health is read from the game API. The [first screen and limits](benchmark-initial.md#first-screen-2026-11-02)
+include errors, estimated timeout billing and the unverified winnability/strength limits.
+
 Planning only. The owner supplied enough direction for a small first implementation,
 with documented starting choices that can change later. No code, scenario, game run or
 paid comparison is authorized by this discussion. The older interview is a catalogue of

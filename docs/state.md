@@ -1,10 +1,15 @@
 # Project state
 
-Updated 2026-11-01: what runs, where each game stands, what comes next. Status only:
+Updated 2026-11-02: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+
+Codex: [initial mirror benchmark](twwarhammer3/benchmark-initial.md) implemented and checked
+at `b1136e8`, version5: six enemy Swordsmen + Cannon; native health. Three scripted and
+five Haiku attempts completed, all losses. No game runs; no strength/winnability claim.
+[Measurement check](agreed-checks.md) passed in the recorded scope; broader choices wait.
 
 Codex: [GaP](twwarhammer3/gap-plan.md) temporary initiation check passed offline at `4f0c3fc`; one fresh 1x battle at `5c02d08` passed infantry-contact/cavalry-melee criteria but lost at 666.8 s. Game closed; no strength claim. [New battle viewer](http://localhost:8765/gap-fixed-live-20261101.html). Recorded spend $0.02857/$5; `runs/gap-initiation-20261101/handoff.md`; benchmark choices deferred.
 
@@ -18,7 +23,7 @@ compare-peers fixes and the 10-30 factory items merged; branches and decisions i
 Built (Claude Code, 2026-11-01 night): the "How the code works" [plan](how-code-works-plan.md)'s pilot (map, play-job story, `check.py` flags; merge `c471b45`)
 and step 4 (two stories; merge `45c2a39`), reviewed by agents; quiz not passed (n=1). Your look waits: `runs/how-code-works-20261101/handoff.md`. Then (11-01 afternoon) two tabs, "Control methods" (basic vs GaP on one battle clock) and "One graph battle" ([log](twwarhammer3/log.md#2026-11-01-control-methods-drawn-on-the-how-the-code-works-page)); reviewed by agents, no quiz, your look waits (`runs/control-methods-20261101/handoff.md`). $0. Then (11-01 evening) the page [redesigned](twwarhammer3/log.md#2026-11-01-the-how-the-code-works-page-redesigned): one bar, map dots at real rates, a whole-battle GaP replay; three old tabs removed. $0.
 
-Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; no battle or run yet.
+Built (Claude Code, 2026-10-31): `--provider anthropic` in both games (Haiku, Sonnet, Opus 5.5; [plan](anthropic-provider-plan.md)); every effort passed one live call at `551b514` ($0.02, [log](twwarhammer3/log.md#2026-10-31-anthropic-provider-added)). Jobs need `GAMEAI_ANTHROPIC_WORKSPACE_ID` too; five Haiku benchmark battles have since completed.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
@@ -32,15 +37,16 @@ MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementa
 
 ## Total War: WARHAMMER III
 
-Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
+Initial mirror benchmark completed; broader definition remains open (decision 1): [definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
 - Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52,
-  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. The new benchmark is not implemented or verified.
+  evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Initial recording/arithmetic
+  passed at `b1136e8`; controller strength and task winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.02857; the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.549347 (includes one estimated timeout charge); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
@@ -82,8 +88,8 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 
 ## Owner decisions waiting
 
-1. **Benchmark definition, later.** Health and morale are the tentative primary measures; Siege, Survival, Ambush and Conquest join Land in the intended scope (owner, 2026-10-28). Scoring formulas, profiles, mode order, knowledge/latency evidence and checks remain open in the [Land interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle). Engine timer outcomes and small mixed armies remain agreed; historical c1 is unchanged. Durations use battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)).
-2. **Next experiments and spending.** Choose a game window for the new profile's measurement checks/pilot, after its definitions are settled, then the controller comparison and budget. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
+1. **Benchmark follow-up, later.** Initial mirror recording/arithmetic passed at `b1136e8`; the three scripts and five Haiku attempts all lost. Broader definitions remain open. Health and morale are the tentative primary measures; Siege, Survival, Ambush and Conquest join Land in the intended scope (owner, 2026-10-28). Scoring formulas, profiles, mode order, knowledge/latency evidence and checks remain open in the [Land interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle). Engine timer outcomes and small mixed armies remain agreed; historical c1 is unchanged. Durations use battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)).
+2. **Next experiments and spending.** The initial mirror screen is complete; further comparisons, profiles and budgets wait for the owner. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
 3. **Remaining autonomy rules.** The [standing menu and small interviews](autonomy.md#standing-work) were agreed on 2026-10-28; the saved overnight plan ran that night (02:39-04:35; [report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)). Other provisions of the older [away guidelines](autonomy.md) still await review; this was not blanket acceptance.
 4. **Model-team choices to review later.** On 2026-10-28 you let me settle five open items for now; each keeps today's behaviour, stays marked and is listed in [multi-agent-implementation.md](twwarhammer3/multi-agent-implementation.md#choices-settled-for-now-2026-10-28). Before a paid team battle, agree a check for `team_llm_rules` ([next](twwarhammer3/multi-agent-implementation.md#next)); model members have not played live.
 5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements. These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).

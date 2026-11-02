@@ -315,7 +315,8 @@ uv run --locked --extra llm python -m twwarhammer3 rl PHASE PLAN --output ...  #
   `spend --provider openrouter` prints that ledger.
 - `--provider anthropic` selects Claude Haiku 5.5 by default and
   `runs/twwarhammer3/anthropic-spend.jsonl`. Models, key file and the workspace variable:
-  [Anthropic](controllers.md#anthropic). Unplayed in battle.
+  [Anthropic](controllers.md#anthropic). Five Haiku mirror battles completed;
+  [results and limits](benchmark-initial.md#first-screen-2026-11-02).
 - Comma-separated `--policy` names rotate in an order drawn from `--rotation-seed`;
   `--delay-seconds 0,6,10` crosses them with observation-age arms; `--episodes` defaults
   to one per combination. `--policy package.module:Class` loads an outside controller

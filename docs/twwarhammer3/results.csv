@@ -652,3 +652,11 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-02,pilot-r3-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,52eab85,realtime,1.0,0.0,unsupported_or_invalid,6,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,,
 2026-11-02,pilot-r4-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,5c503a0,realtime,1.0,0.0,lost,1205,1.0,1.0,3970,0,0.3,0,classic,,,,,1.0,1.0,0.0,time_limit,
 2026-11-02,pilot-v4-01,episode-0000,emp-mirror-cavalry-v1,hold,,,4,b9da442,realtime,1.0,0.0,won,1028,0.3,0.22,3357,0,0.3,0,classic,,,,,0.295,0.0,0.0,engine_result,
+2026-11-02,pilot-v5-r2-01,episode-0000,emp-mirror-cavalry-v1,hold,,,5,b1136e8,realtime,1.0,0.0,lost,573,0.35,0.7,1852,0,0.31,0,classic,,,,,0.0,0.696,0.0,engine_result,
+2026-11-02,pilot-v5-r2-02,episode-0000,emp-mirror-cavalry-v1,attack_nearest,,,5,b1136e8,realtime,1.0,0.0,lost,317,0.42,0.75,1023,0,0.31,0,classic,,,,,0.0,0.747,0.0,engine_result,
+2026-11-02,pilot-v5-r2-03,episode-0000,emp-mirror-cavalry-v1,rush_nearest,,,5,b1136e8,realtime,1.0,0.0,lost,300,0.42,0.66,966,0,0.3,0,classic,,,,,0.0,0.66,0.0,engine_result,
+2026-11-02,model-v5-01,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,275,0.67,0.98,103,8,2.6,0.0827,classic,,,,,0.0,0.979,0.0,engine_result,anthropic
+2026-11-02,model-v5-02,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,310,0.62,0.88,119,1,2.56,0.0936,classic,,,,,0.0,0.881,0.0,engine_result,anthropic
+2026-11-02,model-v5-03,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,375,0.51,0.71,146,0,2.4,0.1223,classic,,,,,0.0,0.651,0.0,engine_result,anthropic
+2026-11-02,model-v5-04,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,436,0.42,0.85,157,18,2.47,0.1316,classic,,,,,0.0,0.853,0.0,engine_result,anthropic
+2026-11-02,model-v5-05,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,290,0.63,0.86,115,1,2.47,0.0906,classic,,,,,0.0,0.859,0.0,engine_result,anthropic

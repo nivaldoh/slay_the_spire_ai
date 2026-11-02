@@ -28,6 +28,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: initial benchmark checked and five Haiku attempts completed
+
+At `b1136e8`, version5, build25961564, fresh launches at unpaused1x. Native health API;
+no screenshot health measurement. Recording/arithmetic check passed: 26 components,
+independent API-to-ending challenge, 3 scripted endings and 5 model endings recounted.
+Free hold/walk/run: 3/3 completed, 3 losses, conditions13.10/4.70/4.40.
+Haiku5.5 low `llm_rules`v22: 5/5 completed, 5 engine losses; conditions
+28.40/24.40/5.50/5.30/24.30. 646 attempted requests, 645 responses, 640 dispatched decisions;
+no retries/replacements, invalid batches or terminal errors. Retain 28 engine order
+refusals (26 routing, 2 unreachable), 1 incomplete-reply forfeit and 1 timeout.
+Known response cost$0.5110642 + uncertain estimate$0.0097089 = debit$0.5207731;
+WH3 cumulative$0.549347, Spire$0, under$2. Actual timeout billing unknown. Captures:
+3 scripted/13 model failures retained; separate passive captures show all8 endings.
+Independent review: no findings; 645 unique response IDs match the original ledger.
+Recorded Windows ratios1.0000; not an independent NTFS recount. Raw evidence/reports:
+`runs/benchmark-initial-20261102/`; [runbook](benchmark-initial.md#first-screen-2026-11-02).
+No controller-strength, winnability, cavalry-advantage or generalisation claim. No new run.
+
 ## 2026-11-02: add two enemy Swordsmen; obtain health from the engine
 
 Owner: add two enemy Swordsmen to make the standing-army battle harder. Version5:
