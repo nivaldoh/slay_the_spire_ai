@@ -2536,3 +2536,39 @@ old = 'bare = sum(row["outcome"] == "won" and row["cycles"] == 0'
 new = 'bare = sum(row["outcome"] != "won" and row["cycles"] == 0'
 tests = ["tests/twwarhammer3/test_wh3_cards.py::test_no_cycle_wins_count_only_wins_whose_replay_shows_zero_cycles"]
 source = "2026-11-02 cleanup, WH3 mutants batch"
+
+[[plant]]
+id = "ledger-refuses-free-reservation"
+guards = "A $0 reservation (a model priced at zero) is accepted, charged and released"
+file = "src/gameai/ledger.py"
+old = "if not math.isfinite(usd) or usd < 0:"
+new = "if not math.isfinite(usd) or usd <= 0:"
+tests = ["tests/gameai/test_ledger.py::test_a_free_call_reserves_charges_and_releases_zero_dollars"]
+source = "2026-11-02 cleanup mutation run, gameai-mutants batch"
+
+[[plant]]
+id = "llm-stops-resending-timeouts-and-server-errors"
+guards = "408, 500 and 504 replies are resent like the other transient HTTP codes"
+file = "src/gameai/llm.py"
+old = "TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}"
+new = "TRANSIENT_HTTP = {409, 429, 502, 503}"
+tests = ["tests/gameai/test_model.py::test_a_transient_http_error_is_resent_and_the_next_reply_returned"]
+source = "2026-11-02 cleanup mutation run, gameai-mutants batch"
+
+[[plant]]
+id = "llm-408-not-charged-as-uncertain"
+guards = "A 408 before success is charged at the reservation like a 5xx; a 429 is not"
+file = "src/gameai/llm.py"
+old = "uncertain += error.code >= 500 or error.code == 408"
+new = "uncertain += error.code >= 500"
+tests = ["tests/gameai/test_model.py::test_only_errors_that_may_have_been_billed_are_charged_at_the_reservation"]
+source = "2026-11-02 cleanup mutation run, gameai-mutants batch"
+
+[[plant]]
+id = "anthropic-null-cache-write-crashes-normalization"
+guards = "Anthropic usage with null or absent cache counts is charged on its reported tokens"
+file = "src/gameai/llm.py"
+old = '+ (usage.get("cache_creation_input_tokens") or 0),'
+new = '+ usage.get("cache_creation_input_tokens", 0),'
+tests = ["tests/gameai/test_providers.py::test_anthropic_usage_without_cache_counts_is_charged_as_reported"]
+source = "2026-11-02 cleanup mutation run, gameai-mutants batch"

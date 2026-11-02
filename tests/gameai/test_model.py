@@ -562,3 +562,56 @@ def test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry(
     assert reopened.spent == pytest.approx(expected)
     with pytest.raises(BudgetExhausted):
         reopened.reserve(ledger.budget)
+
+
+# HTTP semantics, as the OpenAI and Anthropic Python SDKs retry them (openai-python
+# _base_client._should_retry): 408 Request Timeout, 409 Conflict, 429 Too Many Requests and
+# 5xx server errors are transient (post docstring: "retries only transient ... errors").
+@pytest.mark.parametrize("code", [408, 409, 429, 500, 502, 503, 504])
+def test_a_transient_http_error_is_resent_and_the_next_reply_returned(code, monkeypatch):
+    outcomes = [urllib.error.HTTPError("u", code, "transient", {}, io.BytesIO(b"{}")),
+                io.BytesIO(b'{"id": "ok"}')]
+    sent = []
+
+    def urlopen(request, timeout):
+        sent.append(request)
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
+    assert api.post("key", {})["id"] == "ok"
+    assert len(sent) == 2
+
+
+# Module docstring: attempts with uncertain billing are charged at the reserved rate, one
+# held share each (_charge_uncertain). A 5xx or a 408 timeout may follow work the provider
+# began; a 429 (RFC 6585 rate limit) refuses the request unprocessed.
+@pytest.mark.parametrize(("code", "uncertain"), [(500, 1), (408, 1), (429, 0)])
+def test_only_errors_that_may_have_been_billed_are_charged_at_the_reservation(
+        tmp_path, monkeypatch, code, uncertain):
+    ledger = Ledger(tmp_path / "spend.jsonl", 1.0)
+    reply = {"id": "ok", "status": "completed", "usage": USAGE, "output": []}
+    outcomes = [urllib.error.HTTPError("u", code, "error", {}, io.BytesIO(b"{}")),
+                io.BytesIO(json.dumps(reply).encode())]
+    held_at_send = []
+
+    def urlopen(request, timeout):
+        held_at_send.append(ledger.held)
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
+    model = api.Model("gpt-6-luna", "low", ledger, instructions="system",
+                      max_output_tokens=200, send=lambda body: api.post("key", body))
+    model.call("user", {})
+
+    share = held_at_send[0] / api.TRANSPORT_ATTEMPTS
+    reported = (600 * 0.10 + 400 * 0.01 + 200 * 0.50) / 1e6  # USAGE at gpt-6-luna's prices
+    assert ledger.spent == pytest.approx(uncertain * share + reported)
+    assert model.totals["uncertain_transport_attempts"] == uncertain

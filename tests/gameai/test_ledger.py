@@ -92,3 +92,14 @@ def test_zero_and_positive_charges_remain_usable_after_reopening(tmp_path):
     reopened.reserve(0.75)
     with pytest.raises(BudgetExhausted):
         reopened.reserve(0.125)
+
+
+def test_a_free_call_reserves_charges_and_releases_zero_dollars(tmp_path):
+    # Zero is nonnegative ("Reservation must be finite and nonnegative"): a model priced at
+    # zero reserves, charges and releases $0 like any other call.
+    ledger = Ledger(tmp_path / "spend.jsonl", 1.0)
+    ledger.reserve(0)
+    ledger.charge(0, job="free")
+    ledger.release(0)
+
+    assert ledger.spent == 0 and ledger.held == 0

@@ -406,3 +406,22 @@ def test_only_anthropic_resends_an_overloaded_529(provider, sends, monkeypatch):
     else:
         assert llm.post("test-key", body, provider=provider)["_uncertain_attempts"] == 1
     assert len(sent) == sends
+
+
+# Anthropic's Usage types both cache counts as optional (null or absent); the normalization
+# adds them to input_tokens (its comment), so without them the reported counts stand alone.
+@pytest.mark.parametrize("cache", ["null", "absent"])
+def test_anthropic_usage_without_cache_counts_is_charged_as_reported(tmp_path, monkeypatch,
+                                                                     cache):
+    plain = message('{"ok":true}')
+    for field in ("cache_read_input_tokens", "cache_creation_input_tokens"):
+        if cache == "null":
+            plain["usage"][field] = None
+        else:
+            del plain["usage"][field]
+    agent, _ = anthropic_model(tmp_path, monkeypatch, [plain])
+    attempt = agent.call("test", SCHEMA)
+
+    assert attempt["usage"]["input_tokens"] == 1000
+    assert attempt["usage"]["input_tokens_details"] == {"cached_tokens": 0}
+    assert attempt["usd"] == pytest.approx((1000 * .10 + 40 * .50) / 1e6)
