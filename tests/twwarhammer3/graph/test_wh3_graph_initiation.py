@@ -422,3 +422,59 @@ def test_invalid_unit_identity_refuses_before_public_projection(monkeypatch):
     monkeypatch.setattr(team, "project", forbidden_projection)
     with pytest.raises(ValueError, match="starting unit data"):
         graph_initiation.member_view(raw, composition, "line")
+
+
+@pytest.mark.parametrize("kept", ["initiators", "initiation_check"])
+def test_downgraded_artifact_keeping_either_initiation_field_is_refused(tmp_path, kept):
+    # A legacy manifest predates initiation ("legacy artifact cannot carry new initiation
+    # requirements"); with either field kept, a revision could read no requirement.
+    generate(tmp_path / "author", Canned(replies(GOOD, WAIT)),
+             starting_episode(tmp_path / "start"))
+    output = tmp_path / "author/artifact"
+    path = output / "manifest.json"
+    value = json.loads(path.read_text())
+    value["version"] = graph_author.LEGACY_VERSION
+    del value["initiation_check" if kept == "initiators" else "initiators"]
+    path.write_text(json.dumps(value))
+    with pytest.raises(ValueError, match="legacy artifact"):
+        graph_author.load_artifact(output)
+
+
+@pytest.mark.parametrize("side,index,uid", [("friendly", 0, ""), ("enemy", 1, 7),
+                                            ("enemy", 1, "e1")])
+def test_empty_non_text_or_repeated_unit_ids_are_invalid_start_data(side, index, uid):
+    # Orders, targets and ownership are keyed by unit ID (protocol.friendly_units), so the
+    # checker accepts only distinct non-empty text IDs ("IDs" in its refusal).
+    view = public_start()
+    view[side][index]["id"] = uid
+    with pytest.raises(ValueError, match="starting unit data"):
+        graph_initiation.check(GOOD, view)
+
+
+def test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units():
+    # Rests on JUDGEMENT src/twwarhammer3/battle/graph.py G4 Target choice: select_target picks
+    # the visible enemy nearest any owned unit. Two cannons (range 100) at x 0 and 1000: e1 at
+    # x 50 is in range of the first, e2 at x 500 of neither, so only e1 gives an attack route.
+    spec = {"version": graph.VERSION, "entry": "owned", "nodes": {
+        "owned": {"op": "owned", "inputs": {}, "next": {"succeeded": "target", "empty": "owned"}},
+        "target": {"op": "select_target", "inputs": {"units": {"ref": "owned.units"}},
+                   "next": {"succeeded": "shoot", "empty": "owned"}},
+        "shoot": {"op": "shoot", "inputs": {"units": {"ref": "owned.units"},
+                                             "target": {"ref": "target.target"}},
+                  "next": {"succeeded": "owned", "failed": "owned", "cancelled": "owned"}}}}
+    gun = {"type": "wh_main_emp_art_great_cannon", "class": "artillery", "men": 12, "z": 0,
+           "state": [], "ammo": 20, "range": 100}
+    view = {"schema": "wh3-v1", "battle": "b", "seq": 1, "phase": "Deployed", "time_ms": 5000,
+            "friendly": [{**gun, "id": "gA", "x": 0}, {**gun, "id": "gB", "x": 1000}],
+            "enemy": [{"id": "e1", "men": 90, "x": 50, "z": 0, "state": []},
+                      {"id": "e2", "men": 90, "x": 500, "z": 0, "state": []}]}
+    policy = graph.GraphPolicy(spec)
+    policy.decide(view)
+    policy.decide({**view, "seq": 2})
+    picked = [event["outputs"]["target"] for event in policy.drain_events()
+              if event.get("event") == "transition" and event.get("node") == "target"]
+
+    report = graph_initiation.check(spec, view)
+
+    assert picked == ["e1"]
+    assert {order["target"] for order in report["attack_orders"]} == {"e1"}

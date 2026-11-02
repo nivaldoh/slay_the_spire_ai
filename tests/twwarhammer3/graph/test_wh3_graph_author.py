@@ -383,3 +383,30 @@ def test_author_cli_keeps_openrouter_within_the_owners_50_dollars(tmp_path, monk
         assert "cannot exceed $50" in capsys.readouterr().err
     else:
         assert main() == 0 and caps == [50.0]
+
+
+def test_revision_feedback_keeps_only_each_members_own_dispatched_orders(tmp_path):
+    # public_feedback: per-member views, ordinary own orders and own feedback. A play trace also
+    # has team "completed" rows (team.TeamPolicy) and order-free decisions (play.py logs quiet
+    # decisions too); neither is an order batch or feedback.
+    author(tmp_path / "initial", Canned(replies()))
+    previous = tmp_path / "initial/artifact"
+    episode = completed(tmp_path / "episode", previous)
+    path = episode / "trace.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[2:2] = [
+        {"kind": "team", "event": "completed", "member": "cavalry", "decision": "cavalry-1",
+         "orders": [{"type": "attack", "unit": "cav-unit", "target": "enemy"}],
+         "started": 1.0, "completed": 2.0},
+        {"kind": "decision", "seq": 1, "time_ms": 10000, "request": "quiet-1", "orders": [],
+         "behavior": {"type": "graph", "member": "line", "decision": "line-1",
+                      "source_seq": 1, "source_ms": 10000}}]
+    path.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    send = Canned(replies(WAIT, WAIT))
+    result = author(tmp_path / "revision", send, previous=previous, evidence=episode)
+    line, cavalry = (json.loads(send.requests[i]["input"][0]["content"])["public_feedback"]
+                     for i in (1, 2))
+    assert line["orders"] == []
+    assert cavalry["orders"] == [{"seq": 1, "orders": [
+        {"type": "attack", "unit": "cav-unit", "target": "enemy"}]}]
+    assert result["evidence"]["counts"]["cavalry"]["orders"] == 1

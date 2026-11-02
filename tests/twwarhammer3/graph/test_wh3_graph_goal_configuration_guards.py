@@ -93,3 +93,43 @@ def test_builtin_team_leaf_is_closed_and_refused_inside_a_configured_team(tmp_pa
             result.close()
         for policy in nested:
             policy.close()
+
+
+@pytest.mark.parametrize("provider,model,budget", [
+    ("openrouter", "z-ai/glm-5.3", 50), ("anthropic", "claude-haiku-5-5", 200),
+])
+def test_goal_budget_may_reach_its_own_providers_allowance(
+        tmp_path, monkeypatch, provider, model, budget):
+    # AGENTS.md: the owner's $50 on OpenRouter ("cannot exceed $50", so $50 itself is allowed)
+    # and the Anthropic key's separate $200; the OpenRouter cap is not another provider's.
+    path, config, raw = configuration(tmp_path)
+    raw["model"] = config["model"] = model
+    path.write_text(json.dumps(raw))
+    config.update(provider=provider, budget_usd=budget)
+    monkeypatch.setattr(configured, "api_key", lambda p: "test-only")
+    assert callable(configured.factory(path, config))
+
+
+@pytest.mark.parametrize("unit_types", [[], "spear"])
+def test_member_unit_types_must_be_a_nonempty_list_of_types(tmp_path, unit_types):
+    # Only null means "the rest" (graph_author INSTRUCTIONS). An empty list owns nothing, and
+    # text would become one-letter types at build time (tuple("spear")).
+    path, config, raw = configuration(tmp_path, team=True)
+    raw["members"]["line"]["unit_types"] = unit_types
+    path.write_text(json.dumps(raw))
+    with pytest.raises(ValueError, match="distinct unit_types"):
+        configured.load(path, config)
+
+
+def test_goal_member_without_effort_uses_the_job_effort_else_low(tmp_path):
+    # __main__ --effort: "the reasoning effort of a model policy named without /EFFORT", default
+    # "low"; graph_author.load_template passes no job effort at all.
+    path, config, raw = configuration(tmp_path)
+    del raw["effort"]
+    path.write_text(json.dumps(raw))
+    config["effort"] = "medium"
+    value, _, goals, _ = configured.load(path, config)
+    assert value["effort"] == "medium" and goals == {("claude-haiku-5-5", "medium")}
+    del config["effort"]
+    value, _, goals, _ = configured.load(path, config)
+    assert value["effort"] == "low" and goals == {("claude-haiku-5-5", "low")}

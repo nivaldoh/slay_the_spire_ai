@@ -2824,3 +2824,165 @@ old = 'if end is None or r.get("tick") is None or r["tick"] <= end]'
 new = 'if end is None and r.get("tick") is None or r["tick"] <= end]'
 tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
 source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "configured-openrouter-cap-refuses-exactly-50"
+guards = "An OpenRouter goal budget of exactly $50 is allowed (owner: cannot exceed $50)"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'if provider == "openrouter" and config["budget_usd"] > 50:'
+new = 'if provider == "openrouter" and config["budget_usd"] >= 50:'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "configured-openrouter-cap-limits-every-provider"
+guards = "The $50 OpenRouter cap does not limit another provider's budget"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'if provider == "openrouter" and config["budget_usd"] > 50:'
+new = 'if provider == "openrouter" or config["budget_usd"] > 50:'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "configured-accepts-empty-or-text-unit-types"
+guards = "A team member's unit_types is null or a non-empty list of distinct types"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'elif (not isinstance(unit_types, list) or not unit_types'
+new = 'elif (not isinstance(unit_types, list) and not unit_types'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "configured-goal-effort-ignores-job-effort"
+guards = "A graph_llm member without effort uses the job's --effort, else low"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'effort = node.get("effort", config.get("effort") or "low")'
+new = 'effort = node.get("effort", config.get("effort") and "low")'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-author-drops-member-orders"
+guards = "Revision feedback keeps each member's own dispatched order batches"
+file = "src/twwarhammer3/battle/graph_author.py"
+old = 'name = (event.get("behavior") or {}).get("member")'
+new = 'name = (event.get("behavior") and {}).get("member")'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-author-counts-order-free-decisions"
+guards = "Decisions without orders are not order batches in revision feedback"
+file = "src/twwarhammer3/battle/graph_author.py"
+old = 'if name in histories and event.get("orders"):'
+new = 'if name in histories or event.get("orders"):'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-author-reads-any-team-row-as-feedback"
+guards = "Only team feedback rows become member feedback; other team rows do not refuse revision"
+file = "src/twwarhammer3/battle/graph_author.py"
+old = 'elif event.get("kind") == "team" and event.get("event") == "feedback":'
+new = 'elif event.get("kind") == "team" or event.get("event") == "feedback":'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-author-legacy-keeps-one-initiation-field"
+guards = "A legacy artifact carrying either initiation field is refused"
+file = "src/twwarhammer3/battle/graph_author.py"
+old = 'elif "initiation_check" in manifest or "initiators" in manifest:'
+new = 'elif "initiation_check" in manifest and "initiators" in manifest:'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-initiation-accepts-empty-or-non-text-ids"
+guards = "Starting unit IDs are non-empty text"
+file = "src/twwarhammer3/battle/graph_initiation.py"
+old = 'if not all(isinstance(uid, str) and uid for uid in ids)'
+new = 'if not all(isinstance(uid, str) or uid for uid in ids)'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-initiation-accepts-repeated-ids"
+guards = "Starting unit IDs are distinct"
+file = "src/twwarhammer3/battle/graph_initiation.py"
+old = 'for uid in ids) or len(ids) != len(set(ids)):'
+new = 'for uid in ids) and len(ids) != len(set(ids)):'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-view-member-inputs-become-frames"
+guards = "Viewer frames come only from observation and result rows, not member input copies"
+file = "src/twwarhammer3/battle/graph_view.py"
+old = 'if kind in ("observation", "result") and isinstance(record.get("observation"), dict):'
+new = 'if kind in ("observation", "result") or isinstance(record.get("observation"), dict):'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-view-order-free-decision-is-dispatch"
+guards = "A decision without orders is not an order dispatch in the viewer"
+file = "src/twwarhammer3/battle/graph_view.py"
+old = 'elif kind == "decision" and record.get("orders"):'
+new = 'elif kind == "decision" or record.get("orders"):'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-view-reads-unregistered-acks"
+guards = "Acks of requests no graph member dispatched are skipped, not refused"
+file = "src/twwarhammer3/battle/graph_view.py"
+old = 'elif kind == "ack" and record.get("request") in requests:'
+new = 'elif kind == "ack" or record.get("request") in requests:'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "skill-contracts-accepts-empty-or-text-units"
+guards = "A units literal is a non-empty list of distinct strings"
+file = "src/twwarhammer3/battle/skill_contracts.py"
+old = 'return (isinstance(value, list) and bool(value)'
+new = 'return (isinstance(value, list) or bool(value)'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "skill-contracts-accepts-empty-or-non-text-target"
+guards = "A target literal is a non-empty string"
+file = "src/twwarhammer3/battle/skill_contracts.py"
+old = 'return isinstance(value, str) and bool(value)'
+new = 'return isinstance(value, str) or bool(value)'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "skill-contracts-accepts-other-point-keys"
+guards = "A point literal has exactly numeric x and z"
+file = "src/twwarhammer3/battle/skill_contracts.py"
+old = 'return (isinstance(value, dict) and set(value) == {"x", "z"}'
+new = 'return (isinstance(value, dict) or set(value) == {"x", "z"}'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "skill-contracts-destroyed-unit-available"
+guards = "A destroyed unit (0 men) is not owned or available"
+file = "src/twwarhammer3/battle/skill_contracts.py"
+old = 'return (unit.get("men", 0) > 0 and unit.get("x") is not None'
+new = 'return (unit.get("men", 0) >= 0 and unit.get("x") is not None'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
+source = "2026-11-02 GaP survivors (cleanup batch gap)"
+
+[[plant]]
+id = "graph-initiation-targets-the-farthest-enemy"
+guards = "The initiation proof targets the enemy the runtime select_target picks: nearest any owned unit"
+file = "src/twwarhammer3/battle/graph_initiation.py"
+old = 'target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units), e["id"]),'
+new = 'target = min(enemies, key=lambda e: (max(skills.distance(u, e) for u in units), e["id"]),'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py::test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units"]
+source = "2026-11-02 cleanup round 5 review"

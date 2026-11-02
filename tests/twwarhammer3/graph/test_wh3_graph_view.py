@@ -314,3 +314,28 @@ def test_foreign_or_misbound_nested_input_source_is_rejected(tmp_path, field, va
     rewrite(episode, result, rows)
     with pytest.raises(ValueError, match="input source"):
         graph_view.collect_episode(episode)
+
+
+def test_member_inputs_and_order_free_decisions_add_no_frames_orders_or_acks(tmp_path):
+    # Frames come from observation/result rows (replay.py sources); a team input row is a
+    # member's projected copy (team.decide). play.py also logs order-free decisions, and the
+    # engine acknowledges them with no results; they dispatch nothing.
+    from twwarhammer3.battle import team
+
+    episode, result, rows = recorded(tmp_path)
+    line_graph = result["card"]["disclosure"]["configuration"]["members"]["line"]
+    member_input = {"kind": "team", "event": "input", "member": "line", "decision": "line-1",
+                    "source_seq": 1, "source_ms": 1000,
+                    "observation": team.project(rows[0]["observation"], {"u"})}
+    quiet = {"kind": "decision", "seq": 1, "time_ms": 1000, "decision_time_ms": 1000,
+             "request": "request-0", "orders": [], "behavior": {
+                 "member": "line", "node": "act", "source_seq": 1, "source_ms": 1000,
+                 "graph_sha256": graph.digest(line_graph["controller"]["graph"])}}
+    quiet_ack = {"kind": "ack", "request": "request-0", "ack": {
+        "request": "request-0", "based_on": 1, "applied_ms": 1100, "results": []}}
+    rows[1:1] = [member_input, quiet, quiet_ack]
+    rewrite(episode, result, rows)
+    value = graph_view.collect_episode(episode)
+    assert [frame["source"]["line"] for frame in value["frames"]] == [1, 9]
+    assert [(e["kind"], e["request"]) for e in value["events"] if e["kind"] in (
+        "orders", "ack")] == [("orders", "request-1"), ("ack", "request-1")]
