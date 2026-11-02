@@ -24,6 +24,8 @@ revisions written below are the earlier passes.
   341 of 341 caught; the gate passed (2696 passed, 43 skipped) with another session's
   uncommitted edits present, so not at the revision in `check.py`'s sense. Evidence:
   `runs/cleanup-20261102/plants-main-515491c.txt` and `runs/checks/20261102-120816-*.log`.
+  On a clean tree, CI passed all three jobs at `d605605` (run 41475393465). The owner accepted
+  this pass as verifying the 2026-11-02 cleanup's test work (owner: "Accept as verified").
 
 - WH3 initial mirror benchmark measurements (agreed 2026-11-02, owner: "Use this check"):
   saved UI screenshots of both rosters/settings, engine ending and displayed tactical-unit
