@@ -151,6 +151,8 @@ def validate_config(scenario, config):
 
 def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
     """Write a queue plan without launching or paying; the existing queue executes it once."""
+    from twwarhammer3.battle.setup import scenarios
+
     if output.exists():
         raise ValueError(f"plan already exists: {output}")
     if not math.isfinite(budget_usd) or not 0 < budget_usd <= 200:
@@ -167,6 +169,7 @@ def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"],
                                        cwd=REPO_ROOT, text=True).strip()
     plan = {"benchmark": VERSION, "source_revision": revision, "stage": stage,
+            "scenario": scenarios()[SCENARIO],
             "purpose": "exploratory initial mirror benchmark; no reliable ranking claim",
             "preparation_usd": 0, "cumulative_ledger_cap_usd": budget_usd,
             "keep_going": stage == "model", "jobs": jobs}
@@ -180,11 +183,17 @@ def read_json(path):
 
 def collect(plan_path: Path) -> dict:
     """One row per planned attempt, including queue failures before an episode exists."""
-    from twwarhammer3.battle.setup import scenarios
-
     plan = json.loads(plan_path.read_text())
     if plan.get("benchmark") != VERSION:
         raise ValueError("not a mirror-v1 benchmark plan")
+    expected_profile = plan.get("scenario")
+    if expected_profile is None:
+        # Earlier initial plans named only the source. Read that frozen profile rather
+        # than silently judging an old attempt against today's changed settings.
+        source = subprocess.check_output([
+            "git", "show", f"{plan['source_revision']}:configs/twwarhammer3/scenarios.json"],
+            cwd=REPO_ROOT, text=True)
+        expected_profile = json.loads(source)[SCENARIO]
     state = read_json(plan_path.with_name(plan_path.stem + "-state.json")) or {}
     executions = {str((REPO_ROOT / row["output"]).resolve()): row
                   for row in state.get("completed", [])}
@@ -222,7 +231,7 @@ def collect(plan_path: Path) -> dict:
         config = manifest.get("config") or {}
         matches = (manifest.get("source_revision") == plan["source_revision"]
                    and config.get("scenario") == SCENARIO
-                   and manifest.get("scenario") == scenarios()[SCENARIO]
+                   and manifest.get("scenario") == expected_profile
                    and config.get("policy") == job["controller"]
                    and (result or {}).get("policy") == job["controller"]
                    and config.get("episodes") == 1)

@@ -105,6 +105,7 @@ arithmetic were independently checked. No live multiplayer or cloud performance 
   [`pettingzoo/test/parallel_test.py`](https://github.com/Farama-Foundation/PettingZoo/blob/main/pettingzoo/test/parallel_test.py):
   per-agent identity and episode-lifecycle checks. Inspected, not run; its synchronous
   stepping contract does not establish real-time multiplayer synchronization.
+  [unitcontrollers](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html),
 
 Refinement, 2026-10-30: independent cloud, reference/headless/RL and source reviews;
 evidence in `runs/twwarhammer3/multiplayer-plan-20261030/`. Sources inspected, no deployment

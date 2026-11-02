@@ -28,6 +28,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: owner allows enemy AI toggles in the initial mirror profile
+
+Third pilot at `52eab85` also stopped: enemy crossbows skirmish remained on after delayed
+release. Its 1 setup error, 0 decisions, no engine ending and 2 never-started attempts
+remain in `runs/benchmark-initial-20261102/pilot-r3.report.json`; $0 model calls.
+Owner chose "Allow and record enemy AI toggles": scenario_version2 pins our army's
+initial toggles, records both armies' settings and never acquires enemy control in the
+active profile. Roster, score and timing limits unchanged. New plans freeze the profile;
+older plans use their named source's profile, so later edits cannot rewrite attribution.
+New enemy-control/validation cases failed first; 188 focused cases pass; independent review
+found no remaining findings. Full gate/new free pilot pending. Earlier failed plans stay visible;
+there is no gameplay result or strength claim from them.
+
 ## 2026-11-02: mirror startup handover waits for the engine
 
 Second pilot at `ae9a09b`: 1 setup error (enemy crossbows skirmish still on), 0 decisions,

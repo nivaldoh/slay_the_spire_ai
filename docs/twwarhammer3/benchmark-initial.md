@@ -9,6 +9,14 @@ Historical scenarios, chariot admission and results keep their earlier rules.
 accounting rest on Simple condition score and No-retry scope and accounting there.
 Neither the cavalry advantage nor controller strength has been established.
 
+Owner, 2026-11-02: "Allow and record enemy AI toggles". Scenario version2 pins our initial
+fire-at-will/skirmish/guard, records both armies' actual supported flags, and leaves enemy
+control with the AI throughout startup. Enemy skirmish may be on. This supersedes the
+original both-armies-off starter proposal after three failed setup attempts; those plans
+and failures stay in their reports. Scoring remains mirror-v1, with no change to armies.
+Each plan freezes its profile. Earlier plans without that field are checked against their
+named Git revision, so later settings cannot silently change attribution of old attempts.
+
 The engine's win/draw/loss comes first. At its first ending, the mod records each original
 friendly unit's health bar (0.01 precision), headcount and wavering/routing/shattered/departed
 flags. A departed unit must explicitly be no longer deployed or deploying; routing alone
@@ -44,12 +52,14 @@ JUDGEMENT?: Startup handover — Codex, 2026-11-02: wait one existing engine tic
 enemy release and one before checking AI-owned readbacks. Immediate release failed two
 pilots; this short setup interval changes when the first controller decision can begin.
 
-`benchmark_behaviours` issues startup toggles once. The initial setup waits for the above
-handover; it never repeatedly takes enemy control to force a behaviour during play.
-Keep errors from failed application/release. See the engine's
+Owner's subsequent "Allow and record enemy AI toggles" supersedes this attempted remedy.
+It was tested only in pilot-r3 and did not produce the required enemy toggle state.
+The active scenario version2 never acquires enemy units, so uses no handover wait;
+the helper's earlier modes remain for their recorded regression checks. Keep errors
+from failed friendly application/readback. See the engine's
 [unitcontroller documentation](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html):
 issuing commands takes control, and release hands control back to the player or AI.
-Whether delayed release preserves enemy settings still needs a new live pilot.
+The third pilot still read enemy skirmish on after delayed release; its hypothesis is unproved.
 Reference structure: [SWE-bench's planned-instance report](https://github.com/SWE-bench/SWE-bench/blob/02e7a74ffd0b/swebench/harness/reporting.py),
 already in [references.md](../references.md): enumerate the plan, join evidence, keep missing attempts.
 
@@ -99,11 +109,11 @@ failure counts from saved records; change private fields and require identical i
 This establishes recording/arithmetic, not strength or the cavalry advantage. A green
 component suite alone is insufficient. See [agreed checks](../agreed-checks.md).
 
-Current status: implemented at `b5ecab8`; 2582 offline cases passed, 43 skipped, independent
-review found no remaining offline findings. First pilot stopped on stale startup toggle
-evidence (1 setup error; 2 attempts never started; $0). Its original report is retained.
-The readback fix passed offline; a second pilot still found enemy skirmish on after
-immediate release (1 setup error, 2 never started, $0). Both reports remain intact.
-A delayed-release fix has a failing-before/passing-after regression; next pilot pending.
+Current status: implemented at `b5ecab8`, with readback/handover fixes at `ae9a09b` and
+`52eab85`; latest full gate 2587 passed, 43 skipped, independent review found no findings.
+Three starter pilots each stopped on setup: first stale own readback, then two enemy
+skirmish readbacks. All three plans/results are retained (no model calls or engine ending).
+Owner-selected friendly-only toggles are built, with new component regressions; version2
+pilot and live measurements remain pending.
 No live correctness or strength claim yet. Evidence/card:
 `runs/benchmark-initial-20261102/`.

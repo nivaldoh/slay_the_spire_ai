@@ -2,7 +2,7 @@
  "emp-mirror-cavalry-v1": {
   "name": "emp-mirror-cavalry-v1",
   "benchmark": "mirror-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "empire_mirror",
   "brief": "Win this Land Battle against the Empire army. Engine timer endings count. Preserve your army where possible.",
   "split": "development",

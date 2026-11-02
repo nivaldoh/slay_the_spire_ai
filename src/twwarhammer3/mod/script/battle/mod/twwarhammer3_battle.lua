@@ -450,9 +450,9 @@ local function benchmark_condition(now)
     return {version = 1, time_ms = now, units = units}
 end
 
--- Pin supported initial toggles for both armies; releasing the enemy controller returns
--- movement/target selection to the built-in AI. Record every readback, including failures.
-local function benchmark_behaviours(apply, defer_enemy)
+-- Apply initial toggles to the selected side; the active benchmark selects friendlies only.
+-- Record both armies, including failures. Earlier modes remain for recorded regressions.
+local function benchmark_behaviours(apply, defer_enemy, side_filter)
     local evidence = {}
     for _, side in ipairs({"friendly", "enemy"}) do
         evidence[side] = {}
@@ -460,7 +460,7 @@ local function benchmark_behaviours(apply, defer_enemy)
             local entry = state[side][id]
             local values = {supported = {}}
             local controller = nil
-            if apply ~= false then
+            if apply ~= false and (not side_filter or side == side_filter) then
                 controller = entry.controller or entry.army:create_unit_controller()
                 if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
             end
@@ -1495,7 +1495,7 @@ local function start()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender")}
     if session.benchmark then
-        local toggles_ok, toggles = pcall(benchmark_behaviours, true, true)
+        local toggles_ok, toggles = pcall(benchmark_behaviours, true, false, "friendly")
         state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}
     end
     local modifiers = {}

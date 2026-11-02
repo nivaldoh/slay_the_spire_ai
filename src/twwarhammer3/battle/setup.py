@@ -567,7 +567,10 @@ def check_battle(scenario: dict, observation: dict) -> dict:
                 for key, wanted in (("fire_at_will", True), ("skirmish", False), ("defend", False)):
                     ranged = "crossbowmen" in unit.get("type", "")
                     required = key == "defend" or ranged and key in ("fire_at_will", "skirmish")
-                    if (required or key in values) and values.get(key) is not wanted:
+                    if required and type(values.get(key)) is not bool:
+                        raise ProtocolError(f"setup {side}/{unit['id']}: unreadable {key}")
+                    if (side == "friendly" and (required or key in values)
+                            and values.get(key) is not wanted):
                         raise ProtocolError(f"setup {side}/{unit['id']} {key}: {values.get(key)!r}")
         checks["benchmark_behaviours"] = toggles
     for key in ("unit_scale", "realism", "player_defends"):

@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-02 (initial WH3 benchmark implementation): "Implement the initial version"
+  in benchmark-implementation.md; "Use a cheap model from the Anthropic API"; "Keep
+  this initial version simple." Agreed screenshot/engine-ending/health checks within
+  1 percentage point, plus offline routing/recovery/missing-read/retry cases.
+  After three setup failures: "Allow and record enemy AI toggles"; pin our initial
+  toggles, record enemy choices and leave its control with the built-in AI.
 - 2026-11-01 (code page, WH3 only): "I think the Slay the Spire box in the Map section of the HTML
   is just creating confusion there. Instead of having that, we should just omit that game and
   make it clear that we're talking about only WH3." Also: "multi-agent.html" "doesn't seem like

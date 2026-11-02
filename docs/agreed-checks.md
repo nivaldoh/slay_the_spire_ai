@@ -20,7 +20,10 @@ revisions written below are the earlier passes.
   health within 1 percentage point; hand-recompute condition and failure counts from records.
   Offline: routing/recovery, missing reads and accidental retries; private-data changes must
   not change policy inputs. Command: `uv run --locked pytest -ra
-  tests/twwarhammer3/test_wh3_mirror_benchmark.py`. Live procedure/commands:
+  tests/twwarhammer3/test_wh3_mirror_benchmark.py
+  tests/twwarhammer3/test_wh3_mirror_enemy_ai.py`. Owner's same-day follow-up:
+  pin our initial toggles and record enemy AI choices ("Allow and record enemy AI toggles").
+  Live procedure/commands:
   [initial runbook](twwarhammer3/benchmark-initial.md#measurement-check).
   Not yet passed at a recorded revision. This checks recording/arithmetic, not model strength
   or the cavalry advantage. Roster, score and limits retain their JUDGEMENT markers.
