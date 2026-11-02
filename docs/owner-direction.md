@@ -5,12 +5,18 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-01 (code page, WH3 only): "I think the Slay the Spire box in the Map section of the HTML
+  is just creating confusion there. Instead of having that, we should just omit that game and
+  make it clear that we're talking about only WH3." Also: "multi-agent.html" "doesn't seem like
+  the best name now"; "We should update the README with at least some of these visuals." Read as:
+  the page is [how-code-works.html](how-code-works.html), "How the WH3 code works"; its map
+  leaves Slay the Spire's paths out; the README's WH3 section shows the map and two views.
 - 2026-11-01 (control methods on the page): "Find a good way to represent different army
   control methods that we will implement. For now we have the basic one, and then GaP. We need
-  clean visuals for those too." Read as: the [page](multi-agent.html) draws each control method
+  clean visuals for those too." Read as: the [page](how-code-works.html) draws each control method
   as it is built, now the basic one (the model picks the orders at each decision) and GaP
   (models write graphs that code plays); drawing GaP in the page itself rests on JUDGEMENT?
-  docs/multi-agent.html GaP drawn in the page.
+  docs/how-code-works.html GaP drawn in the page.
 - 2026-11-01 (visual docs): "I like the general idea of helping me quickly understand how the
   code works in a visual, concrete, simple, intuitive way. That's by far the most important
   thing about that." Earlier (2026-10-31): make it "the main way I understand the structure of
@@ -18,7 +24,8 @@ Both games:
   updating it "after every single commit". On the [plan](how-code-works-plan.md): "My answers:
   1a, 2a, 3a. About the three questions that need my 'yes', I agree with them." So:
   - `multi-agent.html` becomes a "How the code works" map of the whole repo, plus short
-    stories built on real battles; today's tabs are frozen as an appendix;
+    stories built on real battles; today's tabs are frozen as an appendix (superseded
+    2026-11-01: WH3 only, renamed, above);
   - refreshes run as away-window upkeep or on request, at most weekly and at most 100 API calls
     each;
   - small excerpts of recorded battles are committed in `docs/`, publicly: a standing exception

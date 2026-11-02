@@ -130,7 +130,9 @@ What hurts:
 
 ### 1. What the page becomes
 
-One page, still `docs/multi-agent.html` so links keep working, retitled "How the code works". Three levels:
+One page, still `docs/multi-agent.html` so links keep working, retitled "How the code works". Three levels
+(owner, 2026-11-01: now `docs/how-code-works.html`, "How the WH3 code works", its map without Slay
+the Spire):
 
 1. **A map of the whole repo, the first view.** About 12 area boxes in today's coloured bands:
    - the WH3 play loop and controllers;

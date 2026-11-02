@@ -79,7 +79,25 @@ handed back to live control at the saved moment ([how and what is verified](docs
 The same tool is public for players and modders:
 [wh3-battle-checkpoints](https://github.com/nivaldoh/wh3-battle-checkpoints).
 
+**How the WH3 code works.** [A page of its own](docs/how-code-works.html) maps the WH3 code and
+tells short stories from real battles. On the map, each teal dot is one thing sent along a link,
+at that link's pace (not to scale): under a model controller the battle state about every
+second, orders and model calls every few seconds, a result once a battle; under a graph
+controller, state and orders several times a second, and no model call or only a few target hints.
+
+[![The map of the WH3 code: one box per part, teal dots moving along the links at their rates](docs/images/code-map.gif)](docs/how-code-works.html)
+
+<a href="docs/how-code-works.html#methods"><img src="docs/images/code-methods.png" width="49%" alt="Basic vs GaP: when each control method asks a model, on one battle clock"></a>
+<a href="docs/how-code-works.html#graph"><img src="docs/images/code-graph-replay.png" width="49%" alt="One graph battle replayed: each member's current step, the step lanes and the units' positions"></a>
+
+*Left: when each control method asks a model. Basic asks at every decision (92 calls during a
+335 s battle); in a graph (GaP) battle, models write the graphs before it and revise them after
+(3 calls each), and none was asked during it (its optional target hints were unused). Right:
+that graph battle replayed whole, with each member's current step lit. GitHub shows the page's
+source: open `docs/how-code-works.html` in a browser from a clone.*
+
 [How the mod works](docs/twwarhammer3/README.md#how-it-works) ·
+[How the WH3 code works](docs/how-code-works.html) ·
 [Battle checkpoints](docs/twwarhammer3/checkpoints.md) ·
 [Benchmark design](docs/twwarhammer3/benchmark.md) ·
 [Results and experiment log](docs/twwarhammer3/log.md) ·

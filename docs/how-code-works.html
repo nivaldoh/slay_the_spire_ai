@@ -1,14 +1,14 @@
 <!doctype html>
-<!-- How the code works: a map of the whole repo and short stories built on real battles, plus
+<!-- How the WH3 code works: a map of the WH3 code and short stories built on real battles, plus
      two older views of 2026-10-31 (multiplayer, factory). Open it in a local browser: paste
-     \\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html into the
+     \\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\how-code-works.html into the
      address bar. Plan: docs/how-code-works-plan.md. Each new view's hand-written data is its own
      file, docs/how-code-works-view-<id>.js; scripts write the file lists and the examples. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How the code works</title>
+<title>How the WH3 code works</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -3311,7 +3311,7 @@ const DIAGRAM_FILES = { from: "", revision: "", files: [] }; // scripts/diagram_
 const DIAGRAM_EXAMPLES = {}; // scripts/diagram_examples.py
 let DIAGRAM_FLAGS = null; // scripts/check.py's flags, when its ignored data file exists
 </script>
-<script src="multi-agent-files.js"></script>
+<script src="how-code-works-files.js"></script>
 <script src="how-code-works-example-job.js"></script>
 <script src="how-code-works-view-map.js"></script>
 <script src="how-code-works-view-job.js"></script>
@@ -4650,7 +4650,7 @@ body.sources-off #panel .badge.changed {
 </head>
 <body class="sources-off">
 <header id="top">
-  <a class="home" href="#map">How the code works</a>
+  <a class="home" href="#map">How the WH3 code works</a>
   <nav id="tabs" aria-label="Views"></nav>
   <label class="switch" title="Show status colours, file references and judgement calls">
     <input type="checkbox" id="sources-switch"> Sources
@@ -6789,7 +6789,7 @@ function renderAll(stepIndex) {
   }
   renderTabs();
   const tab = state.tab;
-  document.title = tab.id === "map" ? "How the code works" : `${tab.title}: how the code works`;
+  document.title = tab.id === "map" ? "How the WH3 code works" : `${tab.title}: how the WH3 code works`;
   $("question").textContent = (flow && flow.question) || tab.question || tab.title;
   $("takeaway").textContent = (flow && flow.takeaway) || tab.takeaway || "";
   renderProvenance(tab);

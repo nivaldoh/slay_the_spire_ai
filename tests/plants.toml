@@ -2092,6 +2092,15 @@ tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_st
 source = "2026-11-01 How the code works pilot"
 
 [[plant]]
+id = "diagram-flags-ignore-the-maps-outside"
+guards = "the map's outside paths (Slay the Spire's) are neither missing nor unboxed"
+file = "scripts/check.py"
+old = '                outside = tuple(view.get("outside", []))  # paths the page leaves out'
+new = '                outside = ()'
+tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
+source = "2026-11-01 How the code works: WH3 only"
+
+[[plant]]
 id = "diagram-error-reaches-the-exit-code"
 guards = "Any diagram error prints one line and never changes the exit code or the pass record"
 file = "scripts/check.py"

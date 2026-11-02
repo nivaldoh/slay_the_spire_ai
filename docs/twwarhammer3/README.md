@@ -39,7 +39,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
 | [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
 | [gap-plan.md](gap-plan.md) | initial graph controllers: frozen skills, interchangeable members, authoring/revision commands, checks, evidence and deferred research |
-| [../multi-agent.html](../multi-agent.html) | "How the code works": a map of the repo whose moving dots show how often each link runs, short stories from real battles (one play job, one decision, a team, basic vs GaP, a graph battle with its whole-battle replay), multiplayer and the factory; sources behind a switch. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html` |
+| [../how-code-works.html](../how-code-works.html) | "How the WH3 code works": a map of the WH3 code whose moving dots show how often each link runs, short stories from real battles (one play job, one decision, a team, basic vs GaP, a graph battle with its whole-battle replay), multiplayer and the factory; sources behind a switch. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\how-code-works.html` |
 | [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
@@ -134,8 +134,8 @@ through it, and every order enters through it.
 Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup). One file per line since
 2026-11-01: a line starting `` - `path`: `` says what that file does, and a path ending in `/`
 covers the files below it. `scripts/diagram_files.py` reads these lines into the "How the
-code works" page (`docs/multi-agent.html`), and `scripts/check.py` flags `src/` Python files
-missing here. The Spire list is in [docs/spire/AGENTS.md](../spire/AGENTS.md#layout).
+WH3 code works" page (`docs/how-code-works.html`), and `scripts/check.py` flags `src/` Python
+files missing here, except Slay the Spire's, which the page leaves out. The Spire list is in [docs/spire/AGENTS.md](../spire/AGENTS.md#layout).
 
 JUDGEMENT?: One file per line, full paths (Claude Code, 2026-11-01): chosen so a script reads
 the list exactly; the old grouped prose gave 36 of 49 files a description. The page's file

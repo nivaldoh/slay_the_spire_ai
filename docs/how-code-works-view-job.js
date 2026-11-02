@@ -1,5 +1,5 @@
 "use strict";
-// The "What happens in one play job?" story of docs/multi-agent.html. Hand-written; the rules
+// The "What happens in one play job?" story of docs/how-code-works.html. Hand-written; the rules
 // are docs/how-code-works-plan.md sections 2 and 5. Strict JSON inside push( ... ), because
 // scripts/check.py and scripts/diagram_examples.py read it; keep Prettier's --quote-props preserve
 // --trailing-comma none. Messages and maps come from docs/how-code-works-example-job.js.

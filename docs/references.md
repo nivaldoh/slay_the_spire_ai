@@ -430,7 +430,7 @@ OpenAI posts and cookbook:
 
 ## Diagram viewers
 
-For [multi-agent.html](multi-agent.html), the animated diagram of the multi-agent parts
+For [how-code-works.html](how-code-works.html) (then `multi-agent.html`), the animated diagram of the multi-agent parts
 (2026-10-31). We copy techniques, not code; the viewer names each source in a comment.
 Checked on 2026-10-31 by a second agent (`runs/multi-agent-diagram-20261031/maps-and-references.json`).
 

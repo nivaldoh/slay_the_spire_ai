@@ -1,5 +1,5 @@
 "use strict";
-// The "How do two members share one army?" story of docs/multi-agent.html. Hand-written; rules:
+// The "How do two members share one army?" story of docs/how-code-works.html. Hand-written; rules:
 // docs/how-code-works-plan.md sections 2 and 5. The lanes are copied from the frozen Team tab's
 // probe flow (claims checked at 21f6204). Strict JSON inside push( ... ); keep Prettier's
 // --quote-props preserve --trailing-comma none. Messages and maps: how-code-works-example-members.js.

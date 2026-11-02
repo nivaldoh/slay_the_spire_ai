@@ -1,14 +1,14 @@
-"""Write docs/multi-agent-files.js: every path in the file lists, what it does, and its map box.
+"""Write docs/how-code-works-files.js: every path in the file lists, what it does, and its map box.
 
-The lists are the WH3 README's Code map and docs/spire/AGENTS.md's Layout, one file per line
-(`` - `path`: what it does ``); the map boxes are the `files` prefixes of the Map view,
-docs/how-code-works-view-map.js. The page shows a box's files when it is clicked. The line format
-and the paths come from scripts/check.py, which flags paths missing from the lists or in no box,
-so the two cannot read the lists differently.
+The list is the WH3 README's Code map, one file per line (`` - `path`: what it does ``), less
+the paths the Map view leaves out (its "outside": Slay the Spire's); the map boxes are the
+`files` prefixes of the Map view, docs/how-code-works-view-map.js. The page shows a box's files
+when it is clicked. The line format and the paths come from scripts/check.py, which flags paths
+missing from the list or in no box, so the two cannot read the list differently.
 
-    uv run --locked python scripts/diagram_files.py [--out docs/multi-agent-files.js]
+    uv run --locked python scripts/diagram_files.py [--out docs/how-code-works-files.js]
 
-The output, a classic script the page loads, depends only on those three files, so two runs on
+The output, a classic script the page loads, depends only on those two files, so two runs on
 one tree write identical files.
 """
 import argparse
@@ -30,14 +30,17 @@ def payload(source: str) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", type=Path, default=ROOT / "docs" / "multi-agent-files.js")
+    parser.add_argument("--out", type=Path, default=ROOT / "docs" / "how-code-works-files.js")
     args = parser.parse_args()
     view = payload((ROOT / f"{check.DIAGRAM_VIEW}map.js").read_text(encoding="utf-8"))
     owners = sorted(((prefix, box["id"]) for box in view["elements"]
                      for prefix in box.get("files", [])), key=lambda pair: -len(pair[0]))
+    outside = tuple(view.get("outside", []))
     files = []
     for page, heading in check.DIAGRAM_LISTS.items():
         for path, text in check.file_list((ROOT / page).read_text(encoding="utf-8"), heading):
+            if path.startswith(outside):
+                continue
             box = next((owner for prefix, owner in owners if path.startswith(prefix)), None)
             files.append({"path": path, "text": " ".join(text.split()), "box": box,
                           "list": page})

@@ -1,11 +1,11 @@
 "use strict";
-// The "How does a graph play a battle with no model in it?" story of docs/multi-agent.html.
+// The "How does a graph play a battle with no model in it?" story of docs/how-code-works.html.
 // The 8 step boxes and their exits are generated from the battle's frozen graphs
 // (docs/how-code-works-example-graph.js, scripts/diagram_examples.py graph); the bands, the Graph
 // author and Battle script boxes, their wires and the steps are hand-written. Rules:
 // docs/how-code-works-plan.md sections 2 and 5; design: runs/control-methods-20261101/
 // final-spec.md. Strict JSON inside push( ... ); keep Prettier's --quote-props preserve
-// --trailing-comma none. The view rests on JUDGEMENT? docs/multi-agent.html GaP drawn in the page;
+// --trailing-comma none. The view rests on JUDGEMENT? docs/how-code-works.html GaP drawn in the page;
 // its steps rest on JUDGEMENT? scripts/diagram_examples.py Graph story moments.
 // JUDGEMENT?: Graph battle layout — Claude Code, 2026-11-01: three side-by-side bands, Cloud API
 // (Graph author) left, WSL Python (one row per member) middle, Windows game (Battle script)

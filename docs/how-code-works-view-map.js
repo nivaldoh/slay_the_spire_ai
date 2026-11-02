@@ -1,24 +1,41 @@
 "use strict";
-// The "Map" view of docs/multi-agent.html: the whole repo in 12 boxes. Hand-written; the rules
+// The "Map" view of docs/how-code-works.html: the WH3 code in 11 boxes. Hand-written; the rules
 // are docs/how-code-works-plan.md sections 2 and 5. Strict JSON inside push( ... ), because
 // scripts/check.py and scripts/diagram_files.py read it; keep Prettier's --quote-props preserve
-// --trailing-comma none. Each box's "files" are the path prefixes it owns in the file lists.
+// --trailing-comma none. Each box's "files" are the path prefixes it owns in the file lists;
+// "outside" lists Slay the Spire's, which the page leaves out (owner, 2026-11-01: "omit that game
+// and make it clear that we're talking about only WH3").
 // The wires' rate texts quote the two example battles' counts: they rest on JUDGEMENT? Example
 // battles in scripts/diagram_examples.py.
 DIAGRAM.tabs.push({
   "id": "map",
   "title": "Map",
-  "question": "What are the parts of this repo, and how do they connect?",
+  "question": "What are the parts of the WH3 code, and how do they connect?",
   "takeaway":
-    "A WH3 play job runs one battle at a time in the real game; most other parts prepare, check or read those battles.",
+    "A WH3 play job runs one battle at a time in the real game; most other parts prepare, check or read those battles. Slay the Spire, the repo's other game, is not drawn.",
   "summary":
-    "Twelve areas, in the bands where they run. Click a box for what it does, the command that starts it, its stories and its files.",
+    "Eleven areas, in the bands where they run. Click a box for what it does, the command that starts it, its stories and its files.",
   "commit": "7bf32e6",
   "reviewed": "2026-11-01",
   "facts": {
     "providers": ["openai", "openrouter", "anthropic"],
     "hidden_keys": ["evaluation", "final", "setup", "native"]
   },
+  "outside": [
+    "src/spire/",
+    "configs/llm/",
+    "configs/suites/",
+    "tests/spire/",
+    "docs/spire/",
+    "scripts/inventory_scenarios.py",
+    "scripts/audit_language_training.py",
+    "scripts/audit_ppo_training.py",
+    "scripts/export_relabel_datasets.py",
+    "scripts/offline_agreement.py",
+    "scripts/plot_results.py",
+    "scripts/train_language.py",
+    "scripts/train_language_rl.py"
+  ],
   "size": [1060, 572],
   "bands": [
     {
@@ -192,7 +209,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "paused",
       "note":
-        "Turns recorded model decisions from both games into fine-tuning datasets. Only smoke tests have run; there is no learning result.",
+        "Turns WH3's exported model decisions into fine-tuning datasets (the same code reads Slay the Spire's). Only smoke tests have run; there is no learning result.",
       "command": "uv run --locked --extra llm python scripts/sft_smoke.py DATASET --output DIR",
       "files": ["src/gameai/sft.py", "scripts/sft_smoke.py"],
       "status": "built, component tests only",
@@ -272,38 +289,6 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/report.py:1",
         "docs/twwarhammer3/results.csv"
       ]
-    },
-    {
-      "id": "map.spire",
-      "label": "Slay the Spire",
-      "code": "src/spire/",
-      "kind": "process",
-      "where": "WSL Python",
-      "x": 415,
-      "y": 430,
-      "w": 230,
-      "h": 64,
-      "state": "paused",
-      "note":
-        "The second game, paused behind WH3: full runs in which a model makes every choice of a run, through the same model-call code.",
-      "command": "uv run python -m spire play ...",
-      "files": [
-        "src/spire/",
-        "configs/llm/",
-        "configs/suites/",
-        "tests/spire/",
-        "docs/spire/",
-        "scripts/inventory_scenarios.py",
-        "scripts/audit_language_training.py",
-        "scripts/audit_ppo_training.py",
-        "scripts/export_relabel_datasets.py",
-        "scripts/offline_agreement.py",
-        "scripts/plot_results.py",
-        "scripts/train_language.py",
-        "scripts/train_language_rl.py"
-      ],
-      "status": "built, component tests only",
-      "refs": ["src/spire/__init__.py:1", "docs/state.md:57"]
     },
     {
       "id": "map.checkpoints",
@@ -607,15 +592,6 @@ DIAGRAM.tabs.push({
       "payload": "export writes the recorded model decisions; sft.py turns them into datasets.",
       "status": "built, component tests only",
       "refs": ["src/gameai/sft.py:1"]
-    },
-    {
-      "id": "map.spire>models",
-      "from": "map.spire",
-      "to": "map.models",
-      "label": "model calls",
-      "payload": "Spire's full runs use the same model-call module.",
-      "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:1"]
     }
   ]
 });

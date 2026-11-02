@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: the code page shows WH3 only, renamed, and in the README
+
+Claude Code, $0, no game. Owner: the Slay the Spire box "is just creating confusion"; "omit that
+game and make it clear that we're talking about only WH3"; "multi-agent.html" no longer fits; the
+README should show "at least some of these visuals".
+- `docs/multi-agent.html` is now `docs/how-code-works.html` ("How the WH3 code works"), with
+  `how-code-works-files.js`; links and current mentions follow (older log text keeps the name).
+- The map drops the Spire box and its wire and says that game is not drawn. Its new "outside"
+  list (Spire's paths) is skipped by `check.py`'s file-list flags and `diagram_files.py`, which no
+  longer read docs/spire/AGENTS.md; a test case and a plant cover the skip.
+- The README's WH3 section shows the map as a GIF of its moving dots, and stills of Basic vs GaP
+  and the graph-battle replay (`docs/images/code-*`, 1.8 MB together).
+- Checks: `check.py` passed; `func.js` 35/35 and `func2.js` 56/56 on the renamed page; the
+  extended test fails on a `check.py` that ignores "outside". A reviewer found the old local
+  path in the WH3 README, "no model call" overstated in the README (GaP may ask for target
+  hints) and the stale-path check unpinned for left-out paths; all fixed. Unverified: your look.
+
 ## 2026-11-01: the "How the code works" page redesigned
 
 Claude Code, $0, no game; two sessions, a PC reset between them. Owner's goal: the page looked
@@ -463,7 +480,7 @@ generator bugs. A Chrome trace-event JSON of the lanes was written, not opened i
 
 ## 2026-10-31: multi-agent diagram page, Overview flow and links (plan step 5)
 
-Claude Code, $0, no game. The Overview of [`docs/multi-agent.html`](../multi-agent.html) now
+Claude Code, $0, no game. The Overview of [`docs/multi-agent.html`](../how-code-works.html) now
 loops a dot on every built link and opens an area's tab on a click; its panel lists each area's
 status and sources. The page is linked from the [Pages](README.md#pages) table and
 [workflow.md](../workflow.md); [references.md](../references.md#diagram-viewers) lists the five
@@ -475,7 +492,7 @@ replay mode (step 6) waits for the owner, and so does the look. Handoff:
 
 ## 2026-10-31: multi-agent diagram page, Play loop tab (plan step 2)
 
-Claude Code, $0, no game. The Play loop tab of [`docs/multi-agent.html`](../multi-agent.html):
+Claude Code, $0, no game. The Play loop tab of [`docs/multi-agent.html`](../how-code-works.html):
 23 boxes, 32 wires, four flows. "One decision, one model controller" replays r25 of
 `bench-b45-knights3-glm-low-l1-20261020` episode-0000 (GLM 5.3, low; one episode, not a
 measurement; it ran at `b7e2dd1`, and the page names the parts that differ at `21f6204`: the
@@ -489,7 +506,7 @@ items: 35 confirmed, 1 wrong; fixed after.
 
 ## 2026-10-31: multi-agent diagram page, Multiplayer tab (plan step 3)
 
-Claude Code, $0, no game. The Multiplayer tab of [`docs/multi-agent.html`](../multi-agent.html):
+Claude Code, $0, no game. The Multiplayer tab of [`docs/multi-agent.html`](../how-code-works.html):
 21 boxes, 39 wires and four flows drawn from the code (start-up in its real order, one operator
 command, close, compare-peers; illustrative, since no multiplayer battle has run). Its banner:
 built offline, zero live multiplayer battles, one dry run on 2026-10-31 that reached the menu
@@ -502,7 +519,7 @@ that arrives during close() is answered "renewed" and events can follow the "clo
 
 ## 2026-10-31: multi-agent diagram page, Factory tab (plan step 4)
 
-Claude Code, $0, no game. The Factory tab of [`docs/multi-agent.html`](../multi-agent.html): 23
+Claude Code, $0, no game. The Factory tab of [`docs/multi-agent.html`](../how-code-works.html): 23
 boxes, 37 wires and two flows drawn from the code ("a normal change", "the WH3 experiment loop";
 illustrative). It shows the gaps the plan names: git runs no hook on a merge that completes by
 itself (the main session's Stop hook reruns check.py at the turn's end); main has no branch
@@ -709,7 +726,7 @@ claim. Next: exception expectations (two wrong-type KeyError variants pass) and 
 ## 2026-10-31: multi-agent diagram page, step 1 (viewer, Overview, Team tab)
 
 Claude Code, $0, no game; plan and evidence `runs/multi-agent-diagram-20261031/` (the owner's
-decisions of 2026-10-31). [`docs/multi-agent.html`](../multi-agent.html) is one file of plain SVG and
+decisions of 2026-10-31). [`docs/multi-agent.html`](../how-code-works.html) is one file of plain SVG and
 JavaScript that opens from file://. It has tabs, a flow player that moves dots on one clock, lanes
 and a side panel with each part's payload, status, judgement markers and source lines at `21f6204`.
 Step 1 draws a boxes-only Overview and the Team tab (18 boxes, 26 wires). The scripted flow

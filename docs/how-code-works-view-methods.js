@@ -1,5 +1,5 @@
 "use strict";
-// The "When does each control method ask a model?" comparison of docs/multi-agent.html.
+// The "When does each control method ask a model?" comparison of docs/how-code-works.html.
 // Hand-written: question, takeaway, captions, step rows, card fields (1)-(4) and statuses. The
 // lanes, side cells and card numbers come from docs/how-code-works-example-methods.js
 // (scripts/diagram_examples.py methods). Rules: docs/how-code-works-plan.md sections 2 and 5;

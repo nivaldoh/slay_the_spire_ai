@@ -868,13 +868,17 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
     git(tmp_path, "init", "-q")
     files = {
         "src/pkg/a.py": "", "src/pkg/b.py": "", "src/pkg/__init__.py": "",
+        "src/other/c.py": "", "scripts/other.py": "",  # another game's: the map leaves them out
         "src/gameai/providers.py": 'PROVIDERS = {"openai": A, "openrouter": B}\n',
         "src/twwarhammer3/protocol.py": 'HIDDEN_KEYS = ("evaluation", "final")\n',
         "docs/twwarhammer3/README.md": "## Code map\n\n- `src/pkg/a.py`: does a,\n"
                                        "  over two lines\n"
                                        "- `src/gameai/providers.py`: routes\n"
                                        "- `src/twwarhammer3/protocol.py`: the protocol\n"
-                                       "- `src/old.py`: gone\n\n## Commands\n\n"
+                                       "- `src/old.py`: gone\n"
+                                       "- `scripts/other.py`: the other game's\n"
+                                       "- `src/other/gone.py`: listed, left out, deleted\n\n"
+                                       "## Commands\n\n"
                                        "- `--show`: not a file list line\n",
     }
     for name, text in files.items():
@@ -886,6 +890,7 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
     views = [
         {"id": "map", "commit": commit, "reviewed": "2026-07-01",
          "facts": {"providers": ["openai", "openrouter", "anthropic"]},
+         "outside": ["src/other/", "scripts/other.py"],
          "elements": [{"id": "m.box", "files": owned}]},
         {"id": "s", "commit": commit, "reviewed": "2026-10-30", "example": "e",
          "facts": {"hidden_keys": ["final", "evaluation"]}, "elements": []},
@@ -907,7 +912,7 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
         "['anthropic', 'openai', 'openrouter']",
         "1 src/ Python files missing from the file lists: src/pkg/b.py",
         "1 listed paths in no map box: src/twwarhammer3/protocol.py",
-        "1 listed paths not in the repo: src/old.py"]
+        "2 listed paths not in the repo: src/old.py, src/other/gone.py"]  # outside still checked
     assert flags()["u"]["reasons"] == [  # a view that says less than the code is flagged too
         "src/gameai/providers.py PROVIDERS is now ['openai', 'openrouter']; the view says "
         "['openai']",

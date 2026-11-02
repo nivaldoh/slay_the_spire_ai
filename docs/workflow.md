@@ -16,7 +16,7 @@ This page is the light factory plan (2026-10-28/29; the full plan with the owner
 "Implement docs/light-factory-plan.md". The process is in use; every check it
 added is still "proposed, not agreed" under the [hard rule](../AGENTS.md#verification-hard-rule).
 Sources are linked inline and listed in [references.md](references.md).
-A diagram of these parts is the Factory tab of [multi-agent.html](multi-agent.html#factory)
+A diagram of these parts is the Factory tab of [how-code-works.html](how-code-works.html#factory)
 (open it in a local browser; the [WH3 README](twwarhammer3/README.md#pages) gives the path).
 
 ## Sizes of change
@@ -146,10 +146,11 @@ markers   3 problems listed in the log, for the owner
   carry one, in log history, no date, a "rests on" pointing nowhere), listed in the log; the
   untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
   markers, so they never fail the run.
-- "diagram" counts the views of the "How the code works" page (`docs/multi-agent.html`)
+- "diagram" counts the views of the "How the WH3 code works" page (`docs/how-code-works.html`)
   that need a refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01): a cited
   line whose text changed (text that only moved is recorded, not flagged), a cited file gone,
-  a `src/` Python file missing from the file lists or a listed path in no map box, the names
+  a `src/` Python file missing from the file list or a listed path in no map box (Slay the
+  Spire's paths, the map's "outside", aside), the names
   a view states that differ from the code (providers, hidden observation keys, model and
   scripted policies, graph operations, controller versions), a review older than three months,
   a cited file of one of a view's examples changed since that example was made, and a story

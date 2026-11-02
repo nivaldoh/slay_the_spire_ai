@@ -1,5 +1,5 @@
 "use strict";
-// The "What does the model see and send at one decision?" story of docs/multi-agent.html.
+// The "What does the model see and send at one decision?" story of docs/how-code-works.html.
 // Hand-written; rules: docs/how-code-works-plan.md sections 2 and 5. Strict JSON inside push( ... )
 // (scripts/check.py and scripts/diagram_examples.py read it); keep Prettier's --quote-props
 // preserve --trailing-comma none. Messages and maps: docs/how-code-works-example-decision.js.

@@ -153,7 +153,7 @@ EXAMPLES = {
     # 386.3 s witness, from the rows below. The cavalry's charge failures after 407.9 s or the
     # line's later fights would tell another story; the graph view's steps rest on these rows.
     # The battle rests on JUDGEMENT? Example battles above; hiding unvisited steps and untaken
-    # exits rests on JUDGEMENT? GaP drawn in the page (docs/multi-agent.html, by TAB_ORDER).
+    # exits rests on JUDGEMENT? GaP drawn in the page (docs/how-code-works.html, by TAB_ORDER).
     "graph": {
         "kind": "graph",
         "job": "runs/twwarhammer3/battle/gap-initial-02-20261101",

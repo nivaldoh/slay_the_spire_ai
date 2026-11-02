@@ -34,14 +34,15 @@ when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-
 Last, "markers" counts the marker problems listed in the log (docs/judgement.md); only the
 owner changes markers, so they never fail.
 
-"diagram" counts the views of the "How the code works" page (docs/multi-agent.html, plan
+"diagram" counts the views of the "How the WH3 code works" page (docs/how-code-works.html, plan
 docs/how-code-works-plan.md section 6; the owner's yes, 2026-11-01) that need a refresh, from Git
 objects at HEAD: a line a view cites whose text changed, indentation aside (the same text found
 elsewhere counts as moved, recorded, not flagged; cited are the refs of the view, its boxes,
 wires, notes, cards and steps, of their statuses and of the boxes and wires an example generated
 for the view, each read at its own commit or the view's), cited text that cannot be read, a cited
-file gone, a `src/` Python file missing from the file lists (the WH3 README's Code map section
-and docs/spire/AGENTS.md's Layout section) or a listed path in no map box or not in the repo, the
+file gone, a `src/` Python file missing from the file list (the WH3 README's Code map section)
+or a listed path in no map box or not in the repo, the map's "outside" paths (Slay the Spire's,
+which the page leaves out) aside, the
 names a view states (providers, hidden observation keys, model and scripted policies, graph
 operations; controller versions with their values) that differ from the code, a review older
 than three months, a cited file of any of a view's examples changed since that example was made,
@@ -610,7 +611,7 @@ def skip_reasons(output: str) -> str:
 
 DIAGRAM_VIEW = "docs/how-code-works-view-"  # one hand-written view per file: <id>.js
 DIAGRAM_EXAMPLE = "docs/how-code-works-example-"  # written by scripts/diagram_examples.py
-DIAGRAM_LISTS = {"docs/twwarhammer3/README.md": "## Code map", "docs/spire/AGENTS.md": "## Layout"}
+DIAGRAM_LISTS = {"docs/twwarhammer3/README.md": "## Code map"}  # the page draws WH3 only
 DIAGRAM_ENTRY = re.compile(r"^- `([^`\s]+)`: (.+(?:\n  \S.*)*)", re.M)  # one file per line
 DIAGRAM_REF = re.compile(r"^([^\s:]+)(?::(\d+)(?:-(\d+))?)?$")
 DIAGRAM_DATA = "runs/checks/diagram-flags.js"
@@ -804,10 +805,12 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
                 for page, heading in DIAGRAM_LISTS.items():
                     listed.update(file_list(text(rev, page) or "", heading))
                 owners = [prefix for box in view["elements"] for prefix in box.get("files", [])]
+                outside = tuple(view.get("outside", []))  # paths the page leaves out
                 missing = [n for n in names if n.startswith("src/") and n.endswith(".py")
+                           and not n.startswith(outside)
                            and not n.endswith("__init__.py") and n not in listed]
-                unboxed = [path for path in listed
-                           if not any(path.startswith(prefix) for prefix in owners)]
+                unboxed = [path for path in listed if not path.startswith(outside)
+                           and not any(path.startswith(prefix) for prefix in owners)]
                 stale = [path for path in listed if path not in present
                          and not any(n.startswith(path) for n in names if path.endswith("/"))]
                 for count, what in ((missing, "src/ Python files missing from the file lists"),
