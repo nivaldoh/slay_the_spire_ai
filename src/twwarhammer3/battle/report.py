@@ -54,6 +54,10 @@ def trial_metrics(directory: Path, result: dict) -> dict:
     attempts = list((result.get("failure") or {}).get("attempts") or [])
     exchanges = {}
     replies = transport_failures = 0
+    # A team's members decide from their own sources: order ages and engine refusals come from
+    # each member's feedback (the dispatcher's ack dates from its newest poll), failures from
+    # its failed events, and exchanges are keyed by member (both number theirs m1, m2, ...).
+    team = "members" in ((result.get("card") or {}).get("disclosure") or {})
     trace = directory / "trace.jsonl"
     if trace.exists():
         with trace.open() as handle:
@@ -73,8 +77,14 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                     meta = event.get("behavior") or {}
                     if meta.get("plan_age_s") is not None:
                         plan_ages.append(meta["plan_age_s"])
-                    attempts.extend(meta.get("attempts") or [])
-                elif kind == "ack":
+                    attempts.extend({**attempt, "member": meta.get("member")} for attempt
+                                    in meta.get("attempts") or [])
+                elif (team and kind == "team" and event.get("event") == "feedback"
+                      and event.get("source") == "local"):
+                    error = event["ack"].get("validation_error", "unknown")
+                    rejections["validation: " + error] += 1
+                elif (kind == "ack" and not team) or (team and kind == "team"
+                                                      and event.get("event") == "feedback"):
                     # JUDGEMENT: Order age population — assistant, 2026-10-14/15 (flagged by
                     # Claude, 2026-10-28): non-empty batches only; the text report takes a median
                     # of battle medians, the page pools them all. The brief asks only for a median.
@@ -88,13 +98,17 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                     rejections["validation: " + str(event.get("error", "unknown"))] += 1
                 elif kind == "forfeit":  # a failed decision the episode went on after
                     attempts.extend(event["failure"].get("attempts") or [])
+                elif kind == "team" and event.get("event") == "failed":
+                    attempts.extend({**attempt, "member": event.get("member")} for attempt
+                                    in (event.get("failure") or {}).get("attempts") or [])
                 elif kind == "model_exchange":
-                    exchanges[event["id"]] = event.get("attempts") or []
+                    exchanges[event.get("member"), event["id"]] = event.get("attempts") or []
     # Complete exchanges also retain calls finished after the last executor tick. Use
     # their attempts once; controller/failure metadata repeats them, including failed calls
     # without response IDs. Keep legacy metadata when no complete exchange was captured.
     attempts = ([attempt for captured in exchanges.values() for attempt in captured]
-                + [attempt for attempt in attempts if attempt.get("exchange_id") not in exchanges])
+                + [attempt for attempt in attempts
+                   if (attempt.get("member"), attempt.get("exchange_id")) not in exchanges])
     for attempt in attempts:
         response_id = attempt.get("response_id")
         if response_id and response_id in seen_calls:
@@ -320,8 +334,6 @@ def collect(jobs: list[Path]) -> dict:
             delay = result.get("delay_ms", declared.get("delay_ms", 0))
             label = f"{policy} / +{delay / 1000:g}s"
             card = result.get("card") or {}
-            if "members" in (card.get("disclosure") or {}):  # its ages and calls are members'
-                raise ValueError(f"{directory}: team episodes are not reported yet")
             if card.get("kind") == "external":
                 label += " / " + str(card.get("source_sha256", "unknown"))[:12]
             # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent

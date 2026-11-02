@@ -1,10 +1,11 @@
-"""Proposed, not yet agreed: team members that own unit groups, and model members.
+"""Agreed 2026-11-02: team members that own unit groups, and model members.
 
 Real Python components with fake workers or fake transports; no game and no paid call.
 """
 import json
 import sys
 import time
+from collections import Counter
 from functools import partial
 from pathlib import Path
 from threading import Event
@@ -16,9 +17,9 @@ from wh3_fixtures import CONFIG, USAGE, FakeMailbox, FakeSend, opening
 from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.llm import APIError, usage_cost
+from gameai.llm import APIError, Model, usage_cost
 from twwarhammer3.battle import controllers, digest, export, llm, play, report, team, watch
-from twwarhammer3.protocol import PolicyFailure
+from twwarhammer3.protocol import PolicyFailure, refused
 
 GUNS = "wh_main_emp_inf_handgunners"
 HORN = {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 0, "z": 0}
@@ -418,14 +419,24 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
     # Its second request was built from the 3 s state and dispatched at 4 s.
     assert any(line.startswith("    3s -> [cavalry] gpt-6-luna:") for line in lines)
     assert feed.usd == pytest.approx(result["llm"]["usd"])
-    job = tmp_path / "job"  # report and export do not read member records yet
+    job = tmp_path / "job"  # report and export read member records
     job.mkdir()
     (tmp_path / "e").rename(job / "episode-0000")
-    manifest = {"config": {"policy": "team_llm_rules", "model": "gpt-6-luna", "effort": "low"}}
+    manifest = {"config": {"policy": "team_llm_rules", "model": "gpt-6-luna", "effort": "low",
+                           "scenario": "kho5-dwf5"}}
     (job / "manifest.json").write_text(json.dumps(manifest))
-    with pytest.raises(ValueError, match="team episodes"):
-        report.collect([job])
-    assert export.episode_records(job / "episode-0000", manifest, {})[1]["excluded"]
+    metrics = report.collect([job])["groups"][0]["trials"][0]["metrics"]
+    # Each member's delay from its own source (1.5 s, 2.5 s), not the dispatch's 0.5 s; all
+    # four calls, though both members number their exchanges m1, m2.
+    assert (metrics["order_age_s"]["n"], metrics["order_age_s"]["mean"]) == (2, 2.0)
+    assert metrics["reply_validation"]["attempts"] == 4
+    rows, inventory = export.episode_records(job / "episode-0000", manifest, {})
+    # One row per member call; both members number their exchanges m1, m2.
+    assert "excluded" not in inventory and Counter(row["member"] for row in rows) == {
+        "cavalry": 2, "line": 2}
+    for row in rows:
+        assert row["attempts"] and row["user_prompt"] == row["attempts"][0]["user_prompt"]
+        assert ("Your units:\n- f1 " in row["user_prompt"]) == (row["member"] == "cavalry")
     path = job / "episode-0000/result.json"  # team evidence from before polls were recorded
     path.write_text(json.dumps({k: v for k, v in json.loads(path.read_text()).items()
                                 if k != "polls"}))
@@ -437,6 +448,46 @@ def test_a_member_caption_shows_the_state_it_decided_on():
                 "source_ms": 30000}
     assert play.caption(battle(5, 36000), behavior, [ADVANCE]) == (
         "36 s: cavalry (gpt-6-luna) from the state at 30 s\nGo.\nf2 move (10, 20)")
+
+
+@pytest.mark.parametrize("member", [None, "line"])
+def test_report_counts_an_idless_failed_reply_once_when_metadata_repeats_its_exchange(
+        tmp_path, member):
+    responses = iter([
+        {"id": None, "status": "failed", "error": {"message": "backend failure"},
+         "usage": {"input_tokens": 10, "output_tokens": 1}, "output": []},
+        {"id": "r1", "status": "completed", "usage": {"input_tokens": 10, "output_tokens": 1},
+         "output": [{"type": "message", "content": [{"type": "output_text", "text": "{}"}]}]},
+    ])
+    model = Model("gpt-6-luna", "low", Ledger(tmp_path / "spend.jsonl", 1),
+                  instructions="Return JSON.", max_output_tokens=256, record_exchanges=True,
+                  send=lambda body: next(responses))
+    _, attempts = model.ask("p", {}, parse=json.loads, retries=0)
+    exchange, = model.drain_exchanges()
+    events = [{"kind": "decision", "behavior": {"member": member, "attempts": attempts}},
+              {"kind": "model_exchange", "member": member, **exchange}]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(row) + "\n" for row in events))
+    result = {"card": {"disclosure": {"members": {"line": {}}}}} if member else {}
+    metrics = report.trial_metrics(tmp_path, result)
+    assert model.totals["calls"] == len(exchange["attempts"]) == 2
+    assert metrics["reply_validation"]["attempts"] == 2
+    assert metrics["reply_validation"]["failed_responses"] == 1
+    assert metrics["call_seconds"]["n"] == 2
+
+
+def test_report_counts_a_local_team_refusal_without_inventing_an_engine_age(tmp_path):
+    local = refused([move("f1"), move("f2")], "member does not own f2")
+    events = [
+        {"kind": "team", "event": "feedback", "member": "cavalry", "source": "local",
+         "ack": local, "latency": {"source": "local", "think_s": 0.5}},
+        {"kind": "team", "event": "feedback", "member": "line", "source": "engine",
+         "ack": {"applied_ms": 2500, "results": [{"index": 1, "ok": True}]},
+         "latency": {"source": "engine", "delay_ms": 1500}},
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(row) + "\n" for row in events))
+    metrics = report.trial_metrics(tmp_path, {"card": {"disclosure": {"members": {}}}})
+    assert metrics["order_age_s"] == {"n": 1, "mean": 1.5, "p50": 1.5, "p90": 1.5}
+    assert metrics["rejections"] == {"validation: member does not own f2": 1}
 
 
 def test_think_time_runs_from_the_members_own_start():
@@ -473,6 +524,7 @@ def test_a_team_refuses_an_interval_or_aged_track(tmp_path, track):
 def test_the_team_version_follows_the_rules_prompt():
     rules = controllers.VERSIONS["llm_rules"]
     assert controllers.VERSIONS["team_llm_rules"].startswith(rules + "+t")
+
 
 def test_a_member_whose_call_outlives_cleanup_says_so_in_its_record(tmp_path, monkeypatch):
     # Its cost and call reach only the ledger, so the record's usd and calls are short of it.

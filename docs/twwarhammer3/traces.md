@@ -35,7 +35,8 @@ Rows follow the export-row contract both games' exporters share (schema 2): a da
 builder reads only `schema_version`, `id`, `game`, `group`, `split`, policy, provider,
 model, effort, `prompt_version`, the system and user prompts with their hashes,
 `attempts`, `error`, `outcome`, `labels` and `provenance`. Everything else in a row is
-WH3 detail. Its fine-tuning target is a row's last attempt, and only when that attempt has
+WH3 detail; a model team's rows carry `member` (the member's name, null for one controller),
+one row per member call. Its fine-tuning target is a row's last attempt, and only when that attempt has
 no error, status `completed` and non-empty text, the row's `error` is null and its
 `split` is `development`. `id` is `<source id>/<episode>/m<decision index>`; the source
 id is the SHA-256 of the job directory name, a newline and the manifest's SHA-256, so ids
