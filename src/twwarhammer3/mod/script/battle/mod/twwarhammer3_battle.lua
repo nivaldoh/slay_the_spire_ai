@@ -432,6 +432,51 @@ local function strength(entries)
     return total
 end
 
+-- Private first-ending measurements. Never default an unreadable health/state to zero.
+local function benchmark_condition(now)
+    local units = {}
+    for _, id in ipairs(state.friendly_ids) do
+        local unit = state.friendly[id].unit
+        local deployed = get(unit, "is_deployed", nil)
+        local deploying = get(unit, "is_deploying", nil)
+        local departed = nil
+        if deployed == true then departed = false
+        elseif deployed == false and deploying == false then departed = true end
+        units[#units + 1] = {id = id, type = get(unit, "type", nil),
+            hp = round(get(unit, "unary_hitpoints", nil), 2), men = get(unit, "number_of_men_alive", nil),
+            wavering = get(unit, "is_wavering", nil), routing = get(unit, "is_routing", nil),
+            shattered = get(unit, "is_shattered", nil), departed = departed}
+    end
+    return {version = 1, time_ms = now, units = units}
+end
+
+-- Pin supported initial toggles for both armies; releasing the enemy controller returns
+-- movement/target selection to the built-in AI. Record every readback, including failures.
+local function benchmark_behaviours()
+    local evidence = {}
+    for _, side in ipairs({"friendly", "enemy"}) do
+        evidence[side] = {}
+        for _, id in ipairs(state[side .. "_ids"]) do
+            local entry = state[side][id]
+            local values = {supported = {}}
+            local controller = entry.controller or entry.army:create_unit_controller()
+            if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
+            for _, key in ipairs(BEHAVIOURS) do
+                if get(entry.unit, "can_use_behaviour", false, key) then
+                    values.supported[#values.supported + 1] = key
+                    if key == "fire_at_will" or key == "skirmish" or key == "defend" then
+                        controller:change_behaviour_active(key, key == "fire_at_will")
+                    end
+                    values[key] = get(entry.unit, "is_behaviour_active", nil, key)
+                end
+            end
+            if not entry.controller then controller:release_control() end
+            evidence[side][id] = values
+        end
+    end
+    return evidence
+end
+
 local function evaluation()
     return {version = 2, friendly = strength(state.friendly), enemy = strength(state.enemy),
             objectives = state.objective_totals}
@@ -1160,6 +1205,9 @@ local function finish()
     -- For evaluation only: the result observation ends the episode before any decision.
     sample_objectives(battle_time())
     state.final = evaluation()
+    if session and session.benchmark then
+        state.final.benchmark = benchmark_condition(battle_time())
+    end
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end
@@ -1419,6 +1467,10 @@ local function start()
     state.started_ms = battle_time()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender")}
+    if session.benchmark then
+        local toggles_ok, toggles = pcall(benchmark_behaviours)
+        state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}
+    end
     local modifiers = {}
     local query = 'ArmyList.JoinString("" + AiStatsModifier, ";")'
     for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do

@@ -26,6 +26,7 @@ from collections import Counter
 from itertools import groupby
 from pathlib import Path
 
+from twwarhammer3.battle.benchmark import evaluate
 from twwarhammer3.battle.commander import describe_plan
 from twwarhammer3.battle.controllers import policy_parts
 from twwarhammer3.battle.llm import describe_orders, short_type
@@ -109,6 +110,10 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" delay mean {result.get('delay_s')} s max {max(delays, default=0) / 1000:.1f} s;"
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
+    if result.get("benchmark"):
+        assessed = evaluate(result)
+        lines.append(f"benchmark {assessed['version']}: engine {assessed['outcome']}; "
+                     f"condition {assessed['condition']}; unavailable {assessed['unavailable']}")
     if "windows_clock_ratio" in result:
         lines.append(one_x(result))
     if "members" in (result.get("card", {}).get("disclosure") or {}):

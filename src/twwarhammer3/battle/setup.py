@@ -550,6 +550,23 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     expected = scenario["expect"]
     settings = observation.get("setup") or {}
     checks = {}
+    if scenario.get("benchmark"):
+        toggles = settings.get("benchmark_behaviours") or {}
+        for side, roster in (("friendly", observation.get("friendly", [])),
+                             ("enemy", observation.get("enemy_roster", []))):
+            if len(toggles.get(side, {})) != len(roster):
+                raise ProtocolError(f"setup {side}: missing benchmark behaviour readbacks")
+            for unit in roster:
+                values = toggles[side].get(unit["id"], {})
+                for key in values.get("supported", []):
+                    if type(values.get(key)) is not bool:
+                        raise ProtocolError(f"setup {side}/{unit['id']}: unreadable {key}")
+                for key, wanted in (("fire_at_will", True), ("skirmish", False), ("defend", False)):
+                    ranged = "crossbowmen" in unit.get("type", "")
+                    required = key == "defend" or ranged and key in ("fire_at_will", "skirmish")
+                    if (required or key in values) and values.get(key) is not wanted:
+                        raise ProtocolError(f"setup {side}/{unit['id']} {key}: {values.get(key)!r}")
+        checks["benchmark_behaviours"] = toggles
     for key in ("unit_scale", "realism", "player_defends"):
         if settings.get(key) != expected[key]:
             raise ProtocolError(f"setup {key}: {settings.get(key)!r}, expected {expected[key]!r}")

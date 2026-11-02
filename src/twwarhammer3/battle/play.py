@@ -110,6 +110,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     scenario = load_scenario(config)
     fill_timeouts(scenario, config)
     validate_declaration(scenario, config)
+    from twwarhammer3.battle.benchmark import validate_config
+
+    validate_config(scenario, config)
     environment = collect_diagnostics()
     steps = scenario_steps(scenario, build_id=environment.get("game", {}).get("steam_build_id"))
     revision = committed_revision("attributable battles", SOURCES)
@@ -163,6 +166,14 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
             print(json.dumps({key: result.get(key) for key in (
                 "episode", "status", "battle_s", "decisions", "invalid", "delay_s", "error",
             )}, sort_keys=True), flush=True)
+            if scenario.get("benchmark"):
+                from twwarhammer3.battle.benchmark import evaluate
+
+                assessment = evaluate(result)
+                if assessment["outcome"] and assessment["condition"] is None:
+                    manifest["error"] = "terminal condition unavailable: " + str(
+                        assessment["unavailable"])
+                    return "measurement_failure"
             # JUDGEMENT: Job stop — assistant, b1 (2026-10-14; flagged by Claude, 2026-10-28):
             # any ending but won/lost/draw stops the job. Going on to the next trial would play
             # the rotation's later controllers and change which battles are paired.
@@ -193,6 +204,8 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 mailbox.reset()
                 settings = {**session(config), **({"custom": scenario["custom"]}
                                                  if scenario.get("custom") else {})}
+                if scenario.get("benchmark"):
+                    settings["benchmark"] = scenario["benchmark"]
                 with (mailbox.owned_session(settings),
                       OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game):
                     manifest["game"] = game.info
@@ -537,6 +550,8 @@ def public(observation: dict, scenario: dict) -> dict:
     if scenario.get("scoring") and view.get("mode"):
         # The scorer's rule is public: a contact-scored card says so to the controller.
         view["mode"] = {**view["mode"], "scoring": scenario["scoring"]}
+    if scenario.get("benchmark") and view.get("mode"):
+        view["mode"] = {**view["mode"], "benchmark": scenario["benchmark"]}
     return view
 
 
@@ -549,6 +564,16 @@ def engine_ending(observation: dict) -> dict:
         ended_by = "custom_objective"
     return {"result": observation["result"], "ended_by": ended_by,
             "battle_ms": observation.get("time_ms"), "timer": timer or None}
+
+
+def record_ending(result: dict, observation: dict, scenario: dict) -> None:
+    """Keep the first ending and its measurements even when the next operation raises."""
+    if result.get("engine_ending"):
+        return
+    result["engine_ending"] = engine_ending(observation)
+    if scenario.get("benchmark"):
+        result["benchmark"] = {**((observation.get("final") or {}).get("benchmark") or {}),
+                               "version": scenario["benchmark"]}
 
 
 # Launch identifiers and the mod's own memory of its orders: a restore has none of it, so
@@ -639,7 +664,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         if observation.get("result"):
             # Kept before the acknowledgement below, which can fail; a controller failure
             # from here on still sets the status, and engine_ending keeps what ended.
-            result["engine_ending"] = engine_ending(observation)
+            record_ending(result, observation, scenario)
             timer, ended_by = observation.get("timer") or {}, result["engine_ending"]["ended_by"]
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
@@ -682,6 +707,10 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             failure = exc
         except BaseException:
             event("observation", observation=basis, since_previous_applied_ms=since)
+            if scenario.get("benchmark"):
+                latest = mailbox.read_observation() or {}
+                if latest.get("battle") == battle and latest.get("result"):
+                    record_ending(result, latest, scenario)
             raise
         finally:
             record_exchanges(policy, event)

@@ -17,6 +17,7 @@ from pathlib import Path
 
 from gameai.llm import reasoning_parts
 from gameai.provenance import REPO_ROOT, sha256
+from twwarhammer3.battle.benchmark import evaluate
 from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 from twwarhammer3.battle.report import shared_measures
 
@@ -281,6 +282,9 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
                else None, "ended_by": result.get("ended_by"), "error": result.get("error"),
                "measures": shared_measures(result, scenario), "final": result.get("final"),
                "objectives": result.get("objectives"), "llm": result.get("llm")}
+    if scenario.get("benchmark"):
+        outcome["benchmark"] = evaluate(result)
+        outcome["gameplay_outcome"] = outcome["benchmark"]["outcome"]
     group = _group(job, manifest)
     # JUDGEMENT: Training split — the 2026-10-17 exporter treats every non-held-out job as
     # development (original decision-maker unrecorded; flagged by Codex, 2026-10-23).

@@ -330,15 +330,23 @@ class Model:
 
     def __init__(self, name: str, effort: str, ledger: Ledger, *, instructions: str,
                  max_output_tokens: int, send=None, provider: str = "openai",
-                 record_exchanges: bool = False, record_logprobs: bool = False):
+                 record_exchanges: bool = False, record_logprobs: bool = False,
+                 failed_resends: int = FAILED_RESENDS,
+                 transport_attempts: int = TRANSPORT_ATTEMPTS):
         validate(provider, name, effort)
         if max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
         self.name, self.effort, self.ledger = name, effort, ledger
+        if type(failed_resends) is not int or failed_resends < 0:
+            raise ValueError("failed_resends must be a nonnegative integer")
+        if type(transport_attempts) is not int or transport_attempts < 1:
+            raise ValueError("transport_attempts must be a positive integer")
+        self.failed_resends, self.transport_attempts = failed_resends, transport_attempts
         self.provider = provider
         self.instructions, self.max_output_tokens = instructions, max_output_tokens
         self.send = send or partial(post, api_key(provider), provider=provider,
-                                   record_transport=provider == "openrouter")
+                                   record_transport=provider == "openrouter",
+                                   attempts=transport_attempts)
         self.totals = Counter()
         self.record_exchanges = record_exchanges
         # Opt-in: token logprobs where providers.LOGPROBS declares them, kept in each
@@ -372,7 +380,7 @@ class Model:
         tokens = len(json.dumps(body).encode()) + 1024
         price_in, _, price_out = get_provider(self.provider).prices[self.name]
         reservation = (tokens * price_in + self.max_output_tokens * price_out) / 1e6
-        held = reservation * TRANSPORT_ATTEMPTS
+        held = reservation * self.transport_attempts
         self.ledger.reserve(held)
         try:
             return self._call_reserved(body, tokens, reservation)
@@ -474,7 +482,7 @@ class Model:
         without spending a retry. When either allowance runs out the last failure is raised,
         a rejected reply as InvalidReply; an APIError carries the attempts made so far as
         ``attempts``."""
-        attempts, feedback, resends = [], "", FAILED_RESENDS
+        attempts, feedback, resends = [], "", self.failed_resends
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
         try:

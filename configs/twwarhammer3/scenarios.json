@@ -1,4 +1,30 @@
 {
+ "emp-mirror-cavalry-v1": {
+  "name": "emp-mirror-cavalry-v1",
+  "benchmark": "mirror-v1",
+  "scenario_version": 1,
+  "family": "empire_mirror",
+  "brief": "Win this Land Battle against the Empire army. Engine timer endings count. Preserve your army where possible.",
+  "split": "development",
+  "status": "initial_unverified",
+  "battle_type": "classic",
+  "attacker": "player",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire", "faction": "wh_main_emp_empire", "lord": false,
+   "units": ["wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_crossbowmen", "wh_main_emp_cav_empire_knights"]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire", "faction": "wh_main_emp_empire", "lord": false,
+   "units": ["wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_crossbowmen", "wh_main_emp_inf_swordsmen"]
+  },
+  "expect": {
+   "battle_type": "land_normal", "difficulty": "ai_level_normal",
+   "funds": "funds_custom", "funds_amount": 6000,
+   "time_limit_s": 1200, "ai_stats_modifier": 1.0, "unit_scale": 0.75,
+   "realism": false, "player_defends": false
+  }
+ },
  "kho5-dwf5": {
   "player": {
    "subculture": "wh3_main_sc_kho_khorne",

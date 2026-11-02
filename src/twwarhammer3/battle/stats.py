@@ -12,6 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle.benchmark import evaluate
 from twwarhammer3.battle.controllers import policy_parts
 
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
@@ -41,6 +42,8 @@ def row(job: Path, episode: Path) -> dict:
     manifest = json.loads((job / "manifest.json").read_text())
     result = json.loads((episode / "result.json").read_text())
     config = manifest["config"]
+    if manifest.get("scenario", {}).get("benchmark"):
+        result = {**result, "status": evaluate(result)["outcome"] or result["status"]}
     # A rotation's llm_rules@gpt-6-luna is policy llm_rules with its own model and effort.
     policy, model, effort = policy_parts(result.get("policy", config.get("policy", "")), config)
     delays = result.get("delays_ms") or []

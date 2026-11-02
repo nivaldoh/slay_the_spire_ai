@@ -308,6 +308,12 @@ def render_mode(mode: dict | None) -> str | None:
         head += "; if time runs out, " + {"us": "you win", "none": "it is a draw"}.get(
             winner, f"{winner} wins")
     lines = [head + "."]
+    if mode.get("benchmark") == "mirror-v1":
+        lines.append("Benchmark: engine win > draw > loss (timer endings count). Within the same "
+                     "outcome, preserve your five original units: mean final health-bar fraction, "
+                     "equal weights, multiplied by 1 normally, .8 wavering, .5 routing, "
+                     "0 shattered, dead or departed. Only the strongest penalty applies; "
+                     "rallied units use their current state. The battle runs unpaused at 1x.")
     if mode.get("objectives"):
         lines.append("The game's description: " + mode["objectives"])
     if mode.get("custom"):
@@ -597,10 +603,13 @@ class LLMPolicy:
     """One instance per episode: its notes, history and last-seen map are the memory."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None, provider: str = "openai"):
+                 system_prompt: str | None = None, provider: str = "openai",
+                 benchmark: bool = False):
+        self.benchmark = benchmark
         self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True,
+                         **({"failed_resends": 0, "transport_attempts": 1} if benchmark else {}))
         self.totals = self.api.totals
         self.notes = ""
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)
@@ -611,6 +620,14 @@ class LLMPolicy:
         self.sent: list[dict] = []
         self.ordered: dict[str, dict] = {}
         self._metadata = {}
+        if benchmark:
+            from twwarhammer3.battle import benchmark as profile
+
+            self.card = {"benchmark": profile.VERSION, "transport_attempts": 1,
+                         "failed_resends": 0, "invalid_retries": 0, "salvage": False,
+                         "read_timeout_s": profile.READ_TIMEOUT_S,
+                         "max_calls": profile.CALL_LIMIT, "battle_usd": profile.BATTLE_USD,
+                         "max_output_tokens": MAX_OUTPUT_TOKENS}
 
     def decide(self, observation: dict) -> list[dict]:
         remember(self.last_seen, observation)
@@ -631,8 +648,10 @@ class LLMPolicy:
         try:
             reply, metadata["attempts"] = self.api.ask(
                 prompt, REPLY_SCHEMA, lambda text: parse_reply(text, observation),
-                INVALID_RETRIES)
+                0 if self.benchmark else INVALID_RETRIES)
         except InvalidReply as error:
+            if self.benchmark:
+                raise invalid_reply(error) from None
             salvaged = salvage(error.attempts, observation)
             if salvaged is None:
                 raise invalid_reply(error) from None

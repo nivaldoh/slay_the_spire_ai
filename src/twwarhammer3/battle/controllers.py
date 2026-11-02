@@ -154,6 +154,10 @@ def card(name: str, policy, config: dict) -> dict:
 
 def factories(config: dict, *, _ledger=None) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
+    from twwarhammer3.battle import benchmark
+    from twwarhammer3.battle.setup import scenarios
+
+    is_benchmark = scenarios().get(config.get("scenario"), {}).get("benchmark") == benchmark.VERSION
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
     models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
@@ -171,13 +175,25 @@ def factories(config: dict, *, _ledger=None) -> dict:
             raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
         if ledger is None:
             ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
-        send = partial(post, api_key(provider), provider=provider, record_transport=True)
+        key = api_key(provider)
+        send = (partial(benchmark.send_once, key, provider=provider) if is_benchmark else
+                partial(post, key, provider=provider, record_transport=True))
         for name in models:
             base, model, effort = parts[name]
             kind = {"commander": commander.CommanderPolicy,
                     "team_llm_rules": team.ModelTeam}.get(base, llm.LLMPolicy)
-            makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
-                                   system_prompt=MODEL_PROMPTS[base].read_text())
+            if is_benchmark:
+                if base != "llm_rules":
+                    raise ValueError("mirror-v1 initially supports only the direct llm_rules model")
+
+                def make(model=model, effort=effort, prompt=MODEL_PROMPTS[base].read_text()):
+                    return llm.LLMPolicy(model, effort, benchmark.BattleBudget(ledger), send=send,
+                                         provider=provider, system_prompt=prompt, benchmark=True)
+
+                makers[name] = make
+            else:
+                makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
+                                       system_prompt=MODEL_PROMPTS[base].read_text())
     for name in parts.keys() - models:
         if name == "configured":
             from twwarhammer3.battle.configured import factory

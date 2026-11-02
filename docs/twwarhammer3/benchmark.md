@@ -21,6 +21,16 @@ A `JUDGEMENT:` line marks an agent's proposal that the owner hasn't decided yet;
 
 ## The first battle
 
+Owner follow-up, 2026-11-02: start with a single Empire-versus-Empire battle. Both sides
+have three melee units and one ranged unit; our fifth unit is cavalry, theirs a weaker
+non-cavalry unit. The aim is to see whether the controller can exploit that advantage.
+The owner delegated reasonable starting settings; the concrete
+[mirror profile](benchmark-implementation.md#first-version-follow-up-2026-11-02) remains
+marked and unverified. Other battle research comes later.
+
+The following Empire-versus-Greenskins roster and two-role design are earlier proposals,
+retained with their markers; they are not the current first battle.
+
 JUDGEMENT: Starter armies — Codex, 2026-10-23: propose eight units per side with lords and casters.
 Reusing the lordless line or changing factions would change the decisions and measurement scope;
 the first matchup proposal rests on this choice, not on the old line's win rates.
@@ -54,10 +64,25 @@ These battles are for development: we will study them and tune controllers on th
 
 The engine decides win, loss or draw. Keep the raw engine result next to any benchmark score.
 
-Owner direction, 2026-10-28: the benchmark should probably measure unit health and morale,
-with other metrics secondary. This is a tentative measurement priority; their aggregation,
-weights and relation to the engine result remain undecided. The win-rate summary below is
-still the earlier proposal, not an adopted answer to that direction.
+Owner follow-up, 2026-11-02: **engine wins rank above losses**. Health means the game's
+tactical-unit health bar, not individual soldiers' HP. Start with simple calculations
+and revise later. The proposed outcome-first, health/state tie-break and no-retry error
+accounting are in the [starter plan](benchmark-implementation.md#first-version-follow-up-2026-11-02).
+The earlier text below records the preceding discussion; the relationship between wins
+and losses is now decided, while the proposed numeric defaults remain marked.
+
+Owner direction, 2026-11-01, refining 2026-10-28: tentatively score mostly on unit health;
+a healthier army should score better. Lower morale should reduce the score, with routed
+units penalised more strongly. The formula, unit weighting, observation time, treatment
+of recovery and relation to the engine result remain undecided. The win-rate summary below
+is an earlier proposal, not the selected primary score. See the
+[plan update](benchmark-implementation.md#owner-directions-2026-11-01).
+
+The owner also tentatively prefers failures counted separately as errors rather than
+partially scored battles. This does not yet resolve comparison denominators, replacement
+rules or the earlier forfeit convention below. A known engine ending is still retained
+alongside later errors; a transient error need not erase the eventual battle result.
+This update changes the plan only; the evaluator and historical scores are unchanged.
 
 JUDGEMENT: Primary summary — Codex, 2026-10-23: propose wins divided by scored attempts,
 with draws as non-wins, not half-points. A points table or preservation tie-break changes

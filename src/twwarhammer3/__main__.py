@@ -100,6 +100,15 @@ def main() -> int:
     doctor = commands.add_parser("doctor", help="Inspect the game and runtime (read-only)")
     doctor.add_argument("--json", action="store_true")
 
+    benchmark = commands.add_parser("benchmark", help="Initial Empire mirror benchmark")
+    benchmark.add_argument("action", choices=("plan", "report"))
+    benchmark.add_argument("plan", type=Path,
+                           help="queue plan JSON (new for plan; existing for report)")
+    benchmark.add_argument("--stage", choices=("pilot", "model"), default="pilot")
+    benchmark.add_argument("--budget-usd", type=float, default=2,
+                           help="cumulative WH3 Anthropic ledger cap, including earlier jobs")
+    benchmark.add_argument("--output", type=Path, help="report filename stem")
+
     coordinator = commands.add_parser(
         "coordinator", help="Serve one native multiplayer match attempt; stdin takes"
         ' {"client", "body"} commands as JSON lines; EOF or Ctrl-C closes it')
@@ -272,6 +281,19 @@ def main() -> int:
     spend.add_argument("--ledger", type=Path, default=None, help="override the provider's ledger")
 
     args = parser.parse_args()
+
+    if args.command == "benchmark":
+        from twwarhammer3.battle import benchmark
+
+        try:
+            if args.action == "plan":
+                data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
+            else:
+                data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"))
+        except (ValueError, OSError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(data, indent=2))
+        return 0
 
     if args.command == "export":
         from twwarhammer3.battle.export import export_traces

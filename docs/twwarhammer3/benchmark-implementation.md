@@ -8,13 +8,158 @@ await confirmation. The phases below remain the earlier Land proposal. Mode orde
 profiles, scoring and correctness checks need later discussion; the interview need not
 be settled now. No new run is scheduled by this update.
 
+## Owner directions 2026-11-01
+
+The [2026-11-02 follow-up](#first-version-follow-up-2026-11-02) narrows these earlier
+directions. Its single Empire mirror battle replaces the earlier starter proposal.
+
+**Plan update only; no implementation yet.** These replies address the five areas in
+the remaining-decisions summary, not questions 1–5 of the older interview below.
+“Probably” remains tentative; the detailed questions are narrowed where answered,
+not all settled.
+
+| Area | Owner's direction | Details still open |
+|---|---|---|
+| Battle score | Tentatively score mostly on unit health: a healthier army scores better. Lower morale reduces the score, with routed units penalised more strongly | Health aggregation and unit weighting; when to measure; own versus enemy condition; morale/routing penalty size; recovered routs, healing, barriers and summons; relationship to the engine winner |
+| Battle conditions | Research later | Armies, loadouts, deployment, map, role, opponent settings and mode-specific objectives remain candidates |
+| Comparison conditions | Owner will examine the options and think further later | Models versus whole controllers, knowledge, helpers and resource limits remain deferred |
+| Failures and repetition | Tentatively count failures separately as errors, instead of awarding a partial battle score | Error categories, denominator and retry/replacement rules; repeat counts, reserved variants and uncertainty remain open. This reply did not select a sampling plan |
+| Measurement correctness | Use a related benchmark as the initial method reference, then adjust the method and details as the work develops | Which reference and which parts to adopt; WH3-specific measurement checks and tolerances |
+
+For the reference choice, use the existing [BEHAVIOR, CARLA and SMACv2 profiles](benchmark-references.md)
+as the researched candidates. None is selected by this update. A borrowed evaluation
+procedure still needs checks against WH3's own health, morale, outcomes and live clock;
+an external benchmark's results do not validate our recorder.
+
+The error direction concerns a separate error count and no partial battle score for failed
+attempts. It does not yet decide whether errors enter a comparison denominator, how the
+earlier agreed forfeit convention changes, or when to replace an attempt. Reconcile those
+points before evaluator work. Keep a known engine result when an error occurs after the
+ending, and keep transient errors alongside the eventual result when play continues,
+under the existing agreed rules in the [outcome table](benchmark.md#outcome-and-score).
+
+Next planning work, when resumed: research battle conditions and a suitable benchmark
+method, receive the owner's comparison choices, then specify the remaining score and
+error details. The phases below describe later work; this update starts no implementation,
+measurement probe, pilot or paid comparison. Historical results and agreed checks stay intact.
+
+## First version follow-up 2026-11-02
+
+Implementation now authorized by the owner's subsequent request: "Implement the initial
+version ... Use a cheap model from the Anthropic API. Keep this initial version simple."
+The [initial runbook](benchmark-initial.md) gives the implementation, commands and limits.
+The planning-only paragraphs below record the earlier scope; they no longer prohibit
+this requested implementation/pilot. Existing JUDGEMENT defaults remain marked.
+
+Planning only. The owner supplied enough direction for a small first implementation,
+with documented starting choices that can change later. No code, scenario, game run or
+paid comparison is authorized by this discussion. The older interview is a catalogue of
+later questions, not a requirement to answer all 32 before building this version.
+
+Owner decisions: use health at the tactical-unit level (a regiment's health bar, not each
+soldier); simple calculations; engine wins above losses; one Empire mirror battle with
+three melee and one ranged unit on both sides, plus our cavalry versus a weaker
+non-cavalry unit; reasonable documented public inputs and limits; no retries. Other
+battles and more elaborate calculations can wait. Defaults below are Codex's proposals
+under that delegation, not owner-selected values or verified measurements.
+
+JUDGEMENT: Mirror profile — Codex, 2026-11-02: start with the roster and settings below.
+Different infantry, role, map or difficulty changes the cavalry opportunity;
+the first development battle rests on this profile, whose advantage is unverified.
+
+- Our army: three Swordsmen, one Crossbowmen and one Empire Knights unit. Enemy: four
+  Swordsmen and one Crossbowmen. No lords, heroes, spells, summons or reinforcements.
+- Taurox map, player attacks, normal AI, stats modifier 1.0, rank zero, large unit size
+  (0.75), realism off, 1200 battle-second timer, unpaused 1x. Explicit custom funds 6000
+  cap recruitment, not army strength. Use the existing automatic deployment and record
+  the realised start; matching settings do not promise identical starts across launches.
+- Set fire-at-will on for ranged units, skirmish and guard off for both armies; explicitly
+  record other supported toggles. Check these against the lobby and initial state before
+  scoring. No formation tuning or prescribed cavalry manoeuvre in the task prompt.
+  The intended *small* advantage needs a pilot; unit counts alone do not establish it.
+
+JUDGEMENT: Simple condition score — Codex, 2026-11-02: outcome first, own final health second,
+with equal unit weights and state factors below. Enemy damage, cost weights or time averages
+could reverse ties; this first score measures preservation, not total combat strength.
+
+Rank individual completed battles by win, draw, loss, then by own army condition within
+the same outcome. At the first engine ending, average the five original units' health
+fractions multiplied by: 1 normally, 0.8 if wavering, 0.5 if routing, 0 if shattered,
+confirmed dead or confirmed to have left the field. Apply only the strongest penalty;
+multiply the average by 100. A rallied unit uses its current state, with no lasting rout
+penalty. This uses existing health precision and flags, not numeric leadership or entity
+HP. Retain the raw values. A missing/failed read makes the condition score unavailable,
+not zero; the known engine outcome remains valid. No hidden-enemy histories are needed
+for this first score. An absent record alone does not establish death or departure.
+
+JUDGEMENT: Starter limits and inputs — Codex, 2026-11-02: retain the current public interface
+and use the bounds below for initial model screens. More knowledge or compute changes the
+comparison; these limits apply to a complete controller, including all its model members.
+
+Use the current visibility-filtered structured state and public lobby roster, with the
+order documentation and identical supplied game facts for compared controllers. Private
+evaluation/setup data, replays and screenshots stay outside policy inputs. Record the
+prompt, memory, helpers, model, effort and provider; initially compare frozen complete
+controllers, not intrinsic model knowledge. Preserve the existing 16000-token response
+cap; propose 60 seconds per decision call, 200 calls and $2 per battle across all members.
+No added observation delay or fixed wait between decisions. Retain the existing 900 s
+setup and 1320 s battle wall caps; score the engine timer ending, not a wall-cap stop.
+These per-battle model limits need implementation; paid jobs still need a named ledger
+cap within the shared allowances, and separately declared pre-battle preparation costs.
+
+JUDGEMENT: No-retry scope and accounting — Codex, 2026-11-02: interpret "No retries" as no
+replacement battles, transport resends or model repair calls. A battle-only interpretation
+would allow more model attempts; error counts and cost depend on this interpretation.
+
+Every planned attempt keeps its place in the report. A failed decision sends no orders;
+a later decision from new state is ordinary continued play, not a resend or repair.
+Record that error even if the battle finishes. Terminal failures without an engine ending
+get no condition score or invented loss. Preserve endings followed by cleanup errors.
+Show wins/draws/losses over engine-completed attempts, completion over planned attempts,
+and error counts/categories alongside both; show never-started attempts too. No automatic
+replacement or aggregate ranking that hides incomplete attempts. Current model code has
+transport, failed-response and invalid-reply retries; all must be disabled for this profile.
+
+JUDGEMENT: Starter repetition — Codex, 2026-11-02: one free pilot per existing simple script,
+then five planned attempts per selected controller for an exploratory screen. Larger samples
+change precision and cost; these counts establish neither reliable ranking nor generalisation.
+
+Pilot with hold, walk-nearest and run-nearest: three fresh launches, one battle each in
+the declared role. Stop on setup or measurement failure. For a later model screen, freeze
+controllers and interleave five fresh launches per controller; no replacements. Show raw
+counts and condition values. This is one development battle; no held-out claim. Select
+models and a total budget before scheduling that screen. Keep pilot failures visible if
+a fix leads to a newly versioned pilot.
+
+JUDGEMENT: Minimal correctness check — Codex, 2026-11-02: propose the concrete check below.
+An offline-only check cannot establish agreement with the game; exact live cases still
+need the owner's agreement before this can be entered in agreed-checks.md.
+
+"Correctness" means that the recorder and arithmetic describe the battle the game ran:
+check both rosters/settings at the start; compare timestamped health bars and wavering,
+routing and recovery flags with the UI/independent engine evidence; match the engine
+ending; hand-recompute the simple score and failure counts from saved records. Check
+that changing private data cannot change policy inputs. Use missing-read and routing-as-
+death examples to make sure the check catches those mistakes, and count requests to
+detect an accidental retry. Agree cases and health-display tolerance before the live
+check. This establishes measurement correctness, not controller strength or a proven
+cavalry advantage. Existing reference profiles can inform implementation without another
+broad research phase; no external benchmark's pass verifies our WH3 measurements.
+
 ## Milestones
 
-The first milestone is a working evaluation of one matchup in both roles, with a checked report and commands anyone can rerun. A reusable release also freezes the reference controllers, makes the evidence accessible, lists its limits, and records a recount and a rerun by someone other than the author. A pilot alone gives neither a reliable win rate nor results on other armies or maps. Two roles rest on JUDGEMENT `benchmark.md` Role coverage.
+The first milestone is a working evaluation of the single mirror battle above, with a
+checked report and commands anyone can rerun. A reusable release also freezes reference
+controllers, makes evidence accessible, lists its limits, and records an independent
+recount and rerun. A pilot alone gives neither a reliable win rate nor results on other
+armies or maps. The earlier two-role milestone is deferred.
 
 ## Phases
 
 Each phase ends with something the owner can review. A new correctness check needs the owner's agreement.
+The table and marked pilot size below preserve the older two-role proposal; for the first
+version, use the single profile, end-state score and pilot above. Full private histories,
+a reserved map and answers to the whole interview are not first-version prerequisites.
 
 | Phase | Work | Done when |
 |---|---|---|
@@ -36,6 +181,10 @@ Build on what exists: the mod and mailbox, the play loop, the reports and the ou
 ## Owner interview: one Land Battle
 
 The owner asked for these questions on 2026-10-23, all at once, to settle the definition of one Land Battle. They remain useful for that battle within the broader scope named above. Answer by number, here or in conversation; a short answer or "undecided" is enough. The options are not defaults, and the JUDGEMENT proposals in the definition stay open until answered.
+
+The [2026-11-01 directions](#owner-directions-2026-11-01) narrow the score, error handling
+and method questions. Battle-condition research and comparison choices are deferred;
+the owner need not answer the remaining interview now.
 
 Already decided: small mixed armies first; the engine picks the winner, timer wins included; battles run unpaused at 1x. The aim (owner, 2026-10-23): compare models on the knowledge needed to win **and** on acting well despite API latency. Reading health or a routing flag is objective; how much it is worth in a score is a separate choice. A win alone doesn't show which knowledge the model used.
 
@@ -215,6 +364,10 @@ What the code records today and what is missing: [measurement gaps](#measurement
 
 ## Correctness checks to agree
 
+Owner direction, 2026-11-01: begin with a related benchmark's evaluation method and refine
+it as the work develops. The [reference profiles](benchmark-references.md) are candidates;
+the checks below remain earlier proposals, not a selected or agreed method.
+
 JUDGEMENT: Land Battle checks — Codex, 2026-10-23: propose the case set below, using live
 UI/engine observations and independently classified outcomes. Offline readers alone would
 support narrower claims; release readiness rests on agreement and execution of these checks.
@@ -291,6 +444,11 @@ Measured on 2026-10-13/14 from the register and runs; the full analysis is Part 
 - **The AI stats modifier** changed only the AI units' stats in the b2 and b8 startup snapshots. Lobby options, modifier getters and terrain sampling are in [integration.md](integration.md).
 
 ## Related research
+
+For scenario construction and evaluation code, start with the
+[three reference benchmarks](benchmark-references.md): BEHAVIOR, CARLA Leaderboard and
+SMACv2. Their short profiles keep task authorship, measurements, pinned source entry points
+and WH3 transfer limits together; they introduce no new benchmark rules.
 
 A selective review of primary sources on 2026-10-20. It shaped the earlier tactic-card work; the WH3 uses below are our proposals.
 

@@ -15,6 +15,15 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 initial mirror benchmark measurements (agreed 2026-11-02, owner: "Use this check"):
+  saved UI screenshots of both rosters/settings, engine ending and displayed tactical-unit
+  health within 1 percentage point; hand-recompute condition and failure counts from records.
+  Offline: routing/recovery, missing reads and accidental retries; private-data changes must
+  not change policy inputs. Command: `uv run --locked pytest -ra
+  tests/twwarhammer3/test_wh3_mirror_benchmark.py`. Live procedure/commands:
+  [initial runbook](twwarhammer3/benchmark-initial.md#measurement-check).
+  Not yet passed at a recorded revision. This checks recording/arithmetic, not model strength
+  or the cavalry advantage. Roster, score and limits retain their JUDGEMENT markers.
 - WH3 GaP temporary author-initiation check (agreed 2026-11-01, owner: "Ok, we can proceed
   with this solution temporarily"): a caller-declared initiator must have an attack route
   before contact; waiting members remain allowed. Reject a stalled specialist reply via

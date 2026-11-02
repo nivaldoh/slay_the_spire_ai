@@ -12,6 +12,7 @@ import statistics
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from twwarhammer3.battle.benchmark import evaluate
 from twwarhammer3.battle.stats import active_left
 
 OUTCOMES = {"won", "lost", "draw"}
@@ -258,7 +259,14 @@ def collect(jobs: list[Path]) -> dict:
             # unrecorded; flagged by Codex, 2026-10-23): only engine-ended trials count.
             # Including card forfeits changes the rate; this remains a diagnostic.
             outcome = "time_limit" if result.get("ended_by") == "time_limit" else result["status"]
+            benchmark = evaluate(result) if scenario.get("benchmark") else None
+            recorded_status = result["status"]
+            if benchmark:
+                outcome = benchmark["outcome"] or result["status"]
+                result = {**result, "status": outcome}
             metrics = trial_metrics(directory, result)
+            if benchmark:
+                metrics["benchmark"] = benchmark
             protected = scenario.get("protected") or []
             totals = (result.get("final") or {}).get("friendly", {}).get("by_type") or {}
             denominator = sum(totals.get(key, {}).get("men0", 0) for key in protected)
@@ -268,6 +276,7 @@ def collect(jobs: list[Path]) -> dict:
                 "instance": str(job), "episode": directory.name, "controller": label,
                 "policy": policy, "delay_ms": delay, "outcome": outcome,
                 "engine_outcome": result["status"] if result["status"] in OUTCOMES else None,
+                "recorded_status": recorded_status,
                 "ended_by": result.get("ended_by"),
                 "valid": result["status"] in OUTCOMES,
                 "setup_checked": bool(manifest.get("setup_checks") and result.get("setup_checks")),

@@ -183,6 +183,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/llm.py`: direct API-model controller: llm, llm_rules
 - `src/twwarhammer3/battle/commander.py`: asynchronous API model over skills
 - `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
+- `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
 - `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
 - `src/twwarhammer3/battle/team.py`: two independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition
