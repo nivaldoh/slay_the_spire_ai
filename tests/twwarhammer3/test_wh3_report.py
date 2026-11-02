@@ -272,3 +272,24 @@ def test_the_win_rate_counts_engine_endings_only_and_a_timer_win_is_not_one_of_i
     path.write_text(json.dumps({**json.loads(path.read_text()), "ended_by": "time_limit"}))
     [hold] = report.collect([job])["groups"][0]["controllers"]
     assert (hold["trials"], hold["valid"], hold["win_rate"]) == (5, 3, pytest.approx(1 / 3))
+
+
+def test_the_win_interval_is_the_wilson_score_interval():
+    # Hand-worked Wilson score interval at z = 1.96: 5 of 10 is 0.5 +/- 0.26341, as
+    # statsmodels proportion_confint(5, 10, method="wilson") gives (0.23659, 0.76341); 10 of 10
+    # is (0.72246, 1).
+    assert report.wilson(5, 10) == pytest.approx([0.23659, 0.76341], abs=1e-5)
+    assert report.wilson(10, 10) == pytest.approx([0.72246, 1], abs=1e-5)
+
+
+def test_report_counts_each_order_the_engine_refused_by_its_error(tmp_path):
+    # reports.md: refused engine orders are counted apart from rejected replies; an ack result
+    # with ok false is one refused order (engine/mailbox.py orders.results).
+    ack = {"kind": "ack", "latency": {"delay_ms": 500}, "ack": {
+        "request": "r1", "based_on": 1, "applied_ms": 1500, "results": [
+            {"index": 1, "unit": "f1", "ok": True},
+            {"index": 2, "unit": "army", "ok": False, "error": "cannot_purchase_there"},
+            {"index": 3, "unit": "army", "ok": False, "error": "cannot_purchase_there"}]}}
+    (tmp_path / "trace.jsonl").write_text(json.dumps(ack) + "\n")
+    metrics = report.trial_metrics(tmp_path, {})
+    assert metrics["rejections"] == {"engine: cannot_purchase_there": 2}

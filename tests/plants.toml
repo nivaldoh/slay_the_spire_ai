@@ -2986,3 +2986,156 @@ old = 'target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in u
 new = 'target = min(enemies, key=lambda e: (max(skills.distance(u, e) for u in units), e["id"]),'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py::test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units"]
 source = "2026-11-02 cleanup round 5 review"
+
+[[plant]]
+id = "link-status-for-seq-zero-lands-on-the-last-command"
+guards = "A status report names a delivered command by its 1-based seq; seq 0 is no command, even while the latest one waits delivered"
+file = "src/twwarhammer3/engine/link.py"
+old = "commands[seq - 1] if 0 < seq <= len(commands) else None"
+new = "commands[seq - 1] if 0 <= seq <= len(commands) else None"
+tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_status_for_a_command_never_delivered_is_refused_and_changes_nothing"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "link-status-for-a-queued-command-is-recorded-late"
+guards = "A status for a queued or unknown command is refused as not delivered and leaves no record"
+file = "src/twwarhammer3/engine/link.py"
+old = 'if not command or command["state"] in ("queued", "fenced"):'
+new = 'if not command and command["state"] in ("queued", "fenced"):'
+tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_status_for_a_command_never_delivered_is_refused_and_changes_nothing"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "link-stopped-worker-requests-time-out-at-once"
+guards = "A stopped worker sends its evidence with a full heartbeat timeout, not one cut at its past deadline"
+file = "src/twwarhammer3/engine/link.py"
+old = "if self.deadline is not None and not self._stopped:"
+new = "if self.deadline is not None or not self._stopped:"
+tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_request_timeout_is_cut_at_the_lease_deadline_until_the_worker_stops"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "link-running-worker-timeout-not-cut-at-deadline"
+guards = "A running worker's heartbeat wait and request timeout end at its lease deadline"
+file = "src/twwarhammer3/engine/link.py"
+old = "if self.deadline is not None and not self._stopped:"
+new = "if self.deadline is None and not self._stopped:"
+tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_request_timeout_is_cut_at_the_lease_deadline_until_the_worker_stops"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "model-accepts-zero-transport-attempts"
+guards = "Zero transport attempts would hold no budget reservation; Model refuses anything but a positive integer"
+file = "src/gameai/llm.py"
+old = "if type(transport_attempts) is not int or transport_attempts < 1:"
+new = "if type(transport_attempts) is not int and transport_attempts < 1:"
+tests = ["tests/gameai/test_model.py::test_a_model_needs_a_positive_integer_of_transport_attempts"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "refused-batch-results-off-by-one"
+guards = "A refused batch's results use the engine's 1-based order positions"
+file = "src/twwarhammer3/protocol.py"
+old = '"results": [{"index": index + 1,'
+new = '"results": [{"index": index + 2,'
+tests = ["tests/twwarhammer3/test_wh3_protocol.py::test_a_refused_batch_acknowledges_each_order_at_its_one_based_position"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "purchase-of-exactly-the-supplies-left-refused"
+guards = "A purchase costing exactly the supplies left is allowed (the mod's cost <= supplies)"
+file = "src/twwarhammer3/protocol.py"
+old = 'purchases["spent"] + cost > mode["supplies"]:'
+new = 'purchases["spent"] + cost >= mode["supplies"]:'
+tests = ["tests/twwarhammer3/test_wh3_protocol.py::test_a_purchase_that_spends_exactly_the_supplies_left_is_allowed"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "wilson-lower-bound-always-zero"
+guards = "The reported win interval is the Wilson score interval, lower bound included"
+file = "src/twwarhammer3/battle/report.py"
+old = "return [max(0, centre - radius), min(1, centre + radius)]"
+new = "return [min(0, centre - radius), min(1, centre + radius)]"
+tests = ["tests/twwarhammer3/test_wh3_report.py::test_the_win_interval_is_the_wilson_score_interval"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "report-ignores-engine-refused-orders"
+guards = "Each order the engine refused counts in the report's rejections under its error"
+file = "src/twwarhammer3/battle/report.py"
+old = 'for order in event["ack"].get("results") or []:'
+new = 'for order in event["ack"].get("results") and []:'
+tests = ["tests/twwarhammer3/test_wh3_report.py::test_report_counts_each_order_the_engine_refused_by_its_error"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "report-counts-accepted-orders-as-refused"
+guards = "Only ack results with ok false count as engine refusals"
+file = "src/twwarhammer3/battle/report.py"
+old = 'if not order.get("ok"):'
+new = 'if order.get("ok"):'
+tests = ["tests/twwarhammer3/test_wh3_report.py::test_report_counts_each_order_the_engine_refused_by_its_error"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "reinforcement-counted-under-the-next-orders-type"
+guards = "An accepted reinforcement counts under the unit type of the order its 1-based result index names"
+file = "src/twwarhammer3/battle/play.py"
+old = 'unit_type = outstanding["orders"][item["index"] - 1]["reinforcement"]'
+new = 'unit_type = outstanding["orders"][item["index"] - 0]["reinforcement"]'
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_an_accepted_reinforcement_counts_under_its_own_orders_type"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "refused-batch-not-logged-inside-observe-ms"
+guards = "A refused batch is logged with its invalid event even within observe_ms of the last logged decision"
+file = "src/twwarhammer3/battle/play.py"
+old = "logged = (orders or invalid or behavior != logged_behavior or logged_ms is None"
+new = "logged = (orders or invalid and behavior != logged_behavior or logged_ms is None"
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_a_decision_inside_observe_ms_is_logged_when_it_was_refused_or_its_metadata_changed"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "new-metadata-not-logged-inside-observe-ms"
+guards = "A decision with new metadata is logged even within observe_ms of the last logged decision"
+file = "src/twwarhammer3/battle/play.py"
+old = "logged = (orders or invalid or behavior != logged_behavior or logged_ms is None"
+new = "logged = (orders or invalid or behavior != logged_behavior and logged_ms is None"
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_a_decision_inside_observe_ms_is_logged_when_it_was_refused_or_its_metadata_changed"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "observation-wait-bound-zero"
+guards = "Each observation wait lasts up to --observation-timeout while the episode has time left"
+file = "src/twwarhammer3/battle/play.py"
+old = "remaining = max(deadline - time.time(), 0)"
+new = "remaining = min(deadline - time.time(), 0)"
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_each_observation_wait_is_bounded_by_the_observation_timeout"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "register-blank-cost-for-scripted-rows"
+guards = "A scripted episode's register row records usd 0, as the committed scripted rows do"
+file = "src/twwarhammer3/battle/stats.py"
+old = '"usd": round((result.get("llm") or {}).get("usd", 0), 4),'
+new = '"usd": round(result["llm"]["usd"], 4) if result.get("llm") else "",'
+tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_scripted_row_records_no_cost_and_the_registers_units"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "register-added-age-in-milliseconds"
+guards = "The register's added_age_s is the episode's delay_ms in seconds"
+file = "src/twwarhammer3/battle/stats.py"
+old = '"added_age_s": result.get("delay_ms", 0) / 1000,'
+new = '"added_age_s": result.get("delay_ms", 0),'
+tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_scripted_row_records_no_cost_and_the_registers_units"]
+source = "2026-11-02 runtime-readers survivor batch"
+
+[[plant]]
+id = "protocol-accepts-an-unlisted-behaviour"
+guards = "A behaviour the observation does not list for the unit voids the batch"
+file = "src/twwarhammer3/protocol.py"
+old = 'if behaviour not in BEHAVIOURS or behaviour not in friendly[unit].get("behaviours", {}):'
+new = 'if behaviour not in BEHAVIOURS and behaviour not in friendly[unit].get("behaviours", {}):'
+tests = ["tests/twwarhammer3/test_wh3_protocol.py::test_extended_orders_reject_unavailable_actions_and_invalid_arguments"]
+source = "2026-11-02 cleanup round 5 review"

@@ -1010,3 +1010,70 @@ def test_a_job_writes_the_diagnostics_it_collected_to_environment_json(
               makers={"attack_nearest": Hold})
     assert json.loads((job / "environment.json").read_text()) == environment
     assert report.collect([job])["jobs"][0]["definition"]["game"] == environment["game"]
+
+
+def test_an_accepted_reinforcement_counts_under_its_own_orders_type(tmp_path):
+    # engine/mailbox.py: results indexes are one-based positions in the request, so result 1 is
+    # the hounds order; the knights order (2) was refused.
+    class Buyer(Hold):
+        def decide(self, observation):
+            return [{"unit": "army", "type": "reinforce", "reinforcement": "hounds", "zone": 6},
+                    {"unit": "army", "type": "reinforce", "reinforcement": "knights", "zone": 6}]
+
+    acked = bridge_observation(2, 2000)
+    acked["orders"] = {"request": "r1", "based_on": 1, "applied_ms": 1500, "results": [
+        {"index": 1, "unit": "army", "ok": True},
+        {"index": 2, "unit": "army", "ok": False, "error": "cannot_purchase_there"}]}
+    states = [bridge_observation(0, 0), bridge_observation(1, 1000), acked,
+              bridge_observation(3, 3000, result="lost")]
+    for state in states:
+        state["mode"] = {"supplies": 2000, "spawn_zones": [{"id": 6, "x": 0, "z": 0}],
+                         "reinforcements": [{"type": "hounds", "cost": 500},
+                                            {"type": "knights", "cost": 700}]}
+    result = play.play_episode(tmp_path / "e", CONFIG, Buyer, FakeMailbox(states),
+                               not_battle=None)
+    assert result["objectives"]["reinforce"] == 1
+    assert result["objectives"]["reinforcements_by_type"] == {"hounds": 1}
+
+
+def test_a_decision_inside_observe_ms_is_logged_when_it_was_refused_or_its_metadata_changed(
+        tmp_path):
+    # play.py: quiet decisions are logged once per observe_ms (1000 here), and every decision
+    # with orders, an error or new metadata is logged. Decisions come every 250 ms: the second
+    # is refused, the third has new metadata, the fourth is quiet.
+    class Changing(Hold):
+        def __init__(self):
+            self.calls = 0
+
+        def decide(self, observation):
+            self.calls += 1
+            return [{"unit": "ghost", "type": "halt"}] if self.calls == 2 else []
+
+        def metadata(self):
+            return {"type": "changing", "plan": 0 if self.calls < 3 else 1}
+
+    states = [bridge_observation(0, 0), bridge_observation(1, 1000),
+              bridge_observation(2, 1250, ack=True), bridge_observation(3, 1500, ack=True),
+              bridge_observation(4, 1750, ack=True), bridge_observation(5, 2000, result="won")]
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0}, Changing,
+                               FakeMailbox(states), not_battle=None)
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    assert result["decisions"] == 4 and result["invalid"] == 1
+    assert [e["time_ms"] for e in events if e["kind"] == "decision"] == [1000, 1250, 1500]
+    assert [e["kind"] for e in events].count("invalid") == 1
+
+
+def test_each_observation_wait_is_bounded_by_the_observation_timeout(tmp_path):
+    # --observation-timeout bounds one wait for the next observation (5 s here); the episode
+    # timeout (100 s) is far off, so it is the whole bound. A bound of 0 would make the real
+    # mailbox time out whenever the next observation is not already written.
+    timeouts = []
+
+    class Timed(FakeMailbox):
+        def wait_observation(self, *, battle, after_seq, timeout):
+            timeouts.append(timeout)
+            return super().wait_observation(battle=battle, after_seq=after_seq, timeout=timeout)
+
+    mailbox = Timed([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
+    play.play_episode(tmp_path / "e", CONFIG, Hold, mailbox, not_battle=None)
+    assert timeouts == [CONFIG["observation_timeout"]]

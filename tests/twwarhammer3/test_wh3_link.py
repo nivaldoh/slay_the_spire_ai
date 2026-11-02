@@ -535,3 +535,51 @@ def test_a_client_using_another_clients_or_an_unknown_generation_gets_409(coordi
             assert (status, reply.get("error")) == (409, "unknown generation"), (generation, path)
     assert not (coordinator.directory / "events-A.jsonl").exists()
     assert b.next_command() == {"seq": 1, "body": {"orders": "for b"}}
+
+
+def test_a_status_for_a_command_never_delivered_is_refused_and_changes_nothing(coordinator):
+    # A worker reports a status for a delivered command (module docstring); seq 0 names none,
+    # even while the client's latest command waits delivered, nor does a queued one.
+    link = worker(coordinator)
+    link.hello()
+    coordinator.submit("A", {"n": 1})
+    link.next_command()
+
+    def report(seq):
+        return call(coordinator, "POST", "/command-status", generation=link.generation,
+                    seq=seq, status="rejected", time_ns=1, monotonic_ns=1)
+
+    for seq in (0, 2):
+        assert report(seq) == (409, {"schema": 1, "error": f"command {seq} was not delivered"})
+    link.report(1, "submitted")
+    coordinator.submit("A", {"n": 2})
+    assert report(2) == (409, {"schema": 1, "error": "command 2 was not delivered"})
+    assert [(row["seq"], row["status"]) for row in records(coordinator, "status")] == [
+        (1, "submitted")]
+    assert records(coordinator, "late_status") == []
+    assert link.next_command() == {"seq": 2, "body": {"n": 2}}
+
+
+def test_a_request_timeout_is_cut_at_the_lease_deadline_until_the_worker_stops(coordinator,
+                                                                              monkeypatch):
+    # WorkerLink._timeout: a heartbeat interval cut at the deadline, so the beat loop wakes when
+    # the lease lapses; a stopped worker keeps sending evidence (module docstring) at the full
+    # interval.
+    stops, own = [], Clock()
+    link = worker(coordinator, stops=stops, clock=own, heartbeat_s=2.0)
+    link.hello()
+    timeouts, post = [], link._post
+
+    def send(path, body, timeout):
+        timeouts.append(timeout)
+        return post(path, body, timeout)
+
+    monkeypatch.setattr(link, "_post", send)
+    own.t = 1
+    link.beat()  # 14 s left before the deadline of 15; renewed to 16
+    own.t = 15.5
+    link.beat()  # 0.5 s left; renewed to 30.5
+    own.t = 31
+    assert not link.live() and stops == ["A"]
+    link.beat()
+    assert timeouts == [2.0, 0.5, 2.0]

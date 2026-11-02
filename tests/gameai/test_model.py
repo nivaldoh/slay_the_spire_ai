@@ -615,3 +615,13 @@ def test_only_errors_that_may_have_been_billed_are_charged_at_the_reservation(
     reported = (600 * 0.10 + 400 * 0.01 + 200 * 0.50) / 1e6  # USAGE at gpt-6-luna's prices
     assert ledger.spent == pytest.approx(uncertain * share + reported)
     assert model.totals["uncertain_transport_attempts"] == uncertain
+
+
+@pytest.mark.parametrize("attempts", [0, 2.0])
+def test_a_model_needs_a_positive_integer_of_transport_attempts(tmp_path, attempts):
+    # Model.call holds its reservation times transport_attempts against the hard budget, so
+    # zero attempts would hold nothing; the error says "must be a positive integer".
+    ledger = Ledger(tmp_path / "spend.jsonl", 1)
+    with pytest.raises(ValueError, match="transport_attempts must be a positive integer"):
+        api.Model("gpt-6-luna", "low", ledger, instructions="", max_output_tokens=256,
+                  send=lambda body: {}, transport_attempts=attempts)

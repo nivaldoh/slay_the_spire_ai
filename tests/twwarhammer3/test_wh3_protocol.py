@@ -103,6 +103,7 @@ def test_toggles_ability_and_a_flanking_sequence_can_share_a_unit():
     ({"type": "move", "x": 0, "z": 1, "queue": "false"}, "booleans"),
     ({"type": "behaviour", "behaviour": "skirmish", "enabled": 1}, "boolean"),
     ({"type": "behaviour", "behaviour": "invincible", "enabled": True}, "unavailable"),
+    ({"type": "behaviour", "behaviour": "defend", "enabled": True}, "unavailable"),
     ({"type": "ability", "ability": "unknown"}, "unavailable"),
     ({"type": "ability", "ability": "cooling"}, "unavailable"),
     ({"type": "ability", "ability": "buff", "target": "e1"}, "not visible"),
@@ -239,3 +240,22 @@ def test_a_zero_move_width_is_refused():
     with pytest.raises(protocol.IllegalActionError, match="width must be a positive number"):
         protocol.validate_orders([{"unit": "f1", "type": "move", "x": 0, "z": 1, "width": 0}],
                                  capable_observation())
+
+
+def test_a_refused_batch_acknowledges_each_order_at_its_one_based_position():
+    # engine/mailbox.py: results indexes are one-based positions in the request; the string
+    # in second place keeps its position but names no unit.
+    orders = [{"unit": "f1", "type": "halt"}, "halt", {"unit": "f2", "type": "halt"}]
+    assert protocol.refused(orders, "bad") == {"validation_error": "bad", "results": [
+        {"index": 1, "unit": "f1", "ok": False, "error": "bad"},
+        {"index": 3, "unit": "f2", "ok": False, "error": "bad"}]}
+
+
+def test_a_purchase_that_spends_exactly_the_supplies_left_is_allowed():
+    # The mod lists a pool unit as affordable when its cost <= supplies
+    # (twwarhammer3_battle.lua, observation mode.reinforcements); warriors cost 900.
+    order = {"unit": "army", "type": "reinforce", "reinforcement": "warriors", "zone": 14}
+    protocol.validate_orders([order], {**SURVIVAL, "mode": {**SURVIVAL["mode"], "supplies": 900}})
+    with pytest.raises(protocol.IllegalActionError, match="warriors costs 900, supplies 899"):
+        protocol.validate_orders([order],
+                                 {**SURVIVAL, "mode": {**SURVIVAL["mode"], "supplies": 899}})

@@ -166,3 +166,21 @@ def test_a_row_writes_the_date_short_source_and_seconds_columns_at_the_registers
         "delay_s": 8.94,  # (8000 + 9880) / 2 ms
         "usd": 0.0124,  # 0.012449 to four places
     }
+
+
+def test_a_scripted_row_records_no_cost_and_the_registers_units(tmp_path):
+    # A scripted controller's result has "llm": {} (play.py: its policy has no totals); the
+    # register's scripted rows record usd 0 (results.csv, attack-m3-20261013). Active shares go
+    # to 3 places, as own_active does: 2 / 7 = 0.2857 -> 0.286. delay_ms 6000 is
+    # --delay-seconds 6 (controllers.rotation).
+    job = tmp_path / "hold-b9-20261015"
+    (job / "episode-0000").mkdir(parents=True)
+    (job / "manifest.json").write_text(json.dumps({
+        "created_at": "2026-10-15T00:00:00", "source_revision": "abc1234def",
+        "config": {"policy": "hold", "interval_ms": 0}}))
+    (job / "episode-0000/result.json").write_text(json.dumps({
+        "status": "lost", "policy": "hold", "decisions": 3, "invalid": 0, "delay_ms": 6000,
+        "llm": {}, "final": {"friendly": {"men": 4, "men0": 7, "active_men": 3},
+                             "enemy": {"men": 5, "men0": 7, "active_men": 2}}}))
+    row = stats.row(job, job / "episode-0000")
+    assert (row["usd"], row["enemy_active"], row["added_age_s"]) == (0, 0.286, 6.0)
