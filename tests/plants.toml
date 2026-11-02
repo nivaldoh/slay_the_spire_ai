@@ -2680,3 +2680,147 @@ old = 'record["orders"][index - 1]'
 new = 'record["orders"][index - 2]'
 tests = ["tests/twwarhammer3/test_wh3_digest.py::test_the_engine_verdict_on_the_second_order_names_the_second_order"]
 source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "checkpoint-restore-lua-at-its-checkpoint-tick"
+guards = "A restore runs Lua only at tick 1 and after its checkpoint, never at the checkpoint tick"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '1 < item["tick"] <= restore["tick"]'
+new = '1 < item["tick"] < restore["tick"]'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-restore-refuses-tick-1-lua"
+guards = "A restore may run tick-1 setup Lua"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '1 < item["tick"] <= restore["tick"]'
+new = '1 <= item["tick"] <= restore["tick"]'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-differences-crash-on-one-sided-field"
+guards = "A reading field present on one side only is a difference, not a crash"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if isinstance(a, dict) and isinstance(b, dict):'
+new = 'if isinstance(a, dict) or isinstance(b, dict):'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-differences-truncate-unequal-lists"
+guards = "Reading lists of unequal length differ; equal-length lists are compared element by element"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'isinstance(b, list) and len(a) == len(b):'
+new = 'isinstance(b, list) and len(a) != len(b):'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-context-at-handover-allowed"
+guards = "An injection context at the handover time itself is refused (it must be later)"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if context <= 100 * save_tick:'
+new = 'if context < 100 * save_tick:'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-restore-failure-drops-fault-reason"
+guards = "A restore_failure caused by a fault names that fault row as its reason"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'row = fault[1] if fault and (restored is None or fault[0] < restored) else None'
+new = 'row = fault[1] if fault and (restored is None and fault[0] < restored) else None'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-injection-tick-reads-other-lua"
+guards = "Only a lua event at the injection tick makes an error there a restore_fault"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'lua_before = any(r.get("event") == "lua" and r.get("tick") == at'
+new = 'lua_before = any(r.get("event") == "lua" and r.get("tick") != at'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-attribution-reads-setup-lua"
+guards = "Attribution reads the inject lua event of the injection tick, not a setup event"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'r.get("event") == "lua" and r.get("label") == "inject"'
+new = 'r.get("event") == "lua" or r.get("label") == "inject"'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-attribution-accepts-refused-inject"
+guards = "The mod's accepted:false reply, or no inject lua event, fails the accepted clause"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if not isinstance(value, dict) or value.get("accepted") is not True:'
+new = 'if not isinstance(value, dict) and value.get("accepted") is not True:'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-refused-reason-lists-ok-results"
+guards = "The results clause's reason lists only the refused results"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'refused = [r for r in results if not r.get("ok")]'
+new = 'refused = [r for r in results if r.get("ok")]'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-divergence-at-applied-tick-fails"
+guards = "A divergence at the applied tick is after the apply, not a fault"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if early is not None and early < applied_tick:'
+new = 'if early is not None and early <= applied_tick:'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-limits-ignore-rebuild"
+guards = "Limits must contain a restore's rebuild; a source plan has none"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '(plan.get("checkpoint") or {}).get("tick", 0)'
+new = '(plan.get("checkpoint") and {}).get("tick", 0)'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-not-saved-counts-tick-rows"
+guards = "not_saved lists declared saves without a saved row"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'written = {r["tick"] for r in rows if r.get("event") == "saved"}'
+new = 'written = {r["tick"] for r in rows if r.get("event") != "saved"}'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-missing-save-waits-for-timeout"
+guards = "A missing save ends the run at the result after the bounded settle, not at the timeout"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if set(ended["saves"]) <= written or time.time() > ended["settle"]:'
+new = 'if set(ended["saves"]) <= written and time.time() > ended["settle"]:'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-gone-copy-not-suspect"
+guards = "A replay copy gone after the run marks its library entry suspect"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = "        target.unlink(missing_ok=True)\n        if after != record[\"replay_sha256\"]:"
+new = "        target.unlink(missing_ok=False)\n        if after != record[\"replay_sha256\"]:"
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
+
+[[plant]]
+id = "checkpoint-compare-attempts-tickless-rows"
+guards = "compare_attempts reads agent rows without a tick and attempts without an ending"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if end is None or r.get("tick") is None or r["tick"] <= end]'
+new = 'if end is None and r.get("tick") is None or r["tick"] <= end]'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_boundaries.py"]
+source = "2026-11-02 checkpoint survivor tests"
