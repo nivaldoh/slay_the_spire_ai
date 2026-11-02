@@ -9,6 +9,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -364,6 +365,20 @@ def test_each_committed_plant_still_applies_and_names_real_tests():
     assert all(plant["old"] != plant["new"] and plant["guards"] and plant["tests"]
                and all((root / test.split("::")[0]).exists() for test in plant["tests"])
                for plant in plants)
+
+
+def test_each_plant_test_node_names_a_test_in_its_file():
+    # A renamed test leaves its plants' tests missing, which only `check.py --plants` shows.
+    root = Path(check.__file__).resolve().parents[1]
+    missing = []
+    for plant in check.plant_list(root):
+        for target in (test for test in plant["tests"] if "::" in test):
+            path, *names = target.split("[")[0].split("::")
+            text = (root / path).read_text(encoding="utf-8")
+            if not all(re.search(rf"^\s*(def|class) {re.escape(name)}\b", text, re.M)
+                       for name in names):
+                missing.append(f"{plant['id']}: {target}")
+    assert missing == []
 
 
 def run_main(root, monkeypatch, *args):
