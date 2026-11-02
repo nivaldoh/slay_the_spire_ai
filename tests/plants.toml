@@ -2279,3 +2279,48 @@ old = "                     *made.get(\"elements\", []), *made.get(\"wires\", []
 new = ""
 tests = ["tests/test_check_script.py::test_diagram_flags_follow_the_cited_text_not_its_line_numbers"]
 source = "2026-11-01 control-methods review"
+
+[[plant]]
+id = "checkpoint-assess-scores-unequal-handover"
+guards = "A step run whose handover reading differs from the source's at the save tick is restore_fault with no reward"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'verdict.update(status="restore_fault", reason="handover reading differs")'
+new = 'pass'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_a_restore_whose_handover_reading_differs_is_a_restore_fault_without_reward"]
+source = "2026-11-02 cleanup test-gap batch wh3-tests"
+
+[[plant]]
+id = "confirm-control-judged-like-a-normal-run"
+guards = "A deranged control passes the closed loop only with a, b, c and d_live_win False"
+file = "src/twwarhammer3/battle/confirm.py"
+old = 'if not plan.get("control") else ('
+new = 'if True else ('
+tests = ["tests/twwarhammer3/test_wh3_confirm.py::test_the_closed_loop_verdict_needs_a_live_win_and_a_control_that_loses"]
+source = "2026-11-02 cleanup test-gap batch wh3-tests"
+
+[[plant]]
+id = "graph-author-allows-openrouter-over-50"
+guards = "graph-author refuses an OpenRouter budget over the owner's $50"
+file = "src/twwarhammer3/__main__.py"
+old = 'if args.provider == "openrouter" and args.budget_usd > 50:'
+new = 'if False:'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py::test_author_cli_keeps_openrouter_within_the_owners_50_dollars"]
+source = "2026-11-02 cleanup test-gap batch wh3-tests"
+
+[[plant]]
+id = "confirm-control-judged-by-the-live-result-alone"
+guards = "A deranged control passes the closed loop only with a, b, c and d_live_win False"
+file = "src/twwarhammer3/battle/confirm.py"
+old = "all(v for k, v in result[\"clauses\"].items() if k != \"d_live_win\")\n        and result[\"clauses\"][\"d_live_win\"] is False"
+new = "result[\"clauses\"][\"d_live_win\"] is False"
+tests = ["tests/twwarhammer3/test_wh3_confirm.py::test_the_closed_loop_verdict_needs_a_live_win_and_a_control_that_loses"]
+source = "2026-11-02 cleanup review of the wh3-tests batch"
+
+[[plant]]
+id = "checkpoint-assess-reads-the-last-reading"
+guards = "The handover reading compared with the source is the one at the save tick"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = "reading = next((r[\"value\"] for r in rows if r.get(\"event\") == \"reading\"\n                        and r.get(\"tick\") == restore[\"tick\"]), None)"
+new = "reading = next((r[\"value\"] for r in reversed(rows) if r.get(\"event\") == \"reading\"), None)"
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_a_restore_whose_handover_reading_differs_is_a_restore_fault_without_reward"]
+source = "2026-11-02 cleanup review of the wh3-tests batch"

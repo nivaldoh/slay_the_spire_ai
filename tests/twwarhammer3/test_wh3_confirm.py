@@ -114,3 +114,59 @@ def test_first_order_disagreements_name_updates_whose_measured_change_has_the_ot
              "measured_change": measured}))
     assert confirm.first_order_disagreements(tmp_path, 0.0) == [1, 4]
     assert confirm.first_order_disagreements(tmp_path, 1e-5) == [4]
+
+
+def launch(tmp_path, monkeypatch, *, control, live_win, reproduced=True, prelaunch_pass=True):
+    """confirm.launch on one rung with attack_nearest chosen; the step run and the clauses are
+    replaced, so only the pass rule and the launched batch are real."""
+    from contextlib import nullcontext
+
+    from twwarhammer3.battle import rl
+
+    audit = tmp_path / "audit"
+    audit.mkdir()
+    (audit / "attempt.json").write_text(json.dumps({"plan": {"injection": {"tick": 1202}}}))
+    (tmp_path / "record.json").write_text("{}")
+    table = tmp_path / "table.json"
+    table.write_text(json.dumps({"rungs": [{
+        "record": str(tmp_path / "record.json"), "reference": str(tmp_path / "reference"),
+        "context": {}, "attempts": [{"attempt": str(audit)}]}]}))
+    output = tmp_path / "confirm"
+    output.mkdir()
+    (output / "prelaunch.json").write_text(json.dumps({"pass": prelaunch_pass, "checks": {},
+                                                       "chosen": "attack_nearest"}))
+    launched = []
+    monkeypatch.setattr(rl, "gpu_lease", lambda path: nullcontext())
+    monkeypatch.setattr(confirm, "candidates", lambda context: {"candidates": LISTED})
+    monkeypatch.setattr(checkpoint, "injection_for", lambda *args: {"orders": args[2]})
+    monkeypatch.setattr(checkpoint, "limits_covering", lambda record: {})
+
+    def restore_episode(record, plan, out):
+        assert prelaunch_pass, "launched despite a failed pre-launch check"
+        launched.append(plan["injection"])
+
+    monkeypatch.setattr(checkpoint, "restore_episode", restore_episode)
+    monkeypatch.setattr(confirm, "clauses", lambda out: {
+        "a_lines_and_batch": True, "b_reproduces_audit": reproduced,
+        "c_table_matches_attempt": True, "d_live_win": live_win})
+    result = confirm.launch({"table": str(table), "control": control}, output)
+    assert launched == [{"orders": LISTED[1]["orders"]}]
+    assert json.loads((output / "confirm.json").read_text())["pass"] == result["pass"]
+    return result["pass"]
+
+
+@pytest.mark.parametrize("control,live_win,reproduced,passed", [
+    (False, True, True, True), (False, False, True, False),  # the trained choice must win live
+    (True, False, True, True), (True, True, True, False),    # the deranged control must not
+    (False, True, False, False), (True, False, False, False),  # both need (a) to (c)
+])
+def test_the_closed_loop_verdict_needs_a_live_win_and_a_control_that_loses(
+        tmp_path, monkeypatch, control, live_win, reproduced, passed):
+    # checkpoint-rl-plan.md stage 4: the control "must then pass (a) to (c) and fail (d)".
+    assert launch(tmp_path, monkeypatch, control=control, live_win=live_win,
+                  reproduced=reproduced) is passed
+
+
+def test_a_failed_prelaunch_check_launches_nothing(tmp_path, monkeypatch):
+    with pytest.raises(RuntimeError, match="pre-launch checks failed"):
+        launch(tmp_path, monkeypatch, control=False, live_win=True, prelaunch_pass=False)

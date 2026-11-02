@@ -353,3 +353,33 @@ def test_bad_coordinator_task_is_repaired_before_sending_it_to_a_specialist(tmp_
     first = json.loads((tmp_path / "artifact/calls.jsonl").read_text().splitlines()[0])
     assert first["role"] == "coordinator" and len(first["attempts"]) == 2
     assert "empty or too long" in first["attempts"][0]["error"]
+
+
+@pytest.mark.parametrize("budget,refused", [("50.01", True), ("50", False)])
+def test_author_cli_keeps_openrouter_within_the_owners_50_dollars(tmp_path, monkeypatch,
+                                                                  capsys, budget, refused):
+    # AGENTS.md: the owner's $50 on OpenRouter covers both games' cumulative ledger.
+    from gameai import provenance
+    from twwarhammer3.__main__ import main
+
+    monkeypatch.setattr(provenance, "committed_revision", lambda purpose, sources: "rev")
+    ledger = tmp_path / "openrouter-spend.jsonl"
+    ledger.touch()
+    caps = []
+
+    def generate(template, task, output, ledger, **kwargs):
+        caps.append(ledger.budget)
+        return {"status": "ready", "totals": {}}
+
+    monkeypatch.setattr(graph_author, "generate", generate)
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "graph-author", "--task", "public task",
+                                     "--output", str(tmp_path / "output"), "--provider",
+                                     "openrouter", "--budget-usd", budget,
+                                     "--ledger", str(ledger)])
+    if refused:
+        with pytest.raises(SystemExit) as exc:
+            main()
+        assert exc.value.code == 2 and caps == []
+        assert "cannot exceed $50" in capsys.readouterr().err
+    else:
+        assert main() == 0 and caps == [50.0]
