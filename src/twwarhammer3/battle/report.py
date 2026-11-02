@@ -198,6 +198,75 @@ def shared_measures(result: dict, scenario: dict) -> dict:
     }
 
 
+def controller_summary(controller: str, items: list[dict]) -> dict:
+    """One controller's row of a group: outcomes, the win rate and means over its trials."""
+    outcomes = Counter(trial["outcome"] for trial in items)
+    valid = sum(trial["valid"] for trial in items)
+    instance_counts = Counter(trial["instance"] for trial in items if trial["valid"])
+    means = {}
+    for field in ("margin", "decisions_per_battle_s"):
+        values = [trial["metrics"][field] for trial in items
+                  if trial["metrics"][field] is not None
+                  and (field != "margin" or trial["valid"])]
+        means[field] = statistics.mean(values) if values else None
+    for field in ("order_age_s", "plan_age_s", "call_seconds",
+                  "snapshot_age_at_decision_s"):
+        values = [trial["metrics"][field]["mean"] for trial in items
+                  if trial["metrics"][field]["mean"] is not None]
+        means[field] = statistics.mean(values) if values else None
+    for field in ("victory_held", "key_held", "supplies_left"):
+        values = [(trial.get("objectives") or {}).get(field) for trial in items
+                  if trial["valid"]]
+        values = [value for value in values if value is not None]
+        means[field] = statistics.mean(values) if values else None
+    # Typical order delay: the median of each battle's median order age.
+    medians = [trial["metrics"]["order_age_s"]["p50"] for trial in items
+               if trial["metrics"]["order_age_s"]["p50"] is not None]
+    return {
+        "controller": controller, "trials": len(items), "valid": valid,
+        "instances": len({trial["instance"] for trial in items}),
+        "outcomes": dict(outcomes), "win_rate": outcomes["won"] / valid if valid else None,
+        "time_limit_engine_outcomes": dict(Counter(
+            trial["engine_outcome"] for trial in items
+            if trial["outcome"] == "time_limit" and trial["engine_outcome"])),
+        # Wilson assumes one Bernoulli trial per instance. Do not report it
+        # on correlated rematch repeats; retain the raw rate and denominator.
+        "win_ci95": wilson(outcomes["won"], valid)
+        if max(instance_counts.values(), default=0) <= 1 else None,
+        "usd": sum(trial["llm"].get("usd", 0) for trial in items),
+        "wall_s": sum(trial["wall_s"] or 0 for trial in items),
+        "unchecked_trials": sum(not trial["setup_checked"] for trial in items),
+        "start_flagged_trials": sum(bool(trial["start_flagged"]) for trial in items),
+        "means": means,
+        "order_age_median_s": statistics.median(medians) if medians else None,
+        "input_tokens": sum(trial["llm"].get("input_tokens", 0) for trial in items),
+        "output_tokens": sum(trial["llm"].get("output_tokens", 0) for trial in items),
+    }
+
+
+def paired_margins(a: str, b: str, trials: list[dict], flagged: set) -> dict:
+    """A minus B active-strength margin by launch, with and without the launches whose starts
+    were flagged; its statistics rest on JUDGEMENT src/twwarhammer3/battle/report.py Pair
+    statistics."""
+    instances = defaultdict(lambda: defaultdict(list))
+    for trial in trials:
+        margin = trial["metrics"]["margin"]
+        if trial["controller"] in (a, b) and trial["valid"] and margin is not None:
+            instances[trial["instance"]][trial["controller"]].append(margin)
+    differences = {instance: statistics.mean(values[a]) - statistics.mean(values[b])
+                   for instance, values in instances.items() if a in values and b in values}
+    unflagged = {instance: value for instance, value in differences.items()
+                 if instance not in flagged}
+    return {"a": a, "b": b, **mean_interval(list(differences.values())),
+            "differences_by_instance": differences,
+            "without_flagged_starts": {
+                **mean_interval(list(unflagged.values())),
+                "differences_by_instance": unflagged,
+                "excluded_instances": sorted(differences.keys() & flagged)},
+            "unpaired_instances": sorted(set(t["instance"] for t in trials)
+                                         - differences.keys())}
+
+
 def collect(jobs: list[Path]) -> dict:
     groups = defaultdict(list)
     seen = set()
@@ -293,73 +362,14 @@ def collect(jobs: list[Path]) -> dict:
     output = []
     for signature, trials in groups.items():
         controllers = sorted({trial["controller"] for trial in trials})
-        summaries, paired = [], []
-        for controller in controllers:
-            items = [trial for trial in trials if trial["controller"] == controller]
-            outcomes = Counter(trial["outcome"] for trial in items)
-            valid = sum(trial["valid"] for trial in items)
-            instance_counts = Counter(trial["instance"] for trial in items if trial["valid"])
-            means = {}
-            for field in ("margin", "decisions_per_battle_s"):
-                values = [trial["metrics"][field] for trial in items
-                          if trial["metrics"][field] is not None
-                          and (field != "margin" or trial["valid"])]
-                means[field] = statistics.mean(values) if values else None
-            for field in ("order_age_s", "plan_age_s", "call_seconds",
-                          "snapshot_age_at_decision_s"):
-                values = [trial["metrics"][field]["mean"] for trial in items
-                          if trial["metrics"][field]["mean"] is not None]
-                means[field] = statistics.mean(values) if values else None
-            for field in ("victory_held", "key_held", "supplies_left"):
-                values = [(trial.get("objectives") or {}).get(field) for trial in items
-                          if trial["valid"]]
-                values = [value for value in values if value is not None]
-                means[field] = statistics.mean(values) if values else None
-            # Typical order delay: the median of each battle's median order age.
-            medians = [trial["metrics"]["order_age_s"]["p50"] for trial in items
-                       if trial["metrics"]["order_age_s"]["p50"] is not None]
-            summaries.append({
-                "controller": controller, "trials": len(items), "valid": valid,
-                "instances": len({trial["instance"] for trial in items}),
-                "outcomes": dict(outcomes), "win_rate": outcomes["won"] / valid if valid else None,
-                "time_limit_engine_outcomes": dict(Counter(
-                    trial["engine_outcome"] for trial in items
-                    if trial["outcome"] == "time_limit" and trial["engine_outcome"])),
-                # Wilson assumes one Bernoulli trial per instance. Do not report it
-                # on correlated rematch repeats; retain the raw rate and denominator.
-                "win_ci95": wilson(outcomes["won"], valid)
-                if max(instance_counts.values(), default=0) <= 1 else None,
-                "usd": sum(trial["llm"].get("usd", 0) for trial in items),
-                "wall_s": sum(trial["wall_s"] or 0 for trial in items),
-                "unchecked_trials": sum(not trial["setup_checked"] for trial in items),
-                "start_flagged_trials": sum(bool(trial["start_flagged"]) for trial in items),
-                "means": means,
-                "order_age_median_s": statistics.median(medians) if medians else None,
-                "input_tokens": sum(trial["llm"].get("input_tokens", 0) for trial in items),
-                "output_tokens": sum(trial["llm"].get("output_tokens", 0) for trial in items),
-            })
-        flagged_instances = {trial["instance"] for trial in trials if trial["start_flagged"]}
-        for a, b in itertools.combinations(controllers, 2):
-            instances = defaultdict(lambda: defaultdict(list))
-            for trial in trials:
-                margin = trial["metrics"]["margin"]
-                if trial["controller"] in (a, b) and trial["valid"] and margin is not None:
-                    instances[trial["instance"]][trial["controller"]].append(margin)
-            differences = {instance: statistics.mean(values[a]) - statistics.mean(values[b])
-                           for instance, values in instances.items() if a in values and b in values}
-            unflagged = {instance: value for instance, value in differences.items()
-                         if instance not in flagged_instances}
-            paired.append({"a": a, "b": b, **mean_interval(list(differences.values())),
-                           "differences_by_instance": differences,
-                           "without_flagged_starts": {
-                               **mean_interval(list(unflagged.values())),
-                               "differences_by_instance": unflagged,
-                               "excluded_instances": sorted(
-                                   differences.keys() & flagged_instances)},
-                           "unpaired_instances": sorted(set(t["instance"] for t in trials)
-                                                        - differences.keys())})
-        output.append({"definition": json.loads(signature), "controllers": summaries,
-                       "paired": paired, "trials": trials})
+        flagged = {trial["instance"] for trial in trials if trial["start_flagged"]}
+        output.append({"definition": json.loads(signature),
+                       "controllers": [controller_summary(controller, [
+                           trial for trial in trials if trial["controller"] == controller])
+                           for controller in controllers],
+                       "paired": [paired_margins(a, b, trials, flagged)
+                                  for a, b in itertools.combinations(controllers, 2)],
+                       "trials": trials})
     trials = [trial for group in output for trial in group["trials"]]
     valid = sum(trial["valid"] for trial in trials)
     walls = [job["wall_seconds"] for job in job_records]
