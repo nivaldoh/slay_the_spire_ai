@@ -33,7 +33,8 @@ def test_friendly_scope_never_acquires_or_commands_enemy_units():
 
 def test_current_enemy_choices_are_recorded_and_our_wrong_toggles_still_refuse():
     profile = setup.scenarios()[benchmark.SCENARIO]
-    state = {"setup": {"unit_scale": .75, "realism": False, "player_defends": False,
+    state = {"setup": {"unit_scale": .75, "realism": False,
+                       "player_defends": profile["expect"]["player_defends"],
                        "army_ai_stats_modifiers": [1, 1], "unit_experience": {},
                        "benchmark_behaviours": {}}, "terrain": {"rows": ["...."]},
              "armies": {side: {"faction": army["faction"]}

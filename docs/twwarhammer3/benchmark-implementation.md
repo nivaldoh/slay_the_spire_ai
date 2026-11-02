@@ -67,10 +67,16 @@ JUDGEMENT: Mirror profile — Codex, 2026-11-02: start with the roster and setti
 Different infantry, role, map or difficulty changes the cavalry opportunity;
 the first development battle rests on this profile, whose advantage is unverified.
 
-- Our army: three Swordsmen, one Crossbowmen and one Empire Knights unit. Enemy: four
-  Swordsmen and one Crossbowmen. No lords, heroes, spells, summons or reinforcements.
-- Taurox map, player attacks, normal AI, stats modifier 1.0, rank zero, large unit size
-  (0.75), realism off, 1200 battle-second timer, unpaused 1x. Explicit custom funds 6000
+- Our army: three Swordsmen, one Crossbowmen and one Empire Knights unit. Enemy (version3,
+  owner below): three Swordsmen, one Crossbowmen and one Great Cannon. No lords, heroes,
+  spells, summons or reinforcements.
+- Owner, 2026-11-02, after the `hold` pilot stood 20 minutes with neither army moving
+  (we attacked, so the AI defended): "We should give the opponent an artillery then", then
+  chose "Cannon and AI attacks" from the offered options. Version3: a Great Cannon (450 m
+  range) replaces the enemy's fourth Swordsmen, and the enemy attacks. Earlier versions'
+  pilots stay attributed to their frozen profiles.
+- Taurox map, enemy attacks (version3; we attacked in versions 1-2), normal AI, stats
+  modifier 1.0, rank zero, large unit size (0.75), realism off, 1200 battle-second timer, unpaused 1x. Explicit custom funds 6000
   cap recruitment, not army strength. Use the existing automatic deployment and record
   the realised start; matching settings do not promise identical starts across launches.
 - Owner follow-up, 2026-11-02: "Allow and record enemy AI toggles". For

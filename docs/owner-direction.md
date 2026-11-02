@@ -5,6 +5,15 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-02 (WH3 mirror task, 02:27): after pilot-r4's `hold` battle stood still (we
+  attacked, the AI defended): "This is bad. We should give the opponent an artillery then";
+  from the offered options, "Cannon and AI attacks" (a Great Cannon replaces the enemy's
+  fourth Swordsmen; the enemy attacks) and "Stop after this battle" for pilot-r4's last two
+  pilots. [Profile](twwarhammer3/benchmark-implementation.md).
+- 2026-11-02 (WH3 model team): "1. ok" (merge `wh3-team-report`), "2. ok" (the pass list in
+  `runs/overnight-20261031/b3/team-check-card.md`), "3. Model is a cheap ANthropic one.
+  Budget at most $3, ideally way less"; first battle on `emp5-emp5`, chosen over the mirror
+  task. [Next](twwarhammer3/multi-agent-implementation.md#next).
 - 2026-11-02 (initial WH3 benchmark implementation): "Implement the initial version"
   in benchmark-implementation.md; "Use a cheap model from the Anthropic API"; "Keep
   this initial version simple." Agreed screenshot/engine-ending/health checks within

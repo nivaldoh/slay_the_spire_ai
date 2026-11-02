@@ -17,6 +17,12 @@ and failures stay in their reports. Scoring remains mirror-v1, with no change to
 Each plan freezes its profile. Earlier plans without that field are checked against their
 named Git revision, so later settings cannot silently change attribution of old attempts.
 
+Owner, 2026-11-02, after pilot-r4's `hold` battle stood still (we attacked; the AI
+defended and waited): scenario version3 gives the enemy a Great Cannon in place of its
+fourth Swordsmen and makes the enemy the attacker; our army is unchanged. pilot-r4 was
+stopped by its stop file after that battle. Whether a Great Cannon supports guard
+(`defend`), which setup requires readable for every unit, is unknown until a pilot.
+
 The engine's win/draw/loss comes first. At its first ending, the mod records each original
 friendly unit's health bar (0.01 precision), headcount and wavering/routing/shattered/departed
 flags. A departed unit must explicitly be no longer deployed or deploying; routing alone

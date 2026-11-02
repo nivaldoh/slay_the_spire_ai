@@ -28,6 +28,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: mirror version3: the enemy gets a Great Cannon and attacks
+
+Claude Code, at the owner's direction; no game run for this change.
+- pilot-r4 at `5c503a0`, job 1 (`hold`): setup passed; no unit of either army moved all
+  battle (we attacked, so the AI defended). Engine loss at the timer: 1205 battle s,
+  3970 decisions, 0 invalid, $0 (queue log). Its two other pilots were stopped by the
+  plan's stop file (owner: "Stop after this battle"). Codex's recount is still to come.
+- Owner: "We should give the opponent an artillery then"; chose "Cannon and AI attacks".
+  scenario_version3: a Great Cannon replaces the enemy's fourth Swordsmen; the enemy
+  attacks (`player_defends` true). Our army is unchanged. In pilot-r4 the armies started
+  554-573 m apart; recorded observations give the cannon 450 m range.
+- One agreed-test fixture (`test_wh3_mirror_enemy_ai.py`) now reads `player_defends` from
+  the profile instead of hardcoding false. Mirror and setup tests: 100 passed.
+- Unverified: whether a Great Cannon can use guard (`defend`), which setup requires readable
+  for every unit, and whether the AI attacks. A free version3 pilot decides both.
+
 ## 2026-11-02: owner allows enemy AI toggles in the initial mirror profile
 
 Third pilot at `52eab85` also stopped: enemy crossbows skirmish remained on after delayed
