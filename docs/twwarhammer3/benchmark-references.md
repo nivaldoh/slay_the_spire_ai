@@ -4,8 +4,8 @@ Use these three benchmarks to design WH3 scenarios and check what their results 
 Read this index, then the relevant profile for construction details, evaluation rules and
 pinned GitHub entry points.
 
-For concrete battle behaviours and candidate comparisons, see the
-[WH3 tactics catalogue](tactics-reference.md) and [evaluation designs](tactics-evaluation.md).
+For the current battle and its evaluation, see the
+[benchmark definition](benchmark.md) and [implementation plan](benchmark-implementation.md).
 
 | Benchmark | How tasks are made | What it measures | Read it for |
 |---|---|---|---|
