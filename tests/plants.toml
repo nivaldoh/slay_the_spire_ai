@@ -3139,3 +3139,12 @@ old = 'if behaviour not in BEHAVIOURS or behaviour not in friendly[unit].get("be
 new = 'if behaviour not in BEHAVIOURS and behaviour not in friendly[unit].get("behaviours", {}):'
 tests = ["tests/twwarhammer3/test_wh3_protocol.py::test_extended_orders_reject_unavailable_actions_and_invalid_arguments"]
 source = "2026-11-02 cleanup round 5 review"
+
+[[plant]]
+id = "doc-links-pass-a-committed-page-linking-an-untracked-file"
+guards = "A committed page's link to a file git does not track fails the link test"
+file = "tests/test_doc_links.py"
+old = "        elif path in TRACKED and path not in CHANGED and resolved not in TRACKED:\n            broken.append(f\"{target}: not tracked by git, so a fresh clone (CI) lacks it\")\n"
+new = ""
+tests = ["tests/test_doc_links.py::test_a_committed_page_linking_to_an_untracked_file_fails"]
+source = "2026-11-02: CI failed at 8211df9 on a link to an untracked page while check.py passed"

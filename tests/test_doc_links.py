@@ -5,10 +5,17 @@ underscores dropped, each space a hyphen, repeated headings suffixed -1, -2, ...
 Links inside code spans and fenced blocks, and http(s) and mailto links, are not checked.
 Nor are links into the thesis notes, which stay untracked (owner, 2026-10-29: "(b)"), so that
 a fresh clone such as CI's passes; a broken link into them goes unnoticed, locally too.
+A page committed as it stands here fails on a link to a file git does not track (committed or
+staged), even if the file exists here: a fresh clone lacks it (CI failed this way at 8211df9
+while the local gate passed).
 
 JUDGEMENT?: Untracked links — Claude, 2026-10-29: the owner's "(b)" said links whose target is
 untracked; on a fresh clone a typo's target is untracked too, so only docs/thesis/ is skipped.
 Skipping every untracked target would let any mistyped link pass in CI.
+
+JUDGEMENT?: Untracked targets — Claude, 2026-11-02: only pages identical to HEAD are held to git's
+files; holding every page would refuse each commit that adds a link with its new target. So a
+page committed without its target passes until the next run, which then fails.
 """
 
 import re
@@ -26,6 +33,26 @@ REFERENCE = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)", re.M)
 HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$")
 HTML_ANCHOR = re.compile(r"<a\s+(?:name|id)=\"([^\"]+)\"")
 PRIVATE = ROOT / "docs" / "thesis"
+
+
+def git_paths(root: Path, *command: str) -> set[Path]:
+    try:
+        listed = subprocess.run(["git", *command], cwd=root, capture_output=True, text=True,
+                                check=True).stdout.split("\0")
+    except (OSError, subprocess.CalledProcessError):
+        return set()
+    return {root / name for name in listed if name}
+
+
+def tracked_paths(root: Path = ROOT) -> tuple[set[Path], set[Path]]:
+    """The files git tracks (committed or staged) and their folders; and the files that differ
+    from HEAD here (edited, staged, deleted or added)."""
+    files = git_paths(root, "ls-files", "-z", "--cached")
+    changed = git_paths(root, "diff", "-z", "--name-only", "--no-renames", "HEAD")
+    return files | {folder for file in files for folder in file.parents}, changed
+
+
+TRACKED, CHANGED = tracked_paths()
 
 
 def markdown_files() -> list[Path]:
@@ -83,13 +110,15 @@ def broken_links(path: Path) -> list[str]:
         file_part, _, anchor = target.partition("#")
         file_part = unquote(file_part)
         if file_part.startswith("/"):
-            resolved = ROOT / file_part.lstrip("/")
+            resolved = (ROOT / file_part.lstrip("/")).resolve()
         else:
             resolved = (path.parent / file_part).resolve() if file_part else path
         if resolved.is_relative_to(PRIVATE) and not path.is_relative_to(PRIVATE):
             continue
         if not resolved.exists():
             broken.append(f"{target}: no such file")
+        elif path in TRACKED and path not in CHANGED and resolved not in TRACKED:
+            broken.append(f"{target}: not tracked by git, so a fresh clone (CI) lacks it")
         elif anchor and resolved.suffix == ".md" and unquote(anchor) not in anchors(resolved):
             broken.append(f"{target}: no such anchor")
     return broken
@@ -122,3 +151,30 @@ def test_wrapped_links_are_checked(tmp_path):
                     "[a bad\nanchor](#gone) and [one line](also-missing.md).\n")
     assert broken_links(page) == ["missing.md#nope: no such file", "#gone: no such anchor",
                                   "also-missing.md: no such file"]
+
+
+def test_a_committed_page_linking_to_an_untracked_file_fails(tmp_path, monkeypatch):
+    root = tmp_path.resolve()
+    page = root / "page.md"
+    text = "# Top\n[kept](kept.md#top), [local](local.md), [top](#top).\n"
+    page.write_text(text)
+    (root / "kept.md").write_text("# Top\n")
+    (root / "local.md").write_text("# Top\n")
+    git = ["git", "-c", "core.hooksPath=/dev/null", "-c", "commit.gpgSign=false",
+           "-c", "user.name=Test", "-c", "user.email=test@example.invalid"]
+    subprocess.run(git + ["init", "-q"], cwd=root, check=True)
+    subprocess.run(git + ["add", "page.md", "kept.md"], cwd=root, check=True)
+    subprocess.run(git + ["commit", "-q", "-m", "Pages"], cwd=root, check=True)
+
+    def links():
+        tracked, changed = tracked_paths(root)
+        monkeypatch.setitem(globals(), "TRACKED", tracked)
+        monkeypatch.setitem(globals(), "CHANGED", changed)
+        return broken_links(page)
+
+    assert links() == ["local.md: not tracked by git, so a fresh clone (CI) lacks it"]
+    page.write_text(text + "An edit that may be committed with local.md.\n")
+    assert links() == []
+    page.write_text(text)
+    subprocess.run(git + ["add", "local.md"], cwd=root, check=True)
+    assert links() == []  # staged: the next commit adds it
