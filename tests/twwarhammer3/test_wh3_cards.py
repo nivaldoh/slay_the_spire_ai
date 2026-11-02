@@ -258,3 +258,61 @@ def test_no_cycle_wins_count_only_wins_whose_replay_shows_zero_cycles(tmp_path):
     assert header.split()[-10:-8] == ["no-cycle", "wins"] and row.startswith("attack_nearest ")
     # Like the header, the row ends: no-cycle wins, battle s, age p50/p90 s, info proxy s.
     assert row.split()[-4] == "1"
+
+
+def test_a_pull_out_in_the_second_to_last_engagement_counts_as_one_cycle(tmp_path):
+    # tactic-cards.md, cycles v1: a cycle is a non-final engagement with an accepted move order,
+    # and the second-to-last engagement is not the last. Engagements 10-15, 30-35 and 50-53 s;
+    # the win's only applied move lands at 32 s, in the second.
+    # Rests on JUDGEMENT src/twwarhammer3/battle/cards.py Cycle signature: v1 counts moves in
+    # every engagement but the last.
+    melee = set(range(10, 16)) | set(range(30, 36)) | set(range(50, 54))
+    frames = [{"recorder": 1, "job": "j", "battle": "b1", "time_ms": second * 1000,
+               "friendly": [{"id": "f1", "state": ["melee"] if second in melee else ["idle"]}],
+               "enemy": []} for second in range(60)]
+    (tmp_path / "replay.jsonl").write_text("".join(json.dumps(f) + "\n" for f in frames))
+    records = [
+        {"kind": "decision", "seq": 31, "time_ms": 31000, "request": "r1",
+         "orders": [{"unit": "f1", "type": "move", "x": 0, "z": -120, "run": True}]},
+        {"kind": "ack", "request": "r1", "ack": {"request": "r1", "based_on": 31,
+                                                 "applied_ms": 32000,
+                                                 "results": [{"index": 1, "unit": "f1",
+                                                              "ok": True}]}},
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records))
+    assert cycles(tmp_path) == 1
+
+
+def test_the_verdict_counts_the_witness_launches_at_5_s_age_and_no_interval(tmp_path):
+    # tactic-cards.md: the witness is judged at 5 s added age and no added interval on its first
+    # 5 launches. Three such launches are 3 of 5.
+    # Rests on JUDGEMENT src/twwarhammer3/battle/cards.py gate sizes: witness 4 of its first 5
+    # at 5 s.
+    witness = "twwarhammer3.battle.calibration:SnapHitAndRun"
+    launches = [_job(tmp_path, f"witness-l{i}", [_episode(0, witness, "lost", delay_ms=5000)])
+                for i in (1, 2, 3)]
+    assert "witness at 5 s age, 0 s interval has 3 of 5 launches" in board("chariot", launches)
+
+
+def test_launches_at_another_decision_interval_form_their_own_board_cell(tmp_path):
+    # A cell is a controller at an added age and a decision interval: the card's witness key
+    # is (controller, added age, interval), and tactic-cards.md reports the witness at 5 s/0 s
+    # and at 5 s/5 s as separate cells.
+    witness = "twwarhammer3.battle.calibration:SnapHitAndRun"
+    launches = [_job(tmp_path, name, [_episode(0, witness, "lost", delay_ms=5000)],
+                     config={"interval_ms": interval})
+                for name, interval in [("witness-0s", 0), ("witness-5s", 5000)]]
+    rows = [line.split() for line in board("chariot", launches).splitlines()
+            if line.startswith("SnapHitAndRun")]
+    # Columns: controller, age s, pace s (the interval), n.
+    assert sorted(row[1:4] for row in rows) == [["5", "0", "1"], ["5", "5", "1"]]
+
+
+def test_the_age_p90_of_twenty_delays_is_not_their_seventeenth_smallest(tmp_path):
+    # Every common definition of the 90th percentile of 20 values (nearest rank, linear
+    # interpolation and the others) lies between the 18th and 19th smallest. Both are 2.0 s
+    # here, so the p90 is 2.0 s whichever is meant; the 17th smallest is 1.7 s.
+    delays = [2500, 2000, 1700, 2000] + [100 * i for i in range(16, 0, -1)]  # in ack order
+    job = _job(tmp_path, "attack-l1", [_episode(0, "attack_nearest", "lost", delays_ms=delays)])
+    rows, _ = battles(CARDS["chariot"], [job])
+    assert rows[0]["age_p90_s"] == 2.0

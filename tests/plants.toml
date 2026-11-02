@@ -2626,3 +2626,57 @@ old = '        longest = max(timed, key=lambda d: d["latency"]["think_s"])'
 new = "        longest = timed[-1]"
 tests = ["tests/twwarhammer3/test_wh3_replay.py::test_the_longest_model_reply_is_the_slowest_of_several_calls"]
 source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "play-skips-environment-json"
+guards = "A job writes collect_diagnostics()'s result to environment.json, which report and export read"
+file = "src/twwarhammer3/battle/play.py"
+old = '    write_json(output / "environment.json", environment)'
+new = "    pass"
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_a_job_writes_the_diagnostics_it_collected_to_environment_json"]
+source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "cards-cycles-skip-second-to-last-engagement"
+guards = "A pull-out in any engagement but the last, the second-to-last included, is a cycle"
+file = "src/twwarhammer3/battle/cards.py"
+old = "engagements(frames, unit)[:-1]"
+new = "engagements(frames, unit)[:-2]"
+tests = ["tests/twwarhammer3/test_wh3_cards.py::test_a_pull_out_in_the_second_to_last_engagement_counts_as_one_cycle"]
+source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "cards-witness-cell-at-wrong-age"
+guards = "The verdict judges the witness launches recorded at 5 s added age and no interval"
+file = "src/twwarhammer3/battle/cards.py"
+old = '"witnesses": {(WITNESS, 5000, 0): 4}'
+new = '"witnesses": {(WITNESS, 2000, 0): 4}'
+tests = ["tests/twwarhammer3/test_wh3_cards.py::test_the_verdict_counts_the_witness_launches_at_5_s_age_and_no_interval"]
+source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "cards-merges-decision-intervals"
+guards = "Launches at different decision intervals land in separate board cells"
+file = "src/twwarhammer3/battle/cards.py"
+old = 'config.get("interval_ms") or 0'
+new = 'config.get("interval_ms") and 0'
+tests = ["tests/twwarhammer3/test_wh3_cards.py::test_launches_at_another_decision_interval_form_their_own_board_cell"]
+source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "cards-p90-one-rank-low"
+guards = "The board's age p90 of 20 delays lies between the 18th and 19th smallest (any common definition), not the 17th"
+file = "src/twwarhammer3/battle/cards.py"
+old = "delays[-(-9 * len(delays) // 10) - 1]"
+new = "delays[-(-9 * len(delays) // 11) - 1]"
+tests = ["tests/twwarhammer3/test_wh3_cards.py::test_the_age_p90_of_twenty_delays_is_not_their_seventeenth_smallest"]
+source = "2026-11-02 reader-survivors mutation sample"
+
+[[plant]]
+id = "digest-shows-the-wrong-order-beside-a-result"
+guards = "An engine result with 1-based index i is shown beside the decision's i-th order"
+file = "src/twwarhammer3/battle/digest.py"
+old = 'record["orders"][index - 1]'
+new = 'record["orders"][index - 2]'
+tests = ["tests/twwarhammer3/test_wh3_digest.py::test_the_engine_verdict_on_the_second_order_names_the_second_order"]
+source = "2026-11-02 reader-survivors mutation sample"

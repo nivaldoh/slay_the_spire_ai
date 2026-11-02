@@ -992,3 +992,21 @@ def test_only_accepted_purchases_count_and_each_reinforcement_counts_by_type(tmp
                                not_battle=None)
     assert result["objectives"] == {"victory_held": None, "supplies_left": 2000, "build": 1,
                                     "reinforce": 1, "reinforcements_by_type": {"hounds": 1}}
+
+
+def test_a_job_writes_the_diagnostics_it_collected_to_environment_json(
+        tmp_path, harness, monkeypatch):
+    # report.collect reads environment.json's game into a job's never-pooled definition, and
+    # export copies the file; play writes collect_diagnostics()'s result there before episodes.
+    environment = {"schema_version": 1, "status": "ready", "blockers": [],
+                   "warnings": ["Warhammer3.exe differs from the pinned hash (game updated?)"],
+                   "game": {"path": "C:/Games/WH3/Warhammer3.exe", "sha256": "f00d",
+                            "steam_build_id": None}}
+    monkeypatch.setattr(play, "collect_diagnostics", lambda: environment)
+    harness.append(FakeMailbox([bridge_observation(0, 0),
+                                bridge_observation(1, 1000, result="won")]))
+    job = tmp_path / "job"
+    play.play(job, {**CONFIG, "results": str(tmp_path / "r.csv")},
+              makers={"attack_nearest": Hold})
+    assert json.loads((job / "environment.json").read_text()) == environment
+    assert report.collect([job])["jobs"][0]["definition"]["game"] == environment["game"]

@@ -180,3 +180,17 @@ def test_a_decision_line_shows_each_sides_tickets_and_the_goal(tmp_path):
     assert "tickets" in line
     tickets = line.split("tickets", 1)[1]
     assert "us 183" in tickets and "enemy 40" in tickets and "600" in tickets
+
+
+def test_the_engine_verdict_on_the_second_order_names_the_second_order(tmp_path):
+    # The mod numbers each order's result from 1 in the batch's order (apply_pending in
+    # twwarhammer3_battle.lua), so result index 2 is the decision's second order.
+    move = {"unit": "f1", "type": "move", "x": 10, "z": 20, "run": False}
+    attack = {"unit": "f2", "type": "attack", "target": "e1", "mode": "auto", "run": False}
+    write_episode(tmp_path / "episode-0000", [
+        decision(5, [move, attack], reason="Go."),
+        ack(5, [{"index": 1, "unit": "f1", "ok": True},
+                {"index": 2, "unit": "f2", "ok": False, "error": "target_not_visible"}])])
+    lines = decision_at(tmp_path / "episode-0000", 5).splitlines()
+    assert lines[-2:] == ["   1. f1 move (10, 20): ok",
+                          "   2. f2 attack e1: REJECTED target_not_visible"]
