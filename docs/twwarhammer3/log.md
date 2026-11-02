@@ -28,6 +28,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: add two enemy Swordsmen; obtain health from the engine
+
+Owner: add two enemy Swordsmen to make the standing-army battle harder. Version5:
+six Swordsmen plus Great Cannon attack our unchanged five units. Prior plans stay frozen.
+Owner also withdraws screenshot checking of health; use game-provided values. The mod
+already reads `unit:unary_hitpoints()` (regiment HP/initial HP), rounded to two decimals,
+plus separate men/morale/departure flags. No new health hook, tooltip or desktop input.
+Version4 hold at `b9da442`: 1 engine win at1028s, condition18.28, 3357 decisions,
+0 invalid orders, 0 model calls. Independent raw recount agrees; Windows ratio1.0000,
+range0.9997–1.0004 over1022.7s. Background WGC saved rosters/role and an ending frame;
+desktop capture failed; exact settings rest on menu/engine reads. Queue stopped before
+2 attempts after a documentation-only HEAD move; owner also requested the new roster.
+Existing roster assertions follow the owner's changed requirement; score stays unchanged.
+Evidence/card: `runs/benchmark-initial-20261102/`; version5 live/paid screen pending.
+No general difficulty, balance or controller-strength claim from this one standing win.
+
 ## 2026-11-02: confirmed four-Swordsmen/Cannon profile and started-attempt counting
 
 Owner's later confirmation in this implementation thread: replace enemy Crossbowmen

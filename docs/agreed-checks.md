@@ -35,6 +35,11 @@ revisions written below are the earlier passes.
   tests/twwarhammer3/test_wh3_mirror_benchmark.py
   tests/twwarhammer3/test_wh3_mirror_enemy_ai.py`. Owner's same-day follow-up:
   pin our initial toggles and record enemy AI choices ("Allow and record enemy AI toggles").
+  Later owner direction on 2026-11-02 withdraws the screenshot-health tolerance step:
+  "we shouldn't be relying on screenshots to check health values for units"; obtain
+  health from the game API. The mod already reads `unit:unary_hitpoints()`; audit the
+  binding/identity/first-ending record and recompute from the saved unit values.
+  Roster/settings/ending UI evidence remains separate. No health tooltip is required.
   Live procedure/commands:
   [initial runbook](twwarhammer3/benchmark-initial.md#measurement-check).
   Not yet passed at a recorded revision. This checks recording/arithmetic, not model strength

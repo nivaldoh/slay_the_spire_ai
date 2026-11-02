@@ -2,7 +2,7 @@
  "emp-mirror-cavalry-v1": {
   "name": "emp-mirror-cavalry-v1",
   "benchmark": "mirror-v1",
-  "scenario_version": 4,
+  "scenario_version": 5,
   "family": "empire_mirror",
   "brief": "Win this Land Battle against the Empire army. Engine timer endings count. Preserve your army where possible.",
   "split": "development",
@@ -16,7 +16,7 @@
   },
   "enemy": {
    "subculture": "wh_main_sc_emp_empire", "faction": "wh_main_emp_empire", "lord": false,
-   "units": ["wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_art_great_cannon"]
+   "units": ["wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_inf_swordsmen", "wh_main_emp_art_great_cannon"]
   },
   "expect": {
    "battle_type": "land_normal", "difficulty": "ai_level_normal",

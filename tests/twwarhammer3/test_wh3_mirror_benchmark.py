@@ -245,7 +245,9 @@ def test_lua_terminal_health_uses_unit_bars_and_explicit_departure():
 
 def test_profile_is_explicit_and_rejects_missing_toggle_measurements():
     profile = setup.scenarios()[benchmark.SCENARIO]
-    assert len(profile["player"]["units"]) == len(profile["enemy"]["units"]) == 5
+    # Owner, 2026-11-02: add two enemy Swordsmen; our original five stay unchanged.
+    assert len(profile["player"]["units"]) == 5
+    assert len(profile["enemy"]["units"]) == 7
     assert profile["expect"]["difficulty"] == "ai_level_normal"
     assert "scoring" not in profile and not profile["player"]["lord"]
     with pytest.raises(ProtocolError, match="behaviour"):

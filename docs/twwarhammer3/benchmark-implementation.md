@@ -67,8 +67,8 @@ JUDGEMENT: Mirror profile — Codex, 2026-11-02: start with the roster and setti
 Different infantry, role, map or difficulty changes the cavalry opportunity;
 the first development battle rests on this profile, whose advantage is unverified.
 
-- Our army: three Swordsmen, one Crossbowmen and one Empire Knights unit. Enemy (version4,
-  owner below): four Swordsmen and one Great Cannon. No lords, heroes,
+- Our army: three Swordsmen, one Crossbowmen and one Empire Knights unit. Enemy (version5,
+  owner below): six Swordsmen and one Great Cannon. No lords, heroes,
   spells, summons or reinforcements.
 - Owner, 2026-11-02, after the `hold` pilot stood 20 minutes with neither army moving
   (we attacked, so the AI defended): "We should give the opponent an artillery then", then
@@ -79,6 +79,10 @@ the first development battle rests on this profile, whose advantage is unverifie
   and role", answering the explicit proposal to replace enemy Crossbowmen with a Great
   Cannon, keep four enemy Swordsmen and make the enemy attack our unchanged army. Version4
   supersedes the version3 composition above; old plans/results keep their original profiles.
+- Later owner direction, 2026-11-02: "We should add 2 swordsmen to the enemy side to
+  make it more challenging." Version5 adds two to version4: six enemy Swordsmen plus
+  Great Cannon, same attacking role and unchanged friendly army. A harder intended task
+  is not a measured difficulty or balance claim.
 - Taurox map, enemy attacks (version3; we attacked in versions 1-2), normal AI, stats
   modifier 1.0, rank zero, large unit size (0.75), realism off, 1200 battle-second timer, unpaused 1x. Explicit custom funds 6000
   cap recruitment, not army strength. Use the existing automatic deployment and record
@@ -158,6 +162,16 @@ detect an accidental retry. Agree cases and health-display tolerance before the 
 check. This establishes measurement correctness, not controller strength or a proven
 cavalry advantage. Existing reference profiles can inform implementation without another
 broad research phase; no external benchmark's pass verifies our WH3 measurements.
+
+Owner follow-up, 2026-11-02: do not rely on screenshots to check unit health; get the
+values from the game, extending the mod if needed. This withdraws the screenshot health
+and one-percentage-point step agreed earlier. The existing mod already reads
+[`unit:unary_hitpoints()`](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unit.html#function:unit:unary_hitpoints),
+the engine's current regiment HP divided by its initial HP. It records two-decimal health,
+headcount and state at the first ending. Check the API binding, unit identity, missing-read
+handling and first-ending serialization; independently recompute from those unit records.
+Saved UI stills may check rosters/settings/ending, and never supply health to the score.
+No numeric-tooltip or desktop-input step is required.
 
 ## Milestones
 

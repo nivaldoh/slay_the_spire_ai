@@ -29,6 +29,10 @@ with the AI attacking our unchanged army. This supersedes version3's different g
 The Cannon's fire-at-will value may be either boolean; a missing readback is a setup error.
 No Cannon skirmish flag is required. The current profile still needs its free pilot.
 
+Owner follow-up, 2026-11-02: version5 adds two enemy Swordsmen, making six plus the
+Great Cannon; role and our five units stay unchanged. This is an intended challenge
+increase, not a measured balance claim. Version4's hold pilot is retained separately.
+
 The engine's win/draw/loss comes first. At its first ending, the mod records each original
 friendly unit's health bar (0.01 precision), headcount and wavering/routing/shattered/departed
 flags. A departed unit must explicitly be no longer deployed or deploying; routing alone
@@ -116,18 +120,23 @@ or was interrupted. Truncated trace lines remain errors; foreign battle identiti
 
 ## Measurement check
 
-Owner agreed 2026-11-02 in the implementation thread: saved UI screenshots for rosters,
-settings, engine ending and displayed unit health within 1 percentage point; offline
-routing/recovery, missing-read and accidental-retry cases. Hand-recompute scores and
-failure counts from saved records; change private fields and require identical inputs.
-This establishes recording/arithmetic, not strength or the cavalry advantage. A green
-component suite alone is insufficient. See [agreed checks](../agreed-checks.md).
+Owner originally agreed saved UI screenshots of rosters/settings, ending and health
+within one percentage point. The later direction withdraws reliance on screenshots for
+health: obtain it from the game. The mod already calls
+[`unit:unary_hitpoints()`](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unit.html#function:unit:unary_hitpoints),
+which returns regiment HP as a fraction of its initial HP. The saved per-unit `hp` is
+rounded to two decimals; headcount and morale/departure flags are separate engine reads.
+Check that binding and unit identity, missing reads and first-ending serialization;
+hand-recompute condition and errors from the records. Offline checks retain routing,
+recovery, accidental retries and private-input isolation. UI stills may check rosters,
+settings and ending; no tooltip or numeric-health OCR is required. This checks recording
+and arithmetic, not strength or the cavalry advantage. See [agreed checks](../agreed-checks.md).
 
-Current status: version2 hold completed at `5c503a0`: engine timer loss, raw condition100,
-no model calls, then the owner's stop file left two attempts not started. The ending still
-failed because WH3 was not foreground. Whole-battle Windows ratio0.9991, stretch range
-0.9637–1.0004: the short-window warning stays visible. Full live measurement check did not pass.
-Three earlier setup-failure plans remain intact. Version4 and the started-counter fix are
-drafted with focused regressions; full gate and new pilot/Haiku screen remain pending.
-No live correctness or strength claim yet. Evidence/card:
-`runs/benchmark-initial-20261102/`.
+Current status: version4 hold at `b9da442` won at1028 battle seconds, condition18.28,
+3357 decisions, zero invalid orders or model calls. Independent raw recount agrees.
+Windows ratio1.0000, stretch range0.9997–1.0004 over1022.7s. WGC saved both rosters/role
+and an ending frame; desktop captures failed because WH3 was in the background. Exact
+settings came from menu/engine reads. The queue stopped before its other two attempts
+because another session moved HEAD (documentation only); the owner also requested the
+new roster. The version5 free pilot/Haiku screen remains pending. No strength claim.
+Earlier failed/stopped plans stay in `runs/benchmark-initial-20261102/`.

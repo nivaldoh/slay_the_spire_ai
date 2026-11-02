@@ -13,7 +13,8 @@ SWORD = "wh_main_emp_inf_swordsmen"
 
 def test_confirmed_armies_and_enemy_attack_are_explicit():
     profile = setup.scenarios()[benchmark.SCENARIO]
-    assert Counter(profile["enemy"]["units"]) == {SWORD: 4, CANNON: 1}
+    # Owner, 2026-11-02: "add 2 swordsmen to the enemy side" after version4.
+    assert Counter(profile["enemy"]["units"]) == {SWORD: 6, CANNON: 1}
     assert profile["attacker"] == "enemy" and profile["expect"]["player_defends"] is True
     assert Counter(profile["player"]["units"]) == {
         SWORD: 3, "wh_main_emp_inf_crossbowmen": 1, "wh_main_emp_cav_empire_knights": 1}
