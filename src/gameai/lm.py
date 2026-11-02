@@ -1,6 +1,6 @@
 """Candidate scoring helpers for local language models (WH3 checkpoint RL).
 
-Copied unchanged from spire.language (policy, sampling, training). Spire keeps its own
+Copied unchanged from spire.language (policy, training). Spire keeps its own
 copies: scripts/audit_language_training.py requires those files byte-identical to the
 sources recorded with each training job. Torch is imported lazily, so game phases that
 import this module never initialise CUDA.
@@ -12,7 +12,6 @@ import ctypes
 import fcntl
 import hashlib
 import json
-import math
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -64,13 +63,6 @@ def candidate_log_probs(model, prompt_ids: list[int], completions: list[list[int
         device=device,
     )
     return (picked * valid).sum(dim=-1)
-
-
-def normalized(scores: list[float], temperature: float) -> list[float]:
-    scaled = [score / temperature for score in scores]
-    peak = max(scaled)
-    log_total = peak + math.log(sum(math.exp(value - peak) for value in scaled))
-    return [value - log_total for value in scaled]
 
 
 def _json(value) -> bytes:
