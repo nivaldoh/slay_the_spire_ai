@@ -1,6 +1,7 @@
 """Source attribution using real files and Git; never launches either game."""
 
 import hashlib
+import json
 import os
 import subprocess
 
@@ -135,3 +136,16 @@ def test_fingerprints_follow_bytes_even_when_size_and_timestamp_match(tmp_path, 
 
     source.write_bytes(b"abc")
     assert provenance.source_fingerprints(("src",)) == expected
+
+
+def test_a_failed_write_json_leaves_the_previous_document_whole(tmp_path, monkeypatch):
+    path = tmp_path / "manifest.json"
+    provenance.write_json(path, {"status": "running"})
+
+    def interrupted(*args):
+        raise OSError("interrupted before the rename")
+
+    monkeypatch.setattr(provenance.os, "replace", interrupted)
+    with pytest.raises(OSError):
+        provenance.write_json(path, {"status": "won"})
+    assert json.loads(path.read_text()) == {"status": "running"}

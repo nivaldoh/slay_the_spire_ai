@@ -2378,3 +2378,34 @@ old = "        if not stopping:\n            stopping, signalled = True, child\n
 new = "        stopping, signalled = True, child\n        if child:\n            child.send_signal(signal.SIGINT)  # uv passes it on to play\n"
 tests = ["tests/twwarhammer3/test_wh3_queue.py::test_a_second_stop_passes_no_second_sigint"]
 source = "2026-11-02 cleanup survey: dropping the guard passed every test"
+
+[[plant]]
+id = "write-json-writes-in-place"
+guards = "A failed write_json leaves the previous document whole (a temporary file, then os.replace)"
+file = "src/gameai/provenance.py"
+old = '''
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+    os.replace(temporary, path)'''
+new = '''
+    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")'''
+tests = ["tests/gameai/test_provenance.py::test_a_failed_write_json_leaves_the_previous_document_whole"]
+source = "2026-11-02 cleanup survey (write-json-atomicity-test)"
+
+[[plant]]
+id = "windows-log-named-after-the-job-log"
+guards = "Two episodes of one controller, each logging to <episode>/game.log, get distinct Windows logs"
+file = "src/gameai/windows.py"
+old = 'f"game-{os.getpid()}-{uuid.uuid4().hex}.log"'
+new = 'f"game-{os.getpid()}-{Path(log_path).name}"'
+tests = ["tests/gameai/test_windows.py::test_episode_logs_are_unique_even_in_same_controller"]
+source = "2026-11-02 cleanup survey (windows-log-uniqueness-same-name)"
+
+[[plant]]
+id = "owned-game-failed-startup-leaves-the-supervisor"
+guards = "A failed startup stops the Windows supervisor and reports its stderr"
+file = "src/gameai/windows.py"
+old = "            self.close()\n            if isinstance(exc, Exception)"
+new = "            if isinstance(exc, Exception)"
+tests = ["tests/gameai/test_windows.py::test_a_failed_startup_stops_the_supervisor_and_reports_its_stderr"]
+source = "2026-11-02 cleanup survey (owned-game-startup-failure-test)"

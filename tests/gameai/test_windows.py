@@ -109,6 +109,32 @@ def test_owned_game_runs_the_supervisor_with_the_rules_and_command(tmp_path, mon
     assert command[command.index("--log") + 1] == "C:/wh3-agent/" + game.windows_log.name
 
 
+def test_a_failed_startup_stops_the_supervisor_and_reports_its_stderr(tmp_path, monkeypatch):
+    read_end, write_end = os.pipe()
+    os.close(write_end)  # the supervisor exits before its startup line
+    stopped = []
+
+    class FakePopen:
+        def __init__(self, command, **kwargs):
+            self.stdout = os.fdopen(read_end, "rb")
+
+        def communicate(self, *args, **kwargs):
+            stopped.append(args)
+            self.stdout.close()
+            return "", "windows_game: refusing overlap with existing game PIDs 7"
+
+    monkeypatch.setattr(windows.subprocess, "Popen", FakePopen)
+    game = windows.OwnedGame(
+        tmp_path / "game.log", runtime_dir=Path("/mnt/z/wh3-agent"), game_dir="C:/Games/WH3",
+        command=["C:/Games/WH3/Warhammer3.exe"], rules=WH3,
+    )
+    with pytest.raises(RuntimeError, match="closed stdout.*refusing overlap"):
+        with game:
+            pytest.fail("entered without a startup line")
+    assert stopped == [("stop\n",)] and game.process is None
+    assert "refusing overlap" in (tmp_path / "supervisor.stderr.log").read_text()
+
+
 def test_owned_game_close_is_idempotent_and_copies_evidence(tmp_path):
     game = owned_game(tmp_path, "evidence/game.log")
     game.windows_log.write_text("game evidence")
@@ -135,8 +161,9 @@ def test_owned_game_force_stops_only_its_supervisor(tmp_path):
 
 
 def test_episode_logs_are_unique_even_in_same_controller(tmp_path):
-    first = owned_game(tmp_path, "first.log")
-    second = owned_game(tmp_path, "second.log")
+    # Each episode keeps its log as <episode>/game.log (play.py, rollout.py).
+    first = owned_game(tmp_path, "episode-0000/game.log")
+    second = owned_game(tmp_path, "episode-0001/game.log")
     assert first.windows_log != second.windows_log
 
 
