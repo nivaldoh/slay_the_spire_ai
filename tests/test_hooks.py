@@ -252,7 +252,7 @@ def test_a_game_job_is_a_python_process_running_one(tmp_path):
     assert stop_check.game_job_running(tmp_path)
 
 
-@pytest.mark.parametrize("sub", ["play", "launch", "menu", "rl"])
+@pytest.mark.parametrize("sub", ["play", "launch", "menu", "rl", "worker"])
 def test_each_wh3_game_command_is_a_game_job(tmp_path, sub):
     (tmp_path / "30").mkdir()
     (tmp_path / "30/cmdline").write_bytes(f"/v/bin/python\0-m\0twwarhammer3\0{sub}\0".encode())

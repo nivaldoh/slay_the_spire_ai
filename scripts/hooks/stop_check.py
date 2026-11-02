@@ -10,9 +10,9 @@ Stop hook such as /goal's also sets, so the hook remembers its last answer) goes
 warning, so a failure Claude cannot fix (another session's change, a file a play job keeps
 writing) costs one turn, not the session. A timed-out check is killed with its tests and not
 retried on the same tree; a check that cannot run warns and lets the stop through. While a
-game job runs (a WH3 or Spire play, launch, menu, RL phase, rollout, training, evaluation or
-replay, the queue or a known live-check script), the check is skipped to keep load off the game.
-Help and evidence recounts of live-check scripts stay offline.
+game job runs (a WH3 or Spire play, launch, menu, RL phase, multiplayer worker, rollout,
+training, evaluation or replay, the queue or a known live-check script), the check is skipped
+to keep load off the game. Help and evidence recounts of live-check scripts stay offline.
 If the tree changes during a passing check, its final state is unchecked: block once and
 remember no pass, so a fresh stop must check again.
 Each decision appends one JSON line (time, session, decision) to runs/checks/stop-hook.log.
@@ -35,7 +35,7 @@ CACHE = ROOT / "runs" / "checks" / "stop-hook.json"
 TIMEOUT_S = 600
 CHECK_COMMAND = ["uv", "run", "--locked", "python", "scripts/check.py"]
 # Commands that start or drive a game (`spire replay` is on the spire-restore-replay branch).
-GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl"),
+GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl", "worker"),
                  "spire": ("play", "rollout", "train", "evaluate", "replay")}
 LIVE_CHECKERS = {"check_wh3_army_setup.py", "check_wh3_checkpoint.py",
                  "check_wh3_checkpoint_siege.py", "check_wh3_restored_episode.py",
