@@ -2572,3 +2572,57 @@ old = '+ (usage.get("cache_creation_input_tokens") or 0),'
 new = '+ usage.get("cache_creation_input_tokens", 0),'
 tests = ["tests/gameai/test_providers.py::test_anthropic_usage_without_cache_counts_is_charged_as_reported"]
 source = "2026-11-02 cleanup mutation run, gameai-mutants batch"
+
+[[plant]]
+id = "checkpoint-witness-largest-axis"
+guards = "A move is witnessed by its dest within dest_m of the order on the x/z plane"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'math.hypot(dest[0] - order["x"], dest[1] - order["z"]) <= dest_m)'
+new = 'max(abs(dest[0] - order["x"]), abs(dest[1] - order["z"])) <= dest_m)'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_a_move_is_witnessed_by_its_dest_on_the_x_z_plane_and_a_halt_by_no_moving_state"]
+source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "checkpoint-late-excludes-the-margin"
+guards = "A save exactly late_margin_s before the ending counts as late"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '"late": ending["battle_ms"] - 100 * row["tick"] >= late_margin_s * 1000}'
+new = '"late": ending["battle_ms"] - 100 * row["tick"] > late_margin_s * 1000}'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_source_records_mark_saves_at_the_ending_unusable_and_late_by_the_margin"]
+source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "checkpoint-late-rung-picks-the-earliest"
+guards = "late_rung returns the latest usable, late save"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = "    return max(eligible)[1]"
+new = "    return min(eligible)[1]"
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_source_records_mark_saves_at_the_ending_unusable_and_late_by_the_margin"]
+source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "checkpoint-scores-a-run-ended-by-an-exception"
+guards = "A step run stopped by an exception is written as infrastructure, never assessed"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'if attempt["status"] != "interrupted" and ended_by != "exception":'
+new = 'if attempt["status"] != "interrupted":'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_records.py::test_a_step_run_stopped_by_an_exception_is_written_unscored"]
+source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "confirm-launches-after-a-failed-prelaunch"
+guards = "A failed pre-launch check stops the closed-loop launch before any step run"
+file = "src/twwarhammer3/battle/confirm.py"
+old = '    if not prelaunch["pass"]:'
+new = "    if False:"
+tests = ["tests/twwarhammer3/test_wh3_confirm.py::test_a_failed_prelaunch_check_launches_nothing"]
+source = "2026-11-02 cleanup integration review"
+
+[[plant]]
+id = "replay-longest-reply-is-the-last"
+guards = "The longest model reply caption names the slowest of several calls"
+file = "src/twwarhammer3/battle/replay.py"
+old = '        longest = max(timed, key=lambda d: d["latency"]["think_s"])'
+new = "        longest = timed[-1]"
+tests = ["tests/twwarhammer3/test_wh3_replay.py::test_the_longest_model_reply_is_the_slowest_of_several_calls"]
+source = "2026-11-02 cleanup integration review"
