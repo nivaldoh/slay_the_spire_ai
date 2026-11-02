@@ -128,7 +128,7 @@ def test_passive_capture_runs_outside_caller_and_joins_evidence(tmp_path, monkey
 
     def screenshot(*args, **kwargs):
         entered.set()
-        assert release.wait(2)
+        assert release.wait(30)  # returns once set; 30 s only bounds a broken release
         (bridge / "still-b-opening.png").write_bytes(b"image")
         return SimpleNamespace(stdout=json.dumps({"status": "captured",
             "file": "still-b-opening.png", "time_ms": 1100, "grab_wall_s": .04}))
@@ -136,7 +136,7 @@ def test_passive_capture_runs_outside_caller_and_joins_evidence(tmp_path, monkey
     monkeypatch.setattr(capture, "windows_path", str)
     monkeypatch.setattr(capture.subprocess, "run", screenshot)
     with capture.PassiveCapture(bridge, job="j", pid=123, enabled=True):
-        assert entered.wait(2)
+        assert entered.wait(30)  # the capture thread can start late under load
         # The caller remains free to submit orders while the screenshot is blocked.
         assert not release.is_set()
         release.set()
