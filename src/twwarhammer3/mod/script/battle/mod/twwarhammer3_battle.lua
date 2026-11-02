@@ -452,7 +452,7 @@ end
 
 -- Pin supported initial toggles for both armies; releasing the enemy controller returns
 -- movement/target selection to the built-in AI. Record every readback, including failures.
-local function benchmark_behaviours(apply)
+local function benchmark_behaviours(apply, defer_enemy)
     local evidence = {}
     for _, side in ipairs({"friendly", "enemy"}) do
         evidence[side] = {}
@@ -473,7 +473,21 @@ local function benchmark_behaviours(apply)
                     values[key] = get(entry.unit, "is_behaviour_active", nil, key)
                 end
             end
-            if controller and not entry.controller then controller:release_control() end
+            if controller and not entry.controller then
+                if defer_enemy then
+                    state.benchmark_release_pending = (state.benchmark_release_pending or 0) + 1
+                    bm:callback(function()
+                        local ok, err = pcall(function() controller:release_control() end)
+                        if not ok then state.setup.benchmark_behaviours.error = clean_error(err) end
+                        -- A further engine tick lets the readback describe AI-owned units.
+                        bm:callback(function()
+                            state.benchmark_release_pending = state.benchmark_release_pending - 1
+                        end, session.tick_ms or 250)
+                    end, session.tick_ms or 250)
+                else
+                    controller:release_control()
+                end
+            end
             evidence[side][id] = values
         end
     end
@@ -788,6 +802,9 @@ local function observation(now)
         and not (state.setup.benchmark_behaviours or {}).error then
         local toggles_ok, toggles = pcall(benchmark_behaviours, false)
         state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}
+    end
+    if session.benchmark and state.setup then
+        state.setup.benchmark_release_pending = state.benchmark_release_pending or 0
     end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
@@ -1478,7 +1495,7 @@ local function start()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender")}
     if session.benchmark then
-        local toggles_ok, toggles = pcall(benchmark_behaviours)
+        local toggles_ok, toggles = pcall(benchmark_behaviours, true, true)
         state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}
     end
     local modifiers = {}

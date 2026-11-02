@@ -39,6 +39,17 @@ A timed-out request is charged conservatively as potentially billed, without a r
 Record actual elapsed call times. Setup has a 900 s cap, each
 battle 1320 wall seconds, and each job 2280 wall seconds. Engine timer: 1200 battle
 seconds. Run one unpaused 1x battle per fresh launch, no added observation age or waits.
+
+JUDGEMENT?: Startup handover — Codex, 2026-11-02: wait one existing engine tick before
+enemy release and one before checking AI-owned readbacks. Immediate release failed two
+pilots; this short setup interval changes when the first controller decision can begin.
+
+`benchmark_behaviours` issues startup toggles once. The initial setup waits for the above
+handover; it never repeatedly takes enemy control to force a behaviour during play.
+Keep errors from failed application/release. See the engine's
+[unitcontroller documentation](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html):
+issuing commands takes control, and release hands control back to the player or AI.
+Whether delayed release preserves enemy settings still needs a new live pilot.
 Reference structure: [SWE-bench's planned-instance report](https://github.com/SWE-bench/SWE-bench/blob/02e7a74ffd0b/swebench/harness/reporting.py),
 already in [references.md](../references.md): enumerate the plan, join evidence, keep missing attempts.
 
@@ -91,6 +102,8 @@ component suite alone is insufficient. See [agreed checks](../agreed-checks.md).
 Current status: implemented at `b5ecab8`; 2582 offline cases passed, 43 skipped, independent
 review found no remaining offline findings. First pilot stopped on stale startup toggle
 evidence (1 setup error; 2 attempts never started; $0). Its original report is retained.
-The readback fix has a failing-before/passing-after regression; a new pilot is pending.
+The readback fix passed offline; a second pilot still found enemy skirmish on after
+immediate release (1 setup error, 2 never started, $0). Both reports remain intact.
+A delayed-release fix has a failing-before/passing-after regression; next pilot pending.
 No live correctness or strength claim yet. Evidence/card:
 `runs/benchmark-initial-20261102/`.

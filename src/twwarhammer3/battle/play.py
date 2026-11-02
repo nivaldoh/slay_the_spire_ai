@@ -631,6 +631,10 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             result["final_time_ms"] = observation["time_ms"]
         result["battle_ms"] = observation["time_ms"]
         result["remaining_ms"] = observation.get("remaining_ms")
+        if (scenario.get("benchmark") and not observation.get("result")
+                and (observation.get("setup") or {}).get("benchmark_release_pending", 0)):
+            event("setup_wait", reason="benchmark_enemy_handover", observation=observation)
+            continue
         if "scenario" not in result and observation.get("friendly"):
             pool = (scenario.get("player") or {}).get("reinforcements")
             if (isinstance(pool, list) and pool

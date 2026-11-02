@@ -552,6 +552,9 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     checks = {}
     if scenario.get("benchmark"):
         toggles = settings.get("benchmark_behaviours") or {}
+        if toggles.get("error") or settings.get("benchmark_release_pending"):
+            raise ProtocolError("setup benchmark behaviour handover failed: "
+                                + str(toggles.get("error")))
         for side, roster in (("friendly", observation.get("friendly", [])),
                              ("enemy", observation.get("enemy_roster", []))):
             if len(toggles.get(side, {})) != len(roster):

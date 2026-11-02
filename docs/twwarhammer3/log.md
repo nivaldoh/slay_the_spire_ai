@@ -28,6 +28,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: mirror startup handover waits for the engine
+
+Second pilot at `ae9a09b`: 1 setup error (enemy crossbows skirmish still on), 0 decisions,
+no engine ending, $0; 2 later attempts never started. Both failed pilot reports remain
+in `runs/benchmark-initial-20261102/`, with lobby screenshots from the second launch.
+Hypothesis, not proved: immediate enemy release discards queued startup behaviour changes.
+Fix: one existing engine tick before release, one further tick before checking AI-owned
+readbacks; no policy calls until every enemy release finishes. Failed releases still refuse
+setup. Roster/score unchanged; rests on JUDGEMENT? Startup handover in
+[the runbook](benchmark-initial.md). New deferred-command regression fails before the fix;
+185 focused cases passed; independent review found no remaining findings. Full gate and
+new frozen pilot pending. Two setup failures across two plans establish no gameplay rate.
+
 ## 2026-11-02: initial mirror benchmark, first pilot stops on stale toggle evidence
 
 Implemented at `b5ecab8`: [runbook](benchmark-initial.md), mirror-v1 profile/evaluator,
@@ -41,9 +54,10 @@ started. Both five-unit rosters/settings passed lobby readbacks. At 5300 ms, pub
 skirmish was false but cached private setup still said true, so the setup guard stopped.
 The failed plan/report remain `runs/benchmark-initial-20261102/pilot{,.report}.json`.
 Fix: read current private toggle flags when publishing initial setup, without reissuing
-commands. Regression failed first, then 105 focused Lua/benchmark cases passed; independent
-review found no remaining findings. Final gate/new frozen pilot pending; first attempt retained.
-Game closed; no model calls, score or strength finding. Opening still shows own roster
+commands, at `ae9a09b`. Regression failed first; 105 focused cases and the full gate
+(2583 passed, 43 skipped) passed; independent review found no remaining findings.
+New free pilot `pilot-r2.json` also stopped (above); first attempt retained. No model calls.
+Opening still shows own roster
 and full bars; complete UI measurement check remains outstanding.
 
 ## 2026-11-01: native multiplayer observer smoke, one battle
