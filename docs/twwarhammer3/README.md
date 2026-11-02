@@ -39,7 +39,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
 | [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
 | [gap-plan.md](gap-plan.md) | initial graph controllers: frozen skills, interchangeable members, authoring/revision commands, checks, evidence and deferred research |
-| [../multi-agent.html](../multi-agent.html) | an animated diagram of the play loop, the team, native multiplayer and the factory: boxes, wires and step-by-step flows, each claim with its source. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html` |
+| [../multi-agent.html](../multi-agent.html) | "How the code works": a map of the repo whose moving dots show how often each link runs, short stories from real battles (one play job, one decision, a team, basic vs GaP, a graph battle with its whole-battle replay), multiplayer and the factory; sources behind a switch. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\multi-agent.html` |
 | [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
@@ -249,9 +249,9 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `scripts/wh3_queue.py`: runs a frozen plan of `twwarhammer3 play` jobs one at a time
 - `scripts/wh3_db.py`: reads rows of a WH3 database table from the game's db.pack
 - `scripts/refusal_sweep.py`: removes one refusal at a time and lists those no test catches
-- `scripts/diagram_replay.py`: one recorded team episode as a measured flow for the page
 - `scripts/diagram_files.py`: the page's file lists, from these lists and the map's boxes
-- `scripts/diagram_examples.py`: small excerpts of a recorded battle for the page's stories
+- `scripts/diagram_examples.py`: small excerpts of a recorded battle for the page's stories,
+  and the whole GaP battle its graph replay plays
 - `scripts/sft_smoke.py`: a minimal local LoRA fine-tuning smoke test (CUDA only)
 - `scripts/inventory_scenarios.py`: Spire first combat: the development inventory
 - `scripts/audit_language_training.py`: Spire first combat: audit of saved SFT evidence

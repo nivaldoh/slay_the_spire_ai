@@ -29,6 +29,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-01: the "How the code works" page redesigned
+
+Claude Code, $0, no game; two sessions, a PC reset between them. Owner's goal: the page looked
+"disorganized and cluttered", with tabs that "seem disconnected" and slop like "Frozen 31 Oct";
+"Less is more"; keep the overview's moving dots that compare timing; include something like the
+GaP battle viewer.
+- One bar groups the views as the map does: Map; One battle (job, decision, two members); Control
+  methods (basic vs GaP, graph battle); Multiplayer; Factory. Each view's corner map lights and
+  names its area; a story's last step offers the next view. Overview, Play loop and Team went (in
+  Git at `72e5197`) with `scripts/diagram_replay.py`. The page is 266 KB, was 383 KB.
+- Status lines ("Frozen 31 Oct", review dates, "not verified", "code changed since", trace rows)
+  sit behind the one Sources switch. Multiplayer and Factory step like the stories, with no
+  made-up clock, speed menu or slider, and larger type; the experiment loop has its own heading.
+- The Map's wires carry teal dots at five kinds of rate, sourced and not to scale, switchable
+  between a model and a graph controller: a request after every decision, 88 in the 335 s basic
+  battle and 2017 in the 618 s GaP battle; 92 model calls in the first, none in the second.
+- One graph battle gains "Whole battle" (`diagram_examples.py replay`): both members' current
+  steps lit, one lane row per step (536 runs), 165 order batches (6 new), the story's 8 steps as
+  bookmarks, the units' public positions once a second. 77 KB, against graph-view's 5.4 MB page.
+- Checks: `check.py` passed (2555 tests); `runs/page-redesign-20261101/func.js` 35/35 and
+  `runs/page-polish-20261101/func2.js` 56/56 assertions; each of 11 planted wrong versions fails
+  at least one. Two fresh-eyes agents answered 12 of 12 questions from the page; a third judged
+  its look. Reviewers found 3 wrong claims, then 3 regressions (timing notes hidden, steps
+  demoted, a tall corner map) and a wrong caption at a flow's end; all fixed. Card not agreed
+  (owner away). Unverified: whether the page teaches; your look. 4 `JUDGEMENT?:` markers (map dot
+  speeds, replaced tabs, replay sampling, replay current step).
+
 ## 2026-11-01: control methods drawn on the "How the code works" page
 
 Claude Code, $0, no game. Owner's goal: "Find a good way to represent different army control

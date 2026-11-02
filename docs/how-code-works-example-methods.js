@@ -16,7 +16,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "rows": [
     {
      "id": "basic",
-     "label": "Basic: the model picks every order · in the loop · model calls 0 / 92 / 0",
+     "label": "Basic: the model picks every order · model calls: 0 before, 92 during, 0 between",
      "header": true,
      "code": "llm_rules · battle/llm.py",
      "badges": [
@@ -35,7 +35,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
     },
     {
      "id": "gap",
-     "label": "GaP: models write graphs, code plays them · before and between battles · model calls 3 / 0 / 3",
+     "label": "GaP: models write graphs, code plays them · model calls: 3 before, 0 during, 3 between",
      "header": true,
      "code": "configured · battle/graph.py",
      "badges": [

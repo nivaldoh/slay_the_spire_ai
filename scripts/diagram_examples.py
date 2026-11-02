@@ -18,19 +18,20 @@ configs/ and scripts/), each with its sha256 at that commit. changed_since lists
 whose content at HEAD differs: the page's "code changed since" badge (plan section 3).
 scripts/check.py flags the story when another cited file changes later. Output depends only on the
 recorded files, the story file and HEAD's copies of the cited files, so two runs at one revision
-write identical files. Modelled on scripts/diagram_replay.py.
+write identical files.
 
-Two kinds read GaP battles (docs/how-code-works-plan.md, the control-methods spec's generated
+Three kinds read GaP battles (docs/how-code-works-plan.md, the control-methods spec's generated
 data): `methods` writes the "Control methods" lanes, side cells and card numbers, one example per
 method plus "methods" (lanes and cards); `graph` writes the boxes and wires of the recorded graphs
-for "One graph battle". Both read graph steps through twwarhammer3.battle.graph_view.
-collect_episode(), which checks every member_event against the recorded graphs, and trace rows
-for each member's own view. They recompute every count in the recipe's `stated` and refuse to
-write when one differs; `stated` is meant to hold each record count the story states (its
-captions, labels, summary and notes, not its status lines). One methods view cites both methods'
-code, so each methods example takes its files from its group's `refs`; graph takes them from its
-story's refs (the recipe's `refs` while the story file does not exist yet) plus the generated
-boxes' refs.
+for "One graph battle"; `replay` writes that battle whole for its "Whole battle" flow (step runs,
+order batches, positions once a second). All read graph steps through
+twwarhammer3.battle.graph_view.collect_episode(), which checks every member_event against the
+recorded graphs, and trace rows for each member's own view. methods and graph recompute every count
+in the recipe's `stated` and refuse to write when one differs; `stated` is meant to hold each
+record count the story states (its captions, labels, summary and notes, not its status lines). One
+methods view cites both methods' code, so each methods example takes its files from its group's
+`refs`; graph takes them from its story's refs (the recipe's `refs` while the story file does not
+exist yet) plus the generated boxes' refs.
 """
 import argparse
 import ast
@@ -103,8 +104,7 @@ EXAMPLES = {
             {"id": "basic", "kind": "model", "example": "methods-basic",
              "job": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020",
              "episode": "episode-0000",
-             "title": "Basic: the model picks every order", "where": "in the loop",
-             "code": "llm_rules · battle/llm.py",
+             "title": "Basic: the model picks every order", "code": "llm_rules · battle/llm.py",
              "before": "Nothing asked: the rules prompt is written by hand",
              "between": "Nothing: a fresh controller each battle, same prompt",
              "decisions": ["r1", "r2"],  # reply 1 and its ack, reply 2 (methods steps 1-3)
@@ -123,7 +123,7 @@ EXAMPLES = {
              "artifact": "runs/twwarhammer3/gap-20261101/initial-02",
              "revisions": ["runs/twwarhammer3/gap-20261101/revised-01"],
              "title": "GaP: models write graphs, code plays them",
-             "where": "before and between battles", "code": "configured · battle/graph.py",
+             "code": "configured · battle/graph.py",
              "empty": "no model asked during the battle",
              "members": {"cavalry": "A", "line": "B"},  # page colours: A blue, B vermillion
              "rows": {"steps": [37, 28], "order": 75, "view": 66},  # methods steps 5 and 6
@@ -217,6 +217,11 @@ EXAMPLES = {
                              "line.attack>acquire": "succeeded ×77 / failed ×7"}},
     },
 }
+# The whole graph battle for the graph view's "Whole battle" replay: the same battle as "graph".
+# JUDGEMENT?: Replay sampling (Claude Code, 2026-11-01, page redesign): positions once a second,
+# not interpolated; the trace has a view every 300-600 ms. Every view would double the file;
+# the replay's map rests on it.
+EXAMPLES["replay"] = {"kind": "replay", "of": "graph", "every_ms": 1000}
 CONTROLLERS = "src/twwarhammer3/battle/controllers.py"
 AUTHOR = "src/twwarhammer3/battle/graph_author.py"
 SKILLS = "src/twwarhammer3/battle/skill_contracts.py"
@@ -569,8 +574,9 @@ def recorded_cards(runs: Path) -> tuple:
 
 
 def header(group: dict, calls: list) -> dict:  # a group's header row; its click opens the card
-    return {"id": group["id"], "label": f"{group['title']} · {group['where']} · model calls "
-                                        f"{' / '.join(map(str, calls))}",
+    before, during, between = calls  # the counts say where a model is asked
+    return {"id": group["id"], "label": f"{group['title']} · model calls: "
+                                        f"{before} before, {during} during, {between} between",
             "header": True, "code": group["code"], "badges": [group["example"]],
             "card": group["id"]}
 
@@ -1426,7 +1432,105 @@ def build_graph(recipe: dict, runs: Path) -> dict:
     return example
 
 
+def build_replay(recipe: dict, runs: Path) -> dict:
+    """The whole graph battle: its steps as rows [box, label, node, skill], each member's step
+    runs [box, start, done, next start, runs, exits] (back-to-back runs of one step joined),
+    its order batches (new, or the same as that member's previous batch) and the units' public
+    positions once every `every_ms`. All of it from graph_view.collect_episode, as the graph
+    story's boxes."""
+    group = EXAMPLES[recipe["of"]]
+    gap = GaP(group, runs)
+    events, end_ms = gap.view["events"], gap.result["battle_ms"]
+    rows, runs_out, orders, owned = [], [], [], {}
+    for member in group["members"]:
+        spec = gap.view["graphs"][member]
+        mine = [e for e in events if e["member"] == member]
+        started = [e for e in mine if e["kind"] == "started"]
+        # A run's own end: a transition, or a cancellation. "closed" is left out: at the end of
+        # the battle it names the graph's next step and that step's last run number.
+        ends = {(e["node"], e["node_run"]): (e.get("status") or e["kind"], e["time_ms"])
+                for e in mine if e["kind"] in ("transition", "cancelled", "exhausted")}
+        ran = {e["node"] for e in started}
+        rows += [[f"{member}.{node}", node_label(spec["nodes"][node], gap.labels), node,
+                  int(spec["nodes"][node]["op"] in gap.labels[2])]  # 1: a skill, run until done
+                 for node in graph_order(spec) if node in ran]
+        closed = [e["time_ms"] for e in mine if e["kind"] == "closed"]
+        # JUDGEMENT?: Replay current step (Claude Code, 2026-11-01, page redesign): a box stays lit
+        # from its step's start to the next start; its bar ends at the run's own end. Lit only to
+        # that end, it would go dark between views; the replay's lit boxes rest on it.
+        for i, e in enumerate(started):
+            until = started[i + 1]["time_ms"] if i + 1 < len(started) else min(closed + [end_ms])
+            status, done = ends.get((e["node"], e["node_run"]), ("still running at the end", None))
+            box = f"{member}.{e['node']}"
+            last = runs_out[-1] if runs_out else None
+            if last and last[0] == box and last[3] == e["time_ms"]:
+                last[2:4] = [done, until]
+                last[4] += 1
+                last[5][status] = last[5].get(status, 0) + 1
+            else:
+                runs_out.append([box, e["time_ms"], done, until, 1, {status: 1}])
+        previous = None
+        applied = {e["request"]: e["ack"].get("applied_ms") for e in mine if e["kind"] == "ack"}
+        for e in (e for e in mine if e["kind"] == "orders"):
+            text = "; ".join(" ".join(str(part) for part in (
+                o["unit"], o["type"], o.get("target"),
+                f"to {round(o['x'])}, {round(o['z'])}" if o.get("x") is not None else None)
+                if part) for o in e["orders"])
+            # new or the same as before: rests on JUDGEMENT? Resent rule (EXAMPLES above)
+            signature = json.dumps(e["orders"], sort_keys=True)
+            orders.append([e["time_ms"], applied.get(e["request"]), f"{member}.{e['node']}",
+                           text, int(signature != previous)])
+            previous = signature
+            for o in e["orders"]:
+                if o["unit"] not in owned.setdefault(member, []):
+                    owned[member].append(o["unit"])
+    for run in runs_out:  # exits as "no ×542, yes ×1"
+        run[5] = ", ".join(f"{name} ×{count}" for name, count in run[5].items())
+    frames = gap.view["frames"]
+    sides = {u["id"]: side for f in frames for side in ("friendly", "enemy") for u in f[side]}
+    units = sorted(sides, key=lambda uid: (sides[uid] != "friendly", uid))
+    sampled, index = [], 0
+    every = recipe["every_ms"]
+    for t in range(frames[0]["time_ms"], end_ms + 1, every):
+        while index + 1 < len(frames) and frames[index + 1]["time_ms"] <= t:
+            index += 1
+        where = {u["id"]: u for side in ("friendly", "enemy") for u in frames[index][side]
+                 if u.get("x") is not None}
+        spots = [[round(where[uid]["x"]), round(where[uid]["z"])] if uid in where
+                 else [None, None] for uid in units]
+        sampled.append([frames[index]["time_ms"], [value for spot in spots for value in spot]])
+    xs = [v for _, xy in sampled for v in xy[0::2] if v is not None]
+    zs = [v for _, xy in sampled for v in xy[1::2] if v is not None]
+    path = f"{group['job']}/{group['episode']}/trace.jsonl"
+    print(f"  replay: {len(runs_out)} step runs, {len(orders)} order batches, {len(sampled)} "
+          f"frames of {len(frames)} views")
+    return {"job": Path(group["job"]).name, "episode": group["episode"], "of": recipe["of"],
+            "commit": gap.commit[:7], "outcome": gap.result.get("status"),
+            "source": f"{path}, read by graph_view.collect_episode (steps, orders and views)",
+            "start": frames[0]["time_ms"], "end": end_ms, "every_ms": every,
+            "members": [{"id": m, "who": who, "units": owned.get(m, [])}
+                        for m, who in group["members"].items()],
+            "units": [[uid, sides[uid], gap.names.get(uid, uid)] for uid in units],
+            "bounds": [min(xs) - 20, max(xs) + 20, min(zs) - 20, max(zs) + 20],
+            "rows": rows, "runs": runs_out, "orders": orders, "frames": sampled}
+
+
+def compact(value, indent: str = "") -> str:
+    """JSON with one line per row: an object's keys indented, a list of lists one row a line."""
+    inner = indent + " "
+    if isinstance(value, dict):
+        return "{\n" + ",\n".join(f"{inner}{json.dumps(key)}: {compact(item, inner)}"
+                                   for key, item in value.items()) + f"\n{indent}}}"
+    if isinstance(value, list) and any(isinstance(item, (list, dict)) for item in value):
+        return "[\n" + ",\n".join(inner + json.dumps(item, ensure_ascii=False,
+                                                      separators=(",", ":"))
+                                   for item in value) + f"\n{indent}]"
+    return json.dumps(value, ensure_ascii=False)
+
+
 def build(recipe: dict, runs: Path) -> dict:
+    if recipe.get("kind") == "replay":
+        return build_replay(recipe, runs)
     if recipe.get("kind") == "methods":
         return build_methods(recipe, runs)
     if recipe.get("kind") == "graph":
@@ -1554,9 +1658,10 @@ def main() -> None:
     args = parser.parse_args()
     built = build(EXAMPLES[args.example], args.runs or main_checkout())
     examples = built if EXAMPLES[args.example].get("kind") == "methods" else {args.example: built}
+    body = (compact(examples) if EXAMPLES[args.example].get("kind") == "replay"
+            else json.dumps(examples, indent=1, ensure_ascii=False))
     text = (f'"use strict";\n// Generated by scripts/diagram_examples.py {args.example}; do not '
-            f"edit by hand.\nObject.assign(DIAGRAM_EXAMPLES, "
-            f"{json.dumps(examples, indent=1, ensure_ascii=False)});\n")
+            f"edit by hand.\nObject.assign(DIAGRAM_EXAMPLES, {body});\n")
     leak = PRIVATE.search(text)
     if leak:
         raise SystemExit(f"refused: the output matches a private pattern near {leak.start()}")

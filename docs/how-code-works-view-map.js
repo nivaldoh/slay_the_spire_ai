@@ -3,6 +3,8 @@
 // are docs/how-code-works-plan.md sections 2 and 5. Strict JSON inside push( ... ), because
 // scripts/check.py and scripts/diagram_files.py read it; keep Prettier's --quote-props preserve
 // --trailing-comma none. Each box's "files" are the path prefixes it owns in the file lists.
+// The wires' rate texts quote the two example battles' counts: they rest on JUDGEMENT? Example
+// battles in scripts/diagram_examples.py.
 DIAGRAM.tabs.push({
   "id": "map",
   "title": "Map",
@@ -411,7 +413,18 @@ DIAGRAM.tabs.push({
       "label": "scenario",
       "payload": "The scenario's armies, map and checks; play passes them to setup's lobby steps.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/setup.py:1-3"]
+      "rate": {
+        "kind": "job",
+        "short": "once a job",
+        "text":
+          "A job that starts the game runs the scenario's lobby steps once; its later battles restart the same battle. A job with --attach joins the battle already running."
+      },
+      "refs": [
+        "src/twwarhammer3/battle/setup.py:1-3",
+        "src/twwarhammer3/battle/play.py:1-5",
+        "src/twwarhammer3/battle/play.py:174-187",
+        "src/twwarhammer3/battle/play.py:201"
+      ]
     },
     {
       "id": "map.factory>play",
@@ -420,6 +433,12 @@ DIAGRAM.tabs.push({
       "label": "starts jobs",
       "payload": "An agent or the queue starts a play job with a command line.",
       "status": "built, component tests only",
+      "rate": {
+        "kind": "job",
+        "short": "a job at a time",
+        "text":
+          "The queue runs a frozen plan of play jobs one at a time; agents also start single jobs by hand."
+      },
       "refs": ["scripts/wh3_queue.py:1"]
     },
     {
@@ -430,7 +449,17 @@ DIAGRAM.tabs.push({
       "payload":
         "--policy configured loads a graph controller, which play runs like any other policy.",
       "status": "built, component tests only",
-      "refs": ["docs/twwarhammer3/gap-plan.md:358-360"]
+      "rate": {
+        "kind": null,
+        "short": "graph jobs only",
+        "graph": {"kind": "job", "short": "once a job"},
+        "text":
+          "A job loads its graphs when it starts; models wrote them before it (3 calls for the 1 Nov battle)."
+      },
+      "refs": [
+        "docs/twwarhammer3/gap-plan.md:358-360",
+        "docs/how-code-works-example-methods.js"
+      ]
     },
     {
       "id": "map.play>runtime",
@@ -440,7 +469,20 @@ DIAGRAM.tabs.push({
       "bend": -40,
       "payload": "One request at a time, written to orders.json.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/engine/mailbox.py:1"]
+      "rate": {
+        "kind": "seconds",
+        "short": "after each decision",
+        "graph": {"kind": "fraction", "short": "after each decision"},
+        "text":
+          "One request after every decision, with or without orders: 88 in the 335 s basic battle of 20 Oct (49 with none) and 2017 in the 618 s GaP battle of 1 Nov (1852 with none). The game reads orders.json every 0.2 s of real time and applies them at its next tick, every 0.25 s of battle time."
+      },
+      "refs": [
+        "src/twwarhammer3/engine/mailbox.py:1",
+        "src/twwarhammer3/battle/play.py:724",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1537",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1480",
+        "docs/how-code-works-example-methods.js"
+      ]
     },
     {
       "id": "map.runtime>play",
@@ -451,10 +493,22 @@ DIAGRAM.tabs.push({
       "payload":
         "observation.json: our units in full, enemy units only while our side can see them. Python then strips the hidden keys (evaluation, final, setup, native) before a policy sees it.",
       "status": "built, component tests only",
+      "rate": {
+        "kind": "second",
+        "short": "every 1 s or sooner",
+        "graph": {"kind": "fraction", "short": "every 0.3 s"},
+        "text":
+          "The battle script writes the state every 1 s of battle time (the default --observe-ms) and again after it applies each request; the play loop looks for a new one every 0.1 s. A graph controller sends a request at every view, so in the 618 s GaP battle of 1 Nov the state came every 0.3 s (1990 of 2016 gaps; the other 26 were 0.6 s)."
+      },
       "refs": [
         "src/twwarhammer3/engine/mailbox.py:91-92",
         "src/twwarhammer3/protocol.py:45",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289",
+        "src/twwarhammer3/__main__.py:26-27",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1331-1334",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1130",
+        "src/twwarhammer3/engine/mailbox.py:173",
+        "docs/how-code-works-example-methods.js"
       ]
     },
     {
@@ -464,7 +518,16 @@ DIAGRAM.tabs.push({
       "label": "save, rebuild",
       "payload": "Saves a battle mid-way and rebuilds it from the saved tick.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/checkpoint.py:1"]
+      "rate": {
+        "kind": "job",
+        "short": "per checkpoint run",
+        "text":
+          "A checkpoint run plays one source battle or one restore through the normal harness."
+      },
+      "refs": [
+        "src/twwarhammer3/battle/checkpoint.py:1",
+        "src/twwarhammer3/battle/checkpoint.py:10-11"
+      ]
     },
     {
       "id": "map.multiplayer>runtime",
@@ -482,7 +545,19 @@ DIAGRAM.tabs.push({
       "label": "model calls",
       "payload": "A model controller asks for orders.",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:1"]
+      "rate": {
+        "kind": "seconds",
+        "short": "every few seconds",
+        "graph": {"kind": null, "short": "none, or a few hints"},
+        "text":
+          "A model controller asks at every decision: 92 calls in the 335 s battle of 20 Oct (88 decisions, 3 re-asks after a refused batch and 1 call still out at the end), and its orders used a view 3.3 s old (median). The graph controllers of the 1 Nov battle asked none during it; a graph with target hints asks at most once every 30 s of battle while it sees candidate targets, up to its request cap (rests on JUDGEMENT G4 Goal limits in graph_goals.py)."
+      },
+      "refs": [
+        "src/gameai/llm.py:1",
+        "docs/how-code-works-example-methods.js",
+        "src/twwarhammer3/battle/graph_goals.py:24-27",
+        "src/twwarhammer3/battle/graph_goals.py:207-212"
+      ]
     },
     {
       "id": "map.models>provider",
@@ -491,7 +566,18 @@ DIAGRAM.tabs.push({
       "label": "requests",
       "payload": "HTTPS requests to the provider the job named.",
       "status": "outside our code: the provider APIs (src/gameai/providers.py:92)",
-      "refs": ["src/gameai/providers.py:92"]
+      "rate": {
+        "kind": "seconds",
+        "short": "per model call",
+        "graph": {"kind": null, "short": "per model call"},
+        "text":
+          "One HTTPS request per model call, more when the service has a passing failure."
+      },
+      "refs": [
+        "src/gameai/providers.py:92",
+        "src/gameai/llm.py:1",
+        "src/gameai/llm.py:133-136"
+      ]
     },
     {
       "id": "map.play>reports",
@@ -501,7 +587,17 @@ DIAGRAM.tabs.push({
       "payload":
         "Each episode's trace.jsonl and result.json, and one row in docs/twwarhammer3/results.csv.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/stats.py:1-3"]
+      "rate": {
+        "kind": "battle",
+        "short": "once a battle",
+        "text":
+          "trace.jsonl grows during the battle; result.json and the results.csv row are written once, when it ends. The two example battles lasted 335 s and 618 s."
+      },
+      "refs": [
+        "src/twwarhammer3/battle/stats.py:1-3",
+        "src/twwarhammer3/battle/play.py:161",
+        "docs/how-code-works-example-methods.js"
+      ]
     },
     {
       "id": "map.reports>posttraining",

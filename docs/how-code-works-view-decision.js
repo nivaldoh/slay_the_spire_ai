@@ -48,7 +48,7 @@ DIAGRAM.tabs.push({
       "code": "orders.json",
       "kind": "file",
       "where": "Windows game",
-      "x": 50,
+      "x": 40,
       "y": 34,
       "w": 200,
       "h": 60,
@@ -67,7 +67,7 @@ DIAGRAM.tabs.push({
       "where": "Windows game",
       "x": 330,
       "y": 34,
-      "w": 220,
+      "w": 210,
       "h": 60,
       "note":
         "Polls orders.json on real time; on battle time, each tick applies the waiting request and writes the state.",
@@ -105,7 +105,7 @@ DIAGRAM.tabs.push({
       "where": "WSL Python",
       "x": 330,
       "y": 170,
-      "w": 220,
+      "w": 210,
       "h": 64,
       "note":
         "Reads the newest state, asks the policy only when no request is outstanding, and writes the request.",
@@ -122,9 +122,9 @@ DIAGRAM.tabs.push({
       "code": "play.py public()",
       "kind": "process",
       "where": "WSL Python",
-      "x": 630,
+      "x": 640,
       "y": 170,
-      "w": 220,
+      "w": 210,
       "h": 64,
       "note":
         "Today's code removes the hidden keys (evaluation, final, setup, native) before a policy sees the state; on 20 Oct an inline filter removed the first three.",

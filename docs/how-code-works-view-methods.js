@@ -159,13 +159,13 @@ DIAGRAM.tabs.push({
         "example": "methods",
         "key": "lanes",
         "legend":
-          "purple bar: one wait for a model, from the view it read to its orders applying · tick: a graph step · bar: a skill step running · ◆ new orders · ▫ same orders sent again · no mark: current orders kept"
+          "pink bar: one wait for a model, from the view it read to its orders applying · tick: a graph step · bar: a skill step running · ◆ new orders · ▫ same orders sent again · no mark: current orders kept"
       },
       "steps": [
         {
           "rows": ["basic.model"],
           "caption":
-            "Basic: the model is asked at every decision; each purple bar is one wait for its reply.",
+            "Basic: the model is asked at every decision; each pink bar is one wait for its reply.",
           "message": {
             "example": "methods-basic",
             "key": "r1"

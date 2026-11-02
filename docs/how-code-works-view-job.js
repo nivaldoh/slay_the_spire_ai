@@ -80,7 +80,7 @@ DIAGRAM.tabs.push({
       "where": "Windows game",
       "x": 470,
       "y": 34,
-      "w": 210,
+      "w": 200,
       "h": 60,
       "note":
         "session.json, menu.json and orders.json from the Python side; observation.json, menu.log and mod.log from the game. These files are the only way the two sides talk.",
@@ -93,9 +93,9 @@ DIAGRAM.tabs.push({
       "code": "twwarhammer3_frontend.lua",
       "kind": "process",
       "where": "Windows game",
-      "x": 730,
+      "x": 740,
       "y": 34,
-      "w": 210,
+      "w": 200,
       "h": 60,
       "note":
         "Our Lua script in the main menu: it runs the steps in menu.json, one UI action at a time.",

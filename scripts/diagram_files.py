@@ -8,8 +8,8 @@ so the two cannot read the lists differently.
 
     uv run --locked python scripts/diagram_files.py [--out docs/multi-agent-files.js]
 
-The output depends only on those three files, so two runs on one tree write identical files.
-Modelled on scripts/diagram_replay.py (a generated classic script the page loads).
+The output, a classic script the page loads, depends only on those three files, so two runs on
+one tree write identical files.
 """
 import argparse
 import importlib.util

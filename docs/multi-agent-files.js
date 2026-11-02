@@ -454,12 +454,6 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "scripts/diagram_replay.py",
-   "text": "one recorded team episode as a measured flow for the page",
-   "box": "map.factory",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "scripts/diagram_files.py",
    "text": "the page's file lists, from these lists and the map's boxes",
    "box": "map.factory",
@@ -467,7 +461,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "scripts/diagram_examples.py",
-   "text": "small excerpts of a recorded battle for the page's stories",
+   "text": "small excerpts of a recorded battle for the page's stories, and the whole GaP battle its graph replay plays",
    "box": "map.factory",
    "list": "docs/twwarhammer3/README.md"
   },

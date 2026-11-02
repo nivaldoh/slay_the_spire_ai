@@ -158,7 +158,7 @@ DIAGRAM.tabs.push({
   "flows": [
     {
       "id": "story",
-      "title": "One graph battle",
+      "title": "Story",
       "story": true,
       "speed": 0.25,
       "steps": [
@@ -365,6 +365,14 @@ DIAGRAM.tabs.push({
           "refs": ["src/twwarhammer3/battle/skill_contracts.py:119-124"]
         }
       ]
+    },
+    {
+      "id": "replay",
+      "title": "Whole battle",
+      "replay": "replay",
+      "speeds": [1, 4, 16],
+      "speed": 4,
+      "steps": []
     }
   ]
 });
