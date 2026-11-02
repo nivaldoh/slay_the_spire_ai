@@ -650,3 +650,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-02,pilot-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,b5ecab8,realtime,1.0,0.0,unsupported_or_invalid,5,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,,
 2026-11-02,pilot-r2-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,ae9a09b,realtime,1.0,0.0,unsupported_or_invalid,5,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,,
 2026-11-02,pilot-r3-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,52eab85,realtime,1.0,0.0,unsupported_or_invalid,6,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,,
+2026-11-02,pilot-r4-01,episode-0000,emp-mirror-cavalry-v1,hold,,,,5c503a0,realtime,1.0,0.0,lost,1205,1.0,1.0,3970,0,0.3,0,classic,,,,,1.0,1.0,0.0,time_limit,

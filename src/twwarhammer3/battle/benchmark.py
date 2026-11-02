@@ -207,9 +207,26 @@ def collect(plan_path: Path) -> dict:
         if execution and execution.get("exit_code"):
             errors.append({"category": "queue", "detail": execution})
         trace = directory / "episode-0000/trace.jsonl"
+        traced_battle, trace_mismatch = None, False
         if trace.exists():
             for line in trace.read_text().splitlines():
-                event = json.loads(line)
+                if not line.strip():
+                    continue
+                try:
+                    event = json.loads(line)
+                except ValueError as exc:
+                    errors.append({"category": "trace", "detail": str(exc)})
+                    continue
+                if event["kind"] == "battle":
+                    observed = event.get("observation") or {}
+                    identity = observed.get("battle")
+                    if (observed.get("job") == directory.name
+                            and isinstance(identity, str) and identity):
+                        if traced_battle and traced_battle != identity:
+                            trace_mismatch = True
+                        traced_battle = identity
+                    else:
+                        trace_mismatch = True
                 if event["kind"] in ("forfeit", "invalid"):
                     errors.append({"category": event["kind"], "detail": event.get("error")})
                 if event["kind"] == "model_exchange" and event.get("error"):
@@ -229,14 +246,18 @@ def collect(plan_path: Path) -> dict:
             if shot.get("status") != "captured":
                 errors.append({"category": "screenshot", "detail": shot})
         config = manifest.get("config") or {}
+        result_battle = (result or {}).get("battle")
+        if result_battle and traced_battle and result_battle != traced_battle:
+            trace_mismatch = True
         matches = (manifest.get("source_revision") == plan["source_revision"]
                    and config.get("scenario") == SCENARIO
                    and manifest.get("scenario") == expected_profile
                    and config.get("policy") == job["controller"]
-                   and (result or {}).get("policy") == job["controller"]
-                   and config.get("episodes") == 1)
+                   and (not result or result.get("policy") == job["controller"])
+                   and config.get("episodes") == 1 and not trace_mismatch)
         if manifest and not matches:
-            errors.append({"category": "provenance", "detail": "source/profile/controller differs"})
+            errors.append({"category": "provenance",
+                           "detail": "source/profile/controller/battle differs"})
         measured = evaluate(result)
         recorded_outcome = measured["outcome"]
         if not matches:
@@ -246,7 +267,7 @@ def collect(plan_path: Path) -> dict:
         if measured["outcome"] and measured["condition"] is None:
             errors.append({"category": "measurement", "detail": measured["unavailable"]})
         rows.append({"output": str(directory), "controller": job["controller"],
-                     "started": bool((result or {}).get("battle")),
+                     "started": bool(result_battle or traced_battle),
                      "status": (result or manifest).get("status", "never_started"),
                      "source_revision": manifest.get("source_revision"),
                      "evidence_matches_plan": matches,
@@ -256,7 +277,7 @@ def collect(plan_path: Path) -> dict:
                      "queue_execution": execution,
                      "not_started_reason": (state.get("error") or state.get("stopped")
                                             or "queue has not reached this attempt")
-                     if not (result or {}).get("battle") else None,
+                     if not (result_battle or traced_battle) else None,
                      "llm": (result or {}).get("llm"), "errors": errors, **measured})
     counts = Counter(row["outcome"] for row in rows if row["outcome"])
     completed = sum(counts.values())

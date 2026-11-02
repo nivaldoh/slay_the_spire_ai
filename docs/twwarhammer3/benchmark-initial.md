@@ -23,6 +23,12 @@ fourth Swordsmen and makes the enemy the attacker; our army is unchanged. pilot-
 stopped by its stop file after that battle. Whether a Great Cannon supports guard
 (`defend`), which setup requires readable for every unit, is unknown until a pilot.
 
+The owner's subsequent explicit confirmation in this implementation thread selects
+version4: four enemy Swordsmen and a Great Cannon (replacing the enemy Crossbowmen),
+with the AI attacking our unchanged army. This supersedes version3's different gun roster.
+The Cannon's fire-at-will value may be either boolean; a missing readback is a setup error.
+No Cannon skirmish flag is required. The current profile still needs its free pilot.
+
 The engine's win/draw/loss comes first. At its first ending, the mod records each original
 friendly unit's health bar (0.01 precision), headcount and wavering/routing/shattered/departed
 flags. A departed unit must explicitly be no longer deployed or deploying; routing alone
@@ -105,6 +111,8 @@ the same failure. Compare raw counts/condition values; no aggregate controller r
 reliable win-rate/generalisation claim from this exploratory screen. Generic report/stats
 use this evaluator's engine outcomes for these jobs; the plan report is authoritative for
 planned/never-started attempts. Source revision and controller prompts/cards stay in each job.
+Started counts also use a matching first battle trace when result saving has not happened
+or was interrupted. Truncated trace lines remain errors; foreign battle identities are refused.
 
 ## Measurement check
 
@@ -115,11 +123,11 @@ failure counts from saved records; change private fields and require identical i
 This establishes recording/arithmetic, not strength or the cavalry advantage. A green
 component suite alone is insufficient. See [agreed checks](../agreed-checks.md).
 
-Current status: implemented at `b5ecab8`, with readback/handover fixes at `ae9a09b` and
-`52eab85`; latest full gate 2587 passed, 43 skipped, independent review found no findings.
-Three starter pilots each stopped on setup: first stale own readback, then two enemy
-skirmish readbacks. All three plans/results are retained (no model calls or engine ending).
-Owner-selected friendly-only toggles are built, with new component regressions; version2
-pilot and live measurements remain pending.
+Current status: version2 hold completed at `5c503a0`: engine timer loss, raw condition100,
+no model calls, then the owner's stop file left two attempts not started. The ending still
+failed because WH3 was not foreground. Whole-battle Windows ratio0.9991, stretch range
+0.9637–1.0004: the short-window warning stays visible. Full live measurement check did not pass.
+Three earlier setup-failure plans remain intact. Version4 and the started-counter fix are
+drafted with focused regressions; full gate and new pilot/Haiku screen remain pending.
 No live correctness or strength claim yet. Evidence/card:
 `runs/benchmark-initial-20261102/`.

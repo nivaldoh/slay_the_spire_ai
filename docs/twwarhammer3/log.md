@@ -28,6 +28,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: confirmed four-Swordsmen/Cannon profile and started-attempt counting
+
+Owner's later confirmation in this implementation thread: replace enemy Crossbowmen
+with Great Cannon, keep four Swordsmen, AI attacks our unchanged army. Version4 records
+that choice; version3's three-Swordsmen/Crossbowmen/Cannon composition remains in history.
+Pilot-r4 at `5c503a0` ended: 1 engine timer loss at1205 s, raw condition100, no model calls;
+the owner stop file left 2 attempts never started. Whole-battle Windows ratio0.9991,
+stretch range0.9637–1.0004; ending screenshot failed (WH3 not foreground). No full live
+measurement or clock pass. Raw files: `runs/benchmark-initial-20261102/pilot-r4*`.
+Fix: matching battle traces now count starts before result saving, including hard stops;
+truncated lines remain errors, foreign identities are refused, no ending is invented.
+The Cannon fire readback is required, its value stays the AI's choice, skirmish not required.
+New roster/readback/start regressions failed first; independent review found no findings
+on99 focused cases. Full gate and the current-profile free pilot/Haiku screen are pending.
+Old Crossbowmen assertions stay unchanged in an owner-approved, separately committed fixture.
+
 ## 2026-11-02: mirror version3: the enemy gets a Great Cannon and attacks
 
 Claude Code, at the owner's direction; no game run for this change.

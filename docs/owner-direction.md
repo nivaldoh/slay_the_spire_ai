@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-02 (later WH3 mirror confirmation in implementation thread): "Use that roster
+  and role", answering the explicit proposal: replace enemy Crossbowmen with a Great
+  Cannon, keep four Swordsmen, and make the enemy attack our unchanged army. Version4
+  records this clarification separately from the earlier version3 composition below.
+  Also approved keeping the old Crossbowmen readback case and adding separate Cannon tests.
 - 2026-11-02 (WH3 mirror task, 02:27): after pilot-r4's `hold` battle stood still (we
   attacked, the AI defended): "This is bad. We should give the opponent an artillery then";
   from the offered options, "Cannon and AI attacks" (a Great Cannon replaces the enemy's

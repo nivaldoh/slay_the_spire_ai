@@ -565,8 +565,10 @@ def check_battle(scenario: dict, observation: dict) -> dict:
                     if type(values.get(key)) is not bool:
                         raise ProtocolError(f"setup {side}/{unit['id']}: unreadable {key}")
                 for key, wanted in (("fire_at_will", True), ("skirmish", False), ("defend", False)):
-                    ranged = "crossbowmen" in unit.get("type", "")
-                    required = key == "defend" or ranged and key in ("fire_at_will", "skirmish")
+                    crossbow = "crossbowmen" in unit.get("type", "")
+                    ranged = crossbow or "great_cannon" in unit.get("type", "")
+                    required = (key == "defend" or key == "fire_at_will" and ranged
+                                or key == "skirmish" and crossbow)
                     if required and type(values.get(key)) is not bool:
                         raise ProtocolError(f"setup {side}/{unit['id']}: unreadable {key}")
                     if (side == "friendly" and (required or key in values)
