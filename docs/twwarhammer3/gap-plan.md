@@ -196,6 +196,12 @@ When a battle ends, record unsent work and ignore late replies; nothing sends on
 episode owns the transport. In the first design, a new graph version starts only between
 attempts.
 
+Open question (owner, 2026-11-02: decide later): when a member's reply expires before
+dispatch (`graph.MAX_AGE_MS`, 5 s) and carried no orders, should its running skill fail?
+Today `skill_contracts.py` (`acknowledge`, line 148) fails it on the refusal's
+`validation_error` ("order refused"), though a move skill in progress usually emits no orders;
+no test pins either behaviour.
+
 ### The skill catalog
 
 Owner, 2026-10-31 (G5): "We should build a broader library first", using MORSL as a
