@@ -1,21 +1,23 @@
 # The WH3 agent team: what is built and what comes next
 
-Updated 2026-10-27. [team.py](../../src/twwarhammer3/battle/team.py) runs two members on
+Updated 2026-11-02. [team.py](../../src/twwarhammer3/battle/team.py) runs two members on
 one army: the scripted probes, each owning one unit, and the model team (`team_llm_rules`).
 Each member decides on its own copy of the public state and gets its orders sent while the
 other is still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
 live check passed 4/4 at `45fe7b0`, `b0ac9e3`, `31823f3` (the model-team branch before its
 rebase onto `main`) and `3adbaa4` (rebased)
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
-progress, feedback and cleanup for two scripts; model teams, messages and teamwork quality
-are unverified. The [evaluation plan](multi-agent-plan.md) says what a team is for; this
+progress, feedback and cleanup for two scripts. Messages and teamwork quality remain
+unverified. The direct model team's seven-point mechanics check passed in one battle
+at `c1ad84d` (2026-11-02); [next](#next) records its scope and the initial comparison.
+The [evaluation plan](multi-agent-plan.md) says what a team is for; this
 page covers the code.
 
 ## What team.py does
 
-Proposed extension, 2026-10-31: [GaP graph controllers](gap-plan.md) reuse this dispatcher
-and the existing policy interface. The plan covers skills, live LLM members, between-battle
-revision and later native allied armies; no graph controller is implemented.
+[GaP graph controllers](gap-plan.md) reuse this dispatcher and the existing policy
+interface. Their implemented skills, live preferences and between-battle revision are a
+separate controller family; that page records their checks and remaining limits.
 
 The probe battle is `emp-knights-emp-swordsmen` (one Swordsmen, one Empire Knights unit).
 `DelayInfantry` and `DelayCavalry` are zero-argument controllers, so they load through the
@@ -91,8 +93,8 @@ first waits 3 s on a stop event that cleanup can wake.
   `members`), and `polls` keeps the dispatcher's own. The card says `asynchronous`; `digest`
   and `watch` label member lines and show a member's prompt at its source time; `digest`
   measures a member's delay from that source and labels evidence recorded before `team-v2`
-  (no `polls`) as dispatcher polls. `report` and `export` read member records (2026-10-31;
-  before, they refused or excluded team episodes).
+  (no `polls`) as dispatcher polls. `report` reads member feedback and exchanges;
+  `export` matches exchange IDs within each member and labels its rows with `member`.
 - **Clock.** Team times use the wall clock, as `play.py`'s think times do: WSL's monotonic
   clock ran 0-11% slow ([benchmark](benchmark.md)), the wall clock is stepped about 1 s every
   32 s, and this Python's thread timeouts follow the wall clock: 15 timed 3 s waits
@@ -225,30 +227,46 @@ Moved verbatim from the [state page](../state.md#owner-decisions-waiting) inbox 
 
 ## Next
 
-Team work is a later controller arm on the Land Battle benchmark ([owner,
-2026-10-27](../owner-direction.md)); the structure screen in
-[team-structures.md](team-structures.md) waits for that battle's first team-vs-single
-result. The live check passed at the rebased `3adbaa4`, so `wh3-model-team` merges (owner,
-2026-10-27). Before the first team battle:
-1. `report` and `export` read member records: order ages from each member's source time,
-   calls and forfeits from team events, exchanges keyed by member (both members number theirs
-   `m1`, `m2`, ...). Owner approved `wh3-team-report` on 2026-11-02, including its changed
-   export assertion; both report and export now read member records. On `main` since
+The initial direct model-team test and comparison are complete (owner, 2026-11-02).
+`report` and `export` read member records; the first paid case passed its agreed
+[seven-point check](../agreed-checks.md) at `c1ad84d`: 90 component cases and one fresh
+`emp5-emp5` team battle. Each member retained its own units, public view, calls and source
+ages, and progressed independently. The concurrency probe showed two overlapping successful
+client requests; server compute overlap is not observable.
+
+One fresh battle per arm, Haiku low through Anthropic, same frozen source/build, setup,
+rosters and map, unpaused 1x:
+
+| Recorded measure | Two-member team | Single controller |
+|---|---:|---:|
+| Engine result / battle seconds | lost / 301.7 | lost / 298.5 |
+| Captured API attempts | 213 | 114 |
+| Cost (USD) | 0.1757983 | 0.0964757 |
+| Median nonempty order age (s) | 3.0 | 2.7 |
+| Friendly men remaining / active | 35 / 0 | 116 / 0 |
+| Enemy men remaining / active | 212 / 212 | 152 / 152 |
+| Engine refusals (`unit_routing`) | 25 | 4 |
+
+The owner clarified that calls count captured API attempts inside exchange containers,
+which can hold retries. Both cases reconcile to the ledger; no pending or uncertainty
+charges. Total new spend including the two-call probe: $0.2723294; ending WH3 Anthropic
+ledger $0.8216764 of its $3 cap. Independent raw recounts checked ownership, prompts,
+engine feedback, clocks, token costs and final evaluator readings. Initial positions
+differed by at most 0.361 m for friendly units and 4.144 m for visible enemies; retain that
+variation. Neither case establishes strength, a ranking or an architecture advantage.
+
+Evidence and commands: `runs/team-initial-20261102/`; `recount_v2.py team single`,
+`compare.py`, and `review/comparison/final_audit.py`. The original frozen recount is kept
+with its challenged flaws. The report also distinguishes local validation refusals from
+engine acknowledgements and assigns no engine age to local refusals.
+
+1. The card board retains its existing display limitation. On `main` since
    `56d3937`: the card board leaves team episodes off (JUDGEMENT Team rows in `cards.py`) and
    each member's record in `result.json` says `running_at_close`.
-2. The owner agreed `team/test_wh3_model_team.py` and the first paid battle's pass list
-   on 2026-11-02 (`runs/overnight-20261031/b3/team-check-card.md`): ownership, member views,
-   independent progress, member-source ages, charges/exchanges, engine ending and 1x.
-3. A check that the pinned backend serves two calls at once (it has only served one).
 
-The owner chose `emp5-emp5` for this first test on 2026-11-02, using cheap Anthropic calls.
-In this thread the owner also agreed the initial comparison: one fresh team battle and one
-fresh `llm_rules` battle with the same Haiku model/effort, scenario and setup at unpaused 1x.
-The team test is the team arm. Compare engine outcome, final condition, charged cost, calls
-and source order ages; keep failures and make no strength claim at one battle per arm.
-The existing WH3 Anthropic ledger has a $3 cumulative cap, including earlier spend and the
-concurrency probe. Stop on a failed team check, two failed launches, a build mismatch or
-budget exhaustion. Card and recount artifacts: `runs/team-initial-20261102/`.
-Messages and
-teams beyond one army stay deferred: [plan §4](multi-agent-plan.md#communication) and
-[§9-§10](multi-agent-plan.md#9-stages).
+This comparison rests on JUDGEMENT `docs/twwarhammer3/multi-agent-implementation.md`
+`team.py` PARTITION, ARMY_OWNER, target filter, ModelTeam max_age_ms and CLOSE_WAIT_S above.
+Broader comparison design, equal-resource arms, repetitions and budgets remain the owner's
+choices. The [team-structures plan](team-structures.md) still refers to a parked scenario;
+its wider stages need a chosen benchmark and revised card before execution. Messages,
+regrouping and native allied armies remain separate later work.

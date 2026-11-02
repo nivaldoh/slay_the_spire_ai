@@ -28,6 +28,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-02: initial one-army model-team test and comparison complete
+
+Owner-approved one team and one single Haiku-low battle on `emp5-emp5`, frozen `c1ad84d`,
+unpaused 1x; no replacement jobs. Team's seven-point mechanics check passed with 90 clean
+component cases, two overlapping client calls, and independent raw live recount.
+Team: lost at 301.7 s, 213 API attempts, $0.1757983, median nonempty source age 3.0 s;
+single: lost at 298.5 s, 114 attempts, $0.0964757, median 2.7 s. Friendly men left 35/116,
+active 0/0; enemy remaining/active 212/152. All 25/4 refusals were engine `unit_routing`.
+Model calls count attempt records inside exchange containers (owner's explicit clarification).
+All 329 new ledger rows match 327 battle attempts plus 2 probe calls; token-cost arithmetic
+checked independently. Total new spend $0.2723294; ending WH3 ledger $0.8216764 of $3 cap.
+Both declared/recorded setups, rosters, map and source match. Initial positions differ by
+at most 0.361 m friendly/4.144 m enemy. Raw Windows ratios 1.000011/0.999989; all 30 s stretches
+within the agreed band. No uncertainty or running-at-close calls; game controllers closed.
+Integrate approved member report/export; fix duplicated ID-less retries and local feedback
+without engine age. Both regressions fail first; independent review catches 6 retained plants.
+Evidence: `runs/team-initial-20261102/`; `recount_v2.py`, `compare.py`, `review/comparison/`.
+Mechanics only at the recorded revision/case; no strength ranking or architecture advantage.
+Existing split/view/cleanup JUDGEMENT choices remain in `multi-agent-implementation.md`.
+
+
 ## 2026-11-02: initial benchmark checked and five Haiku attempts completed
 
 At `b1136e8`, version5, build25961564, fresh launches at unpaused1x. Native health API;
@@ -581,7 +602,7 @@ visuals for those too."
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest: the [starting-set screen](#2026-10-22-the-starting-set-screen) (30 floor launches, 2026-10-22); first: `bench-g1-cavalry-ai10-01-20261014` |
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages and native multiplayer unimplemented |
-| `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Unplayed; no agreed check yet |
+| `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | benchmark harness | b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |

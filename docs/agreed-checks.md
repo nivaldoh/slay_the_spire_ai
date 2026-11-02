@@ -125,22 +125,23 @@ revisions written below are the earlier passes.
   pre-contact infantry attack/matching-melee audit; movement/no-order controls were not
   rerun. Engine lost at 666.8 s; no strength claim. Raw checks/citations:
   `runs/gap-initiation-20261101/review/live-followup/` (one battle).
-- WH3 direct model team (agreed 2026-11-02): component command `uv run --locked pytest -ra
+- WH3 direct model team (agreed 2026-11-02): `uv run --locked pytest -ra
   tests/twwarhammer3/team/test_wh3_model_team.py
   tests/twwarhammer3/team/test_wh3_team.py
-  tests/twwarhammer3/test_wh3_benchmark_outcome.py`. The draft's engine-outcome test filename
-  does not exist; the current outcome-table cases live in this benchmark-outcome file.
-  The owner approved the report/export
-  assertion change and the seven-point pass list in
-  `runs/overnight-20261031/b3/team-check-card.md`: each member orders only its partition;
-  prompts contain its own units and public allies, never private observation sections;
-  one member's batch is acknowledged while the other's call runs; order ages use the
-  member's source; ledger/result/exchange accounting reconciles, including running-at-close
-  costs; engine ending retained or member failure identified; Windows-clock ratio within
-  0.99–1.01. Catch unauthorized ownership and dispatcher-age plants offline.
-  First live case: one fresh `emp5-emp5` battle with two cheap Anthropic members at unpaused
-  1x. Not yet passed; no strength claim. Initial team/single comparison separately agreed
-  in [the implementation plan](twwarhammer3/multi-agent-implementation.md#next).
+  tests/twwarhammer3/test_wh3_benchmark_outcome.py` (the draft's engine-outcome test filename
+  did not exist; current outcome-table cases use this name). Seven-point live check:
+  orders stay within each member's partition; own/allied prompts contain public data only;
+  a batch is acknowledged while a peer call runs; ages use each member's source and match
+  report output; ledger/result/exchange charges and calls reconcile, including pending calls;
+  engine ending or attributed failure is retained; the digest's Windows-clock line stays
+  within 0.99–1.01 at unpaused 1x. Owner clarified after the team run: count captured API
+  attempts within exchanges, not exchange containers ("Agree: count captured API attempts").
+  Catch unauthorized ownership and dispatcher-age plants offline. Passed at `c1ad84d`:
+  90 component cases and one fresh Haiku-low `emp5-emp5` team battle; independent raw
+  recount covers all seven points. Commands/evidence: `runs/team-initial-20261102/`,
+  `recount_v2.py team` and `review/live-team/independent.py` there. The original frozen
+  recount is retained with its challenged flaws. This establishes mechanics for the
+  declared case, not strength, broad action effects or player-equivalent visibility.
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py

@@ -19,7 +19,7 @@ from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, Model, usage_cost
 from twwarhammer3.battle import controllers, digest, export, llm, play, report, team, watch
-from twwarhammer3.protocol import PolicyFailure
+from twwarhammer3.protocol import PolicyFailure, refused
 
 GUNS = "wh_main_emp_inf_handgunners"
 HORN = {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 0, "z": 0}
@@ -473,6 +473,21 @@ def test_report_counts_an_idless_failed_reply_once_when_metadata_repeats_its_exc
     assert metrics["reply_validation"]["attempts"] == 2
     assert metrics["reply_validation"]["failed_responses"] == 1
     assert metrics["call_seconds"]["n"] == 2
+
+
+def test_report_counts_a_local_team_refusal_without_inventing_an_engine_age(tmp_path):
+    local = refused([move("f1"), move("f2")], "member does not own f2")
+    events = [
+        {"kind": "team", "event": "feedback", "member": "cavalry", "source": "local",
+         "ack": local, "latency": {"source": "local", "think_s": 0.5}},
+        {"kind": "team", "event": "feedback", "member": "line", "source": "engine",
+         "ack": {"applied_ms": 2500, "results": [{"index": 1, "ok": True}]},
+         "latency": {"source": "engine", "delay_ms": 1500}},
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(row) + "\n" for row in events))
+    metrics = report.trial_metrics(tmp_path, {"card": {"disclosure": {"members": {}}}})
+    assert metrics["order_age_s"] == {"n": 1, "mean": 1.5, "p50": 1.5, "p90": 1.5}
+    assert metrics["rejections"] == {"validation: member does not own f2": 1}
 
 
 def test_think_time_runs_from_the_members_own_start():

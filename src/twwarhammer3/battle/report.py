@@ -79,6 +79,10 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                         plan_ages.append(meta["plan_age_s"])
                     attempts.extend({**attempt, "member": meta.get("member")} for attempt
                                     in meta.get("attempts") or [])
+                elif (team and kind == "team" and event.get("event") == "feedback"
+                      and event.get("source") == "local"):
+                    error = event["ack"].get("validation_error", "unknown")
+                    rejections["validation: " + error] += 1
                 elif (kind == "ack" and not team) or (team and kind == "team"
                                                       and event.get("event") == "feedback"):
                     # JUDGEMENT: Order age population — assistant, 2026-10-14/15 (flagged by

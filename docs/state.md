@@ -6,8 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex: initial one-army model-team test and agreed one-team/one-single comparison on
-`emp5-emp5`; isolated checkout, $3 cumulative Anthropic cap. Card: `runs/team-initial-20261102/card.md`.
+Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 
 Codex: [initial mirror benchmark](twwarhammer3/benchmark-initial.md) implemented and checked
 at `b1136e8`, version5: six enemy Swordsmen + Cannon; native health. Three scripted and
@@ -33,8 +32,7 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push to `main` and each pull request (results: `gh run list`).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; eight
-draft branches are unmerged ([list](#branches)).
+**Nothing runs**; post-training stays paused. Historical drafts/worktrees: [list](#branches).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 
@@ -48,8 +46,8 @@ Initial mirror benchmark completed; broader definition remains open (decision 1)
   passed at `b1136e8`; controller strength and task winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
-- Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.549347 (includes one estimated timeout charge); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`; its initial comparison is complete.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.8216764 (includes one estimated timeout charge); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
@@ -94,7 +92,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 1. **Benchmark follow-up, later.** Initial mirror recording/arithmetic passed at `b1136e8`; the three scripts and five Haiku attempts all lost. Broader definitions remain open. Health and morale are the tentative primary measures; Siege, Survival, Ambush and Conquest join Land in the intended scope (owner, 2026-10-28). Scoring formulas, profiles, mode order, knowledge/latency evidence and checks remain open in the [Land interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle). Engine timer outcomes and small mixed armies remain agreed; historical c1 is unchanged. Durations use battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)).
 2. **Next experiments and spending.** The initial mirror screen is complete; further comparisons, profiles and budgets wait for the owner. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
 3. **Remaining autonomy rules.** The [standing menu and small interviews](autonomy.md#standing-work) were agreed on 2026-10-28; the saved overnight plan ran that night (02:39-04:35; [report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)). Other provisions of the older [away guidelines](autonomy.md) still await review; this was not blanket acceptance.
-4. **Model-team choices to review later.** On 2026-10-28 you let me settle five open items for now; each keeps today's behaviour, stays marked and is listed in [multi-agent-implementation.md](twwarhammer3/multi-agent-implementation.md#choices-settled-for-now-2026-10-28). Before a paid team battle, agree a check for `team_llm_rules` ([next](twwarhammer3/multi-agent-implementation.md#next)); model members have not played live.
+4. **Model team:** initial test/comparison complete; broader design/budget and earlier marked choices remain for later review ([next](twwarhammer3/multi-agent-implementation.md#next)).
 5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements. These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).
 6. **Controller direction.** Adopt or drop the attack-route prompt change; keep or defer the commander approach. The attack-route draft needs its own comparison under the new Land Battle definition and renumbering before adoption. `commander` is unplayed since v4; [controller plans](twwarhammer3/controllers.md) remain proposals.
 7. **Backend and sampling policy.** Review the delegated backend pins and decide sampling capture and serving-fault treatment. b36's [backend pins](twwarhammer3/latency.md#owner-decisions) await review. Recommended: request log-probabilities, seed and explicit sampling where the pinned backend advertises them ([gaps](posttraining.md#beyond-supervised-fine-tuning); listings rechecked October 21, not a capture test). Choose how to report or rerun [garbled replies](twwarhammer3/empire.md#for-the-owner-to-decide); current backend failures count against the model.
@@ -123,7 +121,6 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
-- `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes).
 - `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`f3bcd97`): agreed-check drafts;
   `gate-xdist` (`668940e`): check.py on xdist workers.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

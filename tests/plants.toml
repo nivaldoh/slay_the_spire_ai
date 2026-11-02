@@ -3194,3 +3194,12 @@ old = 'attempts.extend({**attempt, "member": meta.get("member")} for attempt'
 new = 'attempts.extend({**attempt, "member": None} for attempt'
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_an_idless_failed_reply_once_when_metadata_repeats_its_exchange"]
 source = "2026-11-02 initial one-army team integration review"
+
+[[plant]]
+id = "report-local-feedback-treated-as-engine-ack"
+guards = "Locally refused team batches have no engine age and count as validation once"
+file = "src/twwarhammer3/battle/report.py"
+old = 'and event.get("source") == "local"):'
+new = 'and event.get("source") == "never_local"):'
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_a_local_team_refusal_without_inventing_an_engine_age"]
+source = "2026-11-02 initial one-army team report review"
