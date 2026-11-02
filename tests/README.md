@@ -5,7 +5,8 @@ contain the review findings, reference projects and proposed cleanup. `spire/` h
 Spire decision and protocol tests and their shared message builders. The remaining Spire
 tests still use the older `combat/`, `engine/`, `fullrun/`, `language/`, `openweight/`, `ppo/`
 and `fixtures/` directories. `gameai/` is shared; `twwarhammer3/` belongs to **WH3**;
-`test_doc_links.py` covers the repo.
+the top-level `test_*.py` files cover the repo (links, rules, hooks, `check.py`, agent sync,
+the refusal sweep).
 
 ## Running tests
 
@@ -54,7 +55,7 @@ agreed verification method.
 | Source attribution | [test_provenance.py](gameai/test_provenance.py) | Real temporary Git repositories: scoped edits, staged/deleted/renamed/untracked files refuse attribution; outside-scope edits pass. Byte changes affect fingerprints even with matching size/timestamps. No launch or Windows claim. |
 | Spire message framing and disconnects | [test_bridge.py](engine/test_bridge.py) | Real sockets and relay subprocess; no JVM or Windows game launch. |
 | Spire legal choices, target identity and public inputs | [test_decisions.py](spire/test_decisions.py), [test_protocol.py](spire/test_protocol.py), [engine regressions](combat/test_engine_regressions.py) | Synthetic messages and recorded transitions. Original-trace comparisons need local evidence; no current-game validation. |
-| Spire run lifecycle | [test_play.py](fullrun/test_play.py), [stopping](fullrun/test_play_stops.py) | Real loop; fake game and bridge. Includes disconnect, interruption and source-change cases. Action/time limits and actual Windows cleanup are not established by these tests. |
+| Spire run lifecycle | [test_play.py](fullrun/test_play.py), [stopping](fullrun/test_play_stops.py) | Real loop; fake game and bridge. Includes disconnect, interruption, source-change, action-limit and run-time-limit cases (a fake clock). Actual Windows cleanup is not established by these tests. |
 | WH3 order validation and mailbox delivery | [test_wh3_protocol.py](twwarhammer3/test_wh3_protocol.py), [test_wh3_mailbox.py](twwarhammer3/test_wh3_mailbox.py), [battle Lua](twwarhammer3/test_wh3_battle_lua.py) | Python, files and production Lua functions; simulated game methods. Includes foreign job/battle rejection and duplicate delivery. Acceptance does not establish live movement. |
 | WH3 acknowledgement identity and endings | [test_wh3_play.py](twwarhammer3/test_wh3_play.py) | Real loop, queued observations and controlled time. Unrelated/repeated acknowledgements do not release pending work. Terminal-call time is excluded from the battle clock; actual game timing remains separate. |
 | WH3 member ownership and independent progress | [team/test_wh3_team.py](twwarhammer3/team/test_wh3_team.py), [team/test_wh3_model_team.py](twwarhammer3/team/test_wh3_model_team.py), [test_wh3_play.py](twwarhammer3/test_wh3_play.py) | Controlled workers and some real threading; fake observations. The separate live check tests scripted members. |
