@@ -15,6 +15,16 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- Test suite rejects its kept wrong versions (agreed 2026-11-02, owner: "Agree as written"):
+  in the main checkout the exit gate `check.py` passes, and `check.py --plants` reports every
+  planted wrong version kept in `plants.toml` caught. Commands, from the repository root:
+  `uv run --locked python` with `check.py`, then with `check.py --plants`. It shows the suite
+  still rejects each recorded wrong version at that revision; it says nothing about live game
+  behaviour or about wrong versions nobody planted. Passed at `515491c` (2026-11-02): plants
+  341 of 341 caught; the gate passed (2696 passed, 43 skipped) with another session's
+  uncommitted edits present, so not at the revision in `check.py`'s sense. Evidence:
+  `runs/cleanup-20261102/plants-main-515491c.txt` and `runs/checks/20261102-120816-*.log`.
+
 - WH3 initial mirror benchmark measurements (agreed 2026-11-02, owner: "Use this check"):
   saved UI screenshots of both rosters/settings, engine ending and displayed tactical-unit
   health within 1 percentage point; hand-recompute condition and failure counts from records.
