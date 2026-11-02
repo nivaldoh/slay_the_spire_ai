@@ -508,20 +508,22 @@ def next_facts(index: int, decisions: list[dict], frames: list[dict], labels: di
     return rejections + sorted(facts, key=lambda fact: fact["time_ms"])
 
 
-def build(episode: Path, manifest: dict | None = None, notes: dict | None = None) -> dict:
-    manifest = manifest or json.loads((episode.parent / "manifest.json").read_text())
-    result_path = episode / "result.json"
-    result = json.loads(result_path.read_text()) if result_path.exists() else {}
-    frames, decisions, warnings, terrain, armies = {}, [], [], None, None
-    by_request, notes_text, pending_invalid, battle, job = {}, None, None, None, None
+def read_trace(episode: Path) -> tuple[dict, list[dict], list[dict], dict]:
+    """The trace's observation frames by (time, seq), its decisions with their
+    acknowledgements, unreadable-line warnings, and the battle, job, terrain and armies the
+    observations name."""
+    frames, decisions, warnings, by_request = {}, [], [], {}
+    seen = {"battle": None, "job": None, "terrain": None, "armies": None}
+    notes_text, pending_invalid = None, None
     for line, record in records(episode / "trace.jsonl"):
         source = {"file": "trace.jsonl", "line": line}
         kind = record.get("kind")
         obs = record.get("observation")
         if isinstance(obs, dict) and obs.get("time_ms") is not None:
-            battle, job = obs.get("battle", battle), obs.get("job", job)
-            terrain = obs.get("terrain") or terrain
-            armies = obs.get("armies") or armies
+            seen["battle"] = obs.get("battle", seen["battle"])
+            seen["job"] = obs.get("job", seen["job"])
+            seen["terrain"] = obs.get("terrain") or seen["terrain"]
+            seen["armies"] = obs.get("armies") or seen["armies"]
             frames[(obs["time_ms"], obs.get("seq"))] = public_frame(obs, source)
         if kind == "unreadable":
             warnings.append({**source, "error": record["error"]})
@@ -554,6 +556,11 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
                     decision["orders"][index].update(
                         ack=reply, status="rejected" if not reply.get("ok")
                         else "queued" if reply.get("queued") else "acknowledged")
+    return frames, decisions, warnings, seen
+
+
+def add_recorder_frames(episode: Path, frames: dict, warnings: list[dict], battle, job) -> int:
+    """Add the 1 Hz recorder's frames of this battle and job; returns how many were added."""
     recorded = 0
     for line, record in records(episode / "replay.jsonl"):
         source = {"file": "replay.jsonl", "line": line}
@@ -564,19 +571,26 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
             continue
         frames[(record["time_ms"], -1)] = public_frame(record, source)
         recorded += 1
-    ordered = sorted(frames.values(), key=lambda f: (f["time_ms"], f.get("seq", -1)))
-    scenario = manifest.get("scenario") or {}
+    return recorded
+
+
+def name_units(episode: Path, frames: list[dict]) -> None:
+    """Readable unit names from unit_names.json, when the episode captured them."""
     names_path = episode / "unit_names.json"
     if names_path.exists():
         names = json.loads(names_path.read_text())
-        for frame in ordered:
+        for frame in frames:
             for side in ("friendly", "enemy", "enemy_roster"):
                 for unit in frame[side]:
                     name = names.get(unit["id"])
                     if isinstance(name, str) and name:
                         unit.update(name=name, name_source="unit_names.json")
+
+
+def roster_of(frames: list[dict], protected: list) -> list[dict]:
+    """Every unit seen, friendly first, in id order."""
     roster = {}
-    for frame in ordered:
+    for frame in frames:
         for side in ("friendly", "enemy", "enemy_roster"):
             for unit in frame[side]:
                 roster[unit["id"]] = {
@@ -587,9 +601,47 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
                     # A nameless roster entry never replaces a recorded name.
                     "name": (unit.get("name") or roster.get(unit["id"], {}).get("name")
                              or unit_name(unit)),
-                    "protected": unit.get("type") in scenario.get("protected", [])}
-    roster = sorted(roster.values(), key=lambda entry: (
+                    "protected": unit.get("type") in protected}
+    return sorted(roster.values(), key=lambda entry: (
         entry["side"] != "friendly", int(re.sub(r"\D", "", entry["id"]) or 0), entry["id"]))
+
+
+def displacements(before: dict, after: dict) -> list[dict]:
+    """How far each unit seen in both frames moved between them."""
+    first = {u["id"]: u for side in ("friendly", "enemy") for u in before[side]}
+    movement = []
+    for side in ("friendly", "enemy"):
+        for unit in after[side]:
+            prior = first.get(unit["id"])
+            if prior and all(u.get(k) is not None for u in (unit, prior) for k in "xz"):
+                movement.append({"unit": unit["id"], "side": side,
+                                 "from": [prior["x"], prior["z"]],
+                                 "to": [unit["x"], unit["z"]],
+                                 "metres": math.hypot(unit["x"] - prior["x"],
+                                                      unit["z"] - prior["z"])})
+    return movement
+
+
+def sample_interval(frames: list[dict], recorded: int, manifest: dict) -> int:
+    """The recorder's interval; without recorder frames, the observations' own spacing."""
+    if recorded:
+        return (manifest.get("recorder") or {}).get("interval_ms") or 1000
+    observed = [f["time_ms"] for f in frames if f["friendly"] or f["enemy"]]
+    spacing = [b - a for a, b in zip(observed, observed[1:]) if b > a]
+    least = (manifest.get("config") or {}).get("observe_ms") or 1000
+    return max(least, round(statistics.median(spacing) / 100) * 100) if spacing else least
+
+
+def build(episode: Path, manifest: dict | None = None, notes: dict | None = None) -> dict:
+    manifest = manifest or json.loads((episode.parent / "manifest.json").read_text())
+    result_path = episode / "result.json"
+    result = json.loads(result_path.read_text()) if result_path.exists() else {}
+    frames, decisions, warnings, seen = read_trace(episode)
+    recorded = add_recorder_frames(episode, frames, warnings, seen["battle"], seen["job"])
+    ordered = sorted(frames.values(), key=lambda f: (f["time_ms"], f.get("seq", -1)))
+    scenario = manifest.get("scenario") or {}
+    name_units(episode, ordered)
+    roster = roster_of(ordered, scenario.get("protected", []))
     identify(roster, (notes or {}).get("units") or {},
              base_stats((result.get("setup") or {}).get("unit_base_stats")))
     labels = {entry["id"]: entry["display"] for entry in roster}
@@ -606,19 +658,8 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
                         else None,
                         reply_s=(decision.get("latency") or {}).get("think_s"),
                         steps=steps, summary=summary_lines(steps, labels))
-        movement = []
-        if basis is not None and after is not None:
-            first = {u["id"]: u for side in ("friendly", "enemy") for u in ordered[basis][side]}
-            for side in ("friendly", "enemy"):
-                for unit in ordered[after][side]:
-                    prior = first.get(unit["id"])
-                    if prior and all(u.get(k) is not None for u in (unit, prior) for k in "xz"):
-                        movement.append({"unit": unit["id"], "side": side,
-                                         "from": [prior["x"], prior["z"]],
-                                         "to": [unit["x"], unit["z"]],
-                                         "metres": math.hypot(unit["x"] - prior["x"],
-                                                              unit["z"] - prior["z"])})
-        decision["displacements"] = movement
+        decision["displacements"] = (displacements(ordered[basis], ordered[after])
+                                     if basis is not None and after is not None else [])
     events = state_events(ordered, scenario.get("protected", []), labels)
     for index, decision in enumerate(decisions):
         facts = next_facts(index, decisions, ordered, labels, events)
@@ -634,14 +675,6 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
                                      if ended_by and ended_by != "engine_result" else "")})
     events.sort(key=lambda e: e["time_ms"])
     mark_key_events(events, roster)
-    if recorded:
-        interval = (manifest.get("recorder") or {}).get("interval_ms") or 1000
-    else:  # the controller's observations are the only frames: use their own spacing
-        observed = [f["time_ms"] for f in ordered if f["friendly"] or f["enemy"]]
-        spacing = [b - a for a, b in zip(observed, observed[1:]) if b > a]
-        least = (manifest.get("config") or {}).get("observe_ms") or 1000
-        interval = (max(least, round(statistics.median(spacing) / 100) * 100) if spacing
-                    else least)
     for event in events:
         event["frame"] = next((i for i, f in enumerate(ordered)
                                if f["time_ms"] >= event["time_ms"]), len(ordered) - 1)
@@ -649,13 +682,13 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
         "schema": SCHEMA, "evidence_kind": "recorded", "episode": episode.name,
         "created_at": manifest.get("created_at", ""), "finished_at": result.get("finished_at"),
         "frames": ordered, "decisions": decisions, "events": events,
-        "roster": roster, "terrain": terrain, "armies": armies,
+        "roster": roster, "terrain": seen["terrain"], "armies": seen["armies"],
         "warnings": warnings,
         "frame_source": ("1 Hz recorder plus decision-basis observations; no interpolation"
                          if recorded else
                          "Decision-basis observations from trace.jsonl; no interpolation"),
         "recorder_version": RECORDER_VERSION if recorded else None,
-        "sample_interval_ms": interval,
+        "sample_interval_ms": sample_interval(ordered, recorded, manifest),
         "summary": {
             "decisions": len(decisions),
             "orders": sum(len(d["orders"]) for d in decisions),
