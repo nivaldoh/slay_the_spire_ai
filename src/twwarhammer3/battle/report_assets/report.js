@@ -119,6 +119,10 @@
   // scores. Codex flagged it 2026-10-23; the completed-battle view itself was owner-directed.
   const won = (entry) => (entry.trial.engine_outcome || entry.trial.outcome) === "won";
   const draw = (entry) => (entry.trial.engine_outcome || entry.trial.outcome) === "draw";
+  const isBenchmark = (entry) => Boolean(entry.group.definition.scenario?.benchmark);
+  const conditionText = (value) => (value == null ? "unavailable" : value.toFixed(2));
+  const BENCHMARK_RULE =
+    "Engine outcome first: win > draw > loss. Within the same outcome, condition is the mean of the five original units' health fractions after their strongest state penalty, times 100. State factors: normal 1, wavering 0.8, routing 0.5; shattered, dead or departed 0. Missing reads make condition unavailable. No aggregate controller ranking.";
   // A commander's record beside its score: "won 1 of 6", "lost its only battle".
   const record = (s) =>
     s.items.length === 1
@@ -148,15 +152,17 @@
   // A battle's score: 100 for a win, else the share of the enemy army broken at the end (or
   // the scenario's objective measure). A battle without the measure has none.
   const scoreOf = (entry) =>
-    (
-      entry.battle.objective_outcome != null
-        ? entry.battle.objective_outcome === "success"
-        : won(entry)
-    )
-      ? 100
-      : entry.battle.progress == null
-        ? null
-        : Math.min(99.99, 100 * entry.battle.progress);
+    isBenchmark(entry)
+      ? null
+      : (
+            entry.battle.objective_outcome != null
+              ? entry.battle.objective_outcome === "success"
+              : won(entry)
+          )
+        ? 100
+        : entry.battle.progress == null
+          ? null
+          : Math.min(99.99, 100 * entry.battle.progress);
   const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
   // A score as printed: never rounded up to a win's 100 (a 99.8% loss reads 99).
   const points = (value) => (value >= 100 ? "100" : String(Math.min(99, Math.round(value))));
@@ -178,6 +184,8 @@
       b = entry.battle,
       out = [];
     const score = scoreOf(entry);
+    if (isBenchmark(entry))
+      out.push(`condition ${conditionText(entry.battle.benchmark?.condition)} / 100`);
     const basis = {
       tickets: "ticket progress",
       objective_time: "objective ownership time",
@@ -272,6 +280,7 @@
   // its battles (seconds survived in survival) and the best scripted rule's, when any ran.
   const anyRule = data.scenarios.some((s) => s.rows.some((r) => r.kind === "scripted"));
   function cells(item) {
+    if (item.benchmark) return [];
     const metric = item.mode === "survival" ? "duration" : "score";
     const out = models.map((family) => {
       const rows = item.rows.filter((row) => row.family === family);
@@ -409,6 +418,13 @@
     `${item.noun || `${item.short} battle`}${plural ? "s" : ""}`;
   function finding() {
     const all = [...shown].map((key) => entries.get(key));
+    if (data.scenarios.every((item) => item.benchmark)) {
+      $("finding").textContent =
+        `${all.length} engine-completed battles in ${data.scenarios.length} recorded condition${data.scenarios.length === 1 ? "" : "s"}. Exploratory results; controller ranking and winnability remain unverified. Every planned attempt is listed below when a plan is supplied.`;
+      document.querySelector(".dek").textContent =
+        "The initial Empire battle benchmark, with its engine outcomes, condition scores and recorded decisions. The map replays the units the controller could observe; game screenshots are presentation only. Battles ran unpaused at normal speed.";
+      return;
+    }
     const dated = all
       .map((entry) => entry.battle.date)
       .filter((value) => date(value))
@@ -592,7 +608,7 @@
 
   // Figure 1's scenario: the largest controlled comparison anywhere. The page opens on it.
   const headline = data.scenarios
-    .filter((s) => s.controlled)
+    .filter((s) => s.controlled && !s.benchmark)
     .sort((a, b) => b.controlled.launches - a.controlled.launches)[0];
   // Figure 1: one score per commander in that comparison; definitions as its footnotes.
   function renderHeadline() {
@@ -660,7 +676,9 @@
   }
   // The score, defined for the kinds of battle on the page only.
   function scoreNote() {
-    const bases = new Set([...shown].map((key) => data.battles[key].progress_basis ?? "strength"));
+    const legacy = [...shown].filter((key) => !isBenchmark(entries.get(key)));
+    if (!legacy.length) return BENCHMARK_RULE;
+    const bases = new Set(legacy.map((key) => data.battles[key].progress_basis ?? "strength"));
     const modes = new Set(data.scenarios.map((s) => s.mode));
     // The modes scored by the enemy broken: land battles and siege defences.
     const broken = data.modes
@@ -668,8 +686,10 @@
         data.scenarios.some(
           (s) =>
             s.mode === mode.key &&
-            s.battles.some((k) =>
-              [null, undefined, "killed"].includes(data.battles[k].progress_basis),
+            s.battles.some(
+              (k) =>
+                !isBenchmark(entries.get(k)) &&
+                [null, undefined, "killed"].includes(data.battles[k].progress_basis),
             ),
         ),
       )
@@ -682,7 +702,125 @@
       bases.has("tickets") && "of the ticket goal reached (conquest and domination)",
       bases.has("evacuation") && "of the batteries in the extraction zone (evacuation)",
     ].filter(Boolean);
-    return `Score: 100 for a win${parts.length ? `; otherwise the percentage ${parts.join(" or ")}` : ""}.${bases.has("duration") ? " Survival battles score seconds survived." : ""} Bars are means over completed battles; lines span the worst to the best.`;
+    return `Score: 100 for a win${parts.length ? `; otherwise the percentage ${parts.join(" or ")}` : ""}.${bases.has("duration") ? " Survival battles score seconds survived." : ""} Bars are means over completed battles; lines span the worst to the best.${legacy.length < shown.size ? ` Mirror benchmark: ${BENCHMARK_RULE}` : ""}`;
+  }
+
+  // The plan collector owns counts, errors and score inputs. This view only formats them;
+  // it never derives a scalar rank or fills a missing measurement with a legacy score.
+  function renderBenchmarkResults() {
+    const box = $("benchmark-attempts");
+    const plans = data.benchmark_plans || [];
+    const linked = new Set(plans.flatMap((plan) => plan.rows.map((row) => row.battle_key)));
+    const unplanned = [...shown].filter((key) => isBenchmark(entries.get(key)) && !linked.has(key));
+    if (!plans.length && !unplanned.length) return;
+    $("benchmark-results").hidden = false;
+    $("benchmark-rule").textContent = BENCHMARK_RULE;
+    box.replaceChildren();
+    const sections = plans.map((plan) => ({
+      name: plan.plan,
+      summary: `${plan.planned} planned; ${plan.started} started; ${plan.completed} matched engine endings; ${plan.never_started} never started. Wins / draws / losses: ${plan.outcomes.won} / ${plan.outcomes.draw} / ${plan.outcomes.lost}.`,
+      rows: plan.rows,
+    }));
+    if (unplanned.length)
+      sections.push({
+        name: "Recorded battles without a supplied plan",
+        summary: "Planned and never-started counts are unavailable for these battles.",
+        rows: unplanned.map((key) => {
+          const entry = entries.get(key);
+          return {
+            ...entry.battle.benchmark,
+            output: entry.trial.instance,
+            controller: fullName(entry),
+            status: entry.trial.outcome,
+            battle_key: key,
+            errors: null,
+          };
+        }),
+      });
+    for (const section of sections) {
+      box.append(el("h3", section.name), el("p", section.summary, "benchmark-summary"));
+      const table = el("table", null, "benchmark-table"),
+        head = el("thead"),
+        tr = el("tr");
+      for (const title of ["Battle", "Controller", "Engine outcome", "Condition / 100", "Evidence"])
+        tr.append(el("th", title));
+      head.append(tr);
+      const body = el("tbody");
+      section.rows.forEach((row, index) => {
+        const line = el("tr"),
+          battle = el("td"),
+          controller = el(
+            "td",
+            row.battle_key ? fullName(entries.get(row.battle_key)) : row.controller,
+          );
+        line.dataset.output = row.output;
+        if (row.battle_key) {
+          const s = data.scenarios.findIndex((item) => item.battles.includes(row.battle_key));
+          battle.append(
+            button(
+              `Watch ${index + 1}`,
+              async () => {
+                await renderScenario(s, false);
+                await openRun(row.battle_key, false);
+                $("watch").scrollIntoView({ behavior: "auto" });
+              },
+              "inline benchmark-watch",
+            ),
+          );
+        } else battle.append(el("span", String(index + 1)));
+        battle.append(el("small", row.output, "benchmark-job"));
+        const outcome = el("td", row.outcome ? capital(row.outcome) : "No engine outcome");
+        outcome.className = "benchmark-outcome";
+        if (!row.outcome) outcome.append(el("small", row.not_started_reason || row.status));
+        const score = el("td", null, "benchmark-condition");
+        score.append(el("b", conditionText(row.condition)));
+        if (row.condition != null) {
+          const bar = el("span", null, "benchmark-health"),
+            fill = el("i");
+          fill.style.width = `${row.condition}%`;
+          bar.append(fill);
+          score.append(bar);
+        }
+        const evidence = el("td"),
+          details = el("details");
+        details.append(
+          el(
+            "summary",
+            row.errors
+              ? `${row.errors.length} recorded error events; score inputs`
+              : "Error count unavailable; score inputs",
+          ),
+          el(
+            "pre",
+            JSON.stringify(
+              {
+                units: row.units,
+                unavailable: row.unavailable,
+                errors: row.errors,
+                evidence_matches_plan: row.evidence_matches_plan,
+              },
+              null,
+              2,
+            ),
+            "raw",
+          ),
+        );
+        evidence.append(details);
+        line.append(battle, controller, outcome, score, evidence);
+        body.append(line);
+      });
+      table.append(head, body);
+      const scroll = el("div", null, "benchmark-scroll");
+      scroll.append(table);
+      box.append(scroll);
+    }
+    box.append(
+      el(
+        "p",
+        "Error categories count recorded events and may describe the same failure. Condition measures own army preservation; it does not establish controller strength or task balance.",
+        "figcap",
+      ),
+    );
   }
   // Cumulative API spend per model over every attempt in the report's input.
   function renderSpend() {
@@ -1173,6 +1311,18 @@
         name.append(button(item.title, pick(data.scenarios.indexOf(item)), "scenario"));
         if (item.armies?.line) name.append(el("small", item.armies.line));
         const bars = el("div", null, "bars");
+        if (item.benchmark)
+          for (const row of item.rows) {
+            const stats = rowStats(row),
+              line = el("p", null, "benchmark-record");
+            line.append(
+              el("b", row.name),
+              `: ${record(stats)}; condition ${row.battles
+                .map((key) => conditionText(data.battles[key].benchmark?.condition))
+                .join(", ")}.`,
+            );
+            bars.append(line);
+          }
         for (const cell of cells(item)) bars.append(scoreRow(cell, top));
         block.append(name, bars);
         section.append(block);
@@ -1186,7 +1336,7 @@
     const caption = el("p", null, "figcap");
     caption.append(
       el("b", "Figure 3. "),
-      `Each model's mean score over its completed battles in every scenario (seconds survived in endless survival) and its record, and in grey the best scripted rule's. Click a scenario to watch it above. † pools several settings or test-setup versions (hover it for which), so it is not a controlled comparison.${killed.length ? ` ${killed.length} lost battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
+      `${data.scenarios.some((item) => !item.benchmark) ? "Each model's mean legacy score over its completed battles and the best scripted rule's (seconds survived in endless survival). † pools settings or test-setup versions; it is not a controlled comparison. " : ""}Mirror profiles show every controller's outcome record and individual condition values, with different test setups kept separate. Click a scenario to watch it above.${killed.length ? ` ${killed.length} lost battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
     );
     box.append(caption);
   }
@@ -1317,6 +1467,8 @@
         "Provisional candidates, one per intended decision problem. A different faction, map, army size or difficulty is a variant, not a new family. Each candidate needs executable alternatives and evidence that its choices matter; wins and losses alone do not establish benchmark quality. The strongest-model screen and held-out evaluation are still ahead.",
       ],
     ];
+    if (data.scenarios.some((item) => item.benchmark) || data.benchmark_plans?.length)
+      items.push(["Mirror benchmark", BENCHMARK_RULE]);
     const battles = data.omitted.battles.length,
       launches = data.omitted.setup_only.length;
     if (battles || launches)
@@ -1530,6 +1682,7 @@
     Viewer.onTime(markHighlights);
     downloads();
     renderMethod();
+    renderBenchmarkResults();
     if (!data.scenarios.length) {
       $("heading").textContent = "No completed battles in this report";
       for (const id of ["viewer", "results", "plans", "all"]) $(id).hidden = true;

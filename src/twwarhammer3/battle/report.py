@@ -12,6 +12,7 @@ import statistics
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from twwarhammer3.battle.benchmark import collect as collect_plan
 from twwarhammer3.battle.benchmark import evaluate
 from twwarhammer3.battle.stats import active_left
 
@@ -97,7 +98,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                 elif kind == "invalid":
                     rejections["validation: " + str(event.get("error", "unknown"))] += 1
                 elif kind == "forfeit":  # a failed decision the episode went on after
-                    attempts.extend(event["failure"].get("attempts") or [])
+                    attempts.extend((event.get("failure") or {}).get("attempts") or [])
                 elif kind == "team" and event.get("event") == "failed":
                     attempts.extend({**attempt, "member": event.get("member")} for attempt
                                     in (event.get("failure") or {}).get("attempts") or [])
@@ -281,7 +282,13 @@ def paired_margins(a: str, b: str, trials: list[dict], flagged: set) -> dict:
                                          - differences.keys())}
 
 
-def collect(jobs: list[Path]) -> dict:
+def collect(jobs: list[Path], *, benchmark_plans: list[Path] | None = None) -> dict:
+    # Enumerate the frozen plans before joining recordings, as in SWE-bench's
+    # swebench/harness/reporting.py (docs/references.md). Missing attempts stay in plans;
+    # foreign evidence never supplies a scored replay merely because its path exists.
+    plans = [collect_plan(path) for path in benchmark_plans or []]
+    jobs = [*jobs, *(Path(row["output"]) for plan in plans for row in plan["rows"]
+                     if row["evidence_matches_plan"])]
     groups = defaultdict(list)
     seen = set()
     job_records = []
@@ -390,6 +397,7 @@ def collect(jobs: list[Path]) -> dict:
                   "job_wall_s": total_wall,
                   "valid_trials_per_wall_hour": valid * 3600 / total_wall if total_wall else None}
     return {"schema": 1, "groups": output, "jobs": job_records,
+            **({"benchmark_plans": plans} if plans else {}),
             "throughput": throughput,
             "limitations": "Exploratory comparisons. Whole latency includes network and retries. "
             "Added age is a minimum: available buffered snapshots can be older, especially "

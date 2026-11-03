@@ -163,6 +163,7 @@ def _portable(report: dict) -> dict:
     """Replace local paths with stable evidence identifiers, including paired keys."""
     instances = {job["instance"] for job in report.get("jobs", [])}
     instances.update(trial["instance"] for group in report["groups"] for trial in group["trials"])
+    instances.update(plan["plan"] for plan in report.get("benchmark_plans", []))
     names = {}
     for instance in sorted(instances):
         name = Path(instance).name
@@ -351,6 +352,11 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "own_left": _share(own.get("remaining"), own.get("registered")),
         }
         scenario = definition.get("scenario") or {}
+        benchmark = (trial.get("metrics") or {}).get("benchmark")
+        if scenario.get("benchmark"):
+            # The new evaluator supplies the score. Legacy enemy-broken bars are not
+            # its health/state tie-break, and never replace a missing condition.
+            battles[key]["benchmark"] = benchmark
         measures = trial.get("measures") or {}
         custom = measures.get("custom_objective")
         # JUDGEMENT?: Partial credit by mode — assistant, 2026-10-15: a lost battle scores by
@@ -380,7 +386,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         elif mode_of(scenario) == "survival":
             # Endless waves have no finite enemy denominator or known completion target.
             battles[key].update(progress=None, progress_basis="duration")
-        by_name.setdefault(scenario_name(definition), []).append(key)
+        name = scenario_name(definition)
+        identity = (name, battles[key]["harness"]) if scenario.get("benchmark") else name
+        by_name.setdefault(identity, []).append(key)
 
     def row(key):
         return battles[key]["commander"]["name"], battles[key]["commander"]["detail"]
@@ -411,13 +419,17 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
 
     runs, scenario_notes = notes.get("runs") or {}, notes.get("scenarios") or {}
     # The core scenarios, when the report has any; else every scenario (an ad hoc report).
-    core = {name for name in by_name if (scenario_notes.get(name) or {}).get("core_candidate")}
+    core = {name for name in by_name if isinstance(name, str)
+            and (scenario_notes.get(name) or {}).get("core_candidate")}
     scenarios = []
-    for name, every in by_name.items():
+    for identity, every in by_name.items():
+        name = identity[0] if isinstance(identity, tuple) else identity
+        definition = group_of(every[0])["definition"]
+        scenario = definition.get("scenario") or {}
         # Completed battles only. Diagnostic probes test tooling, not commanding.
         keys = [key for key in every if trials[key]["valid"]
                 and battles[key]["commander"]["kind"] != "diagnostic"]
-        if not keys or (core and name not in core):
+        if not keys or (core and name not in core and not scenario.get("benchmark")):
             continue
         definition = group_of(keys[0])["definition"]
         scenario = definition.get("scenario") or {}
@@ -448,6 +460,12 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "split": scenario.get("split"), "status": scenario.get("status"),
             "difficulty": (scenario.get("expect") or {}).get("difficulty"),
             "battle_type": scenario.get("battle_type") or "unrecorded",
+            **({"benchmark": scenario["benchmark"],
+                "scenario_version": scenario.get("scenario_version"),
+                "title": (f"{note.get('title') or 'Empire cavalry'} — "
+                          f"version {scenario.get('scenario_version', '?')}"),
+                "short": f"Empire cavalry v{scenario.get('scenario_version', '?')}"}
+               if scenario.get("benchmark") else {}),
             "armies": armies(scenario), "battles": keys,
             "rows": sorted(rows.values(), key=lambda item: (
                 order[item["kind"]], item["name"],  # numbers in natural order: +6 s before +10 s
@@ -469,7 +487,14 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
     omitted = {"battles": sorted((key for key in trials if key not in shown), key=chronology),
                "setup_only": [index for index, job in enumerate(data.get("jobs", []))
                               if job["instance"] not in started]}
+    by_instance = {trial["instance"]: key for key, trial in trials.items()
+                   if trial["episode"] == "episode-0000" and key in shown}
+    plans = [{**plan, "rows": [{**row, "battle_key": by_instance.get(row["output"])
+                               if row["evidence_matches_plan"] else None}
+                              for row in plan["rows"]]}
+             for plan in data.get("benchmark_plans", [])]
     return {"schema": 3, "evidence_kind": kind, "report": data, "battles": battles,
+            "benchmark_plans": plans,
             "scenarios": scenarios, "omitted": omitted,
             "modes": [{"key": key, "title": title, "name": name} for key, title, name in MODES]}
 
@@ -626,6 +651,8 @@ def render(report: dict, notes: dict | None = None) -> str:
     # Stills: each featured battle, and the earliest battle of each commander in each scenario.
     pictured = {scenario["featured"] for scenario in data["scenarios"]}
     for scenario in data["scenarios"]:
+        if scenario.get("benchmark"):
+            pictured.update(scenario["battles"])
         for row in scenario["rows"]:
             pictured.add(min(row["battles"], key=chronology))
     for key, payload in payloads.items():

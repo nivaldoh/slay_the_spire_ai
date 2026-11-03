@@ -69,9 +69,15 @@ previews and the tooling. With the saved jobs available, rebuild the suite repor
 
 ```bash
 uv run python -m twwarhammer3 report --jobs-file configs/twwarhammer3/benchmark_jobs.json \
+  --benchmark-plan runs/benchmark-initial-20261102/pilot-v5-r2.json \
+  --benchmark-plan runs/benchmark-initial-20261102/model-v5.json \
   --output runs/twwarhammer3/reports/benchmark
 # Open runs/twwarhammer3/reports/benchmark.html in a browser.
 ```
+
+The main report retains the earlier annotated Sol cavalry flank alongside the current
+Empire mirror results. Each scenario keeps its scoring; the earlier example stays until
+a better replacement is agreed. [Open the report on Windows](docs/twwarhammer3/reports.md#main-report-and-retained-example).
 
 **Battle checkpoints.** A running battle can be saved at any tick and restored exactly, as
 often as needed: the battle is rebuilt from the game's own replay, checked tick by tick, and

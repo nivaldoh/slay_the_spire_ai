@@ -1216,6 +1216,100 @@ blockquote {
   margin-bottom: 14px;
   font: 600 var(--t-xl) / 1.15 var(--serif);
 }
+.benchmark-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.benchmark-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: var(--t-s);
+}
+.benchmark-table th,
+.benchmark-table td {
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.benchmark-table th {
+  color: var(--muted);
+  font-weight: 500;
+}
+.benchmark-table td {
+  max-width: 240px;
+  overflow-wrap: anywhere;
+}
+.benchmark-job,
+.benchmark-outcome small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.benchmark-table .raw {
+  max-width: 240px;
+  max-height: 240px;
+}
+.benchmark-health {
+  display: block;
+  height: 5px;
+  width: 100px;
+  background: var(--line);
+  margin-top: 8px;
+}
+.benchmark-health i {
+  display: block;
+  height: 100%;
+  background: var(--ink-2);
+}
+.benchmark-summary,
+.benchmark-record {
+  margin: 12px 0;
+}
+@media (max-width: 760px) {
+  .benchmark-table {
+    min-width: 0;
+  }
+  .benchmark-table thead {
+    display: none;
+  }
+  .benchmark-table tbody {
+    display: block;
+  }
+  .benchmark-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .benchmark-table td {
+    max-width: none;
+    padding: 0;
+    border: 0;
+  }
+  .benchmark-table td:nth-child(1),
+  .benchmark-table td:nth-child(2),
+  .benchmark-table td:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+  .benchmark-outcome::before,
+  .benchmark-condition::before {
+    display: block;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .benchmark-outcome::before {
+    content: "Engine outcome";
+  }
+  .benchmark-condition::before {
+    content: "Condition / 100";
+  }
+  .benchmark-table .raw {
+    max-width: 100%;
+  }
+}
 .finding {
   max-width: var(--measure);
   margin-top: 22px;

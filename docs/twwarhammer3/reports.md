@@ -1,9 +1,77 @@
 # WH3 benchmark reports
 
-**New definition, 2026-10-23:** the [Land Battle report plan](benchmark.md#measurements)
-uses engine outcomes including timer wins, with separate army-condition and timing/cost
-diagnostics. The current report described below is not yet that benchmark view; its
-denominator and contact-only rate need the versioned change in the plan.
+The [initial mirror benchmark](benchmark-initial.md) uses this existing visual report for
+its maps, replays, decisions and scores. Its engine outcome and own-army condition replace
+the legacy enemy-broken score for these battles. Historical scenarios keep their earlier
+scores and presentation. Broader [Land Battle report requirements](benchmark.md#measurements)
+remain separate from this first profile.
+
+## Main report and retained example
+
+The main entry point is `runs/twwarhammer3/reports/benchmark.html`: the earlier suite plus
+the current mirror plans, with their scenario definitions and scoring kept separate.
+Owner, 2026-11-02: retain the earlier GPT Sol cavalry-flanking result until a better
+replacement is agreed. Its recordings and previous reports were never removed; the
+mirror-only page linked earlier simply did not include them.
+
+The main report keeps the annotated Sol battle
+`bench-c1-cavalry-ai11-02-20261015/episode-0000` selected in **Cavalry assault, stronger enemy**.
+Choose **Play key moment** for **The guns break first**. This is the earlier scenario and
+score, not a result on the new Empire mirror profile. Its original comparison battles
+and other earlier scenarios remain available, so the selected win is not the whole result.
+The curated selection/highlight notes remain unchanged. Rebuild with the [suite command](#suite-report)
+below; keep this historical example when updating the main report until a replacement is agreed.
+
+On Windows, open:
+`\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\benchmark.html`.
+The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1-cavalry-ai11.html`.
+
+## Initial benchmark visuals
+
+`benchmark report PLAN` writes the visual page alongside the original planned-attempt
+JSON and text. To combine the free pilots and model screen in one standalone HTML file:
+
+```bash
+uv run --locked python -m twwarhammer3 report \
+  --benchmark-plan runs/benchmark-initial-20261102/pilot-v5-r2.json \
+  --benchmark-plan runs/benchmark-initial-20261102/model-v5.json \
+  --output runs/twwarhammer3/reports/initial-benchmark
+```
+
+Open `runs/twwarhammer3/reports/initial-benchmark.html` locally. On Windows, paste
+`\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\initial-benchmark.html`
+into File Explorer's address bar. The HTML, JSON and text companions live in the standard
+WH3 reports folder; implementation/review scratch stays in `runs/benchmark-visual-20261102/`.
+Each planned attempt
+shows its engine outcome, first-ending condition, errors and raw per-unit score inputs;
+its Watch button opens the existing map, timeline and decision viewer when a completed
+matching recording exists. Missing/foreign evidence and never-started attempts remain
+visible without invented outcomes. Combined plans retain separate, unambiguous identities.
+Different mirror profiles/test setups stay in separate scenario views, even alongside
+historical core scenarios. Condition values are shown individually, without a controller
+ranking or a legacy enemy-broken fallback. These choices follow the current benchmark
+contract; its score weights still rest on JUDGEMENT `benchmark-implementation.md` Simple
+condition score.
+
+The ordinary `report JOB ...` command also shows mirror scores and replays. Supply plans
+to establish planned/never-started counts and the complete error-event accounting; without
+plans these counts are explicitly unavailable. Failed still captures remain evidence;
+every mirror battle's successful automatic stills can be inspected in its replay. The
+separate passive ending PNGs retained by the measurement review are not automatically
+embedded. The page does not depend on any neighbouring evidence directory after generation.
+
+The dedicated offline browser check recomputes conditions from raw unit records, checks
+every completed attempt's score and replay link, desktop/phone layouts, JSON download,
+the copied standalone file and never-started-plan visibility. It is proposed, not a newly
+agreed verification method:
+
+```bash
+NODE_PATH=~/.cache/wh3-playwright/node_modules node \
+  tests/twwarhammer3/check_wh3_benchmark_report_browser.cjs \
+  runs/twwarhammer3/reports/initial-benchmark runs/benchmark-visual-20261102/browser
+```
+
+## Historical reports
 
 `twwarhammer3 report` turns saved job directories into a text report, the collector's full
 JSON and an HTML page that opens offline and holds its own CSS, scripts, evidence and
@@ -80,11 +148,13 @@ findings from hypotheses; Kislev is described as reinforcement defence because t
 evidence has not established a budgeting tradeoff. The six candidates remain displayed.
 
 The canonical entry point is `runs/twwarhammer3/reports/benchmark.html`, with `.json`
-and `.txt` companions. Rebuild it from the explicit, versioned selection (run at the
-repository root):
+and `.txt` companions. Rebuild it from the explicit, versioned historical selection and
+the current mirror plans (run at the repository root):
 
 ```bash
 uv run python -m twwarhammer3 report --jobs-file configs/twwarhammer3/benchmark_jobs.json \
+  --benchmark-plan runs/benchmark-initial-20261102/pilot-v5-r2.json \
+  --benchmark-plan runs/benchmark-initial-20261102/model-v5.json \
   --output runs/twwarhammer3/reports/benchmark
 ```
 

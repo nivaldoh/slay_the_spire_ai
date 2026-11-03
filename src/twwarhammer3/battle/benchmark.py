@@ -5,7 +5,6 @@ plan, then join evidence, keeping missing attempts. No donor code. Historical ca
 retain their own evaluator; this module only reads the versioned mirror profile.
 """
 
-import html
 import json
 import math
 import signal
@@ -294,7 +293,11 @@ def collect(plan_path: Path) -> dict:
 
 
 def report(plan_path: Path, output: Path) -> dict:
-    data = collect(plan_path)
+    from twwarhammer3.battle import report as trials
+    from twwarhammer3.battle import report_html
+
+    visual = trials.collect([], benchmark_plans=[plan_path])
+    data = visual["benchmark_plans"][0]
     text = (f"{VERSION}: {data['completed']}/{data['planned']} engine-completed; "
             f"{data['never_started']} never started; outcomes {data['outcomes']}.\n"
             "Rank completed battles by win > draw > loss, then own condition; "
@@ -307,13 +310,7 @@ def report(plan_path: Path, output: Path) -> dict:
     def artifact(suffix):
         return output.with_name(output.name + suffix)
 
+    report_html.write(artifact(".html"), visual)
     write_json(artifact(".json"), data)
     artifact(".txt").write_text(text)
-    artifact(".html").write_text(
-        '<!doctype html><meta charset="utf-8"><title>WH3 mirror benchmark</title>'
-        '<style>body{font:16px system-ui;max-width:1000px;margin:2em auto}'
-        'pre{white-space:pre-wrap}</style>'
-        '<h1>WH3 initial mirror benchmark</h1><pre>' + html.escape(text) + '</pre>'
-        '<details><summary>Every attempt and raw scoring inputs</summary><pre>'
-        + html.escape(json.dumps(data, indent=2)) + '</pre></details>')
     return data

@@ -118,6 +118,20 @@ planned/never-started attempts. Source revision and controller prompts/cards sta
 Started counts also use a matching first battle trace when result saving has not happened
 or was interrupted. Truncated trace lines remain errors; foreign battle identities are refused.
 
+Owner, 2026-11-02: the existing HTML visuals and benchmark scores are part of this benchmark.
+`benchmark report` now uses that report's map/replay/decision viewer and adds every planned
+attempt with its engine outcome and condition. The JSON/text plan report keeps its schema.
+The earlier plain HTML bypassed the visual report; its legacy enemy-broken score was also
+not this evaluator's condition. Both are corrected by the [visual integration](reports.md#initial-benchmark-visuals),
+which gives the combined pilot/model command and offline checks. No new battles are needed
+to build it; existing evidence supplies all eight replays. These presentation checks are
+proposed, not a new agreement about model strength or winnability.
+
+The canonical [main report](reports.md#main-report-and-retained-example) also retains the
+earlier annotated Sol cavalry flank and its original comparison results, at the owner's
+request, until a better replacement is agreed. Those keep their earlier scenario/score;
+`initial-benchmark.html` remains the current mirror-only view.
+
 ## Measurement check
 
 Owner originally agreed saved UI screenshots of rosters/settings, ending and health
