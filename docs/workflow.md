@@ -19,6 +19,28 @@ Sources are linked inline and listed in [references.md](references.md).
 A diagram of these parts is the Factory tab of [how-code-works.html](how-code-works.html#factory)
 (open it in a local browser; the [WH3 README](twwarhammer3/README.md#pages) gives the path).
 
+## Start here
+
+Read the opening above and the sections for the task; the tables below route to existing
+rules. `AGENTS.md` is already loaded by the agent. Start with [Active work](state.md#active-work)
+and the relevant track in `state.md`, then that track's page. Check Git and live processes
+before relying on a handoff's branch, running-job or completion claims. Completed reports
+and full deferred choices live in the [review queue](review-queue.md); open the relevant item
+before acting on it. A pending choice on another track does not block independent work.
+
+| Task | Sections to read |
+|---|---|
+| Any change | [Size](#sizes-of-change), the matching [loop](#loops-what-runs-when) and [report](#reports) |
+| Normal change, including a new or changed test | [Card](#before-a-change-the-card), [checks in layers](#checks-in-layers) and [reviewer](#agent-checks-and-the-reviewer) |
+| Commit | [Exit gate](#the-exit-gate-scriptscheckpy), including its warning and pass-record limits |
+| Check, hook or workflow change | Also [keeping the process working](#keeping-the-process-working) and [what exists](#what-exists-and-what-waits) |
+| Unattended work | Also [long-run brief and handoff](#long-runs-while-the-owner-is-away) and [autonomy](autonomy.md) |
+| Agent configuration | Also [Claude Code and Codex](#claude-code-and-codex) |
+
+For the owner's original instructions, search [owner-direction.md](owner-direction.md) by
+topic/date. For an agreed correctness method and its recorded revisions, read the relevant
+entry in [agreed-checks.md](agreed-checks.md). Neither file needs loading in full at startup.
+
 ## Sizes of change
 
 What the owner sees depends on the kind of change, not on who made it ("The change sets the
@@ -99,6 +121,11 @@ prompted this guard. It hashes checkout contents and symlink targets (including 
 and dangling links), not historical versions left in the index.
 
 A normal check invalidates the record it found at startup; rejected arguments clear it too.
+A normal run holds `runs/checks/gate.lock` until it exits, so another normal gate in this
+checkout waits before touching shared scratch or reports. The filesystem lock works across
+PID namespaces; a PID absent from one sandbox is not proof another sandbox's run ended.
+This serialization rests on JUDGEMENT? `scripts/check.py` Gate serialization. Closing the
+process releases the lock; the empty lock file stays in place so waiters share one inode.
 A successful overlapping run on unchanged files can establish a new pass even if this one
 aborts (rests on JUDGEMENT? `scripts/check.py` Concurrent passes). `--help` and `--plants`
 do not replace the normal-run record.
@@ -419,6 +446,11 @@ The owner alternates between the two (2026-10-29), so each gets the same pieces;
 | WH3 version review | `.claude/workflows/wh3-version-review.js` (the Workflow tool) | None: one `reviewer` per episode, by hand |
 | Personal settings | `.claude/settings.local.json` (plugins, permissions; ignored) | `~/.codex/config.toml` |
 
+Codex's native `PreToolUse` dispatch through code-mode `exec_command` blocked a harmless
+`ruff format --help` probe on 2026-11-02 (`runs/factory-startup-20261102/native-hook-probe.txt`).
+This checks one dispatch/refusal path; it does not establish native Stop behaviour.
+Matching configuration files alone establish neither path.
+
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them
 (so `stop_check.py` lets an unchanged failing tree through after one block); a Codex
@@ -433,3 +465,85 @@ Not building: Sonar's products, dashboards or coverage targets; repo-wide mutati
 spec frameworks such as Kiro; an Inspect port, a type-checker migration or an orchestration
 framework; Anthropic's scale machinery. A new tool needs a gap we have seen, a named use and
 a check that it helps.
+
+### Session context improvements
+
+Saved at the owner's request on 2026-11-02 for later implementation planning. These are
+audit suggestions; no instruction, memory, plugin or verification change is adopted here.
+
+- **Reconcile current information.** Keep current status and owner authorization in their
+  respective shared homes, with pointers elsewhere. The audit found Claude's memory still
+  proposing the completed multiplayer observer smoke, and `state.md` still asking for the
+  team-report merge approval already recorded in `owner-direction.md`. Recheck these examples
+  before acting; they describe the audit snapshot, not a permanent list of pending work.
+- **Reduce private memory duplication.** Move useful durable guidance into shared repository
+  docs and shorten Claude's memory index to pointers. Do not copy its historical status into
+  Codex. `test_agent_sync.py` compares repository hooks, reviewers and skills; it does not
+  establish parity of personal memories, installed plugins or complete startup context.
+- **Narrow skill availability and triggers.** Review which catalogs ordinary WH3 development
+  needs, and which belong only to occasional tasks. Broad modding triggers can send an
+  established project through unnecessary reconnaissance. Check supported configuration and
+  actual loading before proposing exclusions; some built-in entries may not be configurable.
+- **Shorten the always-loaded instructions.** Consider moving detailed commands, layout and
+  game-specific implementation facts behind explicit task routes. Measure characters or
+  tokens as well as lines. Keep verification, owner decisions, concurrent game work, budgets
+  and evidence preservation prominent; preserve the shared `CLAUDE.md` import and conditional
+  Spire guidance. Promote the owner's priority: reduce their attention and manual review work.
+- **Improve selective reading.** Extend the existing reading table for status questions,
+  research and read-only audits. Make current directions, proposals and historical notes
+  distinguishable. A link alone does not ensure an agent reads required guidance; moving
+  text saves nothing if the route still makes every task read the whole destination.
+
+Separate automatic context from later reads: skill descriptions load before selected skill
+bodies; imported instructions load with their parent. Sources already in [references.md](references.md):
+[Codex skills](https://learn.chatgpt.com/docs/build-skills) and
+[Claude memory](https://code.claude.com/docs/en/memory), read during this audit.
+
+JUDGEMENT: Context comparison — Codex, 2026-11-02, proposes the tasks and measures below.
+Different tasks could expose different omissions; no sample size or pass criterion is agreed.
+
+Before adopting changes, agree a small before/after comparison within each tool, holding its
+version, model, configuration and task prompts fixed. Include a status question, an already
+approved action, a running-game conflict, a WH3-only change and a shared-code change. Measure
+startup and subsequent reading tokens, retrieval of required guidance, stale conclusions,
+unnecessary questions and owner intervention. Record cached input separately from cost;
+first-request totals include platform instructions and tools as well as repository text.
+Fewer tokens alone would not establish an improvement. The proposed benefits remain unverified.
+
+### Concurrent work improvements
+
+Saved at the owner's request on 2026-11-02 for later planning: "No overengineering, no slop."
+The benchmark handoff records a docs-only commit interrupting its queue
+(`runs/benchmark-initial-20261102/handoff.md`); a passing gate lost its pass record when
+files changed during the run (`runs/checks/20261102-134700-b1136e8-2335005.log`). The current
+working copy already serializes full checks; that lock does not prevent concurrent edits.
+
+JUDGEMENT: Concurrent work proposal — Codex, 2026-11-02, proposes separate writing checkouts,
+one integration owner and the trial below. Sharing a writing checkout or distributing merges
+would change coordination costs and risks. These suggestions and the trial are not adopted.
+
+- **Separate concurrent writers.** Give each writing task its own branch and worktree, with
+  its own environment and scratch. Read-only investigation can use an existing checkout.
+  Review a fixed revision; mutating review experiments belong in a separate scratch checkout.
+- **Assign one integration owner.** One session brings ready changes into `main`, reconciles
+  shared summaries, checks the combined result and commits when permitted. Other writers
+  continue in their worktrees. Preserve the required main-checkout check: worktree checks
+  can skip evidence-dependent cases. Existing game-time and commit restrictions still apply.
+- **Name tasks and their scope.** In the existing Active work entry, identify the task,
+  responsible session, checkout and expected files; "Codex" or "Claude" alone is ambiguous.
+  Reuse task handoffs for the exact revision, checks and unresolved dependencies. Agree a
+  shared interface before concurrent tasks implement against it; avoid making the owner
+  relay messages. No new coordination service or task registry is proposed.
+- **Freeze experiment code.** Evaluate the benchmark's separate execution checkout as a
+  repeatable practice. Preserve established ledger and result destinations explicitly;
+  do not duplicate ledgers or link whole `runs/` folders. Isolation alone does not authorize
+  simultaneous controllers or relaxing the current restrictions.
+- **Consider Stop-hook attribution later.** A read-only session currently can trigger a full
+  check of another writer's dirty tree. First assess whether checkout separation resolves
+  this. Any hook change needs reliable attribution of this session's edits and must preserve
+  the exact-tree commit gate; a dirty tree alone does not identify who owes validation.
+
+Proposed trial: use independent offline tasks with separate writers and one integration
+owner, then check their combined result. Agree the cases and success criteria first; observe
+overwritten edits, invalidated checks, repeated work and owner intervention. Benefits remain
+unverified; adding coordination machinery is not itself progress.

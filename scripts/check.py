@@ -66,6 +66,7 @@ checks; ours are tests/test_repo_rules.py, which the suite runs).
 """
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -845,6 +846,19 @@ def main() -> int:
     # a genuine pass on current contents can survive another run's abort. Invalidating it
     # would force an extra run; this guard's concurrent behavior rests on this.
     (ROOT / CHECKED).unlink(missing_ok=True)
+    # JUDGEMENT?: Gate serialization — Codex, 2026-11-02, factory reliability request:
+    # normal gates share one checkout lock; per-run leases would allow parallel checks.
+    # This protects scratch/report ownership across separate PID namespaces.
+    # Followed: huggingface_hub/src/huggingface_hub/file_download.py uses WeakFileLock
+    # around shared cache writes. WSL/CI use Unix flock here, without a new dependency.
+    lock = ROOT / "runs" / "checks" / "gate.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with lock.open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        return normal_main(args)
+
+
+def normal_main(args: argparse.Namespace) -> int:
     head = git(ROOT, "rev-parse", "--short", "HEAD").strip()
     branch = git(ROOT, "branch", "--show-current").strip() or "detached HEAD"
     status = git(ROOT, "status", "--porcelain").splitlines()

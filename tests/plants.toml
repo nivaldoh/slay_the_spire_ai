@@ -2988,6 +2988,24 @@ tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py::test_the_proof_
 source = "2026-11-02 cleanup round 5 review"
 
 [[plant]]
+id = "gate-overlap-without-filesystem-lock"
+guards = "Normal gates cannot enter pytest together and overwrite or prune active scratch"
+file = "scripts/check.py"
+old = "fcntl.flock(held, fcntl.LOCK_EX)"
+new = "pass"
+tests = ["tests/test_check_isolation.py::test_overlapping_gates_keep_active_scratch_and_release_after_exit"]
+source = "2026-11-02 factory startup concurrency reproduction and independent review"
+
+[[plant]]
+id = "gate-lock-errors-keep-old-pass"
+guards = "A lock setup or acquisition error cannot leave a previous gate receipt available"
+file = "scripts/check.py"
+old = "\n    (ROOT / CHECKED).unlink(missing_ok=True)\n"
+new = "\n    pass\n"
+tests = ["tests/test_check_isolation.py::test_lock_failure_invalidates_the_previous_pass"]
+source = "2026-11-02 factory startup independent review"
+
+[[plant]]
 id = "link-status-for-seq-zero-lands-on-the-last-command"
 guards = "A status report names a delivered command by its 1-based seq; seq 0 is no command, even while the latest one waits delivered"
 file = "src/twwarhammer3/engine/link.py"
