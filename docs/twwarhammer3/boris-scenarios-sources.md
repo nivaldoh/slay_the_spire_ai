@@ -3,8 +3,8 @@
 Inspected 2026-11-03 for the [scenario catalogue](boris-scenarios.md). Excerpts below locate
 supporting passages; they do not establish live recruitability, tactical effectiveness or
 current competitive rankings. The armies and experimental contrasts are original proposals.
-The repository targets patch 9.0.4, Steam build 25961564 in
-[runtime.py](../../src/twwarhammer3/engine/runtime.py); no game was launched for this research.
+This research used the former patch 9.0.4/Steam build 25961564 pin; the
+[current runtime pin](integration.md#pins) is recorded separately. No game was launched for this research.
 
 ## Ownership and army content
 

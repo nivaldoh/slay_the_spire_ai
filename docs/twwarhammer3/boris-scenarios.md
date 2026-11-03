@@ -67,8 +67,8 @@ a current faction ranking or an optimal list for this restricted collection.
   [Boris overview](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/107).
 * **Patch-sensitive synergy matters.** In 9.0.3, Crush the Weak changed to grow during
   sustained winning melee; Teutogen attacks and several new-unit prices also changed.
-  Launch-era impressions cannot settle their present value. These cards target the repo's
-  9.0.4 pin, not an assumed latest build.
+  Launch-era impressions cannot settle their present value. These cards were researched
+  against the former 9.0.4 pin; reassess patch-sensitive claims on the [current build](integration.md#pins).
   [CA 9.0.3 notes](https://community.creative-assembly.com/total-war/total-war-warhammer/forums/7-patch-notes-amp-announcements/threads/16126-total-war-warhammer-iii-patch-9-0-3).
 * **Support has an opportunity cost.** An October multiplayer balance proposal questions
   the cost of Ulric prayers and Teutogen performance. That is community judgement, predating

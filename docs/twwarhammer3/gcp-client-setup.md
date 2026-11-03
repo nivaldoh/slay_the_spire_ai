@@ -107,7 +107,7 @@ empty VM/disk inventory before the next attempt. This is provisioning evidence o
 | Wrong NVIDIA licence | A VM created without `nvidia-l4-vws` gets the "Virtual Applications" licence: one display, at most 1280x1024 | The licence reading (step 1) is not "NVIDIA RTX Virtual Workstation", "Licensed" | Delete and recreate the VM with the vWS accelerator |
 | Too slow for 1x | `g2-standard-4` has 4 vCPUs. Google's own Windows example uses `g2-standard-8`; Steam recommends an i5-class CPU | Battle time runs slower than Windows time | Resize to `g2-standard-8` (more per hour) |
 | No L4 free in the zone | Stockouts are separate from quota (`ZONE_RESOURCE_POOL_EXHAUSTED`) | The create fails | The region runner tries other quoted zones within the same allowance and deadline |
-| Game builds differ between your PC and the VM | Your PC's WH3 is set to "always keep updated" | `doctor` on the VM reports a build other than 25961564 | Set the VM to update only on launch. Multiplayer needs equal builds, and a re-pin needs your yes |
+| Game builds differ between your PC and the VM | Your PC's WH3 is set to "always keep updated" | `doctor` on the VM reports a different build or executable hash from the PC | Set the VM to update only on launch. Multiplayer needs equal builds, and a re-pin needs your yes |
 | Costs keep running | Budget alerts only notify; Google's spend caps do not cover Compute Engine. A stopped VM still bills its disk | The bill grows | Fixed DELETE deadline plus an independent cloud workflow; confirm both VM and disk are absent |
 | Open to the internet | A new project's default network allows RDP and SSH from any address | — | Delete those two rules first; allow only Google's IAP range. Your Steam login stays on the VM until you remove the device in Steam or delete the VM |
 | Windows SSH is a Preview feature | SSH through IAP is documented for Linux only | `gcloud compute ssh` fails | Startup scripts, which run as SYSTEM and log to the serial port, plus RDP |
@@ -312,8 +312,9 @@ has no usable display, the fallback changes what the test measures.
    pilot). Check Steam's UI or `logs/content_log.txt` for live progress; require a
    completed install and actual executable before treating the host as ready.
 2. Stop Steam, set `"AutoUpdateBehavior" "1"` (update only when launched), start Steam again.
-3. Run `python -m twwarhammer3 doctor` on the VM: the build must be 25961564 and
-   `Warhammer3.exe` must match the pin. If either differs, stop and tell you.
+3. Run `python -m twwarhammer3 doctor` on the VM: the build and `Warhammer3.exe` must
+   match the [current runtime pin](integration.md#pins) and the PC. If either differs,
+   stop and tell you.
 4. Use the owner's selected Low preset and record actual resolution and unit size.
    Save the configuration through a graceful game exit, then reuse it. Check persistence
    once across a restart; do not revisit graphics on every launch unless it changed.

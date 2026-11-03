@@ -7,8 +7,8 @@ behaviours, then [evaluation designs](tactics-evaluation.md) for comparisons and
 
 Research date: 2026-11-01. Sources establish historical examples and documented game
 features; **the proposed tactics' effectiveness in our pinned WH3 build is unverified**.
-The runtime [pin](../../src/twwarhammer3/engine/runtime.py) identifies patch 9.0.4, build
-25961564. Earlier patch notes and WH2 Academy material are explicitly dated foundations,
+This research used patch 9.0.4, build 25961564; the current runtime
+[pin](integration.md#pins) is recorded separately. Earlier patch notes and WH2 Academy material are explicitly dated foundations,
 not current numerical specifications. [Source notes](tactics-sources.md) record access limits.
 
 The [benchmark definition](benchmark.md) governs: fixed armies and deployment, public

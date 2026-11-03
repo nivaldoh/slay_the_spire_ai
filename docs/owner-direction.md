@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (WH3 update): "WH3 has received an updated on Steam. Let's re-pin it in our
+  code to work with the latest version". Re-pin the normal runtime to the completed local
+  9.0.5/build 26403568 install; native checkpoint support remains a separate build guard.
 - 2026-11-03 (Boris scenario research): research distinct WH3 battle setups for the account
   entering through Boris Todbringer's standalone End Times pack, with Empire on either
   side; cover mechanics, competitive play, unit/faction variety, terrain and model/team

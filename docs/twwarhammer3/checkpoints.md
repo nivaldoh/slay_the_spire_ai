@@ -3,6 +3,9 @@
 Save a running battle at a tick and later continue it from exactly that tick, as often as
 needed: for benchmarks and training that start several attempts from one battle state.
 Steam build 25961564 only; the agent checks the game's code bytes and refuses other builds.
+The installed game and normal runtime [pin](integration.md#pins) moved to 9.0.5/build
+26403568 on 2026-11-03. Checkpoints refuse that executable; porting their native hooks and
+rerunning the agreed checks remain necessary before using them on the updated install.
 The public release of the same tool for players and modders is
 [github.com/nivaldoh/wh3-battle-checkpoints](https://github.com/nivaldoh/wh3-battle-checkpoints)
 (v0.1.0, owner-approved 2026-10-25).

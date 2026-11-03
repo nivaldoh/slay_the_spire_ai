@@ -28,6 +28,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: runtime re-pinned to Steam 9.0.5
+
+- Owner requested the re-pin. Completed Steam install: build 26403568, Windows file/product
+  version 9.0.5.0; executable SHA256 recorded in [Pins](integration.md#pins). Updated both
+  runtime constants; earlier evidence retains its actual build.
+- Independent install comparison failed on the old pins and passes on the new ones;
+  read-only `doctor` is ready with no warnings. Focused runtime/doctor/checkpoint guards:
+  33 passed, one Windows opt-in skipped. Evidence/card: `runs/wh3-repin-20261103/`.
+- Checkpoints retain their independent old-executable guard and refuse this install;
+  porting native hooks and rerunning their agreed checks remain necessary.
+- One free scripted smoke battle is next, unpaused at 1x. Patch-to-patch result equivalence,
+  full live compatibility and policy strength remain unverified; no paid calls.
+
 ## 2026-11-03: mailbox transition test review
 
 - [Review](../testing.md#mailbox-transition-review-2026-11-03): added 14 offline cases for
