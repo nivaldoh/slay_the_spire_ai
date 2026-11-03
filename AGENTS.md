@@ -57,8 +57,7 @@ the marking pass: [docs/judgement.md](docs/judgement.md).
 
 ## Working habits
 
-The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and
-token use):
+The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and token use):
 - `docs/state.md` stays status only, under about 120 lines, with the current next steps
   (other pages keep candidates and deferred items). New owner directions go in
   `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
@@ -71,9 +70,11 @@ token use):
   or the commit (owner, 2026-10-28); outside sources go in [references.md](docs/references.md).
 - Put task-created scripts, logs, temporary artifacts, diagnostics and test scratch in the
   ignored `runs/`, never in the home root or unrelated directories; inventory old garbage.
-- Delete a branch and its worktree once merged; create worktrees outside `/tmp`, which a
-  WSL restart wipes. While a WH3 queue runs, commit nothing: it stops before its next job
-  when HEAD moves. Add no file, scenario or diagnostic that no planned experiment uses.
+- Edit tracked files only in your own worktree and branch, not in the shared main checkout
+  ([how](docs/workflow.md#several-sessions-at-once), owner 2026-11-02); game jobs stay there
+  (rests on JUDGEMENT? docs/workflow.md Worktree details). Delete both once merged. A running
+  WH3 queue stops when its checkout's HEAD moves: commit or merge nothing there meanwhile.
+  Add no file, scenario or diagnostic that no planned experiment uses.
 - When `doctor` or a job warns that a game build differs from its pin, tell the owner;
   re-pin only with their approval.
 
@@ -127,9 +128,8 @@ card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/READ
   directory and refuses uncommitted changes in its source scope: `src/gameai/`,
   `src/twwarhammer3/`, `configs/twwarhammer3/`, `pyproject.toml`, `uv.lock` and
   `.python-version` (`battle/play.py` `SOURCES`). `launch` checks no scope.
-  A play job stops before its next episode if a file in its scope changes. Shared source
-  and dependency changes can stop either game. Check any running job's source scope before
-  editing, even another game's files; draft in a git worktree while one runs.
+  A play job stops before its next episode if a file in its scope changes: while one runs,
+  merge nothing into its checkout that touches its scope (shared code counts for both games).
 - Check "Active work" in `docs/state.md` first. Never run two game controllers at once,
   even for different games: each `RuntimeLock` only protects its own game.
 - WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
