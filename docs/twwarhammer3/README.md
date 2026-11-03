@@ -1,14 +1,23 @@
 # Total War: WARHAMMER III battles
 
-The benchmark draft starts with small mixed-army **Land Battles** against the game AI.
+The initial benchmark is one **Empire-versus-Empire Land Battle** against the game AI:
+our three Swordsmen, Crossbowmen and Knights against six Swordsmen and a Great Cannon
+(version5). Engine wins rank above losses; tactical-unit health and state distinguish condition.
+The [starter defaults](benchmark-implementation.md#first-version-follow-up-2026-11-02) are
+documented starting choices. The [initial implementation](benchmark-initial.md) has no retries;
+its agreed recording/arithmetic check passed at `b1136e8`. The three scripted and five Haiku
+battles all lost; winnability and controller strength remain unverified. The existing
+[visual HTML report](reports.md#initial-benchmark-visuals) includes scores, all planned attempts
+and recorded battle replays; it runs offline.
 The intended scope also includes Siege, Survival, Ambush and Conquest; other types await
-confirmation (owner, 2026-10-28). Health and morale are the tentative primary measures;
-scoring and checks remain open. The engine decides the winner, including timer endings
+confirmation (owner, 2026-10-28). The [current plan direction](benchmark-implementation.md#owner-directions-2026-11-01)
+tentatively scores mainly health, reduced by low morale and more strongly by routing;
+formulas and checks remain open. The engine decides the winner, including timer endings
 (owner, 2026-10-23). Scripts, models and hybrids use structured state while the benchmark
 battle runs unpaused at 1x; actual delay, cost and failures accompany outcomes.
 Start with the [definition and first profile](benchmark.md#the-first-battle)
-and [implementation plan](benchmark-implementation.md#phases). The profile and new
-checks remain proposals; the existing readers do not yet implement this definition.
+and [implementation plan](benchmark-implementation.md#phases). Detailed settings and new
+settings remain marked; the initial evaluator and plan report implement the single profile.
 The [tactic cards](tactic-cards.md) retain their historical rules and evidence.
 Controller research, team recovery and training are related work with separate evidence
 requirements. What is running and the versions on `main`: [../state.md](../state.md);
@@ -29,6 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
+| [tactics-reference.md](tactics-reference.md) | researched historical, Total War and Warhammer tactics; faction/composition and terrain/mode variants; linked evaluation proposals and source notes |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
 | [../thesis/](../thesis/proposal.md) | the proposed master's thesis (moved 2026-10-27): proposal, candidate directions, related work and the earlier memory proposal |
@@ -36,6 +46,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [robot-team-plan.md](robot-team-plan.md) | staged Empire experiment plan: establish useful recovery, compare allocation, then test delayed plans or learning; evidence, measures and stop conditions |
 | [multi-agent-plan.md](multi-agent-plan.md) | proposed evaluation of independent teammates: split army, single-client steps, native team battles and multiplayer campaigns; contracts, comparisons, checks and stages |
 | [native-multiplayer.md](native-multiplayer.md) | initial native team-battle assessment: unattended versus headless clients, synchronization probes, cloud costs and risks |
+| [Cloud usage](../cloud.md) / [GCP setup](gcp-client-setup.md) | project, spending boundary and cleanup proposals / Windows game-host installation |
 | [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
 | [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
 | [gap-plan.md](gap-plan.md) | initial graph controllers: frozen skills, interchangeable members, authoring/revision commands, checks, evidence and deferred research |
@@ -176,6 +187,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 
 `src/twwarhammer3/battle/`, jobs and controllers:
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
+- `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
 - `src/twwarhammer3/battle/setup.py`: scenarios with `base` inheritance, lobby steps,
   benchmark checks; its docstring is the scenario field reference
 - `src/twwarhammer3/battle/controllers.py`: policy names, model prompts, rotation, outside
@@ -183,7 +195,6 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/llm.py`: direct API-model controller: llm, llm_rules
 - `src/twwarhammer3/battle/commander.py`: asynchronous API model over skills
 - `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
-- `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
 - `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
 - `src/twwarhammer3/battle/team.py`: two independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition

@@ -53,6 +53,10 @@ Both games:
   deactivated/deleted when not in use to avoid accidental billing charges". Discuss
   how and check the login; this does not select a cleanup design or authorize a live
   cleanup test. The second Steam account is prepared; its WH3 licence is not confirmed.
+- 2026-11-02 (cross-domain research reference): find one good published paper testing
+  robotics against another domain and summarize it in the research references. Use it
+  later to assess evidence connecting robotics or multi-agent systems with WH3.
+  This request selects reading material; it does not adopt or run a cross-domain test.
 - 2026-11-02 (initial one-army model-team comparison): active goal, "Complete the initial
   test and comparison for the one army multi-agent feature". Owner chose "Agree to this
   initial comparison": one fresh team battle and one fresh single-controller battle on
@@ -62,6 +66,18 @@ Both games:
   no strength claim from one battle per arm. Card: `runs/team-initial-20261102/card.md`.
   After the team run the owner clarified call accounting: "Agree: count captured API
   attempts" inside each exchange record, whose container can hold several retries.
+- 2026-11-02 (retain earlier results): keep the earlier GPT Sol cavalry-flanking example
+  visible with the new benchmark results, "until we find a better replacement at least".
+  The canonical report retains the historical catalogue and its annotated Sol flank;
+  the new mirror results keep their own scenario and scoring.
+- 2026-11-02 (initial benchmark visuals): "Didn't we have an HTML file with visuals and
+  benchmark scores? ... It should be considered a part of that". Integrate the initial
+  benchmark with the existing visual HTML report, including its current scores and evidence.
+- 2026-11-02 (session context audit): "Let's take note of these suggestions somewhere in our
+  repo to plan their implementation later". Save the [context suggestions](workflow.md#session-context-improvements)
+  for later planning; this does not adopt the changes or their proposed comparison method.
+  Follow-up: "Let's take note of these potential improvements as well" saves the
+  [concurrent-work suggestions](workflow.md#concurrent-work-improvements), also for later planning.
 - 2026-11-02 (initial WH3 benchmark follow-up): "We should add 2 swordsmen to the enemy side
   to make it more challenging" after observing the standing army win. Version5 selects six
   enemy Swordsmen plus Great Cannon, still attacking; our five units stay unchanged.
@@ -89,6 +105,32 @@ Both games:
   1 percentage point, plus offline routing/recovery/missing-read/retry cases.
   After three setup failures: "Allow and record enemy AI toggles"; pin our initial
   toggles, record enemy choices and leave its control with the built-in AI.
+- 2026-11-02 (WH3 benchmark follow-up, discussion only): use the game's tactical-unit
+  health bars, not individual soldiers' HP; start with simple calculations and revise later.
+  Start with one Empire-versus-Empire battle: three melee and one ranged unit on each side,
+  plus our cavalry versus a weaker non-cavalry unit. Research other battles later.
+  Choose and document reasonable initial settings, limits and public battle information.
+  "No retries." Engine wins rank above losses. Propose simple, common-sense correctness
+  checks; the owner asked what that meant, not to adopt an unseen check. This narrows the
+  previous entry; it does not authorize implementation or game runs. Concrete delegated
+  defaults remain marked in the [starter plan](twwarhammer3/benchmark-implementation.md#first-version-follow-up-2026-11-02).
+- 2026-11-01 (WH3 benchmark plan, no implementation): tentative score mainly from unit
+  health, with lower morale reducing it and routing penalised more strongly. Research
+  battle conditions later; the owner will review comparison options later. Tentatively
+  count failures separately as errors instead of partially scoring them. Start the
+  evaluation method from a related benchmark, then refine it; no particular reference,
+  formula, weights, failure denominator or repeat count was selected. Details and the
+  earlier failure-rule reconciliation: [plan update](twwarhammer3/benchmark-implementation.md#owner-directions-2026-11-01).
+- 2026-11-01 (WH3 knowledge skill follow-up): after the tactics research, consider a shared
+  WH3 knowledge and game-mechanics skill for Codex and Claude Code. This is a reminder,
+  not a built skill. The [tactics reference](twwarhammer3/tactics-reference.md) and
+  [engine facts](twwarhammer3/integration.md) can supply material with version and
+  verification limits intact.
+- 2026-11-01 (WH3 benchmark references): compile three benchmarks including BEHAVIOR;
+  investigate how tasks are created, what evaluations measure and how they work, inspect
+  their GitHub implementations, explain WH3's real-world parallels and transfer limits,
+  and save short reusable summaries for future sessions. Research does not settle the
+  benchmark's pending definition or scoring choices.
 - 2026-11-01 (code page, WH3 only): "I think the Slay the Spire box in the Map section of the HTML
   is just creating confusion there. Instead of having that, we should just omit that game and
   make it clear that we're talking about only WH3." Also: "multi-agent.html" "doesn't seem like

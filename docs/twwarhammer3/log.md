@@ -45,6 +45,38 @@ benchmark harness revision, G1 and G2 the calibration stages.
   graphics, reliable Start Battle and unattended desktop startup. Zero multiplayer games;
   disconnected operation and the full compatibility check remain unverified.
 
+## 2026-11-02: GCP region fallback added, offline only
+
+Owner requested retries across more regions after the six capacity failures.
+`scripts/wh3_gcp.py` previews supported zones, interleaves eight quoted regions, and creates
+at most one host. Stockouts retry only after explicit empty VM/disk inventories; other
+errors stop. Fixed deadline, independent cleanup and the $5 / 3-hour boundary remain.
+Regional quote age/order/reserve rest on JUDGEMENT comments in the runner.
+Read-only discovery found 22 supported zones across eight regions; no provisioning this turn.
+Focused cloud checks: 26 passed; missing-absence mutation detected. Independent reviewer
+recomputed all eight rates and checked unknown states, cleanup, deadline and retry handling.
+Full gate: Ruff clean, 2742 passed / 43 skipped (torch/Windows extras); dirty tree, not
+agreed verification at HEAD. Evidence/card: `runs/gcp-region-fallback-20261102/`.
+The new cleanup probe, live retries, billing and Windows/WH3 behavior remain unverified;
+the repeatable verification method has not been agreed.
+
+## 2026-11-02: GCP cleanup exercised; L4 stockouts block Windows setup
+
+Project `wh3-benchmark`: login/billing reads succeeded; global GPU quota increased to 1.
+Owner approved $5 total and at most 3 hours including installation; second Steam account owns WH3.
+Two disposable Linux cleanup cases passed once each: native deletion of a running VM,
+and external workflow deletion of a stopped VM, both with disks absent afterward.
+Independent review checked resource IDs, completed operations, workflow state and API 404s.
+Six Windows/L4 creates failed with stockouts: us-east1-b/c, us-central1-a/b/c, us-west1-a.
+No Windows VM or game ran. Final VMs/disks/IPs/snapshots/custom-image inventories are empty;
+pilot workflows, firewall rule and service accounts removed; existing project retained.
+Cleanup-test estimate below $0.03; actual billed total pending. No game compatibility result.
+Docs record fixed DELETE deadlines, independent cleanup, explicit project flags and CLI-status caveat.
+Checks: 118 doc/repo-rule cases passed; full gate Ruff clean, 2716 passed, 43 skipped
+(torch/Windows extras unavailable). Tree changed during gate; no agreed-check result at HEAD.
+Evidence/cards: `runs/twwarhammer3/gcp/setup-20261102/`; [cloud usage](../cloud.md).
+Cleanup method and Windows/game compatibility remain unverified under the owner's hard rule.
+
 ## 2026-11-02: initial one-army model-team test and comparison complete
 
 Owner-approved one team and one single Haiku-low battle on `emp5-emp5`, frozen `c1ad84d`,
@@ -66,6 +98,58 @@ Mechanics only at the recorded revision/case; no strength ranking or architectur
 Existing split/view/cleanup JUDGEMENT choices remain in `multi-agent-implementation.md`.
 
 
+## 2026-11-02: direct model-team report/export integration and first comparison plan
+
+Integrate owner-approved `wh3-team-report` (5dcdac9/e5effd0): report uses member-source
+ages and failures; report/export match exchange IDs within each member. This keeps the
+existing single-controller path and does not change controllers, prompts or scoring.
+Independent review found ID-less failed replies duplicated between decision metadata
+and exchanges; the new regression fails first (member: 3 vs 2 attempts; single passes),
+then passes with member identity retained. Four original plants caught independently.
+Focused reader/team/outcome cases: 147 passed. Offline gate: Ruff clean, 2653 passed,
+69 skipped in the isolated checkout; skipped local evidence is not a main-tree pass.
+Evidence and review: `runs/team-initial-20261102/`. Live model teams remain unverified.
+Owner agreed one fresh team and one fresh single battle on `emp5-emp5`, cheap Anthropic,
+1x, $3 cumulative existing WH3 ledger, failures retained; compare outcome, final condition,
+cost, calls and source ages. The team smoke is the team arm. No strength claim at n=1/arm.
+Concurrency probe and live seven-point check are pending; no paid call for this slice yet.
+
+## 2026-11-02: retain the Sol cavalry flank in the main report
+
+Owner: keep the earlier GPT Sol cavalry-flanking result until a better replacement.
+Earlier recordings/reports were intact; the new mirror-only page had omitted them.
+The canonical `runs/twwarhammer3/reports/benchmark.html` now combines the existing
+historical catalogue with both current mirror plans. All 140 earlier jobs/231 trial
+outcomes and 101 visible historical score-input sets match the preceding report;
+the 8 mirror attempts match their saved plan reports. No evaluator or controller change.
+Sol's annotated `bench-c1-cavalry-ai11-02-20261015/episode-0000` win remains selected;
+Play key moment opens "The guns break first". Original comparison battles stay visible.
+Offline Chromium checked that replay, key moment and switching to the mirror results;
+no browser errors/network requests. Doc links: 111 passed. Evidence/card/review:
+`runs/benchmark-retained-20261102/`; [entry points/build](reports.md#main-report-and-retained-example).
+No new game or model call. The selected historical win is not new-profile evidence or
+a general controller-strength claim; presentation checks remain proposed, not agreed.
+
+## 2026-11-02: initial benchmark uses the existing visual HTML report
+
+Owner: the HTML visuals and benchmark scores are part of the initial benchmark.
+`benchmark report` now uses the existing offline map/replay/decision viewer. The ordinary
+report accepts repeated `--benchmark-plan` to combine pilots/model attempts without losing
+missing attempts or plan identities. Mirror scores show engine outcome then own condition;
+legacy enemy-broken scores stay with historical scenarios. Profiles/test setups stay apart.
+No plan means planned/error counts are unavailable, not zero. Raw plan JSON/text unchanged.
+Four regressions failed first; 114 focused cases passed. Independent recount matched all
+8 recorded outcomes/conditions and their replay links. Browser checks passed for all 8,
+desktop/phone, copied offline HTML, JSON download, never-started and unplanned cases;
+historical recorded/synthetic report browser checks passed. Review found 2 issues (missing
+plan error counts and duplicate plan basenames), corrected and challenged with regressions.
+Full exit-gate evidence: `runs/benchmark-visual-20261102/check-final-unrestricted.txt`;
+sandbox socket failures stay in `check.txt`. Card, checks and review stay there; the combined
+report lives at `runs/twwarhammer3/reports/initial-benchmark.html` (owner: easier to find).
+[Commands/limits](reports.md#initial-benchmark-visuals).
+The presentation check is proposed, not newly agreed. No game/API call or new result;
+strength, winnability and generalisation remain unverified.
+
 ## 2026-11-02: initial benchmark checked and five Haiku attempts completed
 
 At `b1136e8`, version5, build25961564, fresh launches at unpaused1x. Native health API;
@@ -83,22 +167,6 @@ Independent review: no findings; 645 unique response IDs match the original ledg
 Recorded Windows ratios1.0000; not an independent NTFS recount. Raw evidence/reports:
 `runs/benchmark-initial-20261102/`; [runbook](benchmark-initial.md#first-screen-2026-11-02).
 No controller-strength, winnability, cavalry-advantage or generalisation claim. No new run.
-
-## 2026-11-02: direct model-team report/export integration and first comparison plan
-
-Integrate owner-approved `wh3-team-report` (5dcdac9/e5effd0): report uses member-source
-ages and failures; report/export match exchange IDs within each member. This keeps the
-existing single-controller path and does not change controllers, prompts or scoring.
-Independent review found ID-less failed replies duplicated between decision metadata
-and exchanges; the new regression fails first (member: 3 vs 2 attempts; single passes),
-then passes with member identity retained. Four original plants caught independently.
-Focused reader/team/outcome cases: 147 passed. Offline gate: Ruff clean, 2653 passed,
-69 skipped in the isolated checkout; skipped local evidence is not a main-tree pass.
-Evidence and review: `runs/team-initial-20261102/`. Live model teams remain unverified.
-Owner agreed one fresh team and one fresh single battle on `emp5-emp5`, cheap Anthropic,
-1x, $3 cumulative existing WH3 ledger, failures retained; compare outcome, final condition,
-cost, calls and source ages. The team smoke is the team arm. No strength claim at n=1/arm.
-Concurrency probe and live seven-point check are pending; no paid call for this slice yet.
 
 ## 2026-11-02: add two enemy Swordsmen; obtain health from the engine
 
@@ -158,7 +226,8 @@ initial toggles, records both armies' settings and never acquires enemy control 
 active profile. Roster, score and timing limits unchanged. New plans freeze the profile;
 older plans use their named source's profile, so later edits cannot rewrite attribution.
 New enemy-control/validation cases failed first; 188 focused cases pass; independent review
-found no remaining findings. Full gate/new free pilot pending. Earlier failed plans stay visible;
+found no remaining findings. Full gate: 2590 passed, 43 skipped. At `5c503a0`, pilot-r4
+passed its first setup and runs unpaused 1x; terminal measurements pending. Failed plans stay visible;
 there is no gameplay result or strength claim from them.
 
 ## 2026-11-02: mirror startup handover waits for the engine
@@ -217,6 +286,52 @@ in WSL, `launch`, session edited to `observe`; the owner set up and played one s
   Unverified (n=1, no agreed check); nothing multiplayer was tested. Evidence:
   `runs/twwarhammer3/native-multiplayer/smoke/a2/` (mod.log copied there) and `smoke-logs/`.
 
+
+## 2026-11-01: owner updates the benchmark plan
+
+Documentation only, at the owner's request; no implementation, game runs or spending.
+- Recorded [directions](benchmark-implementation.md#owner-directions-2026-11-01): tentative
+  health-led score, reductions for low morale and stronger penalties for routing;
+  battle-condition research later; owner comparison choices deferred; tentative separate
+  error counts instead of partial scores; use a related benchmark method initially and refine.
+- Formula, weights, sampling, donor benchmark and reconciliation with earlier failure
+  accounting remain open. No existing JUDGEMENT marker or agreed check was changed.
+- Aligned the definition, evaluation companion, README, state and owner directions.
+  Documentation checks: `runs/benchmark-plan-update-20261101/`; no game-effect claim.
+
+## 2026-11-01: tactics reference and candidate evaluations
+
+Codex, documentation research; no game runs or paid calls.
+- Added a [catalogue](tactics-reference.md) of 30 tactical patterns spanning historical
+  manoeuvres, Total War control, Warhammer abilities and objectives, with faction/army
+  examples, terrain variants, counters and observable comparisons.
+- Added [evaluation designs](tactics-evaluation.md): eight proposed comparison cards,
+  measurement gaps, detector checks and variation, drawing on BEHAVIOR, CARLA and SMACv2.
+- [Sources](tactics-sources.md) distinguish developer documentation, historical accounts
+  and indexed-only older Academy text. Independent review reproduced all ten quoted
+  excerpts; corrected the feint's pursuer diagnostic and a confounded roster comparison.
+- Four proposal markers added: Tactic catalogue, Tactical comparisons, Tactic diagnostics,
+  Tactic study structure. No benchmark choice, scenario, score or check was adopted.
+- Owner's shared Codex/Claude WH3 knowledge-skill reminder saved in
+  [owner directions](../owner-direction.md) and state. The skill is not built.
+- Check output, independent review and completion audit: `runs/tactics-reference-20261101/`.
+  Tactical effectiveness, proposed detectors and current-build numerical mechanics remain
+  unverified; documentation/source checks do not establish game effects.
+
+## 2026-11-01: three benchmark references for scenario design
+
+Codex, offline research; no game runs or paid calls.
+- Added a [reference index](benchmark-references.md) and profiles of BEHAVIOR, CARLA
+  Leaderboard 2.1 and SMACv2: task authorship versus instance generation, measurements,
+  evaluation procedures, source revisions, code entry points and WH3 transfer limits.
+- Explained parallels to fleet supervision and robot-team coordination; these are research
+  analogies, not evidence of physical transfer. Transfer proposals stay marked; no scenario,
+  score, correctness check, sample plan or new experiment was adopted.
+- Source review caught a stale CARLA criteria URL, an implicit planned-route denominator,
+  BEHAVIOR's required-tag versus inspected-main distinction, and an incorrect class name;
+  corrected. Research notes, source excerpts and checks: `runs/benchmark-references-20261101/`.
+- External benchmark results were not reproduced. Repository-check results are in the task
+  handoff; source inspection establishes the cited implementation details, not WH3 effects.
 
 ## 2026-11-01: the code page shows WH3 only, renamed, and in the README
 

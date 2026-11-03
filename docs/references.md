@@ -6,6 +6,40 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Cross-domain research reference (2026-11-02)
+
+Karttunen et al., [From Video Game to Real Robot: The Transfer Between Action Spaces](https://doi.org/10.1109/ICASSP40776.2020.9053221),
+ICASSP 2020. [Research summary](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot):
+experimental design, evidence limits and possible WH3 comparisons for later discussion.
+Literature reference only; no experiment or verification method adopted.
+
+## WH3 benchmark reference profiles
+
+The [WH3 tactics source register](twwarhammer3/tactics-sources.md) collects historical
+accounts from NPS, the National Army Museum and English Heritage, plus CA mechanics guides
+and patch notes. It supports the [tactics catalogue](twwarhammer3/tactics-reference.md) and
+[candidate evaluations](twwarhammer3/tactics-evaluation.md); game effects remain unverified.
+
+The [reference index](twwarhammer3/benchmark-references.md) and its profiles collect
+task-construction methods, evaluation semantics and pinned implementation entry points.
+
+- [BEHAVIOR](https://github.com/StanfordVL/BEHAVIOR-1K): household task definitions,
+  starting states and goal checks; [profile](twwarhammer3/benchmark-references/behavior.md).
+- [CARLA Leaderboard](https://github.com/carla-simulator/leaderboard) and
+  [ScenarioRunner](https://github.com/carla-simulator/scenario_runner): traffic situations,
+  event criteria and versioned scores; [profile](twwarhammer3/benchmark-references/carla.md).
+- [SMACv2](https://github.com/oxwhirl/smacv2): generated tactical situations, partial
+  observation and coordination; [profile](twwarhammer3/benchmark-references/smacv2.md).
+- Zhu et al., [MultiAgentBench (ACL 2025)](https://aclanthology.org/2025.acl-long.421/),
+  [MARBLE code](https://github.com/ulab-uiuc/MARBLE): LLM team structures, communication
+  and separate task/coordination measures; complements SMACv2 for our split-army comparison.
+  [Profile](twwarhammer3/benchmark-references/multiagentbench.md) includes pinned code,
+  WH3 connections and limits of its scheduling, judge scores and disabled graph metrics.
+
+Source inspection dated 2026-11-01; MultiAgentBench added 2026-11-02. Exact revisions and
+primary papers are in the profiles.
+No external benchmark results reproduced or WH3 verification established by these sources.
+
 ## GaP graph controllers for WH3 (2026-10-31)
 
 - Chen et al., [GaP paper v1](https://arxiv.org/html/2607.05369v1), July 2026:
@@ -74,6 +108,26 @@ Each entry ends with its status:
 Collected 2026-10-28 and 2026-10-29 for the light factory plan, now [workflow.md](workflow.md).
 Vendor pages (Sonar) are marketing: use their terms, not their numbers.
 
+## Agent context loading
+
+Read 2026-11-02 for the [workflow reading routes](workflow.md#start-here):
+
+- OpenAI, [Rethinking skills and prompts for GPT-6 Astra](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra),
+  2026-09-11: task-specific document pointers and progressive disclosure reduce irrelevant
+  context. This supports routing guidance; it does not measure this repository's token use.
+- OpenAI, [Codex Prompting Guide](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide#using-agentsmd):
+  `AGENTS.md` is injected from the global and root-to-working-directory instruction chain.
+  Inference from that mechanism: linked pages still need an explicit read.
+- OpenAI, [Hooks](https://learn.chatgpt.com/docs/hooks#tool-coverage): `exec_command` matches
+  `Bash`; project hooks need trust for the current definition. The repo's native refusal
+  probe is recorded in [workflow.md](workflow.md#claude-code-and-codex); Stop is still unverified.
+
+Gate isolation, read 2026-11-02: Hugging Face Hub
+[`src/huggingface_hub/file_download.py`](https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/file_download.py)
+serializes shared cache writes with `WeakFileLock`. Our Unix-only gate uses
+[`fcntl.flock`](https://docs.python.org/3/library/fcntl.html#fcntl.flock) on a persistent
+file for the same ownership pattern; it does not adopt Hub's download logic or dependencies.
+
 ## WH3 native multiplayer assessment
 
 Checked 2026-10-30 for the [feasibility draft](twwarhammer3/native-multiplayer.md).
@@ -84,6 +138,9 @@ arithmetic were independently checked. No live multiplayer or cloud performance 
   advertised 2–8-player battles; not proof of scripted multiplayer control.
 - CA-authored scripting references, community mirrors:
   [battle](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle.html),
+  [unitcontrollers](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html),
+  [unit HP and morale API](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unit.html#function:unit:unary_hitpoints)
+  (`unary_hitpoints` measures regiment HP relative to initial HP; used by mirror-v1),
   [timers](https://chadvandy.github.io/tw_modding_resources/WH3/battle/timer_manager.html),
   [UI synchronization warning](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html).
   Installed copies under `runs/twwarhammer3/vanilla/` govern this build.
@@ -105,9 +162,6 @@ arithmetic were independently checked. No live multiplayer or cloud performance 
   [`pettingzoo/test/parallel_test.py`](https://github.com/Farama-Foundation/PettingZoo/blob/main/pettingzoo/test/parallel_test.py):
   per-agent identity and episode-lifecycle checks. Inspected, not run; its synchronous
   stepping contract does not establish real-time multiplayer synchronization.
-  [unitcontrollers](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unitcontroller.html),
-  [unit HP and morale API](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle_unit.html#function:unit:unary_hitpoints)
-  (`unary_hitpoints` measures regiment HP relative to initial HP; used by mirror-v1),
 
 Refinement, 2026-10-30: independent cloud, reference/headless/RL and source reviews;
 evidence in `runs/twwarhammer3/multiplayer-plan-20261030/`. Sources inspected, no deployment
@@ -178,6 +232,79 @@ Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-mu
   Acting on either is the game's own code; whether WH3 does is unknown. Used by the static
   lobby audit (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored).
   **checked**
+
+## GCP client setup guide (2026-11-02)
+
+Sources for the [Google Cloud setup guide](twwarhammer3/gcp-client-setup.md), read by two
+research agents on 2026-11-02 (web only; nothing created or run); a third agent rechecked the
+guide's claims against them and its 16 findings were applied. Official pages **checked**;
+forum posts and third-party sites **secondary**.
+
+- Google Cloud: [free-trial limits](https://docs.cloud.google.com/free/docs/free-cloud-features),
+  [GPU quota names](https://docs.cloud.google.com/compute/resource-usage),
+  [quota requests](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/preferences/create),
+  [quota IDs](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/info/list),
+  [gcloud quota examples](https://docs.cloud.google.com/docs/quotas/gcloud-cli-examples),
+  [quota review](https://docs.cloud.google.com/docs/quotas/overview),
+  [G2 zones](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),
+  [G-series VMs](https://docs.cloud.google.com/compute/docs/gpus/create-gpu-vm-g-series),
+  [Windows images](https://docs.cloud.google.com/compute/docs/images/os-details),
+  [Windows SSH (Preview)](https://docs.cloud.google.com/compute/docs/connect/windows-ssh),
+  [Windows startup scripts](https://docs.cloud.google.com/compute/docs/instances/startup-scripts/windows),
+  [Windows passwords](https://docs.cloud.google.com/sdk/gcloud/reference/compute/reset-windows-password),
+  [vWS licence](https://docs.cloud.google.com/compute/docs/gpus/about-gpus),
+  [GPU host maintenance](https://docs.cloud.google.com/compute/docs/gpus/gpu-host-maintenance),
+  [virtual display device](https://docs.cloud.google.com/compute/docs/instances/enable-instance-virtual-display),
+  [stockouts](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability),
+  [stopping VMs from a budget](https://docs.cloud.google.com/billing/docs/how-to/control-usage):
+  account, quota, VM and lifetime facts; forum reports of automatic GPU quota refusals:
+  [2024-12](https://discuss.google.dev/t/gpu-quota-increase-beyond-0/176297),
+  [2026-07](https://discuss.google.dev/t/blocked-by-automated-gpu-quota-denials-on-academic-research-grant/377219).
+- NVIDIA [RDS sessions skip the GPU on Windows Server](https://docs.nvidia.com/vgpu/19.0/known-issues/bug-no-id-no-gpu-utilization-windows-server-guests.html),
+  [licensed display limits](https://docs.nvidia.com/vgpu/latest/grid-licensing-user-guide/intro-to-grid-licensing.html);
+  Microsoft [RDS hardware-GPU policy](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-terminalserver),
+  [auto-logon](https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon),
+  [Sysinternals Autologon](https://learn.microsoft.com/en-us/sysinternals/downloads/autologon),
+  [scheduled-task principals](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskprincipal):
+  what makes a game render on a Server VM; none of it is a WH3 result.
+- Valve [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD) and
+  [Steam command line](https://developer.valvesoftware.com/wiki/Command_Line_Options_(Steam));
+  [WH3 store page](https://store.steampowered.com/app/1142710/) (Windows 7/10, 120 GB);
+  us-east1 machine price from [gcloud-compute.com](https://gcloud-compute.com/g2-standard-4.html) (third-party).
+- Reference repos for the in-VM steps: [gcloudrig](https://github.com/gcloudrig/gcloudrig)
+  (`gcloudrig.psm1`, `gcloudrig-boot.ps1`; T4 vWS on Compute Engine with Steam; last push
+  2023-11) and [Parsec Cloud Preparation Tool](https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool)
+  (`PostInstall/PostInstall.ps1`; archived 2025-10, Server 2016/2019). Fallback display driver:
+  [parsec-vdd](https://github.com/nomi-san/parsec-vdd). Read, not run.
+- Forum reports that a disconnected RDP session stops drawing:
+  [Classmethod](https://dev.classmethod.jp/articles/parsec_host_black_screen_when_rdp_disconnected),
+  [SmartBear](https://support.smartbear.com/testcomplete/docs/ver-14-2/testing-with/running/via-rdp/keeping-computer-unlocked.html).
+
+## Cloud usage and cleanup (2026-11-02)
+
+Official sources read for [cloud usage](cloud.md); two live cleanup cases are recorded there:
+- [VM runtime limits](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime):
+  stop clears the termination timestamp; termination can begin up to 30 seconds late.
+- [Disk auto-deletion](https://docs.cloud.google.com/compute/docs/disks/modify-persistent-disk#auto-delete):
+  `autoDelete=true` removes an attached disk with its VM; retained disks keep billing.
+- [Budget alerts](https://docs.cloud.google.com/billing/docs/how-to/budgets) and
+  [spend caps](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps):
+  billing delay and the eligible services, which exclude Compute Engine.
+- Workflows [deadline waiting](https://docs.cloud.google.com/workflows/docs/reference/stdlib/sys/sleep_until),
+  [VM deletion](https://docs.cloud.google.com/workflows/docs/reference/googleapis/compute/v1/instances/delete)
+  and [pricing](https://cloud.google.com/workflows/pricing): cleanup primitives,
+  charged by executed steps. Official docs alone do not establish our implementation's correctness.
+- Reference pattern: GoogleCloudPlatform/workflows-demos,
+  [long-running-container/prime-generator.yaml](https://github.com/GoogleCloudPlatform/workflows-demos/blob/master/long-running-container/prime-generator.yaml),
+  VM deletion from an external workflow; adapted to fixed deadlines and exact target names.
+- [Resource availability errors](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability):
+  stockouts are separate from quota; trying another zone or later is Google's documented response.
+- Region retry implementation: [SkyPilot, sky/provision/provisioner.py](https://github.com/skypilot-org/skypilot/blob/master/sky/provision/provisioner.py),
+  `bulk_provision` stops failover if teardown fails. Our runner stops when absence is uncertain.
+  Google's [Billing catalogue API](https://docs.cloud.google.com/billing/v1/how-tos/catalog-api)
+  supplied the regional SKU rates; live accelerator/machine listings supplied supported zones.
+  Eight regional quotes and 22 advertised zones checked on 2026-11-03 UTC, without provisioning;
+  evidence: `runs/gcp-region-fallback-20261102/`. Advertised support does not establish capacity.
 
 ## Verification talks and Sonar
 
@@ -615,76 +742,3 @@ For `.github/workflows/check.yml` (2026-10-29):
 ### Launcher failure contract tests (2026-10-31)
 
 Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.
-
-## GCP client setup guide (2026-11-02)
-
-Sources for the [Google Cloud setup guide](twwarhammer3/gcp-client-setup.md), read by two
-research agents on 2026-11-02 (web only; nothing created or run); a third agent rechecked the
-guide's claims against them and its 16 findings were applied. Official pages **checked**;
-forum posts and third-party sites **secondary**.
-
-- Google Cloud: [free-trial limits](https://docs.cloud.google.com/free/docs/free-cloud-features),
-  [GPU quota names](https://docs.cloud.google.com/compute/resource-usage),
-  [quota requests](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/preferences/create),
-  [quota IDs](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/info/list),
-  [gcloud quota examples](https://docs.cloud.google.com/docs/quotas/gcloud-cli-examples),
-  [quota review](https://docs.cloud.google.com/docs/quotas/overview),
-  [G2 zones](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),
-  [G-series VMs](https://docs.cloud.google.com/compute/docs/gpus/create-gpu-vm-g-series),
-  [Windows images](https://docs.cloud.google.com/compute/docs/images/os-details),
-  [Windows SSH (Preview)](https://docs.cloud.google.com/compute/docs/connect/windows-ssh),
-  [Windows startup scripts](https://docs.cloud.google.com/compute/docs/instances/startup-scripts/windows),
-  [Windows passwords](https://docs.cloud.google.com/sdk/gcloud/reference/compute/reset-windows-password),
-  [vWS licence](https://docs.cloud.google.com/compute/docs/gpus/about-gpus),
-  [GPU host maintenance](https://docs.cloud.google.com/compute/docs/gpus/gpu-host-maintenance),
-  [virtual display device](https://docs.cloud.google.com/compute/docs/instances/enable-instance-virtual-display),
-  [stockouts](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability),
-  [stopping VMs from a budget](https://docs.cloud.google.com/billing/docs/how-to/control-usage):
-  account, quota, VM and lifetime facts; forum reports of automatic GPU quota refusals:
-  [2024-12](https://discuss.google.dev/t/gpu-quota-increase-beyond-0/176297),
-  [2026-07](https://discuss.google.dev/t/blocked-by-automated-gpu-quota-denials-on-academic-research-grant/377219).
-- NVIDIA [RDS sessions skip the GPU on Windows Server](https://docs.nvidia.com/vgpu/19.0/known-issues/bug-no-id-no-gpu-utilization-windows-server-guests.html),
-  [licensed display limits](https://docs.nvidia.com/vgpu/latest/grid-licensing-user-guide/intro-to-grid-licensing.html);
-  Microsoft [RDS hardware-GPU policy](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-terminalserver),
-  [auto-logon](https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon),
-  [Sysinternals Autologon](https://learn.microsoft.com/en-us/sysinternals/downloads/autologon),
-  [scheduled-task principals](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskprincipal):
-  what makes a game render on a Server VM; none of it is a WH3 result.
-- Valve [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD) and
-  [Steam command line](https://developer.valvesoftware.com/wiki/Command_Line_Options_(Steam));
-  [WH3 store page](https://store.steampowered.com/app/1142710/) (Windows 7/10, 120 GB);
-  us-east1 machine price from [gcloud-compute.com](https://gcloud-compute.com/g2-standard-4.html) (third-party).
-- Reference repos for the in-VM steps: [gcloudrig](https://github.com/gcloudrig/gcloudrig)
-  (`gcloudrig.psm1`, `gcloudrig-boot.ps1`; T4 vWS on Compute Engine with Steam; last push
-  2023-11) and [Parsec Cloud Preparation Tool](https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool)
-  (`PostInstall/PostInstall.ps1`; archived 2025-10, Server 2016/2019). Fallback display driver:
-  [parsec-vdd](https://github.com/nomi-san/parsec-vdd). Read, not run.
-- Forum reports that a disconnected RDP session stops drawing:
-  [Classmethod](https://dev.classmethod.jp/articles/parsec_host_black_screen_when_rdp_disconnected),
-  [SmartBear](https://support.smartbear.com/testcomplete/docs/ver-14-2/testing-with/running/via-rdp/keeping-computer-unlocked.html).
-
-## Cloud usage and cleanup (2026-11-02)
-
-Official sources read for [cloud usage](cloud.md); two live cleanup cases are recorded there:
-- [VM runtime limits](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime):
-  stop clears the termination timestamp; termination can begin up to 30 seconds late.
-- [Disk auto-deletion](https://docs.cloud.google.com/compute/docs/disks/modify-persistent-disk#auto-delete):
-  `autoDelete=true` removes an attached disk with its VM; retained disks keep billing.
-- [Budget alerts](https://docs.cloud.google.com/billing/docs/how-to/budgets) and
-  [spend caps](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps):
-  billing delay and the eligible services, which exclude Compute Engine.
-- Workflows [deadline waiting](https://docs.cloud.google.com/workflows/docs/reference/stdlib/sys/sleep_until),
-  [VM deletion](https://docs.cloud.google.com/workflows/docs/reference/googleapis/compute/v1/instances/delete)
-  and [pricing](https://cloud.google.com/workflows/pricing): cleanup primitives,
-  charged by executed steps. Official docs alone do not establish our implementation's correctness.
-- Reference pattern: GoogleCloudPlatform/workflows-demos,
-  [long-running-container/prime-generator.yaml](https://github.com/GoogleCloudPlatform/workflows-demos/blob/master/long-running-container/prime-generator.yaml),
-  VM deletion from an external workflow; adapted to fixed deadlines and exact target names.
-- [Resource availability errors](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability):
-  stockouts are separate from quota; trying another zone or later is Google's documented response.
-- Region retry implementation: [SkyPilot, sky/provision/provisioner.py](https://github.com/skypilot-org/skypilot/blob/master/sky/provision/provisioner.py),
-  `bulk_provision` stops failover if teardown fails. Our runner stops when absence is uncertain.
-  Google's [Billing catalogue API](https://docs.cloud.google.com/billing/v1/how-tos/catalog-api)
-  supplied the regional SKU rates; live accelerator/machine listings supplied supported zones.
-  Eight regional quotes and 22 advertised zones checked on 2026-11-03 UTC, without provisioning;
-  evidence: `runs/gcp-region-fallback-20261102/`. Advertised support does not establish capacity.
