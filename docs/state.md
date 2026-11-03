@@ -6,10 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-GCP retry VM running in `us-central1-a`; Windows bootstrap active, no game installed.
-Owner requests a fresh chat. Disk expires Nov4 ~04:20 UTC (~$0.83/day); compute DELETE
-07:11 UTC Nov3, backup07:16 UTC. Handoff: `runs/twwarhammer3/gcp/session-20261103c/handoff.md`.
-Tracked updates are in branch/worktree `gcp-retry`; do not provision another host.
+GCP: no VM (retry stopped after Windows setup: no Steam login or game; handoff `runs/twwarhammer3/gcp/session-20261103c/handoff.md`).
+Leftover disk `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged.
+Draft [VM team plan](twwarhammer3/vm-team-plan.md) (2026-11-03): owner decisions first; nothing agreed or run.
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 

@@ -279,6 +279,24 @@ Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-mu
   lobby audit (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored).
   **checked**
 
+## VM team plan (2026-11-03)
+
+Outside sources for the [VM team plan](twwarhammer3/vm-team-plan.md), read by research and
+review agents on 2026-11-03 (web only; nothing created or run).
+
+- [WH3 EULA](https://store.steampowered.com/eula/1142710_eula_1) §7(b), (c), (e), (f): one
+  computer at a time; no "remote access arrangement"; no reverse engineering, decompiling or
+  modifying; no circumventing "security protections". **checked** (by a review agent)
+- [Boris Todbringer store page](https://store.steampowered.com/app/3589670/): grants Immortal
+  Empires; multiplayer for a DLC-only account not mentioned. **checked**
+- [Steam thread 4302697675601825934](https://steamcommunity.com/app/1142710/discussions/0/4302697675601825934/)
+  (2024): compare `modified` logs; a movie-type mod in `data/`, mod versions or game versions
+  explain the remaining "incompatible" joins. **secondary**
+- [IAP TCP forwarding](https://docs.cloud.google.com/iap/docs/using-tcp-forwarding): idle
+  connections close after 1 h. **secondary**
+- [NVIDIA vGPU known issue 3583766](https://docs.nvidia.com/vgpu/20.0/known-issues/bug-3583766-multiple-rdp-reconnections-use-all-frame-buffer.html):
+  repeated RDP reconnects on Server 2022 use up GPU frame buffer. **checked**
+
 ## GCP client setup guide (2026-11-02)
 
 Sources for the [Google Cloud setup guide](twwarhammer3/gcp-client-setup.md), read by two
