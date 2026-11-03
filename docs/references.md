@@ -272,6 +272,12 @@ Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-mu
   [disk pricing](https://cloud.google.com/compute/disks-image-pricing),
   [network pricing](https://cloud.google.com/vpc/network-pricing);
   [airgpu](https://airgpu.com/); [Tailscale pricing](https://tailscale.com/pricing). **checked**
+- Valve [Steam browser protocol](https://developer.valvesoftware.com/wiki/Steam_browser_protocol):
+  `steam://joinlobby/<appid>/<lobby id>/<steam id>`; cited from memory in
+  `twwarhammer3/mp-next-steps.md` (step 1 join routes). **unread**
+- Microsoft [CreateFileW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew):
+  `FILE_SHARE_DELETE` lets another handle delete or rename an open file; behaviour
+  measured on Windows 11 for `mp-next-steps.md` step 2, Server 2022 untested. **unread**
 - Steam [ISteamMatchmaking](https://partner.steamgames.com/doc/api/ISteamMatchmaking):
   friends-only lobbies do not show up in the lobby list; on an accepted invite Steam posts
   GameLobbyJoinRequested_t if the game is running, else launches it with `+connect_lobby <id>`.

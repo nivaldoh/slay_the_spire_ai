@@ -6,6 +6,10 @@ spending. It orders the remaining [native multiplayer](native-multiplayer.md) st
 one GCP VM. Labels: checked (read or run on 2026-11-03), read (from a doc), secondary (third
 party), inferred.
 
+2026-11-03 evening: S1 ran in a shorter form (identical mods first, no vanilla lobby;
+[log](log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)). The next steps
+are planned in [mp-next-steps.md](mp-next-steps.md).
+
 ## End state
 
 At one frozen revision on build 26403568 (patch 9.0.5), one WSL coordinator runs a private native

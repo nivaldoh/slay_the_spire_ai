@@ -32,14 +32,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 - Owner's goal: a multiplayer match between the PC (main account) and a GCP VM (second,
   Boris-only account). VM `wh3-mp-20261103d`, us-west1-c (12 stockouts first), 21:08-22:58
-  UTC, about $2.07 at the $1.131/h quote plus storage; billing unreconciled. Owner asked to
+  UTC, about $2.06 at the $1.131/h quote plus storage; billing unreconciled. Owner asked to
   keep the game disk "a few days": autoDelete off, VM-only backup cleanup, disk deletion
   workflow at 2026-11-06 21:08:54 UTC (~$0.83/day). Both hosts at `01647bd`, build 26403568;
   the four hello fields (build, exe, pack, source hashes) matched.
 - PC alone, single player: owned `worker --mode control` launched the game; one move
   `submitted`, applied at 89.5 s, unit walked 27 m (first live run of the owned worker).
 - `mp_log` version lines: VM vanilla `mod=0x0`, both modded `mod=0x1ec02ea8`; `data=` equal
-  with and without the startup-movie pack. The modded VM joined the PC's friends-only lobby.
+  with and without the startup-movie pack. The modded VM joined the PC's lobby.
 - Battle 1 (PC host; PC Empire + VM Middenland, 2 Swordsmen each, vs one AI army): PC
   control, VM observe. One Lua move from A appeared on B; `compare-peers` (two coordinators'
   files merged by hand): 79 equal battle times, 553/553 unit readings exact, no desync line.
@@ -48,7 +48,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   sampling shifted 300 ms at its first order): 238/238 exact, idle only; readings ≤300 ms
   apart differ by at most 6.4 m (|dx|+|dz|) while moving, so not exact evidence.
 - Found: the VM's mod once logged `rename failed: observation.json.tmp: File exists`
-  (Windows refuses the remove while the native reader holds the file); next write worked.
+  (inferred: a native reader held the file; reproduced on the PC); next write worked.
   The owner did the lobbies by hand; lobby automation to investigate (owner).
 - Unverified: one battle each, PC hosting only, no ending read by the engine, no host swap,
   no agreed check. Evidence: `runs/twwarhammer3/native-multiplayer/{o2,mp1,mp2}/`,
