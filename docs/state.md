@@ -13,18 +13,13 @@ Tracked updates are in branch/worktree `gcp-retry`; do not provision another hos
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 
-Main visual report: `runs/twwarhammer3/reports/benchmark.html` retains earlier results and
-Sol's annotated cavalry flank alongside the current mirror plans ([open/build](twwarhammer3/reports.md#main-report-and-retained-example)).
-Initial benchmark visual report built from all eight saved battles; offline checks/review
-recorded in `runs/benchmark-visual-20261102/`. HTML: `runs/twwarhammer3/reports/initial-benchmark.html`
-([open/build it](twwarhammer3/reports.md#initial-benchmark-visuals)).
+Visual reports: `runs/twwarhammer3/reports/benchmark.html` ([open/build](twwarhammer3/reports.md#main-report-and-retained-example)) and `initial-benchmark.html` ([open/build](twwarhammer3/reports.md#initial-benchmark-visuals)); checks in `runs/benchmark-visual-20261102/`.
 
 Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`.
 
 Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs).
 Follow-up: shared Codex/Claude WH3 knowledge skill ([direction](owner-direction.md)).
-Later planning: [session context](workflow.md#session-context-improvements) and
-[concurrent work](workflow.md#concurrent-work-improvements); suggestions saved, implementation pending.
+Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews; correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
