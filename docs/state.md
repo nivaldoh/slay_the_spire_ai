@@ -8,7 +8,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 GCP: no VM (retry stopped after Windows setup: no Steam login or game; handoff `runs/twwarhammer3/gcp/session-20261103c/handoff.md`).
 Leftover disk `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged.
-Draft [VM team plan](twwarhammer3/vm-team-plan.md) (2026-11-03): owner decisions first; nothing agreed or run.
+Draft [VM team plan](twwarhammer3/vm-team-plan.md): owner set $10 cloud, restricted units, friends-only lobby, licence fine (11-03); decisions 1-4 open; nothing run.
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 

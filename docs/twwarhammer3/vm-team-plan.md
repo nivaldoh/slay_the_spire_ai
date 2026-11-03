@@ -48,34 +48,33 @@ no step 7. A model demo, step 7 or a split army changes S2 and the session count
 4. **Mod route** (next section). Proposed: identical files for every Lua case, both clients vanilla
    once, one mixed join attempt. For the vanilla lobby, A's startup-skip movie pack leaves `data/`,
    so the startup movies play again (~131 s: `integration.md`, Packs and loading; read).
-5. **Cloud money and storage.** Both earlier $5 allowances are closed (`gcp-client-setup.md`,
-   Steps 6; read). Proposed: $5 each for S1 (≤2.75 h) and S2 (≤3 h) at the $1.131/h quote
-   ([costs](gcp-client-setup.md#costs)), with $1 of each held back (rests on JUDGEMENT
-   `scripts/wh3_gcp.py` Reserve), and S1's disk kept ≤24 h as you directed for the retry (branch
-   `gcp-retry`, `owner-direction.md`; read). Then S2 must start within 21 h of S1's creation, and
-   a failed S1 deletes the disk. If that zone has no free L4 by then (9 of 11 creates so far were
-   stockouts; checked: both `provision/state.json`), S2 downloads the game again and battle 2 moves
-   to a third session, or you allow ≤4 h and $6 (3.8 h × $1.131 + $1 = $5.30).
-6. **Fixture on the second account.** The Khorne fixture you marked fine (`native-multiplayer.md`,
-   step 0) is not available on that account ([guide](gcp-client-setup.md#3-your-steam-session); read).
-   Proposed: two `wh_main_emp_inf_swordsmen` per army (the pilot's units; rests on JUDGEMENT?
-   Diagnostic roster update), Middenland on B, Empire on A, no lord, a base-game Land map; S2's AI
-   army is two Swordsmen deployed far off. Checks then cover these units only. Whether the Boris
-   pack allows multiplayer is undocumented (its [store page](https://store.steampowered.com/app/3589670/)
-   names only Immortal Empires; checked). "Check at $0 first" → you sign that account into Steam on
-   your PC and open a lobby alone, noting units and maps (this switches your PC's Steam login; the
-   effect on your DLC installs is unknown). "No" → it is checked in S1 step (2).
-7. **Lobby privacy.** Step 8 rules out public lobbies, and none is made until you choose
-   (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`; read). "Friends-only, accounts befriended first" →
-   B joins by invite (the invite route is unknown: `references.md`). "Password" → probably still
-   listed publicly (unverified).
+5. **Cloud money: set.** You allowed $10 for now and asked to keep costs low (2026-11-03; read
+   here as a new allowance from $0). S1 (≤2.75 h, ≤$3.75) and S2 (≤3 h, ≤$3.39) at the $1.131/h
+   quote ([costs](gcp-client-setup.md#costs)), each with $1 held back (rests on JUDGEMENT
+   `scripts/wh3_gcp.py` Reserve), total ≤$9.14. Still yours: keeping S1's disk ≤24 h for S2, as
+   you directed for the retry (branch `gcp-retry`, `owner-direction.md`; read). Then S2 must start
+   within 21 h of S1's creation, and a failed S1 deletes the disk. If that zone has no free L4 by
+   then (9 of 11 creates so far were stockouts; checked: both `provision/state.json`), S2 downloads
+   the game again: either battle 2 moves to a later session beyond this $10, or S2 runs ≤4 h
+   (3.8 h × $1.131 + $1 = $5.30; with S1's $3.75 + $1 that is $10.05, so only if S1's bill
+   comes in lower or you allow it).
+6. **Units: set to a restricted set.** You said a more limited set is fine (2026-11-03). The second
+   account has only the Boris Todbringer DLC, which does not open every base-game faction, so the
+   Khorne fixture (`native-multiplayer.md`, step 0) is out. Proposed: two
+   `wh_main_emp_inf_swordsmen` per army (the pilot's units; rests on JUDGEMENT? Diagnostic roster
+   update), Middenland on B, Empire on A, no lord, a base-game Land map; S2's AI army is two
+   Swordsmen deployed far off. Checks then cover these units only. Whether a Boris-only account can
+   play multiplayer is undocumented (its [store page](https://store.steampowered.com/app/3589670/)
+   names only Immortal Empires; checked): S1 step (2) checks it, unless you prefer to sign that
+   account into Steam on your PC first and open a lobby alone ($0; switches your PC's Steam login).
+7. **Lobby: friends-only, by invite.** The two Steam accounts are already friends (you, 2026-11-03).
+   No public lobby (step 8; `runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`; read).
+   How WH3 handles the invite is unknown (`references.md`, ISteamMatchmaking).
 8. **Worker link (S2 only)** ([plan](native-multiplayer.md#proposed-worker-connection)). "Tailscale"
    → needs an account. "Reverse SSH forward (`-N -R` with keepalive) inside the pilot's IAP tunnel
    (`session-20261102b/remote.py`; checked)" → no account, untested; IAP closes connections idle
    for 1 h ([IAP](https://docs.cloud.google.com/iap/docs/using-tcp-forwarding); secondary).
-9. **Licence.** The [WH3 EULA](https://store.steampowered.com/eula/1142710_eula_1) bars use "on more
-   than one computer ... at the same time" (§7(b)) and in a "remote access arrangement" (§7(c))
-   (checked). Each account runs on one machine; whether RDP to a VM counts is yours or SEGA's call.
+9. **Licence: fine** (you, 2026-11-03).
 
 ## Modded and unmodded clients
 
@@ -167,7 +166,7 @@ the VM and an owned observe worker (observe drops all orders: battle Lua; checke
 fresh price quotes (the current ones expire 2026-11-04 00:38 UTC), retention scripts. Exit:
 `check.py`, (a) and (b), offline only. Stop: a check fails.
 
-**S1. Paid: lobbies and the first Lua move** (≤2.75 h). Needs decisions 1-7 and 9, and O1-O3.
+**S1. Paid: lobbies and the first Lua move** (≤2.75 h). Needs decisions 1-4 and O1-O3.
 Money: ≤2.75 h × $1.131 = $3.11, plus the kept disk ≤18.25 h × $0.035 = $0.64: ≤$3.75. You: about
 90 min including Steam Guard; PC game about 1 h, A windowed.
 1. 0:00-1:20: create the VM; you log in over RDP and to Steam and start the download (the pilot

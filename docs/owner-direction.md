@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (VM team plan decisions): "you are allowed to spend $10 for now, but let's try to
+  minimize the costs. The units are indeed more limited in the VM, so it's fine to use a more
+  restricted set." The second account has only the Boris Todbringer DLC, which does not give
+  access to all base-game factions. "The two Steam accounts are already added as friends. The
+  licencing is fine so don't worry about it." Applied: [VM team plan](twwarhammer3/vm-team-plan.md#owner-decisions)
+  decisions 5-7 and 9; the $10 read as a new cloud allowance from $0.
 - 2026-11-03 (WH3 update): "WH3 has received an updated on Steam. Let's re-pin it in our
   code to work with the latest version". Re-pin the normal runtime to the completed local
   9.0.5/build 26403568 install; native checkpoint support remains a separate build guard.
