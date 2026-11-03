@@ -44,6 +44,11 @@ Literature reference only; no experiment or verification method adopted.
 
 ## WH3 benchmark reference profiles
 
+The [Boris scenario source register](twwarhammer3/boris-scenarios-sources.md) records SEGA's
+DLC-only ownership rules, CA unit/patch descriptions and competitive-context sources,
+with exact excerpts and access limits. It supports the
+[battle proposals](twwarhammer3/boris-scenarios.md), not live verification or adoption.
+
 The [WH3 tactics source register](twwarhammer3/tactics-sources.md) collects historical
 accounts from NPS, the National Army Museum and English Heritage, plus CA mechanics guides
 and patch notes. It supports the [tactics catalogue](twwarhammer3/tactics-reference.md) and

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (Boris scenario research): research distinct WH3 battle setups for the account
+  entering through Boris Todbringer's standalone End Times pack, with Empire on either
+  side; cover mechanics, competitive play, unit/faction variety, terrain and model/team
+  behaviour. [Catalogue](twwarhammer3/boris-scenarios.md); scenario adoption remains open.
 - 2026-11-03 (VM setup efficiency): battle setup takes too long. Save and reuse the
   graphics configuration; with working storage, check it once rather than navigating
   graphics settings on every launch. Owner wants the assistant to establish the Windows

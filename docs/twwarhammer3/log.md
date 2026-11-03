@@ -28,6 +28,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: Boris-only tactical scenario research
+
+- Added [26 battle proposals](boris-scenarios.md): 16 Empire-pool cases, 3 with Bretonnia,
+  7 requiring a licensed cross-faction opponent. Each gives armies, terrain, team roles,
+  a decision/failure contrast and evidence to collect; source excerpts are [registered](boris-scenarios-sources.md).
+- Publisher sources distinguish Boris/core Empire/Free-LC access from other paid Empire
+  units; actual second-account recruitment still needs the per-unit lobby check.
+- Six marked choices cover settings, terrain, recipes, team comparisons, admission evidence
+  and a first selection. These are proposals; no configuration, scorer or agreed check changed.
+- Initial worktree gate: Ruff clean; 2697 passed, 69 skipped. Skips include optional Torch,
+  Windows and local saved evidence. Independent source review caught a singular/plural
+  quotation error, corrected; native 2v2 also explicitly needs attack/model integration.
+- Zero new battles or model calls. Recruitability beyond the recorded account probe,
+  mechanics, balance, winnability and cooperation gains remain unverified.
+- Review and gate evidence: `runs/boris-scenarios/`; final gate is recorded with the commit.
+
 ## 2026-11-03: GCP pilot closed; compatibility check incomplete
 
 - Region fallback created one Windows/L4 VM after seven stockouts. Game source `1fd0b6d`,
