@@ -382,6 +382,8 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   we haven't saved human time, we've only moved it", claude.dev). After about five changes,
   keep, simplify or drop each step; after a model upgrade, drop steps that catch nothing
   ([Anthropic](https://www.anthropic.com/research/harness-design-long-running-apps)).
+  For that count, the main checkout's `runs/checks/` keeps one log per gate run there, and
+  `stop-hook.log` and `commit-guard.log` (one line per stop decision or refused commit).
 - **Changing the process** is a normal change with a card: edit this page, `check.py` or the
   reviewer file, and the report names what the change should catch.
 
@@ -439,6 +441,12 @@ Codex's native `PreToolUse` dispatch through code-mode `exec_command` blocked a 
 `ruff format --help` probe on 2026-11-02 (`runs/factory-startup-20261102/native-hook-probe.txt`).
 This checks one dispatch/refusal path; it does not establish native Stop behaviour.
 Matching configuration files alone establish neither path.
+A sandbox that refuses new sockets fails the socket tests: in 8 normal `check.py` runs as PID
+3 or 4 (logs 11-01 22:04 to 11-02 19:10), 26 to 98 tests each failed or errored on
+`PermissionError` from `socket.socket()`. Run the gate outside the sandbox (Codex:
+`sandbox_permissions: "require_escalated"`, which the owner or a saved rule approves). Those
+errors say nothing about the code; a run's other failures still do (two of the 8 also lost
+their scratch folder or failed a stale plant).
 
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them

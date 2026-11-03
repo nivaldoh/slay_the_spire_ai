@@ -478,7 +478,7 @@ def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_pa
     spec = importlib.util.spec_from_file_location("check_copy", tmp_path / "scripts/check.py")
     check = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(check)
-    (tmp_path / "runs/checks").mkdir(parents=True)
+    (tmp_path / "runs/checks").mkdir(parents=True, exist_ok=True)  # the hook logs refusals there
     record = tmp_path / "runs/checks/last-pass.json"
     record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
     assert git("commit", "-qm", "base").returncode == 0
@@ -501,6 +501,50 @@ def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_pa
     (linked / "runs/checks/last-pass.json").write_text(
         json.dumps({"tree": check.tree_content(linked)}))
     assert git("commit", "-qam", "there", cwd=linked).returncode == 0
+
+
+def test_the_git_hook_logs_each_refusal_in_the_main_checkout(tmp_path):
+    main = tmp_path / "main"
+    (main / "scripts/githooks").mkdir(parents=True)
+    for name in ("scripts/check.py", "scripts/githooks/pre-commit"):
+        (main / name).write_bytes((ROOT / name).read_bytes())
+    (main / "scripts/githooks/pre-commit").chmod(0o755)
+    (main / ".gitignore").write_text("runs/\n__pycache__/\n")
+
+    def git(*args, cwd=main):
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd,
+                              capture_output=True, text=True)
+    git("init", "-q")
+    git("config", "core.hooksPath", "scripts/githooks")
+    git("add", ".")
+    assert git("commit", "--no-verify", "-qm", "base").returncode == 0
+    log = main / "runs/checks/commit-guard.log"
+    assert not log.exists()  # a skipped hook logs nothing
+    spec = importlib.util.spec_from_file_location("check_copy", main / "scripts/check.py")
+    check = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(check)
+    (main / "runs/checks").mkdir(parents=True)
+    (main / "runs/checks/last-pass.json").write_text(
+        json.dumps({"tree": check.tree_content(main)}))
+    assert git("commit", "--allow-empty", "-qm", "checked").returncode == 0
+    assert not log.exists()  # an allowed commit logs nothing
+    (main / "a.py").write_text("x = 1\n")
+    git("add", "a.py")
+    assert git("commit", "-qm", "unchecked").returncode != 0
+    linked = tmp_path / "linked"
+    assert git("worktree", "add", "-q", str(linked)).returncode == 0
+    (linked / "b.py").write_text("y = 1\n")
+    git("add", "b.py", cwd=linked)
+    assert git("commit", "-qm", "unchecked there", cwd=linked).returncode != 0
+    # both refusals reach the main checkout's log, which outlives the worktree
+    checkouts = [Path(json.loads(line)["checkout"]) for line in log.read_text().splitlines()]
+    assert checkouts == [main, linked]
+    assert not (linked / "runs/checks/commit-guard.log").exists()
+    log.unlink()
+    log.mkdir()  # a log that cannot be written still refuses with the instruction
+    refused = git("commit", "-qm", "unchecked")
+    assert refused.returncode != 0 and "run it, read its result" in refused.stderr
+    assert "Traceback" not in refused.stderr
 
 
 LIVE_CHECKER_SCRIPTS = [

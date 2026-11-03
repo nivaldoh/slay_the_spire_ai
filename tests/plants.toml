@@ -3221,3 +3221,21 @@ old = 'and event.get("source") == "local"):'
 new = 'and event.get("source") == "never_local"):'
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_a_local_team_refusal_without_inventing_an_engine_age"]
 source = "2026-11-02 initial one-army team report review"
+
+[[plant]]
+id = "commit-guard-log-error-hides-instruction"
+guards = "A refusal whose log cannot be written still prints the instruction"
+file = "scripts/githooks/pre-commit"
+old = "    except Exception:  # as in checked(): the log never changes the answer\n        pass\n"
+new = "    except ZeroDivisionError:\n        pass\n"
+tests = ["tests/test_hooks.py::test_the_git_hook_logs_each_refusal_in_the_main_checkout"]
+source = "2026-11-02 factory: MISSED by the first version of that test"
+
+[[plant]]
+id = "commit-guard-logs-allowed-commits"
+guards = "Only refused commits are logged"
+file = "scripts/githooks/pre-commit"
+old = "    if not checked():\n"
+new = "    note_refusal()\n    if not checked():\n"
+tests = ["tests/test_hooks.py::test_the_git_hook_logs_each_refusal_in_the_main_checkout"]
+source = "2026-11-02 factory review of 29e3e2f: MISSED before the allowed-commit case"

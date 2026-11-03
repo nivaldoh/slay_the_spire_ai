@@ -3,11 +3,16 @@
 now in this tree (its record, runs/checks/last-pass.json, holds tree_content's hash). git runs it
 for every `git commit`, however typed, but not for merges, cherry-picks, reverts, rebases or
 `am`; `--no-verify` skips it. Enable it with `git config core.hooksPath scripts/githooks` (the
-owner approved 2026-10-30); a checkout without this file then runs no hook."""
+owner approved 2026-10-30); a checkout without this file then runs no hook.
+Each refusal appends one JSON line (time, checkout) to the main checkout's
+runs/checks/commit-guard.log, so the guard's catches can be counted (docs/workflow.md, count
+what each step catches); a linked worktree's own runs/ is deleted with it. A log that cannot be
+written never changes the answer."""
 import importlib.util
 import json
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True,
@@ -25,8 +30,22 @@ def checked(root: Path = ROOT) -> bool:
         return False
 
 
+def note_refusal(root: Path = ROOT) -> None:
+    try:
+        common = subprocess.run(["git", "rev-parse", "--git-common-dir"], cwd=root,
+                                capture_output=True, text=True, check=True).stdout.strip()
+        log = (root / common).resolve().parent / "runs/checks/commit-guard.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with log.open("a", encoding="utf-8") as out:
+            out.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"),
+                                  "checkout": str(root)}) + "\n")
+    except Exception:  # as in checked(): the log never changes the answer
+        pass
+
+
 if __name__ == "__main__":
     if not checked():
         print("pre-commit: scripts/check.py has not passed on these exact files; run it, read "
               "its result, then commit (AGENTS.md: before each commit)", file=sys.stderr)
+        note_refusal()
         sys.exit(1)
