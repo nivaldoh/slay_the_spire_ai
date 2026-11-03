@@ -5,6 +5,54 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (VM setup efficiency): battle setup takes too long. Save and reuse the
+  graphics configuration; with working storage, check it once rather than navigating
+  graphics settings on every launch. Owner wants the assistant to establish the Windows
+  graphics session without requiring them to open RDP. Record this as follow-up work;
+  unattended startup and operation without a viewer are separate, unverified capabilities.
+- 2026-11-03 (VM deployment): the blue "Start Battle" button must be clicked before
+  timing; a static deployment screen is not a running battle or evidence of a freeze.
+- 2026-11-02 (VM account clarification): "All the others are not enabled for that
+  account since we have a limited DLC that granted access to the base game"; only
+  one Khorne unit was available. This supersedes the assumption of a full WH3 base
+  roster. Discover selectable units on the actual client; the DLC is Boris Todbringer.
+- 2026-11-02 (VM graphics): "It's in the main menu now. I lowered graphics settings
+  from Ultra to Low". Record Low as the configuration for this compatibility check.
+- 2026-11-02 (VM freeze evidence): "Use the three-second limit": investigate a
+  possible stall after more than three seconds without advancing game-time readings;
+  recording gaps over three seconds make the interval inconclusive. Neither passes
+  based on average speed alone.
+- 2026-11-02 (VM manual handoff): record the WSL/RDP/Windows-login/Steam procedure.
+  Owner reported that new output hides earlier instructions; repeat the full login
+  steps together when handing over and keep them visible in the status question.
+- 2026-11-02 (second Steam account content): owns WH3 and only "Boris Todbringer
+  Lords of the Endtimes" DLC. Owner reports access to some Empire units, possibly
+  more; the exact roster is not checked. Use a compatible army on that client and
+  confirm selectable units in its battle setup before running.
+- 2026-11-02 (GCP compatibility check): "Use this check": one small unpaused battle,
+  120 seconds with Remote Desktop connected and 120 seconds disconnected; reconnect
+  to confirm rendering. No crash/freeze, usable screenshots, battle time within 1%
+  of Windows elapsed time. This verifies only the tested VM configuration.
+- 2026-11-02 (GCP capacity fallback): "make our code more resilient ... by letting it
+  try more regions". Add automatic region fallback under the existing cloud boundary.
+- 2026-11-02 (GCP pilot budget and licence): owner chose "Approve $5 total, at most
+  3 hours" for one Windows/L4 setup session including installation, with automatic
+  VM/disk deletion at the deadline. This replaces the earlier $1 cloud cap and includes
+  the cleanup tests. Second Steam account: "Yes, it owns WH3".
+- 2026-11-02 (GCP setup, proceed): "Let's proceed with the plan for the GCP setup. We
+  will stop after confirming that the game does work in the VM (or understanding why,
+  if it doesn't)." Improve the cloud guidelines along the way; watch billing, avoid
+  overengineering and hidden assumptions, use official GCP docs, and explain manual
+  steps concretely and concisely. The initial $1 total limit was later increased above.
+- 2026-11-02 (cloud guidelines): "write some guidelines in our repo for cloud usage",
+  including prevention of accidental billing and the project ID. "Be concise, no slop."
+  [Cloud usage](cloud.md) records the boundary, cleanup requirements and test evidence.
+- 2026-11-02 (GCP setup, discussion before deployment): owner logged in through WSL,
+  names project `wh3-benchmark`, and says "Boundaries for now will be $1". Before
+  instantiation, "first ensure that whatever we instantiate can be automatically
+  deactivated/deleted when not in use to avoid accidental billing charges". Discuss
+  how and check the login; this does not select a cleanup design or authorize a live
+  cleanup test. The second Steam account is prepared; its WH3 licence is not confirmed.
 - 2026-11-02 (initial one-army model-team comparison): active goal, "Complete the initial
   test and comparison for the one army multi-agent feature". Owner chose "Agree to this
   initial comparison": one fresh team battle and one fresh single-controller battle on

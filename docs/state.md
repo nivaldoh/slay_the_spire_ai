@@ -1,10 +1,14 @@
 # Project state
 
-Updated 2026-11-02: what runs, where each game stands, what comes next. Status only:
+Updated 2026-11-03: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+
+GCP pilot closed: evidence exported; VM/disk deleted. WH3 launched and one battle ran,
+but the connected/disconnected check is incomplete. Fix setup automation before another
+funded session. [Result and next steps](twwarhammer3/gcp-client-setup.md#pilot-result-2026-11-03).
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 
@@ -52,7 +56,9 @@ Initial mirror benchmark completed; broader definition remains open (decision 1)
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
   modes, link, worker, `compare-peers`; [status](twwarhammer3/native-multiplayer.md#implementation-status)),
-  all unverified. The $0 observer smoke ran 2026-11-01 (one battle, readings as expected). Next: licences/accounts. Zero live MP battles.
+  all unverified; zero live MP battles. GCP launched WH3, but the agreed host check is
+  incomplete and VM/disk deleted. The second account has DLC-granted access with a limited
+  roster; use its confirmed recruitable units. [GCP result](twwarhammer3/gcp-client-setup.md#pilot-result-2026-11-03).
 
 ## Slay the Spire
 

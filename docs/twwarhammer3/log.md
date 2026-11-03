@@ -28,6 +28,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: GCP pilot closed; compatibility check incomplete
+
+- Region fallback created one Windows/L4 VM after seven stockouts. Game source `1fd0b6d`,
+  Steam build 25961564 and executable matched the pin; licensed NVIDIA L4 vWS.
+- Vanilla WH3 launched; one passive-observer battle ran to an engine win. UI Low,
+  1600×900, five Middenland Swordsmen each (Small), no lords; AI attacking.
+- Agreed 120 s connected / 120 s disconnected check did not pass: initial connected
+  recording had a read error; disconnection came too late to finish its interval.
+  The retry remained in deployment after a reported-success input; no timing began.
+- Screenshots/logs exported. VM and disk deleted at 03:55:54 UTC; paid-resource inventories
+  empty, pilot support access removed. Quote-based subtotal about $3.58 including the
+  earlier $0.03 allowance; actual billing, traffic and tax pending. No model calls.
+- Evidence/review: `runs/twwarhammer3/gcp/session-20261102b/`. No `play` job or register row.
+  [Result/follow-ups](gcp-client-setup.md#pilot-result-2026-11-03): faster setup, persist
+  graphics, reliable Start Battle and unattended desktop startup. Zero multiplayer games;
+  disconnected operation and the full compatibility check remain unverified.
+
 ## 2026-11-02: initial one-army model-team test and comparison complete
 
 Owner-approved one team and one single Haiku-low battle on `emp5-emp5`, frozen `c1ad84d`,

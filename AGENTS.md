@@ -4,8 +4,8 @@ AI policies for original Windows games from WSL. Current focus: Total War: WARHA
 (WH3; real-time custom battles through a Lua mod). Start with [docs/state.md](docs/state.md):
 read "Active work" and the relevant track, then that track's page.
 Codex loads this file; Claude Code imports it through `CLAUDE.md`. It holds hard rules and
-pointers in at most 200 lines (a repo rule): detail goes in the page it governs. How a change
-is made (cards, `scripts/check.py`, the reviewer, reports): [docs/workflow.md](docs/workflow.md).
+pointers in at most 200 lines; detail goes in the page it governs. Cloud work: read [docs/cloud.md](docs/cloud.md).
+How a change is made (cards, checks, reviewer, reports): [workflow reading routes](docs/workflow.md#start-here).
 
 Before Spire work (its source, legacy configs, tests, scripts, or shared code affecting it),
 read [docs/spire/AGENTS.md](docs/spire/AGENTS.md); skip it for WH3-only work.

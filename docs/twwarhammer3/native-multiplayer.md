@@ -101,8 +101,8 @@ Blocked, and what unblocks each item:
 |---|---|
 | Low-graphics (H1) comparison; native completed-tick collector | A game window; the collector also needs its own card |
 | Lobby automation (step 8) | Live UI dumps (game window) or owner-approved layout extraction; the owner's ruling on lobby privacy |
-| Ordinary multiplayer, one-peer move, authority and visibility checks (steps 3, 5, 7) | A second concurrent licence and Steam account; agreed checks |
-| Hosted client (step 2) | A provider account, billing and a quote |
+| Ordinary multiplayer, one-peer move, authority and visibility checks (steps 3, 5, 7) | A working second client and agreed checks; the second account has DLC-granted game access with a limited roster, so confirm its recruitable units |
+| Hosted client (step 2) | GCP pilot closed and VM/disk deleted. WH3 launched and one battle ran, but the connected/disconnected check is incomplete. Fix Start Battle input and unattended desktop startup before another bounded session ([result](gcp-client-setup.md#pilot-result-2026-11-03)) |
 | Link between machines | A Tailscale account, or the IAP alternative |
 
 ## Evidence and remaining uncertainty
@@ -668,7 +668,12 @@ unavailable. Two clean sessions cannot establish a production failure rate or po
 
 ## Google Cloud runbook
 
-This is a **future, unexecuted runbook**, not provisioning authorization. Google's
+The concrete version, with your few manual steps and the risks first, is
+[gcp-client-setup.md](gcp-client-setup.md). The owner authorized one bounded GCP pilot
+on 2026-11-02. The Singapore VM launched WH3 and one battle ran, but the agreed check
+is incomplete. Evidence was exported and the VM/disk deleted; no multiplayer was run.
+
+The remaining steps are a runbook, not authorization for another cloud session. Google's
 [Windows GPU workstation guide](https://docs.cloud.google.com/compute/docs/virtual-workstation/windows-gpu)
 provides a Windows Server 2022 + display-capable vWS route. That is a supported workstation
 configuration, not a WH3 compatibility result. Steam's Windows game requirements do not

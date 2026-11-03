@@ -615,3 +615,76 @@ For `.github/workflows/check.yml` (2026-10-29):
 ### Launcher failure contract tests (2026-10-31)
 
 Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.
+
+## GCP client setup guide (2026-11-02)
+
+Sources for the [Google Cloud setup guide](twwarhammer3/gcp-client-setup.md), read by two
+research agents on 2026-11-02 (web only; nothing created or run); a third agent rechecked the
+guide's claims against them and its 16 findings were applied. Official pages **checked**;
+forum posts and third-party sites **secondary**.
+
+- Google Cloud: [free-trial limits](https://docs.cloud.google.com/free/docs/free-cloud-features),
+  [GPU quota names](https://docs.cloud.google.com/compute/resource-usage),
+  [quota requests](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/preferences/create),
+  [quota IDs](https://docs.cloud.google.com/sdk/gcloud/reference/quotas/info/list),
+  [gcloud quota examples](https://docs.cloud.google.com/docs/quotas/gcloud-cli-examples),
+  [quota review](https://docs.cloud.google.com/docs/quotas/overview),
+  [G2 zones](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),
+  [G-series VMs](https://docs.cloud.google.com/compute/docs/gpus/create-gpu-vm-g-series),
+  [Windows images](https://docs.cloud.google.com/compute/docs/images/os-details),
+  [Windows SSH (Preview)](https://docs.cloud.google.com/compute/docs/connect/windows-ssh),
+  [Windows startup scripts](https://docs.cloud.google.com/compute/docs/instances/startup-scripts/windows),
+  [Windows passwords](https://docs.cloud.google.com/sdk/gcloud/reference/compute/reset-windows-password),
+  [vWS licence](https://docs.cloud.google.com/compute/docs/gpus/about-gpus),
+  [GPU host maintenance](https://docs.cloud.google.com/compute/docs/gpus/gpu-host-maintenance),
+  [virtual display device](https://docs.cloud.google.com/compute/docs/instances/enable-instance-virtual-display),
+  [stockouts](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability),
+  [stopping VMs from a budget](https://docs.cloud.google.com/billing/docs/how-to/control-usage):
+  account, quota, VM and lifetime facts; forum reports of automatic GPU quota refusals:
+  [2024-12](https://discuss.google.dev/t/gpu-quota-increase-beyond-0/176297),
+  [2026-07](https://discuss.google.dev/t/blocked-by-automated-gpu-quota-denials-on-academic-research-grant/377219).
+- NVIDIA [RDS sessions skip the GPU on Windows Server](https://docs.nvidia.com/vgpu/19.0/known-issues/bug-no-id-no-gpu-utilization-windows-server-guests.html),
+  [licensed display limits](https://docs.nvidia.com/vgpu/latest/grid-licensing-user-guide/intro-to-grid-licensing.html);
+  Microsoft [RDS hardware-GPU policy](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-admx-terminalserver),
+  [auto-logon](https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon),
+  [Sysinternals Autologon](https://learn.microsoft.com/en-us/sysinternals/downloads/autologon),
+  [scheduled-task principals](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskprincipal):
+  what makes a game render on a Server VM; none of it is a WH3 result.
+- Valve [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD) and
+  [Steam command line](https://developer.valvesoftware.com/wiki/Command_Line_Options_(Steam));
+  [WH3 store page](https://store.steampowered.com/app/1142710/) (Windows 7/10, 120 GB);
+  us-east1 machine price from [gcloud-compute.com](https://gcloud-compute.com/g2-standard-4.html) (third-party).
+- Reference repos for the in-VM steps: [gcloudrig](https://github.com/gcloudrig/gcloudrig)
+  (`gcloudrig.psm1`, `gcloudrig-boot.ps1`; T4 vWS on Compute Engine with Steam; last push
+  2023-11) and [Parsec Cloud Preparation Tool](https://github.com/parsec-cloud/Parsec-Cloud-Preparation-Tool)
+  (`PostInstall/PostInstall.ps1`; archived 2025-10, Server 2016/2019). Fallback display driver:
+  [parsec-vdd](https://github.com/nomi-san/parsec-vdd). Read, not run.
+- Forum reports that a disconnected RDP session stops drawing:
+  [Classmethod](https://dev.classmethod.jp/articles/parsec_host_black_screen_when_rdp_disconnected),
+  [SmartBear](https://support.smartbear.com/testcomplete/docs/ver-14-2/testing-with/running/via-rdp/keeping-computer-unlocked.html).
+
+## Cloud usage and cleanup (2026-11-02)
+
+Official sources read for [cloud usage](cloud.md); two live cleanup cases are recorded there:
+- [VM runtime limits](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime):
+  stop clears the termination timestamp; termination can begin up to 30 seconds late.
+- [Disk auto-deletion](https://docs.cloud.google.com/compute/docs/disks/modify-persistent-disk#auto-delete):
+  `autoDelete=true` removes an attached disk with its VM; retained disks keep billing.
+- [Budget alerts](https://docs.cloud.google.com/billing/docs/how-to/budgets) and
+  [spend caps](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps):
+  billing delay and the eligible services, which exclude Compute Engine.
+- Workflows [deadline waiting](https://docs.cloud.google.com/workflows/docs/reference/stdlib/sys/sleep_until),
+  [VM deletion](https://docs.cloud.google.com/workflows/docs/reference/googleapis/compute/v1/instances/delete)
+  and [pricing](https://cloud.google.com/workflows/pricing): cleanup primitives,
+  charged by executed steps. Official docs alone do not establish our implementation's correctness.
+- Reference pattern: GoogleCloudPlatform/workflows-demos,
+  [long-running-container/prime-generator.yaml](https://github.com/GoogleCloudPlatform/workflows-demos/blob/master/long-running-container/prime-generator.yaml),
+  VM deletion from an external workflow; adapted to fixed deadlines and exact target names.
+- [Resource availability errors](https://docs.cloud.google.com/compute/docs/troubleshooting/troubleshooting-resource-availability):
+  stockouts are separate from quota; trying another zone or later is Google's documented response.
+- Region retry implementation: [SkyPilot, sky/provision/provisioner.py](https://github.com/skypilot-org/skypilot/blob/master/sky/provision/provisioner.py),
+  `bulk_provision` stops failover if teardown fails. Our runner stops when absence is uncertain.
+  Google's [Billing catalogue API](https://docs.cloud.google.com/billing/v1/how-tos/catalog-api)
+  supplied the regional SKU rates; live accelerator/machine listings supplied supported zones.
+  Eight regional quotes and 22 advertised zones checked on 2026-11-03 UTC, without provisioning;
+  evidence: `runs/gcp-region-fallback-20261102/`. Advertised support does not establish capacity.

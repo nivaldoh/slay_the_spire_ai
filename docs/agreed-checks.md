@@ -15,6 +15,21 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 GCP VM compatibility (agreed 2026-11-02, owner: "Use this check"):
+  one small unpaused battle, measuring 120 seconds with Remote Desktop connected and
+  120 seconds after disconnecting, then reconnecting to confirm rendering. Pass: no
+  crash or freeze, usable screenshots, and battle time within 1% of Windows elapsed
+  time in each interval. This checks only the tested VM configuration. Procedure and
+  evidence: [GCP setup guide](twwarhammer3/gcp-client-setup.md#5-one-client-test).
+  Owner's same-day clarification ("Use the three-second limit"): more than three
+  seconds without advancing game-time readings flags a possible stall to investigate;
+  a recording gap over three seconds makes the interval inconclusive. Neither passes
+  on average speed alone. Confirm connected means an RDP viewer, not an active console.
+  Attempted 2026-11-03 UTC with source `1fd0b6d`: incomplete; no passing revision.
+  One battle ran, but the initial connected recording had a read error and the battle
+  ended before 120 seconds disconnected. The retry stayed in deployment. Earlier
+  cleanup probes are separate and do not establish game compatibility.
+
 - Test suite rejects its kept wrong versions (agreed 2026-11-02, owner: "Agree as written"):
   in the main checkout the exit gate `check.py` passes, and `check.py --plants` reports every
   planted wrong version kept in `plants.toml` caught. Commands, from the repository root:

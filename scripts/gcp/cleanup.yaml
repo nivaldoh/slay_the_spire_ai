@@ -1,0 +1,49 @@
+# Pattern: GoogleCloudPlatform/workflows-demos/long-running-container/prime-generator.yaml
+# Official sys.sleep_until and compute delete connectors; no guest/local process needed.
+# JUDGEMENT: Cleanup implementation — Codex, 2026-11-02: one cloud workflow per
+# disposable VM, fixed target name, zone and deadline. A scheduler would recur and need removal.
+main:
+  steps:
+    - probe:
+        call: remove
+    - deadline:
+        call: sys.sleep_until
+        args:
+          time: __DEADLINE__
+    - cleanup:
+        call: remove
+
+remove:
+  steps:
+    - delete_vm:
+        try:
+          call: googleapis.compute.v1.instances.delete
+          args:
+            project: wh3-benchmark
+            zone: __ZONE__
+            instance: __NAME__
+        retry: ${http.default_retry}
+        except:
+          as: e
+          steps:
+            - vm_absent:
+                switch:
+                  - condition: ${map.get(e, "code") != 404}
+                    raise: ${e}
+    - delete_disk:
+        try:
+          call: googleapis.compute.v1.disks.delete
+          args:
+            project: wh3-benchmark
+            zone: __ZONE__
+            disk: __NAME__
+        retry: ${http.default_retry}
+        except:
+          as: e
+          steps:
+            - disk_absent:
+                switch:
+                  - condition: ${map.get(e, "code") != 404}
+                    raise: ${e}
+    - done:
+        return: __NAME__
