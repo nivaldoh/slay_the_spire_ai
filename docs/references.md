@@ -35,6 +35,18 @@ fetched the page and found the quote; *Read*: one agent fetched it.
   off-the-shelf LLMs met given formal specifications 27% in Lean, 44% in Verus, 82% in Dafny.
   *Read.*
 
+## RTS test reference (2026-11-03)
+
+[DeepMind PySC2](https://github.com/google-deepmind/pysc2), inspected at
+`0df53d38c153972f1e368572ba65b1442a0fd41f`:
+[mock_sc2_env_test.py](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/env/mock_sc2_env_test.py)
+tests episode transitions, including two episodes on one environment;
+[protocol_error_test.py](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/tests/protocol_error_test.py)
+checks specific protocol/request errors and replay behaviour against the actual SC2 process.
+Read as a research-code reference for WH3 transition tests and the separation between fake
+environment tests and live-engine evidence. Neither its tests nor SC2 ran here; its stepping
+model is not WH3's unpaused 1x timing contract. Application and evidence: [testing review](testing.md#mailbox-transition-review-2026-11-03).
+
 ## Cross-domain research reference (2026-11-02)
 
 Karttunen et al., [From Video Game to Real Robot: The Transfer Between Action Spaces](https://doi.org/10.1109/ICASSP40776.2020.9053221),

@@ -17,7 +17,7 @@ Visual reports: `runs/twwarhammer3/reports/benchmark.html` ([open/build](twwarha
 
 Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`.
 
-Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs).
+Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03).
 Follow-up: shared Codex/Claude WH3 knowledge skill ([direction](owner-direction.md)).
 Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.
 

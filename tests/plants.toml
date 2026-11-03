@@ -3239,3 +3239,54 @@ old = "    if not checked():\n"
 new = "    note_refusal()\n    if not checked():\n"
 tests = ["tests/test_hooks.py::test_the_git_hook_logs_each_refusal_in_the_main_checkout"]
 source = "2026-11-02 factory review of 29e3e2f: MISSED before the allowed-commit case"
+
+# Mailbox transition review: the old mailbox suite passed each of these wrong versions.
+[[plant]]
+id = "mailbox-accepts-an-older-sequence"
+guards = "Only observations beyond after_seq release an observation wait"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = 'if observation.get("seq", -1) > after_seq:'
+new = 'if observation.get("seq", -1) != after_seq:'
+tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_wait_ignores_unusable_observation_then_delivers_newer_one"]
+source = "2026-11-03 mailbox contract review: older is not newer"
+
+[[plant]]
+id = "mailbox-overwrites-pending-on-timeout"
+guards = "A timed-out write leaves the outstanding request byte-for-byte intact"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '                raise MailboxTimeout("the game did not consume the previous request")'
+new = '''                (self.directory / "orders.json").write_text("{}")
+                raise MailboxTimeout("the game did not consume the previous request")'''
+tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_timeout_preserves_pending_request_until_consumption"]
+source = "2026-11-03 mailbox contract review: refusal must preserve the pending request"
+
+[[plant]]
+id = "mailbox-propagates-transient-read-lock"
+guards = "Observation and rematch waits recover after a transient read lock"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '        except (OSError, ValueError):'
+new = '        except (FileNotFoundError, ValueError):'
+tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_wait_recovers_after_a_transient_read_lock"]
+source = "2026-11-03 mailbox contract review: locked reads mean not yet"
+
+[[plant]]
+id = "mailbox-discards-loading-sequence-zero"
+guards = "Rematch wait returns the new battle's Loading placeholder at seq zero"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '        self.written_ns = written_ns'
+new = '''        if not observation.get("seq"):
+            return None
+        self.written_ns = written_ns'''
+tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_rematch_wait_delivers_loading_at_sequence_zero"]
+source = "2026-11-03 mailbox contract review: zero is a valid initial sequence"
+
+[[plant]]
+id = "mailbox-discards-engine-ending"
+guards = "Engine terminal observations and final evidence reach the controller"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '        self.written_ns = written_ns'
+new = '''        if observation.get("result"):
+            return None
+        self.written_ns = written_ns'''
+tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_terminal_observation_is_delivered_with_its_evidence"]
+source = "2026-11-03 mailbox contract review: endings are observations too"

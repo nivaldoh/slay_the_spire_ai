@@ -28,6 +28,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: mailbox transition test review
+
+- [Review](../testing.md#mailbox-transition-review-2026-11-03): added 14 offline cases for
+  stale/foreign observations, transient read locks, seq-zero rematches, endings and pending
+  requests across timeouts. No production code or existing assertions changed.
+- Reference: [PySC2](../references.md#rts-test-reference-2026-11-03), pinned repeated-episode
+  and live protocol-error tests; pytest isolation and Google's behaviour-focused guidance.
+- Real code: 19 existing mailbox cases and all 33 expanded cases pass. Five wrong versions
+  passed the old mailbox suite and fail the new tests; retained in `tests/plants.toml`.
+- Independent reviewer reproduced those counts and caught two additional wrong versions:
+  dropping final evidence and refusing immediately instead of waiting for consumption.
+- Worktree `scripts/check.py`: Ruff clean, 2,711 passed, 69 skipped (optional torch, local
+  evidence and Windows opt-ins); no failures. Raw checks/review: `runs/test-review-20261103/`.
+- Card/check proposed, not agreed; rests on JUDGEMENT
+  `tests/twwarhammer3/test_wh3_mailbox_transitions.py` Mailbox transition checks.
+  No games or paid calls; live movement, Windows timing and deterministic restores remain
+  unverified by this work. Existing formal-verification candidates still await agreement.
+
 ## 2026-11-03: Boris-only tactical scenario research
 
 - Added [26 battle proposals](boris-scenarios.md): 16 Empire-pool cases, 3 with Bretonnia,

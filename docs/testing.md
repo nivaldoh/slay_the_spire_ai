@@ -30,6 +30,32 @@ wholesale. The applications to our game code below are proposals.
 | [Anthropic, agent evaluations](https://www.anthropic.com/research/demystifying-evals-for-ai-agents) | Check the resulting state, test the grader, and allow valid alternative solutions. Applied to software checks below; research scoring stays in the evaluation guide. |
 | [Anthropic, infrastructure noise](https://www.anthropic.com/research/infrastructure-noise) | Resource limits can change which strategies succeed. Control component-test scheduling; do not silently relax live battle deadlines to make a check pass. |
 
+## Mailbox transition review 2026-11-03
+
+Reviewed the existing behaviour map, WH3 protocol/mailbox tests, play-loop acknowledgement
+tests and team tests. The changes target gaps in the real mailbox; `FakeMailbox` in the
+play-loop tests deliberately does not implement its filtering. This is a focused review,
+not an assertion-by-assertion audit of every package.
+
+The existing 19 mailbox cases passed five deliberately wrong implementations: accepting
+an older sequence, overwriting the pending request before raising a timeout, propagating
+a transient read lock, dropping Loading sequence zero, and dropping engine endings.
+[Transition tests](../tests/twwarhammer3/test_wh3_mailbox_transitions.py) add 14 cases;
+all 33 cases pass on real code, and each of those five mutations now fails an intended
+assertion or exception check. The mutations are retained in [plants.toml](../tests/plants.toml).
+Evidence: `runs/test-review-20261103/`; raw outputs distinguish passing baselines from
+deliberately failing mutations. No production code, existing assertions or agreed checks changed.
+
+The tests follow [PySC2's repeated-episode pattern](references.md#rts-test-reference-2026-11-03),
+using one mailbox across stale data, recovery and rematch transitions. They use real temporary
+files and control polling time, following pytest's isolation guidance; assertions check
+delivered messages and preserved bytes, following Google's behaviour-focused guidance above.
+The independent oracle is this repo's mailbox contract, not PySC2's different game protocol.
+These proposed checks rest on JUDGEMENT `tests/twwarhammer3/test_wh3_mailbox_transitions.py`
+Mailbox transition checks. Windows sharing locks, live order effects, 1x timing and
+deterministic game restores remain unverified by this work. The broader fault-injection and
+information-boundary candidates in the formal-verification section still await agreement.
+
 ## Write tests that explain the requirement
 
 For a meaningful behavior, establish four things: the condition, the action, the expected
