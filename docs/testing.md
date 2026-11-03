@@ -160,10 +160,6 @@ the model-input contract during refactors; they do not establish prompt quality.
 the changed text and requirement before regenerating an expectation. Never refresh a
 snapshot merely to turn a failure green.
 
-Snapshot generation is authoring, even when pytest reports a pass after writing it.
-`WH3_WRITE_PROMPTS=1` enables that mode; verification needs a separate run with the variable
-absent, as shown in [the prompt tests](../tests/twwarhammer3/test_wh3_prompts.py).
-
 Generated-input tests need a meaningful property. For example, changing only hidden fields
 must leave the public policy input unchanged. This complements explicit examples; it does
 not justify adding Hypothesis everywhere or replacing game checks with generated states.
@@ -174,17 +170,10 @@ JUDGEMENT: Agent review workflow — Codex, 2026-10-23, proposes a requirement-f
 and targeted fault challenge; accepting an agent's green suite alone misses shared mistakes
 in code and expectations. This is draft guidance, not a new agreed verification method.
 
-Give an independent reviewer the requirement and the changed code/tests, and ask for a
-specific wrong behavior that could still pass. Another agent's agreement is review evidence,
-not an independent correctness reference; agents can share the same mistaken assumption.
-Use reproducible counterexamples to resolve disagreements. The expectation should come
-from the contract or independently checked example, not the author's explanation of the patch.
-
-Review test changes as carefully as runtime changes: weaker assertions, new skips, longer
-timeouts, rewritten snapshots and altered fakes can all conceal a regression. Check the
-final diff and test selection after experiments. Run deliberate faults in an isolated copy
-or process, and run the final checks on the restored implementation. An import error or
-unrelated timeout is not evidence that a test detected the intended fault.
+The reviewer's inputs and rules are in [workflow.md](workflow.md#agent-checks-and-the-reviewer),
+the rules against rigged checks in [checks in layers](workflow.md#checks-in-layers). Review
+test changes as carefully as runtime changes: weaker assertions, new skips, longer timeouts,
+rewritten snapshots and altered fakes can all conceal a regression.
 
 For agentic game policies, grade the observable outcome while allowing different valid
 tactics. Exact command order belongs in a check only when order is part of the contract,
@@ -212,8 +201,8 @@ Do not make repeated attempts until green the acceptance rule for a flaky test.
 
 Keep a small map by behavior, linking the tests, what is real or substituted, and the gap
 that remains. [The current map](../tests/README.md#what-the-checks-establish) is a starting
-inventory, not a claim of complete coverage. Keep agreement and passing revisions in the
-existing AGENTS.md register rather than creating another verification register.
+inventory, not a claim of complete coverage. Agreement and passing revisions stay in
+[agreed-checks.md](agreed-checks.md).
 
 JUDGEMENT: Coverage reporting — Codex, 2026-10-23, proposes scoped branch reports alongside
 the behavior map; a percentage-only report would describe a different kind of coverage.

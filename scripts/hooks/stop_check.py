@@ -3,7 +3,10 @@ since its last pass, and keep the turn going while it fails.
 
 The tree's identity is HEAD, the index, the diff against HEAD and the untracked files'
 contents (ignored files such as runs/ are left out). A pass is remembered per identity in
-runs/checks/, so an unchanged tree is not rechecked; a failure is rerun at the next fresh
+runs/checks/, so an unchanged tree is not rechecked. A completed scripts/check.py pass on the
+current contents (its record, read while the identity stays the same) counts as a pass too;
+exit 0 without that record does not. An edit made and undone between two reads of the identity
+is not seen. A failure is rerun at the next fresh
 stop, in case it was a timing flake. Exit 2 blocks the stop and shows the failure. This hook
 never blocks twice in a row: a stop after its own block (`stop_hook_active`, which another
 Stop hook such as /goal's also sets, so the hook remembers its last answer) goes through with a

@@ -9,11 +9,17 @@ Completion needs a fresh readable JUnit report with named cases, a passing test 
 A zero exit without that evidence is incomplete. The suite runs without WH3_WRITE_PROMPTS, so it
 never rewrites prompt snapshots, and its scratch
 directory (runs/test-scratch/check-<pid>) is removed after a pass; a failed run's stays for
-reading the failure until the next run starts, which removes every ended run's.
+reading the failure until the next run starts, which removes every ended run's. The suite also
+runs without PYTEST_ADDOPTS and PYTHONOPTIMIZE (whole suite, assertions on) and with a fresh
+bytecode directory per run, so a same-size edit is never read from stale bytecode. Two normal
+runs in one checkout take turns on runs/checks/gate.lock; a waiting run prints nothing. Never
+delete that empty file: waiters hold its inode, so a new file would let a third run start beside
+the second. A run in another sandbox (PID namespace) can hold it while `ps` here shows none.
 
 A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
 of every file not ignored (tree_content); scripts/githooks/pre-commit refuses a commit unless the
-hash still matches, and a failing run deletes it.
+hash still matches. A normal run deletes the record it starts with, and so do rejected
+arguments; --help and --plants leave it alone.
 
 Each run also appends one line to runs/checks/agreed-passes.jsonl (owner, 2026-10-29: "(a)"):
 for every entry of docs/agreed-checks.md with a pytest command, whether that command's tests

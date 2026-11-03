@@ -30,7 +30,7 @@ before acting on it. A pending choice on another track does not block independen
 
 | Task | Sections to read |
 |---|---|
-| Any change | [Size](#sizes-of-change), the matching [loop](#loops-what-runs-when) and [report](#reports) |
+| Any change | [Your own worktree](#several-sessions-at-once), [size](#sizes-of-change), the matching [loop](#loops-what-runs-when) and [report](#reports) |
 | Normal change, including a new or changed test | [Card](#before-a-change-the-card), [checks in layers](#checks-in-layers) and [reviewer](#agent-checks-and-the-reviewer) |
 | Commit | [Exit gate](#the-exit-gate-scriptscheckpy), including its warning and pass-record limits |
 | Check, hook or workflow change | Also [keeping the process working](#keeping-the-process-working) and [what exists](#what-exists-and-what-waits) |
@@ -40,6 +40,39 @@ before acting on it. A pending choice on another track does not block independen
 For the owner's original instructions, search [owner-direction.md](owner-direction.md) by
 topic/date. For an agreed correctness method and its recorded revisions, read the relevant
 entry in [agreed-checks.md](agreed-checks.md). Neither file needs loading in full at startup.
+
+## Several sessions at once
+
+Owner, 2026-11-02, after five tasks' uncommitted edits shared the main checkout (one task's
+`src/` edits made every WH3 `play` refuse to start, and 16 of the Stop hook's 25 blocks from
+10-31 to 11-02 21:35 came after a check that passed, 14 of which could not record a pass
+because files changed while it ran): "Own worktree (Recommended)".
+
+JUDGEMENT?: Worktree details — Claude, 2026-11-02, under the owner's "Own worktree (Recommended)":
+game jobs stay in the main checkout, a worktree is a task's claim, landing is a fast-forward
+there; an integrating session or `state.md` claims would differ. The bullets below rest on it.
+
+- A session that edits tracked files works in its own worktree and branch, both named after
+  the task: `git worktree add ../slay_the_spire_ai-<task> -b <task>`, or
+  `runs/<task>/worktree` (ignored), never `/tmp` (a WSL restart wipes it); then
+  `uv sync --locked` inside it. Never link `.venv` (it repointed the main checkout's install,
+  2026-10-29) or `runs/` (commands run there would write into the main checkout's evidence).
+  The worktree is the claim: check `git worktree list` before taking a task. Read-only
+  sessions and the owner use the main checkout.
+- Game jobs (`play`, `launch`, the queue, live checks) still run from the main checkout,
+  which holds the ledgers and evidence. Their session claims Active work and commits there
+  before the launch, and commits the job's register rows and log entry there after it ends.
+- Run `check.py` and commit in the worktree: the commit hook works there, the Stop hook does
+  not ([hooks](#claude-code-and-codex)).
+- To land: rebase on `main`; in the main checkout run `git merge --ff-only <task>`, then
+  `check.py` (tests of saved evidence skip in worktrees), then push. A fast-forward refuses
+  to overwrite another session's uncommitted file. Land nothing while a WH3 queue runs: any
+  HEAD move stops it, and the Bash hook refuses that merge only in a session started in the
+  main checkout.
+- Before stopping, commit on your branch if `check.py` passes; otherwise leave the work in
+  your worktree. Either way, the handoff names the worktree, the branch and what still fails.
+  Write handoffs and evidence to the main checkout's `runs/<task>/` (a worktree's own `runs/`
+  goes with it). Remove the worktree and branch once merged.
 
 ## Sizes of change
 
@@ -117,18 +150,10 @@ records a hash of the files it checked (`runs/checks/last-pass.json`); the git h
 it again (owner approved 2026-10-30; enable with `git config core.hooksPath scripts/githooks`
 in checkouts that contain the hook). Merges, cherry-picks, reverts, rebases and `am` run
 other hooks and are not covered; `--no-verify` skips it. Unchecked commits on 10-29 and 10-30
-prompted this guard. It hashes checkout contents and symlink targets (including directory
-and dangling links), not historical versions left in the index.
-
-A normal check invalidates the record it found at startup; rejected arguments clear it too.
-A normal run holds `runs/checks/gate.lock` until it exits, so another normal gate in this
-checkout waits before touching shared scratch or reports. The filesystem lock works across
-PID namespaces; a PID absent from one sandbox is not proof another sandbox's run ended.
-This serialization rests on JUDGEMENT? `scripts/check.py` Gate serialization. Closing the
-process releases the lock; the empty lock file stays in place so waiters share one inode.
-A successful overlapping run on unchanged files can establish a new pass even if this one
-aborts (rests on JUDGEMENT? `scripts/check.py` Concurrent passes). `--help` and `--plants`
-do not replace the normal-run record.
+prompted this guard. Two normal runs in one checkout take turns (`runs/checks/gate.lock`).
+The exact rules for a pass, the record and the lock are in the docstring of `scripts/check.py`;
+they rest on JUDGEMENT? `scripts/check.py` Completion evidence, Checked tree, Concurrent
+passes and Gate serialization.
 
 ```text
 $ uv run --locked python scripts/check.py
@@ -143,57 +168,31 @@ needs your yes (changes since HEAD):
 markers   3 problems listed in the log, for the owner
 ```
 
-- It runs `ruff check .` and the whole offline suite, Lua and image tests
-  included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
-  test among them. It exits 1 if anything fails. It never launches a game, spends money or
-  commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
-  A zero pytest exit needs a fresh readable JUnit report with named cases, a passing test
-  and no errors/failures; missing, empty, all-skipped or contradictory reports are incomplete
-  and issue no pass record or agreed-check credit (rests on JUDGEMENT? `scripts/check.py`
-  Completion evidence). This does not establish full collection or correct test expectations.
-  Pytest gets a fresh disposable bytecode directory for each run, overriding an inherited
-  cache prefix. This catches same-size/same-timestamp source and test edits while preserving
-  shared caches. The directory is removed on return or a Python exception.
-  It also removes caller `PYTEST_ADDOPTS` and `PYTHONOPTIMIZE` settings from subprocesses:
-  the gate runs the whole suite with assertions active. Focused pytest commands remain separate.
+- It runs `ruff check .` and the whole offline suite (Lua, image, repo-rule and link tests
+  among them) and exits 1 if anything fails or pytest cannot show a completed run. It never
+  launches a game, spends money, commits or rewrites prompt snapshots. A pass does not
+  establish full collection or correct test expectations.
 - "needs your yes" lists edits only the owner approves, in everything not yet on
   `origin/main` (or since `--base REV`): lines removed or changed in a file an agreed check
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an
   assert removed or changed under `tests/`; a skip or xfail added; a changed prompt snapshot;
   a package added or a version changed in `uv.lock`. A line moved verbatim is not flagged.
-  Warnings never fail the run: they go in the report for the owner. Each item prints once
-  per base; later runs print a count, and each run's log lists every item.
-  If the display cache cannot be written, new items still print and may repeat on later runs.
-- "agreed" counts the [agreed checks](agreed-checks.md) with a pytest command whose tests
-  passed in this run; each run appends them to `runs/checks/agreed-passes.jsonl` with its
-  revision (owner, 2026-10-29). A line counts for its revision only when `at_revision` is true:
-  before and after the run, no tracked file changed and no untracked file outside `docs/` other
-  than Markdown. An entry with a live command too is recorded as its "pytest part only".
+  Warnings never fail the run: they go in the report for the owner.
+- "agreed" counts the [agreed checks](agreed-checks.md) whose pytest command passed in this
+  run, appended to `runs/checks/agreed-passes.jsonl` (owner, 2026-10-29); a line counts for
+  its revision only on an unchanged tree (`at_revision`).
 - "markers" counts format problems in JUDGEMENT markers (misspelt, in a file that cannot
   carry one, in log history, no date, a "rests on" pointing nowhere), listed in the log; the
   untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
   markers, so they never fail the run.
-- "diagram" counts the views of the "How the WH3 code works" page (`docs/how-code-works.html`)
-  that need a refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01): a cited
-  line whose text changed (text that only moved is recorded, not flagged), a cited file gone,
-  a `src/` Python file missing from the file list or a listed path in no map box (Slay the
-  Spire's paths, the map's "outside", aside), the names
-  a view states that differ from the code (providers, hidden observation keys, model and
-  scripted policies, graph operations, controller versions), a review older than three months,
-  a cited file of one of a view's examples changed since that example was made, and a story
-  step naming a box, wire or lane row the view lacks. It reads Git objects at HEAD
-  only, writes the details to the log and to the ignored `runs/checks/diagram-flags.js` (the
-  page shows them), and skips in a shallow clone or a linked worktree. An error prints "could
-  not run"; it never fails the run or changes the pass record.
+- "diagram" counts the views of [how-code-works.html](how-code-works.html) that need a
+  refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01).
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
   run only when a change touches what they cover. The full offline suite always runs
   (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.
-- In a linked worktree, tests that read the main checkout's `runs/` evidence skip (2026-10-30:
-  64 skipped against 41), and the "worktree" line says so: run `check.py` in the main checkout,
-  after merging, before counting a pass. Do not link `runs/` folders into a worktree: commands
-  run there (`pack`, `report`, `launch`) would then write into the main checkout's evidence.
-  Give the worktree its own venv (`uv sync --locked`): a linked `.venv` repointed the main
-  checkout's install (2026-10-29).
+- In a linked worktree, tests that read the main checkout's `runs/` evidence skip and the
+  "worktree" line says so: after merging, run `check.py` in the main checkout before counting
+  a pass.
 
 ## Checks in layers
 
@@ -333,8 +332,8 @@ checks the brief does not list, and states the cutoff. "Met" only means stop: in
 a small model judges it from the transcript ([/goal](https://code.claude.com/docs/en/goal));
 in Codex the working model marks its own goal done
 ([Codex goals](https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex)).
-Codex and Claude share this tree: each session claims its task in
-[Active work](state.md#active-work) first.
+Each writing session works in [its own worktree](#several-sessions-at-once), which is its
+claim; a long run that uses the game also claims [Active work](state.md#active-work) first.
 
 The handoff note (`runs/<task>/handoff.md`) has five headings, after OpenAI's
 [ExecPlans](https://developers.openai.com/cookbook/articles/codex_exec_plans): Progress,
@@ -371,9 +370,9 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   waits for the same failure twice and the owner's yes.
 - **Replay what the tests once caught.** `tests/plants.toml` keeps planted wrong versions,
   each with the tests that must fail on it (owner, 2026-10-29: "Seems fine"). `uv run --locked
-  python scripts/check.py --plants` replays them at HEAD in about three minutes (63 plants, 175 s
-  on 2026-10-30): a MISSED line is a test that decayed. Run it before an agreed check or a guarded file changes and after a model
-  upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
+  python scripts/check.py --plants` replays them at HEAD (348 plants took 13 minutes on
+  2026-11-02): a MISSED line is a test that decayed. Run it before an agreed check or a
+  guarded file changes and after a model upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
   to the same wrong version of the new code; removing or changing plants needs the owner's yes.
   Add a plant when a review finds a wrong version the tests missed and a new test catches it.
   A plant whose tests read saved evidence names it (`evidence`); the replay copies it from the
@@ -402,13 +401,13 @@ JUDGEMENT: Rollout order — Codex, 2026-10-28, proposes agreement, one pilot, t
 Start strict and loosen with evidence (claude.dev): the reviewer sees every normal change
 until its counts show its findings are mostly noise.
 
-| Item | Status (2026-10-29) |
+| Item | Status |
 |---|---|
 | `scripts/check.py`, repo rules, risky-edit warnings (stage 1) | Built and planted-tested |
 | Reviewer and its first eval (stage 2), export leak test, review workflow fix | Built |
-| Docs cleanup (stage 3) | Done and reviewed (one reviewer found 6 issues, fixed): AGENTS.md is a map of at most 200 lines; docs/spire/AGENTS.md only gained the `check.py` line (135 lines, loaded only for Spire work) |
-| Hooks, skills, CI (stage 4) | Trigger seen 2026-10-29: a commit made before its `check.py` run (96e6265), and one workflow repeated about twenty times (plant, sweep, recount). Built: `scripts/hooks/stop_check.py` (Stop: runs `check.py` when HEAD, the index, the diff or an untracked file changed since its last pass; exit 2 keeps the turn going, never twice in a row; skipped while a game job runs) and `scripts/hooks/pre_bash.py` (Bash: refuses `ruff format` except `--check`/`--diff`, and git commands that move HEAD while `scripts/wh3_queue.py` runs), tested in `tests/test_hooks.py`; both seen live in Claude Code on 2026-10-29 (the Bash hook refusing a probe, the Stop hook running `check.py` at a turn's end: `runs/checks/20261029-111240-a2c63b0-988366.log`). Skill: `refusal-sweep` (`.agents/skills/`) for the repeated sweep, with `scripts/refusal_sweep.py` tested in `tests/test_refusal_sweep.py`. Both tools get the same hooks, reviewer and skills (owner, 2026-10-29; [below](#claude-code-and-codex)). CI: `.github/workflows/check.yml` runs `check.py` on each push to `main` and each pull request (owner's decision 4, 2026-10-29; runs on GitHub passed at `da47cde` and `e1d141c`: 1835 passed, 64 skipped; one racy test failed in between, fixed); the link test skips links into the untracked `docs/thesis/` |
-| Experiment loop (stage 5) | Waits for the next planned free experiment (it is done on one). `digest` warnings do not stop a queue (owner, 2026-10-29: "(a)"): a build mismatch only warns (owner, 2026-10-18), and stopping on invalid batches would end weak models' runs early. An episode that is not won, lost or drawn still stops its job. The b51 1x warning came later and does not stop a queue either |
+| Docs cleanup (stage 3) | Done and reviewed: AGENTS.md is a map of at most 200 lines |
+| Hooks, skills, CI (stage 4) | Built 2026-10-29, after a commit made before its `check.py` run (96e6265) and one workflow repeated about twenty times: the Stop and Bash hooks (`scripts/hooks/`, each described in its docstring, tested in `tests/test_hooks.py`), the `refusal-sweep` skill, and CI running `check.py` on each push to `main` and each pull request (owner's decision 4, 2026-10-29). Both tools get the same pieces ([below](#claude-code-and-codex)) |
+| Experiment loop (stage 5) | Waits for the next planned free experiment. `digest` warnings do not stop a queue: build mismatches and invalid batches (owner, 2026-10-29: "(a)"); the b51 1x warning came later and does not stop a queue either. An episode that is not won, lost or drawn still stops its job |
 
 JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
 rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` refused everywhere,
@@ -416,21 +415,11 @@ never two blocks in a row, no check beside a game job, and a stop let through wh
 cannot run or timed out; a narrower list, more blocks or failing closed would block differently.
 How hard the exit gate is enforced rests on these.
 
-A passing Stop check must also leave the checkout unchanged. If its fingerprint changes
-during the run, the final tree is unchecked: no pass is cached, the hook blocks once and a
-fresh stop checks again. The existing escape after one block still reports no established
-pass. Fingerprints cannot detect an edit made and undone between their two reads.
-Timeout, Ctrl-C and SIGTERM clean up the check's process group before the hook exits;
-an interrupted run records no new pass. SIGKILL cannot run this cleanup. Direct-signal
-subprocess tests cover this; Codex's UI cancellation delivery has not been checked.
-The game-load guard also recognizes the five direct WH3 live-check scripts, including
-ordinary Python flags. Their help and evidence-recount commands stay offline. This is
-command-line recognition tested with fake processes; live timing effects remain unverified.
-Stop also adopts a completed normal gate pass when its content hash matches and the tree
-identity stays unchanged during lookup (rests on JUDGEMENT? `scripts/check.py` Checked tree
-and Concurrent passes, including that content definition's private-notes exception). Missing,
-stale or broken proof falls back to checking. Exit 0 alone without a matching completed record
-is incomplete; reader `SystemExit(0)` is rejected, while Stop cancellation still propagates.
+What the Stop hook does when the tree changes during its check, on a timeout or signal,
+beside a game job, and with an earlier `check.py` pass is in the docstring of
+`scripts/hooks/stop_check.py`; taking an earlier pass rests on JUDGEMENT? `scripts/check.py`
+Checked tree and Concurrent passes. Its tests use fake processes and direct signals; Codex's
+UI cancellation and live timing are unchecked.
 
 ### Claude Code and Codex
 
@@ -513,37 +502,15 @@ Fewer tokens alone would not establish an improvement. The proposed benefits rem
 ### Concurrent work improvements
 
 Saved at the owner's request on 2026-11-02 for later planning: "No overengineering, no slop."
-The benchmark handoff records a docs-only commit interrupting its queue
-(`runs/benchmark-initial-20261102/handoff.md`); a passing gate lost its pass record when
-files changed during the run (`runs/checks/20261102-134700-b1136e8-2335005.log`). The current
-working copy already serializes full checks; that lock does not prevent concurrent edits.
 
 JUDGEMENT: Concurrent work proposal — Codex, 2026-11-02, proposes separate writing checkouts,
 one integration owner and the trial below. Sharing a writing checkout or distributing merges
 would change coordination costs and risks. These suggestions and the trial are not adopted.
 
-- **Separate concurrent writers.** Give each writing task its own branch and worktree, with
-  its own environment and scratch. Read-only investigation can use an existing checkout.
-  Review a fixed revision; mutating review experiments belong in a separate scratch checkout.
-- **Assign one integration owner.** One session brings ready changes into `main`, reconciles
-  shared summaries, checks the combined result and commits when permitted. Other writers
-  continue in their worktrees. Preserve the required main-checkout check: worktree checks
-  can skip evidence-dependent cases. Existing game-time and commit restrictions still apply.
-- **Name tasks and their scope.** In the existing Active work entry, identify the task,
-  responsible session, checkout and expected files; "Codex" or "Claude" alone is ambiguous.
-  Reuse task handoffs for the exact revision, checks and unresolved dependencies. Agree a
-  shared interface before concurrent tasks implement against it; avoid making the owner
-  relay messages. No new coordination service or task registry is proposed.
-- **Freeze experiment code.** Evaluate the benchmark's separate execution checkout as a
-  repeatable practice. Preserve established ledger and result destinations explicitly;
-  do not duplicate ledgers or link whole `runs/` folders. Isolation alone does not authorize
-  simultaneous controllers or relaxing the current restrictions.
-- **Consider Stop-hook attribution later.** A read-only session currently can trigger a full
-  check of another writer's dirty tree. First assess whether checkout separation resolves
-  this. Any hook change needs reliable attribution of this session's edits and must preserve
-  the exact-tree commit gate; a dirty tree alone does not identify who owes validation.
-
-Proposed trial: use independent offline tasks with separate writers and one integration
-owner, then check their combined result. Agree the cases and success criteria first; observe
-overwritten edits, invalidated checks, repeated work and owner intervention. Benefits remain
-unverified; adding coordination machinery is not itself progress.
+Separate writing checkouts were adopted later that day ([above](#several-sessions-at-once)).
+Still proposals: one session that brings every ready branch into `main`; agreeing a shared
+interface before two tasks build against it; a frozen execution checkout for each experiment,
+as the initial benchmark used (`runs/benchmark-initial-20261102/handoff.md`); Stop-hook
+attribution of a session's own edits, if separate checkouts do not end read-only sessions'
+extra checks; and a trial of independent offline tasks, with its cases and success criteria
+agreed first.

@@ -25,8 +25,6 @@ marking them for the owner's review; the rule for agents is in
   file into `source_sha256`, which the card board pools on); the Lua mod (the pack hash is
   part of every card cell's setup identity); `spire/protocol.py` and `spire/policies.py`
   (byte-stable).
-- A change inside a play scope (`src/gameai`, `src/twwarhammer3`, `configs/twwarhammer3`,
-  `src/spire`, `configs/llm`) stops a running job: mark code only between jobs.
 - List: `git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'`; add `-F "JUDGEMENT?"`
   for the uncertain ones, or a branch name for unmerged drafts.
 
@@ -68,16 +66,10 @@ marking them for the owner's review; the rule for agents is in
   tree) whose messages give marker counts per file so the owner can sample. Date each choice
   with `git log -S` and check whether a later commit narrowed it (most errors the 2026-10-28
   reviews found were wrong dates or authors); one skeptical reviewer per batch.
-- Batches done 2026-10-28 (44 markers; the Lua mod, policy files and prompts cannot carry one,
-  so their markers sit in the pages that document them): `[loop]` 30-44 (`play.py` 7,
-  `capture.py` 1), `[controllers]` 60-74 (`controllers.md` 7), `[scoring]` 15-29 (report code
-  8, `reports.md` 2), `[verification]` 135-149 (1), `[gameai]` 75-89 (3, and 2 in
-  `posttraining.md`), `[mod]` 195-209 (3), `[spire-fullrun]` 90-104 (10). `[scenarios]`,
-  `[benchmark-docs]`, `[scripts-tests]`, `[plans]` and `[active-branch]` added none. Four independent review
-  passes found 5 wrong and 13 weak markers and 8 weak skip reasons, all addressed. Reasons
-  for every unmarked candidate, the reviews and the areas left (`[cards]`, `[spire-combat]`):
-  `runs/judgement-batch-20261028/` (`task.md`, `review.md`; `markers-added.txt` lists the 44 by
-  file and line for sampling).
+- 2026-10-28: 44 markers from 12 areas; reviews found 5 wrong and 13 weak markers, all
+  addressed ([log](twwarhammer3/log.md#2026-10-28-afternoon-44-judgement-markers-stats-keeps-timing-arms-apart)).
+  Per-area counts, a reason for every unmarked candidate and the reviews:
+  `runs/judgement-batch-20261028/` (`markers-added.txt` lists the 44 by file and line).
 - 2026-10-29: `[cards]` 0-14 added 5 markers in `cards.py` (Foils; `JUDGEMENT?` Pre-registration
   label, Sampling unit, Cell identity, Foil forfeits) and a "rests on" reference to `play.py`'s
   Operator errors, Forfeit split and Wall cap. Skipped: witness cadence (the owner chose v2 at

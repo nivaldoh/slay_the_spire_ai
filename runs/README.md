@@ -31,15 +31,8 @@ runs/
     battle/           One directory per `twwarhammer3 play` job. A job started by hand has
                       <job>.log beside it; a queued job (scripts/wh3_queue.py) usually logs
                       to its plan's .log under calibration/ instead.
-                      Version jobs are <policy>[-<model>]-v<version>-<scenario>-<date>
-                      (e.g. commander-luna-v2-rand-322117462-20261013); the version after
-                      -v (15, 1.2) fills the results register's harness column. Names
-                      without a -v<N>- part leave it blank (bench-b13-glm-v20-... and
-                      bench-b40-...-v21-... record 20 and 21), and `stats` groups those by
-                      source revision: attack-... (the first scripted baselines),
-                      bench-b<N>-..., bench-c1-... and bench-g1-... (benchmark screens and
-                      calibration), smoke-... (battle types), probe-... (engine checks),
-                      visual-sol-low-20261015.
+                      Job names and the register's harness column: Terms in
+                      docs/twwarhammer3/README.md.
     visual-probes/    Scripted recorder, camera and capture checks (play jobs) and their
                       audits
     calibration/      Benchmark queue plans and their state files, logs, stop and
@@ -93,17 +86,11 @@ the game is launched once per job, so `game.log`, `menu.log`, `map_list.txt`,
 `army_player.txt` and, in jobs from `8434cd3` (2026-10-15) to before `e32b1b5` (2026-10-20)
 that listed their units, `cards_slot<N>.txt` (the recruitment cards each army's race offered)
 sit in the job directory,
-and later episodes are rematches of the same battle. WH3 episodes can also contain
-`replay.jsonl` (public 1 Hz frames), `unit_names.json`, `imagery.json`, `stills.json`
-and `still-<battle>-<trigger>.png` presentation captures. Replay exports embed derived
-public data and exact prompts; images never become policy inputs. Missing/throttled
-captures and malformed recorder lines remain evidence rather than being reconstructed.
-
-Since WH3 harness b14 and Spire `87b370b` (2026-10-17), traces also contain
-`model_exchange` events with exact API request bodies and returned output items, including
-failed calls and late commander replies.
-WH3's [offline exporter](../docs/twwarhammer3/traces.md) joins them to orders, acknowledgements
-and outcomes. Historical gaps are labelled; source jobs and spend ledgers stay unchanged.
+and later episodes are rematches of the same battle. WH3 episodes can also hold `replay.jsonl`,
+`unit_names.json`, `imagery.json` and stills
+([recording and stills](../docs/twwarhammer3/reports.md#recording-and-stills)); traces since
+WH3 harness b14 and Spire `87b370b` hold `model_exchange` events
+([traces.md](../docs/twwarhammer3/traces.md#capture-for-future-battles)).
 
 Records in `first-combat/` name their original `runs/<name>` paths; see
 [docs/spire/first-combat/README.md](../docs/spire/first-combat/README.md#evidence-and-tools)

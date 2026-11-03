@@ -26,9 +26,11 @@ decision easier. Time occupied, tests added and branches produced are not succes
   unless they explicitly keep the window open. A status question does not cancel authorized
   offline work. New directions supersede conflicting work.
 - The [limits](#limits) are shared across agents and sessions. A new day, message or session
-  does not clear pending review. Check [Active work](state.md#active-work) and live process
-  handles before claiming a task or the game; an old status line alone proves neither idle
-  nor running. Record the task, responsible agent and artifact there; one writer per task.
+  does not clear pending review. Check `git worktree list`, [Active work](state.md#active-work)
+  and live process handles before claiming a task or the game; an old status line alone
+  proves neither idle nor running. A task's claim is its worktree and branch
+  ([several sessions](workflow.md#several-sessions-at-once)), the game's is Active work; one
+  writer per task.
 
 ## The test
 
@@ -64,10 +66,9 @@ Then prioritize work the owner named, evidence for the decision blocking the nex
 and objective roadmap features useful across the unresolved choices. Inspect existing
 artifacts first. Prefer finishing or simplifying a draft over opening another line of work.
 
-Before starting, write a few lines in the existing task note or `runs/` folder:
-**what this unblocks; what already exists; the next observable result and its reference;
-what will be retained; the time/attempt bound and stop condition.** Reuse a command or test
-before adding one. A new script or abstraction needs a named consumer in the current plan.
+Before starting, write the [brief](workflow.md#long-runs-while-the-owner-is-away), adding
+what the task unblocks and what already exists. Reuse a command or test before adding one.
+A new script or abstraction needs a named consumer in the current plan.
 If work is useful only after an owner choice, limit it to the cheapest discriminating probe.
 
 At the bound, keep the result, narrow the task, or park it with the reason. Repeat a scan,
@@ -106,25 +107,12 @@ observed friction; make small changes, and do not claim token savings without me
 
 ## Checks
 
-*Proposed 2026-10-21; how checks are run and reported is in [workflow.md](workflow.md).*
-
-Write the expected behavior and independent reference before implementing it; a check-first
-approach does not require a new test for every edit. Reuse focused checks. For a bug, retain
-the failing-before evidence where feasible; for important new checks, show they reject a
-plausible wrong implementation. Snapshots and agreement between readers of the same source
-do not independently establish correctness. Run the relevant AGENTS.md commands.
-
-Record command, source revision (and diff if uncommitted), inputs, passed/failed/skipped or
-unavailable checks, and the narrow conclusion. New checks stay **proposed, not yet agreed**;
-only explicit owner agreement changes that status. An agreed method is verified only where
-it passed, and only for its stated scope. Do not feed official scores from proposed checks.
-
-A passing component check permits further draft work only within the same bounded change
-and the behavior actually exercised. Rerun relevant dependency checks at the resulting tip.
-Stop at the first missing live readback, failed dependency or owner design choice; do not
-stack another feature on an assumed result. Do not weaken agreed assertions or criteria.
-New branch-local regressions are allowed even in a suite used by an agreed method; they
-remain proposed. Any changed expectation is a separate, visible review decision.
+*Proposed 2026-10-21.* How checks are chosen, run and reported: the
+[hard rule](../AGENTS.md#verification-hard-rule) and [workflow.md](workflow.md#checks-in-layers).
+While away, also: feed no official score from a proposed check; let a passing component check
+permit further draft work only within the same bounded change and the behaviour it exercised;
+and stop at the first missing live readback, failed dependency or owner design choice instead
+of building on an assumed result.
 
 ## Code and main
 
@@ -206,19 +194,6 @@ copies or heavy CPU/GPU work while WH3 runs or the owner may be using the PC. St
 on unexpected closure, spend at a $0 cap, changed owner files, two consecutive failed
 launches, or WSL restart (no automatic resume). Report a new game build; it does not itself
 stop play and is never re-pinned alone (owner, 2026-10-18).
-
-## Applying the rules
-
-*Proposed 2026-10-21.*
-
-| Current work | Useful stopping point |
-|---|---|
-| Failure-rule decision | Reuse the existing recount; compare only unresolved options against raw cases. Keep official scores unchanged. |
-| Preserve the engine ending | A local regression and minimal fix retaining the raw ending; changing which result counts is a separate decision. |
-| Chariot scorer check | Inspect the existing mutation results; an unchanged verdict alone is insufficient. Add only a demonstrated missing check. |
-| Campaign infrastructure | Synthetic save-guard check and inert-script check; no speculative campaign controller beyond the live-access gate. |
-| Prompt/held-out/training choice | One measured recommendation and relevant alternative; do not build a family of versions or consume held-out evidence. |
-| All useful next steps blocked | Record what would unblock them and stop. More artifacts are not a substitute for that decision. |
 
 ## On return
 

@@ -9,8 +9,9 @@ The tool is `scripts/refusal_sweep.py` (its docstring has the arguments). It pla
 checkout, never the main tree, and runs every version without bytecode.
 
 1. Card first (docs/workflow.md): which file, which tests, what "caught" means.
-2. `git worktree add --detach runs/<task>/scratch main` (never under /tmp, never a symlinked
-   .venv). Copy any uncommitted test file you want scored into the scratch tree.
+2. `git worktree add --detach runs/<task>/scratch HEAD` from your own worktree, so the sweep
+   scores your branch (never under /tmp, never a symlinked .venv). Copy any uncommitted file
+   you want scored into the scratch tree.
 3. Near a launch, stub its first step in the tests before planting (WH3 checkpoint: the
    RuntimeLock; Spire: `communication_config`), and afterwards check the Windows-side files'
    modification times (`C:/wh3-agent`, `C:/spire-agent`, CommunicationMod's config).
@@ -20,12 +21,12 @@ checkout, never the main tree, and runs every version without bytecode.
    test at this tree to prove the script refuses it: a killed sweep leaves its plant behind
    (2026-10-29: `src/gameai/llm.py` was restored from git). Python:
    `uv run --locked python -I scripts/refusal_sweep.py runs/<task>/scratch src/x.py x x tests/<dirs>`;
-   Lua: pattern `'(?<![\w.:])error\('`, replacement `'tostring('`. Pass test folders in
-   alphabetical order (a WH3 stats test reorders a price table the Spire CLI test reads).
+   Lua: pattern `'(?<![\w.:])error\('`, replacement `'tostring('`.
 5. For each MISSED line, write a test that fails on that removal for the stated reason
    (a refusal, not a KeyError further on), as a pure addition. Rerun the sweep after.
 6. Count a miss "equivalent" only after showing another assertion rejects the same behaviour.
-   Record before and after files under `runs/<task>/`, then have one reviewer rerun every
+   Record before and after files under the main checkout's `runs/<task>/` (a worktree's own
+   `runs/` is deleted with it), then have one reviewer rerun every
    count and plant other wrong versions before the numbers reach the owner.
 7. `git worktree remove --force runs/<task>/scratch` when done.
 
