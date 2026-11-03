@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (first multiplayer battles): "We should extend the lifetime of the GCP storage for
+  a few days too" (applied: game disk kept until 2026-11-06 21:09 UTC). "You should ideally
+  require less help from me as we go"; "we should investigate how you can automate lobby
+  creation later".
 - 2026-11-03 (VM team plan decisions): "you are allowed to spend $10 for now, but let's try to
   minimize the costs. The units are indeed more limited in the VM, so it's fine to use a more
   restricted set." The second account has only the Boris Todbringer DLC, which does not give

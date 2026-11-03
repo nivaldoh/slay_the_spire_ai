@@ -6,9 +6,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-GCP: no VM (retry stopped after Windows setup: no Steam login or game; handoff `runs/twwarhammer3/gcp/session-20261103c/handoff.md`).
-Leftover disk `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged.
-Draft [VM team plan](twwarhammer3/vm-team-plan.md): owner set $10 cloud, restricted units, friends-only lobby, licence fine (11-03); decisions 1-4 open; nothing run.
+GCP: no VM. Game disk `wh3-mp-20261103d` (us-west1-c, build 26403568, second account's Steam login) kept until 2026-11-06 21:09 UTC (~$0.83/day; owner, 11-03); `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged. Cloud spend of the $10: about $2.07 compute plus storage (unreconciled).
+First two native multiplayer battles PC + VM ran 11-03 ([log](twwarhammer3/log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)); next: lobby automation (owner asked to investigate), the Windows observation rename failure, a host-swapped battle. [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 
@@ -39,11 +38,10 @@ scores, every planned attempt and the recorded replays; controller ranking remai
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.8216764 (includes one timeout estimate); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`;
   build 25961564 only, blocked on 9.0.5 pending a native-hook port ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
-- Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
-  modes, link, worker, `compare-peers`; [status](twwarhammer3/native-multiplayer.md#implementation-status)),
-  all unverified; zero live MP battles. GCP launched WH3, but the agreed host check is
-  incomplete and VM/disk deleted. The second account has DLC-granted access with a limited
-  roster; use its confirmed recruitable units. [GCP result](twwarhammer3/gcp-client-setup.md#pilot-result-2026-11-03).
+- Native team multiplayer: offline parts built ([status](twwarhammer3/native-multiplayer.md#implementation-status));
+  11-03, two live PC+VM battles at `01647bd` (PC hosting, lobbies by hand): Lua moves from each
+  client reached the other; battle 1 compared 553/553 readings exact. Unverified (one battle each,
+  no agreed check). The second account plays with its confirmed recruitable units.
 
 ## Slay the Spire
 
