@@ -12,6 +12,12 @@ Both games:
   unattended startup and operation without a viewer are separate, unverified capabilities.
 - 2026-11-03 (VM deployment): the blue "Start Battle" button must be clicked before
   timing; a static deployment screen is not a running battle or evidence of a freeze.
+- 2026-11-03 (verification, empirical and formal): "Something to think about in the meantime:
+  we know that our code needs verification, but we can be more articulate and precise about
+  this. We need, more specifically, a combination of empirical and formal verification. Not
+  sure how formal verification would apply to our project, but it's something worth keeping
+  in mind and taking note of." Applied: a proposed section in
+  [testing.md](testing.md#empirical-and-formal-verification) (`0b9054e`); nothing adopted.
 - 2026-11-02 (VM account clarification): "All the others are not enabled for that
   account since we have a limited DLC that granted access to the base game"; only
   one Khorne unit was available. This supersedes the assumption of a full WH3 base
@@ -53,6 +59,16 @@ Both games:
   deactivated/deleted when not in use to avoid accidental billing charges". Discuss
   how and check the login; this does not select a cleanup design or authorize a live
   cleanup test. The second Steam account is prepared; its WH3 licence is not confirmed.
+- 2026-11-02 (light factory, several agents in one repository): goal "Continue to improve our
+  light factory implementation. No slop, no overengineering, no bloat. Simplify what you can.
+  Codex is working in a parallel session, so be careful not to collide with it (and take the
+  opportunity to make our processes more resilient to multiple agents working in our repo)."
+  Asked whether to land the ended Codex factory session's uncommitted work: "Yes, land it
+  (Recommended)" (landed as `0e8833f`). Asked which rule both agents follow, the options being
+  own worktree, shared main with no leftovers, or decide later: "Own worktree (Recommended)",
+  described as "Each session that edits files works in its own worktree and branch, and merges
+  into main when done". Applied in [workflow.md](workflow.md#several-sessions-at-once)
+  (`1fd0b6d`); its details (game jobs in main, the worktree as claim) are Claude's, marked.
 - 2026-11-02 (cross-domain research reference): find one good published paper testing
   robotics against another domain and summarize it in the research references. Use it
   later to assess evidence connecting robotics or multi-agent systems with WH3.

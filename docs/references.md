@@ -6,6 +6,35 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Empirical and formal verification (2026-11-03)
+
+For [testing.md](testing.md#empirical-and-formal-verification). *Checked*: a second agent
+fetched the page and found the quote; *Read*: one agent fetched it.
+- Dijkstra, [EWD303](https://www.cs.utexas.edu/~EWD/transcriptions/EWD03xx/EWD303.html):
+  testing shows "the presence of bugs but never ... their absence"; for a black box, "testing
+  is the only thing we can do". *Checked.*
+- Clarke and Wing, [Formal Methods: State of the Art and Future Directions](https://www.cs.cmu.edu/~wing/publications/ClarkeWing96.pdf),
+  ACM Computing Surveys 1996: definitions; model checking as "exhaustive state space search";
+  formal methods do "not a priori guarantee correctness". *Read.*
+- Newcombe et al., [Use of Formal Methods at Amazon Web Services](https://lamport.azurewebsites.net/tla/formal-methods-amazon.pdf),
+  2014 (CACM 2015): TLA+ on small critical designs, because "testing the code is inadequate
+  as a method to find subtle errors in design". *Read.*
+- Jackson, [Alloy](https://groups.csail.mit.edu/sdg/pubs/2019/alloy-cacm-18-feb-22-2019.pdf),
+  CACM 2019: bounded checking within a scope; the small scope hypothesis. *Read.*
+- [CrossHair](https://crosshair.readthedocs.io/en/latest/limitations.html): symbolic execution
+  of Python contracts; "the absence of a counterexample does not guarantee that the property
+  holds". *Checked.*
+- [z3py `prove()`](https://z3prover.github.io/api/html/namespacez3py.html): proves a claim "by
+  showing the negation is unsatisfiable". *Read.*
+- Lamport, [TLA+ tools](https://lamport.azurewebsites.net/tla/tools.html): TLC, "an
+  explicit-state model checker" for safety and liveness. *Read.*
+- Kleppmann, [AI will make formal verification go mainstream](https://martin.kleppmann.com/2025/12/08/ai-formal-verification.html),
+  2025: with proofs automated, the hard part becomes "correctly defining the specification".
+  *Checked.*
+- Bursuc et al., [A benchmark for vericoding](https://arxiv.org/abs/2509.22908), 2025:
+  off-the-shelf LLMs met given formal specifications 27% in Lean, 44% in Verus, 82% in Dafny.
+  *Read.*
+
 ## Cross-domain research reference (2026-11-02)
 
 Karttunen et al., [From Video Game to Real Robot: The Transfer Between Action Spaces](https://doi.org/10.1109/ICASSP40776.2020.9053221),

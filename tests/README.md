@@ -1,7 +1,7 @@
 # Tests
 
 Start here to find a check and understand its limits. [Testing guidelines](../docs/testing.md)
-contain the review findings, reference projects and proposed cleanup. `spire/` holds the
+are the proposed guidance on writing tests, with reference projects. `spire/` holds the
 Spire decision and protocol tests and their shared message builders. The remaining Spire
 tests still use the older `combat/`, `engine/`, `fullrun/`, `language/`, `openweight/`, `ppo/`
 and `fixtures/` directories. `gameai/` is shared; `twwarhammer3/` belongs to **WH3**;
@@ -95,6 +95,3 @@ separate CPU jobs for the locked `train` and `llm` extras. Each imports its depe
 before running the same gate, so missing packages fail instead of silently skipping tests.
 These jobs hide CUDA and disable network model loading and Windows opt-ins. They test
 CPU components; GPU, Windows and live-game checks still need their own procedures.
-
-Approval history stays in [docs/agreed-checks.md](../docs/agreed-checks.md) and logs. Commands and script descriptions explain
-what a check does; neither a filename nor a passing local run makes a feature verified.

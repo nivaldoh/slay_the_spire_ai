@@ -19,7 +19,7 @@ Initial benchmark visual report built from all eight saved battles; offline chec
 recorded in `runs/benchmark-visual-20261102/`. HTML: `runs/twwarhammer3/reports/initial-benchmark.html`
 ([open/build it](twwarhammer3/reports.md#initial-benchmark-visuals)).
 
-Codex factory session ended: reviewed changes remain uncommitted; handoff: `runs/factory-startup-20261102/handoff.md`.
+Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`.
 
 Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs).
 Follow-up: shared Codex/Claude WH3 knowledge skill ([direction](owner-direction.md)).

@@ -45,6 +45,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
   graphics, reliable Start Battle and unattended desktop startup. Zero multiplayer games;
   disconnected operation and the full compatibility check remain unverified.
 
+## 2026-11-02 (evening): one worktree per writing session; factory pages trimmed
+
+Claude Code; owner's goal and answers in [owner-direction.md](../owner-direction.md). Five
+tasks' uncommitted edits shared the main checkout: one task's `src/` edits made every `play`
+refuse to start, and 16 of the Stop hook's 25 blocks (10-31 to 11-02 21:35) came after a
+passing check, 14 of which could not record a pass because files changed during it.
+- `0e8833f`: the ended Codex factory session's reviewed gate lock and reading routes, landed.
+- `1fd0b6d`: [Several sessions at once](../workflow.md#several-sessions-at-once) (own worktree
+  and branch, fast-forward landing, game jobs in main); workflow.md's gate and hook mechanism
+  moved into the docstrings; audited cuts in five factory pages (8 files, -80 lines).
+- `5ab2f14`: the commit guard logs each refusal to the main checkout's `runs/checks/`; a note
+  that sandboxes refusing sockets fail 26 to 98 socket tests per gate run (8 runs).
+- Then this entry, the AGENTS.md pointer, a tests/README.md cut and the owner-direction entry.
+Checks: `check.py` PASSED in the worktree and in the main checkout after each merge (2743
+passed, 43 skipped at `5ab2f14`), never at its revision (other sessions' files); CI passed at
+`1fd0b6d`; plants 350 of 350 caught there. Reviews: 12 findings then 4 more, all fixed; two
+recounts corrected drafts. First count of what each step catches (recounted):
+`runs/factory-multiagent-20261102/tally.md`. $0, no game.
+Unverified: whether agents follow the rule; Codex's sandbox writing `../`. Left alone: an
+abandoned merge in `../slay_the_spire_ai-team-battle` (wh3-team-report, conflict since 02:14).
+
 ## 2026-11-02: GCP region fallback added, offline only
 
 Owner requested retries across more regions after the six capacity failures.
