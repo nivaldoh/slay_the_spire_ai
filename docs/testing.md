@@ -121,6 +121,48 @@ mod currently reports constant `speed: 1`; asserting that field cannot detect sl
 The existing team check also compares game-clock progress with elapsed time. Any proposed
 replacement check or tolerance still needs owner agreement.
 
+## Empirical and formal verification
+
+*Proposed 2026-11-03; nothing here is adopted or agreed.* The owner, 2026-11-03: "We need,
+more specifically, a combination of empirical and formal verification. Not sure how formal
+verification would apply to our project, but it's something worth keeping in mind and taking
+note of."
+
+- **Empirical** checks run the code or the game on chosen or sampled inputs: tests, planted
+  wrong versions, live checks, statistics over runs. They show a bug's presence, "never ...
+  their absence" ([Dijkstra](https://www.cs.utexas.edu/~EWD/transcriptions/EWD03xx/EWD303.html)),
+  and are the only option for a black box: the game engines and the model policies. Hypothesis
+  samples inputs and [CrossHair](https://crosshair.readthedocs.io/en/latest/limitations.html)
+  searches code paths with a solver, but a pass from either is still empirical.
+- **Formal** checks state the property precisely and cover every input or state in a stated
+  space: model checking a finite model (TLA+ and TLC, Alloy within a scope), bounded
+  exhaustive enumeration, an SMT solver such as z3, or a machine-checked proof. The guarantee
+  reaches only that space and is only as right as the specification
+  ([Clarke and Wing](https://www.cs.cmu.edu/~wing/publications/ClarkeWing96.pdf);
+  [Kleppmann](https://martin.kleppmann.com/2025/12/08/ai-formal-verification.html)).
+
+They combine: a formal check decides a property of our own code over a small space, and an
+empirical check shows that space and its fakes match the real thing (for example FakeMailbox
+against the live mailbox); planted wrong versions check both. Small spaces are a reasonable
+start: Alloy's [small scope hypothesis](https://groups.csail.mit.edu/sdg/pubs/2019/alloy-cacm-18-feb-22-2019.pdf)
+holds that most bugs have small counterexamples.
+
+Candidates found 2026-11-03 by read-only agents and ranked by a skeptic, who reran rows 1 and 2
+and read the code for rows 3 to 5; a reviewer then reran rows 1 and 2 again
+(`runs/formal-map-20261103/`). Best value first; each needs a card and the owner's agreement:
+
+| Property of our code | Method and size | What the code or a prototype already shows |
+|---|---|---|
+| `play_episode` writes `result.json` with the engine's ending under any single fault at any of its about 20 call sites and any short order of events | Exhaustive fault injection and event enumeration over the real function: about 5,000 fault runs and 10^5 orders, minutes | A won battle loses its record in 15 of 25 single faults (5 call sites x 5 kinds, every kind at 3 cleanup calls) |
+| Every file the commit guard lets git commit has the bytes `check.py` passed on (committing part of a checked tree stays allowed, `JUDGEMENT? scripts/check.py` Checked tree) | Enumerated git states and commit forms with real git 2.43.0: about 2,900 commits, minutes | The guard compares the disk; git commits the index. In a 2-file scope, 180 of 743 allowed commits committed bytes that were never checked |
+| The team dispatcher gives each acknowledgement to the member whose batch was sent, and each member decision exactly one outcome | Enumerated event sequences (up to 8) with a fake executor and clock | Wrong dispatchers passed every test twice (multi-agent-implementation.md) |
+| Policy input is identical for observations whose public parts are equal (noninterference) | Self-composition over a small observation universe, once the owner defines the public part | The single-model prompt would name a friendly unit's target even when that enemy is not visible (whether the engine reports one is unverified); the team projection drops it |
+| `play`'s source scope covers every module its entry points import statically (a `--policy` module loaded by name is a declared exception) | Static import closure over the code, seconds | `checkpoint.py` imports `spire.engine.runtime`, outside the scope |
+
+Stays empirical: what the engines do (orders' effects, visibility, restore determinism), the
+filesystem and clocks under WSL, the model policies' behaviour and strength, and how Claude
+Code and Codex dispatch hooks.
+
 ## WH3 boundaries that need different checks
 
 The Python controller, mailbox files, Lua mod and Windows game can fail independently.
