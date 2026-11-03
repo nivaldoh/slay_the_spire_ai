@@ -662,3 +662,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-02,model-v5-05,episode-0000,emp-mirror-cavalry-v1,llm_rules,claude-haiku-5-5,low,5,b1136e8,realtime,1.0,0.0,lost,290,0.63,0.86,115,1,2.47,0.0906,classic,,,,,0.0,0.859,0.0,engine_result,anthropic
 2026-11-02,team-initial-v22t2-20261102-team,episode-0000,emp5-emp5,team_llm_rules,claude-haiku-5-5,low,,c1ad84d,realtime,1.0,0.0,lost,302,0.15,0.89,188,25,3.14,0.1758,classic,,,,,0.0,0.895,0.0,engine_result,anthropic
 2026-11-02,team-initial-v22t2-20261102-single,episode-0000,emp5-emp5,llm_rules,claude-haiku-5-5,low,,c1ad84d,realtime,1.0,0.0,lost,298,0.49,0.64,113,4,2.58,0.0965,classic,,,,,0.0,0.641,0.0,engine_result,anthropic
+2026-11-03,bench-b52-repin905-smoke-20261103,episode-0000,emp-knights-emp-swordsmen,rush_nearest,,,,21f8447,realtime,1.0,0.0,won,510,0.31,0.12,1656,1,0.3,0,classic,,,,,0.311,0.0,0.0,engine_result,

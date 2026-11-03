@@ -38,8 +38,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
   33 passed, one Windows opt-in skipped. Evidence/card: `runs/wh3-repin-20261103/`.
 - Checkpoints retain their independent old-executable guard and refuse this install;
   porting native hooks and rerunning their agreed checks remain necessary.
-- One free scripted smoke battle is next, unpaused at 1x. Patch-to-patch result equivalence,
-  full live compatibility and policy strength remain unverified; no paid calls.
+- Full offline gate on main at `21f8447`: Ruff clean, 2,759 passed, 43 skipped (optional
+  Torch and Windows opt-ins). Independent pin review found no issues; no existing tests,
+  snapshots or check expectations changed.
+- One `rush_nearest` smoke at `21f8447`, `emp-knights-emp-swordsmen`, build 26403568:
+  engine win at 510 s, recorded 1x, no controller error, $0. Job:
+  `battle/bench-b52-repin905-smoke-20261103/`. One `target_dead` refusal; all four optional
+  stills failed because the game was not foreground. Replay/trace saved; final doctor ready.
+- Two preflights refused insufficient timeout allowances before any launch. The completed
+  smoke satisfies the proposed card; it was not an agreed check. Patch-to-patch result
+  equivalence, broader live compatibility and policy strength remain unverified.
 
 ## 2026-11-03: mailbox transition test review
 

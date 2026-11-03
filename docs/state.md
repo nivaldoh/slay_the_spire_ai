@@ -6,9 +6,6 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-WH3 re-pin to installed 9.0.5/build 26403568 in `wh3-repin-20261103`: offline checks and
-one free scripted smoke battle next. Native checkpoints still require the old executable.
-
 GCP retry VM running in `us-central1-a`; Windows bootstrap active, no game installed.
 Owner requests a fresh chat. Disk expires Nov4 ~04:20 UTC (~$0.83/day); compute DELETE
 07:11 UTC Nov3, backup07:16 UTC. Handoff: `runs/twwarhammer3/gcp/session-20261103c/handoff.md`.
@@ -35,17 +32,14 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 The [visual report](twwarhammer3/reports.md#initial-benchmark-visuals) includes current outcome/condition
 scores, every planned attempt and the recorded replays; controller ranking remains unverified.
 
-- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52,
+- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`; its initial comparison is complete.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.8216764 (includes one timeout estimate); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
-- Runtime pin: 9.0.5/build 26403568 ([pins](twwarhammer3/integration.md#pins)); older gameplay
-  evidence does not establish correctness or benchmark equivalence on this patch.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`;
-  build 25961564 only, blocked on the updated install pending a native-hook port
-  ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
+  build 25961564 only, blocked on 9.0.5 pending a native-hook port ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 - Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
   modes, link, worker, `compare-peers`; [status](twwarhammer3/native-multiplayer.md#implementation-status)),
   all unverified; zero live MP battles. GCP launched WH3, but the agreed host check is
