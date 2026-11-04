@@ -16,6 +16,25 @@ JUDGEMENT?: Session grouping — Claude, 2026-11-03: offline work, one $0 PC win
 paid session for the join test and the VM-hosted battle. A separate join session costs a
 second boot and VM hour; the cost figures below rest on this.
 
+## Implementation status (2026-11-03)
+
+Built and on main (`ea6f1c6`, `3f0da5b`, `256936d`); each new test fails on a planted wrong
+version; nothing here is verified under the hard rule.
+- Step 2: delete-sharing reads on Windows (`gameai.windows.open_shared`; opt-in test passed on
+  the PC); the multiplayer observation grid. Live on the PC ($0, one human and an AI,
+  `runs/twwarhammer3/native-multiplayer/tb2/`): regular readings stayed on the grid around
+  three acknowledgements (one off-grid, at 29.6 s). Two clients sharing times: needs the VM.
+- Step 1: `worker --menu`, `ready` (presses only a shown Start Battle, at most once), lobby
+  map (`lobby-map-20261103/`), `map_steps`/`army_steps`/`host_steps`/`join_steps`,
+  `lobby_ids`. Live on the PC: host_steps (with the open slot removed) went from the main menu
+  to Ready with no clicks; the first `ready` pressed a hidden button of the same name (fixed);
+  the second started the battle 0.5 s after the press. Joining: needs the VM.
+  Corrections from the map: the host dialog has no friends-only setting (our lobbies were
+  public with a password); AI slots need a lord even with "Start without Lord(s)".
+- Step 3: `wh3_gcp.py --disk` (offline tests), cap $10. Session kit and brief:
+  `runs/twwarhammer3/gcp/next-session-kit/` (auto-logon, one-coordinator starter, join map).
+  Stopped before the VM, as the owner asked.
+
 ## Owner decisions
 
 Answered 2026-11-03 ([direction](../owner-direction.md)); implementation not started:

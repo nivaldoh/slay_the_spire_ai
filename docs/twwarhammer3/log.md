@@ -28,6 +28,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: multiplayer next steps built; PC test bed
+
+- Built the offline parts of [mp-next-steps.md](mp-next-steps.md#implementation-status-2026-11-03)
+  (owner decisions 1-5): Windows delete-sharing reads, a multiplayer observation grid,
+  `ready`, `worker --menu`, lobby step builders, `lobby_ids`, `wh3_gcp.py --disk`.
+  Reviewer: no correctness findings, four notes applied. Owner approved the agreed-check test
+  edits. check.py on main: PASSED (2777 passed, 13/13 agreed checks at `3f0da5b`).
+- $0 PC test bed: a multiplayer battle with one human and an AI starts (found while mapping
+  the lobby). host_steps reached Ready with no clicks; the first `ready` pressed a hidden
+  same-named button, fixed in `256936d`; then `ready` started the battle and the grid held
+  around three acknowledgements (one battle, one client).
+- Unverified: two clients' shared times, joining, the VM-hosted battle. Owner: stop before
+  the next VM test; later, investigate a multiplayer-friendly mod API.
+
 ## 2026-11-03: first native multiplayer battles, PC and GCP VM
 
 - Owner's goal: a multiplayer match between the PC (main account) and a GCP VM (second,
