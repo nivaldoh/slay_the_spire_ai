@@ -66,7 +66,8 @@ def author_task(scenario):
             " z north, on a map from -512 to 512. Your units: " + "; ".join(units) + ". The enemy"
             " roster: " + ", ".join(scenario["enemy"]["units"]) + ". Enemy positions are unknown"
             " until seen. Each member's graph must get its units into the fight: a graph that"
-            " waits for contact needs another member that starts it.")
+            " waits for contact needs another member that starts it. The battle goes on after"
+            " one target falls, and a graph that reaches end gives no more orders.")
 
 
 def author(directory, scenario_names, ledger, *, send=None):
