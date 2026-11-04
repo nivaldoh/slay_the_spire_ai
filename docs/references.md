@@ -71,6 +71,14 @@ Literature reference only; no experiment or verification method adopted.
 
 ## WH3 benchmark reference profiles
 
+For the [scenario guidelines](twwarhammer3/scenario-guidelines.md), added 2026-11-04:
+- Ribeiro et al., [CheckList](https://aclanthology.org/2020.acl-main.442/) (ACL 2020),
+  section 2: capability matrices, minimum functionality, invariance and directional tests.
+  The WH3 adaptation must establish its own behavioral expectations and equivalences.
+- Cobbe et al., [Procgen](https://arxiv.org/abs/1912.01588) (ICML 2020): procedural
+  variation and evaluation on unseen instances. It does not establish WH3 generator
+  validity or select our sample counts. Source audit: `runs/scenario-guidelines/research-audit.md`.
+
 The [Boris scenario source register](twwarhammer3/boris-scenarios-sources.md) records SEGA's
 DLC-only ownership rules, CA unit/patch descriptions and competitive-context sources,
 with exact excerpts and access limits. It supports the

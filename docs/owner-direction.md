@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (scenario guidelines): write strong WH3 evaluation-scenario guidelines using
+  the research collection, with diverse complexity, duration, maps and likely tactics;
+  address winnability, intended measurement, game mechanics, engine quirks and multi-agent
+  specifics. Mark judgement calls for later review. The preceding direction remains:
+  "Let's think about this without evaluating anything yet."
+  [Guidelines and choices](twwarhammer3/scenario-guidelines.md); no game run or new check agreed.
 - 2026-11-04 (suite page, wrapping up): on whether the page is clear: "It seems ok for now. Another
   model has been making changes to it in parallel. Let's wrap up here without interrupting it".
   Small maps or overlap: "Keep both for now, I'll review later". More battles: "Stop here for now".

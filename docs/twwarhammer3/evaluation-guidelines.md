@@ -7,6 +7,10 @@ Section 2's tactic-card admission rules, contact-only examples and chariot thres
 below apply to the historical card studies, not the new Land Battle benchmark. General
 rules about information, provenance, failures and uncertainty remain relevant proposals.
 
+For the 2026-11-04 scenario design proposal, use [scenario-guidelines.md](scenario-guidelines.md):
+coverage, winnability, intended measurement, engine and team checks, and choices for review.
+It adds no agreed method and leaves the historical admission rules below unchanged.
+
 Each battle runs in real time (1x, never paused) against the game's own AI. A controller,
 often an LLM with helper code, receives snapshots of the units it can see through a Lua
 mod and sends move and attack orders while the battle continues; the battle ends when one

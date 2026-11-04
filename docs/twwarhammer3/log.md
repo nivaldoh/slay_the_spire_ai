@@ -28,6 +28,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+
+## 2026-11-04: scenario design and validation guidelines
+
+- Owner requested diverse, winnable scenarios that measure their intended decisions, with
+  game/engine and multi-agent specifics; keep evaluation stopped.
+- [Guidelines](scenario-guidelines.md): coverage matrix, per-configuration public-interface
+  witnesses, independent reproduction, repeatability plans, checked opportunities and
+  effects, controlled alternatives, reserved variants and versioned acceptance evidence.
+  Nine choices are marked on the page for review; current scenarios and scores are unchanged.
+- Research: collected BEHAVIOR, CARLA, SMACv2, RoCo and MultiAgentBench profiles, plus
+  CheckList and Procgen. Independent primary-source audit and document review are in
+  `runs/scenario-guidelines/`; no benchmark results were reproduced.
+- Checks: worktree `check.py` passed, 2893 tests passed and 70 skipped (optional dependencies,
+  local evidence and Windows opt-ins). This checks the repository, not scenario validity.
+  Final gate/merge evidence: `runs/scenario-guidelines/handoff.md`.
+- No game run, paid evaluation or new agreed check. All proposed scenario validation
+  procedures remain unagreed, and no scenario gained verification from this documentation.
+
 ## 2026-11-04: unit controller tags and highlighting
 
 The owner asked for clearer unit-to-agent indicators. Kept the existing owner colours;

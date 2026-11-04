@@ -339,6 +339,10 @@ Older declared families and the retired admission rule: [history](benchmark-impl
 
 ## Scenario design
 
+The [scenario guidelines](scenario-guidelines.md) propose coverage across dimensions,
+per-scenario winnability evidence, checks of the intended decision and release criteria.
+Their marked choices await review; they do not change `suite-v1` eligibility or scoring.
+
 Choose variations for coverage, not to steer how a controller should win. Pin every changed condition and compare controllers within it. A larger army changes combat balance, pathing and the number of orders, not only prompt length, and a map or roster change doesn't isolate one cause. A diagnostic for one tactic can be its own experiment.
 
 Other battle types remain later questions: giving up ground and committing reserves in siege defence, spending reinforcements in survival, holding several points in Domination. Each needs its own success rule. Earlier pilots in those modes are in the [history](benchmark-implementation.md#history).

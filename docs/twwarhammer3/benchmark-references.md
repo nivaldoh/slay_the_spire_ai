@@ -42,6 +42,11 @@ bound the analogy; game success establishes no real-world competence. The curren
 
 ## Design lessons to discuss
 
+The [scenario guidelines](scenario-guidelines.md) turn these lessons into proposed coverage,
+witness and validity procedures, with marked decisions for review. They also draw on
+[CheckList](https://aclanthology.org/2020.acl-main.442/) and
+[Procgen](https://arxiv.org/abs/1912.01588) for behavioral tests and reserved instances.
+
 JUDGEMENT?: Transfer proposals — Codex, 2026-11-01: the ideas below organise possible WH3
 scenario work; a single full-battle study is an alternative. These are research proposals;
 the benchmark's pending definition, scores and verification methods remain with the owner.
