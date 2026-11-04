@@ -5,6 +5,25 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (future portfolio, record only): "this ... will be an important aspect to
+  highlight in my portfolio website. Let's write it down without changing the portfolio yet".
+  Preserve these examples of the owner's research direction and experimental judgement:
+  - Framed the question of knowing a tactic versus executing it under variable response
+    latency, with battles continuing at normal speed (owner, 2026-10-18 evening):
+    [latency question](twwarhammer3/latency.md#the-question).
+  - Required agreed, repeatable checks before calling features verified, and visible
+    `JUDGEMENT` markers for agents' decisions about benchmark meaning and verification:
+    [verification rule](../AGENTS.md#verification-hard-rule), [decision tracking](judgement.md).
+  - Drove the checkpoint-restoration goal and expanded siege checks; personally built
+    towers during testing. The subsequent checks exposed construction state that native
+    checksums alone did not cover: [checkpoint method](twwarhammer3/checkpoints.md#the-check),
+    [checksum limits](twwarhammer3/checkpoints.md#limits),
+    [manual-tower record](twwarhammer3/log.md#2026-10-25-recreated-manual-towers-restore-during-construction-and-after-completion).
+  Future framing: directed and tested agent-built experimental infrastructure, supplying
+  research questions, requirements and judgement; Codex and Claude Code did much of the
+  implementation. Git author names alone do not establish personally written code.
+  These examples support an engineering case study; model rankings, general learning gains
+  and a claim of a research breakthrough remain unverified. No portfolio edit is requested.
 - 2026-11-04 (project purpose): "my goal is to better understand how AI models work.
   How they are performing, how they make decisions, how they compare to each other, etc.
   That's why I'm focusing on benchmarks and evaluations." This goal applies across the repo.
