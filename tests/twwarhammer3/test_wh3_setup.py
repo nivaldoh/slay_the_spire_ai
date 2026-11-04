@@ -712,3 +712,26 @@ def test_host_steps_reach_the_lobby_set_slots_0_and_2_and_end_on_ready():
     joined = setup.join_steps({"player": side}, 1)
     assert [step["slot"] for step in joined if "recruit" in step] == [1, 1]
     assert joined[-1] == setup.READY_STEP
+
+
+def test_create_and_configure_leave_the_one_human_test_bed_with_the_ai_in_slot_1():
+    side = {"subculture": "wh_main_sc_emp_empire", "faction": "wh_main_emp_empire",
+            "units": ["wh_main_emp_inf_swordsmen"]}
+    scenario = {"player": side, "enemy": side, "map": "m1"}
+    steps = setup.create_lobby_steps(scenario, open_slot=False)
+    clicks = [step["find"][-1] for step in steps if step.get("click")]
+    assert "button_add_mp_player_slot" not in clicks and "button_add_ai" in clicks
+    checks = {step["expression"]: step["expect"] for step in steps if "expect" in step}
+    assert checks[setup.LOBBY + "PlayerSlotList.Size"] == 2
+    assert checks[setup.LOBBY + "PlayerSlotList.At(1).IsAI"] is True
+    slots = [step["slot"] for step in setup.configure_steps(scenario, open_slot=False)
+             if "recruit" in step]
+    assert slots == [0, 1]
+
+
+def test_lobby_ready_can_only_move_readiness_toward_the_request():
+    flag = setup.LOBBY + "IsLocalPlayerReady"
+    for ready, guard in ((True, "!" + flag), (False, flag)):
+        [toggle] = [step for step in setup.lobby_ready_steps(ready) if "command" in step]
+        assert toggle["command"] == setup.LOBBY + "ToggleReady" and toggle["when"] == guard
+    assert not any("find" in step for step in setup.lobby_ready_steps(True)), "no component lookup"

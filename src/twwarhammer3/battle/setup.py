@@ -358,12 +358,13 @@ READY_STEP = {"find": ["start_button_frame", "button_start_battle"], "click": Tr
               "timeout_ms": 30000}
 
 
-def host_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
-    """Main menu to a hosted multiplayer battle lobby, then Ready: the host's army
-    (``player``) in slot 0, one open player slot for the joiner (slot 1) and the AI army
-    (``enemy``, which needs a lord or autogeneration) in slot 2
-    (docs/twwarhammer3/mp-next-steps.md, step 1)."""
+def create_lobby_steps(scenario: dict, *, open_slot: bool = True) -> list[dict]:
+    """Main menu to a hosted multiplayer lobby with its slots: the host in slot 0, an open
+    player slot 1 unless this is the one-human test bed, and the AI slot after them
+    (docs/twwarhammer3/mp-next-steps.md, step 1). A temporary UI route: no direct create
+    operation is known (docs/twwarhammer3/multiplayer-control-foundation.md)."""
     size = LOBBY + "PlayerSlotList.Size"
+    slots = 3 if open_slot else 2
     steps = [{"log": "multiplayer host; waiting for the main menu"},
              {"find": ["buttons_holder", "button_battle"], "timeout_ms": 240000},
              {"find": ["multiplayer", "button_multiplayer"], "click": True, "timeout_ms": 15000},
@@ -379,22 +380,51 @@ def host_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
              {"wait_ms": 8000}]
     steps += map_steps(scenario)
     steps += [{"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
-              {"wait_ms": 2000},
-              {"find": ["top_team_parent", "button_add_mp_player_slot"], "click": True,
-               "timeout_ms": 15000, "when": f"{size} < 2"},
+              {"wait_ms": 2000}]
+    if open_slot:
+        steps += [{"find": ["top_team_parent", "button_add_mp_player_slot"], "click": True,
+                   "timeout_ms": 15000, "when": f"{size} < 2"},
+                  {"wait_ms": 1500}]
+    steps += [{"find": ["bottom_team_parent", "button_add_ai"], "click": True,
+               "timeout_ms": 15000, "when": f"{size} < {slots}"},
               {"wait_ms": 1500},
-              {"find": ["bottom_team_parent", "button_add_ai"], "click": True,
-               "timeout_ms": 15000, "when": f"{size} < 3"},
-              {"wait_ms": 1500},
-              {"context": "CcoFrontendRoot", "expression": size, "expect": 3, "required": True},
-              {"context": "CcoFrontendRoot", "expression": LOBBY + "PlayerSlotList.At(1).IsAI",
-               "expect": False, "required": True},
-              {"context": "CcoFrontendRoot", "expression": LOBBY + "PlayerSlotList.At(2).IsAI",
-               "expect": True, "required": True}]
-    steps += army_steps(scenario, scenario["player"], 0, build_id=build_id)
-    steps += army_steps(scenario, scenario["enemy"], 2, build_id=build_id)
-    return steps + [{"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"},
-                    READY_STEP]
+              {"context": "CcoFrontendRoot", "expression": size, "expect": slots, "required": True}]
+    if open_slot:
+        steps.append({"context": "CcoFrontendRoot", "expect": False, "required": True,
+                      "expression": LOBBY + "PlayerSlotList.At(1).IsAI"})
+    return [*steps, {"context": "CcoFrontendRoot",
+                     "expression": f"{LOBBY}PlayerSlotList.At({slots - 1}).IsAI",
+                     "expect": True, "required": True}]
+
+
+def configure_steps(scenario: dict, *, open_slot: bool = True,
+                    build_id: str | None = None) -> list[dict]:
+    """The host's two armies, ``player`` in slot 0 and the AI's ``enemy`` in the last slot;
+    each step reads its change back."""
+    return [*army_steps(scenario, scenario["player"], 0, build_id=build_id),
+            *army_steps(scenario, scenario["enemy"], 2 if open_slot else 1, build_id=build_id)]
+
+
+def lobby_ready_steps(ready: bool) -> list[dict]:
+    """Bring this client's lobby readiness to ``ready`` with the context command the Ready
+    button binds, no component lookup. A repeat cannot toggle it back. With every player
+    ready the lobby moves on at once, so the caller reads the outcome from the next phase."""
+    flag = LOBBY + "IsLocalPlayerReady"
+    return [{"context": "CcoFrontendRoot", "expression": flag},
+            {"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"},
+            {"context": "CcoFrontendRoot", "command": LOBBY + "ToggleReady",
+             "when": ("!" if ready else "") + flag, "required": True},
+            {"context": "CcoFrontendRoot", "expression": flag},
+            {"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"}]
+
+
+def host_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
+    """Main menu to a hosted multiplayer battle lobby, then Ready: the host's army
+    (``player``) in slot 0, one open player slot for the joiner (slot 1) and the AI army
+    (``enemy``, which needs a lord or autogeneration) in slot 2
+    (docs/twwarhammer3/mp-next-steps.md, step 1)."""
+    return [*create_lobby_steps(scenario), *configure_steps(scenario, build_id=build_id),
+            {"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"}, READY_STEP]
 
 
 def join_steps(scenario: dict, slot: int, *, build_id: str | None = None) -> list[dict]:

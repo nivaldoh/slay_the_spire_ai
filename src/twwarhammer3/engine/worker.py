@@ -32,7 +32,10 @@ Lua then presses this client's own Start Battle, during deployment only. ``{"con
 experimental direct adapter (engine/multiplayer_adapter.py) instead of a click: refused or expired
 is ``rejected``, submitted is ``submitted``, and the engine's anonymous ready count arrives as an
 ``adapter`` event (``end_deployment_execute``). ``--menu`` adds
-``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup).
+``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup); such
+a worker also takes the typed frontend operations in ``frontend_steps``, each a fixed step list
+from ``battle/setup.py``, not arbitrary steps: submitted when the menu log says done, rejected
+when it says failed, with the log lines as evidence. ``{"operation": "status"}`` only reports.
 Without that acknowledgement within ``ACK_S`` its effect is unknown and the worker stops. When
 the lease ends, the worker closes an owned game, removes its session, closes the link and exits
 1; a borrowed game keeps running. An owned game that exits ends the worker too (1); on that or
@@ -61,6 +64,7 @@ from pathlib import Path
 
 from gameai import windows
 from gameai.provenance import REPO_ROOT, sha256, source_fingerprints
+from twwarhammer3.battle import setup
 from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.engine import pack, runtime
 from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
@@ -83,9 +87,28 @@ ACK_S = 10.0
 READY = {"control": "ready"}
 LEAVE = {"control": "leave"}
 READY_DEPLOYMENT = {"operation": "ready_deployment"}
+STATUS = {"operation": "status"}
+# JUDGEMENT?: Frontend operation bound — Claude, 2026-11-04: 5 minutes for a frontend operation
+# (a cold main menu alone waits up to 240 s; the plan asks for an explicit deadline beyond the
+# acknowledgement bound). A longer one delays failure; a shorter one fails a slow first launch.
+FRONTEND_S = 300.0
 # JUDGEMENT?: worker run bound — Claude, 2026-10-30: 240 minutes, launch's default game timeout;
 # the worker and its owned game stop then. A shorter bound can cut a long match short.
 MAX_MINUTES = 240
+
+
+def frontend_steps(body: dict, build_id: str) -> list[dict]:
+    """The steps of one typed frontend operation; raises ValueError on any other body."""
+    name, extra = body.get("operation"), set(body) - {"operation"}
+    if name == "set_lobby_ready" and extra == {"ready"} and isinstance(body["ready"], bool):
+        return setup.lobby_ready_steps(body["ready"])
+    if name in ("create_lobby", "configure") and extra == {"scenario", "open_slot"} and (
+            isinstance(body["scenario"], dict) and isinstance(body["open_slot"], bool)):
+        if name == "create_lobby":
+            return setup.create_lobby_steps(body["scenario"], open_slot=body["open_slot"])
+        return setup.configure_steps(body["scenario"], open_slot=body["open_slot"],
+                                     build_id=build_id)
+    raise ValueError(f"not a frontend operation: {name}")
 
 
 def check_names(*names: str) -> None:
@@ -163,8 +186,10 @@ class Worker:
     """The observation side (``watch``, one thread) and the command side (``on_command``, the
     link's poll thread) of one client."""
 
-    def __init__(self, link: WorkerLink, mailbox: Mailbox, mode: str, *, ack_s: float = ACK_S):
+    def __init__(self, link: WorkerLink, mailbox: Mailbox, mode: str, *, ack_s: float = ACK_S,
+                 menu: bool = False, frontend_s: float = FRONTEND_S):
         self.link, self.mailbox, self.mode, self.ack_s = link, mailbox, mode, ack_s
+        self.menu, self.frontend_s = menu, frontend_s
         self.latest = self._seen = self.adapter = None
         self._changed = threading.Condition()
 
@@ -187,6 +212,16 @@ class Worker:
     def refusal(self, body, observation: dict | None) -> str | None:
         if self.mode != "control":
             return "observe mode takes no commands"
+        if body == STATUS:
+            return None
+        if isinstance(body, dict) and body.get("operation") not in (None, "ready_deployment"):
+            if not self.menu:
+                return "this worker has no menu session"
+            try:
+                frontend_steps(body, runtime.PINS["steam_build_id"])
+            except (ValueError, KeyError, TypeError) as error:
+                return str(error)
+            return None
         if body == READY_DEPLOYMENT:
             return None if self.adapter is not None else "this worker has no native adapter"
         if body in (READY, LEAVE):
@@ -215,8 +250,16 @@ class Worker:
         if reason:
             self.link.event("command", {"seq": seq, "status": "rejected", "reason": reason})
             return "rejected"
+        if body == STATUS:
+            latest = observation and {key: observation.get(key) for key in (
+                "battle", "seq", "phase", "time_ms", "result")}
+            self.link.event("status", {"seq": seq, "latest": latest, "menu": self.menu,
+                                       "adapter": self.adapter is not None})
+            return "submitted"
         if body == READY_DEPLOYMENT:
             return self.run_operation(seq, body["operation"])
+        if body.get("operation"):
+            return self.run_frontend(seq, body)
         if body in (READY, LEAVE):
             request = self.mailbox.write_control(observation["battle"], body["control"],
                                                  timeout=self.ack_s)
@@ -253,6 +296,25 @@ class Worker:
         return status
 
 
+    def run_frontend(self, seq: int, body: dict) -> str:
+        """One typed frontend operation. Its end is the frontend's own log line for this
+        request; a missing line stays unknown, since steps may have acted."""
+        offset = self.mailbox.log_offset("menu.log")
+        request = self.mailbox.write_menu(frontend_steps(body, runtime.PINS["steam_build_id"]))
+        self.link.event("command", {"seq": seq, "status": "written", "request": request})
+        deadline = time.monotonic() + self.frontend_s
+        while time.monotonic() < deadline:
+            text = self.mailbox.log_since(offset, "menu.log")
+            lines = text.splitlines()
+            for outcome, status in (("done", "submitted"), ("failed", "rejected")):
+                if f"menu {request}: {outcome}" in lines:
+                    self.link.event("command", {"seq": seq, "status": status, "request": request,
+                                                "log": lines})
+                    return status
+            time.sleep(self.mailbox.poll)
+        raise TimeoutError(f"frontend operation {request} has an unknown effect")
+
+
 def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: str,
         attach: bool, bridge: Path, max_s: float, ack_s: float = ACK_S, menu: bool = False,
         native: bool = False, **link_settings) -> int:
@@ -279,7 +341,7 @@ def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: st
                 raise RuntimeError(f"the running session's multiplayer is "
                                    f"{live.get('multiplayer')!r}, not {mode!r}")
         mailbox = Mailbox(bridge, job=live["job"] if attach else f"{match}.{attempt}.{client}")
-        worker = Worker(link, mailbox, mode, ack_s=ack_s)
+        worker = Worker(link, mailbox, mode, ack_s=ack_s, menu=menu)
         link.start(worker.on_command)
         with contextlib.ExitStack() as stack:
             game = None

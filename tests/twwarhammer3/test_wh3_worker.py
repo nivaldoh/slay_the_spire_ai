@@ -20,6 +20,7 @@ import pytest
 from wh3_fixtures import bridge_observation, fake_install
 
 from twwarhammer3.__main__ import main
+from twwarhammer3.battle import setup
 from twwarhammer3.engine import runtime, worker
 from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 
@@ -644,3 +645,67 @@ def test_the_native_adapter_needs_an_owned_control_session(attach, mode):
     with pytest.raises(ValueError, match="owned control"):
         worker.run("http://x", TOKEN, match="m", attempt="a", client="A", mode=mode, attach=attach,
                    bridge=None, max_s=1, native=True)
+
+
+SCENARIO = {"player": {"subculture": "s", "faction": "f", "units": []},
+            "enemy": {"subculture": "s", "faction": "f", "units": None}, "map": "m1"}
+
+
+class FakeMenuMailbox:
+    poll = 0.01
+
+    def __init__(self, tail):
+        self.tail, self.written = tail, []
+
+    def log_offset(self, name):
+        return 0
+
+    def write_menu(self, steps):
+        self.written.append(steps)
+        return "req"
+
+    def log_since(self, offset, name):
+        return self.tail
+
+
+@pytest.mark.parametrize("tail,expected", [("step 1: ok\nmenu req: done\n", "submitted"),
+                                           ("step 1: failed\nmenu req: failed\n", "rejected")])
+def test_a_frontend_operation_ends_on_the_menu_logs_line_for_this_request(tail, expected):
+    link, mailbox = RecordingLink(), FakeMenuMailbox(tail)
+    client = worker.Worker(link, mailbox, "control", menu=True)
+    assert client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready",
+                                                 "ready": True}}) == expected
+    assert mailbox.written == [setup.lobby_ready_steps(True)]
+    assert link.events[-1]["log"] == tail.splitlines()
+
+
+def test_a_frontend_operation_with_no_log_line_stays_unknown_and_another_requests_line_is_not_it():
+    mailbox = FakeMenuMailbox("menu other: done\n")
+    client = worker.Worker(RecordingLink(), mailbox, "control", menu=True, frontend_s=0.05)
+    with pytest.raises(TimeoutError, match="unknown effect"):
+        client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready", "ready": False}})
+
+
+@pytest.mark.parametrize("body", [
+    {"operation": "set_lobby_ready"}, {"operation": "set_lobby_ready", "ready": "yes"},
+    {"operation": "create_lobby", "scenario": SCENARIO},
+    {"operation": "configure", "scenario": "m1", "open_slot": False},
+    {"operation": "write_memory"}, {"operation": "menu", "steps": []},
+])
+def test_only_the_fixed_frontend_operations_pass_and_nothing_reaches_the_game_otherwise(body):
+    mailbox = FakeMenuMailbox("")
+    assert worker.Worker(RecordingLink(), mailbox, "control", menu=True).on_command(
+        {"seq": 1, "body": body}) == "rejected"
+    assert mailbox.written == []
+
+
+def test_frontend_operations_need_a_menu_session_and_status_only_reports():
+    link, mailbox = RecordingLink(), FakeMenuMailbox("")
+    body = {"operation": "create_lobby", "scenario": SCENARIO, "open_slot": False}
+    plain = worker.Worker(link, mailbox, "control")
+    assert plain.on_command({"seq": 1, "body": body}) == "rejected"
+    assert mailbox.written == []
+    assert worker.Worker(link, mailbox, "control", menu=True).on_command(
+        {"seq": 2, "body": worker.STATUS}) == "submitted"
+    assert link.events[-1] == {"seq": 2, "latest": None, "menu": True, "adapter": False}
+    assert mailbox.written == []
