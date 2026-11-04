@@ -594,7 +594,7 @@ const Viewer = (() => {
         );
       else if (!strong) {
         if (ahead.includes(step))
-          g.append(svg("circle", { cx: x, cy: y, r: 2.6, fill: TEAM.friendly }));
+          g.append(svg("circle", { cx: x, cy: y, r: 2.6, fill: hueOf(id) }));
       } else
         g.append(
           svg("circle", {
@@ -602,7 +602,7 @@ const Viewer = (() => {
             cy: y,
             r: 8,
             fill: MAP,
-            stroke: TEAM.friendly,
+            stroke: hueOf(id),
             "stroke-width": 1.5,
           }),
           svg(
@@ -614,7 +614,7 @@ const Viewer = (() => {
     });
     for (const step of steps.filter((s) => s.kind === "attack" && s.target)) {
       const target = targetAt(step.target, fi),
-        colour = step.status === "rejected" ? REJECTED : TEAM.friendly;
+        colour = step.status === "rejected" ? REJECTED : hueOf(id);
       if (!target) continue;
       // The dotted connector says "this target", not "this path": the route is the dashes.
       const origin = moves.length ? moves.at(-1) : unitIn(r.frames[fi], id);
@@ -828,7 +828,7 @@ const Viewer = (() => {
       if (!ids.has(m.unit)) continue;
       const a = { x: m.from[0], z: m.from[1] },
         b = { x: m.to[0], z: m.to[1] };
-      layer.append(polyline([a, b], TEAM[m.side], { "stroke-width": 1.5 }));
+      layer.append(polyline([a, b], hueOf(m.unit, m.side), { "stroke-width": 1.5 }));
       if (m.metres >= 1) moved.set(m.unit, `${Math.round(m.metres)} m`);
     }
     for (const side of ["friendly", "enemy"]) {
@@ -866,7 +866,7 @@ const Viewer = (() => {
       for (const u of r.frames[view.frame][side]) {
         const current = frame[side].find((item) => item.id === u.id);
         if (placed(u) && placed(current) && Math.hypot(u.x - current.x, u.z - current.z) >= 3)
-          layer.append(polyline([u, current], TEAM[side], { "stroke-width": 1.5, opacity: 0.8 }));
+          layer.append(polyline([u, current], hueOf(u.id, side), { "stroke-width": 1.5, opacity: 0.8 }));
         drawUnit(layer, u, side, { ghost: true });
       }
   }
@@ -1649,7 +1649,7 @@ const Viewer = (() => {
           text,
           button("Clear", () => select(null)),
         );
-        chip.querySelector("svg").style.color = TEAM[entry.side];
+        chip.querySelector("svg").style.color = hueOf(selected, entry.side);
       }
       chip.hidden = !entry;
     }

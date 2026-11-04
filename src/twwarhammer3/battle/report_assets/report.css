@@ -1953,7 +1953,7 @@ sup {
 .suite-plan b { margin-right: 2px; }
 .suite-swatch { width: 13px; height: 13px; flex: none; }
 .suite-stage { background: var(--stage); border-radius: 6px; padding: 12px; font-family: var(--sans); color: var(--stage-ink); }
-.suite-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.suite-tiles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
 .suite-tile { position: relative; min-width: 0; }
 .suite-pick { all: unset; cursor: pointer; display: block; box-sizing: border-box; width: 100%; padding: 6px; border: 2px solid transparent; border-radius: 4px; }
 .suite-pick:hover { border-color: var(--stage-line); }
@@ -1970,6 +1970,7 @@ sup {
 .suite-pair { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 12px 0 6px; font-size: var(--t-s); }
 .suite-pair span { display: inline-flex; align-items: center; gap: 5px; }
 .suite-pair small { color: var(--stage-muted); font-size: var(--t-xs); }
+.suite-pair em { font-style: normal; color: var(--stage-muted); }
 .suite-big { display: block; width: 100%; background: var(--map); border-radius: 4px; }
 .suite-blocked { fill: #22323b; }
 .suite-controls { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 8px; }
@@ -1988,5 +1989,5 @@ sup {
 .suite-more summary { cursor: pointer; color: var(--ink-2); padding: 6px 0; }
 @media (max-width: 760px) {
   .suite-grid { min-width: 720px; }
-  .suite-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .suite-tiles { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

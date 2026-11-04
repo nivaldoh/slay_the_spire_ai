@@ -147,14 +147,15 @@ holds for any method built on another.
 **Arms that differ in advice.** `single` and `team` get the rules-only prompt. `commander`'s prompt
 has a "How to fight" section (arrive together, gang up, come from behind), so comparing them
 mixes the control method with the advice. The `llm` policy has the same kind of advice in
-`system_prompt.md`, so a clean comparison could run it as a second one-model arm.
+`system_prompt.md`, so the `tips` arm runs it as a second one-model arm (owner's yes, 2026-11-04;
+rests on JUDGEMENT suite.py Tips arm).
 
 **What the battles turned out to be.** The authored battles were designed around one problem each,
 and in play several were not that problem (one battle per pair): in `coord-pincer` the enemy block
 split and fought both groups, in `coord-detail` the two waves reached the army within about 10 s of
 each other, and in
 `coord-breakout` neither win kept its line on one enemy group. Read a battle by what its report
-page shows under "What happened", not by its name in the table above.
+page shows, not by its name in the table above.
 
 **Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`
 (rests on JUDGEMENT `battle/suite.py` Scenario tie-break);

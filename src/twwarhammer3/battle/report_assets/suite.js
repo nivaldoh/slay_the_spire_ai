@@ -22,7 +22,12 @@ function suitePage(data, api) {
   const keyOf = new Map(rows.map((row) => [row.output, row.battle_key]));
   const method = (arm) => page.methods[arm];
   const pictures = suite.scenarios;
-  const battleOf = (name, arm) =>
+  const battleOf = new Map(
+    Object.values(suite.pictures)
+      .flatMap((picture) => picture.battles)
+      .map((battle) => [keyOf.get(battle.output), battle]),
+  );
+  const battleIn = (name, arm) =>
     suite.pictures[name].battles.find((battle) => battle.arm === arm) || null;
   let scene = null, // the selected battle's decoded recordings, by method
     current = null,
@@ -167,7 +172,7 @@ function suitePage(data, api) {
       title.append(button(suite.pictures[name].title, () => choose(name), "suite-link"));
       line.append(title);
       for (const arm of order) {
-        const battle = battleOf(name, arm),
+        const battle = battleIn(name, arm),
           cell = el("td");
         if (battle) {
           const won = battle.outcome === "won";
@@ -204,6 +209,10 @@ function suitePage(data, api) {
   const able = (u) =>
     u.men > 0 && !(u.state || []).some((s) => s === "routing" || s === "shattered");
   const placed = (u) => Number.isFinite(u.x) && Number.isFinite(u.z);
+  // The last recording, not the rounded battle length: the end state must be reachable.
+  const lastMoment = (run) => run.frames.at(-1).time_ms / 1000;
+  const ending = (run) =>
+    `${run.battle.outcome === "won" ? "Won" : "Lost"} ${clock(run.battle.battle_s * 1000)}`;
   const frameAt = (run, t) => {
     let low = 0,
       high = run.frames.length - 1;
@@ -275,7 +284,7 @@ function suitePage(data, api) {
   }
 
   function drawArmy(layer, run, r, solid) {
-    const frame = frameAt(run, Math.min(time, run.battle.battle_s));
+    const frame = frameAt(run, time);
     for (const u of frame.enemy.filter((item) => placed(item) && item.men > 0))
       layer.append(
         shape("enemy", project.x(u.x), project.y(u.z), 0.8 * r, {
@@ -288,6 +297,7 @@ function suitePage(data, api) {
     for (const u of frame.friendly.filter((item) => placed(item) && item.men > 0))
       layer.append(
         shape(run.kinds.get(u.id), project.x(u.x), project.y(u.z), r, {
+          "data-unit": u.id,
           fill: solid ? run.hue(u.id) : "#16232b",
           stroke: run.hue(u.id),
           "stroke-width": r / 3.5,
@@ -318,14 +328,12 @@ function suitePage(data, api) {
   function draw() {
     for (const tile of document.querySelectorAll(".suite-tile")) {
       const run = scene[tile.dataset.arm],
-        frame = frameAt(run, Math.min(time, run.battle.battle_s));
+        frame = frameAt(run, time);
       const left = frame.friendly.filter(able).reduce((sum, u) => sum + u.men, 0),
         all = frame.friendly.reduce((sum, u) => sum + (u.men0 || 0), 0);
-      const over = time >= run.battle.battle_s;
+      const over = time >= lastMoment(run);
       tile.querySelector(".suite-bar i").style.width = `${all ? (100 * left) / all : 0}%`;
-      tile.querySelector("em").textContent = over
-        ? `${run.battle.outcome === "won" ? "Won" : "Lost"} ${clock(run.battle.battle_s * 1000)}`
-        : "";
+      tile.querySelector("em").textContent = over ? ending(run) : "";
       tile.classList.toggle("won", over && run.battle.outcome === "won");
       const layer = tile.layer;
       layer.replaceChildren();
@@ -337,6 +345,10 @@ function suitePage(data, api) {
       const solid = index === pair.length - 1;
       drawPaths(big, scene[arm], solid);
       drawArmy(big, scene[arm], BIG_R, solid);
+    }
+    for (const item of document.querySelectorAll(".suite-pair [data-arm]")) {
+      const run = scene[item.dataset.arm];
+      item.querySelector("em").textContent = time >= lastMoment(run) ? ending(run) : "";
     }
     $("suite-clock").textContent = clock(time * 1000);
     $("suite-time").value = time;
@@ -365,9 +377,12 @@ function suitePage(data, api) {
   function showPair() {
     const box = $("suite-pair");
     box.replaceChildren();
-    const [solid, outlined] = pair;
-    box.append(tag("front", "#dfe7ea", method(solid).name));
-    if (outlined) box.append(tag("front", "#dfe7ea", method(outlined).name, false));
+    pair.forEach((arm, index) => {
+      const item = tag("front", "#dfe7ea", method(arm).name, index === 0);
+      item.dataset.arm = arm;
+      item.append(el("em"));
+      box.append(item);
+    });
     box.append(el("small", "on one map. Click the maps above to change which two."));
     for (const tile of document.querySelectorAll(".suite-tile"))
       tile
@@ -407,26 +422,32 @@ function suitePage(data, api) {
     }
   }
 
-  // One method's own replay, with its units coloured by the model that controlled them.
-  function watch(arm) {
-    const battle = scene[arm].battle,
-      m = method(arm);
-    setPlaying(false);
-    document.body.classList.add("suite-watching");
-    Viewer.setUnitHue((id) => memberHue(m, battle.owners[id]));
+  // Whichever way a battle opens, its colours and names come from its own record.
+  function paint(key) {
+    const battle = battleOf.get(key);
+    Viewer.setUnitHue(battle ? (id) => memberHue(method(battle.arm), battle.owners[id]) : null);
     const legend = $("suite-legend");
-    legend.hidden = false;
-    legend.replaceChildren(el("b", m.name));
-    for (const member of m.models.includes("all") || !m.models.length ? ["front"] : m.models)
+    legend.replaceChildren();
+    if (!battle) return;
+    const m = method(battle.arm),
+      split = m.models.length && !m.models.includes("all");
+    legend.append(el("b", m.name));
+    for (const member of split ? m.models : ["front"])
       legend.append(
-        tag(
-          m.models.includes("all") || !m.models.length ? "front" : KINDS[member],
-          memberHue(m, member),
-          memberName(m, member),
-        ),
+        tag(split ? KINDS[member] : "front", memberHue(m, member), memberName(m, member)),
       );
     legend.append(button("Close", closeWatch, "suite-close"));
-    return api.open(keyOf.get(battle.output), false).then(() => legend.scrollIntoView());
+  }
+  function reveal() {
+    document.body.classList.add("suite-watching");
+    $("suite-legend").hidden = false;
+  }
+  function watch(arm) {
+    setPlaying(false);
+    reveal();
+    return api
+      .open(keyOf.get(scene[arm].battle.output), false)
+      .then(() => $("suite-legend").scrollIntoView());
   }
   function closeWatch() {
     document.body.classList.remove("suite-watching");
@@ -451,12 +472,13 @@ function suitePage(data, api) {
       entry.append(`${part.who.map((who) => page.controllers[who]).join(", ")}: ${part.job}`);
       plan.append(entry);
     }
-    scene = await load(name);
+    const loaded = await load(name);
     if (current !== name) return;
-    const lengths = Object.values(scene).map((run) => run.battle.battle_s);
-    end = Math.max(...lengths);
+    scene = loaded;
+    const lengths = Object.values(scene).map(lastMoment);
+    end = Math.ceil(Math.max(...lengths));
     // Open where the battles have already diverged: the moment the first one ended.
-    time = Math.min(...lengths);
+    time = Math.ceil(Math.min(...lengths));
     moved = false;
     $("suite-time").max = end;
     // Start on the two most different results; any two can be picked.
@@ -504,5 +526,7 @@ function suitePage(data, api) {
     return choose(pictures[0]);
   }
 
+  api.paint = paint;
+  api.reveal = reveal;
   return { start };
 }

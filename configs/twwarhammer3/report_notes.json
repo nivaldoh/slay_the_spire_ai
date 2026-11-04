@@ -428,7 +428,7 @@
     "coord-two-fronts": {
       "title": "Two fronts",
       "question": "Two fights at once and one reserve. Where does it go?",
-      "why": "The fights are over 2 minutes apart at a run, and the Knights can be in only one.",
+      "why": "On foot the fights are over 2 minutes apart. The Knights are about 30 s from either one, but can be in only one.",
       "heading": "Two fronts",
       "short": "Two fronts",
       "challenge": "Two fights at once and one reserve. Where does it go?",
@@ -462,17 +462,17 @@
           "who": [
             "front"
           ],
-          "job": "Hold, and march the halberdiers in"
-        },
-        {
-          "who": [
-            "mobile"
-          ],
-          "job": "Hold with the garrison"
+          "job": "Hold the garrison, and march the swordsmen to it"
         },
         {
           "who": [
             "ranged"
+          ],
+          "job": "Hold the garrison"
+        },
+        {
+          "who": [
+            "mobile"
           ],
           "job": "March to the garrison"
         }
@@ -1136,6 +1136,13 @@
           "all"
         ]
       },
+      "tips": {
+        "name": "One model, with tips",
+        "note": "told how to fight",
+        "models": [
+          "all"
+        ]
+      },
       "team": {
         "name": "Three models",
         "note": "cannot talk to each other",
@@ -1155,7 +1162,7 @@
       },
       "gap": {
         "name": "Written rules",
-        "note": "written once, before the battle",
+        "note": "written before the battle, then target hints",
         "models": [
           "front",
           "ranged",
@@ -1172,6 +1179,7 @@
     },
     "order": [
       "single",
+      "tips",
       "team",
       "commander",
       "gap",

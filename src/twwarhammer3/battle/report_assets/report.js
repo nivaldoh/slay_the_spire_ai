@@ -875,6 +875,7 @@
               `Watch ${index + 1}`,
               async () => {
                 await renderScenario(s, false);
+                suiteApi.reveal?.();
                 await openRun(row.battle_key, false);
                 $("watch").scrollIntoView({ behavior: "auto" });
               },
@@ -1017,6 +1018,7 @@
   }
 
   async function openRun(key, scroll) {
+    suiteApi.paint?.(key);
     openKey = key;
     const entry = entries.get(key);
     if (scenario && !scenario.battles.includes(key))

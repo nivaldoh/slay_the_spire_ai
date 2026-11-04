@@ -9,7 +9,7 @@ import pytest
 
 from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import benchmark, configured, graph, suite, team
+from twwarhammer3.battle import benchmark, configured, controllers, graph, suite, team
 from twwarhammer3.battle.setup import check_battle, scenarios, validate_declaration
 from twwarhammer3.protocol import ProtocolError
 
@@ -437,3 +437,11 @@ def test_a_composed_method_on_a_benchmark_battle_is_compared_and_elsewhere_stays
     benchmarked = {"scenario": {"benchmark": benchmark.SUITE}, "model": "m"}
     assert commander(trial, benchmarked)["kind"] == "model"
     assert commander(trial, {"scenario": {}})["kind"] == "diagnostic"
+
+
+def test_the_tips_arm_is_one_model_on_the_prompt_that_says_how_to_fight():
+    policy = suite.ARMS["tips"][suite.ARMS["tips"].index("--policy") + 1]
+    assert policy.split("@")[0] == "llm"
+    prompt = controllers.MODEL_PROMPTS["llm"].read_text()
+    assert "How to fight" in prompt and "How to fight" not in (
+        controllers.MODEL_PROMPTS["llm_rules"].read_text())
