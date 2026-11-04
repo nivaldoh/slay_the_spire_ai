@@ -56,6 +56,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - Relief and pincer go to scenario version 2 at `3951faa`: each enemy gains one Big 'Uns and one
   Boyz unit. Whether they, or any authored battle, can be won by anything but a rush is unknown.
 
+## 2026-11-04: 22 straight losses on authored battles; team and hint faults fixed
+
+- `round-2` at `5bd7458`, Haiku 5.5 low and `skills`: stopped by its stop file after 10 of 30
+  battles, all lost. It found two harness faults. GaP's model hints were refused when the reason
+  ran past 200 characters (8 of 11 calls on `rear-raid`, 18 of 26 on `relief`), so its hint layer
+  mostly did not run. Team members ordered teammates' units, which voids the whole reply under
+  no-retry (26 of 163 and 55 of 276 calls). Fixed in `a0bd02c`: the hint prompt asks for at most
+  15 words, and a class member is told which ids it may order. Those team and GaP battles will be
+  replayed; their rows stay in the plan.
+- `round-2-witness` at `a0bd02c`: a new $0 script, `concentrate`, lost all six.
+- With the rush on the current versions, all 22 battles were lost by every arm that played them,
+  with armies routing with 24-62% of their men alive. A rank-5 player army is the next
+  calibration (`scenario_version` 2 or 3).
+- A lead from 24 battles, not a claim: the two wins so far (`rush` on relief and pincer version 1)
+  read `local_share` 0.56 and 0.57; the 22 losses read 0.22 to 0.50.
+
 ## 2026-11-04: capture the script click path; stop at the owner's request
 
 `foundation-ref4` at `8bd3c55`, build 26403568 ($0): one paired script-click scope and
