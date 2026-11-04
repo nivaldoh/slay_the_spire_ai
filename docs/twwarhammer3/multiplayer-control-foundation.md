@@ -49,6 +49,11 @@ Next bounded discovery question: trace the actual `SimulateLClick` path. Static 
 at RVA `0x41fe10` binds it to `0x22d1eb8`, which forwards the component at wrapper `+0x20`
 to `0x22d1ed0`. That routine calls `0x22ba824`, `0x22bab38` and `0x22bb900`; identify which
 call submits local readiness, with a normal reference, before promoting any binding.
+That registration is the Cco proxy, not the script method: `foundation-ref3` at `608aaab`
+loaded its hooks and ran the battle but recorded no scope/targets. A separate name/function
+table at `0x3d46900/08` binds the script method to `0x22d1f58`; it calls `0x22d19a0`,
+which reaches the same down/up dispatch. The scope hook now watches that entry and labels
+its incoming object as an opaque script wrapper. Fresh live evidence is still required.
 These are discovery leads, not operational addresses. No cloud job has run here.
 
 The next passive trace scopes those input-dispatch call sites to a battle's

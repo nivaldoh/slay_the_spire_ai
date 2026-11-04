@@ -28,6 +28,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: resolve the script binding after the scoped trace stays empty
+
+`foundation-ref3` at `608aaab` loaded all hooks, read a running battle and closed cleanly,
+but emitted no click scope or target records. Capture success did not satisfy discovery.
+Preserve `runs/twwarhammer3/native-multiplayer/foundation-ref3/` ($0); no engine ending.
+The static name search had found the Cco proxy. The separate method table's name pointer
+at `0x3d46900` and function pointer at `0x3d46908` bind `SimulateLClick` to `0x22d1f58`.
+Its path through `0x22d19a0` reaches the previously identified input-dispatch routines.
+Move only the scope hook to that entry, with its checked signature; call the incoming
+object an opaque script wrapper, not a component. Existing tests unchanged; checks/review
+in the commit. Card: `runs/wh3-multiplayer-foundation/lua-click-binding-card.md`.
+Fresh live scope/target evidence is still required. No readiness operation, native
+submission, observer-passivity, replication or acceptance claim.
+
 ## 2026-11-04: move two native input hooks before short call instructions
 
 `foundation-ref2` at `5bf2424`, build 26403568, failed before native-ready/lobby setup:

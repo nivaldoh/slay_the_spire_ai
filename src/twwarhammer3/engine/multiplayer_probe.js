@@ -13,7 +13,7 @@ const BUILD = {
     session_ctor: ['0x2d20c68', '48895c24084889742410574883ec3048'],
     post_tick: ['0x2dda3ac', '488bc44889580848897010488978184c'],
     session_step: ['0x2d78568', '48895c241048896c2418565741544156'],
-    simulate_click: ['0x22d1ed0', '48895c2410574883ec20488bf9c6051d'],
+    simulate_click: ['0x22d1f58', '48895c2410574883ec20488379180048'],
     click_extension: ['0x22bacfd', '4d8bc733d241ffd1488b9f000200008b'],
     click_callback: ['0x22bad3a', '498bd7ff50684883c378493bde75d240'],
     click_component: ['0x22bad5e', 'ff90f800000080bf5c03000000741548'],
@@ -156,7 +156,8 @@ try {
         },
     });
     // Reference-only input tracing. The generic named-event dispatcher above was absent
-    // from foundation-ref1, so observe the SimulateLClick path actually used by the mod.
+    // from foundation-ref1. The name/function pair at 0x3d46900/08 binds the script method
+    // to 0x22d1f58; the Cco proxy's 0x22d1ed0 scope was absent in foundation-ref3.
     // These are UI component calls, not a UI-independent readiness operation.
     hook('simulate_click', {
         onEnter(args) {
@@ -166,7 +167,8 @@ try {
             this.click = {call: ++callId, battle, session: battle.session, generation};
             stack.push(this.click);
             clicks.set(Process.getCurrentThreadId(), stack);
-            record('ui_click_enter', {call: this.click.call, component: args[0].toString(),
+            record('ui_click_enter', {call: this.click.call, receiver: args[0].toString(),
+                                     receiver_kind: 'UIComponent_script_wrapper',
                                      last_completed_tick: battle.emitted});
         },
         onLeave() {
