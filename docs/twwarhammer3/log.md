@@ -43,6 +43,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
   enemies only while visible. Fixed in `55480b9`: placements name a type, and the script reads
   every unit's position privately at the first observation. Not yet checked live.
 
+## 2026-11-04: authored starts work live; two battles recalibrated
+
+- `round-1a` at `dd30b93`, six fresh launches of `rush`, $0, build 26403568: every authored unit
+  stood within 8.4 m of its place in the private first reading (largest error per battle 5.0 to
+  8.4 m), units of both sides, with the engine's reordered ids. The enemy
+  AI moved and attacked as declared. One battle each; this is the first live use of authored
+  starts, not an agreed check.
+- `rush` won `coord-relief` (272 s) and `coord-pincer` (332 s), and lost `coord-rear-raid` (181 s),
+  `coord-detail` (290 s), `coord-breakout` (121 s) and `coord-two-fronts` (163 s). On breakout each
+  unit ran at its nearest enemy and the army split into three fights.
+- Relief and pincer go to scenario version 2 at `3951faa`: each enemy gains one Big 'Uns and one
+  Boyz unit. Whether they, or any authored battle, can be won by anything but a rush is unknown.
+
 ## 2026-11-04: capture the script click path; stop at the owner's request
 
 `foundation-ref4` at `8bd3c55`, build 26403568 ($0): one paired script-click scope and

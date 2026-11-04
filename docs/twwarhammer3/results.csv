@@ -665,3 +665,9 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-03,bench-b52-repin905-smoke-20261103,episode-0000,emp-knights-emp-swordsmen,rush_nearest,,,,21f8447,realtime,1.0,0.0,won,510,0.31,0.12,1656,1,0.3,0,classic,,,,,0.311,0.0,0.0,engine_result,
 2026-11-04,haiku-emp-line-grn-raid-xp5,episode-0000,emp-line-grn-raid-xp5,llm_rules,claude-haiku-5-5,low,,b1537c7,realtime,1.0,0.0,lost,381,0.44,0.74,151,18,2.48,0.1264,classic,,,,,0.0,0.721,0.0,engine_result,anthropic
 2026-11-04,haiku-skv-swarm-dwf-line,episode-0000,skv-swarm-dwf-line,llm_rules,claude-haiku-5-5,low,,b1537c7,realtime,1.0,0.0,lost,1205,0.14,0.18,433,71,2.77,0.4855,classic,,,,,0.143,0.131,0.0,time_limit,anthropic
+2026-11-04,coord-rear-raid--rush--1,episode-0000,coord-rear-raid,rush_nearest,,,,dd30b93,realtime,1.0,0.0,lost,181,0.4,0.59,576,1,0.3,0,classic,,,,,0.0,0.564,0.0,engine_result,
+2026-11-04,coord-relief--rush--1,episode-0000,coord-relief,rush_nearest,,,,dd30b93,realtime,1.0,0.0,won,272,0.58,0.37,867,0,0.31,0,classic,,,,,0.579,0.0,0.0,engine_result,
+2026-11-04,coord-pincer--rush--1,episode-0000,coord-pincer,rush_nearest,,,,dd30b93,realtime,1.0,0.0,won,332,0.53,0.27,1071,1,0.31,0,classic,,,,,0.49,0.0,0.0,engine_result,
+2026-11-04,coord-detail--rush--1,episode-0000,coord-detail,rush_nearest,,,,dd30b93,realtime,1.0,0.0,lost,290,0.62,0.67,926,3,0.31,0,classic,,,,,0.0,0.669,0.0,engine_result,
+2026-11-04,coord-breakout--rush--1,episode-0000,coord-breakout,rush_nearest,,,,dd30b93,realtime,1.0,0.0,lost,121,0.45,0.83,372,0,0.31,0,classic,,,,,0.0,0.832,0.0,engine_result,
+2026-11-04,coord-two-fronts--rush--1,episode-0000,coord-two-fronts,rush_nearest,,,,dd30b93,realtime,1.0,0.0,lost,163,0.47,0.74,514,1,0.31,0,classic,,,,,0.0,0.728,0.0,engine_result,
