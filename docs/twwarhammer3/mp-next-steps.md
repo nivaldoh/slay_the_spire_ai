@@ -233,7 +233,14 @@ built for single player; on 11-03 a multiplayer `ready` pressed a hidden button 
 name, the lobby needed UI paths mapped by hand, and an AI slot rejected "no lord". Questions
 to answer first: which engine or context functions perform these actions without the UI;
 which of them stay local to one client in multiplayer (and which would desync); and how to
-test them without a second client (the one-human multiplayer battle on the PC). Not started.
+test them without a second client (the one-human multiplayer battle on the PC).
+
+Read-only investigation and the [control foundation plan](multiplayer-control-foundation.md)
+are now written (2026-11-03). The owner selected small native hooks, lifecycle plus
+synchronization evidence first, UI only as a temporary route, and six automated acceptance
+matches split between hosts plus fault checks. Direct create/join/deployment bindings remain
+unverified. Documentation only: no implementation or paid VM continuation is authorized by
+this update.
 
 ## Not included
 

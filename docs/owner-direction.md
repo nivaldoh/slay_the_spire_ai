@@ -5,6 +5,17 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (multiplayer foundation plan): "Remember that here we will not implement
+  anything. We will just write the plan to implement later." Save the
+  [plan](twwarhammer3/multiplayer-control-foundation.md) and summarize the approach and tests
+  in chat. In the planning interview the owner selected "Small targeted hooks" and
+  "Lifecycle plus sync evidence". On fallback: "I'd rather avoid depending on the UI. In
+  the future we'd still like to investigate the possibility of a headless run. We can use
+  the UI initially if there's no better way", but it is not a permanent solution. Selected
+  "Use this acceptance check": six fully automated matches, three per host, plus targeted
+  failure tests, exact-tick evidence and no manual recovery in passing matches. This agrees
+  the acceptance structure; detailed marked refinements remain proposals, no check has run,
+  and writing the plan does not authorize implementation or additional spending.
 - 2026-11-03 (Land checkpoint readings): owner chose "Use the existing live-value rule
   (Recommended)": extend the siege rule to Land, require exact numeric morale/speed
   readings, and keep cached stat-panel differences as diagnostics. Preserve the first

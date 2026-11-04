@@ -285,6 +285,24 @@ Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-mu
   lobby audit (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored).
   **checked**
 
+## WH3 multiplayer control foundation
+
+Read 2026-11-03 for the [control foundation plan](twwarhammer3/multiplayer-control-foundation.md).
+Sources support the integration approach, not a working WH3 native binding:
+
+- CA [UI scripting](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html),
+  community mirror: UI-triggered model mutations may desynchronize multiplayer. Installed
+  build 26403568 layouts were read in memory for actual readiness/host/join callback bindings.
+- Valve [ISteamMatchmaking](https://partner.steamgames.com/doc/api/ISteamMatchmaking):
+  create/join and asynchronous lobby callbacks. These do not establish WH3 session setup.
+- [Frida JavaScript API](https://frida.re/docs/javascript-api/): native interception/calls,
+  the reentrancy warning on `Process.runOnThread`, and batching/overhead guidance. Correct
+  game-thread execution points and native signatures still require engine-specific checks.
+- PySC2 [multiplayer test](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/tests/multi_player_test.py),
+  pin `0df53d38c153972f1e368572ba65b1442a0fd41f`: explicit create/join/player identity,
+  repeated matches and cleanup. WH3 must remain live at 1x; its implementation cannot copy
+  SC2's synchronized stepping or assume an official/headless engine API.
+
 ## VM team plan (2026-11-03)
 
 Outside sources for the [VM team plan](twwarhammer3/vm-team-plan.md), read by research and
