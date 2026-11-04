@@ -226,6 +226,11 @@ JUDGEMENT?: Runtime speed fields — legacy mod, 2026-10-13/14; decision author 
 `twwarhammer3_battle.lua` emits constants for `speed`/`awaiting_orders`; measured readbacks
 would change which timing violations checks detect. Runtime guards rest on these fields.
 
+Current status: since `1cc4582` (b52), `speed` reads the engine's
+`current_battle_speed()`; `awaiting_orders` remains false. The
+[probe](log.md#2026-10-31-night-agreed-live-checks-after-the-multiplayer-merge-outcome-readers-b52) read 1 throughout; a slowed battle
+has not been tested. The marker above records the original choice.
+
 ### Clocks (measured 2026-10-28)
 
 - The battle runs at 1x by the Windows clock. The checkpoint agent's per-tick messages,

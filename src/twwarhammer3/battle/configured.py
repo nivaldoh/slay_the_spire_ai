@@ -49,9 +49,9 @@ def load(path, config):
             value = node["graph"]
             if isinstance(value, str):
                 value = json.loads((path.parent / value).read_text())
-            result = {"type": kind, "graph": graph.validate(value)}
+            validator = graph_goals.validate_graph if kind == "graph_llm" else graph.validate
+            result = {"type": kind, "graph": validator(value)}
             if kind == "graph_llm":
-                graph_goals.validate_graph(value)
                 provider = config.get("provider", "openai")
                 model = node.get("model", config.get("model")
                                  or next(iter(get_provider(provider).prices)))

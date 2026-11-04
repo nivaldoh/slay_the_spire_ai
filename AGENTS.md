@@ -90,17 +90,13 @@ handoff note ([workflow](docs/workflow.md#long-runs-while-the-owner-is-away)).
 
 ```
 src/gameai/        Game-neutral code both games import; it never imports a game package:
-                   llm (transport, Model), providers, ledger (hard budget), sft, provenance,
-                   lm (local models, GPU lease), windows and windows_game (owned Windows games)
+                   transport, budgets, datasets, provenance, local models, Windows ownership
 src/twwarhammer3/  WH3 custom battles; module map in docs/twwarhammer3/README.md (Code map)
 src/spire/         Slay the Spire; its map is in docs/spire/AGENTS.md
-configs/           Per game: twwarhammer3/ (prompts, scenarios, report notes, benchmark jobs)
-scripts/           check.py (the exit gate); wh3_queue.py (a frozen plan of WH3 play jobs);
-                   wh3_db.py (unit data from the game database); sft_smoke.py; Spire tools
-tests/             Per package (tests/README.md); test_repo_rules.py, test_doc_links.py: the repo
-docs/              state.md, owner-direction.md, workflow.md, autonomy.md, judgement.md,
-                   agreed-checks.md, testing.md, posttraining.md, references.md, thesis/
-                   (untracked: git grep misses it), twwarhammer3/ (README, log, results), spire/
+configs/           Per-game prompts, scenarios and experiment declarations
+scripts/           Exit gate and tools; listed in the WH3 Code map
+tests/             Per package; tests/README.md routes checks
+docs/              Shared guidance and game tracks; thesis/ is untracked (git grep misses it)
 runs/              Local evidence, ignored by Git; see runs/README.md
 .claude/ .codex/   the same hooks and reviewer for each tool, skills in .agents/ (workflow.md)
 ```
@@ -116,12 +112,10 @@ namespace (no `tests/__init__.py`): every test file name is unique across `tests
 uv sync --locked
 uv run --locked python scripts/check.py   # before each commit: Ruff, whole offline suite, warnings
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
-uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
-uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness, mode, timing
 git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```
 
-More: the WH3 [README](docs/twwarhammer3/README.md#commands) (watch, report, export, spend,
+More: the WH3 [README](docs/twwarhammer3/README.md#commands) (digest, stats, watch, report, export, spend,
 card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/README.md) (extras).
 - `twwarhammer3 play`, `twwarhammer3 launch` and `scripts/wh3_queue.py` run a real game
   (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
@@ -130,7 +124,7 @@ card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/READ
   `.python-version` (`battle/play.py` `SOURCES`). `launch` checks no scope.
   A play job stops before its next episode if a file in its scope changes: while one runs,
   merge nothing into its checkout that touches its scope (shared code counts for both games).
-- Check "Active work" in `docs/state.md` first. Never run two game controllers at once,
+- Never run two game controllers at once,
   even for different games: each `RuntimeLock` only protects its own game.
 - WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
   tests. Never pause or slow the battle to give a policy more thinking time. One exception

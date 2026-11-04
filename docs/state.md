@@ -16,7 +16,7 @@ Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Resu
 
 Visual reports: `runs/twwarhammer3/reports/benchmark.html` ([open/build](twwarhammer3/reports.md#main-report-and-retained-example)) and `initial-benchmark.html` ([open/build](twwarhammer3/reports.md#initial-benchmark-visuals)); checks in `runs/benchmark-visual-20261102/`.
 
-Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`.
+Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`. Repository upkeep: [changes](twwarhammer3/log.md#2026-11-04-repository-upkeep), checks/review `runs/repo-upkeep/`.
 
 Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03).
 Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.

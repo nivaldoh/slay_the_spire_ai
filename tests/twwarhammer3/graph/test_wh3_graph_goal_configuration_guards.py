@@ -133,3 +133,30 @@ def test_goal_member_without_effort_uses_the_job_effort_else_low(tmp_path):
     del config["effort"]
     value, _, goals, _ = configured.load(path, config)
     assert value["effort"] == "low" and goals == {("claude-haiku-5-5", "low")}
+
+
+def test_configured_team_stops_direct_model_requests_after_close(tmp_path, monkeypatch):
+    # Team cleanup sets the shared stop event: no new paid request may leave afterward.
+    from gameai.llm import APIError
+
+    path, config, _ = configuration(tmp_path, team=True)
+    sent = []
+    monkeypatch.setattr(configured, "api_key", lambda provider: "test-only")
+    monkeypatch.setattr(controllers, "api_key", lambda provider: "test-only")
+
+    def post(key, body, **kwargs):
+        sent.append(body)
+        return {"id": "canned"}
+
+    monkeypatch.setattr(controllers, "post", post)
+    policy = configured.factory(path, config)()
+    try:
+        api = policy.members["cavalry"].policy.api
+        body = {"input": "canned"}
+        assert api.send(body) == {"id": "canned"}
+        policy.close()
+        with pytest.raises(APIError, match="team closed; request not sent"):
+            api.send(body)
+        assert sent == [body]
+    finally:
+        policy.close()

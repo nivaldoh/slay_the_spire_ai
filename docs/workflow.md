@@ -187,8 +187,10 @@ markers   3 problems listed in the log, for the owner
   markers, so they never fail the run.
 - "diagram" counts the views of [how-code-works.html](how-code-works.html) that need a
   refresh (owner's yes to the [plan](how-code-works-plan.md), 2026-11-01).
-- Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
-  run only when a change touches what they cover. The full offline suite always runs
+- Locally, optional extras (`uv run --locked --extra train python scripts/check.py`, or
+  `--extra llm`), browser checks and live game checks run when a change touches what they
+  cover. CI runs both CPU extras on every main push and pull request
+  ([configuration](../.github/workflows/check.yml)). The full offline suite always runs
   (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.
 - In a linked worktree, tests that read the main checkout's `runs/` evidence skip and the
   "worktree" line says so: after merging, run `check.py` in the main checkout before counting
@@ -236,7 +238,7 @@ covered by any generic layer:
 
 | WH3 layer | Today | Gap |
 |---|---|---|
-| Battle time | Delays, ages and the clock rule use engine battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)). Since b51 each episode records battle time per Windows second from its observation files' NTFS write times, and `digest` warns outside 0.99-1.01 (owner, 2026-10-29) | Built and tested offline; one live scripted battle read 1.0000 over 413 s (2026-10-29), no agreed check yet. The mod still reports a constant `speed` 1 |
+| Battle time | Delays, ages and the clock rule use engine battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)). Since b51 each episode records battle time per Windows second from its observation files' NTFS write times, and `digest` warns outside 0.99-1.01 (owner, 2026-10-29) | Built and tested offline; one live scripted battle read 1.0000 over 413 s (2026-10-29), no agreed general check yet. Since b52 the mod reads engine speed; a slowed battle remains untested ([runtime fields](twwarhammer3/integration.md#loading-phases-and-control)) |
 | Order effect | Acknowledgements and engine refusals are recorded; tests cover identity | An accepted order is not an effect. The [proposed correctness checks](twwarhammer3/benchmark-implementation.md#correctness-checks-to-agree) wait on the benchmark definition |
 | Outcome source | Only an engine won, lost or draw is a gameplay outcome; a late failure keeps the engine ending (agreed) | Readers still differ on timer wins and failures (state.md Known issues) |
 
