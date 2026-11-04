@@ -72,6 +72,17 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - A lead from 24 battles, not a claim: the two wins so far (`rush` on relief and pincer version 1)
   read `local_share` 0.56 and 0.57; the 22 losses read 0.22 to 0.50.
 
+## 2026-11-04: rank 5 helps but does not win; enemy set to 1.1-1.2 times the player's men
+
+- `round-3` at `2b1e521`, rank-5 player units, $0: stopped by its stop file after 6 of 12 battles,
+  all lost, with `taken` 19.0 to 72.3. Against the same arm and battle at rank 0, `taken` rose on
+  five of six, by 8 to 35 points, and fell 3 on `two-fronts`. In the one replay read in detail (`two-fronts`, `concentrate`) the two groups joined by
+  about 60 s and the army still routed at 190 s with 71% of its men alive: morale, not casualties,
+  ended it. Earlier notes warned of this cascade in lordless armies ([empire.md](empire.md)).
+- `dd2b69d`: enemy men 1.09 to 1.20 times the player's on all six (it was 1.27 to 1.55 on four of
+  them), rank 5 kept. The evidence is one earlier battle family: the Empire line, near 1.0 at
+  rank 5, is the one lordless battle with wins on record. Unverified here until played.
+
 ## 2026-11-04: capture the script click path; stop at the owner's request
 
 `foundation-ref4` at `8bd3c55`, build 26403568 ($0): one paired script-click scope and
