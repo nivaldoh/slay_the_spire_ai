@@ -1,0 +1,37 @@
+{
+  "type": "team",
+  "optional": true,
+  "army_owner": "front",
+  "members": {
+    "ranged": {
+      "unit_types": ["class:missile", "class:missile_chariot", "class:artillery"],
+      "controller": {
+        "type": "graph_llm",
+        "graph": "contact-ranged.json",
+        "model": "claude-haiku-5-5",
+        "effort": "low",
+        "task": "Prefer the visible enemy your shooters can hurt most usefully."
+      }
+    },
+    "mobile": {
+      "unit_types": ["class:cavalry", "class:missile_cavalry", "class:chariot", "class:monster"],
+      "controller": {
+        "type": "graph_llm",
+        "graph": "contact-cavalry.json",
+        "model": "claude-haiku-5-5",
+        "effort": "low",
+        "task": "Prefer a visible engaged enemy for your fast units to charge."
+      }
+    },
+    "front": {
+      "unit_types": null,
+      "controller": {
+        "type": "graph_llm",
+        "graph": "contact-line.json",
+        "model": "claude-haiku-5-5",
+        "effort": "low",
+        "task": "Prefer a useful visible enemy for the line to engage."
+      }
+    }
+  }
+}

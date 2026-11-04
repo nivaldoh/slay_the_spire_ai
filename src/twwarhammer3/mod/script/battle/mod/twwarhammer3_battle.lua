@@ -499,13 +499,9 @@ local function evaluation()
             objectives = state.objective_totals}
 end
 
--- A single authored objective, not a general mission language. Deployment stays private;
--- only the rules, friendly asset ids and current extraction progress reach policies.
-local function setup_custom()
-    local config = session.custom
-    if not config then return end
-    assert(config.kind == "battery_evacuation", "unknown custom objective")
-    for side, placements in pairs(config.deployment or {}) do
+-- Authored starting positions (private setup). An enemy unit returns to the AI afterwards.
+local function teleport_units(deployment)
+    for side, placements in pairs(deployment or {}) do
         for _, placement in ipairs(placements) do
             local entry = assert(state[side][placement.id], "missing authored unit " .. placement.id)
             local controller = entry.controller or entry.army:create_unit_controller()
@@ -515,6 +511,15 @@ local function setup_custom()
             if not entry.controller then controller:release_control() end
         end
     end
+end
+
+-- A single authored objective, not a general mission language. Deployment stays private;
+-- only the rules, friendly asset ids and current extraction progress reach policies.
+local function setup_custom()
+    local config = session.custom
+    if not config then return end
+    assert(config.kind == "battery_evacuation", "unknown custom objective")
+    teleport_units(config.deployment)
     local assets = {}
     for _, id in ipairs(config.assets) do
         assert(state.friendly[id], "missing evacuation asset " .. id)
@@ -1552,9 +1557,12 @@ local function start()
     if not scanned then log("scan failed: " .. clean_error(err)) end
     local custom_ok, custom_error = pcall(setup_custom)
     if not custom_ok then log("custom setup failed: " .. clean_error(custom_error)) end
+    local deployed, deployment_error = pcall(teleport_units, session.deployment)
+    if not deployed then log("deployment failed: " .. clean_error(deployment_error)) end
     state.started_ms = battle_time()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
-                   player_defends = get_context("PlayerAllianceContext.IsDefender")}
+                   player_defends = get_context("PlayerAllianceContext.IsDefender"),
+                   deployment_error = not deployed and clean_error(deployment_error) or nil}
     if session.benchmark then
         local toggles_ok, toggles = pcall(benchmark_behaviours, true, false, "friendly")
         state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}

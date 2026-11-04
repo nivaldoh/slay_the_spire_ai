@@ -40,6 +40,8 @@ entry, and what reads them:
 - ``custom``: the versioned battery-evacuation rules, asset ids, extraction zone and
   deadline; optional ``deployment`` maps friendly/enemy ids to authored positions.
   Only public rules/progress enter ``mode.custom``; deployment remains private setup.
+- ``deployment``: the same authored positions for a plain battle ({"friendly": [{"id", "x",
+  "z", "bearing", "width"}], "enemy": [...]}); ``check_battle`` reads them back.
 - ``name``, ``family``, ``brief``, ``split``, ``status``: report labels (the HTML report
   shows only scenarios with started trials; its reader text is in report_notes.json);
   ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is
@@ -78,6 +80,7 @@ ENGINE_TYPES = {
     "unfortified_settlement": "settlement_unfortified", "siege": "settlement_standard",
     "survival": "survival",
 }
+DEPLOYMENT_TOLERANCE_M = 25  # re-forming is 5-13 m; native starts are 42 m or more away
 TIMERS = {1200: "time_limit_short", 2400: "time_limit_medium", 3600: "time_limit_long"}
 UNIT_SCALES = {.25: "unit_scale_small", .5: "unit_scale_normal",
                .75: "unit_scale_large", 1: "unit_scale_ultra"}
@@ -498,6 +501,8 @@ def validate_declaration(scenario: dict, config: dict) -> None:
         experience_ranks(army)
     if scenario.get("custom"):
         validate_custom(scenario)
+    if scenario.get("deployment"):
+        validate_deployment(scenario, scenario["deployment"])
     if not scenario.get("expect"):
         return
     if not scenario.get("map"):
@@ -554,7 +559,15 @@ def validate_custom(scenario: dict) -> None:
         raise ValueError("evacuation deadline must precede the finite native timer")
     if not isinstance(goal.get("rules"), str) or not goal["rules"].strip():
         raise ValueError("custom objective requires public rules")
-    for side, placements in goal.get("deployment", {}).items():
+    validate_deployment(scenario, goal.get("deployment", {}))
+
+
+def validate_deployment(scenario: dict, deployment: dict) -> None:
+    """Every placement names one unit of its side, once, at finite coordinates."""
+    def finite(value):
+        return (isinstance(value, (float, int)) and not isinstance(value, bool)
+                and math.isfinite(value))
+    for side, placements in deployment.items():
         if side not in {"friendly", "enemy"}:
             raise ValueError("unknown deployment side")
         army = scenario["player" if side == "friendly" else "enemy"]
@@ -637,10 +650,37 @@ def check_menu(scenario: dict, directory) -> dict:
     return checks
 
 
+def check_deployment(scenario: dict, observation: dict) -> dict:
+    """Each authored unit stands near its place in the first observation.
+
+    The script's own reading in the teleport's tick still shows native positions (log,
+    2026-10-16), and units re-form 5-13 m behind the spot, so read a moment later, with room
+    for re-forming that still excludes the native start.
+    """
+    settings = observation.get("setup") or {}
+    if settings.get("deployment_error"):
+        raise ProtocolError(f"authored deployment failed: {settings['deployment_error']}")
+    measured = {}
+    for side, placements in scenario["deployment"].items():
+        actual = {unit["id"]: unit for unit in observation.get(side, [])}
+        for wanted in placements:
+            found = actual.get(wanted["id"]) or {}
+            if found.get("x") is None or found.get("z") is None:
+                raise ProtocolError(f"authored deployment unread for {side}/{wanted['id']}")
+            error = math.hypot(found["x"] - wanted["x"], found["z"] - wanted["z"])
+            if error > DEPLOYMENT_TOLERANCE_M:
+                raise ProtocolError(f"authored deployment failed for {side}/{wanted['id']}:"
+                                    f" {error:.0f} m from its place")
+            measured[wanted["id"]] = round(error, 1)
+    return measured
+
+
 def check_battle(scenario: dict, observation: dict) -> dict:
     expected = scenario["expect"]
     settings = observation.get("setup") or {}
     checks = {}
+    if scenario.get("deployment"):
+        checks["deployment_error_m"] = check_deployment(scenario, observation)
     if scenario.get("benchmark"):
         toggles = settings.get("benchmark_behaviours") or {}
         if toggles.get("error") or settings.get("benchmark_release_pending"):
@@ -658,8 +698,10 @@ def check_battle(scenario: dict, observation: dict) -> dict:
                 for key, wanted in (("fire_at_will", True), ("skirmish", False), ("defend", False)):
                     crossbow = "crossbowmen" in unit.get("type", "")
                     ranged = crossbow or "great_cannon" in unit.get("type", "")
-                    required = (key == "defend" or key == "fire_at_will" and ranged
-                                or key == "skirmish" and crossbow)
+                    # The mirror's roster is fixed; a suite army reads what its units support.
+                    required = (scenario["benchmark"] == "mirror-v1"
+                                and (key == "defend" or key == "fire_at_will" and ranged
+                                     or key == "skirmish" and crossbow))
                     if required and type(values.get(key)) is not bool:
                         raise ProtocolError(f"setup {side}/{unit['id']}: unreadable {key}")
                     if (side == "friendly" and (required or key in values)

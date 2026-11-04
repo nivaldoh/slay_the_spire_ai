@@ -1,8 +1,9 @@
-"""Two independent members sharing one army and one mailbox, each owning declared units.
+"""Independent members sharing one army and one mailbox, each owning declared units.
 
-A member is declared by one unit type (exactly one unit of it), a tuple of types (one or
-more units) or None (every unit nobody else declares); a new friendly unit joins the member
-declaring its type or the one owning the rest, else the episode ends. Each sees ``project``:
+A member is declared by one unit type (exactly one unit of it), a tuple of types or
+``class:NAME`` entries (one or more units) or None (every unit nobody else declares); a new
+friendly unit joins the member declaring it or the one owning the rest, else the episode
+ends. With ``optional`` a member that owns nothing at the start is dropped. Each sees ``project``:
 its own units, its teammate's as allies and the public battle state, never the teammate's
 feedback. It may give any order to its own units and aim abilities at its teammate's; only
 the named army owner gives army-level orders.
@@ -13,7 +14,8 @@ rule: no valid reply or a provider error is a forfeit and the member is asked ag
 credit or budget stop or any other exception ends the episode. At cleanup a forfeit is
 only discarded, a stop still ends the job, and a member bug is a policy failure even after
 the battle ended (a single controller's call that straddles the end keeps the result).
-``ModelTeam`` (the policy ``team_llm_rules``) has two model members sharing the job's ledger.
+``ModelTeam`` (the policy ``team_llm_rules``) has two model members sharing the job's ledger;
+``ClassTeam`` (the same policy on a suite scenario) has up to three, split by class, for any army.
 """
 import hashlib
 from collections import Counter
@@ -54,6 +56,12 @@ ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army o
 # The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
 PARTITION = {"cavalry": (KNIGHT,), "line": None}
 ARMY_OWNER = "line"
+# Rests on JUDGEMENT src/twwarhammer3/battle/suite.py Class team.
+CLASS_PARTITION = {
+    "ranged": ("class:missile", "class:missile_chariot", "class:artillery"),
+    "mobile": ("class:cavalry", "class:missile_cavalry", "class:chariot", "class:monster"),
+    "front": None}
+CLASS_OWNER = "front"
 TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same time. You"
              " order only Your units; Ally abilities may target allied units. You see allied units'"
              " condition, state and visible targets, not the teammate's orders, feedback or"
@@ -104,6 +112,10 @@ def _types(kinds):
     return (kinds,) if isinstance(kinds, str) else tuple(kinds or ())
 
 
+def _declares(kinds, row):
+    return row["type"] in kinds or f"class:{row.get('class')}" in kinds
+
+
 @dataclass
 class Member:
     kinds: object  # a unit type, a tuple of types, or None for every undeclared unit
@@ -124,23 +136,25 @@ class Member:
 
 
 class TeamPolicy:
-    """Units partitioned by declared type; oldest completed batch first, no teammate barrier."""
+    """Units partitioned by declaration; oldest completed batch first, no teammate barrier."""
 
     timing = "asynchronous"
 
     def __init__(self, members, *, stop=None, max_age_ms=5000, army_owner=None, executor=None,
-                 clock=time):  # play.py's clock; WSL's monotonic clock drifts from it
+                 clock=time, optional=False):  # clock: play.py's; WSL's monotonic one drifts
         declared = [kind for kinds, _ in members.values() for kind in _types(kinds)]
         rest = [name for name, (kinds, _) in members.items() if kinds is None]
-        if (len(members) != 2 or len(declared) != len(set(declared)) or len(rest) > 1
-                or army_owner not in (None, *members)):
+        if ((len(members) != 2 and not (optional and members)) or len(rest) > 1
+                or len(declared) != len(set(declared)) or army_owner not in (None, *members)):
             raise TeamHarnessError("a team needs two members with distinct unit types,"
                                    " at most one of them owning the rest")
         self.members = {name: Member(kinds, policy) for name, (kinds, policy) in members.items()}
         self.declared = set(declared)
         self.stop = stop if stop is not None else Event()
-        self.pool = executor if executor is not None else ThreadPoolExecutor(max_workers=2)
+        self.pool = (executor if executor is not None
+                     else ThreadPoolExecutor(max_workers=len(members)))
         self.clock, self.max_age_ms, self.army_owner = clock, max_age_ms, army_owner
+        self.optional = optional
         self.battle = self.selected = None
         self.events = []
         self.closed = False
@@ -214,10 +228,13 @@ class TeamPolicy:
         if len({row["id"] for row in roster}) != len(roster):
             self._fault("team received duplicate friendly unit ids")
         owned = 0
-        for name, member in self.members.items():
+        for name, member in list(self.members.items()):
             units = frozenset(row["id"] for row in roster if (
-                row["type"] in _types(member.kinds) if member.kinds is not None
-                else row["type"] not in self.declared))
+                _declares(_types(member.kinds), row) if member.kinds is not None
+                else not _declares(self.declared, row)))
+            if not units and self.optional and self.battle is None:
+                self._drop(name, member)
+                continue
             if not units or (isinstance(member.kinds, str) and len(units) != 1) or (
                     self.battle is not None and not units >= member.units):
                 self._fault(f"{name}: expected stable units of {member.kinds or 'the rest'}")
@@ -229,6 +246,16 @@ class TeamPolicy:
             self.battle = observation["battle"]
             self._event("partition", battle=self.battle, ownership={
                 name: member.unit for name, member in self.members.items()})
+
+    def _drop(self, name, member):
+        """A member with no units in this army: it never runs, and its work goes elsewhere."""
+        self._event("dropped", name)
+        del self.members[name]
+        close = getattr(member.policy, "close", None)
+        if close:
+            close()
+        if self.army_owner == name:
+            self.army_owner = next(iter(self.members), None)
 
     def _work(self, member, observation):
         from twwarhammer3.battle.play import policy_call  # play imports this module
@@ -434,8 +461,8 @@ class TeamLLM(llm.LLMPolicy):
 
 
 class ModelTeam(TeamPolicy):
-    """Two model members on one army (``PARTITION``), one model, effort and ledger. Each
-    plays the rules prompt on its own view; no age limit, like the single controller.
+    """Model members on one army (``partition``), one model, effort and ledger. Each plays
+    the rules prompt on its own view; no age limit, like the single controller.
 
     Once cleanup starts no new model call or reply retry is sent, but a request already
     sent may still retry its transport (up to ``TRANSPORT_ATTEMPTS`` times), and the job
@@ -443,8 +470,10 @@ class ModelTeam(TeamPolicy):
     reaches only the ledger (its cost and response id): its exchange, cost and call count
     reach no trace or result, whose member row says ``running_at_close``."""
 
+    partition, army_owner, optional = PARTITION, ARMY_OWNER, False
+
     def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
-                 **options):
+                 benchmark=False, **options):
         stop = Event()
 
         def guarded(body):  # no new call or reply retry once cleanup starts
@@ -453,10 +482,18 @@ class ModelTeam(TeamPolicy):
             return send(body)
 
         super().__init__({name: (kinds, TeamLLM(model, effort, ledger, send=guarded,
-                                                provider=provider, system_prompt=system_prompt))
-                          for name, kinds in PARTITION.items()},
-                         stop=stop, max_age_ms=None, army_owner=ARMY_OWNER, **options)
+                                                provider=provider, system_prompt=system_prompt,
+                                                benchmark=benchmark))
+                          for name, kinds in self.partition.items()},
+                         stop=stop, max_age_ms=None, army_owner=self.army_owner,
+                         optional=self.optional, **options)
         self.card.update(paid_calls=True, member_source_sha256=sha256(Path(llm.__file__)))
+
+
+class ClassTeam(ModelTeam):
+    """Up to three model members, split by unit class (``CLASS_PARTITION``), for any army."""
+
+    partition, army_owner, optional = CLASS_PARTITION, CLASS_OWNER, True
 
 
 class _MoveOnce:

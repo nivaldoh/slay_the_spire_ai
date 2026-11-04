@@ -100,11 +100,16 @@ def main() -> int:
     doctor = commands.add_parser("doctor", help="Inspect the game and runtime (read-only)")
     doctor.add_argument("--json", action="store_true")
 
-    benchmark = commands.add_parser("benchmark", help="Initial Empire mirror benchmark")
+    benchmark = commands.add_parser("benchmark", help="Mirror benchmark and coordination suite")
     benchmark.add_argument("action", choices=("plan", "report"))
     benchmark.add_argument("plan", type=Path,
                            help="queue plan JSON (new for plan; existing for report)")
-    benchmark.add_argument("--stage", choices=("pilot", "model"), default="pilot")
+    benchmark.add_argument("--stage", choices=("pilot", "model", "suite"), default="pilot")
+    benchmark.add_argument("--scenarios", help="suite: comma-separated scenario names")
+    benchmark.add_argument("--arms", help="suite: comma-separated arm names (suite.py ARMS)")
+    benchmark.add_argument("--repeats", type=int, default=1, help="suite: battles per pair")
+    benchmark.add_argument("--seed", type=int, default=20261104, help="suite: job order seed")
+    benchmark.add_argument("--start-before", help="suite: no job starts after this ISO time")
     benchmark.add_argument("--budget-usd", type=float, default=2,
                            help="cumulative WH3 Anthropic ledger cap, including earlier jobs")
     benchmark.add_argument("--output", type=Path, help="report filename stem")
@@ -291,7 +296,13 @@ def main() -> int:
         from twwarhammer3.battle import benchmark
 
         try:
-            if args.action == "plan":
+            if args.action == "plan" and args.stage == "suite":
+                from twwarhammer3.battle import suite
+
+                data = suite.make_plan(args.plan, args.scenarios.split(","),
+                                       args.arms.split(","), args.repeats, args.budget_usd,
+                                       seed=args.seed, start_before=args.start_before)
+            elif args.action == "plan":
                 data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
             else:
                 data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"))

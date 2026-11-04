@@ -2449,5 +2449,1025 @@
       }
     },
     "calibration_change": "Empire set step (2026-10-20 morning, delegated): at rank 0 no controller won the line battle by contact in seven launches (hold 327 s, attack_nearest a timer stalemate at 1205 s, GLM 455 and 432 s, Kimi 349 s, LineTeam 592 s, LineTeamReserve 392 s), so a sound fixed plan cannot yet win it. One factor: experience rank 5 on every player unit, the finer knob the owner named on 2026-10-19 (b41 verified ranks at battle start). Floors first."
-  }
+  },
+ "coord-two-fronts": {
+  "name": "coord-two-fronts",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Fight two separate battles at once and decide where one reserve goes",
+  "brief": "Two Empire groups stand 410 m apart, each facing its own Greenskin group 250 m south; one Knights unit waits between them. Neither group is known to win alone.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_orc_boyz"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": -34,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": -80,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": -126,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": 376,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": 330,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": 284,
+     "z": -150,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f7",
+     "x": 125,
+     "z": -115,
+     "bearing": 180,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": -149,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": -103,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": -57,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": -11,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": 261,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e6",
+     "x": 307,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e7",
+     "x": 353,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e8",
+     "x": 399,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "protected": [],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-relief": {
+  "name": "coord-relief",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Hold under attack while a distant column marches to the same fight",
+  "brief": "A small garrison stands 130 m from a Greenskin force; a relief column starts 460 m away and cannot arrive before contact.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_cav_empire_knights",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_big_uns",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_goblin_spearmen"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": 343,
+     "z": -316,
+     "bearing": 200,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": 300,
+     "z": -300,
+     "bearing": 200,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": 257,
+     "z": -284,
+     "bearing": 200,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": -86,
+     "z": -70,
+     "bearing": 120,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": -108,
+     "z": -110,
+     "bearing": 120,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": -132,
+     "z": -150,
+     "bearing": 120,
+     "width": 40
+    },
+    {
+     "id": "f7",
+     "x": -154,
+     "z": -190,
+     "bearing": 120,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": 214,
+     "z": -435,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": 260,
+     "z": -435,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": 306,
+     "z": -435,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": 426,
+     "z": -363,
+     "bearing": 280,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": 434,
+     "z": -317,
+     "bearing": 280,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "protected": [],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-pincer": {
+  "name": "coord-pincer",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Bring two separated groups into one fight at the same time",
+  "brief": "Two Empire groups start 590 m apart with a Greenskin block between them and must attack before the timer; each alone is weaker than the block.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "player",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_cav_empire_knights",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_big_uns",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_goblin_spearmen"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": -150,
+     "z": -231,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": -150,
+     "z": -277,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": -150,
+     "z": -323,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": -150,
+     "z": -369,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": 440,
+     "z": -369,
+     "bearing": 270,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": 440,
+     "z": -323,
+     "bearing": 270,
+     "width": 40
+    },
+    {
+     "id": "f7",
+     "x": 440,
+     "z": -277,
+     "bearing": 270,
+     "width": 40
+    },
+    {
+     "id": "f8",
+     "x": 440,
+     "z": -231,
+     "bearing": 270,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": 35,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": 81,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": 127,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": 173,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": 219,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e6",
+     "x": 265,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": false
+  },
+  "protected": [],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-breakout": {
+  "name": "coord-breakout",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Concentrate on one of three converging groups before they close",
+  "brief": "An Empire force in the open is approached from the west, east and south by three separate Greenskin groups, each weaker than it and starting about 210 m away.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_goblin_spearmen"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": 196,
+     "z": -300,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": 150,
+     "z": -300,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": 104,
+     "z": -300,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": 173,
+     "z": -255,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": 127,
+     "z": -255,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": 150,
+     "z": -215,
+     "bearing": 180,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": -60,
+     "z": -257,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": -60,
+     "z": -303,
+     "bearing": 90,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": 360,
+     "z": -303,
+     "bearing": 270,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": 360,
+     "z": -257,
+     "bearing": 270,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": 104,
+     "z": -475,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e6",
+     "x": 150,
+     "z": -475,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e7",
+     "x": 196,
+     "z": -475,
+     "bearing": 0,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "protected": [],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-detail": {
+  "name": "coord-detail",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Beat the near wave before the far wave arrives",
+  "brief": "An Empire force faces a near Greenskin wave 270 m away; a second wave of equal size starts another 300 m behind it. Together they outnumber the Empire force.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_cav_empire_knights",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_big_uns",
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_cav_goblin_wolf_riders_0"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": 49,
+     "z": -101,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": 16,
+     "z": -134,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": -16,
+     "z": -166,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": -49,
+     "z": -199,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": -2,
+     "z": -72,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": -35,
+     "z": -105,
+     "bearing": 135,
+     "width": 40
+    },
+    {
+     "id": "f7",
+     "x": -68,
+     "z": -138,
+     "bearing": 135,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": 151,
+     "z": -379,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": 184,
+     "z": -346,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": 216,
+     "z": -314,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": 249,
+     "z": -281,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": 371,
+     "z": -489,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e6",
+     "x": 404,
+     "z": -456,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e7",
+     "x": 436,
+     "z": -424,
+     "bearing": 315,
+     "width": 40
+    },
+    {
+     "id": "e8",
+     "x": 469,
+     "z": -391,
+     "bearing": 315,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "protected": [],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-rear-raid": {
+  "name": "coord-rear-raid",
+  "benchmark": "suite-v1",
+  "scenario_version": 1,
+  "family": "coordination",
+  "tests": "Protect guns from cavalry behind the line while the line is engaged",
+  "brief": "An Empire line with two Great Cannons and Handgunners behind it faces Orcs to the south; Greenskin cavalry starts 300 m behind the guns.",
+  "split": "development",
+  "status": "suite_candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": false,
+   "units": [
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_spearmen_1",
+    "wh_main_emp_art_great_cannon",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon",
+    "wh_main_emp_cav_empire_knights"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_grn_greenskins",
+   "faction": "wh_main_grn_greenskins",
+   "lord": false,
+   "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_big_uns",
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_cav_goblin_wolf_riders_0",
+    "wh_main_grn_cav_orc_boar_boyz",
+    "wh_main_grn_cav_goblin_wolf_riders_0"
+   ]
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "id": "f1",
+     "x": 196,
+     "z": -290,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f2",
+     "x": 150,
+     "z": -290,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f3",
+     "x": 104,
+     "z": -290,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f4",
+     "x": 196,
+     "z": -235,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f5",
+     "x": 150,
+     "z": -235,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f6",
+     "x": 104,
+     "z": -235,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "id": "f7",
+     "x": 260,
+     "z": -200,
+     "bearing": 180,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "id": "e1",
+     "x": 81,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e2",
+     "x": 127,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e3",
+     "x": 173,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e4",
+     "x": 219,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "id": "e5",
+     "x": -97,
+     "z": -70,
+     "bearing": 120,
+     "width": 40
+    },
+    {
+     "id": "e6",
+     "x": -120,
+     "z": -110,
+     "bearing": 120,
+     "width": 40
+    },
+    {
+     "id": "e7",
+     "x": -143,
+     "z": -150,
+     "bearing": 120,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "protected": [
+   "wh_main_emp_art_great_cannon"
+  ],
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ]
+ },
+ "coord-mirror": {
+  "base": "emp-mirror-cavalry-v1",
+  "name": "coord-mirror",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Use one cavalry advantage against a larger enemy with a gun; the owner's first battle",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ },
+ "coord-line-raid": {
+  "base": "emp-line-grn-raid-xp5",
+  "name": "coord-line-raid",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Keep a line, guns and reserve doing their jobs while raiders go round the line",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ },
+ "coord-swarm": {
+  "base": "skv-swarm-dwf-line",
+  "name": "coord-swarm",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Command twenty cheap units at once against a small strong line",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ },
+ "coord-caster": {
+  "base": "tze-caster-skv-assault",
+  "name": "coord-caster",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Use one caster's spells and scarce escorts in an assault",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ },
+ "coord-siege": {
+  "base": "chd-reserve-grn-siege",
+  "name": "coord-siege",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Defend walls with one reserve and limited supplies against many attackers",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ },
+ "coord-cavalry": {
+  "base": "brt-cavalry-emp-assault",
+  "name": "coord-cavalry",
+  "benchmark": "suite-v1",
+  "family": "coordination",
+  "tests": "Assault spears and guns with cavalry only, choosing where and when to commit",
+  "status": "suite_candidate",
+  "split": "development",
+  "scoring": null
+ }
 }

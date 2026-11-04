@@ -111,10 +111,13 @@ class CommanderPolicy:
     """One instance per episode; ``close`` waits for the request still in flight."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None, provider: str = "openai"):
+                 system_prompt: str | None = None, provider: str = "openai",
+                 benchmark: bool = False):
+        self.invalid_retries = 0 if benchmark else INVALID_RETRIES
         self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True,
+                         **({"failed_resends": 0, "transport_attempts": 1} if benchmark else {}))
         self.skills = Skills()
         self.pool = ThreadPoolExecutor(max_workers=1)
         self.pending = None
@@ -152,7 +155,7 @@ class CommanderPolicy:
     def _ask(self, prompt: str, seen_ms: int) -> tuple[dict, list[dict], int]:
         """On the worker thread: only the call, so all state changes stay on the caller's."""
         try:
-            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, parse_plan, INVALID_RETRIES)
+            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, parse_plan, self.invalid_retries)
         except InvalidReply as error:
             raise invalid_reply(error) from None
         return reply, attempts, seen_ms

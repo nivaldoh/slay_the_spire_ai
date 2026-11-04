@@ -17,11 +17,17 @@ from gameai.llm import APIError, post
 from gameai.provenance import REPO_ROOT, write_json
 
 VERSION = "mirror-v1"
+SUITE = "suite-v1"  # the coordination suite; its plan, measures and report are in suite.py
 SCENARIO = "emp-mirror-cavalry-v1"
 # Values below rest on JUDGEMENT benchmark-implementation.md Simple condition score,
 # Starter limits and inputs, No-retry scope and accounting, and Starter repetition.
 CALL_LIMIT = 200
 BATTLE_USD = 2
+# JUDGEMENT: Suite limits — Claude, 2026-11-04, overnight goal: no call cap (a team makes about
+# twice a single controller's calls and a battle can last 20 minutes), $1.50 a battle at Haiku.
+# Lower limits end long or many-member battles early and change what they can show.
+SUITE_CALL_LIMIT = 5000
+SUITE_BATTLE_USD = 1.5
 READ_TIMEOUT_S = 60
 FACTORS = {"wavering": .8, "routing": .5, "shattered": 0}
 OUTCOMES = {"won": 2, "draw": 1, "lost": 0}
@@ -62,15 +68,17 @@ class BattleBudget:
     calls too, so failures cannot evade the call or dollar cap.
     """
 
-    def __init__(self, ledger):
+    def __init__(self, ledger, call_limit=CALL_LIMIT, battle_usd=BATTLE_USD):
         self.ledger, self.path = ledger, ledger.path
         self.started_spent, self.calls = ledger.spent, 0
+        self.call_limit, self.battle_usd = call_limit, battle_usd
 
     def reserve(self, usd):
-        if self.calls >= CALL_LIMIT:
-            raise BudgetExhausted(f"Benchmark reached {CALL_LIMIT} decision calls")
-        if self.ledger.spent - self.started_spent + self.ledger.held + usd > BATTLE_USD:
-            raise BudgetExhausted(f"Benchmark next call exceeds ${BATTLE_USD} battle allowance")
+        if self.calls >= self.call_limit:
+            raise BudgetExhausted(f"Benchmark reached {self.call_limit} decision calls")
+        if self.ledger.spent - self.started_spent + self.ledger.held + usd > self.battle_usd:
+            raise BudgetExhausted(
+                f"Benchmark next call exceeds ${self.battle_usd} battle allowance")
         self.ledger.reserve(usd)
         self.calls += 1
 
@@ -81,11 +89,14 @@ class BattleBudget:
         self.ledger.charge(usd, **fields)
 
 
-def condition(ids: list[str], units: list[dict]) -> dict:
-    """Equal tactical-unit weights; no entity/cost weighting or missing-as-dead inference."""
+def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:
+    """Equal tactical-unit weights; no entity/cost weighting or missing-as-dead inference.
+
+    ``size`` is the original unit count a profile requires; None takes any nonempty army."""
     rows, missing = [], []
     by_id = {unit.get("id"): unit for unit in units}
-    if len(ids) != 5 or len(set(ids)) != 5 or len(by_id) != len(units):
+    if (not ids or size not in (None, len(ids)) or len(set(ids)) != len(ids)
+            or len(by_id) != len(units)):
         return {"condition": None, "units": [], "unavailable": ["invalid original/unit identities"]}
     for uid in ids:
         raw = by_id.get(uid)
@@ -110,7 +121,7 @@ def condition(ids: list[str], units: list[dict]) -> dict:
         if men == 0 or raw["departed"]:
             factor = 0
         row.update(factor=factor, contribution=hp * factor)
-    return {"condition": None if missing else 100 * sum(r["contribution"] for r in rows) / 5,
+    return {"condition": None if missing else 100 * sum(r["contribution"] for r in rows) / len(ids),
             "units": rows, "unavailable": missing}
 
 
@@ -122,30 +133,34 @@ def evaluate(result: dict | None) -> dict:
     if outcome not in OUTCOMES:
         outcome = result.get("status") if result.get("status") in OUTCOMES else None
     measured = result.get("benchmark") or {}
+    version = SUITE if measured.get("version") == SUITE else VERSION
     scored = {"condition": None, "units": [], "unavailable": ["no first-ending measurement"]}
-    if outcome and measured.get("version") == VERSION and result.get("setup_checks"):
+    if outcome and measured.get("version") == version and result.get("setup_checks"):
         scored = condition(list((result.get("start") or {}).get("friendly", {})),
-                           measured.get("units") or [])
-    return {"version": VERSION, "outcome": outcome, **scored,
+                           measured.get("units") or [], None if version == SUITE else 5)
+    return {"version": version, "outcome": outcome, **scored,
             "rank": [OUTCOMES[outcome], scored["condition"]]
             if outcome and scored["condition"] is not None else None}
 
 
 def validate_config(scenario, config):
-    """The first profile has one direct controller and one battle per fresh launch."""
+    """A profile has one frozen controller and one battle per fresh launch."""
     if not scenario.get("benchmark"):
         return
-    if scenario["benchmark"] != VERSION:
+    if scenario["benchmark"] not in (VERSION, SUITE):
         raise ValueError("unknown benchmark version")
     allowed = {"hold", "attack_nearest", "rush_nearest", "llm_rules"}
+    if scenario["benchmark"] == SUITE:
+        allowed |= {"skills", "team_llm_rules", "commander", "configured"}
     names = config["policy"].split(",")
     if (len(names) != 1 or names[0].partition("@")[0] not in allowed
             or config.get("episodes") != 1 or config.get("attach")
             or config.get("interval_ms", 0) or str(config.get("delay_seconds", "0")) != "0"
             or config.get("start_timeout") != 900 or config.get("episode_timeout") != 1320
             or config.get("observe_ms") != 1000 or config.get("tick_ms") != 250):
-        raise ValueError("mirror-v1 requires one fresh launch/battle, a direct controller,"
-                         " no added waits, 900/1320 s caps and 1000/250 ms observation/tick")
+        raise ValueError(f"{scenario['benchmark']} requires one fresh launch/battle, a frozen"
+                         " controller, no added waits, 900/1320 s caps and 1000/250 ms"
+                         " observation/tick")
 
 
 def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
@@ -183,10 +198,10 @@ def read_json(path):
 def collect(plan_path: Path) -> dict:
     """One row per planned attempt, including queue failures before an episode exists."""
     plan = json.loads(plan_path.read_text())
-    if plan.get("benchmark") != VERSION:
-        raise ValueError("not a mirror-v1 benchmark plan")
+    if plan.get("benchmark") not in (VERSION, SUITE):
+        raise ValueError("not a benchmark plan")
     expected_profile = plan.get("scenario")
-    if expected_profile is None:
+    if expected_profile is None and plan["benchmark"] == VERSION:
         # Earlier initial plans named only the source. Read that frozen profile rather
         # than silently judging an old attempt against today's changed settings.
         source = subprocess.check_output([
@@ -198,6 +213,9 @@ def collect(plan_path: Path) -> dict:
                   for row in state.get("completed", [])}
     rows = []
     for job in plan["jobs"]:
+        scenario = job.get("scenario", SCENARIO)
+        profile = (plan["scenarios"][scenario] if plan["benchmark"] == SUITE
+                   else expected_profile)
         directory = REPO_ROOT / job["output"]
         manifest = read_json(directory / "manifest.json") or {}
         result = read_json(directory / "episode-0000/result.json")
@@ -249,8 +267,8 @@ def collect(plan_path: Path) -> dict:
         if result_battle and traced_battle and result_battle != traced_battle:
             trace_mismatch = True
         matches = (manifest.get("source_revision") == plan["source_revision"]
-                   and config.get("scenario") == SCENARIO
-                   and manifest.get("scenario") == expected_profile
+                   and config.get("scenario") == scenario
+                   and manifest.get("scenario") == profile
                    and config.get("policy") == job["controller"]
                    and (not result or result.get("policy") == job["controller"])
                    and config.get("episodes") == 1 and not trace_mismatch)
@@ -266,6 +284,7 @@ def collect(plan_path: Path) -> dict:
         if measured["outcome"] and measured["condition"] is None:
             errors.append({"category": "measurement", "detail": measured["unavailable"]})
         rows.append({"output": str(directory), "controller": job["controller"],
+                     "scenario": scenario, "arm": job.get("arm"),
                      "started": bool(result_battle or traced_battle),
                      "status": (result or manifest).get("status", "never_started"),
                      "source_revision": manifest.get("source_revision"),
@@ -280,7 +299,7 @@ def collect(plan_path: Path) -> dict:
                      "llm": (result or {}).get("llm"), "errors": errors, **measured})
     counts = Counter(row["outcome"] for row in rows if row["outcome"])
     completed = sum(counts.values())
-    return {"version": VERSION, "plan": str(plan_path.resolve()), "queue_state": state,
+    return {"version": plan["benchmark"], "plan": str(plan_path.resolve()), "queue_state": state,
             "planned": len(rows),
             "started": sum(r["started"] for r in rows), "completed": completed,
             "engine_completed": sum(bool(r["recorded_engine_outcome"]) for r in rows),
@@ -296,6 +315,10 @@ def report(plan_path: Path, output: Path) -> dict:
     from twwarhammer3.battle import report as trials
     from twwarhammer3.battle import report_html
 
+    if json.loads(plan_path.read_text()).get("benchmark") == SUITE:
+        from twwarhammer3.battle import suite
+
+        return suite.report([plan_path], output)
     visual = trials.collect([], benchmark_plans=[plan_path])
     data = visual["benchmark_plans"][0]
     text = (f"{VERSION}: {data['completed']}/{data['planned']} engine-completed; "

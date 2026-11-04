@@ -398,6 +398,7 @@ def test_startup_rank_query_failure_keeps_observation_ticks_and_does_not_invent_
         function read_slots() end
         function scan() end
         function setup_custom() end
+        function teleport_units() end
         function context_rows() return {} end
         function read_terrain() return {rows = {'..'}} end
         function sample_objectives() end
@@ -965,3 +966,33 @@ def test_the_observed_speed_is_the_engines_reading_and_a_failed_read_is_not_1x()
     assert speed() == "unreadable"
     battle.current_battle_speed = None
     assert speed() == "unreadable"
+
+
+def test_authored_starts_teleport_each_unit_and_hand_the_enemy_back():
+    lua = runtime()
+    lua.execute("""
+        calls = {}
+        local function controller(name)
+            local c = {}
+            function c:add_units() calls[#calls + 1] = name .. ' add' end
+            function c:take_control() calls[#calls + 1] = name .. ' take' end
+            function c:release_control() calls[#calls + 1] = name .. ' release' end
+            function c:teleport_to_location(point, bearing, width)
+                calls[#calls + 1] = name .. ' at ' .. point.x .. ' ' .. point.z .. ' ' .. point.y
+                                    .. ' ' .. bearing .. ' ' .. width
+            end
+            return c
+        end
+        function vector(x, y, z) return {x = x, y = y, z = z} end
+        bm = {battle = {get_terrain_height = function() return 7 end}}
+        state = {friendly = {f1 = {controller = controller('ours')}}, enemy = {e1 = {
+            unit = {}, army = {create_unit_controller = function()
+                return controller('theirs') end}}}}
+    """)
+    teleport = load_battle(lua, "teleport_units")
+    teleport(lua.eval("""{friendly = {{id = 'f1', x = 1, z = 2, bearing = 90, width = 40}},
+                          enemy = {{id = 'e1', x = 3, z = 4, bearing = 0, width = 50}}}"""))
+    calls = list(lua.globals().calls.values())
+    assert "ours at 1 2 7 90 40" in calls and "ours release" not in calls
+    assert [c for c in calls if c.startswith("theirs")] == [
+        "theirs add", "theirs take", "theirs at 3 4 7 0 50", "theirs release"]

@@ -602,6 +602,33 @@ def started():
     return scenario, state
 
 
+def authored():
+    """A plain battle with one authored unit per side and the readback that passes it."""
+    scenario = {"deployment": {
+        "friendly": [{"id": "f1", "x": 0, "z": 0, "bearing": 0, "width": 40}],
+        "enemy": [{"id": "e1", "x": 100, "z": 0, "bearing": 180, "width": 40}]}}
+    state = {"friendly": [{"id": "f1", "x": 8, "z": -6}],
+             "enemy": [{"id": "e1", "x": 100, "z": 13}]}
+    return scenario, state
+
+
+def test_an_authored_start_allows_re_forming_and_is_recorded():
+    assert setup.check_deployment(*authored()) == {"f1": 10.0, "e1": 13.0}
+
+
+# 2026-10-16: an evacuation battle kept its native start, 42-318 m from the authored spots.
+@pytest.mark.parametrize("change,message", [
+    (lambda s, o: o["friendly"][0].update(x=42), "friendly/f1"),
+    (lambda s, o: o["enemy"][0].update(z=None), "unread for enemy/e1"),
+    (lambda s, o: o.update(setup={"deployment_error": "no unit"}), "no unit"),
+])
+def test_a_missed_authored_start_stops_the_job(change, message):
+    scenario, state = authored()
+    change(scenario, state)
+    with pytest.raises(ProtocolError, match=message):
+        setup.check_deployment(scenario, state)
+
+
 # Removing any one of these startup checks passed every test before
 # (runs/refusal-sweep-20261029/setup.txt); each case breaks one readback.
 @pytest.mark.parametrize("change,message", [

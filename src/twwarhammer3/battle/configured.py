@@ -68,13 +68,15 @@ def load(path, config):
                 goal_models.add((model, effort))
             return result
         if kind == "team":
-            if set(node) - {"type", "members", "army_owner", "max_age_ms"}:
+            if set(node) - {"type", "members", "army_owner", "max_age_ms", "optional"}:
                 raise ValueError("unknown team settings")
             members = node.get("members")
-            if not isinstance(members, dict) or len(members) != 2:
+            if not isinstance(members, dict) or not members or (
+                    len(members) != 2 and node.get("optional") is not True):
                 raise ValueError("configured team needs exactly two members")
             result = {"type": kind, "members": {}, "army_owner": node.get("army_owner"),
-                      "max_age_ms": node.get("max_age_ms", graph.MAX_AGE_MS)}
+                      "max_age_ms": node.get("max_age_ms", graph.MAX_AGE_MS),
+                      "optional": node.get("optional", False) is True}
             age = result["max_age_ms"]
             if age is not None and (type(age) is not int or age <= 0):
                 raise ValueError("max_age_ms must be positive or null")
@@ -156,7 +158,7 @@ def factory(path, config, *, ledger=None):
                                            is not None else None, build(member["controller"], stop))
                                     for name, member in node["members"].items()},
                                    stop=stop, army_owner=node["army_owner"],
-                                   max_age_ms=node["max_age_ms"])
+                                   max_age_ms=node["max_age_ms"], optional=node["optional"])
         policy = makers[kind]()
         if stop is not None and isinstance(policy, team.TeamPolicy):
             policy.close()

@@ -157,7 +157,9 @@ def factories(config: dict, *, _ledger=None) -> dict:
     from twwarhammer3.battle import benchmark
     from twwarhammer3.battle.setup import scenarios
 
-    is_benchmark = scenarios().get(config.get("scenario"), {}).get("benchmark") == benchmark.VERSION
+    profile = scenarios().get(config.get("scenario"), {}).get("benchmark")
+    is_benchmark = profile == benchmark.VERSION
+    is_suite = profile == benchmark.SUITE
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
     models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
@@ -176,13 +178,27 @@ def factories(config: dict, *, _ledger=None) -> dict:
         if ledger is None:
             ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
         key = api_key(provider)
+        # A suite's team and commander call from worker threads, which cannot take send_once's
+        # alarm; every suite model call gets one attempt and the socket's read timeout instead.
         send = (partial(benchmark.send_once, key, provider=provider) if is_benchmark else
+                partial(post, key, provider=provider, record_transport=True, attempts=1,
+                        timeout_s=benchmark.READ_TIMEOUT_S) if is_suite else
                 partial(post, key, provider=provider, record_transport=True))
         for name in models:
             base, model, effort = parts[name]
             kind = {"commander": commander.CommanderPolicy,
-                    "team_llm_rules": team.ModelTeam}.get(base, llm.LLMPolicy)
-            if is_benchmark:
+                    "team_llm_rules": team.ClassTeam if is_suite else team.ModelTeam
+                    }.get(base, llm.LLMPolicy)
+            if is_suite:
+                def make(kind=kind, model=model, effort=effort,
+                         prompt=MODEL_PROMPTS[base].read_text()):
+                    budget = benchmark.BattleBudget(ledger, benchmark.SUITE_CALL_LIMIT,
+                                                    benchmark.SUITE_BATTLE_USD)
+                    return kind(model, effort, budget, send=send, provider=provider,
+                                system_prompt=prompt, benchmark=True)
+
+                makers[name] = make
+            elif is_benchmark:
                 if base != "llm_rules":
                     raise ValueError("mirror-v1 initially supports only the direct llm_rules model")
 

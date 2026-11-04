@@ -206,6 +206,8 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                                                  if scenario.get("custom") else {})}
                 if scenario.get("benchmark"):
                     settings["benchmark"] = scenario["benchmark"]
+                if scenario.get("deployment"):
+                    settings["deployment"] = scenario["deployment"]
                 with (mailbox.owned_session(settings),
                       OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game):
                     manifest["game"] = game.info

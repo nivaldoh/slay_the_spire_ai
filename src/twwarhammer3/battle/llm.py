@@ -314,6 +314,12 @@ def render_mode(mode: dict | None) -> str | None:
                      "equal weights, multiplied by 1 normally, .8 wavering, .5 routing, "
                      "0 shattered, dead or departed. Only the strongest penalty applies; "
                      "rallied units use their current state. The battle runs unpaused at 1x.")
+    if mode.get("benchmark") == "suite-v1":
+        lines.append("Benchmark: engine win > draw > loss (timer endings count). Within the same "
+                     "outcome two things count: how much of your original army you keep (mean "
+                     "final health-bar fraction per unit, equal weights, multiplied by 1 normally, "
+                     ".8 wavering, .5 routing, 0 shattered, dead or departed) and how much of the "
+                     "enemy army you destroy or rout. The battle runs unpaused at 1x.")
     if mode.get("objectives"):
         lines.append("The game's description: " + mode["objectives"])
     if mode.get("custom"):
@@ -626,7 +632,8 @@ class LLMPolicy:
             self.card = {"benchmark": profile.VERSION, "transport_attempts": 1,
                          "failed_resends": 0, "invalid_retries": 0, "salvage": False,
                          "read_timeout_s": profile.READ_TIMEOUT_S,
-                         "max_calls": profile.CALL_LIMIT, "battle_usd": profile.BATTLE_USD,
+                         "max_calls": getattr(ledger, "call_limit", profile.CALL_LIMIT),
+                         "battle_usd": getattr(ledger, "battle_usd", profile.BATTLE_USD),
                          "max_output_tokens": MAX_OUTPUT_TOKENS}
 
     def decide(self, observation: dict) -> list[dict]:
