@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (project purpose): "my goal is to better understand how AI models work.
+  How they are performing, how they make decisions, how they compare to each other, etc.
+  That's why I'm focusing on benchmarks and evaluations." This goal applies across the repo.
+  Games are used largely because they offer "a very visual, concrete way to achieve this goal".
 - 2026-11-04 (multiplayer foundation implementation): "Implement
   runs/wh3-multiplayer-foundation-plan/worktree/docs/twwarhammer3/multiplayer-control-foundation.md".
   Supersedes that document's planning-only restriction. Implement the full foundation;

@@ -5,6 +5,12 @@ Language models playing the original games: building a deck and choosing a path 
 **Total War: WARHAMMER III**. The games run on Windows; Python controllers in WSL read
 public game state and send actions through mods. Every decision leaves a trace you can inspect.
 
+The goal is to better understand AI models: how they perform, how they make decisions,
+and how they compare with one another. This is why the project focuses on benchmarks
+and evaluations. Games provide a visual, concrete way to pursue that goal, making model
+decisions and their consequences easier to inspect
+([owner direction, 2026-11-04](docs/owner-direction.md)).
+
 In Slay the Spire, a bad choice can end a run an hour later. In WARHAMMER III, the battle
 keeps moving while the model thinks. This project explores both: how agents plan, how
 their interfaces help or hinder them, and what actually happens when their decisions
