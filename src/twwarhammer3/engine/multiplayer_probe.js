@@ -29,6 +29,8 @@ const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x44
              network: 0x645c8, provider: 0x644e8, local_entries: 0x3a8, local_index: 0x3b4,
              flag_a: 0x3b0, flag_b: 0x3b1};
 const UI = {env: 0x418, deployment_flag: 0x15cf};
+// Battle's Lua getters: battle_outcome_decided 0x2ec9be0, victorious_alliance 0x2f2e86c.
+const SCRIPT = {global: 0x448f208, env: 0x468, winner: 0x5cc, decided: 0x5d0};
 // The tick hands each command handler [env+0x440] (0x2ddab54 -> 0x2f0b580 -> call rax).
 const MODEL = {state: 0x150};
 const STATE = {alliance_count: 0x134, alliances: 0x138, ready_count: 0x9b8,
@@ -168,7 +170,7 @@ try {
         onLeave() {
             generation++;
             battle = {env: this.env, session: null, pending: null, emitted: 0, failed: false,
-                      last: null, commanded: false, provider: null};
+                      last: null, commanded: false, provider: null, decided: false};
             record('environment_created');
         },
     });
@@ -214,6 +216,14 @@ try {
                 b.emitted = p.tick;
                 const world = env.add(ENV.setup).readPointer();
                 record('completed_tick', {...p, phase: world.add(WORLD.phase).readU32()});
+                const script = main.base.add(SCRIPT.global).readPointer();
+                if (!b.decided && !script.isNull() && script.add(SCRIPT.env).readPointer().equals(env)
+                        && script.add(SCRIPT.decided).readU32() !== 0) {
+                    b.decided = true;
+                    // Zero-based alliance index; -1 is a draw (is_draw 0x2ef128c).
+                    record('battle_decided', {tick: p.tick,
+                                              winner: script.add(SCRIPT.winner).readU32() | 0});
+                }
                 const sample = {tick: p.tick, units: witnessRows(env), sent: false};
                 if (b.commanded && b.last && !b.last.sent)
                     record('witness', {tick: b.last.tick, units: b.last.units,
@@ -392,5 +402,4 @@ try {
     throw e;
 }
 record('ready', {base: main.base.toString(), path: main.path, diagnostic_only: true,
-                 capabilities: [], missing: ['native lifecycle operations', 'ending readback',
-                                             'peer calibration']});
+                 capabilities: [], missing: ['native lifecycle operations', 'peer calibration']});

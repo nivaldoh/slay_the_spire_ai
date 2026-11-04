@@ -65,9 +65,10 @@ Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each 
 compared at every tick of the interval and raw unit rows at every scheduled tick, with no
 tolerance and without nearest-tick matching. The interval defaults to everything any client
 recorded, so a late start or a stall counts as missing; a declared interval can narrow it.
-The verdict is ``conflict`` when a checksum, a phase, a raw value or a client's own repeated
-records differ; ``inconclusive`` when evidence is missing, a capture failed, did not stop
-cleanly, or no tick or no unit row was compared; ``agreed`` otherwise. Tick origins, unit order
+The verdict is ``conflict`` when a checksum, a phase, a raw value, a decided winner or a
+client's own repeated records differ; ``inconclusive`` when evidence is missing, only some
+clients saw an ending, a capture failed, did not stop cleanly, or no tick or no unit row was
+compared; ``agreed`` otherwise. Tick origins, unit order
 and field comparability have no two-client calibration yet, so ``agreed`` covers only the
 evidence compared. It is not a synchronization proof.
 """
@@ -266,6 +267,7 @@ def load_capture(path: Path, *, generation: int | None = None) -> dict:
         generation = next(iter(found), None)
     capture = {"ticks": {}, "phases": {}, "witness": {}, "packets": collections.Counter(),
                "packet_rows": [], "conflicts": [], "failures": [], "generation": generation,
+               "ending": None,
                "stopped": not torn and any(row.get("event") == "capture_stopped"
                                            and not row.get("failed") for row in rows)}
     for row in rows:
@@ -284,6 +286,8 @@ def load_capture(path: Path, *, generation: int | None = None) -> dict:
             units = {tuple(unit[:3]): unit[3:] for unit in row["units"]}
             if capture["witness"].setdefault(row["tick"], units) != units:
                 capture["conflicts"].append({"tick": row["tick"], "kind": "witness"})
+        elif event == "battle_decided":
+            capture["ending"] = {"tick": row["tick"], "winner": row["winner"]}
         elif event == "command_packet":
             capture["packets"][row["id"]] += 1
             capture["packet_rows"].append(row)
@@ -296,6 +300,7 @@ def boundaries(capture: dict) -> dict:
             "ticks": len(ticks), "witness_ticks": len(capture["witness"]),
             "first_phase": capture["phases"].get(min(ticks, default=None)),
             "last_phase": capture["phases"].get(max(ticks, default=None)),
+            "ending": capture["ending"],
             "failures": len(capture["failures"]), "stopped": capture["stopped"]}
 
 
@@ -351,10 +356,13 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
                 summary["unit_conflicts"].append({"tick": tick, "unit": list(unit), "rows": rows})
     failed = any(edge["failures"] or not edge["stopped"] for edge in edges.values())
     missing = any(summary["missing_ticks"].values()) or any(summary["missing_witness"].values())
+    winners = {edge["ending"]["winner"] if edge["ending"] and edge["ending"]["tick"] in interval
+               else None for edge in edges.values()}
     if (summary["checksum_conflicts"] or summary["phase_conflicts"] or summary["unit_conflicts"]
-            or any(summary["own_conflicts"].values())):
+            or any(summary["own_conflicts"].values()) or len(winners - {None}) > 1):
         summary["verdict"] = "conflict"
-    elif failed or missing or not (summary["ticks_compared"] and summary["units_compared"]):
+    elif (failed or missing or len(winners) > 1
+          or not (summary["ticks_compared"] and summary["units_compared"])):
         summary["verdict"] = "inconclusive"
     else:
         summary["verdict"] = "agreed"

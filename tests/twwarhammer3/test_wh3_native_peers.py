@@ -22,7 +22,7 @@ const entry = ptr(0x6300000), world = ptr(0x6600000), table = ptr(0x6700000);
 const alliance = ptr(0x6800000), armies = ptr(0x6900000), army = ptr(0x6a00000);
 const units = ptr(0x6b00000), unit = ptr(0x6c00000), body = ptr(0x6d00000);
 const entity = ptr(0x6e00000), id = ptr(0x6f00000), model = ptr(0x7200000);
-const state = ptr(0x7300000);
+const state = ptr(0x7300000), script = ptr(0x7400000);
 pointers.set(session.value, VTABLE.session);
 pointers.set(session.add(0x20).value, env.value);
 pointers.set(env.add(ENV.checksums).value, checks.value);
@@ -53,6 +53,11 @@ words.set(body.add(0xb70).value, 0xfff00123);
 for (const [offset, value] of [[0x88, 0x41200000], [0x8c, 0x42000000], [0x90, 0x43000000]])
     words.set(entity.add(offset).value, value);
 words.set(id.value, 0xabc);
+// Offsets from the getters 0x2ec9be0 and 0x2f2e86c: decided +0x5d0, zero-based winner +0x5cc.
+pointers.set(0x448f208, script.value);
+pointers.set(script.add(0x468).value, env.value);
+words.set(script.add(0x5d0).value, 0);
+words.set(script.add(0x5cc).value, 0xffffffff);
 function call(name, argument, result) {
     const callbacks = hooks.get(Number(BUILD[name][0])), invocation = {};
     if (callbacks.onEnter) callbacks.onEnter.call(invocation, [argument]);
@@ -66,6 +71,10 @@ for (let t = 1; t <= 24; t++) {
     words.set(env.add(ENV.tick).value, t);
     words.set(entry.add(0x18).value, t);
     words.set(entry.add(0x14).value, 1000 + t);
+    if (t === 23) {
+        words.set(script.add(0x5d0).value, 1);
+        words.set(script.add(0x5cc).value, 1);
+    }
     if (t === 13 || t === 1 || t === 11) {
         words.set(ptr(0x7000000).add(0x5008).value, 8);
         hooks.get(Number(BUILD.command_packet[0])).onEnter.call(
@@ -116,6 +125,21 @@ def test_the_agent_writes_every_tick_scheduled_witnesses_and_the_ones_around_a_c
     # alliance, army, index, id, men, hp words, ammo, morale, kind, raw x y z, low 16 of bearing
     assert unit == [0, 0, 0, 77, 60, 1000, 900, 12, 2, 0, 0x41200000, 0x42000000, 0x43000000,
                     0x123]
+
+
+def test_the_agent_records_the_decided_winner_once_from_the_tick_it_appears(rows):
+    decided = [r for r in rows if r["event"] == "battle_decided"]
+    assert [(r["tick"], r["winner"]) for r in decided] == [(23, 1)]
+
+
+def test_differing_winners_conflict_and_a_one_sided_ending_is_inconclusive(tmp_path, rows):
+    def other(second):
+        next(r for r in second if r["event"] == "battle_decided")["winner"] = 0
+    assert pair(tmp_path, rows, other)["verdict"] == "conflict"
+
+    def none(second):
+        return [r for r in second if r["event"] != "battle_decided"]
+    assert pair(tmp_path, rows, none)["verdict"] == "inconclusive"
 
 
 def test_identical_captures_agree_and_cover_every_tick(tmp_path, rows):
