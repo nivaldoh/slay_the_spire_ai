@@ -432,7 +432,7 @@
       "heading": "Two fronts",
       "short": "Two fronts",
       "challenge": "Two fights at once and one reserve. Where does it go?",
-      "seen": "Three methods sent the Knights east and one west; Three models left them standing until they were attacked. One of the three that went east won.",
+      "seen": "Three methods sent the Knights east and two west; Three models left them standing until they were attacked. One of the three that went east won.",
       "plan": [
         {
           "who": [
@@ -485,7 +485,7 @@
       "heading": "Pincer",
       "short": "Pincer",
       "challenge": "Can two groups strike one block at the same moment?",
-      "seen": "In all five battles the block split, and the two fights began 430-530 m apart.",
+      "seen": "In all six battles the block split, and the two fights began 430-530 m apart.",
       "plan": [
         {
           "who": [
@@ -533,7 +533,7 @@
       "heading": "Defeat in detail",
       "short": "Defeat in detail",
       "challenge": "Can the army finish the near wave before the far wave arrives?",
-      "seen": "In all four battles the two waves reached the army within about 10 s of each other.",
+      "seen": "In all five battles the two waves reached the army within 15 s of each other.",
       "plan": [
         {
           "who": [
@@ -557,7 +557,7 @@
       "heading": "Rear raid",
       "short": "Rear raid",
       "challenge": "Can the army hold its line and guard its guns at the same time?",
-      "seen": "One model's guns never fired. In both battles every gun unit was in melee by 2:31, and both lost.",
+      "seen": "One model's guns never fired; with tips they fired a little. In all three battles every gun unit was in melee by 2:31, and all three lost.",
       "plan": [
         {
           "who": [
@@ -1127,7 +1127,7 @@
   },
   "suite": {
     "title": "Can they fight as one army?",
-    "dek": "Five ways of commanding the same army, in six battles. Colour shows who controls each unit.",
+    "dek": "Six ways of commanding the same army, in six battles. Colour shows who controls each unit.",
     "methods": {
       "single": {
         "name": "One model",
@@ -1154,7 +1154,7 @@
       },
       "commander": {
         "name": "Model over scripts",
-        "note": "the only one given battle tips",
+        "note": "also told how to fight",
         "models": [
           "all"
         ],
@@ -1188,11 +1188,12 @@
     "readings": {
       "plans": [
         "round-4",
-        "round-5"
+        "round-5",
+        "round-6"
       ],
       "lines": [
-        "Model over scripts won most, but the same scripts alone won 2 of the 4 they played, and it alone was given battle tips.",
-        "One battle per pair: these are leads, not rankings."
+        "Model over scripts won 4 of 5. The same scripts alone won 2 of 4. One model won none of 6, with tips or without.",
+        "So tips alone did not turn one model's losses into wins. One battle per pair: these are leads, not rankings."
       ]
     },
     "controllers": {

@@ -46,6 +46,20 @@ the owner's rule. This is a research sketch for the existing report, not adoptio
 After the concurrent suite update, reconciled the proposal: owner colours are now implemented;
 member-specific source clocks remain the replay gap. Evidence: `replay-clock-check.txt` there.
 
+## 2026-11-04: tips alone did not help one model
+
+The owner agreed to test whether tips, not the method, explain `commander`'s wins (owner-direction.md).
+- Six `tips` battles (`round-6`, one per scenario, Haiku low, 857c938, build 26403568): 0 of 6 won.
+  `single` was also 0 of 6. Against `single`: better on 3 scenarios, worse on 3, sign test p=1;
+  broke-enemy difference -1.2 points, t 95% [-13.1, 10.8]. `commander` stays 4 of 5, `skills` 2 of 4.
+- Reading: tips alone did not turn one model's losses into wins. This does not show tips are useless:
+  `commander` may need tips and scripts together, which is untested. One battle per pair.
+- Caveats: `tips` ran at 857c938, the others at b86f34f; the game-side changes between them are
+  multiplayer paths, not checked live on single-client battles. Commander's own tips name skills, so
+  `tips` uses their direct-order wording (rests on JUDGEMENT suite.py Tips arm).
+- Cost $0.69, ledger $5.47 to $6.17. All six ended with an engine result; none failed on infrastructure.
+- Page: six methods now; sentences remeasured for `tips`. Unverified: no agreed check for any of it.
+
 ## 2026-11-04: suite page rebuilt so colour shows who controls what
 
 Owner on the last page: "Not clear yet"; too much to read, and the replay map, timelines, start

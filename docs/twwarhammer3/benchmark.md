@@ -149,7 +149,8 @@ holds for any method built on another.
 has a "How to fight" section (arrive together, gang up, come from behind), so comparing them
 mixes the control method with the advice. The `tips` arm is `single` plus only that advice, in
 `system_prompt.md`'s direct-order words (owner's yes, 2026-11-04; rests on JUDGEMENT suite.py Tips
-arm). A test holds that the tips section is its only difference from `single`'s prompt.
+arm). A test holds that the tips section is its only difference from `single`'s prompt. First result, one
+battle per scenario: 0 of 6, as `single` ([log](log.md#2026-11-04-tips-alone-did-not-help-one-model)).
 
 **What the battles turned out to be.** The authored battles were designed around one problem each,
 and in play several were not that problem (one battle per pair): in `coord-pincer` the enemy block

@@ -721,3 +721,9 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-04,coord-detail--commander--1,episode-0000,coord-detail,commander,claude-haiku-5-5,low,,b86f34f,realtime,1.0,0.0,won,440,0.49,0.38,1415,0,0.31,0.1717,classic,,,,,0.458,0.0,0.0,engine_result,anthropic
 2026-11-04,coord-rear-raid--single--1,episode-0000,coord-rear-raid,llm_rules,claude-haiku-5-5,low,,b86f34f,realtime,1.0,0.0,lost,159,0.63,0.9,53,13,2.86,0.0468,classic,,,,,0.0,0.898,0.0,engine_result,anthropic
 2026-11-04,coord-rear-raid--gap--1,episode-0000,coord-rear-raid,configured,,,,b86f34f,realtime,1.0,0.0,lost,198,0.53,0.59,629,2,0.92,0.0133,classic,,,,,0.0,0.566,0.0,engine_result,
+2026-11-04,coord-rear-raid--tips--1,episode-0000,coord-rear-raid,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,163,0.66,0.86,53,17,2.99,0.0609,classic,,,,,0.0,0.859,0.0,engine_result,anthropic
+2026-11-04,coord-relief--tips--1,episode-0000,coord-relief,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,387,0.35,0.77,134,13,2.84,0.1489,classic,,,,,0.0,0.769,0.0,engine_result,anthropic
+2026-11-04,coord-pincer--tips--1,episode-0000,coord-pincer,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,317,0.39,0.77,103,16,3.0,0.1223,classic,,,,,0.0,0.769,0.0,engine_result,anthropic
+2026-11-04,coord-detail--tips--1,episode-0000,coord-detail,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,419,0.44,0.79,157,11,2.63,0.1701,classic,,,,,0.0,0.754,0.0,engine_result,anthropic
+2026-11-04,coord-breakout--tips--1,episode-0000,coord-breakout,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,133,0.65,0.89,45,11,2.83,0.0488,classic,,,,,0.0,0.886,0.0,engine_result,anthropic
+2026-11-04,coord-two-fronts--tips--1,episode-0000,coord-two-fronts,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,372,0.2,0.31,129,23,2.83,0.1436,classic,,,,,0.0,0.278,0.0,engine_result,anthropic

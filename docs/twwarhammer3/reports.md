@@ -51,7 +51,8 @@ right; it is proposed, not agreed. The first comparison:
 
 ```bash
 uv run --locked python -m twwarhammer3 benchmark report runs/coord-suite-20261104/round-4.json \
-  --also runs/coord-suite-20261104/round-5.json --output runs/twwarhammer3/reports/suite
+  --also runs/coord-suite-20261104/round-5.json --also runs/coord-suite-20261104/round-6.json \
+  --output runs/twwarhammer3/reports/suite
 ```
 
 Open `runs/twwarhammer3/reports/suite.html`. On Windows:
