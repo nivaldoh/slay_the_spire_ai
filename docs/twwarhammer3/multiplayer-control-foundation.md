@@ -36,7 +36,20 @@ nonzero; zero means only that capture ran, not readiness, synchrony or acceptanc
 The initial component checks exercise guards and bookkeeping, not ABI correctness.
 Raw witnesses, native submission counting, phase/ending readback, peer calibration,
 confirmed operations, warm reset and the complete acceptance cohort remain outstanding.
-Historical `compare-peers` behavior is unchanged. No live probe or cloud job has run here.
+Historical `compare-peers` behavior is unchanged. One local reference (`foundation-ref1`,
+`77124d4`, build 26403568) captured 103 consecutive ticks without read errors, but zero
+deployment callback traces despite one acknowledged UI click on the shown multiplayer
+panel. The candidate generic event dispatcher did not establish the readiness operation.
+The game closed after deliberate truncation; its final observation was only 8.4 seconds
+after logged start, short of the ten-running-second card. The pre-stop manifest counted
+102 ticks versus 103 in the final stream; the independent recount preserves both. No peer
+replication, observer passivity or direct operation is established by this reference.
+
+Next bounded discovery question: trace the actual `SimulateLClick` path. Static registration
+at RVA `0x41fe10` binds it to `0x22d1eb8`, which forwards the component at wrapper `+0x20`
+to `0x22d1ed0`. That routine calls `0x22ba824`, `0x22bab38` and `0x22bb900`; identify which
+call submits local readiness, with a normal reference, before promoting any binding.
+These are discovery leads, not operational addresses. No cloud job has run here.
 
 ## Owner decisions and completion
 

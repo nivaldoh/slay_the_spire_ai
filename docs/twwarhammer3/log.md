@@ -28,6 +28,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: first foundation reference misses the deployment handler
+
+Local reference `foundation-ref1` at `77124d4`, build 26403568 ($0), then game closed:
+103 completed ticks (1–103, no gaps), no native errors; zero deployment callback traces,
+so the candidate dispatcher did not establish the readiness operation. Three requests:
+two `not_deployment` refusals, then one UI click. The active panel was multiplayer.
+Independent recount matched all 88 source hashes, native-agent/process pins and requests.
+Pre-stop manifest counted 102 ticks; final stream had 103. The retained observation was
+10.2 s absolute engine time, only 8.4 s after logged start: shorter than the card's ten
+running seconds. Original evidence preserved; future driver counts after capture closes
+and measures from its first Deployed observation. No engine ending: deliberate truncation.
+Native probe exit 0 establishes capture only; discovery criterion was not met. No peer
+replication, passivity, native submission or acceptance claim. Evidence/recount:
+`runs/twwarhammer3/native-multiplayer/foundation-ref1/`, task `review/`.
+
 ## 2026-11-04: start the multiplayer foundation with a passive native reference probe
 
 Foundation stage 1: built a bounded Windows Frida capture helper and read-only native
