@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Overnight benchmark run (Claude, 2026-11-04, owner's [goal](owner-direction.md)): claims the game from 03:50 -03; worktree `../slay_the_spire_ai-coord-suite`, brief `runs/coord-suite-20261104/brief.md`. A queue may run: move no HEAD in the main checkout.
+Overnight benchmark run ended 2026-11-04 11:00 -03; game closed. [Suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1), [results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods), handoff `runs/coord-suite-20261104/handoff.md`.
 Checkpoint 9.0.5: Land and all four declared siege states passed at `210e356`; game closed. [Results and limits](twwarhammer3/checkpoints.md#siege-check); evidence `runs/wh3-checkpoint-905/`.
 
 GCP: no VM. Game disk `wh3-mp-20261103d` (us-west1-c, build 26403568, second account's Steam login) kept until 2026-11-06 21:09 UTC (~$0.83/day; owner, 11-03); `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled).
@@ -19,7 +19,6 @@ Visual reports: `runs/twwarhammer3/reports/benchmark.html` ([open/build](twwarha
 Factory: one worktree per writing session ([rule](workflow.md#several-sessions-at-once)); handoff `runs/factory-multiagent-20261102/handoff.md`.
 
 Completed work and review handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03).
-Follow-up: shared Codex/Claude WH3 knowledge skill ([direction](owner-direction.md)).
 Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.
 
 WH3 first; Spire waits behind it; post-training is secondary.
@@ -32,13 +31,14 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 The [visual report](twwarhammer3/reports.md#initial-benchmark-visuals) includes current outcome/condition
 scores, every planned attempt and the recorded replays; controller ranking remains unverified.
+[Coordination suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) (`suite-v1`): 12 scenarios, 6 played, first comparison 26 of 28 battles, one per pair; exploratory, no ranking.
 
 - Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`; its initial comparison is complete.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.8216764 (includes one timeout estimate); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $5.4714 (includes estimates for failed calls); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`,
   build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 - Native team multiplayer: offline parts built ([status](twwarhammer3/native-multiplayer.md#implementation-status));
@@ -83,8 +83,8 @@ general learning gain ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implem
 Details and source links live in the [review queue](review-queue.md#decisions).
 Numbers are unchanged; open the relevant item before acting.
 
-1. **Initial benchmark:** implemented and checked; three scripts and five Haiku attempts lost. Further comparisons and balance remain open.
-2. **Experiments/spending:** game window, comparison and budget; older screens deferred.
+1. **Benchmark:** mirror checked; suite `JUDGEMENT` choices (battles, calibration, arms, tie-break, check) await review.
+2. **Experiments/spending:** whether to confirm the first comparison, with which arms and budget; older screens deferred.
 3. **Autonomy:** standing menu agreed; remaining away rules await review.
 4. **Model team:** initial test/comparison complete; broader design/budget and earlier marked choices remain for later review ([next](twwarhammer3/multi-agent-implementation.md#next)).
 5. **Campaign:** saves and achievements each need permission before any campaign launch.

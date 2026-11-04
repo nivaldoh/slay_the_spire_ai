@@ -72,7 +72,8 @@ Code: [`suite.py`](../../src/twwarhammer3/battle/suite.py). Commands: [runbook](
 named in its `tests` field. Six use authored starting positions, which the setup check reads back
 in the first observation: these are the battles one general cannot fight from one place.
 Six keep native starts, from battles where earlier evidence showed room between weak and strong
-play (the owner's first mirror battle and five others from the register).
+play (the owner's first mirror battle and five others from the register); these six have not
+been played as suite battles yet.
 
 | Scenario | The problem |
 |---|---|
@@ -119,10 +120,10 @@ They do not isolate the cause of a difference, and equal-resource arms come late
 
 | Dimension | Measures | Read from |
 |---|---|---|
-| Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead or routed at the end | Engine ending and totals |
+| Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead, routed or gone at the end, 100 on every win; `killed`, percent of its men dead | Engine ending and totals |
 | Cost | dollars, calls, tokens; for `gap`, what writing the graphs cost, shown apart | Ledger-backed result |
 | Speed | median and 90th-percentile order age, observation to engine application | Engine acknowledgements |
-| Reliability | refused orders, forfeits, every failed or unplayed battle | Trace and plan |
+| Reliability | orders the engine refused; bad replies, which void a decision; failed calls, provider faults or calls closed unsent; every failed or unplayed battle | Trace and plan |
 | Coordination (descriptive) | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
 
 `taken` exists because `own` alone rewards fleeing: the mirror's best Haiku condition, 28.4, was an
@@ -130,26 +131,29 @@ army that routed having removed 2% of the enemy.
 
 Coordination readings describe what happened and are never added to a score
 ([MultiAgentBench](benchmark-references/multiagentbench.md) keeps outcome and process apart for the
-same reason). What they are worth so far (`runs/coord-suite-20261104/local_share_check.py`, 465
-recorded battles, 136 wins, AUC of won against lost inside 22 scenarios that have both):
-whole-battle `local_share` 0.79, but over only the first 60 s after contact 0.47, so it mostly
-restates who won. `spread_s` 0.49: it does not go with winning. On 29 battles of the Empire line it
-does tell running from walking (37 s against 9 s), because running units arrive one at a time.
-`idle_share` counts units held back, including a sound reserve. None is checked against a human's
-judgement, and no reading here measures coordination in a way we have shown to matter.
+same reason). What they are worth so far (`runs/coord-suite-20261104/local_share_check.py`): on 491
+recorded battles (144 wins), of which 389 lie in the 25 scenarios holding both a win and a loss,
+the within-scenario AUC of whole-battle `local_share` is 0.82, of its first 60 s after contact 0.50,
+and of `spread_s` 0.49. So `local_share` mostly restates who won, and `spread_s` does not go with
+winning. On 29 battles of the Empire line `spread_s` does tell running from walking (37 s against
+9 s), because running units arrive one at a time. `idle_share` counts units held back, including a
+sound reserve. None is checked against a human's judgement, and no reading here measures
+coordination in a way we have shown to matter.
 
 **Arms that share parts.** `commander` is `skills` with a model choosing the skills, so `skills` is
 its control: a `commander` win means little until `skills` has played the same battle. The same
 holds for any method built on another.
 
-**Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`;
+**Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`
+(rests on JUDGEMENT `battle/suite.py` Scenario tie-break);
 across scenarios, each arm against `single` by how many scenarios it did better or worse on, with
 an exact sign test, and a paired t interval of `taken`. Win rates carry Wilson intervals, or the
 exact one-sided bound at zero wins. These are the [guidelines'](evaluation-guidelines.md#72-use-the-named-method-for-each-situation)
 small-sample methods, which rule out a bootstrap at these sizes. Battles run in one shuffled order
 per repeat. A battle that fails keeps its row; nothing is replaced. With one or two battles per
 pair these results are exploratory: they rank nothing and show where a confirmation would be worth
-paying for.
+paying for. Results: [log](log.md#2026-11-04-first-comparison-of-control-methods), report
+`runs/twwarhammer3/reports/suite.html` ([build](reports.md#coordination-suite)).
 
 **Proposed check, not agreed.** For any finished plan, a script that shares no code with `suite.py`
 would check, from raw records: every planned pair has one row; every authored unit stood within

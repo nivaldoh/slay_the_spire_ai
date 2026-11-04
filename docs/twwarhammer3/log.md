@@ -28,49 +28,61 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
-## 2026-11-04: coordination suite built; first screen stopped for live tests
+## 2026-11-04: first comparison of control methods
 
-- Owner's overnight goal. Definition: [benchmark.md](benchmark.md#the-coordination-suite-suite-v1);
-  code `battle/suite.py`, branch `coord-suite` landed at `0268cae`. Not yet played.
-- Screen at `b1537c7`, build 26403568, Haiku 5.5 low `llm_rules`, plan
-  `runs/coord-suite-20261104/screen-a.json`: stopped by its stop file after 2 of 14 battles,
-  to free the game for live checks of authored starts. `emp-line-grn-raid-xp5` lost at 381 s,
-  $0.126, enemy 395 of 548 men still active; `skv-swarm-dwf-line` lost on the timer at 1205 s,
-  $0.485, enemy 61 of 466 active. Two battles: no rate is claimed.
-- An independent review of `c2fe619` found that the engine does not keep roster order (153
-  friendly and 106 enemy sides of 414 first observations reordered), so authored places by id
-  would have put the wrong units on them without any error, and that the start check read
-  enemies only while visible. Fixed in `55480b9`: placements name a type, and the script reads
-  every unit's position privately at the first observation. Not yet checked live.
+- Final versions at `b86f34f`, build 26403568, Haiku 5.5 low: rank-5 player units, enemy men 1.09 to
+  1.20 times ours. 26 of 28 planned battles played, one per pair: 22 of 24 paid (`round-4`, finished
+  through `round-4b`) and 4 of 4 `skills` (`round-5`, planned after `commander`'s first three wins).
+  `team` and `commander` on `rear-raid` missed the 11:00 cutoff, after a 28-minute pause for `skills`.
+  An independent recount from raw records reproduced all 26; every battle ended on an engine result,
+  with authored starts within 9.0 m.
 
-## 2026-11-04: authored starts work live; two battles recalibrated
+| Scenario | `skills` | `single` | `team` | `commander` | `gap` |
+|---|---|---|---|---|---|
+| `coord-two-fronts` | lost 61 | lost 75 | lost 14 | **won** 100 | lost 79 |
+| `coord-breakout` | **won** 100 | lost 31 | lost 26 | **won** 100 | lost 31 |
+| `coord-relief` | lost 58 | lost 9 | lost 54 | **won** 100 | **won** 100 |
+| `coord-pincer` | **won** 100 | lost 19 | lost 39 | lost 78 | lost 31 |
+| `coord-detail` | not planned | lost 31 | **won** 100 | **won** 100 | lost 43 |
+| `coord-rear-raid` | not planned | lost 10 | not played | not played | lost 43 |
 
-- `round-1a` at `dd30b93`, six fresh launches of `rush`, $0, build 26403568: every authored unit
-  stood within 8.4 m of its place in the private first reading (largest error per battle 5.0 to
-  8.4 m), units of both sides, with the engine's reordered ids. The enemy
-  AI moved and attacked as declared. One battle each; this is the first live use of authored
-  starts, not an agreed check.
-- `rush` won `coord-relief` (272 s) and `coord-pincer` (332 s), and lost `coord-rear-raid` (181 s),
-  `coord-detail` (290 s), `coord-breakout` (121 s) and `coord-two-fronts` (163 s). On breakout each
-  unit ran at its nearest enemy and the army split into three fights.
-- Relief and pincer go to scenario version 2 at `3951faa`: each enemy gains one Big 'Uns and one
-  Boyz unit. Whether they, or any authored battle, can be won by anything but a rush is unknown.
+The number is `taken`. Every win reads 100 by construction.
 
-## 2026-11-04: 22 straight losses on authored battles; team and hint faults fixed
-
-- `round-2` at `5bd7458`, Haiku 5.5 low and `skills`: stopped by its stop file after 10 of 30
-  battles, all lost. It found two harness faults. GaP's model hints were refused when the reason
-  ran past 200 characters (8 of 11 calls on `rear-raid`, 18 of 26 on `relief`), so its hint layer
-  mostly did not run. Team members ordered teammates' units, which voids the whole reply under
-  no-retry (26 of 163 and 55 of 276 calls). Fixed in `a0bd02c`: the hint prompt asks for at most
-  15 words, and a class member is told which ids it may order. Those team and GaP battles will be
-  replayed; their rows stay in the plan.
-- `round-2-witness` at `a0bd02c`: a new $0 script, `concentrate`, lost all six.
-- With the rush on the current versions, all 22 battles were lost by every arm that played them,
-  with armies routing with 24-62% of their men alive. A rank-5 player army is the next
-  calibration (`scenario_version` 2 or 3).
-- A lead from 24 battles, not a claim: the two wins so far (`rush` on relief and pincer version 1)
-  read `local_share` 0.56 and 0.57; the 22 losses read 0.22 to 0.50.
+- Wins: commander 4 of 5, skills 2 of 4, team 1 of 5, gap 1 of 6, single 0 of 6. On the four
+  scenarios all five arms played: commander 3, skills 2, gap 1, team 0, single 0.
+- Mean percent of the enemy dead, routed or gone at the end, on those four: commander 94.6, skills
+  79.7, gap 60.3, single 33.5, team 33.3. Men actually killed on those four: skills 66.8, commander
+  57.0, gap 48.7, team 33.2, single 32.2.
+- Mean cost per battle on the five scenarios the paid arms share: gap $0.011 plus $0.005 per
+  scenario to write its graphs, single $0.120, commander $0.145, team $0.311; skills $0 on four.
+- commander did better than single in its one battle on each of 5 shared scenarios, winning 4 (sign
+  test p = 0.0625, the lowest that test can give with five pairs, so unresolved at 0.05), and took
+  62.6 points more (t 95% 32.9 to 92.3), which partly repeats the win count.
+- Against skills, its own scripts with no model, commander did better on 3 of 4 and worse on 1
+  (p = 0.625): the two have not been separated, and skills won pincer, which commander lost.
+- gap won one scenario (relief) and single none; both lost the other five, where gap's own + taken
+  led on four by 4 to 21 points and trailed on one by 4. That is 5 of 6 by the suite rule (p = 0.22),
+  3 of 6 if ties break on own alone. gap cost about one tenth of single to play, about one seventh
+  with graph writing, over the same six scenarios.
+- team and single have not been separated: team was better on 3 of 5 and worse on 2 (p = 1), with one
+  win to none, at 2.6 times single's cost over those five. Team sent 7 and 5 orders on two-fronts and
+  breakout in 305 and 259 calls: the models returned empty orders, and the harness dropped nothing.
+- After the id and hint-length fixes (`a0bd02c`), 2 of team's 2010 calls failed (0.1%, neither an id
+  error), against 81 of 439 (18.5%, 80 of them id errors) in two battles before them, on version 1
+  scenarios. gap had no hint refused in 120 answered calls, against 8 of 11 and 18 of 26. It had 5
+  failed calls: 4 provider overload errors and 1 closed unsent at battle end.
+- At these versions rear-raid has no win: only single and gap played it, and both lost. The six
+  native-start scenarios were not played as suite battles.
+- `local_share` and `spread_s`: on 491 recorded battles (144 wins), of which 389 lie in the 25
+  scenarios holding both a win and a loss, within-scenario AUC is 0.82 for whole-battle `local_share`,
+  0.50 for its first 60 s, 0.49 for `spread_s`. They describe; they do not explain.
+- Spend overnight: $4.65 on the WH3 Anthropic ledger ($0.82 to $5.47), $2.99 of it the final
+  comparison's battles. $0.0089 of that is the ledger's estimate for the four overloaded calls.
+- No method is ranked: one battle per pair, one build, and the six scenarios were tuned tonight on
+  earlier rounds of the same scenarios (development evidence, no held-out set); no final-round battle
+  changed a version. Order age is not comparable across arms: commander, skills and gap read the
+  executor's cycle, not the model's. Unverified: the coordination readings, and all of it under the
+  hard rule, since the suite's check is only proposed.
 
 ## 2026-11-04: rank 5 helps but does not win; enemy set to 1.1-1.2 times the player's men
 
@@ -102,6 +114,50 @@ and this landed after its queues ended. [Results table](multiplayer-control-foun
 - Unverified: everything; no agreed check, no second client. Direct create and join not found.
 - Evidence: `runs/wh3-mp-overnight-20261104/` (notes, cards, handoff),
   `runs/twwarhammer3/native-multiplayer/foundation-*`.
+
+## 2026-11-04: 22 straight losses on authored battles; team and hint faults fixed
+
+- `round-2` at `5bd7458`, Haiku 5.5 low and `skills`: stopped by its stop file after 10 of 30
+  battles, all lost. It found two harness faults. GaP's model hints were refused when the reason
+  ran past 200 characters (8 of 11 calls on `rear-raid`, 18 of 26 on `relief`), so its hint layer
+  mostly did not run. Team members ordered teammates' units, which voids the whole reply under
+  no-retry (26 of 163 and 55 of 276 calls). Fixed in `a0bd02c`: the hint prompt asks for at most
+  15 words, and a class member is told which ids it may order. Those team and GaP battles will be
+  replayed; their rows stay in the plan.
+- `round-2-witness` at `a0bd02c`: a new $0 script, `concentrate`, lost all six.
+- With the rush on the current versions, all 22 battles were lost by every arm that played them,
+  with armies routing with 24-62% of their men alive. A rank-5 player army is the next
+  calibration (`scenario_version` 2 or 3).
+- A lead from 24 battles, not a claim: the two wins so far (`rush` on relief and pincer version 1)
+  read `local_share` 0.56 and 0.57; the 22 losses read 0.22 to 0.50.
+
+## 2026-11-04: authored starts work live; two battles recalibrated
+
+- `round-1a` at `dd30b93`, six fresh launches of `rush`, $0, build 26403568: every authored unit
+  stood within 8.4 m of its place in the private first reading (largest error per battle 5.0 to
+  8.4 m), units of both sides, with the engine's reordered ids. The enemy
+  AI moved and attacked as declared. One battle each; this is the first live use of authored
+  starts, not an agreed check.
+- `rush` won `coord-relief` (272 s) and `coord-pincer` (332 s), and lost `coord-rear-raid` (181 s),
+  `coord-detail` (290 s), `coord-breakout` (121 s) and `coord-two-fronts` (163 s). On breakout each
+  unit ran at its nearest enemy and the army split into three fights.
+- Relief and pincer go to scenario version 2 at `3951faa`: each enemy gains one Big 'Uns and one
+  Boyz unit. Whether they, or any authored battle, can be won by anything but a rush is unknown.
+
+## 2026-11-04: coordination suite built; first screen stopped for live tests
+
+- Owner's overnight goal. Definition: [benchmark.md](benchmark.md#the-coordination-suite-suite-v1);
+  code `battle/suite.py`, branch `coord-suite` landed at `0268cae`. Not yet played.
+- Screen at `b1537c7`, build 26403568, Haiku 5.5 low `llm_rules`, plan
+  `runs/coord-suite-20261104/screen-a.json`: stopped by its stop file after 2 of 14 battles,
+  to free the game for live checks of authored starts. `emp-line-grn-raid-xp5` lost at 381 s,
+  $0.126, enemy 395 of 548 men still active; `skv-swarm-dwf-line` lost on the timer at 1205 s,
+  $0.485, enemy 61 of 466 active. Two battles: no rate is claimed.
+- An independent review of `c2fe619` found that the engine does not keep roster order (153
+  friendly and 106 enemy sides of 414 first observations reordered), so authored places by id
+  would have put the wrong units on them without any error, and that the start check read
+  enemies only while visible. Fixed in `55480b9`: placements name a type, and the script reads
+  every unit's position privately at the first observation. Not yet checked live.
 
 ## 2026-11-04: capture the script click path; stop at the owner's request
 

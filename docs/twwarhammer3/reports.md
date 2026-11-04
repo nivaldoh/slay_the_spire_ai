@@ -26,6 +26,20 @@ On Windows, open:
 `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\benchmark.html`.
 The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1-cavalry-ai11.html`.
 
+## Coordination suite
+
+`benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`: the
+[suite's](benchmark.md#the-coordination-suite-suite-v1) method and scenario tables above the usual
+replays, with a Watch button per battle. Plans must share battle versions. The first comparison:
+
+```bash
+uv run --locked python -m twwarhammer3 benchmark report runs/coord-suite-20261104/round-4.json \
+  --also runs/coord-suite-20261104/round-5.json --output runs/twwarhammer3/reports/suite
+```
+
+Open `runs/twwarhammer3/reports/suite.html`. On Windows:
+`\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\suite.html`.
+
 ## Initial benchmark visuals
 
 `benchmark report PLAN` writes the visual page alongside the original planned-attempt
