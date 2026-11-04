@@ -85,8 +85,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-11-04 overnight: direct readiness, leave and raw witnesses on one client
 
 Owner's goal: continue the foundation overnight. Local PC, $0, no VM; cards not agreed (owner
-away). On branch `wh3-mp-witness`, not landed: the benchmark session held `main` and lent the
-game for one 30-minute window. [Results table](multiplayer-control-foundation.md#implementation-status).
+away). The benchmark session held the game and `main`, lent the game for one 30-minute window,
+and this landed after its queues ended. [Results table](multiplayer-control-foundation.md#implementation-status).
 - Found by following command names: `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` under Start Battle.
 - Built: trace of that path and all command packets, raw unit rows, phase and outcome at
   completed ticks, `compare-peers --native`, the direct `ready_deployment` adapter, typed worker

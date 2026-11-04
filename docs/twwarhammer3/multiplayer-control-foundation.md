@@ -77,7 +77,7 @@ handles readiness, before promoting any operation. Targets before instructions d
 establish submission, direct control, passivity or replication. Owner stopped this work
 for continuation in another session; handoff `runs/wh3-multiplayer-foundation/handoff.md`.
 
-Overnight 2026-11-04 (Claude, branch `wh3-mp-witness`; evidence and notes in
+Overnight 2026-11-04 (Claude; evidence and notes in
 `runs/wh3-mp-overnight-20261104/` and `runs/twwarhammer3/native-multiplayer/foundation-ref5-load-refused`,
 `-ref6`, `-ref7`, `-ref8`, `-typed1`). Following the typed command names instead of UI signals
 answered the "next bounded question" above. One client only, $0, in one 30-minute window lent by
