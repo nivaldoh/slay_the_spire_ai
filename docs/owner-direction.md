@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (suite page, wrapping up): on whether the page is clear: "It seems ok for now. Another
+  model has been making changes to it in parallel. Let's wrap up here without interrupting it".
+  Small maps or overlap: "Keep both for now, I'll review later". More battles: "Stop here for now".
+  Then: "Let's commit and wrap it up". This is not a verdict that the page is clear.
 - 2026-11-04 (follow-up cooperation pass): "Let's do another pass from a different
   perspective and see if we can continue to improve it."
 - 2026-11-04 (cooperation research goal): "Use our collected research materials to identify
