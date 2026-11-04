@@ -6,6 +6,25 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Tactic-judge research (2026-11-04)
+
+For the [WH3 judge proposal](twwarhammer3/tactic-judges.md). All six sources independently
+fetched and excerpts checked; audit `runs/scenario-plan-update/research-audit.md`. No result
+reproduced and no WH3 judge validated.
+- [GVL](https://arxiv.org/html/2411.04549v1): estimates task progress with a frozen VLM and
+  shuffled trajectory frames; temporal-progress agreement is not tactic correctness.
+- [AHA](https://arxiv.org/html/2410.00371v1): fine-tuned visual failure annotation using
+  keyframe collages and generated failure cases; its robot task evidence does not transfer automatically.
+- [MINERVA/MiRA](https://arxiv.org/html/2505.00681v1): explicit reasoning criteria and text
+  reference judgements; MiRA itself does not inspect video, so it cannot validate WH3 perception.
+- [VideoJudge](https://arxiv.org/html/2509.21451v1): frames and candidate answers support
+  answer-quality judging; evidence/frame selection matters, but the task is not tactic detection.
+- [MT-Bench judge](https://arxiv.org/html/2306.05685v4): presentation biases motivate blind
+  labels, ordering checks and independent references; chatbot preference agreement is not event accuracy.
+- [Don't Read the Log](https://arxiv.org/html/2609.28564v1): preliminary, model-dependent
+  effects of execution narratives on fixed-video judgements; motivates testing unsupported
+  success claims, not discarding verified engine telemetry.
+
 ## Empirical and formal verification (2026-11-03)
 
 For [testing.md](testing.md#empirical-and-formal-verification). *Checked*: a second agent

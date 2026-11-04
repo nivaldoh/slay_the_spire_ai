@@ -6,12 +6,20 @@ Compare the performance of two different controllers on a Total War Warhammer 3 
 
 ## Scope
 
+Current scenario direction, 2026-11-04: develop a simpler scenario, then a more complex one
+once the first is reliable and validated. Their concrete setups are still open. The
+[updated plan](scenario-guidelines.md#current-plan-and-owner-decisions) records tentative
+owner-manual winnability evidence and the wish to try an overall ranking. The mirror and
+suite below retain their recorded definitions/results; no replacement scenario or score is
+selected here. [Tactic-judge research](tactic-judges.md) is a proposal, not an adopted measure.
+
 The first draft covers a Land Battle (`classic` / `land_normal`) against the game's built-in AI, with small mixed armies (owner, 2026-10-23). The intended benchmark also includes Siege, Survival, Ambush and Conquest, with other battle types for the owner to confirm (2026-10-28). Existing [battle-type scenarios](battle-types.md) and siege checkpoint work are starting points; they do not establish a benchmark for those modes. Their profiles, order of implementation, measurements and checks remain open.
 
 - **Task.** The controller commands a fixed army. It doesn't choose the army or deploy it.
 - **Winner.** The game engine decides who won, lost or drew. A win when the timer runs out is a win (owner, 2026-10-23).
 - **Inputs and orders.** The controller reads the structured battle state our Lua mod publishes and sends its orders back through the mod. The game still does the pathfinding, formations and unit-level fighting.
 - **Time.** The battle runs unpaused at normal speed (1x). The controller's whole delay, network and retries included, is part of its result: a controller that loses because it is slow has lost (owner, 2026-10-14).
+- **Manual demonstration.** Only the owner may pause when manually demonstrating winnability (owner, 2026-11-04). Such evidence is separate from automated results and does not establish their interface/timing feasibility. The recording/check procedure remains open.
 - **Same conditions.** Every controller plays the same battle, with the same information and the same permitted orders. Results from different roles, maps, game builds, controller versions or scoring versions are kept apart.
 - **Claims.** A result says how a controller did in the declared battles, nothing about general WH3 skill or a model's intelligence.
 
@@ -20,6 +28,9 @@ Training (fine-tuning, RL) can use the benchmark's records, but it isn't part of
 A `JUDGEMENT:` line marks an agent's proposal that the owner hasn't decided yet; the [owner interview](benchmark-implementation.md#owner-interview-one-land-battle) collects the open questions. How we will build and check the benchmark: [benchmark-implementation.md](benchmark-implementation.md).
 
 ## The first battle
+
+This section records the earlier mirror choice. The next two scenarios follow the current
+plan above; the mirror is not automatically selected as its simpler scenario.
 
 Owner follow-up, 2026-11-02: start with a single Empire-versus-Empire battle. Both sides
 have three melee units and one ranged unit; our fifth unit is cavalry, theirs a weaker

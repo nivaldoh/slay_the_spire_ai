@@ -5,6 +5,17 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (scenario-plan replies): "Update the plan accordingly, without implementing
+  anything yet." Start with two scenarios, simpler then more complex, adding the next only
+  when the previous seems complete, reliable, trustworthy and validated. Eventual scope is
+  open. Winnability: "Probably a human win by me, manually, with me (and only me) being able
+  to pause a battle to make it easier for me." This is tentative human evidence; only the
+  owner gets the pause exception, never agents or models. Help determine measurement validity
+  and research LLM judges for tactics. Easy scripting may be useful later, not an initial
+  priority. Consider health/morale plus cost, latency and other metrics; details later.
+  Reservation remains undecided. "We can try to have one overall ranking." Probably recheck
+  after game updates; exact triggers/checks remain open. [Updated plan](twwarhammer3/scenario-guidelines.md#current-plan-and-owner-decisions),
+  [judge research](twwarhammer3/tactic-judges.md). No new scenario, scorer or check adopted.
 - 2026-11-04 (writing in the owner's voice): on portfolio copy, "The text reads like AI slop
   though. For instance, everything is a punchline. A bit painful to see. Make it read more
   like me and take note of that to avoid repeating this mistake in the future." Applies to

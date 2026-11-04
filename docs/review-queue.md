@@ -7,8 +7,9 @@ Items keep their existing decision numbers. A listed choice or proposed check is
 ## Decisions
 
 Scenario design under decision 1: [guidelines and review choices](twwarhammer3/scenario-guidelines.md#choices-for-owner-review)
-cover diversity, winnability, intended measurement, engine/team checks and release criteria.
-Methods remain proposals; the current suite and agreed checks are unchanged.
+now follow the owner's replies: two initial scenarios developed sequentially, tentative manual
+wins with owner-only pause, and work toward an overall ranking. Concrete setups, readiness,
+[judge validation](twwarhammer3/tactic-judges.md), scoring and reservation remain open; no runs scheduled.
 
 1. **Initial benchmark and the coordination suite.** The mirror is implemented and checked at `b1136e8`; all 8 battles on version5 were lost. The overnight [suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) adds twelve scenarios, six of them played, and compares control methods ([results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods)). Its choices are marked `JUDGEMENT` and wait for your review: battles and calibration, arms, tie-break and the proposed check. Two findings change how it reads: `commander` alone gets tactics advice, so its lead over `single` mixes method and advice, and several battles did not play as designed. Handoff: `runs/coord-suite-20261104/handoff.md`.
 2. **Next experiments and spending.** The suite's first comparison is exploratory, at one battle per pair. Choose whether to confirm it, on which arms and with what budget. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol.

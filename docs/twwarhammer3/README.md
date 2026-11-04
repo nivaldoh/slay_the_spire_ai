@@ -38,6 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [scenario-guidelines.md](scenario-guidelines.md) | proposed scenario coverage, winnability and capability checks, engine and team requirements, release criteria and owner decisions |
+| [tactic-judges.md](tactic-judges.md) | research and proposed checks for LLM/VLM tactic annotations; no judge or score adopted |
 | [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
 | [tactics-reference.md](tactics-reference.md) | researched historical, Total War and Warhammer tactics; faction/composition and terrain/mode variants; linked evaluation proposals and source notes |
 | [boris-scenarios.md](boris-scenarios.md) | Boris-only content boundaries and concrete battle proposals for tactical decisions and model cooperation, with armies, terrain and prerequisites |

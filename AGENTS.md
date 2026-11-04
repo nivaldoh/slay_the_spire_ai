@@ -127,9 +127,11 @@ card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/READ
 - Never run two game controllers at once,
   even for different games: each `RuntimeLock` only protects its own game.
 - WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
-  tests. Never pause or slow the battle to give a policy more thinking time. One exception
+  tests. Never pause or slow the battle to give a policy more thinking time. Restore exception
   (owner, 2026-10-25): a checkpoint restore may rebuild the battle faster than 1x before
   its handover; from the handover on, 1x.
+  Owner, 2026-11-04: only the owner may pause while manually demonstrating scenario winnability
+  ([plan](docs/twwarhammer3/scenario-guidelines.md#winnability-evidence)); never an agent or policy.
 
 ## Architecture
 

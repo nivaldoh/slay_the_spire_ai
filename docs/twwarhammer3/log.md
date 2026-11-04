@@ -29,6 +29,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: scenario plan updated from the owner's replies
+
+- Plan only: [two scenarios in sequence](scenario-guidelines.md#first-two-scenarios), simpler
+  then more complex once the first is ready; exact setups and readiness checks remain open.
+- Tentative winnability route: owner manual win, with pause allowed only for the owner.
+  Human evidence stays distinct from automated interface/timing feasibility and reliability.
+- Health/morale and cost/latency remain priorities; work toward one ranking, without selecting
+  weights. Reservation is undecided, scripting deferred, update rechecks expected but unspecified.
+- [Judge research](tactic-judges.md): six primary sources independently fetched; narrow event
+  annotations are a candidate, not a validated tactic/benefit score. Earlier text-only guidance
+  reconciled; no judge adopted. Source audit, document review and final gate/merge evidence:
+  `runs/scenario-plan-update/` and its `handoff.md`.
+- No runtime, scenario configuration, scoring or agreed-check changes; no game, policy or
+  judge evaluation. All proposed gameplay/measurement checks remain unverified.
+
 ## 2026-11-04: scenario design and validation guidelines
 
 - Owner requested diverse, winnable scenarios that measure their intended decisions, with

@@ -1,5 +1,11 @@
 # WH3 benchmark implementation
 
+Current planning direction, 2026-11-04: [two scenarios developed sequentially](scenario-guidelines.md#first-two-scenarios),
+tentative owner-manual wins with owner-only pause, and [tactic-judge research](tactic-judges.md).
+Concrete setups, validation and ranking rules remain open. This updates the next-work plan;
+the earlier phases and implemented mirror below retain their history. No implementation or
+evaluation is scheduled by the new reply.
+
 How we get from the [definition](benchmark.md) to a working benchmark: the phases, the open questions, the checks, what the code does today, and the earlier plans. This page changes as the work moves; the definition should not. Status on 2026-10-23: planning only. The owner asked for the definition and plan, not for code changes, game runs or spending.
 
 Update, 2026-10-28: health and morale are the owner's tentative primary measures. The

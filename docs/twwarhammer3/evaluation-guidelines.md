@@ -7,11 +7,13 @@ Section 2's tactic-card admission rules, contact-only examples and chariot thres
 below apply to the historical card studies, not the new Land Battle benchmark. General
 rules about information, provenance, failures and uncertainty remain relevant proposals.
 
-For the 2026-11-04 scenario design proposal, use [scenario-guidelines.md](scenario-guidelines.md):
-coverage, winnability, intended measurement, engine and team checks, and choices for review.
-It adds no agreed method and leaves the historical admission rules below unchanged.
+For the owner's 2026-11-04 replies, use [scenario-guidelines.md](scenario-guidelines.md):
+two scenarios developed sequentially and tentative owner-manual winnability evidence with
+owner-only pause. Automated controllers remain at unpaused 1x. [Judge research](tactic-judges.md)
+extends the proposed evidence options; it adopts no method or score. Historical card rules
+below do not become gates on the new scenarios.
 
-Each battle runs in real time (1x, never paused) against the game's own AI. A controller,
+Each automated battle runs in real time (1x, never paused) against the game's own AI. A controller,
 often an LLM with helper code, receives snapshots of the units it can see through a Lua
 mod and sends move and attack orders while the battle continues; the battle ends when one
 side breaks or the timer runs out. A card is a small frozen battle that tests one tactical
@@ -821,12 +823,19 @@ identifying data. Check the publisher's screenshot policy before sharing stills.
 
 None exists for the first release. Recommended: no LLM-derived label in a reported score.
 
+Update, 2026-11-04: the owner asked to research tactic detection with an LLM judge. The
+[new proposal](tactic-judges.md) considers structured records and visual sequences, expanding
+the earlier text-only proposal in 10.1. It keeps occurrence, benefit and engine outcome
+separate. Sections 10.2–10.5 supply candidate safeguards, not newly approved procedures,
+sample counts or score rules; the first scenario's actual validation method remains open.
+
 ### 10.1 Let code decide what records can decide
 
 If recorded state answers a check, code decides; nobody overrides or averages it. People
 answer what code cannot (whether a win used the card's choice, whether a loss was a harness
-fault), never whether a battle was won. An LLM gets only questions that need reading text
-("does the stated plan match the orders?"), never a tactical-quality score.
+fault), never whether a battle was won. The earlier proposal restricted LLMs to reading
+text ("does the stated plan match the orders?"). The current research also considers narrow
+visual event labels; it does not adopt a tactical-quality score.
 
 ### 10.2 Give reviewers one question, one sheet and a fixed evidence packet
 

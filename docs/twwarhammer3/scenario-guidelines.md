@@ -2,12 +2,50 @@
 
 Owner request, 2026-11-04: diverse scenarios whose winnability and intended measurement
 can be checked, including game mechanics, engine quirks and multi-agent control.
-**Proposal for review.** The methods below do not add an agreed check, launch a game or
-change existing scenarios, scores or historical results. The [benchmark definition](benchmark.md)
-still governs: fixed armies and deployment, public structured observations, permitted
-orders, engine wins including timer wins, and unpaused 1x play. Approval of these guidelines
-would still need concrete per-scenario procedures and recorded passes under the
-[verification rule](../../AGENTS.md#verification-hard-rule).
+**Plan updated from the owner's replies below; no implementation or evaluation yet.**
+The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
+and deployment, public structured observations, permitted orders, engine wins including
+timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
+That demonstration is separate evidence, not a paused model benchmark. No agreed check,
+scorer or historical result changes here; [verification](../../AGENTS.md#verification-hard-rule)
+still needs a concrete agreed procedure and a recorded pass.
+
+## Current plan and owner decisions
+
+Owner, 2026-11-04, replying to the nine choices. These directions govern the initial work;
+earlier marked proposals below remain only where not superseded. Tentative answers are
+not blanket approval of the earlier procedures.
+
+| Choice | Current direction | What remains open |
+|---|---|---|
+| 1 Entry and growth | Add scenarios one by one; add the next when the previous seems complete, reliable, trustworthy and validated | Concrete readiness checks and total eventual set |
+| 2 Initial scope | Start with two scenarios, one simpler and one more complex, developed sequentially | Actual maps, armies, tactics and what creates the added complexity |
+| 3 Winnability | Tentatively use the owner's manual win; only the owner may pause to make that play easier | Recording method, repeatability and what additional evidence is needed for the automated interface |
+| 4 Intended measurement | Work out the method together; research an LLM/VLM judge for tactic detection | Which tactic/event, rubric, evidence, judge model and acceptance criteria; no judge adopted |
+| 5 Opponent | Some scripting is possible if easy; not a priority for the initial scenarios | Need, feasibility and scope of any later scripting |
+| 6 Comparison | Unit health and morale, with cost, latency and other relevant metrics; refine as work progresses | Formulas, weights, resources, timing and method comparisons; no equal-budget or whole-system design newly approved |
+| 7 Reserved scenarios | Undecided | Selection, development/evaluation boundary and reserved variants |
+| 8 Ranking | Try one overall ranking | Formula, scenario weights, failures, uncertainty and whether cost/latency affect rank or appear beside it |
+| 9 Rechecks | Expect to recheck after changes such as game updates | Trigger scope and concrete rerun procedure |
+
+## First two scenarios
+
+1. Plan the simpler scenario first: a small, inspectable decision problem with a clear
+   engine objective and few interacting mechanics. Select its concrete setup with the owner;
+   no existing mirror or suite entry is selected automatically by this update.
+2. For that one scenario, settle setup checks, the owner's demonstration record, the first
+   measurement question and its validation procedure. Resolve observed setup/measurement
+   problems before treating the scenario as ready. Keep a short evidence summary and open
+   issues; “complete” needs an agreed meaning for this scenario, not a universal gate count.
+3. Once the first is judged ready under those checks, add the more complex scenario. Choose
+   the added difficulty deliberately, such as dependent jobs or concurrent threats, rather
+   than assuming extra units alone prove greater reasoning demand. Its actual design is open.
+4. Reconsider further scenarios after experience with these two. The coverage matrix is a
+   menu for those decisions, not a commitment to build a large suite now.
+
+These are planning steps. They schedule no human session, game launch, paid judge call or
+policy run. The manual recording path and any pause evidence still need design; do not
+disable `require_realtime` or change a live controller to obtain the owner's demonstration.
 
 A useful scenario has a consequential decision, a legal winning witness and evidence
 that supports its stated interpretation. Difficulty, visual variety and a plausible story
@@ -27,22 +65,23 @@ JUDGEMENT: Core eligibility — Codex, 2026-11-04: proposes a validated core and
 candidate pool. Keeping unwitnessed battles in the core is an alternative; release eligibility
 below depends on per-scenario winning evidence and support for the advertised measurement.
 
-The proposed core rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Core eligibility.
-This differs from current `suite-v1`, which retains unwitnessed candidates. Adoption would
-create a new release; it would not delete failed attempts or retroactively admit old battles.
+The earlier core/pool proposal rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md`
+Core eligibility. For now the owner selected gradual completion of individual scenarios,
+not a batch admission exercise. The exact readiness procedure remains open. Current
+`suite-v1` and all its failed or unwitnessed attempts retain their historical status.
 
 | Claim | Required evidence | Insufficient substitute |
 |---|---|---|
 | Constructed correctly | Declared setup compared with independent lobby/engine readings; required actions reach their effects | JSON accepted, a command acknowledged, or a green offline suite |
+| Human-demonstrated winnability | Owner wins the exact battle manually; record setup, controls, pause use and engine ending | A claim that this also proves the automated observation/action interface or its response timing is sufficient |
 | Winnable under this interface | A valid complete win by a disclosed controller using the same public information, actions and timing contract | Equal army cost, an omniscient script, a paused demonstration or a win on another version |
 | Reliably reproducible witness | Fresh confirmation attempts under a frozen plan, with counts and uncertainty for the declared conditions | Rerunning until a win or reusing the tuned success as confirmation |
 | Exercises a named decision | The opportunity occurs and a controlled comparison supports that decision's relevance | The scenario name, a good-looking manoeuvre or correlation with winning |
 | Generalizes | Frozen controller evaluated on declared reserved variants or families | More launches of a familiar battle |
 
-A checked win establishes possibility for that execution, not success on every future
-engine trajectory. No finite empirical check proves universal winnability of a random
-scenario generator. Use a finite catalogue of concrete configurations with individual
-witness records for a claim that **every released scenario is witnessed**. A generator
+A checked win establishes possibility under that player's conditions, not success on every
+future engine trajectory. Keep each initial scenario's demonstration attached to its exact
+configuration. No finite empirical check proves universal winnability of a random generator. A generator
 needs its own validity evidence and sampling-failure report; sampled wins do not certify
 all possible outputs. Neither label means a compared LLM will win.
 
@@ -59,11 +98,12 @@ JUDGEMENT: Coverage design — Codex, 2026-11-04: proposes a matrix of decision 
 independent context dimensions, mostly focused cases with some combined battles and easier
 anchors. A hardest-only or faction-balanced suite differs; coverage claims rest on this design.
 
-Maintain one coverage row per concrete scenario and a family summary. The matrix below
+For the first two scenarios, record their selected dimensions and differences. A larger
+coverage row/family summary is a later option. The matrix below
 rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Coverage design. It is a design
-space, not a demand to run its full Cartesian product. Select cells for distinct decisions
-and important interactions; state omissions. Freeze selected cells and their relative
-representation before compared-controller results can influence selection.
+space, not a demand to run its full Cartesian product. Select cases for distinct decisions
+and important interactions; state omissions. The detailed selection/reservation policy is
+still undecided under the owner's reply 7; do not treat this matrix as its adoption.
 
 | Dimension | Useful variation | What must be distinguished |
 |---|---|---|
@@ -112,10 +152,10 @@ or parallel reporting framework is required by this proposal. Split `development
 | Concrete setup | Map/build/content, explicit rosters, rank, loadouts, mounts, resources, AI settings, toggles and deployment; resolve inheritance |
 | Decision opportunity | Observable cue, useful alternatives, dependencies, travel/effect time, opportunity window and expected consequence |
 | Mechanic reference | Relevant engine contract or checked mechanic, research/design source and limits; historical tactics alone are not WH3 evidence |
-| Witness | Frozen controller/artifact, information access, timing, complete winning records and independent reproduction |
+| Winnability evidence | Initially the owner's proposed manual demonstration: setup, controls/information, pauses and engine ending; distinguish human evidence from automated-interface feasibility and repeatability |
 | Controls and predictions | Simplest shortcut, fixed plan, reactive alternative or executor-only comparison; what result would weaken the claim |
 | Measurements | Outcome, setup validity, opportunity and action-effect events; data source, missingness, detector definition and negative cases |
-| Variation and exposure | Allowed parameter ranges, constraints, realised instances, reserved split, authoring/tuning exposure and rejection history |
+| Variation and exposure | Exact instances and authoring/tuning exposure; ranges, constraints, reserved split and rejection history when those are chosen, without assuming a reservation policy |
 | Validation plan | Attempts, unit of repetition, stop/failure rules, pass criteria, uncertainty, budget and named agreed checks still needed |
 | Release record | Source/configuration/pack/controller/scorer identities, evidence paths, current status and conditions requiring recheck |
 
@@ -126,47 +166,39 @@ requiring the evaluated controller to choose A.
 
 ## Winnability evidence
 
+Owner, 2026-11-04: “Probably a human win by me, manually, with me (and only me) being able
+to pause a battle to make it easier for me.” This is the tentative starting route for the
+initial scenarios. Only the owner may use that pause exception; automated policies and
+agent-operated probes stay unpaused at 1x. A manual human session is not scheduled here.
+
+For the proposed demonstration record, retain the exact setup/version, identity of the
+player, normal manual controls/information used, whether pauses occurred, and the engine
+ending. Where available, save pause intervals and action/effect evidence; the recording
+procedure is still to be designed and agreed. Keep failed attempts and setup problems.
+A complete human win establishes human-demonstrated winnability of that configuration.
+It does not measure a model's latency, establish that the structured interface exposes
+every needed action, or demonstrate repeatability from one success.
+
+Record the human and automated conditions separately. If the demonstration relies on a
+view or action the policy lacks, resolve that interface issue before interpreting model
+failure as tactical weakness. Do not pool paused-human performance into a live-controller
+ranking. A model or script win at 1x could later provide additional interface/timing evidence;
+it is not imposed as a prerequisite for beginning the initial human-demonstration route.
+The repeat count and sufficient readiness evidence remain to be agreed for each scenario.
+
+### Earlier stronger witness proposal
+
 JUDGEMENT: Witness contract — Codex, 2026-11-04: proposes a public-interface witness for each
 concrete core configuration, an independent fresh reproduction and a frozen reliability plan.
 One unrestricted human win would be cheaper; eligibility and repeatability claims rest on this.
 
-The procedure below rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Witness contract.
-
-1. **Check feasibility first.** Confirm recruited content, usable routes, needed abilities,
-   victory conditions and the time available. Cost ratios and soldier counts are hypotheses
-   about balance, not proofs. Audit lordless leadership and army-loss behavior where relevant.
-2. **Produce a complete legal winning witness.** A script, model or human acting through the
-   same public interface can supply it. Save inputs, orders, effects and the engine ending,
-   including the period after the supposed tactical success. Winning one engagement is not
-   winning the battle. An ordinary human UI demonstration is a design lead if its information,
-   controls or speed differ. Hidden data may validate the record, never guide the witness;
-   do not embed private enemy coordinates or event schedules in its code or preparation.
-3. **Freeze before confirmation.** Freeze the scenario, witness, helpers, observation/order
-   contract and pass criteria. Give an independent checker the public task and procedure to
-   reproduce the win from a fresh launch and check the trace. A separately authored witness
-   is stronger evidence against shared strategy assumptions; disclose its absence.
-4. **Specify repeatability quantitatively.** The plan names the minimum useful witness success
-   probability, confidence level, number of fresh launches and stopping rule. Choose counts
-   with the [small-sample methods](evaluation-guidelines.md#7-use-statistics-that-fit-small-live-studies),
-   not a convenient universal count. An existence win and a repeatability pass have separate
-   labels. Until these fields are agreed and confirmation passes, repeatability is unverified.
-5. **Cover every released configuration.** Another map, rank, roster, mode, loadout or authored
-   placement is a different configuration, even under one family name. Keep its witness and
-   validity record. Report per-configuration failures; a good average cannot hide an unwitnessed
-   item. Simultaneous claims across many items need a declared error budget, not isolated
-   intervals presented as a guarantee for the whole set.
-
-Report the witness's actual observation age, order age and decision gaps, plus its helpers
-and any pre-battle preparation. A fast script establishes possibility under its own timing;
-it does not establish feasibility at a slow model's cadence. For a latency claim, declare
-and check that timing condition separately while the world continues at 1x. Never pause
-or slow the battle to make a witness succeed.
-
-Keep every confirmation attempt. Failure does not prove impossibility; diagnose setup,
-execution, measurement, witness strategy and uncertainty separately. A repaired witness
-or scenario gets new confirmation evidence. Do not replay an unchanged failed gate until
-it happens to pass. Difficulty can be calibrated in development with reference players
-and controls; do not select battles because they make a preferred model or architecture win.
+This earlier proposal remains parked under the owner's tentative human-win route. It is
+not the mandatory admission gate for the first two scenarios. If selected later, it rests
+on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Witness contract: the witness uses
+only public inputs and permitted orders at 1x; a separate checker reproduces it; a frozen
+plan declares attempts, success threshold, uncertainty and stopping/failure rules. Private
+coordinates or event schedules must not enter its code or preparation. More repeated wins
+would support reliability under the stated conditions, not a universal guarantee.
 
 ## Establish that the intended decision matters
 
@@ -174,7 +206,10 @@ JUDGEMENT: Measurement eligibility — Codex, 2026-11-04: proposes checked oppor
 effect evidence and controlled alternatives before giving a core scenario a capability label.
 Outcome-only labels are an alternative; specific skill claims rest on this stronger evidence.
 
-These checks rest on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Measurement eligibility.
+Owner reply 4 leaves the method open and requests research on LLM judges. The
+[tactic-judge research and proposal](tactic-judges.md) considers structured evidence and
+visual sequences; no judge or detector is selected. The checks below remain candidate
+methods, resting on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Measurement eligibility.
 Separate three questions: did a decision opportunity exist, did the controller do something,
 and did that choice help? None implies the next. A whole-system win supports an outcome
 claim; it does not identify the model's internal reasoning or prove a tactic was necessary.
@@ -255,8 +290,10 @@ JUDGEMENT: Opponent control — Codex, 2026-11-04: proposes native-AI battles as
 comparison and separately labelled scripted-event diagnostics when exact opportunities need
 control. Combining them is an alternative; opponent realism and causal claims depend on this.
 
-This separation rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Opponent control.
-Prefer conditions native AI can produce and that the evidence supports. If exact wave or
+Owner reply 5 permits considering easy scripting later and defers it for the initial
+scenarios. The separation proposed here remains unadopted and rests on JUDGEMENT
+`docs/twwarhammer3/scenario-guidelines.md` Opponent control. Prefer conditions native AI can
+produce and that the evidence supports. If exact wave or
 threat behavior requires scripting, disclose the intervention, trigger, state access and
 what enemy freedom remains. Privileged script knowledge must not leak to friendly policies.
 A scripted diagnostic may establish a mechanism without establishing performance against
@@ -282,7 +319,9 @@ JUDGEMENT: Team comparisons — Codex, 2026-11-04: proposes whole-system compari
 concurrency, with separate matched ablations for specific coordination claims. A single
 resource-equalized ranking differs; architectural interpretations rest on which comparison is used.
 
-Comparisons below rest on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Team comparisons.
+Owner reply 6 prioritizes health/morale and relevant cost/latency measures while leaving
+comparison design for later. The alternatives below remain proposals, not a selected arm
+or resource plan; they rest on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Team comparisons.
 
 - For whole systems, freeze and disclose model, effort, prompts/advice, partition, skills,
   scheduler, memory, preparation, retries and limits. Show all calls, tokens, dollars and
@@ -318,7 +357,10 @@ JUDGEMENT: Selection and reservation — Codex, 2026-11-04: proposes selecting b
 reference validity, then reserving instances before compared-controller tuning. Selecting by
 model separation is an alternative; generalization claims rest on the declared exposure boundary.
 
-The procedure rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Selection and reservation.
+Owner reply 7: “Not sure yet.” The following is a retained option, not an adopted split
+or a gate on choosing the initial scenarios. Until a boundary is chosen, label evidence
+used to change a scenario or controller as development and make no held-out claim.
+This procedure rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Selection and reservation.
 Author a family and constrained parameter range, then materialize and save concrete
 configurations. Record generator version/seed, resolved values and rejection reasons. Freeze
 selection and rejection rules before comparison; never redraw a difficult instance silently.
@@ -339,12 +381,30 @@ and prior results as development history; selection rules must not favor a prefe
 
 ## Reporting and aggregation
 
+Owner, 2026-11-04: compare health and morale, with cost, latency and other relevant metrics;
+“We can try to have one overall ranking.” Work toward an overall ranking while retaining
+individual scenario results. No ranking formula or metric weights are selected by this reply.
+With the initial two scenarios, any aggregate describes those two cases, not general WH3 skill.
+
+The current [condition calculation](../../src/twwarhammer3/battle/benchmark.py) combines
+unit health with categorical state penalties such as wavering and routing. It is not a
+continuous numeric leadership score. The mirror and suite also use different comparison
+rules ([current definitions](benchmark.md#outcome-and-score)); “like we already do” does
+not select either unchanged as the new overall ranking. Existing scoring remains intact.
+
+Before ranking, settle scenario weighting, engine outcomes versus condition, missing/failed
+attempts, and whether cost/latency change rank or are reported alongside it. Keep engine
+outcomes visible and retain the standing engine-win priority until explicitly changed.
+LLM tactic labels are not added to the score by this planning request.
+
 JUDGEMENT: Family reporting — Codex, 2026-11-04: proposes per-family and per-condition results
 before any new suite aggregate. A weighted single ranking is an alternative; an aggregate
 requires owner-selected population/weights so prolific variants do not dominate the claim.
 
-Reporting below rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Family reporting.
-Retain the current engine outcome and versioned condition measures. Present each scenario's
+The earlier preference above no longer postpones work toward an overall ranking. Its
+per-family disclosure remains a useful option, resting on JUDGEMENT
+`docs/twwarhammer3/scenario-guidelines.md` Family reporting. Retain the current engine
+outcome and versioned condition measures. Present each scenario's
 validity/witness status, attempts, outcomes, errors, uncertainty and pertinent diagnostics.
 Show unsupported, unwitnessed and unplayed cases rather than silently dropping them. Report
 family coverage and missing cells. Separate duration, cost and reliability from victory;
@@ -364,16 +424,20 @@ JUDGEMENT: Validation lifecycle — Codex, 2026-11-04: proposes the gates below 
 checks for changed dependencies before carrying a scenario's validity into another release.
 Permanent admission is an alternative; released claims depend on the recorded versions and scope.
 
-This lifecycle rests on JUDGEMENT `docs/twwarhammer3/scenario-guidelines.md` Validation lifecycle.
-It is a proposed documentation procedure, not a new implemented `status` enum or automated gate.
+Owner reply 9 tentatively expects rechecks after game updates. The exact triggers and
+procedure remain open. This proposed lifecycle rests on JUDGEMENT
+`docs/twwarhammer3/scenario-guidelines.md` Validation lifecycle; it is not an implemented
+`status` enum or automated gate. For the first two scenarios, use the human-demonstration
+route and settle readiness with the owner before advancing, rather than silently applying
+the earlier mandatory public-interface witness proposal.
 
 | Stage | Evidence required to advance | If evidence is missing or contradicts the claim |
 |---|---|---|
 | Specify | Completed scenario specification, coverage rationale, feasible alternatives, source and interface audit | Remain a candidate; identify the actual missing mechanic or decision |
 | Construct | Independent setup readbacks and live action-effect checks for required mechanics; detectors challenged with plausible wrong cases | Repair and version; preserve failure evidence |
-| Witness | Legal full win for every released concrete configuration; independent reproduction and preregistered repeatability result | Label possibility/repeatability separately; no unqualified core admission |
-| Validate meaning | Checked opportunity and effect evidence, working controls and declared comparison/perturbation result supporting each advertised capability | Narrow label, redesign, or retain only in the exploratory pool |
-| Freeze | Owner-agreed procedures and selection, versions, reserved splits, witness/diagnostic records, limits and study plan | No claim of verification from proposal approval alone |
+| Demonstrate winnability | Tentatively the owner’s manual win, with setup, pause/controls and engine ending recorded; agree further reliability evidence | Record human-demonstrated status only; automated-interface feasibility and repeatability remain separate |
+| Validate meaning | Agree a check for the actual decision; consider observed events, controlled comparisons and a calibrated judge where useful | Keep unsupported labels tentative, narrow them or redesign; a judge’s opinion alone is not verification |
+| Judge ready and advance | Owner-agreed readiness checks and passes, versions, demonstration/measurement records and unresolved limits; selection/split only when decided | Finish the current scenario before adding the next; proposal approval alone is not verification |
 | Maintain | Rechecks of dependencies affected by engine, pack, interface, scenario, helper or detector changes | Mark affected scope pending recheck; retain the prior release's evidence |
 
 Before a verification run, the owner-agreed procedure must identify exact cases, commands,
@@ -413,16 +477,17 @@ and uncertainty references.
 
 ## Choices for owner review
 
-Each choice has one marker at its governing section. These links introduce no additional
-settings. No battle count, probability target, detector tolerance, duration boundary,
-coverage quota or aggregate weight is adopted by this proposal.
+The [owner response table](#current-plan-and-owner-decisions) is the current decision record.
+Earlier markers are retained with their limits; they are not nine unanswered questions.
 
-- [Core eligibility](#claims-and-eligibility): witnessed, validated core versus retaining all candidates together.
-- [Coverage design](#coverage-across-dimensions): family/context matrix and anchors versus another suite composition.
-- [Witness contract](#winnability-evidence): interface-faithful per-configuration wins, independent reproduction and a reliability plan.
-- [Measurement eligibility](#establish-that-the-intended-decision-matters): evidence needed for each advertised skill.
-- [Opponent control](#game-mechanics-and-engine-checks): native battles and separately labelled scripted diagnostics.
-- [Team comparisons](#multi-agent-scenarios): whole-system results and separate matched tests of specific mechanisms.
-- [Selection and reservation](#variation-and-protection-from-tuning): validity/coverage selection and the boundary around reserved cases.
-- [Family reporting](#reporting-and-aggregation): per-family reporting before choosing new aggregate weights.
-- [Validation lifecycle](#acceptance-and-maintenance): what must be rechecked as dependencies change.
+- Selected direction: progress one scenario at a time; initially one simpler and then one
+  more complex; try an overall ranking. No specific battles or ranking formula selected.
+- Tentative: the owner's manual winning demonstration with owner-only pause; health/morale
+  with cost/latency; rechecks after updates. Exact checks and sufficient evidence remain open.
+- Deferred: scripting for the initial pair; reservation policy; controller resources and
+  comparison design. None is silently settled by the earlier options.
+- Active research: [tactic judges](tactic-judges.md), including what to label, evidence to use
+  and how to test a judge against owner-labelled examples before trusting its output.
+
+No battle count, probability target, detector tolerance, duration boundary, coverage quota,
+score weight or judge model is selected. No implementation or evaluation is scheduled.
