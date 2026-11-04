@@ -24,7 +24,7 @@ Later planning: [session context](workflow.md#session-context-improvements) and 
 WH3 first; Spire waits behind it; post-training is secondary.
 Boris-only [battle proposals](twwarhammer3/boris-scenarios.md): unverified candidates for owner selection; no games scheduled.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews; correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)). Added [cross-domain design reference](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot); WH3 transfer remains open.
+Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)). Added [cross-domain design reference](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot); WH3 transfer remains open. Added [RoCoBench](twwarhammer3/benchmark-references/rocobench.md), with robot coordination parallels to both WH3 team setups.
 
 ## Total War: WARHAMMER III
 Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed, version5 (decision 1): [definition](twwarhammer3/benchmark.md), [phases](twwarhammer3/benchmark-implementation.md#phases),

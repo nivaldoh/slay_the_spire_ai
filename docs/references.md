@@ -47,6 +47,14 @@ Read as a research-code reference for WH3 transition tests and the separation be
 environment tests and live-engine evidence. Neither its tests nor SC2 ran here; its stepping
 model is not WH3's unpaused 1x timing contract. Application and evidence: [testing review](testing.md#mailbox-transition-review-2026-11-03).
 
+## Robot coordination reference (2026-11-04)
+
+Mandi, Jain and Song, [RoCo](https://doi.org/10.1109/ICRA57147.2024.10610855), ICRA 2024:
+**RoCoBench** tests robot cooperation through task dependencies, different capabilities
+and shared space. The [overview](twwarhammer3/benchmark-references/rocobench.md) maps these
+to WH3 unit-group owners and allied army owners, with timing limits and pinned code.
+Literature reference only; no experiment or verification method adopted.
+
 ## Cross-domain research reference (2026-11-02)
 
 Karttunen et al., [From Video Game to Real Robot: The Transfer Between Action Spaces](https://doi.org/10.1109/ICASSP40776.2020.9053221),
