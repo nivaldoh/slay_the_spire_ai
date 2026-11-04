@@ -47,8 +47,9 @@ def process_executable(pid: int) -> Path:
         kernel.CloseHandle(handle)
 
 
-def capture(device, pid: int, output: Path, *, seconds: float) -> int:
-    """Read-only attachment; caller retains ownership. A probe error exits nonzero."""
+def capture(device, pid: int, output: Path, *, seconds: float, adapter=None) -> int:
+    """Read-only attachment unless ``adapter`` (multiplayer_adapter) adds its operations;
+    the caller retains ownership. A probe error exits nonzero."""
     if pid <= 0 or not math.isfinite(seconds) or seconds <= 0:
         raise ValueError("positive pid and finite positive capture seconds are required")
     exe = process_executable(pid)
@@ -61,7 +62,8 @@ def capture(device, pid: int, output: Path, *, seconds: float) -> int:
     (output / "manifest.json").write_text(json.dumps({
         "pid": pid, "executable": str(exe), "exe_sha256": digest,
         "agent_sha256": hashlib.sha256(source.encode()).hexdigest(),
-        "seconds": seconds, "diagnostic_only": True,
+        "adapter_sha256": adapter and hashlib.sha256(adapter.source.encode()).hexdigest(),
+        "seconds": seconds, "diagnostic_only": adapter is None,
     }, indent=2), encoding="utf-8")
     stopped, failed, ready = threading.Event(), threading.Event(), threading.Event()
     lock = threading.Lock()
@@ -96,6 +98,11 @@ def capture(device, pid: int, output: Path, *, seconds: float) -> int:
             script = session.create_script(source)
             script.on("message", message)
             script.load()
+            if adapter is not None:
+                operations = session.create_script(adapter.source)
+                operations.on("message", message)
+                operations.load()
+                adapter.start(operations, write)
             deadline = time.monotonic() + seconds
             while not stopped.is_set() and time.monotonic() < deadline:
                 if (output / "STOP").exists():
