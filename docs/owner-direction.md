@@ -5,6 +5,17 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (overnight benchmark goal): "Work on improving our benchmark, focusing on
+  multi-agents. I'll leave you running overnight and won't be around to answer questions.
+  Use the research materials we collected as references. We should come up with a decent
+  number of challenging, interesting scenarios, think about how to improve the benchmark's
+  metrics being measured. We should think about how to best compare control methods such as
+  single LLM, GaP, and others, to see which approach performs best across different
+  dimensions. Overall, let's make good use of this time by improving our benchmark as much
+  as we can. No slop, no overengineering, no bloat. Verifiability is crucial. Let's try to
+  create an interesting, useful benchmark. You are free to spend money, although we should
+  try to minimize costs. Use a cheap Anthropic model." (Spelling corrected.) Game time and
+  paid calls authorized; brief and cap: `runs/coord-suite-20261104/brief.md`.
 - 2026-11-04 (future portfolio, record only): "this ... will be an important aspect to
   highlight in my portfolio website. Let's write it down without changing the portfolio yet".
   Preserve these examples of the owner's research direction and experimental judgement:
