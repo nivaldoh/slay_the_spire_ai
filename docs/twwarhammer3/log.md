@@ -28,6 +28,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: unit controller tags and highlighting
+
+The owner asked for clearer unit-to-agent indicators. Kept the existing owner colours;
+added stable short tags and named controller keys to large comparison maps. Selecting a
+key highlights that controller's units/paths; Watch names the selected unit's controller.
+Model, rule-set and script tags stay distinct. Tags use the recorded partition, including
+one owner holding units in distant wings. Positions, outcomes and policies are unchanged.
+Review found colliding tags in crowded Pincer scenes; labels now use nearby free space
+and leader lines, following the full replay's existing label-placement approach.
+New proposed browser check: old page fails for missing tags; new page passes 32 battle
+cases and 54 per-method controller selections, plus layout/pair/scene/Watch/phone checks.
+Seven planted errors caught: wrong owner/method, cross-method focus, stale pair/scene,
+wrong leader attachment and the old colliding placement. Existing suite browser check
+and 112-case comparison check pass. Independent review inspected 24 opening/melee views
+without tag overlaps and 12 focus/clear cases without moving or recolouring units/paths.
+Full production HTML matches the audited prototype; the 32-replay payload is unchanged.
+Evidence, reviews and gate output: `runs/ownership-indicators/`. No game or paid call ran.
+No existing test/scorer changed. New check scope rests on its JUDGEMENT? Owner display
+coverage marker; the check is not agreed. Fidelity and reader clarity remain unverified.
+
 ## 2026-11-04: separate battle comparisons and visible recording times
 
 A reader-perspective pass on the [suite report](reports.md#coordination-suite): added an

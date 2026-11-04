@@ -41,6 +41,7 @@ function suitePage(data, api) {
     last = null,
     moved = false, // whether the reader has played or dragged the clock on this battle
     separate = false,
+    ownerFocus = null,
     project = null;
 
   // The viewer and its run line name the method, not the model every method shares.
@@ -66,6 +67,56 @@ function suitePage(data, api) {
           ? "One model, through scripts"
           : "One model"
         : `${page.controllers[member]} ${m.rules ? "rules" : "model"}`;
+  // Stable across the overlay, separate maps and Watch. Read the recorded owner, never
+  // infer it from a unit's glyph or which wing it occupies (redesign guide: unit identity).
+  const OWNER_PREFIX = {
+    single: "M",
+    tips: "M+",
+    commander: "C",
+    team: "T",
+    gap: "R",
+    skills: "S",
+  };
+  const membersOf = (arm) =>
+    method(arm).models.includes("all") || !method(arm).models.length ? ["all"] : method(arm).models;
+  const ownerOf = (battle, id) =>
+    membersOf(battle.arm).includes("all") ? "all" : battle.owners[id];
+  function ownerLabel(arm, member) {
+    const members = membersOf(arm),
+      index = members.indexOf(member);
+    return {
+      tag: index < 0 ? "?" : OWNER_PREFIX[arm] + (members.length > 1 ? index + 1 : ""),
+      name: index < 0 ? "Controller not recorded" : memberName(method(arm), member),
+    };
+  }
+  const focused = (run, id) =>
+    !ownerFocus ||
+    (ownerFocus.arm === run.battle.arm && ownerFocus.member === ownerOf(run.battle, id));
+
+  function ownerControls(arm) {
+    const controls = el("span", null, "suite-owners");
+    controls.setAttribute("role", "group");
+    controls.setAttribute("aria-label", `${method(arm).name} controllers`);
+    for (const member of membersOf(arm)) {
+      const owner = ownerLabel(arm, member),
+        chip = button(
+          "",
+          () => {
+            ownerFocus =
+              ownerFocus?.arm === arm && ownerFocus.member === member ? null : { arm, member };
+            draw();
+          },
+          "suite-owner",
+        );
+      chip.dataset.ownerArm = arm;
+      chip.dataset.owner = member;
+      chip.style.setProperty("--owner-hue", memberHue(method(arm), member));
+      chip.setAttribute("aria-label", `${method(arm).name}: highlight ${owner.name}`);
+      chip.append(el("b", owner.tag), document.createTextNode(owner.name));
+      controls.append(chip);
+    }
+    return controls;
+  }
   const KINDS = { front: "infantry", ranged: "guns", mobile: "knights" };
   const kindOf = (glyph) =>
     /missile|artillery/.test(glyph || "")
@@ -297,10 +348,10 @@ function suitePage(data, api) {
     return layer;
   }
 
-  function drawArmy(layer, run, r, solid) {
+  function drawArmy(layer, run, r, solid, labels = null) {
     const frame = frameAt(run, time);
     if (!frame) return;
-    for (const u of frame.enemy.filter((item) => placed(item) && item.men > 0))
+    for (const u of frame.enemy.filter((item) => placed(item) && item.men > 0)) {
       layer.append(
         shape("enemy", project.x(u.x), project.y(u.z), 0.8 * r, {
           "data-enemy": u.id,
@@ -310,16 +361,110 @@ function suitePage(data, api) {
           opacity: able(u) ? 0.85 : 0.2,
         }),
       );
-    for (const u of frame.friendly.filter((item) => placed(item) && item.men > 0))
-      layer.append(
-        shape(run.kinds.get(u.id), project.x(u.x), project.y(u.z), r, {
+      labels?.push({ layer, x: project.x(u.x), y: project.y(u.z), bright: false });
+    }
+    for (const u of frame.friendly.filter((item) => placed(item) && item.men > 0)) {
+      const member = ownerOf(run.battle, u.id),
+        owner = ownerLabel(run.battle.arm, member),
+        bright = focused(run, u.id),
+        x = project.x(u.x),
+        y = project.y(u.z),
+        mark = shape(run.kinds.get(u.id), x, y, r, {
           "data-unit": u.id,
+          "data-owner": member || "unknown",
           fill: solid ? run.hue(u.id) : "#16232b",
           stroke: run.hue(u.id),
           "stroke-width": r / 3.5,
-          opacity: able(u) ? 1 : 0.25,
+          opacity: (able(u) ? 1 : 0.25) * (bright ? 1 : 0.12),
+        });
+      mark.append(
+        svg("title", {}, `${method(run.battle.arm).name} · ${u.id} · ${owner.tag}: ${owner.name}`),
+      );
+      layer.append(mark);
+      labels?.push({ layer, x, y, u, member, tag: owner.tag, bright, solid });
+    }
+  }
+
+  // As in the full replay's placeLabels, reserve space around actual markers and place
+  // short labels in free nearby space. A leader connects displaced tags; units never move.
+  function placeOwnerTags(labels) {
+    if (!labels.length) return;
+    const pixels = labels[0].layer.ownerSVGElement.getBoundingClientRect().width / project.W;
+    if (!pixels) return; // hidden comparison layout
+    const radius = BIG_R * pixels + 2,
+      taken = labels.map((l) => [
+        l.x * pixels - radius,
+        l.y * pixels - radius,
+        l.x * pixels + radius,
+        l.y * pixels + radius,
+      ]),
+      overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+    for (const l of labels) {
+      if (!l.bright) continue;
+      const x = l.x * pixels,
+        y = l.y * pixels,
+        width = l.tag.length * 7 + 4;
+      let box = null;
+      for (let ring = 1; ring <= 8 && !box; ring++) {
+        const d = radius + 6 + (ring - 1) * 14;
+        const offsets = [
+          [0, -d - 7],
+          [0, d + 7],
+          [d + width / 2, 0],
+          [-d - width / 2, 0],
+          [d, -d],
+          [-d, -d],
+          [d, d],
+          [-d, d],
+        ];
+        if (!l.solid) [offsets[0], offsets[1]] = [offsets[1], offsets[0]];
+        for (const [dx, dy] of offsets) {
+          const next = [x + dx - width / 2, y + dy - 7, x + dx + width / 2, y + dy + 7];
+          if (
+            next[0] < 1 ||
+            next[1] < 1 ||
+            next[2] > project.W * pixels - 1 ||
+            next[3] > project.H * pixels - 1 ||
+            taken.some((other) => overlaps(next, other))
+          )
+            continue;
+          box = next;
+          break;
+        }
+      }
+      if (!box) continue; // dense maps still have the controller keys and focus selection
+      taken.push(box);
+      const tx = (box[0] + box[2]) / 2 / pixels,
+        ty = (box[1] + box[3]) / 2 / pixels;
+      l.layer.append(
+        svg("line", {
+          x1: l.x,
+          y1: l.y,
+          "data-owner-link": l.u.id,
+          x2: tx,
+          y2: ty,
+          stroke: "#c0cbd0",
+          "stroke-width": 0.7 / pixels,
+          opacity: 0.55,
+          "pointer-events": "none",
         }),
       );
+      l.layer.append(
+        svg(
+          "text",
+          {
+            x: tx,
+            y: ty + 4 / pixels,
+            "font-size": 11 / pixels,
+            class: "suite-owner-tag",
+            "data-owner-unit": l.u.id,
+            "data-owner": l.member || "unknown",
+            opacity: able(l.u) ? 1 : 0.5,
+          },
+          l.tag,
+        ),
+      );
+    }
   }
 
   function drawPaths(layer, run, solid) {
@@ -336,13 +481,20 @@ function suitePage(data, api) {
             stroke: run.hue(id),
             "stroke-width": 1.6,
             "stroke-dasharray": solid ? null : "6 5",
-            opacity: 0.6,
+            opacity: focused(run, id) ? 0.6 : 0.07,
           }),
         );
     }
   }
 
   function draw() {
+    for (const chip of document.querySelectorAll(".suite-owner"))
+      chip.setAttribute(
+        "aria-pressed",
+        String(
+          ownerFocus?.arm === chip.dataset.ownerArm && ownerFocus.member === chip.dataset.owner,
+        ),
+      );
     for (const tile of document.querySelectorAll(".suite-tile")) {
       const run = scene[tile.dataset.arm],
         frame = frameAt(run, time);
@@ -361,13 +513,15 @@ function suitePage(data, api) {
     }
     const big = $("suite-big").layer;
     big.replaceChildren();
+    const labels = [];
     for (const [index, arm] of [...pair].reverse().entries()) {
       const solid = index === pair.length - 1,
         group = svg("g", { "data-arm": arm });
-      drawPaths(group, scene[arm], solid);
-      drawArmy(group, scene[arm], BIG_R, solid);
       big.append(group);
+      drawPaths(group, scene[arm], solid);
+      drawArmy(group, scene[arm], BIG_R, solid, labels);
     }
+    placeOwnerTags(labels);
     for (const item of document.querySelectorAll(".suite-pair [data-arm]")) {
       const run = scene[item.dataset.arm];
       item.querySelector("em").textContent = time >= lastMoment(run) ? ending(run) : "";
@@ -379,8 +533,10 @@ function suitePage(data, api) {
       panel.querySelector("em").textContent = time >= lastMoment(run) ? ending(run) : "";
       panel.layer.replaceChildren();
       if (separate) {
+        const labels = [];
         drawPaths(panel.layer, run, true);
-        drawArmy(panel.layer, run, BIG_R, true);
+        drawArmy(panel.layer, run, BIG_R, true, labels);
+        placeOwnerTags(labels);
       }
     }
     $("suite-clock").textContent = clock(time * 1000);
@@ -413,7 +569,8 @@ function suitePage(data, api) {
     pair.forEach((arm, index) => {
       const item = tag("front", "#dfe7ea", method(arm).name, index === 0);
       item.dataset.arm = arm;
-      item.append(el("em"), el("small", null, "suite-sample"));
+      item.classList.add("suite-pair-method");
+      item.append(el("em"), el("small", null, "suite-sample"), ownerControls(arm));
       box.append(item);
     });
     box.append(
@@ -436,7 +593,13 @@ function suitePage(data, api) {
           "aria-label": `${method(arm).name}: its own army and visible enemies`,
         });
       panel.dataset.arm = arm;
-      panel.append(el("h3", method(arm).name), el("em"), el("small", null, "suite-sample"), map);
+      panel.append(
+        el("h3", method(arm).name),
+        el("em"),
+        el("small", null, "suite-sample"),
+        ownerControls(arm),
+        map,
+      );
       panel.layer = sheet(map);
       return panel;
     });
@@ -455,6 +618,7 @@ function suitePage(data, api) {
   }
 
   function togglePair(arm) {
+    ownerFocus = null;
     if (pair.includes(arm)) {
       if (pair.length > 1) pair = pair.filter((item) => item !== arm);
     } else pair = [...pair, arm].slice(-2);
@@ -492,7 +656,10 @@ function suitePage(data, api) {
   // Whichever way a battle opens, its colours and names come from its own record.
   function paint(key) {
     const battle = battleOf.get(key);
-    Viewer.setUnitHue(battle ? (id) => memberHue(method(battle.arm), battle.owners[id]) : null);
+    Viewer.setUnitHue(
+      battle ? (id) => memberHue(method(battle.arm), battle.owners[id]) : null,
+      battle ? (id) => ownerLabel(battle.arm, ownerOf(battle, id)) : null,
+    );
     const legend = $("suite-legend");
     legend.replaceChildren();
     legend.dataset.output = battle?.output || "";
@@ -500,9 +667,13 @@ function suitePage(data, api) {
     const m = method(battle.arm),
       split = m.models.length && !m.models.includes("all");
     legend.append(el("b", `${battle.title}: ${m.name}`));
-    for (const member of split ? m.models : ["front"])
+    for (const member of membersOf(battle.arm))
       legend.append(
-        tag(split ? KINDS[member] : "front", memberHue(m, member), memberName(m, member)),
+        tag(
+          split ? KINDS[member] : "front",
+          memberHue(m, member),
+          `${ownerLabel(battle.arm, member).tag} · ${memberName(m, member)}`,
+        ),
       );
     legend.append(button("Close", closeWatch, "suite-close"));
   }
@@ -518,6 +689,7 @@ function suitePage(data, api) {
 
   async function choose(name) {
     setPlaying(false);
+    ownerFocus = null;
     closeWatch();
     $("suite-page").setAttribute("aria-busy", "true");
     current = name;
@@ -590,6 +762,9 @@ function suitePage(data, api) {
     });
     for (const button of $("suite-layout").querySelectorAll("button"))
       button.addEventListener("click", () => setLayout(button.dataset.layout));
+    window.addEventListener("resize", () => {
+      if (scene) draw();
+    });
     document.title = `${page.title} WH3 coordination suite`;
     return choose(pictures[0]);
   }

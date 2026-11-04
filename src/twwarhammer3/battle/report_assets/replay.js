@@ -176,8 +176,9 @@ const Viewer = (() => {
     watching = null,
     mapWidth = 0;
   const listeners = [];
-  // A page may colour each friendly unit by what controls it; the armies' colours stay default.
-  let unitHue = null;
+  // A page may colour and name each friendly unit's controller; other reports keep army colours.
+  let unitHue = null,
+    unitOwner = null;
   const hueOf = (id, side = "friendly") =>
     (side === "friendly" && unitHue?.(id)) || TEAM[side];
 
@@ -709,7 +710,7 @@ const Viewer = (() => {
       text:
         ghost || !named
           ? null
-          : `${entry.short || u.id}${seen != null ? `, seen ${clock(seen)}` : ""}`,
+          : `${side === "friendly" && unitOwner ? `${unitOwner(u.id).tag} · ` : ""}${entry.short || u.id}${seen != null ? `, seen ${clock(seen)}` : ""}`,
       note: [fleeing && !down && "fleeing", note].filter(Boolean).join(" ") || null,
       colour,
       rank: u.id === selected ? 0 : dim || hollow ? 2 : 1,
@@ -1431,6 +1432,10 @@ const Viewer = (() => {
       el("h3", entry.display),
       el("p", `${entry.role}, ${entry.side === "friendly" ? "friendly" : "enemy"}, ${entry.short}`),
     );
+    if (entry.side === "friendly" && unitOwner) {
+      const owner = unitOwner(id);
+      title.append(el("p", `Controller: ${owner.tag} · ${owner.name}`, "unit-owner"));
+    }
     const icon = glyph(entry.glyph);
     if (unitHue) icon.style.color = hueOf(id, entry.side);
     head.append(
@@ -1868,8 +1873,9 @@ const Viewer = (() => {
     watch,
     setLag,
     onTime: (listener) => listeners.push(listener),
-    setUnitHue: (choose) => {
+    setUnitHue: (choose, describe = null) => {
       unitHue = choose;
+      unitOwner = describe;
       keys = {};
     },
     get time() {

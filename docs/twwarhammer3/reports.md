@@ -50,6 +50,12 @@ them. Shapes are unit kinds, so a split army stays readable when colours overlap
 unit: an average over a kind would put an army split over two fronts where nobody stood. The
 question, plan and "seen" lines are hand-written in `report_notes.json`: no controller sees them.
 The map frame uses units still fighting, so a rout's run off the map does not shrink the fight.
+Large maps also show controller tags: `T1–T3` for the three models, `R1–R3` for the
+written rule sets, `M` for one model, `M+` with tips, `C` for model over scripts, and `S`
+for scripts alone. The named keys show each tag's meaning; select a key to highlight its
+units and paths, then select it again to clear. The same tag follows a controller into
+Watch, where a selected unit names its controller. Tags follow recorded ownership, not
+unit kind or geographic wing. Overview maps retain colour without extra tag text.
 Older reports are unchanged. Browser check:
 `NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_suite_browser.cjs
 runs/twwarhammer3/reports/suite.html`. It checks what the page shows, not that the numbers are
@@ -70,6 +76,11 @@ runs/twwarhammer3/reports/suite.html runs/cooperation-reader-pass/browser`.
 It checks recorded identities, positions and sample times against the cited raw rows, plus
 shared scale, mode/pair switching and phone layout. It does not establish useful coordination;
 display fidelity remains unverified under the owner's rule until a check is agreed.
+Ownership check: `NODE_PATH=~/.cache/wh3-playwright/node_modules node
+tests/twwarhammer3/check_wh3_owner_tags_browser.cjs runs/twwarhammer3/reports/suite.html
+runs/ownership-indicators/browser`. It requires raw trace partitions and the companion JSON;
+coverage rests on JUDGEMENT? Owner display coverage in that file. It is proposed, not agreed;
+reader clarity still needs feedback.
 
 ## Cooperation evidence proposal
 

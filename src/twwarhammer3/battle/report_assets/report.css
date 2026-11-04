@@ -1983,6 +1983,15 @@ sup {
 .suite-panel h3 { font-size: var(--t-s); color: var(--stage-ink); margin: 0; }
 .suite-panel em { font-style: normal; font-size: var(--t-xs); color: var(--stage-muted); }
 .suite-panel svg { margin-top: 6px; }
+.suite-pair .suite-pair-method { flex-wrap: wrap; max-width: 100%; }
+.suite-owners { display: flex; flex-wrap: wrap; gap: 4px; margin: 5px 0 3px; }
+.suite-pair .suite-owners { flex-basis: 100%; }
+.suite-owner { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--stage-line); border-radius: 4px; background: transparent; color: var(--stage-ink-2); padding: 3px 7px; font: inherit; font-size: var(--t-xs); cursor: pointer; }
+.suite-owner b { color: var(--owner-hue); font-variant-numeric: tabular-nums; }
+.suite-owner[aria-pressed="true"] { border-color: var(--owner-hue); color: var(--stage-ink); background: var(--stage-3); }
+.suite-owner:focus-visible { outline: 2px solid var(--stage-ink); outline-offset: 2px; }
+.suite-owner-tag { fill: #fff; stroke: #16232b; stroke-width: 3px; paint-order: stroke; text-anchor: middle; font-family: var(--sans); font-weight: 700; pointer-events: none; }
+.unit-owner { font-weight: 700; }
 .suite-blocked { fill: #22323b; }
 .suite-controls { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 8px; }
 .suite-controls button { background: var(--stage-2); color: var(--stage-ink); border: 1px solid var(--stage-line); border-radius: 4px; padding: 6px 18px; font: inherit; cursor: pointer; }
