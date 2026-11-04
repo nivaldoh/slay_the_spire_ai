@@ -28,6 +28,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: capture the script click path; stop at the owner's request
+
+`foundation-ref4` at `8bd3c55`, build 26403568 ($0): one paired script-click scope and
+five target records, all within that scope/thread/generation at last-completed tick 14.
+Targets in order: `22f7588`, `1c6b410`, `1c0ef3c`, `8d8480`, `233f848`; recorded bytes
+match the pinned executable. These are targets before call instructions, not submissions.
+Independent recount: 134 consecutive ticks (1–134), no duplicates/gaps/errors; manifest
+matches. Three matched ready acknowledgements: two refusals, then one UI click. First
+Deployed 2100 ms → running 13200 ms: 11.1 s. All 88 source hashes match the revision.
+Probe exited 0; game closed, deliberately truncated with no ending. Evidence/recount:
+`runs/twwarhammer3/native-multiplayer/foundation-ref4/`, task `click-review/ref4-recount.json`.
+The targets expose UI handling and signal emission; the underlying session readiness
+operation is still unidentified. No direct-control, passivity, replication or acceptance
+pass. Owner: "Let's wrap it up for now. I'll continue in another session"; no more probes.
+Next bounded question: follow the observed click's signal receivers. Handoff:
+`runs/wh3-multiplayer-foundation/handoff.md`; paid VM continuation remains stopped.
+
 ## 2026-11-04: resolve the script binding after the scoped trace stays empty
 
 `foundation-ref3` at `608aaab` loaded all hooks, read a running battle and closed cleanly,

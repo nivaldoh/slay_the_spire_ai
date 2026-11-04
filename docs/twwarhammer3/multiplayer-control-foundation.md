@@ -68,6 +68,15 @@ The helper reported failure and closed the owned game. The first two hooks now s
 Raw register snapshots are not function arguments. This patch-site change remains
 unverified until a fresh reference; the failed attempt is retained.
 
+`foundation-ref4` at `8bd3c55` reached the script scope: one paired click and five target
+records, plus 134 consecutive completed ticks without errors. Its retained running
+window was 11.1 engine seconds after the first Deployed observation; game/helper closed.
+The underlying session readiness operation is still unidentified: the observed UI
+handlers emit signals through `0x9070c0`. Next bounded question is which signal receiver
+handles readiness, before promoting any operation. Targets before instructions do not
+establish submission, direct control, passivity or replication. Owner stopped this work
+for continuation in another session; handoff `runs/wh3-multiplayer-foundation/handoff.md`.
+
 ## Owner decisions and completion
 
 The owner selected these directions during the investigation:
