@@ -705,6 +705,9 @@
     return `Score: 100 for a win${parts.length ? `; otherwise the percentage ${parts.join(" or ")}` : ""}.${bases.has("duration") ? " Survival battles score seconds survived." : ""} Bars are means over completed battles; lines span the worst to the best.${legacy.length < shown.size ? ` Mirror benchmark: ${BENCHMARK_RULE}` : ""}`;
   }
 
+  const SUITE_RULE =
+    "Engine outcome first: win > draw > loss. Within the same outcome, own is the mean of every original unit's health fraction after its strongest state penalty, times 100, and taken is the percent of the enemy dead or routed. State factors: normal 1, wavering 0.8, routing 0.5; shattered, dead or departed 0. Missing reads leave a value unavailable. No aggregate ranking.";
+
   // The coordination suite's own summary (suite.py); nothing here is computed from replays.
   function renderSuite() {
     const suite = data.suite;
@@ -801,7 +804,7 @@
     const unplanned = [...shown].filter((key) => isBenchmark(entries.get(key)) && !linked.has(key));
     if (!plans.length && !unplanned.length) return;
     $("benchmark-results").hidden = false;
-    $("benchmark-rule").textContent = BENCHMARK_RULE;
+    $("benchmark-rule").textContent = data.suite ? SUITE_RULE : BENCHMARK_RULE;
     box.replaceChildren();
     const sections = plans.map((plan) => ({
       name: plan.plan,

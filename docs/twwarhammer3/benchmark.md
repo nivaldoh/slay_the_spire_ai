@@ -104,8 +104,7 @@ excluded by a win rate: an unwitnessed scenario stays and is shown as unwitnesse
 | `single` | One model orders every unit (`llm_rules`) | The reference for every model arm |
 | `team` | One model per unit class, at the same time | Does dividing the army help? |
 | `commander` | One model gives standing skills; scripts carry them out between its replies | Does a slower planner over fast scripts help? |
-| `graphs` | Generic frozen [graphs](gap-plan.md) per class; a model only suggests targets every 30 s | What do target hints add to a fixed plan? |
-| `gap` | The same, but a coordinator and one specialist per class write the graphs before each scenario, from its public task | Can a plan a model writes once beat thinking throughout? Writing is billed separately |
+| `gap` | Before each scenario a coordinator and one specialist per class write frozen [graphs](gap-plan.md) from its public task; in battle a model only suggests targets every 30 s | Can a plan a model writes once beat thinking throughout? Writing is billed separately |
 
 These compare whole systems, as the [evaluation plan](multi-agent-plan.md#6-controllers-and-comparisons)
 says to do first: each at its natural concurrency, with what it spent shown beside what it won.

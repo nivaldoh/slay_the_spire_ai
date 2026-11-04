@@ -156,7 +156,8 @@ def validate_config(scenario, config):
         raise ValueError("unknown benchmark version")
     allowed = {"hold", "attack_nearest", "rush_nearest", "llm_rules"}
     if scenario["benchmark"] == SUITE:
-        allowed |= {"skills", "team_llm_rules", "commander", "configured"}
+        allowed |= {"skills", "team_llm_rules", "commander", "configured",
+                    "twwarhammer3.battle.reference:Concentrate"}
     names = config["policy"].split(",")
     if (len(names) != 1 or names[0].partition("@")[0] not in allowed
             or config.get("episodes") != 1 or config.get("attach")

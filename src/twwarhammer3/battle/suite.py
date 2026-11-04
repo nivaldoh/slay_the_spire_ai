@@ -25,10 +25,11 @@ from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
 
 # JUDGEMENT: Suite arms — Claude, 2026-11-04, overnight goal: the methods the code has today,
-# frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; one model;
-# one model per unit class; one model over the skills; generic graphs per class with model target
-# hints; graphs a model writes before each scenario, with the same hints (GaP's own idea).
-# Another model, effort or split is another arm; what the comparison answers rests on these.
+# frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; a script
+# that gathers and hits one enemy together (reference.py Concentrate limits); one model; one model
+# per unit class; one model over the skills; graphs a model writes before each scenario, with
+# model target hints in battle (GaP's own idea). Another model, effort or split is another arm;
+# what the comparison answers rests on these.
 # JUDGEMENT: Class team — Claude, 2026-11-04, overnight goal: team.CLASS_PARTITION gives one
 # member each to shooters, to fast or monstrous units and to the rest, on every scenario, so one
 # frozen team plays them all. A split by unit, by type, by position or by a planner is another arm.
@@ -38,11 +39,11 @@ ARMS = {
     "hold": ["--policy", "hold"],
     "rush": ["--policy", "rush_nearest"],
     "skills": ["--policy", "skills"],
+    "concentrate": ["--policy", "twwarhammer3.battle.reference:Concentrate"],
     "single": ["--policy", f"llm_rules@{MODEL}/{EFFORT}", *PAID],
     "team": ["--policy", f"team_llm_rules@{MODEL}/{EFFORT}", *PAID],  # ClassTeam in a suite
     "commander": ["--policy", f"commander@{MODEL}/{EFFORT}", *PAID],
-    "graphs": ["--policy", "configured", "--controller-config", str(GRAPH_TEMPLATE), *PAID],
-    "gap": ["--policy", "configured", *PAID],  # plus each scenario's authored artifact
+    "gap": ["--policy", "configured", *PAID],  # plus each scenario's written artifact
 }
 REFERENCE = "single"
 # JUDGEMENT: Local odds radius — Claude, 2026-11-04: men within 80 m (about two unit widths) of a
@@ -278,6 +279,10 @@ def mean(values):
     return round(statistics.mean(kept), 3) if kept else None
 
 
+def points(value):
+    return None if value is None else round(value, 1)
+
+
 def median(values):
     kept = [value for value in values if value is not None]
     return round(statistics.median(kept), 3) if kept else None
@@ -354,8 +359,8 @@ def summarize(rows):
             "losses": len(done) - wins - draws, "win_bound": win_bound(wins, len(done)),
             "scenarios_won": len({r["scenario"] for r in done if r["outcome"] == "won"}),
             "scenarios_played": len({r["scenario"] for r in done}),
-            "own": mean([r["own"] for r in done]),
-            "taken": mean([r["taken"] for r in done]),
+            "own": points(mean([r["own"] for r in done])),
+            "taken": points(mean([r["taken"] for r in done])),
             "battle_s": median([r["battle_s"] for r in done]),
             "usd": mean([r["usd"] for r in done]),
             "authoring_usd": mean([r["authoring_usd"] for r in done]),
@@ -376,7 +381,8 @@ def summarize(rows):
             **({"paired": {**paired(rows, arm, REFERENCE, scenarios),
                            "taken": taken_difference(rows, arm, REFERENCE, scenarios)}}
                if arm != REFERENCE and REFERENCE in arms else {})}
-    matrix = {scenario: {arm: [{"outcome": r["outcome"] or r["status"], "own": r["own"],
+    matrix = {scenario: {arm: [{"outcome": r["outcome"] or r["status"],
+                                "own": None if r["own"] is None else round(r["own"], 1),
                                 "taken": r["taken"]}
                                for r in rows if r["scenario"] == scenario and r["arm"] == arm]
                          for arm in arms} for scenario in scenarios}
@@ -420,15 +426,44 @@ def render(data):
 
 
 def gather(plans):
-    rows, planned = [], 0
+    """Rows of every plan. A later plan continues an earlier stopped one: its ``supersedes``
+    names battles replayed after a fix, kept and listed but no longer counted, and a pair it
+    plays replaces that pair's never-started row."""
+    rows, superseded = [], {}
     for plan in plans:
-        data = collect(Path(plan))
-        planned += data["planned"]
-        for row in data["rows"]:
-            rows.append({**row, **measure(row)})
-    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": planned,
+        superseded.update(json.loads(Path(plan).read_text()).get("supersedes") or {})
+        rows += [{**row, **measure(row)} for row in collect(Path(plan))["rows"]]
+    set_aside = [{"output": row["output"], "outcome": row["outcome"],
+                  "reason": superseded[row["output"]]}
+                 for row in rows if row["output"] in superseded]
+    played = {(row["scenario"], row["arm"]) for row in rows if row["started"]
+              and row["output"] not in superseded}
+    rows = [row for row in rows if row["output"] not in superseded
+            and (row["started"] or (row["scenario"], row["arm"]) not in played)]
+    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": len(rows),
             "completed": sum(bool(row["outcome"]) for row in rows), "rows": rows,
-            "summary": summarize(rows)}
+            "superseded": set_aside, "summary": summarize(rows)}
+
+
+def make_continuation(output, earlier, replay, budget_usd, *, seed, start_before=None, graphs=None):
+    """A plan for what a stopped plan did not play, plus named battles replayed after a fix."""
+    plan = json.loads(Path(earlier).read_text())
+    state = json.loads(Path(earlier).with_name(Path(earlier).stem + "-state.json").read_text())
+    finished = {str((REPO_ROOT / row["output"]).resolve()) for row in state["completed"]}
+    pairs = [(job["scenario"], job["arm"]) for job in plan["jobs"]
+             if str((REPO_ROOT / job["output"]).resolve()) not in finished or job["arm"] in replay]
+    fresh = make_plan(output, sorted({pair[0] for pair in pairs}),
+                      sorted({pair[1] for pair in pairs}), 1, budget_usd, seed=seed,
+                      start_before=start_before, graphs=graphs)
+    fresh["jobs"] = [job for job in fresh["jobs"] if (job["scenario"], job["arm"]) in pairs]
+    fresh["continues"] = str(earlier)
+    fresh["supersedes"] = replay_reasons = {}
+    for job in plan["jobs"]:
+        output_path = str((REPO_ROOT / job["output"]).resolve())
+        if job["arm"] in replay and output_path in finished:
+            replay_reasons[output_path] = replay[job["arm"]]
+    write_json(output, fresh)
+    return fresh
 
 
 def report(plans, output):

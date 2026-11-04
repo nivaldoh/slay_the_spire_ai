@@ -442,6 +442,8 @@ def team_section(view):
 class TeamLLM(llm.LLMPolicy):
     """The ``llm`` controller on a member's view, with its teammate's units appended."""
 
+    section_of = staticmethod(lambda view: team_section(view))
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.section = ""
@@ -450,7 +452,7 @@ class TeamLLM(llm.LLMPolicy):
         self.api.ask = lambda prompt, *rest: ask(prompt + self.section, *rest)
 
     def decide(self, observation):
-        self.section = team_section(observation)
+        self.section = self.section_of(observation)
         return super().decide(observation)
 
     def metadata(self):
@@ -458,6 +460,15 @@ class TeamLLM(llm.LLMPolicy):
         metadata["prompt"] += self.section
         metadata["prompt_sha256"] = hashlib.sha256(metadata["prompt"].encode()).hexdigest()
         return metadata
+
+
+class ClassTeamLLM(TeamLLM):
+    """A class member, told which ids it may order: one foreign id voids its whole reply, and
+    the first suite battles lost 26 of 163 and 55 of 276 calls that way."""
+
+    section_of = staticmethod(lambda view: team_section(view) + "\nThe only ids you may order: "
+                              + ", ".join(unit["id"] for unit in view["friendly"])
+                              + ". An order for any other unit voids your whole reply.")
 
 
 class ModelTeam(TeamPolicy):
@@ -470,7 +481,7 @@ class ModelTeam(TeamPolicy):
     reaches only the ledger (its cost and response id): its exchange, cost and call count
     reach no trace or result, whose member row says ``running_at_close``."""
 
-    partition, army_owner, optional = PARTITION, ARMY_OWNER, False
+    partition, army_owner, optional, member = PARTITION, ARMY_OWNER, False, TeamLLM
 
     def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
                  benchmark=False, **options):
@@ -481,9 +492,9 @@ class ModelTeam(TeamPolicy):
                 raise APIError("team closed; request not sent")
             return send(body)
 
-        super().__init__({name: (kinds, TeamLLM(model, effort, ledger, send=guarded,
-                                                provider=provider, system_prompt=system_prompt,
-                                                benchmark=benchmark))
+        super().__init__({name: (kinds, self.member(model, effort, ledger, send=guarded,
+                                                    provider=provider, benchmark=benchmark,
+                                                    system_prompt=system_prompt))
                           for name, kinds in self.partition.items()},
                          stop=stop, max_age_ms=None, army_owner=self.army_owner,
                          optional=self.optional, **options)
@@ -493,7 +504,7 @@ class ModelTeam(TeamPolicy):
 class ClassTeam(ModelTeam):
     """Up to three model members, split by unit class (``CLASS_PARTITION``), for any army."""
 
-    partition, army_owner, optional = CLASS_PARTITION, CLASS_OWNER, True
+    partition, army_owner, optional, member = CLASS_PARTITION, CLASS_OWNER, True, ClassTeamLLM
 
 
 class _MoveOnce:
