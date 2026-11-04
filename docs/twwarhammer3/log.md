@@ -46,17 +46,24 @@ the owner's rule. This is a research sketch for the existing report, not adoptio
 After the concurrent suite update, reconciled the proposal: owner colours are now implemented;
 member-specific source clocks remain the replay gap. Evidence: `replay-clock-check.txt` there.
 
-## 2026-11-04: tips alone did not help one model
+## 2026-11-04: one model with tips won none of six
 
 The owner agreed to test whether tips, not the method, explain `commander`'s wins (owner-direction.md).
 - Six `tips` battles (`round-6`, one per scenario, Haiku low, 857c938, build 26403568): 0 of 6 won.
   `single` was also 0 of 6. Against `single`: better on 3 scenarios, worse on 3, sign test p=1;
   broke-enemy difference -1.2 points, t 95% [-13.1, 10.8]. `commander` stays 4 of 5, `skills` 2 of 4.
-- Reading: tips alone did not turn one model's losses into wins. This does not show tips are useless:
-  `commander` may need tips and scripts together, which is untested. One battle per pair.
-- Caveats: `tips` ran at 857c938, the others at b86f34f; the game-side changes between them are
-  multiplayer paths, not checked live on single-client battles. Commander's own tips name skills, so
-  `tips` uses their direct-order wording (rests on JUDGEMENT suite.py Tips arm).
+- Reading: tips alone did not turn one model's losses into wins in these six. It does not show tips
+  are useless: by own + taken it is 3 better, 3 worse, and the interval above allows a gain of about
+  10 points. No arm runs a model over scripts without tips, so their part in `commander`'s wins is
+  still unmeasured.
+- The tips were used. Measured against `single`: notes naming gang, focus or concentrate 457 of 624
+  against 0 of 762; moves and attacks that run 6.8% against 56.2%; fighting unit-seconds sharing a
+  target 54.3% against 27.6%; refused orders 3.8% against 9.7%. Why each battle was lost is unmeasured.
+- Caveats: `tips` ran at 857c938, about 6.5 hours after `single` at b86f34f, with no `single` battle
+  at 857c938. Reviewed by reading: the game-side changes between them are multiplayer paths, not
+  checked live on single-client battles. Commander's own tips name skills, so `tips` uses their
+  direct-order wording (rests on JUDGEMENT suite.py Tips arm). `tips` on Detail is the only one of 32
+  battles with a Windows-clock window below 0.99 (0.885), with recorder gaps of at most 1.2 s.
 - Cost $0.69, ledger $5.47 to $6.17. All six ended with an engine result; none failed on infrastructure.
 - Page: six methods now; sentences remeasured for `tips`. Unverified: no agreed check for any of it.
 
