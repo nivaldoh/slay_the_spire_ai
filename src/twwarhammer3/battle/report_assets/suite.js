@@ -40,6 +40,7 @@ function suitePage(data, api) {
     playing = false,
     last = null,
     moved = false, // whether the reader has played or dragged the clock on this battle
+    separate = false,
     project = null;
 
   // The viewer and its run line name the method, not the model every method shares.
@@ -217,6 +218,7 @@ function suitePage(data, api) {
   const ending = (run) =>
     `${run.battle.outcome === "won" ? "Won" : "Lost"} ${clock(run.battle.battle_s * 1000)}`;
   const frameAt = (run, t) => {
+    if (t * 1000 < run.frames[0].time_ms) return null;
     let low = 0,
       high = run.frames.length - 1;
     while (low < high) {
@@ -226,6 +228,15 @@ function suitePage(data, api) {
     }
     return run.frames[low];
   };
+
+  // The clock compares elapsed battle time, not equivalent tactical states. Preserve each
+  // run's sample time, including missing beginnings and held endings (redesign guide §4).
+  function sampleText(run) {
+    const frame = frameAt(run, time);
+    if (!frame) return `Recording starts ${clockTenths(run.frames[0].time_ms)}`;
+    const at = clockTenths(frame.time_ms);
+    return time > lastMoment(run) ? `Holding final sample ${at}` : `Recorded ${at}`;
+  }
 
   async function load(name) {
     const runs = await Promise.all(
@@ -288,9 +299,11 @@ function suitePage(data, api) {
 
   function drawArmy(layer, run, r, solid) {
     const frame = frameAt(run, time);
+    if (!frame) return;
     for (const u of frame.enemy.filter((item) => placed(item) && item.men > 0))
       layer.append(
         shape("enemy", project.x(u.x), project.y(u.z), 0.8 * r, {
+          "data-enemy": u.id,
           fill: solid ? TEAM.enemy : "none",
           stroke: TEAM.enemy,
           "stroke-width": solid ? 0 : r / 4,
@@ -333,11 +346,14 @@ function suitePage(data, api) {
     for (const tile of document.querySelectorAll(".suite-tile")) {
       const run = scene[tile.dataset.arm],
         frame = frameAt(run, time);
-      const left = frame.friendly.filter(able).reduce((sum, u) => sum + u.men, 0),
-        all = frame.friendly.reduce((sum, u) => sum + (u.men0 || 0), 0);
+      const units = frame?.friendly || [],
+        left = units.filter(able).reduce((sum, u) => sum + u.men, 0),
+        all = units.reduce((sum, u) => sum + (u.men0 || 0), 0);
       const over = time >= lastMoment(run);
+      tile.querySelector(".suite-bar").hidden = !frame;
       tile.querySelector(".suite-bar i").style.width = `${all ? (100 * left) / all : 0}%`;
       tile.querySelector("em").textContent = over ? ending(run) : "";
+      tile.querySelector(".suite-sample").textContent = sampleText(run);
       tile.classList.toggle("won", over && run.battle.outcome === "won");
       const layer = tile.layer;
       layer.replaceChildren();
@@ -355,6 +371,17 @@ function suitePage(data, api) {
     for (const item of document.querySelectorAll(".suite-pair [data-arm]")) {
       const run = scene[item.dataset.arm];
       item.querySelector("em").textContent = time >= lastMoment(run) ? ending(run) : "";
+      item.querySelector(".suite-sample").textContent = sampleText(run);
+    }
+    for (const panel of $("suite-separated").children) {
+      const run = scene[panel.dataset.arm];
+      panel.querySelector(".suite-sample").textContent = sampleText(run);
+      panel.querySelector("em").textContent = time >= lastMoment(run) ? ending(run) : "";
+      panel.layer.replaceChildren();
+      if (separate) {
+        drawPaths(panel.layer, run, true);
+        drawArmy(panel.layer, run, BIG_R, true);
+      }
     }
     $("suite-clock").textContent = clock(time * 1000);
     $("suite-time").value = time;
@@ -386,14 +413,45 @@ function suitePage(data, api) {
     pair.forEach((arm, index) => {
       const item = tag("front", "#dfe7ea", method(arm).name, index === 0);
       item.dataset.arm = arm;
-      item.append(el("em"));
+      item.append(el("em"), el("small", null, "suite-sample"));
       box.append(item);
     });
-    box.append(el("small", "on one map. Click the maps above to change which two."));
+    box.append(
+      el(
+        "small",
+        "Solid and outlined include each battle’s own enemy. Pick maps above to change the pair.",
+      ),
+    );
     for (const tile of document.querySelectorAll(".suite-tile"))
       tile
         .querySelector(".suite-pick")
         .setAttribute("aria-pressed", String(pair.includes(tile.dataset.arm)));
+    // Like RoCo's display_utils.py, keep each execution with its own context; these two
+    // panes share a projection and clock, not a world or an inferred counterfactual.
+    const panels = pair.map((arm) => {
+      const panel = el("section", null, "suite-panel"),
+        map = svg("svg", {
+          class: "suite-big",
+          role: "img",
+          "aria-label": `${method(arm).name}: its own army and visible enemies`,
+        });
+      panel.dataset.arm = arm;
+      panel.append(el("h3", method(arm).name), el("em"), el("small", null, "suite-sample"), map);
+      panel.layer = sheet(map);
+      return panel;
+    });
+    $("suite-separated").replaceChildren(...panels);
+    $("suite-separated").classList.toggle("one", pair.length === 1);
+  }
+
+  function setLayout(value) {
+    separate = value === "separate";
+    $("suite-separated").hidden = !separate;
+    $("suite-big").toggleAttribute("hidden", separate);
+    $("suite-pair").hidden = separate;
+    for (const button of $("suite-layout").querySelectorAll("button"))
+      button.setAttribute("aria-pressed", String(button.dataset.layout === value));
+    if (scene) draw();
   }
 
   function togglePair(arm) {
@@ -414,11 +472,14 @@ function suitePage(data, api) {
       const pick = el("button", null, "suite-pick");
       pick.type = "button";
       const map = svg("svg", { class: "suite-small", role: "img" });
-      map.setAttribute("aria-label", `${method(arm).name}, at the same moment of battle`);
+      map.setAttribute(
+        "aria-label",
+        `${method(arm).name}, latest recorded sample at the comparison time`,
+      );
       tile.layer = sheet(map);
       const bar = el("span", null, "suite-bar");
       bar.append(el("i"));
-      pick.append(el("b", method(arm).name), el("em"), bar, map);
+      pick.append(el("b", method(arm).name), el("em"), el("small", null, "suite-sample"), bar, map);
       pick.addEventListener("click", () => togglePair(arm));
       tile.append(
         pick,
@@ -458,6 +519,7 @@ function suitePage(data, api) {
   async function choose(name) {
     setPlaying(false);
     closeWatch();
+    $("suite-page").setAttribute("aria-busy", "true");
     current = name;
     const item = suite.pictures[name];
     for (const line of document.querySelectorAll(".suite-grid tbody tr"))
@@ -466,7 +528,7 @@ function suitePage(data, api) {
     $("suite-why").textContent = item.why;
     $("suite-seen").textContent = page.current ? item.seen : "";
     const plan = $("suite-plan");
-    plan.replaceChildren(el("b", "The plan (no method sees it):"));
+    plan.replaceChildren(el("b", "One possible tactic (designer’s suggestion):"));
     for (const part of item.plan) {
       const entry = el("span");
       for (const who of part.who) entry.append(swatch(KINDS[who], HUES[who]));
@@ -483,6 +545,8 @@ function suitePage(data, api) {
     moved = false;
     $("suite-time").max = end;
     // Start on the two most different results; any two can be picked.
+    // JUDGEMENT?: Initial pair — Claude, 2026-11-04: show the extremes of enemy broken.
+    // A fixed method pair would show a different first comparison; no ranking follows.
     const ranked = Object.values(scene).sort((a, b) => b.battle.taken - a.battle.taken);
     pair = [ranked[0], ranked.at(-1)]
       .map((run) => run.battle.arm)
@@ -493,6 +557,7 @@ function suitePage(data, api) {
     big.layer = sheet(big);
     showPair();
     draw();
+    $("suite-page").setAttribute("aria-busy", "false");
   }
 
   function start() {
@@ -523,6 +588,8 @@ function suitePage(data, api) {
       time = Number(event.target.value);
       draw();
     });
+    for (const button of $("suite-layout").querySelectorAll("button"))
+      button.addEventListener("click", () => setLayout(button.dataset.layout));
     document.title = `${page.title} WH3 coordination suite`;
     return choose(pictures[0]);
   }

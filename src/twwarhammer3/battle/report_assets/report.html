@@ -43,8 +43,14 @@
       <p id="suite-plan" class="suite-plan"></p>
       <div class="suite-stage">
         <div id="suite-tiles" class="suite-tiles"></div>
+        <div id="suite-layout" class="suite-layout" role="group" aria-label="Compare selected battles">
+          <button type="button" data-layout="overlay" aria-pressed="true">Overlay</button>
+          <button type="button" data-layout="separate" aria-pressed="false">Side by side</button>
+          <span>Separate battles at the same elapsed time; each has its own responding enemy.</span>
+        </div>
         <p id="suite-pair" class="suite-pair"></p>
-        <svg id="suite-big" class="suite-big" role="img" aria-label="Two methods' armies on one map at the same moment of battle"></svg>
+        <svg id="suite-big" class="suite-big" role="img" aria-label="Recorded samples from separate battles, overlaid at the same elapsed time"></svg>
+        <div id="suite-separated" class="suite-separated" hidden></div>
         <div class="suite-controls">
           <button id="suite-play" type="button">Play</button>
           <span id="suite-clock" class="clock">0:00</span>

@@ -30,11 +30,17 @@ The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1
 
 `benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`. Plans must share battle
 versions. The page leads with who won each battle and a small picture of who controls what in each
-method. Picking a battle states its question and a one-line plan per model, then shows every
-method's army on one clock, one small map each, and two of them overlapped on a big map: one solid,
-one outlined, each unit's path drawn. The clock opens when the first of those battles ended, where
+method. Picking a battle states its question and a designer's suggested tactic, then shows every
+method's army on one clock, one small map each. Two selected battles can be overlaid on a big map
+(one solid, one outlined) or shown side by side at the same scale, each unit's path drawn.
+Each contains its own responding enemy army: equal elapsed time does not mean equal tactical
+states. The clock opens when the first of those battles ended, where
 they have already diverged; Play starts from 0:00. "Watch" opens one method's full replay. Every
 other measure and battle sits behind "Every measure and every battle".
+
+Each map names its actual recorded sample time. Before the first sample, units and the strength
+bar are hidden; after the last, the label says it is holding the final sample. No positions are
+interpolated. The unchanged initial pair rests on JUDGEMENT? `suite.js` Initial pair.
 
 Colour is the controller everywhere: pink for one model holding the whole army, blue, green and
 violet for the infantry, guns and knights models or rule sets, grey for scripts alone, orange for
@@ -57,6 +63,13 @@ uv run --locked python -m twwarhammer3 benchmark report runs/coord-suite-2026110
 
 Open `runs/twwarhammer3/reports/suite.html`. On Windows:
 `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\suite.html`.
+
+The proposed comparison check also requires the companion JSON and original recording folders:
+`NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_suite_comparison_browser.cjs
+runs/twwarhammer3/reports/suite.html runs/cooperation-reader-pass/browser`.
+It checks recorded identities, positions and sample times against the cited raw rows, plus
+shared scale, mode/pair switching and phone layout. It does not establish useful coordination;
+display fidelity remains unverified under the owner's rule until a check is agreed.
 
 ## Cooperation evidence proposal
 

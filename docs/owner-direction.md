@@ -5,6 +5,8 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (follow-up cooperation pass): "Let's do another pass from a different
+  perspective and see if we can continue to improve it."
 - 2026-11-04 (cooperation research goal): "Use our collected research materials to identify
   ways to improve our WH3 benchmark. Don't overcomplicate. Don't overengineer. No bloat,
   no slop. Let's improve the ways we measure and visualize real-time agent cooperation

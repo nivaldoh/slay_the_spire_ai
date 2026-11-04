@@ -28,6 +28,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: separate battle comparisons and visible recording times
+
+A reader-perspective pass on the [suite report](reports.md#coordination-suite): added an
+optional side-by-side view at one scale/elapsed clock, with each battle's own enemy response.
+Maps name the actual sample time, hide units/strength before recording starts, and identify
+held final samples. Authored prose is labelled a designer's possible tactic, not an agent plan.
+No scores, outcomes, policies or selected battles changed; no game or paid call ran here.
+The new proposed browser check fails on the old page's seven early unit marks at 0:00.
+It passes 100 panel/time cases across six scenes, plus pair/layout changes and phone/offline;
+the existing browser check also passes. Independent raw audit matched all 26 embedded replays.
+Review found three test gaps (pair click, wrong paths, CSS scale); all were closed.
+Seven planted errors are now caught: early samples, false current time, wrong enemies,
+coordinate/CSS scale, wrong paths and ignored pair changes. Production-build HTML matches
+the audited artifact byte for byte.
+After tips integration, the comparison check passes 112 cases; raw audit matches all 32 replays.
+Checks, raw audit, review and full gate output: `runs/cooperation-reader-pass/`.
+No existing test/check/scorer was changed. Added JUDGEMENT? markers for the inherited initial
+pair and proposed check coverage; the display/check evidence rests on them. The new check is
+not owner-agreed: fidelity and coordination quality remain unverified under the owner's rule.
+
 ## 2026-11-04: cooperation research and animated evidence proposal
 
 The [proposal](benchmark-references.md#make-cooperation-inspectable-before-scoring-it) uses
