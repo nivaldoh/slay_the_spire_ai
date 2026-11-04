@@ -1897,3 +1897,92 @@ sup {
     margin-right: 46px;
   }
 }
+
+/* The coordination suite: one result grid, the selected battle's problem, what each method's
+   groups did, and the replay. Everything else on the page folds away. */
+.is-suite .masthead { padding-bottom: 8px; }
+.is-suite #index,
+.is-suite #finding,
+.is-suite .picks,
+.is-suite .scenario-head,
+.is-suite .challenge-box,
+.is-suite .after,
+.is-suite .map-key,
+.is-suite #strip,
+.is-suite .step-group,
+.is-suite .map-legend,
+.is-suite .run-line .measures,
+.is-suite .run-line .sample,
+.is-suite #results,
+.is-suite #plans,
+.is-suite #all,
+.is-suite #method .interface,
+.is-suite #method h2,
+.is-suite #method-notes { display: none; }
+.is-suite main.wrap { padding: 0; }
+.suite-page { display: grid; gap: 22px; margin-bottom: 26px; }
+.suite-page > * { min-width: 0; }
+#suite-grid { overflow-x: auto; }
+.suite-grid { width: 100%; table-layout: fixed; border-collapse: collapse; font-family: var(--sans); background: var(--sheet); }
+.suite-grid th:first-child { width: 13%; }
+.suite-grid th, .suite-grid td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); font-size: var(--t-s); vertical-align: top; }
+.suite-grid thead th { font-weight: 400; vertical-align: bottom; }
+.suite-grid thead b { display: block; font-size: var(--t-m); color: var(--ink); }
+.suite-grid thead small { display: block; margin-top: 2px; color: var(--muted); font-size: var(--t-xs); line-height: 1.3; }
+.suite-grid tbody th { font-weight: 400; white-space: nowrap; }
+.suite-grid tbody tr.current { box-shadow: inset 3px 0 0 var(--ink); }
+.suite-grid tbody tr.current th { background: var(--note); }
+.suite-grid td.won { background: #d5ecdf; }
+.suite-grid td.won button { color: #0b5c3e; font-weight: 700; }
+.suite-grid td.lost button { color: var(--ink-2); }
+.suite-grid tfoot th, .suite-grid tfoot td { color: var(--ink-2); font-weight: 400; border-bottom: 0; }
+.suite-grid tfoot tr:first-child td { font-weight: 700; color: var(--ink); }
+.suite-link, .suite-cell { all: unset; cursor: pointer; }
+.suite-link { font-size: var(--t-m); color: var(--ink); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+.suite-cell:hover, .suite-link:hover { text-decoration: underline; }
+.suite-cell:focus-visible, .suite-link:focus-visible, .suite-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.suite-none { color: var(--faint); }
+.suite-readings { margin: 0; padding-left: 18px; font-family: var(--serif); font-size: var(--t-m); color: var(--ink); line-height: 1.5; }
+.suite-caveat { margin: 6px 0 0; color: var(--muted); font-size: var(--t-s); }
+.suite-title { margin: 0; font-family: var(--sans); color: var(--muted); font-size: var(--t-s); }
+.suite-case h2 { margin: 2px 0 6px; font-size: var(--t-xl); }
+.suite-why { margin: 0 0 4px; max-width: var(--measure); color: var(--ink-2); line-height: 1.5; }
+.suite-seen { margin: 0 0 14px; max-width: var(--measure); color: var(--ink); font-weight: 700; line-height: 1.5; }
+.suite-plan { display: grid; grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr); gap: 22px; align-items: center; }
+.suite-map { display: block; width: 100%; background: var(--map); border-radius: 4px; }
+.suite-link-line { stroke-width: 2; stroke-dasharray: 6 5; opacity: .9; }
+.suite-group-tag, .suite-enemy-tag { font-family: var(--sans); font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--map); stroke-width: 3px; }
+.suite-group-tag:not([text-anchor]), .suite-enemy-tag { text-anchor: middle; }
+.suite-enemy-tag { fill: var(--enemy); font-weight: 400; }
+.suite-jobs { list-style: none; margin: 0; padding: 0; font-family: var(--sans); }
+.suite-jobs li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.suite-jobs b { display: block; font-size: var(--t-m); }
+.suite-jobs span { color: var(--ink-2); font-size: var(--t-s); }
+.suite-lanes { margin-top: 18px; font-family: var(--sans); }
+.suite-lanes h3 { margin: 0 0 4px; font-size: var(--t-m); }
+.suite-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 6px 0 8px; color: var(--muted); font-size: var(--t-xs); }
+.suite-swatch { color: var(--ink); font-weight: 700; }
+.suite-swatch::before { content: ""; display: inline-block; width: 14px; height: 7px; margin-right: 5px; background: var(--hue); }
+.suite-row { all: unset; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px; align-items: center; width: 100%; padding: 6px 8px; box-sizing: border-box; cursor: pointer; border-top: 1px solid var(--line); }
+.suite-row:hover { background: var(--note); }
+.suite-row.current { background: var(--note); box-shadow: inset 3px 0 0 var(--ink); }
+.suite-row-name b { display: block; font-size: var(--t-s); color: var(--ink); }
+.suite-row-name small { color: var(--muted); font-size: var(--t-xs); }
+.suite-row-name em { display: block; margin-top: 2px; font-style: normal; color: var(--ink-2); font-size: var(--t-xs); line-height: 1.35; }
+.suite-bars { position: relative; display: grid; gap: 3px; }
+.suite-lane { position: relative; display: block; height: 9px; }
+.suite-lane i { position: absolute; top: 3.5px; height: 2px; background: var(--hue); opacity: .55; }
+.suite-lane i.fight { top: 0; height: 9px; opacity: 1; }
+.suite-end { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--faint); }
+.suite-end.won { background: #0e8a5f; width: 3px; }
+.suite-playhead { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.suite-ruler { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px; padding: 0 8px; }
+.suite-axis { position: relative; height: 18px; color: var(--muted); font-size: var(--t-xs); }
+.suite-axis span { position: absolute; top: 3px; transform: translateX(-50%); }
+.suite-more { margin-top: 18px; margin-bottom: 18px; font-family: var(--sans); }
+.suite-more summary { cursor: pointer; color: var(--ink-2); padding: 6px 0; }
+@media (max-width: 760px) {
+  .suite-grid { min-width: 640px; }
+  .suite-plan { grid-template-columns: 1fr; }
+  .suite-row, .suite-ruler { grid-template-columns: 130px minmax(0, 1fr); }
+}

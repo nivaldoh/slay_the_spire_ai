@@ -28,6 +28,32 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: suite page rebuilt around who coordinates with whom
+
+- Owner: the page did not show who should coordinate with whom, how or why, with too much on screen.
+  Suite reports now lead with one grid in plain method names. Each battle states its problem: a
+  start map of named groups, each group's job, and who depends on whom, hand-written in
+  `report_notes.json`. One row per method then shows when each group was in melee and answers the
+  battle's question from the 1 Hz recorder. Everything else folds behind one link: the page went
+  from 8,869 px to 2,664-3,088 px by battle. The mirror page, rebuilt and opened, keeps its layout.
+- A fresh-eyes review against the raw replays changed the reading of the first comparison:
+  - `commander` alone gets tactics advice ("How to fight" in `commander_prompt.md`); `single` and
+    `team` get the rules-only prompt. Its lead over `single` mixes the method with the advice.
+  - The written graphs are rules per unit class with no map plan, so the page calls them written
+    rules. Their template also carries one line of advice per class, such as charging an engaged
+    enemy, and `author_task` adds that a waiting graph needs another member to start the fight.
+  - Battles did not always play as designed: in `coord-pincer` the block split in all five battles
+    and the two fights began 430-530 m apart; in `coord-detail` the far wave had caught up before
+    first contact in all four; in `coord-breakout` neither win kept its line on one enemy group.
+  - `coord-relief`: `commander` won with the column never reaching the garrison's fight, and `team`
+    lost the same way; my first sentence, that the garrison "fought alone" for a set time, was
+    false for those two.
+  - One model's guns on `coord-rear-raid` never fired.
+- Checks: `tests/twwarhammer3/check_wh3_suite_browser.cjs` passes (proposed, not agreed); it shows
+  the page displays its report, not that the numbers are right. A reviewer's separate code
+  recomputed the rows and bars from the 26 replays once; that is a recount, not an agreed check.
+  Hand-written jobs and links are our reading, and the page says so.
+
 ## 2026-11-04: first comparison of control methods
 
 - Final versions at `b86f34f`, build 26403568, Haiku 5.5 low: rank-5 player units, enemy men 1.09 to
@@ -57,7 +83,8 @@ The number is `taken`. Every win reads 100 by construction.
   scenario to write its graphs, single $0.120, commander $0.145, team $0.311; skills $0 on four.
 - commander did better than single in its one battle on each of 5 shared scenarios, winning 4 (sign
   test p = 0.0625, the lowest that test can give with five pairs, so unresolved at 0.05), and took
-  62.6 points more (t 95% 32.9 to 92.3), which partly repeats the win count.
+  62.6 points more (t 95% 32.9 to 92.3), which partly repeats the win count. Only commander gets
+  tactics advice, so this also compares the advice (entry above).
 - Against skills, its own scripts with no model, commander did better on 3 of 4 and worse on 1
   (p = 0.625): the two have not been separated, and skills won pincer, which commander lost.
 - gap won one scenario (relief) and single none; both lost the other five, where gap's own + taken

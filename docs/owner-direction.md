@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (suite page, after the overnight run): "Make sure the suite is visually clear. For a
+  coordination task, it's not visibile who is supposed to be coordinating with who and how or why.
+  There's somehow too much info on the screen and yet the most important ideas are missing. Let's
+  improve how the most interesting pieces of information are conveyed in the benchmark, and reduce
+  visual clutter and confusion."
 - 2026-11-04 (during the overnight run): "Let's test the graph approach btw". The `gap` arm, graphs
   a model writes before each scenario, is in the running comparison.
 - 2026-11-04 (overnight benchmark goal): "Work on improving our benchmark, focusing on

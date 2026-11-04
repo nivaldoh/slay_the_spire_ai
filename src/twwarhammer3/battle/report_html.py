@@ -674,7 +674,8 @@ def render(report: dict, notes: dict | None = None) -> str:
     for character, escaped in (("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
                                ("\u2028", "\\u2028"), ("\u2029", "\\u2029")):
         encoded = encoded.replace(character, escaped)
-    script = (ASSETS / "replay.js").read_text() + "\n" + (ASSETS / "report.js").read_text()
+    script = "\n".join((ASSETS / name).read_text() for name in ("replay.js", "suite.js",
+                                                                 "report.js"))
     digest = base64.b64encode(hashlib.sha256(script.encode()).digest()).decode()
     replacements = {"@@STYLE@@": (ASSETS / "report.css").read_text(), "@@DATA@@": encoded,
                     "@@SCRIPT@@": script, "@@SCRIPT_HASH@@": digest}

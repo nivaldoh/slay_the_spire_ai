@@ -28,9 +28,20 @@ The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1
 
 ## Coordination suite
 
-`benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`: the
-[suite's](benchmark.md#the-coordination-suite-suite-v1) method and scenario tables above the usual
-replays, with a Watch button per battle. Plans must share battle versions. The first comparison:
+`benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`. Plans must share battle
+versions. The page leads with who won each battle, in plain method names. Picking a battle states
+its coordination problem: a start map with named groups, each group's job and who depends on whom.
+Below that one row per method shows when each group fought and answers the battle's question,
+such as where the reserve went; a row opens that replay, with the groups outlined on the map.
+Every other measure and battle sits behind "Every measure and every battle".
+
+Groups, jobs, links and the question are hand-written in `report_notes.json`, not in the battle
+declaration: they are our reading of the battle, no controller sees them, and a group is whichever
+declared centre a unit started nearest. Group timelines and answers are computed from the 1 Hz
+recorder by `suite.py`. Older reports are unchanged. Browser check:
+`NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_suite_browser.cjs
+runs/twwarhammer3/reports/suite.html`. It checks what the page shows, not that the numbers are
+right; it is proposed, not agreed. The first comparison:
 
 ```bash
 uv run --locked python -m twwarhammer3 benchmark report runs/coord-suite-20261104/round-4.json \

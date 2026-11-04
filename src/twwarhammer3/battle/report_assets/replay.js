@@ -176,6 +176,9 @@ const Viewer = (() => {
     watching = null,
     mapWidth = 0;
   const listeners = [];
+  // A page's own drawing under the units: (layer, frame, proj), optionally returning a
+  // function that draws what must sit above them.
+  let overlay = null;
 
   const placed = (u) => u && Number.isFinite(u.x) && Number.isFinite(u.z);
   const requested = (d) => d.decision_time_ms ?? d.time_ms;
@@ -910,6 +913,7 @@ const Viewer = (() => {
       (entry) => entry.side === "enemy" && !frame.enemy.some((u) => u.id === entry.id),
     ).length;
     quiet = frame.friendly.length + frame.enemy.length + unseen > FEW_UNITS;
+    const above = overlay?.(layer, frame, proj);
     drawTrails(layer, frame.time_ms, focus);
     // Routes issued in the last 20 s, faint; the selected unit's standing orders, strong.
     if (!selected)
@@ -991,6 +995,7 @@ const Viewer = (() => {
       );
       layer.append(circle);
     }
+    above?.();
     placeLabels(layer);
   }
 
@@ -1862,6 +1867,7 @@ const Viewer = (() => {
     watch,
     setLag,
     onTime: (listener) => listeners.push(listener),
+    setOverlay: (draw) => (overlay = draw),
     get time() {
       return time;
     },

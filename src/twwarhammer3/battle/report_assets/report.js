@@ -1785,6 +1785,10 @@
         intoView,
       );
   };
+  const suiteApi = {
+    open: openRun,
+    terrainOf: (key) => data.scenarios.find((item) => item.battles.includes(key))?.terrain,
+  };
   async function setup() {
     if (synthetic) $("demo-banner").hidden = false;
     $("watch-featured").addEventListener("click", () => watchFeatured());
@@ -1796,6 +1800,7 @@
     Viewer.onTime(markHighlights);
     downloads();
     renderMethod();
+    const page = data.suite ? suitePage(data, suiteApi) : null;
     renderSuite();
     renderBenchmarkResults();
     if (!data.scenarios.length) {
@@ -1832,6 +1837,7 @@
     renderMatrix();
     await renderScenario(Math.max(0, data.scenarios.indexOf(headline)));
     renderInterface(entries.get(scenario.featured), payload);
+    await page?.start();
     // Figure 2 is drawn at its width: redraw it when that changes.
     new ResizeObserver(() => {
       if (Math.abs($("commanders").clientWidth - plansWidth) > 24) renderPlans();

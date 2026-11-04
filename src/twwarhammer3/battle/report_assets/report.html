@@ -28,11 +28,30 @@
   <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
 
   <header class="wrap masthead">
-    <h1>Language models commanding armies in real time</h1>
-    <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and orders its regiments through a game mod while the battle keeps running. These scenarios are provisional: calibrating distinct decision problems comes before a broader comparison of the strongest models.</p>
+    <h1 id="page-title">Language models commanding armies in real time</h1>
+    <p id="page-dek" class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and orders its regiments through a game mod while the battle keeps running. These scenarios are provisional: calibrating distinct decision problems comes before a broader comparison of the strongest models.</p>
     <nav id="index" class="index" aria-label="Scenarios"></nav>
     <p id="finding" class="finding"></p>
   </header>
+
+  <section id="suite-page" class="suite-page wrap" hidden>
+    <div id="suite-grid"></div>
+    <div id="suite-reading"></div>
+    <div class="suite-case">
+      <p id="suite-title" class="suite-title"></p>
+      <h2 id="suite-question"></h2>
+      <p id="suite-why" class="suite-why"></p>
+      <p id="suite-seen" class="suite-seen" hidden></p>
+      <div class="suite-plan">
+        <div id="suite-map"></div>
+        <div>
+          <div id="suite-jobs"></div>
+          <p id="suite-link-note" class="suite-key"></p>
+        </div>
+      </div>
+      <div id="suite-timeline"></div>
+    </div>
+  </section>
 
   <section id="watch" class="watch" aria-labelledby="heading">
     <div class="wrap scenario-head"><h2 id="heading"></h2></div>
@@ -117,6 +136,11 @@
       </div>
     </div>
   </section>
+
+  <details id="suite-more" class="suite-more wrap" hidden>
+    <summary>Every measure and every battle</summary>
+    <div id="suite-more-body"></div>
+  </details>
 
   <main class="wrap">
     <section id="benchmark-results" class="section" aria-labelledby="benchmark-heading" hidden>
