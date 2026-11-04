@@ -13,8 +13,8 @@ Both games:
   [mp-next-steps.md](twwarhammer3/mp-next-steps.md#later-a-multiplayer-friendly-mod-api).
 - 2026-11-03 (WH3 checkpoints): "Let's update our checkpoint feature to the new version as
   well" (9.0.5/build 26403568); then "This might be a good time to try the live process".
-  Latest: "Let's wait before launching the game again". Finish the offline port; hold
-  live launches. Preserve the existing comparisons and tolerances when checking later.
+  After holding launches, owner resumed: "I think you can try running the game now".
+  Run the agreed live checks; preserve the existing comparisons and tolerances.
 - 2026-11-03 ([multiplayer next steps](twwarhammer3/mp-next-steps.md#owner-decisions)):
   "1. Sure 2. Yes. 3. You can do whatever works best for you. 4. Seems fine 5. We can keep
   it alive for now. Let's take note of these decisions without starting the implementation
