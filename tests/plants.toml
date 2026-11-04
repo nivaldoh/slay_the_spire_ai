@@ -3290,3 +3290,23 @@ new = '''        if observation.get("result"):
         self.written_ns = written_ns'''
 tests = ["tests/twwarhammer3/test_wh3_mailbox_transitions.py::test_terminal_observation_is_delivered_with_its_evidence"]
 source = "2026-11-03 mailbox contract review: endings are observations too"
+
+
+[[plant]]
+id = "land-missing-unit-state-is-not-death"
+guards = "Missing unit state must not exempt required live morale/speed readings"
+file = "tests/twwarhammer3/check_wh3_checkpoint.py"
+old = '''                known_dead = any(type(unit.get(field)) in (int, float)
+                                 and unit[field] == 0 for field in ("men", "hp"))'''
+new = '''                known_dead = unit.get("men", 0) <= 0 or unit.get("hp", 0) <= 0'''
+tests = ["tests/twwarhammer3/test_wh3_land_live_values.py::test_unavailable_state_is_not_evidence_that_live_getters_are_optional"]
+source = "2026-11-03 independent Land live-value review: missing-men probe"
+
+[[plant]]
+id = "land-live-getters-required-for-every-unit"
+guards = "Every living unit needs the live getters, including units after the first"
+file = "tests/twwarhammer3/check_wh3_checkpoint.py"
+old = '''            for unit in value["units"]:'''
+new = '''            for unit in value["units"][:1]:'''
+tests = ["tests/twwarhammer3/test_wh3_land_live_values.py::test_every_unit_needs_live_values_not_just_the_first"]
+source = "2026-11-03 independent Land live-value review: first-unit-only mutant"

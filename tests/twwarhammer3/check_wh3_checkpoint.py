@@ -14,10 +14,14 @@ uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py \
 Pass: both restores match the source's native checksum on every tick and every reading
 (positions, men, hit points, ammunition, morale, abilities, clock, the script's state), and
 the changed restore diverges after its changed order. Agreed by the owner on 2026-10-25.
+Owner, 2026-11-03: use live numeric morale/speed as in siege; raw cached stat-panel
+differences remain diagnostics. All other readings still compare exactly.
 Recount saved evidence without launching: --recount EXISTING_OUTPUT.
 """
 import argparse
+import copy
 import json
+import math
 import shutil
 import sys
 from collections import Counter
@@ -70,7 +74,12 @@ CHANGED = [move(CHANGED_TICK, "spearmen_back", 1, SPEAR, -245, 160), AFTER[1]]
 
 def plans(output: Path) -> dict:
     name = output.name + "-1200"
-    readings = {"every": 100, "lua": READING}
+    # Keep READING unchanged: the siege check imports it and adds the same live getters.
+    live = (Path(__file__).with_name("checkpoint_siege") / "live_units.lua").read_text()
+    reading = ("local battle = (function()\n" + READING + "\nend)()\n"
+               + "battle = twwarhammer3_json.decode(battle)\n" + live
+               + "\nreturn twwarhammer3_json.encode(battle)")
+    readings = {"every": 100, "lua": reading}
     setup_lua = [{"tick": 1, "label": "battle_script", "lua": SCRIPT}]
     source = {"scenario": SCENARIO, "save_at": [{"tick": CHECKPOINT, "name": name}],
               "lua_at": setup_lua + BEFORE + AFTER, "readings": readings, "stop_tick": STOP}
@@ -112,25 +121,80 @@ def completeness(rows: list[dict], *, stop_tick: int, reading_every: int,
     return result
 
 
+def compare_live(source: list[dict], restore: list[dict]) -> dict:
+    """Exact live readings, with cached stat panels retained as diagnostics.
+
+    Owner, 2026-11-03: extend the existing siege live-value rule to Land.
+    Follow the snapshot/comparison pattern in Farama-Foundation/Gymnasium v1.4.0,
+    gymnasium/utils/env_checker.py; the reference rule here is siege.compare_runs.
+    """
+    missing_live = []
+
+    def observed(rows, label):
+        result = []
+        for row in rows:
+            if row.get("event") != "reading":
+                result.append(row)
+                continue
+            value = copy.deepcopy(row["value"])
+            if not value["units"]:
+                missing_live.append({"run": label, "tick": row["tick"], "fields": ["units"]})
+            for unit in value["units"]:
+                # Dead units may lack getters; require explicit zero men/HP as evidence
+                # of death. Missing state must not exempt a unit from numeric readings.
+                known_dead = any(type(unit.get(field)) in (int, float)
+                                 and unit[field] == 0 for field in ("men", "hp"))
+                if not known_dead:
+                    absent = [key for key in ("slow_speed", "fast_speed", "morale_percent")
+                              if type(unit.get(key)) not in (int, float)
+                              or not math.isfinite(unit[key])]
+                    if absent:
+                        missing_live.append({"run": label, "tick": row["tick"],
+                                             "id": unit.get("id"), "fields": absent})
+                unit.pop("stats", None)
+            result.append({**row, "value": value})
+        return result
+
+    result = checkpoint.compare(observed(source, "source"), observed(restore, "restore"))
+    a = {r["tick"]: r["value"] for r in source if r.get("event") == "reading"}
+    b = {r["tick"]: r["value"] for r in restore if r.get("event") == "reading"}
+    cached = []
+    for tick in sorted(a.keys() & b.keys()):
+        before = {u.get("id", i): u for i, u in enumerate(a[tick]["units"])}
+        after = {u.get("id", i): u for i, u in enumerate(b[tick]["units"])}
+        differences = [{"id": uid, "source": before[uid].get("stats"),
+                        "restore": after[uid].get("stats")}
+                       for uid in sorted(before.keys() & after.keys())
+                       if before[uid].get("stats") != after[uid].get("stats")]
+        if differences:
+            cached.append({"tick": tick, "units": differences})
+    result.update(strict_comparison=checkpoint.compare(source, restore), cached_stats=cached,
+                  live_getters_complete=not missing_live, missing_live_getters=missing_live)
+    return result
+
+
 def assess(output: Path) -> dict:
     source = checkpoint.events(output / "source")
-    checks = {"source_saved": any(e.get("event") == "saved" and e["tick"] == CHECKPOINT
+    checks = {"reading_comparison": "live-values-v1",
+              "source_saved": any(e.get("event") == "saved" and e["tick"] == CHECKPOINT
                                   for e in source),
               "source_complete": completeness(source, stop_tick=STOP, reading_every=100)}
     for run in ("restore-a", "restore-b", "changed"):
         rows = checkpoint.events(output / run)
-        result = checkpoint.compare(source, rows)
+        result = compare_live(source, rows)
         result["complete"] = completeness(rows, stop_tick=STOP, reading_every=100,
                                           restored_at=CHECKPOINT)
         checks[run] = result
         restored = result["restored_at"] == CHECKPOINT and result["seed_matches"] is True
         if run == "changed":
             result["pass"] = (restored and result["complete"]["pass"]
+                              and result["live_getters_complete"]
                               and result["checksum_mismatches"] > 0
                               and result["first_mismatch"] > CHANGED_TICK
                               and bool(result["readings_unequal"]))
         else:
             result["pass"] = (restored and result["complete"]["pass"]
+                              and result["live_getters_complete"]
                               and result["checksum_mismatches"] == 0
                               and not result["readings_unequal"])
     manifests = [json.loads((output / run / "manifest.json").read_text())

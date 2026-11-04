@@ -28,6 +28,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-03: strict Land checkpoint check fails on stat panels; live-value rule extended
+
+- Ran the existing Land check at `8029e1b`, build 26403568, four completed/closed launches:
+  `runs/twwarhammer3/checkpoint-check-905-20261103/`. Both identical restores match all
+  2,000 planned native ticks and the Lua seed. Three of nine Lua readings per restore
+  differ only in the enemy Savage Orcs' cached stat panel; the strict check fails.
+- Changed-order control diverges at tick 1303. Independent audit found the same stats-only
+  failure class in retained old-build runs and confirmed a native timed cache; that does
+  not prove every difference harmless. Raw evidence/verdict stays unchanged.
+- Owner chose "Use the existing live-value rule (Recommended)": Land now uses siege's
+  numeric morale/speed readings. All living units need finite getters; only cached panel
+  stats leave the exact comparison, with raw/strict diagnostics retained. Other readings,
+  native ticks, completeness, seeds and changed-order rules are unchanged.
+- Pre-change mutation replay at `8029e1b`: 355 caught, two MISSED (clock/path-stat and
+  transient-read-lock cases outside this change); retained for follow-up, not altered here.
+- Checker card, failed-before component cases and review: `runs/wh3-checkpoint-905/`.
+  Fresh new-method Land and declared siege checks remain pending. No paid calls ($0).
+
 ## 2026-11-03: multiplayer next steps built; PC test bed
 
 - Built the offline parts of [mp-next-steps.md](mp-next-steps.md#implementation-status-2026-11-03)

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (Land checkpoint readings): owner chose "Use the existing live-value rule
+  (Recommended)": extend the siege rule to Land, require exact numeric morale/speed
+  readings, and keep cached stat-panel differences as diagnostics. Preserve the first
+  strict failure; verify a fresh run with the new readings.
 - 2026-11-03 (multiplayer mod API, later): "We should take a note to investigate later if we
   can modify the Lua API, the mod, etc in order to make this sort of functionality (e.g.
   exposing the functionality of the Start Battle button) easier, faster, more reliable and

@@ -201,7 +201,8 @@ revisions written below are the earlier passes.
   one with a changed order; per-tick native checksums and Lua readings:
   `uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output
   runs/twwarhammer3/checkpoint-check-<new-name>` (pass rule offline:
-  `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_checkpoint.py`); agreed
+  `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_checkpoint.py
+  tests/twwarhammer3/test_wh3_land_live_values.py`); agreed
   2026-10-25; passed at `7b1e2ed` (`checkpoint-check-20261025b/`) and at `6fdb271` on main
   (`runs/twwarhammer3/checkpoint-check-20261025c/`, 4 launches: 0 mismatches over 2,001
   ticks and 9/9 readings per restore, the changed one diverged at 1303; a bystander replay
@@ -215,6 +216,13 @@ revisions written below are the earlier passes.
   "About the quick items, yes to all"). Custom land battle, build 25961564; no claim for
   real-time script timers, our bridge mod's state, the loading screen, other battle types
   or builds.
+  Owner extension 2026-11-03: use the siege live-value rule in Land too. Living units
+  require finite numeric `morale_percent`, `slow_speed` and `fast_speed`; only
+  `units[*].stats` is excluded from exact reading comparison. All other fields,
+  every planned native checksum and the changed-order control remain exact. Raw strict
+  comparisons and cached-panel differences are retained. Speed getters describe movement
+  capability, not witnessed fatigue-adjusted effective speed. Earlier passes above use
+  the original raw-reading rule; logs without the new getters do not pass this method.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`

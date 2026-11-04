@@ -21,7 +21,9 @@ def battle(seed=0, changed_from=None, restored=True, reading_change=None):
         checksum = tick * 7 + seed + (1 if diverged else 0)
         rows.append({"event": "tick", "tick": tick, "checksum": checksum})
         if tick % 100 == 0:
-            value = {"units": [{"x": tick / 10, "hp": 0.9 if diverged else 1.0}],
+            value = {"units": [{"id": "unit", "men": 100, "x": tick / 10,
+                                "hp": 0.9 if diverged else 1.0, "morale_percent": 1.0,
+                                "slow_speed": 2.0, "fast_speed": 4.0}],
                      "script": {"draws": [5]}}
             if reading_change == tick:
                 value["units"][0]["hp"] = 0.5

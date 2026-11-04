@@ -50,6 +50,15 @@ two restores with the same later orders; one restore with a changed order at tic
 It passes when both restores match the source on every tick's checksum and every reading
 (positions, men, hit points, ammunition, morale, abilities, clock, the script's timers,
 orders and random draws), and the changed restore diverges after its changed order.
+
+Owner extension, 2026-11-03: use the same live-value rule as siege. Living units must supply
+finite numeric morale percent and slow/fast movement capabilities. Only the cached
+`units[*].stats` panel is excluded from exact comparison; all other fields and every native
+checksum still match exactly. The full raw comparison and panel differences remain in
+`checks.json` and the native logs. Movement capabilities do not establish fatigue-adjusted
+effective speed. Earlier logs without these getters cannot pass the extended method; the
+first strict 9.0.5 attempt stays failed and needs a fresh live run ([log](log.md)).
+
 Passed at `7b1e2ed` (`runs/twwarhammer3/checkpoint-check-20261025b/`) and, after the merge
 and the Replays-list fix, at `6fdb271` (`checkpoint-check-20261025c/`): 0 checksum
 mismatches over 2,001 ticks and 9/9 equal readings per restore; the changed restore diverged
