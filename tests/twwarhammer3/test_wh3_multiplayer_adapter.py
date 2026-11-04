@@ -117,23 +117,12 @@ assert.deepEqual(calls, [ui.value]);
 ''')
 
 
-def test_deployment_phases_are_the_two_the_engine_calls_deployment():
-    agent_check(r'''
-battle();
-const api = load();
-side = send_packet;
-words.set(setup.add(0xc8).value, 0);
-api.submit('ready_deployment', 'r1');
-step();
-assert.equal(results().at(-1).status, 'submitted');
-''')
-
-
 def test_each_guard_refuses_before_the_engine_call():
     agent_check(r'''
 const cases = [
     ['conflict phase', () => words.set(setup.add(0xc8).value, 5), /not deployment/],
     ['phase 1 is not deployment', () => words.set(setup.add(0xc8).value, 1), /not deployment/],
+    ['phase 0 precedes the click', () => words.set(setup.add(0xc8).value, 0), /not deployment/],
     ['one-shot already set', () => words.set(ui.add(0x15cf).value, 1), /already sent/],
     ['engine flag a', () => words.set(env.add(0x3b0).value, 1), /engine flags/],
     ['engine flag b', () => words.set(env.add(0x3b1).value, 1), /engine flags/],

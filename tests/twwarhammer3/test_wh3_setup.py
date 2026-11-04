@@ -735,3 +735,7 @@ def test_lobby_ready_can_only_move_readiness_toward_the_request():
         [toggle] = [step for step in setup.lobby_ready_steps(ready) if "command" in step]
         assert toggle["command"] == setup.LOBBY + "ToggleReady" and toggle["when"] == guard
     assert not any("find" in step for step in setup.lobby_ready_steps(True)), "no component lookup"
+    # The flag lags the command (foundation-ref6), so its read must retry, not read once.
+    read = setup.lobby_ready_steps(True)[-1]
+    assert (read["expression"], read["expect"], read["required"]) == (flag, True, True)
+    assert read["timeout_ms"] >= 3000

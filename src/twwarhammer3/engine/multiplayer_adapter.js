@@ -54,13 +54,14 @@ function current(session) {
     if (!ui.add(UI.env).readPointer().equals(env)) return {refused: 'stale battle interface'};
     return {ui, env, stream: env.add(ENV.provider).readPointer()};
 }
-// The checks 0x1bfa108 makes silently, read first so a refusal is reported. Phase 0 and 4
-// are what the engine's own IsDeploymentPhase (0x1e8933c) accepts; it also sends in phase 1.
+// The checks 0x1bfa108 makes silently, read first so a refusal is reported. It would also
+// send in phases 0 and 1; foundation-ref8 did at phase 0, before the battle's scripted start.
+// Phase 4 is the one a real click happened in (foundation-ref6), so nothing earlier is asked.
 function refusal(state) {
     if (state.refused) return state.refused;
     const {ui, env, stream} = state;
     const phase = env.add(ENV.setup).readPointer().add(SETUP.phase).readU32();
-    if (phase !== 0 && phase !== 4) return 'not deployment: phase ' + phase;
+    if (phase !== 4) return 'not deployment: phase ' + phase;
     if (ui.add(UI.deployment_flag).readU8() !== 0) return 'already sent';
     if (env.add(ENV.flag_a).readU8() !== 0 || env.add(ENV.flag_b).readU8() !== 0)
         return 'engine flags set';

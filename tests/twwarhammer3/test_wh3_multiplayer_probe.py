@@ -139,6 +139,7 @@ pointers.set(model.add(MODEL.state).value, state.value);
 pointers.set(state.add(STATE.alliances).value, 0);
 words.set(state.add(STATE.alliance_count).value, 0);
 words.set(world.add(WORLD.phase).value, 4);
+words.set(state.add(STATE.phase).value, 3);
 pointers.set(SCRIPT.global, 0);
 pointers.set(session.add(0x20).value, env.value);
 pointers.set(env.add(ENV.checksums).value, checks.value);

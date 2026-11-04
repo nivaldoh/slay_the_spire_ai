@@ -33,14 +33,17 @@ const UI = {env: 0x418, deployment_flag: 0x15cf};
 const SCRIPT = {global: 0x448f208, env: 0x468, winner: 0x5cc, decided: 0x5d0};
 // The tick hands each command handler [env+0x440] (0x2ddab54 -> 0x2f0b580 -> call rax).
 const MODEL = {state: 0x150};
-const STATE = {alliance_count: 0x134, alliances: 0x138, ready_count: 0x9b8,
+// phase is the simulated one (0x2ddfff0 sets it); WORLD.phase is a client-side copy of the
+// kind the UI reads, kept since the guards and the reference rows use it.
+const STATE = {phase: 0x28, alliance_count: 0x134, alliances: 0x138, ready_count: 0x9b8,
                ready_countdown: 0x9b4};
 const PROVIDER = {buffer: 8, write_offset: 0x5008};
 // Unit fields as the battle_unit Lua getters read them (table 0x3d4ac70): ui id 0x2f22df8,
 // men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0. The morale word is
 // the state 0x303bd08 reads for is_routing. Hit points: 0x310da24 reads unit+0x80 and +0x88
 // among others; these two are raw words. The walk is the one Lua's alliances/armies/units
-// make, through the model state: 0x2ec53d0, 0x2dd8f28, 0x2ed0708.
+// make, through the model state (0x2ec53d0, 0x2ef796c, 0x2efb448). Reinforcement armies sit
+// elsewhere ([state+0x720]+0xa0), so this walk does not cover them.
 const WORLD = {phase: 0xc8};
 const ALLIANCE = {army_count: 0x34, armies: 0x38};
 const ARMY = {unit_count: 0x164, units: 0x168};
@@ -97,8 +100,7 @@ function unitRow(alliance, army, index, unit) {
              body.add(BODY.bearing).readU32() & 0xffff);
     return row;
 }
-function witnessRows(env) {
-    const state = env.add(ENV.model).readPointer().add(MODEL.state).readPointer();
+function witnessRows(state) {
     const rows = [], alliances = state.add(STATE.alliances).readPointer();
     for (let a = 0, n = state.add(STATE.alliance_count).readU32(); a < n; a++) {
         const alliance = alliances.add(a * 8).readPointer();
@@ -215,7 +217,9 @@ try {
                     env.add(ENV.tick).readU32() !== p.tick || p.tick <= b.emitted) return;
                 b.emitted = p.tick;
                 const world = env.add(ENV.setup).readPointer();
-                record('completed_tick', {...p, phase: world.add(WORLD.phase).readU32()});
+                const state = env.add(ENV.model).readPointer().add(MODEL.state).readPointer();
+                record('completed_tick', {...p, phase: world.add(WORLD.phase).readU32(),
+                                          sim_phase: state.add(STATE.phase).readU32()});
                 const script = main.base.add(SCRIPT.global).readPointer();
                 if (!b.decided && !script.isNull() && script.add(SCRIPT.env).readPointer().equals(env)
                         && script.add(SCRIPT.decided).readU32() !== 0) {
@@ -224,7 +228,7 @@ try {
                     record('battle_decided', {tick: p.tick,
                                               winner: script.add(SCRIPT.winner).readU32() | 0});
                 }
-                const sample = {tick: p.tick, units: witnessRows(env), sent: false};
+                const sample = {tick: p.tick, units: witnessRows(state), sent: false};
                 if (b.commanded && b.last && !b.last.sent)
                     record('witness', {tick: b.last.tick, units: b.last.units,
                                        reason: 'before_command'});

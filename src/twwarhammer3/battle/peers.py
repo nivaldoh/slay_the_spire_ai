@@ -65,10 +65,11 @@ Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each 
 compared at every tick of the interval and raw unit rows at every scheduled tick, with no
 tolerance and without nearest-tick matching. The interval defaults to everything any client
 recorded, so a late start or a stall counts as missing; a declared interval can narrow it.
-The verdict is ``conflict`` when a checksum, a phase, a raw value, a decided winner or a
-client's own repeated records differ; ``inconclusive`` when evidence is missing, only some
-clients saw an ending, a capture failed, did not stop cleanly, or no tick or no unit row was
-compared; ``agreed`` otherwise. Tick origins, unit order
+The verdict is ``conflict`` when a checksum, a raw value, a decided winner, a named packet count
+or a client's own repeated records differ; ``inconclusive`` when evidence is missing, only some
+clients saw an ending, simulated phases differ (their comparability is not calibrated), a
+capture failed, did not stop cleanly, or no tick or no unit row was compared; ``agreed``
+otherwise. Tick origins, unit order
 and field comparability have no two-client calibration yet, so ``agreed`` covers only the
 evidence compared. It is not a synchronization proof.
 """
@@ -280,7 +281,7 @@ def load_capture(path: Path, *, generation: int | None = None) -> dict:
             tick = row["tick"]
             if capture["ticks"].setdefault(tick, row["checksum"]) != row["checksum"]:
                 capture["conflicts"].append({"tick": tick, "kind": "checksum"})
-            if capture["phases"].setdefault(tick, row["phase"]) != row["phase"]:
+            if capture["phases"].setdefault(tick, row.get("sim_phase")) != row.get("sim_phase"):
                 capture["conflicts"].append({"tick": tick, "kind": "phase"})
         elif event == "witness":
             units = {tuple(unit[:3]): unit[3:] for unit in row["units"]}
@@ -305,8 +306,10 @@ def boundaries(capture: dict) -> dict:
 
 
 def compare_captures(captures: dict[str, dict], *, start: int | None = None,
-                     end: int | None = None) -> dict:
-    """Completed-tick comparison of loaded captures, client -> ``load_capture`` (docstring)."""
+                     end: int | None = None,
+                     expected_packets: dict[str, dict[int, int]] | None = None) -> dict:
+    """Completed-tick comparison of loaded captures, client -> ``load_capture`` (docstring).
+    ``expected_packets``: client -> command id -> count, for ``submission_problems``."""
     if len(captures) < 2:
         raise ValueError("a comparison needs at least two clients")
     names = list(captures)
@@ -317,7 +320,9 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
     summary = {"schema": NATIVE_SCHEMA, "clients": edges, "interval": [low, high],
                "missing_ticks": {client: [] for client in names},
                "missing_witness": {client: [] for client in names},
-               "checksum_conflicts": [], "phase_conflicts": [], "unit_conflicts": [],
+               "checksum_conflicts": [], "phase_differences": [], "unit_conflicts": [],
+               "submission_problems": {client: submission_problems(captures[client], counts)
+                                       for client, counts in (expected_packets or {}).items()},
                "ticks_compared": 0,
                "witness_ticks_compared": 0, "units_compared": 0,
                "own_conflicts": {client: capture["conflicts"]
@@ -338,7 +343,7 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
         phases = {client: capture["phases"].get(tick) for client, capture in captures.items()
                   if tick in capture["phases"]}
         if len(set(phases.values())) > 1:
-            summary["phase_conflicts"].append({"tick": tick, "values": phases})
+            summary["phase_differences"].append({"tick": tick, "values": phases})
         if tick % WITNESS_EVERY:
             continue
         for client, capture in captures.items():
@@ -358,10 +363,11 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
     missing = any(summary["missing_ticks"].values()) or any(summary["missing_witness"].values())
     winners = {edge["ending"]["winner"] if edge["ending"] and edge["ending"]["tick"] in interval
                else None for edge in edges.values()}
-    if (summary["checksum_conflicts"] or summary["phase_conflicts"] or summary["unit_conflicts"]
-            or any(summary["own_conflicts"].values()) or len(winners - {None}) > 1):
+    if (summary["checksum_conflicts"] or summary["unit_conflicts"]
+            or any(summary["own_conflicts"].values()) or len(winners - {None}) > 1
+            or any(summary["submission_problems"].values())):
         summary["verdict"] = "conflict"
-    elif (failed or missing or len(winners) > 1
+    elif (failed or missing or len(winners) > 1 or summary["phase_differences"]
           or not (summary["ticks_compared"] and summary["units_compared"])):
         summary["verdict"] = "inconclusive"
     else:
@@ -371,9 +377,7 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
 
 def submission_problems(capture: dict, expected: dict[int, int]) -> list[dict]:
     """Native packet counts against what a client was told to send, by command id: a duplicate
-    can leave positions identical, so counts are checked apart from movement. A command id
-    not in ``expected`` must have no packets."""
-    return [{"id": command, "expected": expected.get(command, 0),
-             "observed": capture["packets"].get(command, 0)}
-            for command in sorted(expected.keys() | capture["packets"].keys())
-            if capture["packets"].get(command, 0) != expected.get(command, 0)]
+    can leave positions identical, so counts are checked apart from movement. Only the named
+    ids count, since the engine sends commands of its own (foundation-ref8: seven kinds)."""
+    return [{"id": command, "expected": count, "observed": capture["packets"].get(command, 0)}
+            for command, count in expected.items() if capture["packets"].get(command, 0) != count]

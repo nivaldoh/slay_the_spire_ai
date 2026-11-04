@@ -256,11 +256,13 @@ def main() -> int:
         "compare-peers", help="Compare what the clients of one native match attempt observed")
     peers.add_argument("attempt", type=Path, nargs="?",
                        help="the coordinator's attempt directory (match.jsonl, events-*.jsonl)")
-    peers.add_argument("--native", nargs="+", metavar="CLIENT=PATH",
-                       help="completed-tick mode: each client's native.jsonl, instead of attempt")
+    peers.add_argument("--native", nargs="+", metavar="CLIENT=PATH[#GENERATION]",
+                       help="completed-tick mode: each client's native.jsonl, instead of attempt;"
+                       " #GENERATION picks one battle of a multi-battle capture")
     peers.add_argument("--start", type=int, help="first tick of the declared interval")
     peers.add_argument("--end", type=int, help="last tick of the declared interval")
-    peers.add_argument("--generation", type=int, help="which battle of a multi-battle capture")
+    peers.add_argument("--packets", nargs="+", metavar="CLIENT=ID:COUNT", default=[],
+                       help="with --native: the count of a named command id on a client")
 
     report = commands.add_parser(
         "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
@@ -577,11 +579,18 @@ def main() -> int:
             parser.error("give an attempt directory or --native, not both")
         try:
             if args.native:
-                captures = dict(item.split("=", 1) for item in args.native)
-                summary = compare_captures(
-                    {client: load_capture(Path(path), generation=args.generation)
-                     for client, path in captures.items()},
-                    start=args.start, end=args.end)
+                captures, expected = {}, {}
+                for item in args.native:
+                    client, _, target = item.partition("=")
+                    path, _, generation = target.partition("#")
+                    captures[client] = load_capture(
+                        Path(path), generation=int(generation) if generation else None)
+                for item in args.packets:
+                    client, _, count = item.partition("=")
+                    command, _, number = count.partition(":")
+                    expected.setdefault(client, {})[int(command)] = int(number)
+                summary = compare_captures(captures, start=args.start, end=args.end,
+                                           expected_packets=expected)
             else:
                 summary = compare(args.attempt)
         except (OSError, ValueError) as exc:
