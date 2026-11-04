@@ -54,9 +54,10 @@ function current(session) {
     if (!ui.add(UI.env).readPointer().equals(env)) return {refused: 'stale battle interface'};
     return {ui, env, stream: env.add(ENV.provider).readPointer()};
 }
-// The checks 0x1bfa108 makes silently, read first so a refusal is reported. It would also
-// send in phases 0 and 1; foundation-ref8 did at phase 0, before the battle's scripted start.
-// Phase 4 is the one a real click happened in (foundation-ref6), so nothing earlier is asked.
+// The checks 0x1bfa108 makes silently, read first so a refusal is reported.
+// JUDGEMENT?: Ready phase — Claude, 2026-11-04: only phase 4, where the real click happened in
+// foundation-ref6. The sender also takes 0 and 1, and foundation-ref8 went through at phase 0;
+// allowing that ends deployment sooner. Direct readiness timing rests on this choice.
 function refusal(state) {
     if (state.refused) return state.refused;
     const {ui, env, stream} = state;

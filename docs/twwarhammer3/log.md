@@ -82,6 +82,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - `dd2b69d`: enemy men 1.09 to 1.20 times the player's on all six (it was 1.27 to 1.55 on four of
   them), rank 5 kept. The evidence is one earlier battle family: the Empire line, near 1.0 at
   rank 5, is the one lordless battle with wins on record. Unverified here until played.
+## 2026-11-04 overnight: direct readiness, leave and raw witnesses on one client
+
+Owner's goal: continue the foundation overnight. Local PC, $0, no VM; cards not agreed (owner
+away). On branch `wh3-mp-witness`, not landed: the benchmark session held `main` and lent the
+game for one 30-minute window. [Results table](multiplayer-control-foundation.md#implementation-status).
+- Found by following command names: `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` under Start Battle.
+- Built: trace of that path and all command packets, raw unit rows, phase and outcome at
+  completed ticks, `compare-peers --native`, the direct `ready_deployment` adapter, typed worker
+  operations, `leave`. Four independent reviews found three blockers before any game ran,
+  among them a wrong unit list and a wrong readiness object.
+- Live, one client, one human host against one AI: `foundation-ref6` (context lobby ready, real
+  click path, leave); `foundation-ref8` (direct ready with no battle clicks, 1512 ticks no gaps,
+  an engine ending at tick 1508 matching Lua, leave). Witness against Lua: 604 rows, ids exact.
+- Not successes: `foundation-ref5-load-refused` (adapter refused at load; fixed), warm re-entry
+  to the games list failed once, `foundation-ref7` and `foundation-typed1` froze, cause unknown.
+- Unverified: everything; no agreed check, no second client. Direct create and join not found.
+- Evidence: `runs/wh3-mp-overnight-20261104/` (notes, cards, handoff),
+  `runs/twwarhammer3/native-multiplayer/foundation-*`.
 
 ## 2026-11-04: capture the script click path; stop at the owner's request
 

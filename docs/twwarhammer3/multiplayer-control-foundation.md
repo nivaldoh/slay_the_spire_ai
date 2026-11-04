@@ -77,29 +77,39 @@ handles readiness, before promoting any operation. Targets before instructions d
 establish submission, direct control, passivity or replication. Owner stopped this work
 for continuation in another session; handoff `runs/wh3-multiplayer-foundation/handoff.md`.
 
-Overnight 2026-11-04 (Claude, branch `wh3-mp-witness`, not on `main` while the benchmark
-session holds it; brief and evidence in `runs/wh3-mp-overnight-20261104/`). Following the
-typed command names instead of UI signals answered the "next bounded question" above:
+Overnight 2026-11-04 (Claude, branch `wh3-mp-witness`; evidence and notes in
+`runs/wh3-mp-overnight-20261104/` and `runs/twwarhammer3/native-multiplayer/foundation-ref5-load-refused`,
+`-ref6`, `-ref7`, `-ref8`, `-typed1`). Following the typed command names instead of UI signals
+answered the "next bounded question" above. One client only, $0, in one 30-minute window lent by
+the benchmark session, so nothing here speaks to another peer. Status is unverified: no check
+is agreed, and each row below rests on the n named.
 
-| Step | Build 26403568 (static reading unless a result says otherwise) |
-|---|---|
-| Button | Receiver `0x1c3bc48` compares the component name with `button_battle_start` |
-| Sender | `0x1bfa108(battle interface [0x448f180])`, one-shot flag `+0x15cf`; in a network battle one command for the local entry |
-| Command | `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE`, written by `0x1bc9350` to the input stream `env+0x644e8`; every typed command starts at `0x1bd09b0` |
-| Execution | Handler `0x2ed483c` gets `[env+0x440]` and counts at `[[env+0x440]+0x150]+0x9b8`; the count is anonymous |
-| End of deployment | `0x2db7cc0`: count reaches the human armies (`0x2dd8f28`); the first ready also starts a countdown `+0x9b4`, so the engine does not wait forever (unverified) |
-| Phase | `[env+0x448]+0xc8`: 0 and 4 deployment (`0x1e8933c`), 5-7 conflict (`0x1e89184`) |
-| Outcome | `[0x448f208]+0x5d0` decided, `+0x5cc` zero-based winner, what Lua's getters read |
-| Lobby ready | `CustomBattleLobbyContext.ToggleReady`, a documented context command |
-| Leave | Global `QuitToMainMenu` context command; native `leave_game` is `0x220d4ac` |
-| Create, join | Not found below the panels. Host request `0x21be4c8` takes widget-built parameters; `mp_automatch` sits in a debug frontend (`0x32ac690`), so it is not this route |
+| Step | Build 26403568 | Live |
+|---|---|---|
+| Lobby ready | `CustomBattleLobbyContext.ToggleReady`, no component lookup; the flag follows after a delay | ref6, 1 run |
+| Button | Receiver `0x1c3bc48` compares the component name with `button_battle_start` | ref6, 1 click |
+| Sender | `0x1bfa108(battle interface [0x448f180])`, flag `+0x15cf` set before its checks | ref6, 1 click |
+| Command | `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` (id is the name's hash), written to input stream `env+0x644e8`; every typed command starts at `0x1bd09b0` | ref6 and ref8 |
+| Execution | Handler `0x2ed483c` gets `[env+0x440]`, counts at `[[env+0x440]+0x150]+0x9b8`, and sets countdown `+0x9b4` to 600 ticks; the count is anonymous | ref6 and ref8 |
+| End of deployment | `0x2db7cc0`: count reaches the human armies; the countdown suggests the engine does not wait forever | static only |
+| Phase | `[env+0x448]+0xc8`, a client-side copy, went 0, 3, 2, 4, 5, then 6, 8 at the ending; click at 4. Simulated phase `[state+0x28]` is recorded from the next capture on | ref6 and ref8 |
+| Outcome | `[0x448f208]+0x5d0` decided, `+0x5cc` zero-based winner; agreed with Lua's result | ref8, 1 battle |
+| Direct ready | Adapter's fixed call to the sender at `session_step`, no click and no component lookup; it needs the battle-interface object, so this does not show headless use | ref8, 1 battle |
+| Leave | Global `QuitToMainMenu`: the game logged `LEAVE GAME REQUEST OK`, `LEAVE SUCCESS`, and the frontend reloaded | ref6 and ref8 |
+| Create, join | Not found below the panels: host request `0x21be4c8` takes widget-built parameters, `mp_automatch` sits in a debug frontend | none |
 
-Built on those readings, all unverified until the live window: passive trace of that path
-and every command packet; raw unit rows and phase at completed ticks; outcome readback;
-`compare-peers --native`; the direct `ready_deployment` adapter (one fixed native call at
-`session_step`, no component lookup, but it needs the battle-interface object, so it does
-not show headless use); typed worker operations `status`, `create_lobby` (still the UI
-route), `configure`, `set_lobby_ready`, `ready_deployment`, `leave`.
+Two results are not successes. **Warm reset failed once** (ref6): after leaving, the same
+process could not get back to the games list, though the session had left cleanly. **Two of
+five launches froze** (ref7 in the frontend, typed1 before its first frame) with the process
+alive; no cause is known. Passive-only references 1-4 did not freeze, so the adapter stays a
+suspect. The typed worker route (`typed_run.py`) therefore has no live run past `status`.
+
+Raw witnesses at completed ticks matched Lua's unit rows on one client: ref8, 604 rows, ids
+exact, largest position gap 2.26 m, from comparing nearest ticks while units move. `compare-peers
+--native` gives `agreed` for a capture against itself and `conflict` for ref8 against ref6 (118
+of 134 checksums differ); that shows it discriminates, not that two peers agree. Each
+is unverified for two clients: tick origins, unit identity and field comparability need one
+two-client reference.
 
 ## Owner decisions and completion
 
