@@ -72,7 +72,9 @@ Open on Windows:
 Build: `python runs/cooperation-evidence/build.py`. Template, JSON with source hashes, source
 audit and independent checks live beside it. This is a reviewable sketch for the existing
 report, not an adopted measure or another reporting system. Fidelity checks are proposed,
-not agreed; useful coordination and cross-domain transfer remain unverified.
+not agreed; useful coordination and cross-domain transfer remain unverified. The current suite
+already colours actual owners; the figure's remaining proposal is each member's own source
+clock and calls, which the existing replay's dispatcher-based decision view does not supply.
 
 ## Initial benchmark visuals
 

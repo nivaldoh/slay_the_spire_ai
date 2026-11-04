@@ -85,8 +85,9 @@ score is an alternative; the display and comparison proposals below remain unado
 
 **First identify the agent.** In the current split-army team, an agent owns regiments;
 it is neither a soldier nor the game's movement controller. In native multiplayer it can
-own an army, with separate client and army resources. The report's geographic groups are
-another grouping: a class-based agent can own units on both wings. Show ownership explicitly.
+own an army, with separate client and army resources. Geographic groups are another grouping:
+a class-based agent can own units on both wings. The [current suite page](reports.md#coordination-suite)
+now colours actual owners from each battle's partition record, replacing its earlier geographic groups.
 
 Use **cooperation** for the shared task; investigate **coordination** through how choices
 depend on teammates' capabilities, state and timing. These are working distinctions, not
@@ -98,16 +99,18 @@ new scores. A shared victory, concurrent calls and useful interdependence are di
 | Did one group remain able to support another? | Put sampled melee/routing states beside orders and the map. Inspect an interval, with unknowns; do not infer protection from nearby units. | [RoCo](benchmark-references/rocobench.md)'s cabinet requires continuing support. Its `task_cabinet.py` distinguishes holding from opening; `prompting/display_utils.py` pairs attributed dialogue with execution video. WH3 support can fail through morale, casualties, hidden enemies or hostile action during inference. |
 | Did adaptation improve the shared result? | Keep engine outcomes and attempt counts beside the existing simple-controller comparisons. A replay illustrates a possible mechanism; it does not isolate its benefit. | [SMACv2](benchmark-references/smacv2.md) tests whether feedback is needed. Its `step(actions)` advances joint steps, whereas WH3 charges real inference delay and preserves standing orders. |
 
-This suggests a concrete report improvement: select an actual owner in the existing replay,
-then inspect its own view and calls on the same clock as the units. Reuse the existing map
-and group timelines; a second reporting framework is unnecessary. The figure is a design
+The remaining report improvement is member-specific information age: select an actual owner,
+then inspect its own source view and calls on the same clock as the units. The current
+`replay.read_trace` still uses dispatcher observations for team decisions; ownership colours
+do not fix that clock. Reuse the current map and owner colours; a second reporting framework
+is unnecessary. The figure is a design
 example, not a replacement report. Its selected battle and fidelity check remain unverified
 under the owner's rule; selection rests on JUDGEMENT `runs/cooperation-evidence/build.py`
 Figure example. Source audit: `runs/cooperation-evidence/source-audit.md`.
 
-Two existing labels need care: `suite.py`'s **ready** means a living unit neither routing
-nor shattered exists, with none of those units in melee; it does not establish readiness to help. Use **not in melee**
-in a future display. A scenario's intended tactic is a hypothesis, not an observed action.
+Keep labels literal: **not in melee** does not establish readiness to help. The earlier
+group display's **ready** label is gone with that display. A scenario's intended tactic is
+a hypothesis, not an observed action.
 The existing [coordination diagnostics](benchmark.md#the-coordination-suite-suite-v1)
 already document their limits; low idle time, tight arrival timing or local numerical
 advantage should not become a quality ranking without a check that establishes their meaning.

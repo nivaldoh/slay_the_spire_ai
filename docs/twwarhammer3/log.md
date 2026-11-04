@@ -43,6 +43,8 @@ audit, reviews and gate output: `runs/cooperation-evidence/`. No game or paid ca
 No existing test/check/scorer changed. Two proposal/example JUDGEMENT markers were added.
 The check is not agreed; display fidelity and cooperation quality remain unverified under
 the owner's rule. This is a research sketch for the existing report, not adoption of a metric.
+After the concurrent suite update, reconciled the proposal: owner colours are now implemented;
+member-specific source clocks remain the replay gap. Evidence: `replay-clock-check.txt` there.
 
 ## 2026-11-04: suite page rebuilt so colour shows who controls what
 
