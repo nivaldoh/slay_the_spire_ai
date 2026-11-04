@@ -7,8 +7,9 @@ import json
 
 import pytest
 
+from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import benchmark, configured, suite, team
+from twwarhammer3.battle import benchmark, configured, graph, suite, team
 from twwarhammer3.battle.setup import check_battle, scenarios
 from twwarhammer3.protocol import ProtocolError
 
@@ -65,10 +66,11 @@ def test_the_score_rewards_what_a_loss_took_as_well_as_what_it_kept():
     assert suite.scenario_value(rows[1]) > suite.scenario_value(rows[0])
 
 
-def test_wilson_and_sign_test_match_hand_values():
-    assert suite.wilson(0, 5) == [0, .434]
-    assert suite.wilson(5, 10) == [.237, .763]
-    assert suite.wilson(0, 0) is None
+def test_win_bounds_and_sign_test_match_the_guidelines_worked_values():
+    # evaluation-guidelines.md 7.2: 0 of 10 is below 26%; 4 of 5 is 38-96%.
+    assert suite.win_bound(0, 10) == {"method": "exact one-sided 95%", "upper": .259}
+    assert suite.win_bound(4, 5) == {"method": "Wilson 95%", "lower": .376, "upper": .964}
+    assert suite.win_bound(0, 0) is None
     assert suite.sign_test(6, 0) == .0312  # 2 x (1/2)^6
     assert suite.sign_test(0, 0) is None
     assert suite.sign_test(3, 3) == 1
@@ -87,10 +89,15 @@ def test_pairing_compares_wins_first_and_skips_a_scenario_either_arm_missed():
     assert (pair["better"], pair["worse"], pair["tied"]) == (1, 1, 1)
 
 
-def test_scenario_interval_resamples_scenarios_and_needs_at_least_two():
-    rows = [{"scenario": "a", "taken": 10}, {"scenario": "b", "taken": 30}]
-    assert suite.scenario_interval(rows, ["a", "b"], "taken") == [10, 30]
-    assert suite.scenario_interval(rows[:1], ["a"], "taken") is None
+def test_the_taken_difference_is_paired_by_scenario_with_a_hand_worked_interval():
+    rows = [row("a", "team", "lost", taken=30), row("a", "single", "lost", taken=20),
+            row("b", "team", "lost", taken=50), row("b", "single", "lost", taken=20),
+            row("c", "team", "lost", taken=10)]  # single missed c, so c is not a pair
+    gap = suite.taken_difference(rows, "team", "single", ["a", "b", "c"])
+    assert gap["scenarios"] == 2 and gap["mean"] == 20
+    # gaps 10 and 30: sd 14.14, se 10, t(1) = 12.706, so 20 +- 127.06
+    assert gap["t_95"] == [-107.1, 147.1]
+    assert suite.taken_difference(rows[:2], "team", "single", ["a"])["t_95"] is None
 
 
 def test_a_plan_visits_every_pair_once_per_repeat_and_is_repeatable(tmp_path, monkeypatch):
@@ -113,7 +120,52 @@ def test_a_plan_refuses_what_is_not_in_the_suite(tmp_path, names, arms, message)
         suite.make_plan(tmp_path / "p.json", names, arms, 1, 5, seed=1)
 
 
-@pytest.mark.parametrize("arm", list(suite.ARMS))
+def test_the_gap_arm_needs_authored_graphs_and_plays_each_scenarios_own(tmp_path, monkeypatch):
+    monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
+    with pytest.raises(ValueError, match="--graphs"):
+        suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["gap"], 1, 5, seed=1)
+    plan = suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["gap"], 1, 5, seed=1,
+                           graphs=tmp_path / "written")
+    args = plan["jobs"][0]["args"]
+    assert args[args.index("--controller-config") + 1] == str(tmp_path / "written/coord-relief")
+
+
+def test_the_authors_task_is_public():
+    scenario = scenarios()["coord-relief"]
+    task = suite.author_task(scenario)
+    assert "f1: wh_main_emp_inf_halberdiers at x=" in task and "defender" in task
+    assert "wh_main_grn_inf_orc_boyz" in task  # the roster is public
+    for place in scenario["deployment"]["enemy"]:  # the enemy's start is not
+        assert f"x={place['x']}, z={place['z']}" not in task
+
+
+def test_authoring_writes_three_graphs_a_configured_team_loads(tmp_path):
+    end = {"version": graph.VERSION, "entry": "owned", "nodes": {
+        "owned": {"op": "owned", "inputs": {}, "next": {"succeeded": "pick", "empty": "owned"}},
+        "pick": {"op": "select_target", "inputs": {"units": {"ref": "owned.units"}},
+                 "next": {"succeeded": "owned", "empty": "owned"}}}}
+    tasks = [{"member": name, "task": "Fight."} for name in team.CLASS_PARTITION]
+    canned = [json.dumps({"tasks": tasks}), *[json.dumps({"graph_json": json.dumps(end)})] * 3]
+
+    def send(body):
+        return {"id": "canned", "status": "completed",
+                "usage": {"input_tokens": 100, "output_tokens": 100},
+                "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": canned.pop(0)}]}]}
+
+    (tmp_path / "spend.jsonl").touch()
+    book = Ledger(tmp_path / "spend.jsonl", 5, must_exist=True)
+    totals = suite.author(tmp_path / "written", ["coord-relief"], book, send=send)
+    assert totals["coord-relief"]["usd"] > 0 and not canned
+    frozen, _, _, artifact = configured.load(tmp_path / "written/coord-relief",
+                                             {"provider": "anthropic"})
+    assert set(frozen["members"]) == set(team.CLASS_PARTITION) and frozen["optional"]
+    result = {"card": {"disclosure": {"artifact": artifact}}}
+    assert suite.authoring_usd(result) == totals["coord-relief"]["usd"]
+    assert suite.authoring_usd({"card": {}}) == 0
+
+
+@pytest.mark.parametrize("arm", [arm for arm in suite.ARMS if arm != "gap"])
 def test_each_arm_builds_for_a_suite_scenario_without_a_game_or_a_call(arm, tmp_path, monkeypatch):
     from twwarhammer3.battle import controllers
     from twwarhammer3.battle.benchmark import validate_config
@@ -261,4 +313,4 @@ def test_a_battle_never_started_keeps_its_row_with_no_measures(tmp_path):
     assert data["planned"] == 1 and data["completed"] == 0
     assert data["rows"][0]["status"] == "never_started" and data["rows"][0]["taken"] is None
     assert data["summary"]["arms"]["hold"]["planned"] == 1
-    assert data["summary"]["arms"]["hold"]["win_rate_95"] is None
+    assert data["summary"]["arms"]["hold"]["win_bound"] is None

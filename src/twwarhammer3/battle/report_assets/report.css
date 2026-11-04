@@ -1220,6 +1220,9 @@ blockquote {
   max-width: 100%;
   overflow-x: auto;
 }
+#suite-summary {
+  overflow-x: auto;
+}
 .benchmark-table {
   width: 100%;
   min-width: 720px;

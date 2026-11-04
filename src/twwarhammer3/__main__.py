@@ -101,15 +101,17 @@ def main() -> int:
     doctor.add_argument("--json", action="store_true")
 
     benchmark = commands.add_parser("benchmark", help="Mirror benchmark and coordination suite")
-    benchmark.add_argument("action", choices=("plan", "report"))
+    benchmark.add_argument("action", choices=("plan", "report", "author"))
     benchmark.add_argument("plan", type=Path,
-                           help="queue plan JSON (new for plan; existing for report)")
+                           help="queue plan JSON (new for plan; existing for report);"
+                                " for author, the new directory of scenario artifacts")
     benchmark.add_argument("--stage", choices=("pilot", "model", "suite"), default="pilot")
     benchmark.add_argument("--scenarios", help="suite: comma-separated scenario names")
     benchmark.add_argument("--arms", help="suite: comma-separated arm names (suite.py ARMS)")
     benchmark.add_argument("--repeats", type=int, default=1, help="suite: battles per pair")
     benchmark.add_argument("--seed", type=int, default=20261104, help="suite: job order seed")
     benchmark.add_argument("--start-before", help="suite: no job starts after this ISO time")
+    benchmark.add_argument("--graphs", type=Path, help="suite: authored artifacts for the gap arm")
     benchmark.add_argument("--budget-usd", type=float, default=2,
                            help="cumulative WH3 Anthropic ledger cap, including earlier jobs")
     benchmark.add_argument("--output", type=Path, help="report filename stem")
@@ -296,12 +298,22 @@ def main() -> int:
         from twwarhammer3.battle import benchmark
 
         try:
-            if args.action == "plan" and args.stage == "suite":
+            if args.action == "author":
+                from gameai.ledger import Ledger
+                from gameai.provenance import committed_revision
+                from twwarhammer3.battle import suite
+                from twwarhammer3.battle.play import SOURCES
+
+                committed_revision("attributable graph authoring", SOURCES)
+                data = suite.author(args.plan, args.scenarios.split(","),
+                                    Ledger(LEDGERS["anthropic"], args.budget_usd, must_exist=True))
+            elif args.action == "plan" and args.stage == "suite":
                 from twwarhammer3.battle import suite
 
                 data = suite.make_plan(args.plan, args.scenarios.split(","),
                                        args.arms.split(","), args.repeats, args.budget_usd,
-                                       seed=args.seed, start_before=args.start_before)
+                                       seed=args.seed, start_before=args.start_before,
+                                       graphs=args.graphs)
             elif args.action == "plan":
                 data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
             else:

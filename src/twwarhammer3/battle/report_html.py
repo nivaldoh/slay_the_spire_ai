@@ -494,7 +494,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                               for row in plan["rows"]]}
              for plan in data.get("benchmark_plans", [])]
     return {"schema": 3, "evidence_kind": kind, "report": data, "battles": battles,
-            "benchmark_plans": plans,
+            "benchmark_plans": plans, "suite": data.get("suite"),
             "scenarios": scenarios, "omitted": omitted,
             "modes": [{"key": key, "title": title, "name": name} for key, title, name in MODES]}
 

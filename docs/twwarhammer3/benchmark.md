@@ -60,6 +60,84 @@ The Empire plays the same armies on the same map twice: once attacking, once def
 
 These battles are for development: we will study them and tune controllers on them. To see how a controller does on a battle it wasn't tuned on, set aside another map before any new tuning (noting any earlier battles played there), freeze the controller, then play that map and report it separately. More launches on Taurox repeat the same task; they aren't new tasks. Without a reserved map, results describe only the development battles. Which map, and how many launches, is still open.
 
+## The coordination suite (suite-v1)
+
+Owner's goal, 2026-11-04: compare control methods (one model, a team of models, GaP and others)
+across different dimensions on a decent number of challenging battles. The suite plays each
+frozen method on each battle and reports them side by side. It is a proposal in use: every
+choice below is marked in the code that holds it, and the owner decides what stays.
+Code: [`suite.py`](../../src/twwarhammer3/battle/suite.py). Commands: [runbook](benchmark-run.md#the-coordination-suite).
+
+**Battles.** Each scenario in `scenarios.json` with `"benchmark": "suite-v1"` poses one problem,
+named in its `tests` field. Six use authored starting positions, which the setup check reads back
+in the first observation: these are the battles one general cannot fight from one place.
+Six keep native starts, from battles where earlier evidence showed room between weak and strong
+play (the owner's first mirror battle and five others from the register).
+
+| Scenario | The problem |
+|---|---|
+| `coord-two-fronts` | Two separate fights at once, one reserve to send |
+| `coord-relief` | A garrison holds while a column 460 m away marches to the same fight |
+| `coord-pincer` | Two groups attack one block together, or each loses alone |
+| `coord-breakout` | Three groups converge; concentrate on one first |
+| `coord-detail` | Beat the near wave before the far wave arrives |
+| `coord-rear-raid` | Guns behind a line, cavalry behind the guns |
+| `coord-mirror` | One cavalry unit's advantage against a larger army with a gun |
+| `coord-line-raid` | A line, guns, reserve and knights with changing jobs |
+| `coord-swarm` | Twenty cheap units against a small strong line |
+| `coord-caster` | One caster's spells and scarce escorts in an assault |
+| `coord-siege` | Walls, one reserve and limited supplies against many |
+| `coord-cavalry` | Cavalry only, against spears and guns |
+
+As in [BEHAVIOR](benchmark-references/behavior.md), a scenario names a goal, not a solution: any
+engine win counts and the prompt names no tactic. As in [SMACv2](benchmark-references/smacv2.md),
+simple scripts play too, so a battle a fixed rule can win shows up as one.
+A scenario is *witnessed* once any arm wins it at this build. Nothing here is admitted or
+excluded by a win rate: an unwitnessed scenario stays and is shown as unwitnessed.
+
+**Control methods.** `suite.ARMS` freezes them; all use Haiku 5.5 low where a model plays.
+
+| Arm | Who decides | What it asks |
+|---|---|---|
+| `hold`, `rush` | Nobody; every unit runs at its nearest enemy | The floor and the naive plan |
+| `skills` | Scripted class skills: shooters shoot, cavalry waits for contact then charges | What a fixed, coordinated script does for $0 |
+| `single` | One model orders every unit (`llm_rules`) | The reference for every model arm |
+| `team` | One model per unit class, at the same time | Does dividing the army help? |
+| `commander` | One model gives standing skills; scripts carry them out between its replies | Does a slower planner over fast scripts help? |
+| `graphs` | Generic frozen [graphs](gap-plan.md) per class; a model only suggests targets every 30 s | What do target hints add to a fixed plan? |
+| `gap` | The same, but a coordinator and one specialist per class write the graphs before each scenario, from its public task | Can a plan a model writes once beat thinking throughout? Writing is billed separately |
+
+These compare whole systems, as the [evaluation plan](multi-agent-plan.md#6-controllers-and-comparisons)
+says to do first: each at its natural concurrency, with what it spent shown beside what it won.
+They do not isolate the cause of a difference, and equal-resource arms come later.
+
+**Dimensions.** One row per planned battle, played or not. No dimension is folded into another.
+
+| Dimension | Measures | Read from |
+|---|---|---|
+| Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead or routed at the end | Engine ending and totals |
+| Cost | dollars, calls, tokens; for `gap`, what writing the graphs cost, shown apart | Ledger-backed result |
+| Speed | median and 90th-percentile order age, observation to engine application | Engine acknowledgements |
+| Reliability | refused orders, forfeits, every failed or unplayed battle | Trace and plan |
+| Coordination | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
+
+`taken` exists because `own` alone rewards fleeing: the mirror's best Haiku condition, 28.4, was an
+army that routed having removed 2% of the enemy. Coordination readings explain results; they are
+never added to a score ([MultiAgentBench](benchmark-references/multiagentbench.md) keeps outcome and
+process apart for the same reason). On 29 recorded battles of the Empire line (`runs/coord-suite-20261104/measure_check.py`)
+`spread_s` averaged 37 s for `rush` against 9 s for walking `attack_nearest`, because running units
+arrive one at a time; `idle_share` measures units held back, including a sound reserve, so a
+high value is not a fault. Neither reading is checked against a human's judgement yet.
+
+**Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`;
+across scenarios, each arm against `single` by how many scenarios it did better or worse on, with
+an exact sign test, and a paired t interval of `taken`. Win rates carry Wilson intervals, or the
+exact one-sided bound at zero wins. These are the [guidelines'](evaluation-guidelines.md#72-use-the-named-method-for-each-situation)
+small-sample methods, which rule out a bootstrap at these sizes. Battles run in one shuffled order
+per repeat. A battle that fails keeps its row; nothing is replaced. With one or two battles per
+pair these results are exploratory: they rank nothing and show where a confirmation would be worth
+paying for.
+
 ## Outcome and score
 
 The engine decides win, loss or draw. Keep the raw engine result next to any benchmark score.

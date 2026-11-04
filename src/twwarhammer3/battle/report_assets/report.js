@@ -705,6 +705,89 @@
     return `Score: 100 for a win${parts.length ? `; otherwise the percentage ${parts.join(" or ")}` : ""}.${bases.has("duration") ? " Survival battles score seconds survived." : ""} Bars are means over completed battles; lines span the worst to the best.${legacy.length < shown.size ? ` Mirror benchmark: ${BENCHMARK_RULE}` : ""}`;
   }
 
+  // The coordination suite's own summary (suite.py); nothing here is computed from replays.
+  function renderSuite() {
+    const suite = data.suite;
+    if (!suite) return;
+    const box = $("suite-summary"),
+      text = (value) => (value == null ? "\u2013" : String(value)),
+      table = (titles, rows) => {
+        const element = el("table", null, "benchmark-table"),
+          head = el("tr"),
+          body = el("tbody");
+        titles.forEach((title) => head.append(el("th", title)));
+        const thead = el("thead");
+        thead.append(head);
+        rows.forEach((cells) => {
+          const line = el("tr");
+          cells.forEach((cell) => line.append(el("td", text(cell))));
+          body.append(line);
+        });
+        element.append(thead, body);
+        return element;
+      };
+    $("benchmark-results").hidden = false;
+    const arms = Object.entries(suite.arms);
+    box.replaceChildren(
+      el("h3", "Control methods, every dimension"),
+      el(
+        "p",
+        "Won counts completed battles. Own and taken are 0 to 100. Age is observation to engine application. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
+        "benchmark-summary",
+      ),
+      table(
+        [
+          "Method",
+          "Won",
+          "Scenarios won",
+          "Own",
+          "Taken",
+          "$ a battle",
+          "$ to write",
+          "Calls",
+          "Age s",
+          "Age p90 s",
+          "Refused",
+          "Forfeits",
+          "Spread s",
+          "Local",
+          "Idle",
+        ],
+        arms.map(([name, arm]) => [
+          name,
+          `${arm.wins}/${arm.completed} of ${arm.planned}`,
+          `${arm.scenarios_won}/${arm.scenarios_played}`,
+          arm.own,
+          arm.taken,
+          arm.usd,
+          arm.authoring_usd,
+          arm.calls,
+          arm.age_s,
+          arm.age_p90_s,
+          arm.refused_share,
+          arm.forfeits,
+          arm.spread_s,
+          arm.local_share,
+          arm.idle_share,
+        ]),
+      ),
+      el("h3", "Each scenario"),
+      el("p", "Outcome, then own / taken, for each battle.", "benchmark-summary"),
+      table(
+        ["Scenario", "Won by", ...arms.map(([name]) => name)],
+        Object.entries(suite.matrix).map(([scenario, cells]) => [
+          scenario,
+          suite.witnessed_by[scenario].join(", ") || "nobody yet",
+          ...arms.map(([name]) =>
+            (cells[name] || [])
+              .map((cell) => `${cell.outcome} ${text(cell.own)} / ${text(cell.taken)}`)
+              .join("; "),
+          ),
+        ]),
+      ),
+    );
+  }
+
   // The plan collector owns counts, errors and score inputs. This view only formats them;
   // it never derives a scalar rank or fills a missing measurement with a legacy score.
   function renderBenchmarkResults() {
@@ -1682,6 +1765,7 @@
     Viewer.onTime(markHighlights);
     downloads();
     renderMethod();
+    renderSuite();
     renderBenchmarkResults();
     if (!data.scenarios.length) {
       $("heading").textContent = "No completed battles in this report";

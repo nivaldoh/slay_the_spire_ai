@@ -218,6 +218,26 @@ and spend allowance, decision rule and final committed revision. Start with targ
 cheap probes; a small frontier screen precedes any broad matched matrix. Shared measures
 do not require a new scoring rule per scenario.
 
+## The coordination suite
+
+Definition: [benchmark.md](benchmark.md#the-coordination-suite-suite-v1). A plan freezes the
+revision, scenario declarations and order; commit first.
+
+```bash
+uv run --locked python -m twwarhammer3 benchmark author runs/<task>/graphs \
+  --scenarios coord-relief,coord-siege --budget-usd 16
+uv run --locked python -m twwarhammer3 benchmark plan runs/<task>/round.json --stage suite \
+  --scenarios coord-relief,coord-siege --arms rush,single,team,commander,gap \
+  --graphs runs/<task>/graphs --repeats 1 --budget-usd 16 \
+  --start-before 2026-11-04T11:00:00-03:00
+uv run python scripts/wh3_queue.py runs/<task>/round.json
+uv run --locked python -m twwarhammer3 benchmark report runs/<task>/round.json
+```
+
+`--budget-usd` is the cumulative Anthropic ledger cap. Paid arms need the Anthropic key variables
+in the queue's environment. The report writes `.report.txt` and `.report.json` beside the plan,
+with one row per planned battle.
+
 ## Stopping
 
 - **A job**: press Ctrl+C in its terminal, or send one SIGINT to its `uv run` or play

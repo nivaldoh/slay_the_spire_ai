@@ -40,7 +40,8 @@ DESCRIPTIONS = {
 }
 INSTRUCTIONS = """Build a WH3 policy from the supplied frozen skill library and public task.
 The coordinator assigns tasks to the declared members; ownership cannot change.
-unit_types null means every friendly unit type not claimed by another member.
+unit_types null means every friendly unit type not claimed by another member; an entry
+class:NAME means every unit of that class. A member with no units in the army never runs.
 Specialists return a JSON object with graph_json, a string containing the graph JSON.
 Use only the listed operations. Graphs have version, entry, and a nodes object.
 Set the graph's version to library.graph_version.
@@ -97,10 +98,11 @@ def frozen_library():
 
 
 def load_template(path, *, provider="anthropic"):
-    """The first authoring release handles two graph members; runtime composition stays general."""
+    """Two graph members, or more in an ``optional`` team; runtime composition stays general."""
     raw = json.loads(Path(path).read_text())
     if (not isinstance(raw, dict) or raw.get("type") != "team"
-            or not isinstance(raw.get("members"), dict) or len(raw["members"]) != 2 or any(
+            or not isinstance(raw.get("members"), dict)
+            or (len(raw["members"]) != 2 and raw.get("optional") is not True) or any(
         member.get("controller", {}).get("type") not in ("graph", "graph_llm")
         for member in raw["members"].values()
     )):

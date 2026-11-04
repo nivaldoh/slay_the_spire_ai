@@ -5,10 +5,10 @@ A plan fixes every scenario/arm battle before any runs and each gets one row, pl
 another: outcome, what was kept and taken, cost, speed, reliability and coordination stay
 apart, so a method can lead on one and trail on another.
 
-Across scenarios the unit of uncertainty is the scenario: arms are compared by paired wins
-and losses per scenario with an exact sign test, and a percentile interval resamples scenario
-means. rliable's get_interval_estimates (rliable/library.py) with task_bootstrap resamples
-tasks and runs; battles here are too few per scenario to resample runs as well.
+Across scenarios the unit of uncertainty is the scenario: each arm is compared with the
+reference by how many scenarios it did better or worse on, with an exact sign test (McNemar's
+test on the scenarios that differ), and by a paired t interval of what it took. These are the
+small-sample methods evaluation-guidelines.md section 7.2 names; it rules out a bootstrap here.
 """
 
 import json
@@ -20,17 +20,19 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle.benchmark import EFFORT, MODEL, SUITE, collect
-from twwarhammer3.battle.report import trial_metrics
+from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
 
 # JUDGEMENT: Suite arms — Claude, 2026-11-04, overnight goal: the methods the code has today,
 # frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; one model;
-# one model per unit class; one model over the skills; frozen graphs per class with model target
-# hints. Another model, effort or split is another arm; what the comparison answers rests on these.
+# one model per unit class; one model over the skills; generic graphs per class with model target
+# hints; graphs a model writes before each scenario, with the same hints (GaP's own idea).
+# Another model, effort or split is another arm; what the comparison answers rests on these.
 # JUDGEMENT: Class team — Claude, 2026-11-04, overnight goal: team.CLASS_PARTITION gives one
 # member each to shooters, to fast or monstrous units and to the rest, on every scenario, so one
 # frozen team plays them all. A split by unit, by type, by position or by a planner is another arm.
 PAID = ["--provider", "anthropic"]
+GRAPH_TEMPLATE = Path("configs/twwarhammer3/graphs/suite-gap.json")
 ARMS = {
     "hold": ["--policy", "hold"],
     "rush": ["--policy", "rush_nearest"],
@@ -38,18 +40,50 @@ ARMS = {
     "single": ["--policy", f"llm_rules@{MODEL}/{EFFORT}", *PAID],
     "team": ["--policy", f"team_llm_rules@{MODEL}/{EFFORT}", *PAID],  # ClassTeam in a suite
     "commander": ["--policy", f"commander@{MODEL}/{EFFORT}", *PAID],
-    "gap": ["--policy", "configured", "--controller-config",
-            "configs/twwarhammer3/graphs/suite-gap.json", *PAID],
+    "graphs": ["--policy", "configured", "--controller-config", str(GRAPH_TEMPLATE), *PAID],
+    "gap": ["--policy", "configured", *PAID],  # plus each scenario's authored artifact
 }
 REFERENCE = "single"
 # JUDGEMENT: Local odds radius — Claude, 2026-11-04: men within 80 m (about two unit widths) of a
 # fighting unit count as that fight. A wider radius blends fights and moves the number toward the
 # whole-army ratio; a narrower one misses supporting units.
 LOCAL_M = 80
-BOOTSTRAP_DRAWS = 10000
 
 
-def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, start_before=None):
+def author_task(scenario):
+    """The public task a graph author reads: goal, roles, rosters and our own starting places.
+
+    The enemy's start is private setup, and no tactic is named: what to do is the author's.
+    """
+    expect = scenario["expect"]
+    role = "defender" if expect["player_defends"] else "attacker"
+    own = scenario.get("deployment", {}).get("friendly") or []
+    places = {place["id"]: f" at x={place['x']}, z={place['z']}" for place in own}
+    units = [f"f{i}: {kind}{places.get(f'f{i}', '')}"
+             for i, kind in enumerate(scenario["player"]["units"], 1)]
+    return (f"Win this {scenario.get('battle_type', 'classic')} battle as the {role}: any engine"
+            f" win counts, and the {expect['time_limit_s']} s timer ends it. Within an outcome,"
+            " keep your own army and destroy or rout the enemy's. Coordinates are metres: x east,"
+            " z north, on a map from -512 to 512. Your units: " + "; ".join(units) + ". The enemy"
+            " roster: " + ", ".join(scenario["enemy"]["units"]) + ". Enemy positions are unknown"
+            " until seen. Each member's graph must get its units into the fight: a graph that"
+            " waits for contact needs another member that starts it.")
+
+
+def author(directory, scenario_names, ledger, *, send=None):
+    """One graph artifact per scenario, written before any battle; a failure stops the batch."""
+    from twwarhammer3.battle import graph_author
+    from twwarhammer3.battle.setup import scenarios
+
+    known, directory = scenarios(), Path(directory)
+    return {name: graph_author.generate(
+        REPO_ROOT / GRAPH_TEMPLATE, author_task(known[name]), directory / name, ledger,
+        model=MODEL, effort=EFFORT, provider="anthropic", send=send)["totals"]
+        for name in scenario_names}
+
+
+def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, start_before=None,
+              graphs=None):
     """A frozen plan: each repeat plays every scenario/arm pair once, in its own random order.
 
     Shuffling pairs, not arms inside a scenario, spreads a scenario's battles over the night
@@ -64,6 +98,8 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
     if repeats < 1:
         raise ValueError("a plan needs at least one repeat")
     known = scenarios()
+    if "gap" in arm_names and not graphs:
+        raise ValueError("the gap arm needs --graphs, a directory of authored scenarios")
     for name in scenario_names:
         if known.get(name, {}).get("benchmark") != SUITE:
             raise ValueError(f"{name} is not a {SUITE} scenario")
@@ -79,6 +115,8 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
             args = ["--scenario", scenario, *ARMS[arm], "--episodes", "1",
                     "--start-timeout", "900", "--episode-timeout", "1320",
                     "--run-timeout", "2280"]
+            if arm == "gap":
+                args += ["--controller-config", str(Path(graphs).resolve() / scenario)]
             if PAID[0] in args:
                 args += ["--budget-usd", str(budget_usd)]
             jobs.append({"output": str(directory.resolve()), "args": args, "arm": arm,
@@ -182,22 +220,32 @@ def measure(row):
     directory = Path(row["output"])
     path = directory / "episode-0000" / "result.json"
     result = json.loads(path.read_text()) if path.exists() else None
-    empty = {"own": None, "taken": None, "battle_s": None, "usd": None, "calls": None,
-             "tokens": None, "age_s": None, "age_p90_s": None, "orders": None, "refused": None,
-             "forfeits": None, "first_contact_s": None, "spread_s": None, "idle_share": None,
-             "local_share": None}
+    empty = {"own": None, "taken": None, "battle_s": None, "usd": None, "authoring_usd": None,
+             "calls": None, "tokens": None, "age_s": None, "age_p90_s": None, "orders": None,
+             "refused": None, "forfeits": None, "first_contact_s": None, "spread_s": None,
+             "idle_share": None, "local_share": None}
     if result is None or not row["evidence_matches_plan"]:
         return empty
     metrics = trial_metrics(path.parent, result)
     llm = result.get("llm") or {}
     trace = metrics["trace"]
     return {"own": row["condition"], "taken": taken(result), "battle_s": result.get("battle_s"),
-            "usd": llm.get("usd", 0), "calls": llm.get("calls", 0),
+            "usd": llm.get("usd", 0), "authoring_usd": authoring_usd(result),
+            "calls": llm.get("calls", 0),
             "tokens": (llm.get("input_tokens") or 0) + (llm.get("output_tokens") or 0),
             "age_s": metrics["order_age_s"]["p50"], "age_p90_s": metrics["order_age_s"]["p90"],
             "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
             "forfeits": metrics["reply_validation"]["failed"] + metrics["transport_failures"],
             **coordination(read_frames(path.parent))}
+
+
+def authoring_usd(result):
+    """What writing this battle's graphs cost, kept apart from what playing them cost."""
+    artifact = ((result.get("card") or {}).get("disclosure") or {}).get("artifact")
+    if not artifact:
+        return 0
+    manifest = Path(artifact["directory"]) / "manifest.json"
+    return json.loads(manifest.read_text())["totals"].get("usd", 0)
 
 
 def mean(values):
@@ -210,15 +258,14 @@ def median(values):
     return round(statistics.median(kept), 3) if kept else None
 
 
-def wilson(wins, battles, z=1.96):
-    """The 95% Wilson interval of a win rate."""
+def win_bound(wins, battles):
+    """Wilson 95%, or for no wins the exact one-sided 95% upper bound (guidelines 7.2)."""
     if not battles:
         return None
-    rate = wins / battles
-    centre = (rate + z * z / (2 * battles)) / (1 + z * z / battles)
-    half = z * math.sqrt(rate * (1 - rate) / battles + z * z / (4 * battles ** 2)) / (
-        1 + z * z / battles)
-    return [round(centre - half, 3), round(centre + half, 3)]
+    if not wins:
+        return {"method": "exact one-sided 95%", "upper": round(1 - .05 ** (1 / battles), 3)}
+    low, high = wilson(wins, battles)
+    return {"method": "Wilson 95%", "lower": round(low, 3), "upper": round(high, 3)}
 
 
 def sign_test(better, worse):
@@ -254,16 +301,17 @@ def paired(rows, arm, reference, scenarios):
             "sign_test_p": sign_test(better, worse)}
 
 
-def scenario_interval(rows, scenarios, field, seed=0):
-    """A 95% percentile interval of an arm's mean, resampling scenarios with a fixed seed."""
-    means = [mean([r[field] for r in rows if r["scenario"] == s]) for s in scenarios]
-    means = [value for value in means if value is not None]
-    if len(means) < 2:
-        return None
-    rng = random.Random(seed)
-    draws = sorted(statistics.mean(rng.choices(means, k=len(means)))
-                   for _ in range(BOOTSTRAP_DRAWS))
-    return [round(draws[int(share * BOOTSTRAP_DRAWS)], 1) for share in (.025, .975)]
+def taken_difference(rows, arm, reference, scenarios):
+    """The arm's mean taken minus the reference's: a t interval over shared scenarios."""
+    gaps = []
+    for scenario in scenarios:
+        a = mean([r["taken"] for r in rows if r["arm"] == arm and r["scenario"] == scenario])
+        b = mean([r["taken"] for r in rows if r["arm"] == reference and r["scenario"] == scenario])
+        if a is not None and b is not None:
+            gaps.append(a - b)
+    interval = mean_interval(gaps)
+    return {"scenarios": len(gaps), "mean": interval["mean"],
+            "t_95": [round(value, 1) for value in interval["ci95"]] if interval["ci95"] else None}
 
 
 def summarize(rows):
@@ -278,12 +326,14 @@ def summarize(rows):
         decided = [row for row in done if row["orders"]]
         table[arm] = {
             "planned": len(mine), "completed": len(done), "wins": wins, "draws": draws,
-            "losses": len(done) - wins - draws, "win_rate_95": wilson(wins, len(done)),
+            "losses": len(done) - wins - draws, "win_bound": win_bound(wins, len(done)),
+            "scenarios_won": len({r["scenario"] for r in done if r["outcome"] == "won"}),
+            "scenarios_played": len({r["scenario"] for r in done}),
             "own": mean([r["own"] for r in done]),
             "taken": mean([r["taken"] for r in done]),
-            "taken_95": scenario_interval(done, scenarios, "taken"),
             "battle_s": median([r["battle_s"] for r in done]),
             "usd": mean([r["usd"] for r in done]),
+            "authoring_usd": mean([r["authoring_usd"] for r in done]),
             "usd_total": round(sum(r["usd"] or 0 for r in mine), 4),
             "usd_per_win": round(sum(r["usd"] or 0 for r in done) / wins, 4) if wins else None,
             "calls": mean([r["calls"] for r in done]),
@@ -296,7 +346,8 @@ def summarize(rows):
             "spread_s": median([r["spread_s"] for r in done]),
             "idle_share": mean([r["idle_share"] for r in done]),
             "local_share": mean([r["local_share"] for r in done]),
-            **({"paired": paired(rows, arm, REFERENCE, scenarios)}
+            **({"paired": {**paired(rows, arm, REFERENCE, scenarios),
+                           "taken": taken_difference(rows, arm, REFERENCE, scenarios)}}
                if arm != REFERENCE and REFERENCE in arms else {})}
     matrix = {scenario: {arm: [{"outcome": r["outcome"] or r["status"], "own": r["own"],
                                 "taken": r["taken"]}
@@ -309,6 +360,7 @@ def summarize(rows):
 
 COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"), ("own", lambda a: a["own"]),
            ("taken", lambda a: a["taken"]), ("$/battle", lambda a: a["usd"]),
+           ("$ author", lambda a: a["authoring_usd"]),
            ("calls", lambda a: a["calls"]), ("age s", lambda a: a["age_s"]),
            ("p90 s", lambda a: a["age_p90_s"]), ("refused", lambda a: a["refused_share"]),
            ("forfeits", lambda a: a["forfeits"]), ("spread s", lambda a: a["spread_s"]),
@@ -325,9 +377,11 @@ def render(data):
     for arm, row in data["summary"]["arms"].items():
         if row.get("paired"):
             pair = row["paired"]
+            gap = pair["taken"]
             lines.append(f"{arm} against {pair['against']}: better on {pair['better']} scenarios,"
                          f" worse on {pair['worse']}, tied on {pair['tied']};"
-                         f" sign test p={pair['sign_test_p']}.")
+                         f" sign test p={pair['sign_test_p']}; taken {gap['mean']} points,"
+                         f" t 95% {gap['t_95']}, {gap['scenarios']} scenarios.")
     lines.append("")
     for scenario, cells in data["summary"]["matrix"].items():
         text = "; ".join(f"{arm} " + ",".join(
@@ -350,9 +404,15 @@ def gather(plans):
 
 
 def report(plans, output):
+    """Text, JSON and the one visual report: its replays, with the suite's tables on top."""
+    from twwarhammer3.battle import report as trials
+    from twwarhammer3.battle import report_html
+
     data = gather(plans)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     write_json(output.with_name(output.name + ".json"), data)
     output.with_name(output.name + ".txt").write_text(render(data))
+    visual = trials.collect([], benchmark_plans=plans)
+    report_html.write(output.with_name(output.name + ".html"), {**visual, "suite": data["summary"]})
     return data
