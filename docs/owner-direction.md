@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 ([multiplayer next steps](twwarhammer3/mp-next-steps.md#owner-decisions)):
+  "1. Sure 2. Yes. 3. You can do whatever works best for you. 4. Seems fine 5. We can keep
+  it alive for now. Let's take note of these decisions without starting the implementation
+  yet": control clients may press their own Start Battle; fixed observation grid in
+  multiplayer only; worker link Claude's choice; VM auto-logon; keep the game disk.
 - 2026-11-03 (first multiplayer battles): "We should extend the lifetime of the GCP storage for
   a few days too" (applied: game disk kept until 2026-11-06 21:09 UTC). "You should ideally
   require less help from me as we go"; "we should investigate how you can automate lobby

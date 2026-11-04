@@ -18,6 +18,16 @@ second boot and VM hour; the cost figures below rest on this.
 
 ## Owner decisions
 
+Answered 2026-11-03 ([direction](../owner-direction.md)); implementation not started:
+1 yes ("Sure"); 2 yes; 3 left to Claude, who takes the proposed reverse SSH forward and
+falls back to two coordinators with a two-directory `compare-peers`; 4 yes ("Seems fine");
+5 keep the disk for now. The disk's deletion job is still armed for 2026-11-06 21:09 UTC;
+cancelling or moving it is a cloud change not yet made.
+
+JUDGEMENT: Worker link — Claude, 2026-11-03, delegated by the owner ("do whatever works
+best"): reverse SSH forward in the IAP tunnel; two coordinators if it fails. Tailscale
+would add an account; step 3's single-coordinator evidence rests on this.
+
 1. **Control clients press their own Start Battle.** In multiplayer the battle Lua refuses
    `control: start` (checked: `twwarhammer3_battle.lua` handles `message.control`), so you
    clicked deployment's Start Battle on both clients. Proposed: in `control` mode only,
