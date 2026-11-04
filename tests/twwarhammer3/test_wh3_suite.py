@@ -59,6 +59,12 @@ def test_taken_reads_the_engines_enemy_totals_and_never_invents_a_value():
     assert suite.taken({}) is None
 
 
+def test_killed_counts_dead_men_so_a_won_battle_need_not_read_100():
+    result = {"final": {"enemy": {"men0": 200, "men": 90, "active_men": 0}}}
+    assert suite.taken(result) == 100 and suite.killed(result) == 55
+    assert suite.killed({}) is None
+
+
 def test_the_score_rewards_what_a_loss_took_as_well_as_what_it_kept():
     fled = {"own": 40, "taken": 2}  # the first screen's shape: routed nearly intact
     fought = {"own": 0, "taken": 60}
@@ -69,9 +75,9 @@ def test_the_score_rewards_what_a_loss_took_as_well_as_what_it_kept():
 def test_commander_is_also_read_against_skills_its_own_executor():
     def battle(arm, outcome):
         return {**row("a", arm, outcome), "status": outcome, **dict.fromkeys(
-            ("battle_s", "usd", "authoring_usd", "calls", "think_s", "age_s", "age_p90_s",
-             "plan_age_s", "orders", "refused", "forfeits", "spread_s", "idle_share",
-             "local_share"))}
+            ("killed", "battle_s", "usd", "authoring_usd", "calls", "think_s", "age_s",
+             "age_p90_s", "plan_age_s", "orders", "refused", "bad_replies", "call_failures",
+             "spread_s", "idle_share", "local_share"))}
 
     arms = suite.summarize([battle("commander", "lost"), battle("skills", "won")])["arms"]
     assert arms["commander"]["control"]["against"] == "skills"

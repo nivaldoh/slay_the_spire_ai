@@ -158,6 +158,15 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
     return plan
 
 
+def killed(result):
+    """Percent of the enemy's men dead at the end. taken reads 100 on every win; this does not."""
+    enemy = (result.get("final") or {}).get("enemy") or {}
+    men0, men = enemy.get("men0"), enemy.get("men")
+    if not men0 or men is None:
+        return None
+    return round(100 * (1 - men / men0), 1)
+
+
 def taken(result):
     """Percent of the enemy army dead, routed or gone at the end; None if unread.
 
@@ -206,8 +215,8 @@ def coordination(frames):
       not fighting. A shooter firing also reads idle, so shooters are left out.
     - local_share: at each fight, friendly men over all men within LOCAL_M of a friendly unit
       in melee, pooled over the battle. Above 0.5 the army outnumbers the enemy where it
-      fights. Only enemies the recorder can see count. On 465 recorded battles it mostly
-      restates who won: its first 60 s do not separate wins from losses (benchmark.md).
+      fights. Only enemies the recorder can see count. On recorded battles it mostly restates
+      who won: its first 60 s do not separate wins from losses (benchmark.md).
     """
     joined, friendly_men, enemy_men, idle, seconds = {}, 0, 0, 0, 0
     first = None
@@ -246,24 +255,26 @@ def measure(row):
     directory = Path(row["output"])
     path = directory / "episode-0000" / "result.json"
     result = json.loads(path.read_text()) if path.exists() else None
-    empty = {"own": None, "taken": None, "battle_s": None, "usd": None, "authoring_usd": None,
-             "calls": None, "tokens": None, "think_s": None, "age_s": None, "age_p90_s": None,
-             "plan_age_s": None, "orders": None,
-             "refused": None, "forfeits": None, "first_contact_s": None, "spread_s": None,
-             "idle_share": None, "local_share": None}
+    empty = {"own": None, "taken": None, "killed": None, "battle_s": None, "usd": None,
+             "authoring_usd": None, "calls": None, "tokens": None, "think_s": None, "age_s": None,
+             "age_p90_s": None, "plan_age_s": None, "orders": None, "refused": None,
+             "bad_replies": None, "call_failures": None, "first_contact_s": None,
+             "spread_s": None, "idle_share": None, "local_share": None}
     if result is None or not row["evidence_matches_plan"]:
         return empty
     metrics = trial_metrics(path.parent, result)
     llm = result.get("llm") or {}
     trace = metrics["trace"]
-    return {"own": row["condition"], "taken": taken(result), "battle_s": result.get("battle_s"),
+    return {"own": row["condition"], "taken": taken(result), "killed": killed(result),
+            "battle_s": result.get("battle_s"),
             "usd": llm.get("usd", 0), "authoring_usd": authoring_usd(result),
             "calls": llm.get("calls", 0),
             "tokens": (llm.get("input_tokens") or 0) + (llm.get("output_tokens") or 0),
             "think_s": metrics["call_seconds"]["p50"], "age_s": metrics["order_age_s"]["p50"],
             "age_p90_s": metrics["order_age_s"]["p90"], "plan_age_s": metrics["plan_age_s"]["p50"],
             "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
-            "forfeits": metrics["reply_validation"]["failed"] + metrics["transport_failures"],
+            "bad_replies": metrics["reply_validation"]["failed"],
+            "call_failures": metrics["transport_failures"],
             **coordination(read_frames(path.parent))}
 
 
@@ -309,6 +320,9 @@ def sign_test(better, worse):
     return round(min(1, 2 * tail), 4)
 
 
+# JUDGEMENT: Scenario tie-break — Claude, 2026-11-04, overnight goal: within an outcome arms compare
+# on own + taken; the mirror uses own alone. On the first 26 battles own alone turns gap against
+# single from 5-1 to 3-3, team from 3-2 to 1-4 and commander from 5-0 to 4-1.
 def scenario_value(rows):
     """One arm on one scenario: wins, then own plus taken; None with nothing completed."""
     done = [row for row in rows if row["outcome"]]
@@ -364,6 +378,7 @@ def summarize(rows):
             "scenarios_played": len({r["scenario"] for r in done}),
             "own": points(mean([r["own"] for r in done])),
             "taken": points(mean([r["taken"] for r in done])),
+            "killed": points(mean([r["killed"] for r in done])),
             "battle_s": median([r["battle_s"] for r in done]),
             "usd": mean([r["usd"] for r in done]),
             "authoring_usd": mean([r["authoring_usd"] for r in done]),
@@ -377,7 +392,8 @@ def summarize(rows):
             "orders": mean([r["orders"] for r in done]),
             "refused_share": (round(sum(r["refused"] for r in decided)
                                     / sum(r["orders"] for r in decided), 3) if decided else None),
-            "forfeits": sum(r["forfeits"] or 0 for r in done),
+            "bad_replies": sum(r["bad_replies"] or 0 for r in done),
+            "call_failures": sum(r["call_failures"] or 0 for r in done),
             "spread_s": median([r["spread_s"] for r in done]),
             "idle_share": mean([r["idle_share"] for r in done]),
             "local_share": mean([r["local_share"] for r in done]),
@@ -407,12 +423,14 @@ def bound_text(bound):
 
 COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
            ("win 95%", lambda a: bound_text(a["win_bound"])), ("own", lambda a: a["own"]),
-           ("taken", lambda a: a["taken"]), ("$/battle", lambda a: a["usd"]),
+           ("taken", lambda a: a["taken"]), ("killed", lambda a: a["killed"]),
+           ("$/battle", lambda a: a["usd"]),
            ("$ author", lambda a: a["authoring_usd"]),
            ("calls", lambda a: a["calls"]), ("think s", lambda a: a["think_s"]),
            ("age s", lambda a: a["age_s"]), ("p90 s", lambda a: a["age_p90_s"]),
            ("plan s", lambda a: a["plan_age_s"]), ("refused", lambda a: a["refused_share"]),
-           ("forfeits", lambda a: a["forfeits"]), ("spread s", lambda a: a["spread_s"]),
+           ("bad replies", lambda a: a["bad_replies"]),
+           ("failed calls", lambda a: a["call_failures"]), ("spread s", lambda a: a["spread_s"]),
            ("idle", lambda a: a["idle_share"]), ("local", lambda a: a["local_share"]))
 
 
