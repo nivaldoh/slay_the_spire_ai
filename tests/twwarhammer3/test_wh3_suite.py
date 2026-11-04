@@ -124,10 +124,16 @@ def test_the_gap_arm_needs_authored_graphs_and_plays_each_scenarios_own(tmp_path
     monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
     with pytest.raises(ValueError, match="--graphs"):
         suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["gap"], 1, 5, seed=1)
+    with pytest.raises(ValueError, match="no ready graphs"):
+        suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["gap"], 1, 5, seed=1,
+                        graphs=tmp_path / "written")
+    ready = tmp_path / "written/coord-relief/attempt-2"
+    ready.mkdir(parents=True)
+    (ready / "manifest.json").write_text('{"status": "ready"}')
     plan = suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["gap"], 1, 5, seed=1,
                            graphs=tmp_path / "written")
     args = plan["jobs"][0]["args"]
-    assert args[args.index("--controller-config") + 1] == str(tmp_path / "written/coord-relief")
+    assert args[args.index("--controller-config") + 1] == str(ready)
 
 
 def test_the_authors_task_is_public():
@@ -145,7 +151,8 @@ def test_authoring_writes_three_graphs_a_configured_team_loads(tmp_path):
         "pick": {"op": "select_target", "inputs": {"units": {"ref": "owned.units"}},
                  "next": {"succeeded": "owned", "empty": "owned"}}}}
     tasks = [{"member": name, "task": "Fight."} for name in team.CLASS_PARTITION]
-    canned = [json.dumps({"tasks": tasks}), *[json.dumps({"graph_json": json.dumps(end)})] * 3]
+    canned = ["not json", "not json",  # a whole first try fails; the second succeeds
+              json.dumps({"tasks": tasks}), *[json.dumps({"graph_json": json.dumps(end)})] * 3]
 
     def send(body):
         return {"id": "canned", "status": "completed",
@@ -156,12 +163,14 @@ def test_authoring_writes_three_graphs_a_configured_team_loads(tmp_path):
     (tmp_path / "spend.jsonl").touch()
     book = Ledger(tmp_path / "spend.jsonl", 5, must_exist=True)
     totals = suite.author(tmp_path / "written", ["coord-relief"], book, send=send)
-    assert totals["coord-relief"]["usd"] > 0 and not canned
-    frozen, _, _, artifact = configured.load(tmp_path / "written/coord-relief",
-                                             {"provider": "anthropic"})
+    assert totals["coord-relief"]["status"] == "ready" and totals["coord-relief"]["tries"] == 2
+    assert not canned
+    written = suite.written_graphs(tmp_path / "written", "coord-relief")
+    frozen, _, _, artifact = configured.load(written, {"provider": "anthropic"})
     assert set(frozen["members"]) == set(team.CLASS_PARTITION) and frozen["optional"]
     result = {"card": {"disclosure": {"artifact": artifact}}}
-    assert suite.authoring_usd(result) == totals["coord-relief"]["usd"]
+    # the failed try's two calls cost money too and count
+    assert suite.authoring_usd(result) > totals["coord-relief"]["usd"]
     assert suite.authoring_usd({"card": {}}) == 0
 
 

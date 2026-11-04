@@ -18,6 +18,7 @@ import statistics
 import subprocess
 from pathlib import Path
 
+from gameai.llm import InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle.benchmark import EFFORT, MODEL, SUITE, collect
 from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
@@ -48,6 +49,7 @@ REFERENCE = "single"
 # fighting unit count as that fight. A wider radius blends fights and moves the number toward the
 # whole-army ratio; a narrower one misses supporting units.
 LOCAL_M = 80
+AUTHOR_TRIES = 3
 
 
 def author_task(scenario):
@@ -71,15 +73,36 @@ def author_task(scenario):
 
 
 def author(directory, scenario_names, ledger, *, send=None):
-    """One graph artifact per scenario, written before any battle; a failure stops the batch."""
+    """Graphs for each scenario, written before any battle; each failed try keeps its folder.
+
+    A scenario gets AUTHOR_TRIES whole tries, so one bad reply costs that scenario a little
+    money rather than the night its arm; what every try cost counts as the arm's writing cost.
+    """
     from twwarhammer3.battle import graph_author
     from twwarhammer3.battle.setup import scenarios
 
-    known, directory = scenarios(), Path(directory)
-    return {name: graph_author.generate(
-        REPO_ROOT / GRAPH_TEMPLATE, author_task(known[name]), directory / name, ledger,
-        model=MODEL, effort=EFFORT, provider="anthropic", send=send)["totals"]
-        for name in scenario_names}
+    known, directory, totals = scenarios(), Path(directory), {}
+    for name in scenario_names:
+        for attempt in range(1, AUTHOR_TRIES + 1):
+            try:
+                manifest = graph_author.generate(
+                    REPO_ROOT / GRAPH_TEMPLATE, author_task(known[name]),
+                    directory / name / f"attempt-{attempt}", ledger, model=MODEL, effort=EFFORT,
+                    provider="anthropic", send=send)
+            except (InvalidReply, ValueError) as exc:
+                totals[name] = {"status": "failed", "tries": attempt, "error": str(exc)}
+                continue
+            totals[name] = {"status": "ready", "tries": attempt, **manifest["totals"]}
+            break
+    return totals
+
+
+def written_graphs(directory, scenario):
+    """The scenario's ready artifact: the last try, the one that succeeded."""
+    tries = sorted((Path(directory).resolve() / scenario).glob("attempt-*"))
+    if not tries or json.loads((tries[-1] / "manifest.json").read_text())["status"] != "ready":
+        raise ValueError(f"no ready graphs for {scenario} in {directory}")
+    return tries[-1]
 
 
 def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, start_before=None,
@@ -116,7 +139,7 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
                     "--start-timeout", "900", "--episode-timeout", "1320",
                     "--run-timeout", "2280"]
             if arm == "gap":
-                args += ["--controller-config", str(Path(graphs).resolve() / scenario)]
+                args += ["--controller-config", str(written_graphs(graphs, scenario))]
             if PAID[0] in args:
                 args += ["--budget-usd", str(budget_usd)]
             jobs.append({"output": str(directory.resolve()), "args": args, "arm": arm,
@@ -242,12 +265,12 @@ def measure(row):
 
 
 def authoring_usd(result):
-    """What writing this battle's graphs cost, kept apart from what playing them cost."""
+    """What writing this scenario's graphs cost, failed tries too, apart from playing them."""
     artifact = ((result.get("card") or {}).get("disclosure") or {}).get("artifact")
     if not artifact:
         return 0
-    manifest = Path(artifact["directory"]) / "manifest.json"
-    return json.loads(manifest.read_text())["totals"].get("usd", 0)
+    tries = Path(artifact["directory"]).parent.glob("attempt-*/manifest.json")
+    return round(sum(json.loads(path.read_text())["totals"].get("usd", 0) for path in tries), 7)
 
 
 def mean(values):
