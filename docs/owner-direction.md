@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (writing in the owner's voice): on portfolio copy, "The text reads like AI slop
+  though. For instance, everything is a punchline. A bit painful to see. Make it read more
+  like me and take note of that to avoid repeating this mistake in the future." Applies to
+  public and owner-voiced text: plain connected sentences, facts without commentary, headings
+  that describe the section. Their earlier rules still hold: American spelling, no semicolons
+  or em dashes in visible text (portfolio `f1c66e0`).
 - 2026-11-04 (scenario guidelines): write strong WH3 evaluation-scenario guidelines using
   the research collection, with diverse complexity, duration, maps and likely tactics;
   address winnability, intended measurement, game mechanics, engine quirks and multi-agent

@@ -171,6 +171,8 @@ Do not run `ruff format` on hand-formatted files (most are); the WH3 report Java
 `prettier --print-width 100`. No overengineering, excessive abstractions or overly safe code.
 Write in simple, concrete language (owner, 2026-10-20): say what a unit, controller or
 experiment actually does; no inflated wording; explain technical terms when they help.
+No punchlines in public or owner-voiced text (owner, 2026-11-04): whole connected sentences, no
+tagline headings, closers for effect or "X, not Y"; rules in `runs/portfolio/AGENTS.md`, Writing.
 
 Tests: [tests/README.md](tests/README.md); [docs/testing.md](docs/testing.md) holds proposed
 guidelines; no coverage threshold. Prioritize action and target identity, stale observations,
