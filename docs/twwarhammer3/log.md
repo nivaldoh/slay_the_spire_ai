@@ -28,6 +28,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: coordination suite built; first screen stopped for live tests
+
+- Owner's overnight goal. Definition: [benchmark.md](benchmark.md#the-coordination-suite-suite-v1);
+  code `battle/suite.py`, branch `coord-suite` landed at `0268cae`. Not yet played.
+- Screen at `b1537c7`, build 26403568, Haiku 5.5 low `llm_rules`, plan
+  `runs/coord-suite-20261104/screen-a.json`: stopped by its stop file after 2 of 14 battles,
+  to free the game for live checks of authored starts. `emp-line-grn-raid-xp5` lost at 381 s,
+  $0.126, enemy 395 of 548 men still active; `skv-swarm-dwf-line` lost on the timer at 1205 s,
+  $0.485, enemy 61 of 466 active. Two battles: no rate is claimed.
+- An independent review of `c2fe619` found that the engine does not keep roster order (153
+  friendly and 106 enemy sides of 414 first observations reordered), so authored places by id
+  would have put the wrong units on them without any error, and that the start check read
+  enemies only while visible. Fixed in `55480b9`: placements name a type, and the script reads
+  every unit's position privately at the first observation. Not yet checked live.
+
 ## 2026-11-04: capture the script click path; stop at the owner's request
 
 `foundation-ref4` at `8bd3c55`, build 26403568 ($0): one paired script-click scope and
