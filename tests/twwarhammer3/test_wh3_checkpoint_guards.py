@@ -24,7 +24,7 @@ class LaunchAttempted(Exception):
 def offline(tmp_path, monkeypatch):
     (tmp_path / "user/replays").mkdir(parents=True)
     environment = {"blockers": [], "game": {"sha256": checkpoint.EXE_SHA256,
-                                            "steam_build_id": 25961564}}
+                                            "steam_build_id": 26403568}}
     monkeypatch.setattr(checkpoint.runtime, "user_dir", lambda: tmp_path / "user")
     monkeypatch.setattr(checkpoint, "collect_diagnostics", lambda: environment)
     monkeypatch.setattr(checkpoint, "conflicting_games", lambda *args: False)
@@ -51,7 +51,7 @@ def test_a_clean_source_plan_reaches_the_launch(offline):
 @pytest.mark.parametrize("case,error,message", [
     ("replay_exists", FileExistsError, "replay sv already exists"),
     ("blocked", RuntimeError, "another game is running"),
-    ("other_build", RuntimeError, "supports Steam build 25961564 only"),
+    ("other_build", RuntimeError, "supports Steam build 26403568 only"),
     ("spire_running", RuntimeError, "Slay the Spire is running"),
     ("lobby_steps_on_restore", ValueError, "lobby_steps apply only to source battles"),
 ])

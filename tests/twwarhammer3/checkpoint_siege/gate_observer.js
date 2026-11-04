@@ -1,8 +1,8 @@
-// Private diagnostic: build 25961564 gate-HP accessor resolves the same building piece
-// used by the recorded CHANGE_GATE_STATUS command (0x142ecd9d4 -> 0x14316b348).
+// Private diagnostic: build 26403568 gate-HP accessor reads the building piece
+// through building+0x90; HP is maximum (piece+0x88) minus damage (piece+0x1b8).
 // Gate state 0 selects _gate_closed; other values select _gate_open. Keep the raw enum
 // until its changes have been witnessed in game. HP is independently read through Lua.
-BUILD.gate_hp = ['0x1be9e48', '488b41080f57c0488b88900000004885'];
+BUILD.gate_hp = ['0x1bf0438', '488b41080f57c0488b88900000004885'];
 const gatePieces = new Map();
 let gateOpenSaved = false;
 Interceptor.attach(at('gate_hp'), {

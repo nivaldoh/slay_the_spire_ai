@@ -2,13 +2,16 @@
 
 Save a running battle at a tick and later continue it from exactly that tick, as often as
 needed: for benchmarks and training that start several attempts from one battle state.
-Steam build 25961564 only; the agent checks the game's code bytes and refuses other builds.
-The installed game and normal runtime [pin](integration.md#pins) moved to 9.0.5/build
-26403568 on 2026-11-03. Checkpoints refuse that executable; porting their native hooks and
-rerunning the agreed checks remain necessary before using them on the updated install.
+The native hooks target 9.0.5 / Steam build 26403568, matching the normal
+runtime [pin](integration.md#pins). The agent checks the game's code bytes and refuses
+other builds. The agreed Land and siege checks still need to pass on this build; historical
+passes below cover build 25961564 only.
+Create new checkpoints on the updated build; compatibility with old-build replay files is
+unverified, and checkpoint-RL library records retain their original executable/agent hashes.
 The public release of the same tool for players and modders is
 [github.com/nivaldoh/wh3-battle-checkpoints](https://github.com/nivaldoh/wh3-battle-checkpoints)
 (v0.1.0, owner-approved 2026-10-25).
+That public release still targets build 25961564; the 9.0.5 port here is not a public release.
 
 ## How it works
 
@@ -59,7 +62,7 @@ between them through git, and a merge, pull or push between the two does not app
 
 | Piece | This repository | Public repository |
 |---|---|---|
-| In-game agent | `engine/checkpoint_agent.js`, with test hooks (off unless a config is passed) | `checkpoint_agent.js`, the same code without the test hooks |
+| In-game agent | `engine/checkpoint_agent.js`, with test hooks (off unless a config is passed) | `checkpoint_agent.js`, build-25961564 version without the test hooks |
 | Player command line (`save NAME`, restore from Replays) | not here | `wh3_checkpoints.py` |
 | Harness runs, comparison, agreed check | `battle/checkpoint.py`, `check_wh3_checkpoint.py` | not there |
 

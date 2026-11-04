@@ -1,4 +1,4 @@
-// WH3 battle checkpoints: Frida agent. Total War: WARHAMMER III, Steam build 25961564 only;
+// WH3 battle checkpoints: Frida agent. Total War: WARHAMMER III, 9.0.5 / Steam build 26403568 only;
 // every native address is checked against its expected bytes before use.
 //
 // Save: write the game's replay file (battle setup and every input so far) at a completed
@@ -6,7 +6,8 @@
 // Replays menu, run it as a live battle, rebuild it quickly while checking every tick's
 // checksum against the file, and hand over live control at the saved tick.
 //
-// Published without the test hooks as github.com/nivaldoh/wh3-battle-checkpoints (v0.1.0).
+// The build-25961564 predecessor was published without the test hooks as
+// github.com/nivaldoh/wh3-battle-checkpoints (v0.1.0).
 // The hooks (CONFIG, set by checkpoint_frida.py) save at exact ticks and run Lua on the battle
 // script state at exact ticks, for twwarhammer3.battle.checkpoint and its live check.
 'use strict';
@@ -14,29 +15,29 @@ const CONFIG = null;  // replaced by checkpoint_frida.py
 
 
 const BUILD = {
-    post_tick: ['0x2dd3304', '488bc44889580848897010488978184c'],
-    session_step: ['0x2d714a8', '48895c241048896c2418565741544156'],
-    session_ctor: ['0x2d19a18', '48895c24084889742410574883ec3048'],
-    env_ctor: ['0x2d98420', '4c894c24204889542410555356574154'],
-    tick_threading_check: ['0x2db0e08', '40534883ec2080b9e045060000488bd9'],
-    save_replay: ['0x2dd7698', '48895c240855488d6c24904881ec7001'],
-    string_from_utf16: ['0x4eb5d0', '40534883ec20488bd94c8bc233c94889'],
-    string_free: ['0x4d34b4', '40534883ec30488b5908488d058fd8a9'],
-    string_from_utf8: ['0x4d7960', '40534883ec20488bd948c74108000000'],
-    string_free_utf8: ['0x4d49d0', '40534883ec20488b5908488d056fc3a9'],
-    allocate: ['0x4d3da0', '48895c2408574883ec3065488b042558'],
-    make_live_provider: ['0x1b9c678', '48895c2408574883ec20488361080048'],
-    crt_existing_context: ['0x116bb58', '40534883ec208bd94c8d0df9605502b9'],
-    crt_current_context: ['0x1168d74', '48895c24084889742410574883ec20ff'],
-    luaL_loadbuffer: ['0x18415b0', '4883ec384889542420488d1504f8ffff'],
-    lua_gettop: ['0x183ee38', '488b4110482b411848c1f804c3cccccc'],
-    lua_settop: ['0x183f940', '85d278294863d24803d2eb0d488b4110'],
-    lua_checkstack: ['0x183e9a0', '48895c2408574883ec204c8b4110488b'],
-    lua_pcall: ['0x183f1a8', '48895c2408574883ec4033c0418bf844'],
-    lua_tolstring: ['0x183fa80', '48895c24084889742410574883ec2049'],
+    post_tick: ['0x2dda3ac', '488bc44889580848897010488978184c'],
+    session_step: ['0x2d78568', '48895c241048896c2418565741544156'],
+    session_ctor: ['0x2d20c68', '48895c24084889742410574883ec3048'],
+    env_ctor: ['0x2d9f56c', '4c894c24204889542410555356574154'],
+    tick_threading_check: ['0x2db7e98', '40534883ec2080b9e045060000488bd9'],
+    save_replay: ['0x2dde7b4', '48895c240855488d6c24904881ec7001'],
+    string_from_utf16: ['0x50add4', '40534883ec20488bd94c8bc233c94889'],
+    string_free: ['0x4f2ff4', '40534883ec30488b5908488d052f83a8'],
+    string_from_utf8: ['0x4f73d0', '40534883ec20488bd948c74108000000'],
+    string_free_utf8: ['0x4f4440', '40534883ec20488b5908488d05df6ea8'],
+    allocate: ['0x4f38e0', '48895c2408574883ec3065488b042558'],
+    make_live_provider: ['0x1ba2ed8', '48895c2408574883ec20488361080048'],
+    crt_existing_context: ['0x11704b8', '40534883ec208bd94c8d0d99875502b9'],
+    crt_current_context: ['0x116d6d4', '48895c24084889742410574883ec20ff'],
+    luaL_loadbuffer: ['0x184757c', '4883ec384889542420488d15d4f7ffff'],
+    lua_gettop: ['0x1844dd4', '488b4110482b411848c1f804c3cccccc'],
+    lua_settop: ['0x18458dc', '85d278294863d24803d2eb0d488b4110'],
+    lua_checkstack: ['0x184493c', '48895c2408574883ec204c8b4110488b'],
+    lua_pcall: ['0x1845144', '48895c2408574883ec4033c0418bf844'],
+    lua_tolstring: ['0x1845a1c', '48895c24084889742410574883ec2049'],
 };
-const VTABLE = {session: 0x3aaf118, replay_provider: 0x3ab4830, live_provider: 0x3a2e0c0, recording: 0x38bfbc0};
-const GLOBAL = {tick_interval: 0x3d0e294, input_name: 0x3ab2ec0, debug_replay: 0x3f69b94, crt_context_index: 0x3d0d9c8};
+const VTABLE = {session: 0x3ab9b38, replay_provider: 0x3ac1750, live_provider: 0x3a39808, recording: 0x38cb4e0};
+const GLOBAL = {tick_interval: 0x3d19284, input_name: 0x3abb488, debug_replay: 0x3f74233, crt_context_index: 0x3d189c8};
 // Battle environment fields (build-specific).
 const ENV = {tick: 0x64720, checksums: 0x64598, provider_cache: 0x64770, replay: 0x645d0,
              replay_flag: 0x645e0, recording: 0x645f0, worker_job: 0x64810};

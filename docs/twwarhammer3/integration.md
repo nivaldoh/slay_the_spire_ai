@@ -21,8 +21,8 @@ re-pin. [CA's release announcement](https://steamcommunity.com/app/1142710/allne
 includes battle balance changes; equivalence with earlier results is unverified.
 The previous pin was 9.0.4.0, Steam build 25961564, executable hash
 `9bd58c63bd7fc5c9909b3d3d9b6b7a6ae4eac784369bf91a9e53c3e9f42be496`;
-[native checkpoints](checkpoints.md) still require that executable and refuse the current
-build. Updating the normal runtime pin does not port their native hooks. Earlier trials used
+[native checkpoints](checkpoints.md) have a separate executable guard and native hook map;
+their port and agreed checks are tracked on that page. Earlier trials used
 9.0.3, build 4366297, Steam 25823491, executable hash
 `518c4f292f275142df13b96b9db704a3db7b4870b2c519df83d850596ecc822a`. Their manifests retain
 that build and the report keeps the conditions separate. Since 2026-10-18 another build

@@ -54,6 +54,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
   no agreed check. Evidence: `runs/twwarhammer3/native-multiplayer/{o2,mp1,mp2}/`,
   `runs/twwarhammer3/gcp/session-20261103d*`.
 
+## 2026-11-03: checkpoint native hooks ported to 9.0.5, live checks held
+
+- Ported the strict executable hash and native addresses to Steam build 26403568:
+  20 functions, four vtables/four globals and the siege gate reader. Kept checkpoint
+  recognition, tick/seed checks, replay rebuild and live handover unchanged.
+- Independent static review found no concrete mapping/hash defect; it does not establish
+  live restoration. The prior-base planted-bug check caught 357/357 wrong implementations.
+- Version-bound check updates only: two guard-test build literals and the siege reader's
+  native address; no comparison, witness or tolerance changes. Owner said to try the live
+  process after the check-update/live-check question. The earlier game has since exited.
+- Card, native audit and offline evidence: `runs/wh3-checkpoint-905/`. Existing agreed Land
+  and siege checks still need to pass on this build. No live correctness claim yet, $0.
+- Owner then said "Let's wait before launching the game again"; no game was launched by
+  this task. The offline review passed; both live checks remain pending.
+- Public player release v0.1.0 still targets the old build; no public release in this change.
+
 ## 2026-11-03: runtime re-pinned to Steam 9.0.5
 
 - Owner requested the re-pin. Completed Steam install: build 26403568, Windows file/product

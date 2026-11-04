@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (WH3 checkpoints): "Let's update our checkpoint feature to the new version as
+  well" (9.0.5/build 26403568); then "This might be a good time to try the live process".
+  Latest: "Let's wait before launching the game again". Finish the offline port; hold
+  live launches. Preserve the existing comparisons and tolerances when checking later.
 - 2026-11-03 ([multiplayer next steps](twwarhammer3/mp-next-steps.md#owner-decisions)):
   "1. Sure 2. Yes. 3. You can do whatever works best for you. 4. Seems fine 5. We can keep
   it alive for now. Let's take note of these decisions without starting the implementation

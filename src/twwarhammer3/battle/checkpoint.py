@@ -9,7 +9,7 @@ fast rebuild before the handover (2026-10-25, AGENTS.md).
 
 `run` plays one source battle (a scenario) or one restore through the normal harness, with
 optional saves, Lua (orders, a battle script) and readings at exact completed ticks.
-`compare` checks a restore against its source tick by tick. Steam build 25961564 only.
+`compare` checks a restore against its source tick by tick. Steam build 26403568 only.
 
 `episode` is the step run of checkpoint RL (docs/twwarhammer3/checkpoint-rl-plan.md): it
 also logs every observation it reads, hands the mod at most one order batch at a declared
@@ -42,7 +42,7 @@ RUNNER = ENGINE / "checkpoint_frida.py"
 WORK = runtime.RUNTIME_DIR / "checkpoint"
 # A Windows Python with frida 17 installed (pip install frida==17.*).
 FRIDA_PYTHON = Path("/mnt/c/wh3-agent/checkpoint-frida-venv/Scripts/python.exe")
-EXE_SHA256 = "9bd58c63bd7fc5c9909b3d3d9b6b7a6ae4eac784369bf91a9e53c3e9f42be496"  # build 25961564
+EXE_SHA256 = "d2a8a58288bf8bd86768f21ff6be036cebb1916f9c312999c60afc1abe13789f"  # build 26403568
 CONFIG = {"speed": 1, "pause": False, "observe_ms": 1000, "tick_ms": 250, "record_replay": False,
           "stills": False, "interval_ms": 0, "delay_ms": 0, "start_timeout": 240,
           "observation_timeout": 20, "run_timeout": 600}
@@ -146,7 +146,7 @@ def launched(plan: dict, output: Path, replay_sha256: str | None, config: dict, 
     if environment["blockers"]:
         raise RuntimeError(environment["blockers"])
     if environment["game"]["sha256"] != EXE_SHA256:
-        raise RuntimeError("the checkpoint agent supports Steam build 25961564 only")
+        raise RuntimeError("the checkpoint agent supports Steam build 26403568 only")
     if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
         raise RuntimeError("Slay the Spire is running")
     scenario = plan.get("scenario")
