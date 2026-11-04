@@ -6,7 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Overnight benchmark run ended 2026-11-04 11:00 -03; game closed. [Suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1), [results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods), handoff `runs/coord-suite-20261104/handoff.md`.
+Overnight benchmark run ended 2026-11-04 11:00 -03; [suite page rebuilt](twwarhammer3/log.md#2026-11-04-suite-page-rebuilt-so-colour-shows-who-controls-what), owner's verdict pending; tips test next. [Suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1), [results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods), handoff `runs/coord-suite-20261104/handoff.md`.
 Checkpoint 9.0.5: Land and all four declared siege states passed at `210e356`; game closed. [Results and limits](twwarhammer3/checkpoints.md#siege-check); evidence `runs/wh3-checkpoint-905/`.
 
 GCP: no VM. Game disk `wh3-mp-20261103d` (us-west1-c, build 26403568, second account's Steam login) kept until 2026-11-06 21:09 UTC (~$0.83/day; owner, 11-03); `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled).

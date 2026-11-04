@@ -1787,7 +1787,7 @@
   };
   const suiteApi = {
     open: openRun,
-    terrainOf: (key) => data.scenarios.find((item) => item.battles.includes(key))?.terrain,
+    decode,
   };
   async function setup() {
     if (synthetic) $("demo-banner").hidden = false;

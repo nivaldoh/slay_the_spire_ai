@@ -44,6 +44,24 @@ No existing test/check/scorer changed. Two proposal/example JUDGEMENT markers we
 The check is not agreed; display fidelity and cooperation quality remain unverified under
 the owner's rule. This is a research sketch for the existing report, not adoption of a metric.
 
+## 2026-11-04: suite page rebuilt so colour shows who controls what
+
+Owner on the last page: "Not clear yet"; too much to read, and the replay map, timelines, start
+maps and battles all fall short. "Saying "west group" or "east group" doesn't help. We should name
+the models instead and the colors should highlight who is controlling what", and try overlapping
+methods (owner-direction.md).
+- The west and east group diagrams, jobs, timelines and answers are gone, and `suite.py` lost its
+  group code. Colour is now the controller on every map, read from each battle's own partition
+  record. Each method gets a small map on one clock; two overlap on a big map, solid and outlined,
+  with each unit's path. Each battle states a one-line plan per model. The replay opens on "Watch".
+- Bug found on the way: Written rules' battles were classed as diagnostic probes (composed card)
+  and left the page, so it had no replay of them. `commander()` now counts a composed controller
+  on a benchmark battle as a compared method.
+- Checks: browser check rewritten, passes on 26 battles of the two plans; a planted bug colouring
+  every unit alike failed it ("team: members and the enemy"). 42 tests in `test_wh3_suite.py`.
+- Unverified: whether this reads clearly to the owner. Whether overlap shows coordination at all
+  is their call; side by side and overlap are both on the page so they can compare.
+
 ## 2026-11-04: code map omissions and current claims corrected
 
 The map now assigns the benchmark/suite/reference modules to boxes, and its generated file

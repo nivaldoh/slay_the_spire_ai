@@ -51,7 +51,6 @@ CONTROLS = {"commander": "skills"}  # the same executor with no model: read its 
 # fighting unit count as that fight. A wider radius blends fights and moves the number toward the
 # whole-army ratio; a narrower one misses supporting units.
 LOCAL_M = 80
-GAP_S = 3  # a recorder gap this short does not end a group's stretch
 AUTHOR_TRIES = 3
 
 
@@ -251,181 +250,35 @@ def coordination(frames):
                             if friendly_men + enemy_men else None)}
 
 
-def groups_of(units, groups):
-    """Each unit's group: the declared centre nearest where it started."""
-    return {key: min(groups, key=lambda group: math.hypot(group["x"] - unit["x"],
-                                                          group["z"] - unit["z"]))["name"]
-            for key, unit in units.items() if unit.get("x") is not None}
+def owners(episode):
+    """Which member controlled which unit, from the battle's own partition record.
 
-
-def lanes(frames, members):
-    """What each group was doing, second by second: [from_s, to_s, "ready" or "fight"].
-
-    A group fights while any of its able units is in melee, and is ready while it has able
-    units and none is. It ends when it has none: routed, shattered or dead, for now. These
-    are recorded states, so a stretch is a reading of what happened, not of what was meant.
-    """
-    result = {name: [] for name in dict.fromkeys(members.values())}
-    for name, spans in result.items():
-        for frame in frames:
-            units = [unit for unit in frame.get("friendly") or []
-                     if members.get(unit.get("id")) == name and able(unit)]
-            if not units:
-                continue
-            state = "fight" if any("melee" in (u.get("state") or []) for u in units) else "ready"
-            second = round(frame["time_ms"] / 1000, 1)
-            if spans and spans[-1][2] == state and second - spans[-1][1] <= GAP_S:
-                spans[-1][1] = second
-            else:
-                spans.append([second, second, state])
-    return result
-
-
-def clock(seconds):
-    return f"{int(seconds) // 60}:{int(seconds) % 60:02d}"
-
-
-def melee_units(frame, members, group, side="friendly"):
-    return [unit for unit in frame.get(side) or [] if members.get(unit.get("id")) == group
-            and able(unit) and "melee" in (unit.get("state") or []) and unit.get("x") is not None]
-
-
-def first_melee(frames, members, side):
-    """The first battle second, and a unit, each group had in melee."""
-    first = {}
-    for frame in frames:
-        for group in dict.fromkeys(members.values()):
-            fighting = melee_units(frame, members, group, side)
-            if group not in first and fighting:
-                first[group] = (round(frame["time_ms"] / 1000, 1), fighting[0])
-    return first
-
-
-def units_of(frame, members, groups):
-    return [unit for unit in frame.get("friendly") or [] if members.get(unit.get("id")) in groups
-            and able(unit) and unit.get("x") is not None]
-
-
-def joined(rule, frames, members):
-    """Where the reserve first fought: beside a group only if it stood near that group's units."""
-    who, first = rule["who"], first_melee(frames, members, "friendly").get(rule["who"])
-    if first is None:
-        return f"{who} never fought"
-    when, unit = first
-    frame = next(item for item in frames if item["time_ms"] / 1000 >= when)
-    near = [members[other["id"]] for other in units_of(frame, members, rule["among"])
-            if within(unit, other)]
-    if not near:
-        return f"{who} first fought away from both groups, at {clock(when)}"
-    return f"{who} joined the {near[0]} at {clock(when)}"
-
-
-def reached(rule, frames, members):
-    """When one group first fought within LOCAL_M of the other's fight, after that fight began."""
-    start = first_melee(frames, members, "friendly").get(rule["a"])
-    for frame in frames if start else ():
-        help_ = melee_units(frame, members, rule["b"])
-        if any(within(a, b) for a in melee_units(frame, members, rule["a"]) for b in help_):
-            return rule["text"].format(gap=clock(frame["time_ms"] / 1000 - start[0]))
-    return rule["never"]
-
-
-def answer(rule, frames, members, foes):
-    """The battle's own question, answered from the recorded states in one sentence."""
-    kind, ours = rule["kind"], first_melee(frames, members, "friendly")
-    theirs = first_melee(frames, foes, "enemy")
-    if kind == "joined":
-        return joined(rule, frames, members)
-    if kind == "reached":
-        return reached(rule, frames, members)
-    if kind == "apart":
-        if rule["a"] not in ours or rule["b"] not in ours:
-            return rule["never"]
-        (at_a, a), (at_b, b) = ours[rule["a"]], ours[rule["b"]]
-        metres = round(math.hypot(a["x"] - b["x"], a["z"] - b["z"]), -1)
-        return f"Two fights {metres:.0f} m apart, starting {clock(abs(at_a - at_b))} apart"
-    if kind == "waves":
-        if rule["a"] not in theirs or rule["b"] not in theirs:
-            return rule["never"]
-        return rule["text"].format(gap=clock(abs(theirs[rule["a"]][0] - theirs[rule["b"]][0])))
-    if kind == "spread":
-        times = [when for when, _ in theirs.values()]
-        groups = len(set(foes.values()))
-        if len(times) < groups:
-            return f"Reached {len(times)} of {groups} enemy groups"
-        routed = first_routed(frames, foes)
-        first = (f"{routed[0]} first routed at {clock(routed[1])}" if routed
-                 else "No enemy force routed")
-        return f"{first}; all {groups} in contact by {clock(max(times))}"
-    who = rule["who"]
-    first = f"first in melee at {clock(ours[who][0])}" if who in ours else "never in melee"
-    return f"{who} {first}; fired {spent(frames, members, who)}% of their ammunition"
-
-
-def first_routed(frames, foes):
-    """The first enemy group, and second, with every unit in sight routing or shattered.
-
-    Routed units can rally, so this says when, not that the group stayed beaten."""
-    fought = set()
-    for frame in frames:
-        units = [unit for unit in frame.get("enemy") or [] if unit.get("id") in foes]
-        fought |= {foes[unit["id"]] for unit in units if "melee" in (unit.get("state") or [])}
-        for group in fought:
-            own = [unit for unit in units if foes[unit["id"]] == group]
-            if own and not any(able(unit) for unit in own):
-                return group, frame["time_ms"] / 1000
-    return None
-
-
-def spent(frames, members, group):
-    """Percent of a group's starting ammunition gone by its last reading."""
-    last = {}
-    start = {}
-    for frame in frames:
-        for unit in frame.get("friendly") or []:
-            if members.get(unit.get("id")) == group and unit.get("ammo") is not None:
-                start.setdefault(unit["id"], unit["ammo"])
-                last[unit["id"]] = unit["ammo"]
-    total = sum(start.values())
-    return round(100 * (1 - sum(last.values()) / total)) if total else 0
-
-
-def battle_story(row, notes):
-    """One played battle for the page: its groups and what each did, by the recorder."""
-    episode = Path(row["output"]) / "episode-0000"
-    path = episode / "result.json"
-    if not row["outcome"] or not path.exists():
-        return None
-    start = json.loads(path.read_text()).get("start") or {}
-    members = groups_of(start.get("friendly") or {}, notes["groups"])
-    foes = groups_of(start.get("enemy") or {}, notes["enemy"])
-    frames = read_frames(episode)
-    return {"output": row["output"], "arm": row["arm"], "outcome": row["outcome"],
-            "battle_s": row["battle_s"], "taken": row["taken"], "groups": members,
-            "lanes": lanes(frames, members),
-            "answer": answer(notes["answer"], frames, members, foes)}
+    Only the team and graph arms split an army; the others have no partition, so the whole
+    army is one controller's ("all")."""
+    path = Path(episode) / "trace.jsonl"
+    for line in path.read_text().splitlines() if path.exists() else ():
+        event = json.loads(line)
+        if event.get("kind") == "team" and event.get("event") == "partition":
+            return {unit: member for member, units in event["ownership"].items()
+                    for unit in ([units] if isinstance(units, str) else units)}
+    return {}
 
 
 def scenario_pictures(rows, notes):
-    """The page's picture of each scenario: the declared problem, starts from a played battle."""
+    """The page's picture of each scenario: its question, and who controlled what in each battle."""
     pictures = {}
     for row in rows:
         note = notes.get(row["scenario"]) or {}
-        if not note.get("groups"):
+        if not note.get("question"):
             continue
-        picture = pictures.setdefault(row["scenario"], {**note, "battles": []})
-        story = battle_story(row, note)
-        if story is None:
-            continue
-        picture["battles"].append(story)
-        if "start" not in picture:
-            path = Path(row["output"]) / "episode-0000/result.json"
-            start = json.loads(path.read_text())["start"]
-            place = {"friendly": note["groups"], "enemy": note["enemy"]}
-            picture["start"] = {side: [
-                {"x": start[side][key]["x"], "z": start[side][key]["z"], "group": group}
-                for key, group in groups_of(start[side], place[side]).items()]
-                for side in place}
+        picture = pictures.setdefault(row["scenario"], {
+            key: note.get(key) for key in ("title", "question", "why", "plan", "seen")}
+            | {"battles": []})
+        if row["outcome"]:
+            picture["battles"].append({
+                "output": row["output"], "arm": row["arm"], "outcome": row["outcome"],
+                "battle_s": row["battle_s"], "taken": row["taken"],
+                "owners": owners(Path(row["output"]) / "episode-0000")})
     return pictures
 
 
@@ -661,7 +514,8 @@ def report(plans, output):
     notes = json.loads(report_html.NOTES_PATH.read_text())
     visual = trials.collect([], benchmark_plans=plans)
     pictures = scenario_pictures(data["rows"], notes["scenarios"])
-    page = {**data["summary"], "pictures": pictures, "scenarios": list(pictures),
+    page = {**data["summary"], "pictures": pictures,
+            "scenarios": sorted(pictures, key=list(notes["scenarios"]).index),
             "page": {**notes.get("suite", {}), "plans": [Path(plan).stem for plan in plans]}}
     report_html.write(output.with_name(output.name + ".html"), {**visual, "suite": page})
     return data

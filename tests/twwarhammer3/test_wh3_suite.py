@@ -394,118 +394,46 @@ def test_a_class_member_is_told_which_ids_it_may_order_and_a_two_member_team_is_
     assert team.TeamLLM.section_of(view) == team.team_section(view)
 
 
-def test_each_unit_joins_the_declared_group_nearest_its_start():
-    groups = [{"name": "West", "x": -100, "z": 0}, {"name": "East", "x": 100, "z": 0}]
-    units = {"f1": {"x": -90, "z": 5}, "f2": {"x": 80, "z": 0}, "f3": {"x": None, "z": 0}}
-    assert suite.groups_of(units, groups) == {"f1": "West", "f2": "East"}
+def test_a_split_armys_owners_come_from_its_own_partition_record(tmp_path):
+    (tmp_path / "trace.jsonl").write_text("\n".join(json.dumps(event) for event in [
+        {"kind": "battle"},
+        {"kind": "team", "event": "partition", "ownership": {
+            "front": ["f1", "f2"], "mobile": ["f3"], "solo": "f4"}}]))
+    assert suite.owners(tmp_path) == {"f1": "front", "f2": "front", "f3": "mobile", "f4": "solo"}
+    (tmp_path / "trace.jsonl").write_text(json.dumps({"kind": "decision"}))
+    assert suite.owners(tmp_path) == {}  # one controller holds the whole army
 
 
-def test_lanes_show_when_each_group_fought_and_when_it_had_no_able_unit_left():
-    members = {"a": "West", "b": "East"}
-    frames = [frame(1, [unit("a"), unit("b")]),
-              frame(2, [unit("a", ["melee"]), unit("b")]),
-              frame(3, [unit("a", ["melee"]), unit("b", ["melee"])]),
-              frame(4, [unit("a", ["routing"]), unit("b", ["melee"])])]
-    assert suite.lanes(frames, members) == {
-        "West": [[1, 1, "ready"], [2, 3, "fight"]],
-        "East": [[1, 2, "ready"], [3, 4, "fight"]]}
-
-
-def test_a_recorder_gap_splits_a_stretch_only_when_it_is_long():
-    frames = [frame(1, [unit("a")]), frame(3, [unit("a")]), frame(20, [unit("a")])]
-    assert suite.lanes(frames, {"a": "West"})["West"] == [[1, 3, "ready"], [20, 20, "ready"]]
-
-
-def test_every_played_scenarios_notes_name_all_its_units_and_real_groups():
+def test_the_page_names_every_arm_and_every_controller_and_every_played_scenario():
     notes = json.loads((REPO_ROOT / "configs/twwarhammer3/report_notes.json").read_text())
-    known = scenarios()
-    pictured = [name for name, note in notes["scenarios"].items() if note.get("groups")]
+    page = notes["suite"]
+    assert set(page["order"]) == set(page["methods"]) <= set(suite.ARMS)
+    named = set(page["controllers"])
+    assert all(set(method["models"]) <= named for method in page["methods"].values())
+    assert set(team.CLASS_PARTITION) <= named
+    pictured = [name for name, note in notes["scenarios"].items() if note.get("question")]
     assert len(pictured) == 6
     for name in pictured:
-        note, places = notes["scenarios"][name], known[name]["deployment"]
-        for side, groups in (("friendly", note["groups"]), ("enemy", note["enemy"])):
-            units = {str(i): place for i, place in enumerate(places[side])}
-            assert set(suite.groups_of(units, groups).values()) == {g["name"] for g in groups}
-        names = {group["name"] for group in note["groups"]}
-        assert all(a in names and b in names for a, b in note["links"])
-        assert note["question"] and note["why"] and all(g["job"] for g in note["groups"])
-        rule = note["answer"]
-        foes = {group["name"] for group in note["enemy"]}
-        assert all(rule[key] in names | foes for key in ("a", "b", "who") if key in rule)
-        assert set(rule.get("among", [])) <= names
-    methods = notes["suite"]["methods"]
-    assert set(notes["suite"]["order"]) == set(methods) <= set(suite.ARMS)
+        note = notes["scenarios"][name]
+        assert note["question"].endswith("?") and note["why"] and note["seen"]
+        assert {who for part in note["plan"] for who in part["who"]} == set(team.CLASS_PARTITION)
 
 
-def positioned(id, x, state=()):
-    return unit(id, state, x=x)
+def test_a_picture_lists_played_battles_and_skips_scenarios_without_a_question(tmp_path):
+    rows = [{"scenario": "s", "arm": "team", "outcome": "won", "output": str(tmp_path / "job"),
+             "battle_s": 100, "taken": 100.0},
+            {"scenario": "s", "arm": "gap", "outcome": None, "output": str(tmp_path / "none"),
+             "battle_s": None, "taken": None},
+            {"scenario": "other", "arm": "gap", "outcome": "lost", "output": "x",
+             "battle_s": 9, "taken": 1.0}]
+    pictures = suite.scenario_pictures(rows, {"s": {"title": "S", "question": "Q?"}})
+    assert list(pictures) == ["s"] and [b["arm"] for b in pictures["s"]["battles"]] == ["team"]
 
 
-def test_the_reserve_joins_a_group_only_if_it_fights_beside_it():
-    members = {"w": "West", "e": "East", "r": "Reserve"}
-    rule = {"kind": "joined", "who": "Reserve", "among": ["West", "East"]}
-    frames = [frame(10, [positioned("w", -100), positioned("e", 100), positioned("r", 0)]),
-              frame(130, [positioned("w", -100), positioned("e", 100),
-                          positioned("r", 90, ["melee"])])]
-    assert suite.answer(rule, frames, members, {}) == "Reserve joined the East at 2:10"
-    assert suite.answer(rule, frames[:1], members, {}) == "Reserve never fought"
-    # 2026-11-04 review: a reserve attacked where it stood had joined nobody.
-    alone = [frame(176, [positioned("e", 300), positioned("r", 0, ["melee"])])]
-    assert suite.answer(rule, alone, members, {}) == (
-        "Reserve first fought away from both groups, at 2:56")
+def test_a_composed_method_on_a_benchmark_battle_is_compared_and_elsewhere_stays_a_probe():
+    from twwarhammer3.battle.report_html import commander
 
-
-RELIEF = {"kind": "reached", "a": "Garrison", "b": "Column", "text": "Help after {gap}",
-          "never": "It never came"}
-
-
-def test_help_counts_only_once_the_two_fights_are_close():
-    members = {"g": "Garrison", "c": "Column"}
-    # 2026-11-04 review: the column fighting elsewhere is not help reaching the garrison.
-    frames = [frame(30, [positioned("g", 0, ["melee"]), positioned("c", 500)]),
-              frame(80, [positioned("g", 0, ["melee"]), positioned("c", 400, ["melee"])])]
-    assert suite.answer(RELIEF, frames, members, {}) == "It never came"
-    frames.append(frame(125, [positioned("g", 0, ["melee"]), positioned("c", 60, ["melee"])]))
-    assert suite.answer(RELIEF, frames, members, {}) == "Help after 1:35"
-
-
-def test_two_groups_are_read_as_two_fights_with_a_distance_and_a_delay():
-    members = {"w": "West", "e": "East"}
-    rule = {"kind": "apart", "a": "West", "b": "East", "never": "Only one fought"}
-    frames = [frame(40, [positioned("w", -200, ["melee"]), positioned("e", 200)]),
-              frame(47, [positioned("w", -200, ["melee"]), positioned("e", 200, ["melee"])])]
-    assert suite.answer(rule, frames, members, {}) == "Two fights 400 m apart, starting 0:07 apart"
-    assert suite.answer(rule, frames[:1], members, {}) == "Only one fought"
-
-
-def test_enemy_groups_are_read_from_their_own_first_contact():
-    foes = {"e1": "Near", "e2": "Far", "e3": "South"}
-    frames = [frame(50, [], [unit("e1", ["melee"])]),
-              frame(54, [], [unit("e1", ["melee"]), unit("e2", ["melee"])]),
-              frame(95, [], [unit("e3", ["melee"])])]
-    waves = {"kind": "waves", "a": "Near", "b": "Far", "text": "{gap} apart", "never": "One wave"}
-    assert suite.answer(waves, frames, {}, foes) == "0:04 apart"
-    assert suite.answer({"kind": "spread"}, frames, {}, foes) == (
-        "No enemy force routed; all 3 in contact by 1:35")
-    assert suite.answer({"kind": "spread"}, frames[:2], {}, foes) == (
-        "Reached 2 of 3 enemy groups")
-    broken = [*frames, frame(120, [], [unit("e1", ["routing"]), unit("e3", ["melee"])])]
-    assert suite.answer({"kind": "spread"}, broken, {}, foes) == (
-        "Near first routed at 2:00; all 3 in contact by 1:35")
-
-
-def test_a_group_never_seen_fighting_is_not_called_routed():
-    foes = {"e1": "West"}
-    assert suite.first_routed([frame(9, [], [unit("e1", ["routing"])])], foes) is None
-
-
-def test_guns_report_their_first_melee_and_the_ammunition_they_spent():
-    members = {"g": "Guns"}
-    frames = [frame(10, [{**unit("g"), "ammo": 40}]),
-              frame(99, [{**unit("g", ["melee"]), "ammo": 10}])]
-    rule = {"kind": "guns", "who": "Guns"}
-    assert suite.answer(rule, frames, members, {}) == (
-        "Guns first in melee at 1:39; fired 75% of their ammunition")
-    idle = [frame(10, [{**unit("g"), "ammo": 40}]), frame(99, [{**unit("g"), "ammo": 40}])]
-    assert suite.answer(rule, idle, members, {}) == (
-        "Guns never in melee; fired 0% of their ammunition")
+    trial = {"policy": "configured", "card": {"kind": "composed"}, "delay_ms": 0}
+    benchmarked = {"scenario": {"benchmark": benchmark.SUITE}, "model": "m"}
+    assert commander(trial, benchmarked)["kind"] == "model"
+    assert commander(trial, {"scenario": {}})["kind"] == "diagnostic"

@@ -36,20 +36,23 @@
 
   <section id="suite-page" class="suite-page wrap" hidden>
     <div id="suite-grid"></div>
-    <div id="suite-reading"></div>
+    <div id="suite-reading" class="suite-reading"></div>
     <div class="suite-case">
-      <p id="suite-title" class="suite-title"></p>
       <h2 id="suite-question"></h2>
-      <p id="suite-why" class="suite-why"></p>
-      <div class="suite-plan">
-        <div id="suite-map"></div>
-        <div>
-          <h3 class="suite-plan-head">The plan (no method sees it)</h3>
-          <div id="suite-jobs"></div>
-          <p id="suite-link-note" class="suite-key"></p>
+      <p class="suite-lines"><span id="suite-why"></span> <b id="suite-seen"></b></p>
+      <p id="suite-plan" class="suite-plan"></p>
+      <div class="suite-stage">
+        <div id="suite-tiles" class="suite-tiles"></div>
+        <p id="suite-pair" class="suite-pair"></p>
+        <svg id="suite-big" class="suite-big" role="img" aria-label="Two methods' armies on one map at the same moment of battle"></svg>
+        <div class="suite-controls">
+          <button id="suite-play" type="button">Play</button>
+          <span id="suite-clock" class="clock">0:00</span>
+          <input id="suite-time" type="range" min="0" max="1" step="1" value="0" aria-label="Battle time">
         </div>
+        <p id="suite-key" class="suite-key"></p>
       </div>
-      <div id="suite-timeline"></div>
+      <p id="suite-legend" class="suite-legend" hidden></p>
     </div>
   </section>
 

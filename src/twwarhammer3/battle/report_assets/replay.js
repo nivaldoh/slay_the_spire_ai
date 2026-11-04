@@ -176,9 +176,10 @@ const Viewer = (() => {
     watching = null,
     mapWidth = 0;
   const listeners = [];
-  // A page's own drawing under the units: (layer, frame, proj), optionally returning a
-  // function that draws what must sit above them.
-  let overlay = null;
+  // A page may colour each friendly unit by what controls it; the armies' colours stay default.
+  let unitHue = null;
+  const hueOf = (id, side = "friendly") =>
+    (side === "friendly" && unitHue?.(id)) || TEAM[side];
 
   const placed = (u) => u && Number.isFinite(u.x) && Number.isFinite(u.z);
   const requested = (d) => d.decision_time_ms ?? d.time_ms;
@@ -504,7 +505,7 @@ const Viewer = (() => {
   function drawTrails(layer, frameTime, focus) {
     for (const [id, track] of tracks) {
       const mine = id === selected,
-        colour = TEAM[sideOf(id)];
+        colour = hueOf(id, sideOf(id));
       const opacity = mine ? 0.95 : focus && !focus.has(id) ? 0.1 : 0.45;
       for (const piece of pieces(track, mine ? -Infinity : frameTime - TRAIL_MS, frameTime)) {
         if (piece.length > 1)
@@ -576,7 +577,7 @@ const Viewer = (() => {
     const g = svg("g", { opacity: strong ? 1 : 0.3, "pointer-events": "none" }),
       dashed = { "stroke-width": strong ? 2.2 : 1, "stroke-dasharray": "7 5" };
     if (lead.length + ahead.length > 1)
-      g.append(polyline([...lead, ...ahead], TEAM.friendly, dashed));
+      g.append(polyline([...lead, ...ahead], hueOf(id), dashed));
     const turn = ahead.length ? [ahead.at(-1)] : lead;
     if (bad.length && turn.length + bad.length > 1)
       g.append(polyline([...turn, ...bad], REJECTED, dashed));
@@ -642,7 +643,7 @@ const Viewer = (() => {
   function drawUnit(layer, u, side, { dim = false, ghost = false, seen = null, note = null } = {}) {
     if (!placed(u)) return;
     const entry = roster.get(u.id) || {},
-      colour = TEAM[side];
+      colour = hueOf(u.id, side);
     const down = u.men === 0,
       fleeing = has(u, "routing") || has(u, "shattered"),
       hollow = ghost || seen != null;
@@ -913,7 +914,6 @@ const Viewer = (() => {
       (entry) => entry.side === "enemy" && !frame.enemy.some((u) => u.id === entry.id),
     ).length;
     quiet = frame.friendly.length + frame.enemy.length + unseen > FEW_UNITS;
-    const above = overlay?.(layer, frame, proj);
     drawTrails(layer, frame.time_ms, focus);
     // Routes issued in the last 20 s, faint; the selected unit's standing orders, strong.
     if (!selected)
@@ -995,7 +995,6 @@ const Viewer = (() => {
       );
       layer.append(circle);
     }
-    above?.();
     placeLabels(layer);
   }
 
@@ -1867,7 +1866,10 @@ const Viewer = (() => {
     watch,
     setLag,
     onTime: (listener) => listeners.push(listener),
-    setOverlay: (draw) => (overlay = draw),
+    setUnitHue: (choose) => {
+      unitHue = choose;
+      keys = {};
+    },
     get time() {
       return time;
     },

@@ -17,7 +17,7 @@ const { chromium } = require("playwright");
   const errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
   await page.goto(pathToFileURL(file).href);
-  await page.waitForSelector(".suite-row");
+  await page.waitForSelector(".suite-tile");
   await page.waitForTimeout(800);
 
   // Who won: one row per scenario, with the plain method names and no model id.
@@ -26,41 +26,89 @@ const { chromium } = require("playwright");
   const grid = await page.locator(".suite-grid").innerText();
   assert.ok(!grid.includes("claude-haiku"), "the grid names methods, not the shared model");
   const wins = Object.values(report.summary.matrix).flatMap((cells) =>
-    Object.values(cells).flat().filter((cell) => cell.outcome === "won"),
+    Object.values(cells)
+      .flat()
+      .filter((cell) => cell.outcome === "won"),
   );
   assert.equal(await page.locator(".suite-grid td.won").count(), wins.length);
+  assert.ok((await page.locator(".suite-who").count()) >= 5, "each method shows who controls what");
 
-  // The selected battle: its question, every group with a job, one timeline per played method.
-  for (const link of await page.locator(".suite-link").all()) {
+  // Every played method gets a map on every battle: a battle without a replay fails here.
+  const played = (name) =>
+    Object.values(report.summary.matrix[name]).filter((cells) => cells.some((c) => c.own != null));
+  const links = await page.locator(".suite-link").all();
+  for (const [index, link] of links.entries()) {
     await link.click();
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(700);
+    const name = await page
+      .locator(".suite-grid tbody tr")
+      .nth(index)
+      .getAttribute("data-scenario");
     assert.ok((await page.locator("#suite-question").innerText()).endsWith("?"));
-    assert.ok((await page.locator(".suite-jobs li").count()) >= 2);
-    assert.ok((await page.locator(".suite-seen").innerText()).length > 20);
-    assert.ok((await page.locator(".suite-row").count()) >= 2);
-    assert.ok(await page.locator(".suite-map text").count());
-    for (const answer of await page.locator(".suite-row-name em").allInnerTexts())
-      assert.ok(answer.length > 5);
+    assert.equal(await page.locator(".suite-tile").count(), played(name).length, name);
   }
 
-  // A timeline row opens that method's battle; the map outlines its groups.
-  const row = page.locator(".suite-row").first();
-  const method = await row.locator("b").innerText();
-  await row.click();
-  await page.waitForTimeout(800);
-  assert.equal(await page.locator("#run-line .name").innerText(), method);
-  assert.ok(await page.locator("#map-layer .suite-group-tag").count());
-  await page.evaluate(() => {
-    const scrubber = document.getElementById("scrubber");
-    scrubber.value = 30;
-    scrubber.dispatchEvent(new Event("input", { bubbles: true }));
+  // Colour is the controller: each map uses as many colours as its battle's record has members.
+  await links[0].click();
+  await page.waitForTimeout(700);
+  const picture = await page.evaluate(() => {
+    const data = JSON.parse(document.getElementById("report-data").textContent),
+      row = document.querySelector(".suite-grid tbody tr.current");
+    return data.suite.pictures[row.dataset.scenario];
   });
-  await page.waitForTimeout(300);
-  assert.ok(await page.locator(".suite-row.current .suite-playhead").isVisible());
+  const colours = (arm) =>
+    page.evaluate((key) => {
+      const marks = document.querySelectorAll(`.suite-tile[data-arm="${key}"] svg g > *`);
+      return new Set([...marks].map((mark) => mark.getAttribute("stroke")).filter(Boolean)).size;
+    }, arm);
+  for (const battle of picture.battles) {
+    const members = new Set(Object.values(battle.owners)).size || 1;
+    assert.equal(await colours(battle.arm), members + 1, `${battle.arm}: members and the enemy`);
+  }
+  const kinds = await page.evaluate(() =>
+    [...document.querySelectorAll(".suite-tile svg g > *")].map((mark) => mark.tagName),
+  );
+  assert.ok(new Set(kinds).size >= 3, "units keep their shapes");
 
-  // Short by default: the detail is one click away, and nothing overflows a phone.
+  // The big map overlaps two methods, solid and outlined, and any map swaps one in.
+  const inPair = () => page.locator('.suite-pick[aria-pressed="true"]').count();
+  assert.equal(await inPair(), 2);
+  await page.locator('.suite-pick[aria-pressed="false"]').first().click();
+  assert.equal(await inPair(), 2);
+  const fills = await page.evaluate(() =>
+    [...document.querySelectorAll("#suite-big g > circle, #suite-big g > rect")].map((mark) =>
+      mark.getAttribute("fill"),
+    ),
+  );
+  assert.ok(fills.includes("#16232b"), "the second method is outlined");
+  assert.ok(
+    fills.some((fill) => fill !== "#16232b"),
+    "the first method is solid",
+  );
+
+  // The clock moves the armies.
+  const before = await page.locator("#suite-big").innerHTML();
+  await page.evaluate(() => {
+    const time = document.getElementById("suite-time");
+    time.value = 20;
+    time.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  assert.notEqual(await page.locator("#suite-big").innerHTML(), before);
+
+  // Watching a method opens its own battle, with its models named.
+  assert.equal(await page.locator("#watch").isVisible(), false);
+  await page.locator('.suite-tile[data-arm="team"] .suite-watch').click();
+  await page.waitForTimeout(800);
+  assert.ok(await page.locator("#watch").isVisible());
+  const legend = await page.locator("#suite-legend").innerText();
+  for (const name of ["Infantry model", "Guns model", "Knights model"])
+    assert.ok(legend.includes(name));
+  await page.locator(".suite-close").click();
+  assert.equal(await page.locator("#watch").isVisible(), false);
+
+  // Short by default, with the detail one click away, and nothing overflows a phone.
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
-  assert.ok(height < 3400, `page is ${height} px tall`);
+  assert.ok(height < 3200, `page is ${height} px tall`);
   assert.equal(await page.locator("#benchmark-results").isVisible(), false);
   await page.locator("#suite-more > summary").click();
   assert.ok(await page.locator("#benchmark-results").isVisible());

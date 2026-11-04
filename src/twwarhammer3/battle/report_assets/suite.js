@@ -1,19 +1,38 @@
 // The coordination suite's page, on top of the replay viewer. Runs between replay.js and
-// report.js in the one script. It reads data.suite and draws: who won, the selected battle's
-// coordination problem, what each method's groups did and when, and the replay.
+// report.js in the one script. It reads data.suite and draws: who controls what in each method,
+// who won, every method overlapped on one map and one clock, and one method's full replay.
 function suitePage(data, api) {
   const $ = (id) => document.getElementById(id);
   const suite = data.suite,
     page = suite.page;
-  // Hues for one army's groups. Orange stays the enemy's; blue, green and violet are told apart
-  // by people with the common colour-vision differences, and names always sit beside them.
-  const GROUP_HUES = ["#3a8fd9", "#1f9e74", "#9a68d6"];
+  // One colour system for the whole page: colour is the controller. Orange stays the enemy's.
+  const HUES = {
+    all: "#ee8fc4",
+    front: "#4aa3e8",
+    ranged: "#6cc04a",
+    mobile: "#ae83ee",
+    scripts: "#95a3ab",
+  };
+  const SPEED = 12; // battle seconds per second of playback
+  const MARGIN_M = 40;
+  const BIG_R = 7,
+    SMALL_R = 19; // marker radii in map units: the small maps show at a quarter of the size
   const order = page.order.filter((arm) => suite.arms[arm]);
   const rows = data.benchmark_plans.flatMap((plan) => plan.rows);
   const keyOf = new Map(rows.map((row) => [row.output, row.battle_key]));
-  const nameOf = (arm) => page.methods[arm]?.[0] || arm;
-  let picture = null,
-    picked = null;
+  const method = (arm) => page.methods[arm];
+  const pictures = suite.scenarios;
+  const battleOf = (name, arm) =>
+    suite.pictures[name].battles.find((battle) => battle.arm === arm) || null;
+  let scene = null, // the selected battle's decoded recordings, by method
+    current = null,
+    pair = [], // the methods on the overlap: [solid, outlined]
+    time = 0,
+    end = 1,
+    playing = false,
+    last = null,
+    moved = false, // whether the reader has played or dragged the clock on this battle
+    project = null;
 
   // The viewer and its run line name the method, not the model every method shares.
   for (const row of rows) {
@@ -21,31 +40,121 @@ function suitePage(data, api) {
     if (battle)
       battle.commander = {
         ...battle.commander,
-        name: nameOf(row.arm),
-        detail: page.methods[row.arm]?.[1] || "",
+        name: method(row.arm)?.name || row.arm,
+        detail: method(row.arm)?.note || "",
         short: "",
       };
   }
 
-  const pictures = Object.keys(suite.pictures).sort(
-    (a, b) => suite.scenarios.indexOf(a) - suite.scenarios.indexOf(b),
-  );
-  const hueOf = (name) =>
-    GROUP_HUES[picture.groups.findIndex((group) => group.name === name)] || GROUP_HUES[0];
-  const battleOf = (name, arm) =>
-    suite.pictures[name].battles.find((battle) => battle.arm === arm) || null;
-  const planned = (name, arm) =>
-    rows.some((row) => row.scenario === name && row.arm === arm);
-  const lostText = (battle) => `Lost, broke ${Math.round(battle.taken)}% of enemy`;
+  // Who holds a unit in one method: one colour, three colours, or grey for scripts alone.
+  const memberHue = (m, member) =>
+    !m.models.length ? HUES.scripts : m.models.includes("all") ? HUES.all : HUES[member];
+  const memberName = (m, member) =>
+    !m.models.length
+      ? "Scripts"
+      : m.models.includes("all")
+        ? m.scripts
+          ? "One model, through scripts"
+          : "One model"
+        : `${page.controllers[member]} ${m.rules ? "rules" : "model"}`;
+  const KINDS = { front: "infantry", ranged: "guns", mobile: "knights" };
+  const kindOf = (glyph) =>
+    /missile|artillery/.test(glyph || "")
+      ? "guns"
+      : /cavalry|monster/.test(glyph || "")
+        ? "knights"
+        : "infantry";
+
+  // Infantry is a circle, guns a triangle, knights a square, the enemy a diamond, on every map.
+  function shape(kind, x, y, r, attrs) {
+    if (kind === "guns")
+      return svg("path", { d: `M${x} ${y - 1.15 * r}l${1.1 * r} ${2 * r}h${-2.2 * r}z`, ...attrs });
+    if (kind === "knights")
+      return svg("rect", { x: x - r, y: y - r, width: 2 * r, height: 2 * r, ...attrs });
+    if (kind === "enemy")
+      return svg("path", { d: `M${x} ${y - r}l${r} ${r}-${r} ${r}-${r}-${r}z`, ...attrs });
+    return svg("circle", { cx: x, cy: y, r, ...attrs });
+  }
+  const swatch = (kind, hue, solid = true) => {
+    const icon = svg("svg", { viewBox: "0 0 20 20", class: "suite-swatch" });
+    icon.append(
+      shape(kind, 10, 10, 7, {
+        fill: solid ? hue : "none",
+        stroke: hue,
+        "stroke-width": solid ? 0 : 2.5,
+      }),
+    );
+    return icon;
+  };
+  const tag = (kind, hue, text, solid = true) => {
+    const item = el("span");
+    item.append(swatch(kind, hue, solid), text);
+    return item;
+  };
+
+  // Who controls what: the model or models above, the army's units below.
+  function picture(arm) {
+    const m = method(arm),
+      W = 150,
+      H = 58,
+      units = { front: [18, 34, 50], ranged: [78, 94], mobile: [132] };
+    const map = svg("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      class: "suite-who",
+      role: "img",
+      "aria-label": `${m.name}: ${m.note}`,
+    });
+    const whole = m.models.includes("all");
+    const headX = (member) => (whole ? W / 2 : { front: 34, ranged: 86, mobile: 132 }[member]);
+    if (m.scripts)
+      map.append(
+        svg("rect", { x: 10, y: 28, width: W - 20, height: 6, rx: 3, fill: HUES.scripts }),
+      );
+    for (const [member, xs] of Object.entries(units))
+      for (const x of xs) {
+        if (m.models.length && !m.scripts)
+          map.append(
+            svg("line", {
+              x1: headX(member),
+              y1: 14,
+              x2: x,
+              y2: 46,
+              stroke: memberHue(m, member),
+              "stroke-width": 1.5,
+              "stroke-dasharray": m.rules ? "3 3" : null,
+            }),
+          );
+        map.append(shape(KINDS[member], x, 49, 5, { fill: memberHue(m, member) }));
+      }
+    if (m.scripts && m.models.length)
+      map.append(
+        svg("line", { x1: W / 2, y1: 14, x2: W / 2, y2: 30, stroke: HUES.all, "stroke-width": 2 }),
+      );
+    for (const member of whole ? ["front"] : m.models)
+      map.append(
+        m.rules
+          ? svg("rect", {
+              x: headX(member) - 7,
+              y: 3,
+              width: 14,
+              height: 14,
+              rx: 2,
+              fill: memberHue(m, member),
+            })
+          : svg("circle", { cx: headX(member), cy: 10, r: 8, fill: memberHue(m, member) }),
+      );
+    return map;
+  }
 
   function renderGrid() {
     const table = el("table", null, "suite-grid"),
       head = el("tr"),
       body = el("tbody");
-    head.append(el("th", "Battle"));
+    head.append(el("th"));
     for (const arm of order) {
       const cell = el("th");
-      cell.append(el("b", nameOf(arm)), el("small", page.methods[arm][1]));
+      const swatch = el("b", method(arm).name);
+      cell.append(swatch, picture(arm), el("small", method(arm).note));
       head.append(cell);
     }
     const thead = el("thead");
@@ -63,16 +172,14 @@ function suitePage(data, api) {
         if (battle) {
           const won = battle.outcome === "won";
           cell.className = won ? "won" : "lost";
-          cell.append(
-            button(
-              won ? `Won in ${clock(battle.battle_s * 1000)}` : lostText(battle),
-              () => choose(name, arm, true),
-              "suite-cell",
-            ),
-          );
+          const mark = button(won ? "Won" : "Lost", () => choose(name), "suite-cell");
+          mark.title = `${clock(battle.battle_s * 1000)}, broke ${Math.round(battle.taken)}% of the enemy`;
+          cell.append(mark);
         } else {
-          const none = el("span", "\u2013", "suite-none");
-          none.title = planned(name, arm) ? "Planned, cut off before it played" : "Not planned";
+          const none = el("span", "–", "suite-none");
+          none.title = rows.some((row) => row.scenario === name && row.arm === arm)
+            ? "Cut off before it played"
+            : "Not planned";
           cell.append(none);
         }
         line.append(cell);
@@ -83,7 +190,7 @@ function suitePage(data, api) {
       wins = el("tr"),
       cost = el("tr");
     wins.append(el("th", "Won"));
-    cost.append(el("th", "Cost a battle"));
+    cost.append(el("th", "A battle costs"));
     for (const arm of order) {
       const row = suite.arms[arm];
       wins.append(el("td", `${row.wins} of ${row.completed}`));
@@ -94,272 +201,275 @@ function suitePage(data, api) {
     $("suite-grid").replaceChildren(table);
   }
 
-  // The battle at its start: every group named, with the links it depends on.
-  function diagram() {
-    const W = 560,
-      H = 330,
-      margin = 58,
-      units = [...picture.start.friendly, ...picture.start.enemy];
-    const xs = units.map((u) => u.x),
-      zs = units.map((u) => u.z);
-    const midX = (Math.min(...xs) + Math.max(...xs)) / 2,
-      midZ = (Math.min(...zs) + Math.max(...zs)) / 2;
-    const scale = Math.min(
-      (W - 2 * margin) / Math.max(120, Math.max(...xs) - Math.min(...xs)),
-      (H - 2 * margin) / Math.max(120, Math.max(...zs) - Math.min(...zs)),
+  const able = (u) =>
+    u.men > 0 && !(u.state || []).some((s) => s === "routing" || s === "shattered");
+  const placed = (u) => Number.isFinite(u.x) && Number.isFinite(u.z);
+  const frameAt = (run, t) => {
+    let low = 0,
+      high = run.frames.length - 1;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if (run.frames[mid].time_ms / 1000 <= t) low = mid;
+      else high = mid - 1;
+    }
+    return run.frames[low];
+  };
+
+  async function load(name) {
+    const runs = await Promise.all(
+      suite.pictures[name].battles.map(async (battle) => {
+        const payload = await api.decode(keyOf.get(battle.output));
+        const frames = payload.frames.filter((frame) => frame.friendly.length);
+        const kinds = new Map(payload.roster.map((entry) => [entry.id, kindOf(entry.glyph)]));
+        // Each unit's own path: an average over a kind would put a split army where nobody stood.
+        const paths = new Map(frames[0].friendly.map((u) => [u.id, []]));
+        frames.forEach((frame, index) => {
+          if (index % 4) return;
+          for (const u of frame.friendly)
+            if (able(u) && placed(u))
+              paths.get(u.id)?.push({ t: frame.time_ms / 1000, x: u.x, z: u.z });
+        });
+        const hue = (id) => memberHue(method(battle.arm), battle.owners[id]);
+        return { battle, frames, kinds, paths, hue, terrain: payload.terrain };
+      }),
     );
-    const X = (x) => W / 2 + (x - midX) * scale,
-      Y = (z) => H / 2 - (z - midZ) * scale;
-    const map = svg("svg", {
-      viewBox: `0 0 ${W} ${H}`,
-      class: "suite-map",
-      role: "img",
-      "aria-label": `${picture.title} at the start: ${picture.why}`,
-    });
-    const centre = (side, name) => {
-      const own = picture.start[side].filter((u) => u.group === name);
-      return {
-        x: own.reduce((sum, u) => sum + X(u.x), 0) / own.length,
-        y: own.reduce((sum, u) => sum + Y(u.z), 0) / own.length,
-        own,
-      };
-    };
-    for (const [from, to] of picture.links) {
-      const a = centre("friendly", from),
-        b = centre("friendly", to);
+    return Object.fromEntries(runs.map((run) => [run.battle.arm, run]));
+  }
+
+  // One frame for every map of a battle: where units stood while still fighting, so a rout's
+  // run off the map does not shrink the fight.
+  function frameMaps() {
+    const points = Object.values(scene).flatMap((run) =>
+      run.frames
+        .flatMap((frame) => [...frame.friendly, ...frame.enemy])
+        .filter(able)
+        .filter(placed),
+    );
+    const xs = points.map((u) => u.x),
+      zs = points.map((u) => u.z),
+      spanX = Math.max(...xs) - Math.min(...xs) + 2 * MARGIN_M,
+      spanZ = Math.max(...zs) - Math.min(...zs) + 2 * MARGIN_M,
+      W = 1000,
+      H = Math.min(480, Math.max(380, (W * spanZ) / spanX));
+    const scale = Math.min(W / spanX, H / spanZ),
+      midX = (Math.min(...xs) + Math.max(...xs)) / 2,
+      midZ = (Math.min(...zs) + Math.max(...zs)) / 2;
+    project = { W, H, x: (x) => W / 2 + (x - midX) * scale, y: (z) => H / 2 - (z - midZ) * scale };
+    project.scale = scale;
+    project.blocked = (Object.values(scene).find((run) => run.terrain) || {}).terrain;
+  }
+
+  function sheet(map) {
+    map.setAttribute("viewBox", `0 0 ${project.W} ${project.H}`);
+    map.replaceChildren();
+    if (project.blocked)
       map.append(
-        svg("line", {
-          x1: a.x,
-          y1: a.y,
-          x2: b.x,
-          y2: b.y,
-          class: "suite-link-line",
-          stroke: hueOf(from),
+        svg("path", {
+          d: blockedPath(project.blocked, project.x, project.y, project.scale),
+          class: "suite-blocked",
         }),
       );
-    }
-    for (const group of picture.enemy) {
-      const { x, y, own } = centre("enemy", group.name);
-      for (const u of own)
-        map.append(
-          svg("path", {
-            d: `M${X(u.x)} ${Y(u.z) - 6}l6 6-6 6-6-6z`,
-            fill: TEAM.enemy,
+    const layer = svg("g");
+    map.append(layer);
+    return layer;
+  }
+
+  function drawArmy(layer, run, r, solid) {
+    const frame = frameAt(run, Math.min(time, run.battle.battle_s));
+    for (const u of frame.enemy.filter((item) => placed(item) && item.men > 0))
+      layer.append(
+        shape("enemy", project.x(u.x), project.y(u.z), 0.8 * r, {
+          fill: solid ? TEAM.enemy : "none",
+          stroke: TEAM.enemy,
+          "stroke-width": solid ? 0 : r / 4,
+          opacity: able(u) ? 0.85 : 0.2,
+        }),
+      );
+    for (const u of frame.friendly.filter((item) => placed(item) && item.men > 0))
+      layer.append(
+        shape(run.kinds.get(u.id), project.x(u.x), project.y(u.z), r, {
+          fill: solid ? run.hue(u.id) : "#16232b",
+          stroke: run.hue(u.id),
+          "stroke-width": r / 3.5,
+          opacity: able(u) ? 1 : 0.25,
+        }),
+      );
+  }
+
+  function drawPaths(layer, run, solid) {
+    for (const [id, path] of run.paths) {
+      const seen = path.filter((p) => p.t <= time);
+      if (seen.length > 1)
+        layer.append(
+          svg("polyline", {
+            points: seen
+              .map((p) => `${project.x(p.x).toFixed(1)},${project.y(p.z).toFixed(1)}`)
+              .join(" "),
+            fill: "none",
+            stroke: run.hue(id),
+            "stroke-width": 1.6,
+            "stroke-dasharray": solid ? null : "6 5",
+            opacity: 0.6,
           }),
         );
-      const low = Math.max(...own.map((u) => Y(u.z)));
-      map.append(svg("text", { x, y: low + 26, class: "suite-enemy-tag" }, group.name));
     }
-    const seats = picture.groups.map((group) => centre("friendly", group.name));
-    picture.groups.forEach((group, index) => {
-      const { x, y, own } = seats[index],
-        hue = hueOf(group.name);
-      map.append(outline(own.map((u) => ({ x: X(u.x), y: Y(u.z) })), hue, 26));
-      for (const u of own)
-        map.append(svg("circle", { cx: X(u.x), cy: Y(u.z), r: 5.5, fill: hue }));
-      // Above the group, or beside it when another group stands too close for that.
-      const crowded = seats.some(
-        (seat, other) => other !== index && Math.hypot(seat.x - x, seat.y - y) < 130,
-      );
-      const left = index % 2 === 1,
-        edge = own.map((u) => X(u.x));
-      const tag = crowded
-        ? {
-            x: left ? Math.min(...edge) - 20 : Math.max(...edge) + 20,
-            y: y + 4,
-            "text-anchor": left ? "end" : "start",
-          }
-        : { x, y: Math.min(...own.map((u) => Y(u.z))) - 18 };
-      map.append(svg("text", { ...tag, class: "suite-group-tag", fill: hue }, group.name));
-    });
-    return map;
   }
 
-  function jobs() {
-    const list = el("ul", null, "suite-jobs");
-    for (const group of picture.groups) {
-      const item = el("li");
-      const name = el("b", group.name);
-      name.style.color = hueOf(group.name);
-      item.append(name, el("span", group.job));
-      list.append(item);
+  function draw() {
+    for (const tile of document.querySelectorAll(".suite-tile")) {
+      const run = scene[tile.dataset.arm],
+        frame = frameAt(run, Math.min(time, run.battle.battle_s));
+      const left = frame.friendly.filter(able).reduce((sum, u) => sum + u.men, 0),
+        all = frame.friendly.reduce((sum, u) => sum + (u.men0 || 0), 0);
+      const over = time >= run.battle.battle_s;
+      tile.querySelector(".suite-bar i").style.width = `${all ? (100 * left) / all : 0}%`;
+      tile.querySelector("em").textContent = over
+        ? `${run.battle.outcome === "won" ? "Won" : "Lost"} ${clock(run.battle.battle_s * 1000)}`
+        : "";
+      tile.classList.toggle("won", over && run.battle.outcome === "won");
+      const layer = tile.layer;
+      layer.replaceChildren();
+      drawArmy(layer, run, SMALL_R, true);
     }
-    return list;
+    const big = $("suite-big").layer;
+    big.replaceChildren();
+    for (const [index, arm] of [...pair].reverse().entries()) {
+      const solid = index === pair.length - 1;
+      drawPaths(big, scene[arm], solid);
+      drawArmy(big, scene[arm], BIG_R, solid);
+    }
+    $("suite-clock").textContent = clock(time * 1000);
+    $("suite-time").value = time;
   }
 
-  const percent = (s, end) => `${Math.min(100, (100 * s) / end).toFixed(2)}%`;
+  function tick(now) {
+    if (!playing) return;
+    if (last != null) time = Math.min(end, time + ((now - last) / 1000) * SPEED);
+    last = now;
+    draw();
+    if (time >= end) return setPlaying(false);
+    requestAnimationFrame(tick);
+  }
 
-  function timeline() {
-    const played = order.filter((arm) => battleOf(picture.name, arm));
-    const end = Math.max(...played.map((arm) => battleOf(picture.name, arm).battle_s));
-    const box = el("div", null, "suite-lanes");
-    const axis = el("div", null, "suite-axis");
-    const step = end > 480 ? 180 : 60;
-    for (let s = step; s < end; s += step) {
-      const tick = el("span", clock(s * 1000));
-      tick.style.left = percent(s, end);
-      axis.append(tick);
+  function setPlaying(on) {
+    playing = on;
+    last = null;
+    $("suite-play").textContent = on ? "Pause" : "Play";
+    if (on) {
+      if (time >= end || !moved) time = 0;
+      moved = true;
+      requestAnimationFrame(tick);
     }
-    box.append(el("h3", "What happened"));
-    if (page.current && picture.seen) box.append(el("p", picture.seen, "suite-seen"));
-    const key = el("p", null, "suite-key");
-    for (const group of picture.groups) {
-      const mark = el("span", group.name, "suite-swatch");
-      mark.style.setProperty("--hue", hueOf(group.name));
-      key.append(mark);
-    }
-    key.append(
-      el(
-        "span",
-        "Thick bar: in melee. Thin line: not in melee, including shooting. Nothing: all routed or dead, for now. Click a method to watch its battle below; the black tick is the replay's position.",
-      ),
-    );
-    box.append(key);
+  }
+
+  function showPair() {
+    const box = $("suite-pair");
+    box.replaceChildren();
+    const [solid, outlined] = pair;
+    box.append(tag("front", "#dfe7ea", method(solid).name));
+    if (outlined) box.append(tag("front", "#dfe7ea", method(outlined).name, false));
+    box.append(el("small", "on one map. Click the maps above to change which two."));
+    for (const tile of document.querySelectorAll(".suite-tile"))
+      tile
+        .querySelector(".suite-pick")
+        .setAttribute("aria-pressed", String(pair.includes(tile.dataset.arm)));
+  }
+
+  function togglePair(arm) {
+    if (pair.includes(arm)) {
+      if (pair.length > 1) pair = pair.filter((item) => item !== arm);
+    } else pair = [...pair, arm].slice(-2);
+    showPair();
+    draw();
+  }
+
+  function renderTiles() {
+    const box = $("suite-tiles");
+    box.replaceChildren();
     for (const arm of order) {
-      const battle = battleOf(picture.name, arm);
-      if (!battle) continue;
-      const row = el("button", null, "suite-row");
-      row.type = "button";
-      row.dataset.arm = arm;
-      row.addEventListener("click", () => pick(arm, true));
-      const label = el("span", null, "suite-row-name");
-      label.append(
-        el("b", nameOf(arm)),
-        el(
-          "small",
-          battle.outcome === "won" ? `Won in ${clock(battle.battle_s * 1000)}` : lostText(battle),
+      if (!scene[arm]) continue;
+      const tile = el("div", null, "suite-tile");
+      tile.dataset.arm = arm;
+      const pick = el("button", null, "suite-pick");
+      pick.type = "button";
+      const map = svg("svg", { class: "suite-small", role: "img" });
+      map.setAttribute("aria-label", `${method(arm).name}, at the same moment of battle`);
+      tile.layer = sheet(map);
+      const bar = el("span", null, "suite-bar");
+      bar.append(el("i"));
+      pick.append(el("b", method(arm).name), el("em"), bar, map);
+      pick.addEventListener("click", () => togglePair(arm));
+      tile.append(
+        pick,
+        button("Watch", () => watch(arm), "suite-watch"),
+      );
+      box.append(tile);
+    }
+  }
+
+  // One method's own replay, with its units coloured by the model that controlled them.
+  function watch(arm) {
+    const battle = scene[arm].battle,
+      m = method(arm);
+    setPlaying(false);
+    document.body.classList.add("suite-watching");
+    Viewer.setUnitHue((id) => memberHue(m, battle.owners[id]));
+    const legend = $("suite-legend");
+    legend.hidden = false;
+    legend.replaceChildren(el("b", m.name));
+    for (const member of m.models.includes("all") || !m.models.length ? ["front"] : m.models)
+      legend.append(
+        tag(
+          m.models.includes("all") || !m.models.length ? "front" : KINDS[member],
+          memberHue(m, member),
+          memberName(m, member),
         ),
-        el("em", battle.answer),
       );
-      const bars = el("span", null, "suite-bars");
-      for (const group of picture.groups) {
-        const lane = el("span", null, "suite-lane");
-        lane.style.setProperty("--hue", hueOf(group.name));
-        for (const [from, to, state] of battle.lanes[group.name] || []) {
-          const part = el("i", null, state === "fight" ? "fight" : "ready");
-          part.style.left = percent(from, end);
-          part.style.width = percent(Math.max(to - from, 1), end);
-          lane.append(part);
-        }
-        bars.append(lane);
-      }
-      const edge = el("span", null, battle.outcome === "won" ? "suite-end won" : "suite-end");
-      edge.style.left = percent(battle.battle_s, end);
-      const head = el("span", null, "suite-playhead");
-      head.hidden = true;
-      bars.append(edge, head);
-      row.append(label, bars);
-      box.append(row);
-    }
-    const ruler = el("div", null, "suite-ruler");
-    ruler.append(el("span"), axis);
-    box.append(ruler);
-    return box;
+    legend.append(button("Close", closeWatch, "suite-close"));
+    return api.open(keyOf.get(battle.output), false).then(() => legend.scrollIntoView());
+  }
+  function closeWatch() {
+    document.body.classList.remove("suite-watching");
+    $("suite-legend").hidden = true;
   }
 
-  // The convex hull of map points (Andrew's monotone chain), for a group's outline.
-  function hull(points) {
-    const sorted = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
-    if (sorted.length < 3) return sorted;
-    const turn = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-    const half = (list) => {
-      const chain = [];
-      for (const p of list) {
-        while (chain.length > 1 && turn(chain.at(-2), chain.at(-1), p) <= 0) chain.pop();
-        chain.push(p);
-      }
-      chain.pop();
-      return chain;
-    };
-    return [...half(sorted), ...half([...sorted].reverse())];
-  }
-
-  // A soft shape around a group's points, hugging them so one straggler stretches the shape,
-  // not the whole map.
-  function outline(points, hue, width) {
-    const edge = hull(points);
-    if (edge.length < 2)
-      return svg("circle", {
-        cx: edge[0].x,
-        cy: edge[0].y,
-        r: width / 2,
-        fill: hue,
-        "fill-opacity": 0.16,
-      });
-    return svg("path", {
-      d: `M${edge.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("L")}Z`,
-      fill: hue,
-      "fill-opacity": 0.16,
-      stroke: hue,
-      "stroke-opacity": 0.16,
-      "stroke-width": width,
-      "stroke-linejoin": "round",
-    });
-  }
-
-  // On the replay, only the shapes and names: the links belong to the start map.
-  function overlay(layer, frame, proj) {
-    if (!picture || !picked) return;
-    const battle = battleOf(picture.name, picked);
-    if (!battle) return;
-    const seats = new Map();
-    for (const group of picture.groups) {
-      const units = frame.friendly.filter(
-        (u) =>
-          battle.groups[u.id] === group.name &&
-          Number.isFinite(u.x) &&
-          u.men > 0 &&
-          !(u.state || []).some((state) => state === "routing" || state === "shattered"),
-      );
-      if (!units.length) continue;
-      const points = units.map((u) => ({ x: proj.x(u.x), y: proj.y(u.z) }));
-      seats.set(group.name, {
-        points,
-        x: points.reduce((sum, p) => sum + p.x, 0) / points.length,
-        y: points.reduce((sum, p) => sum + p.y, 0) / points.length,
-        top: Math.min(...points.map((p) => p.y)),
-      });
-    }
-    for (const [name, seat] of seats) layer.append(outline(seat.points, hueOf(name), 46 * proj.k));
-    return () => {
-      for (const [name, seat] of seats)
-        layer.append(
-          svg(
-            "text",
-            {
-              x: seat.x,
-              y: seat.top - 25 * proj.k - 12,
-              class: "suite-group-tag",
-              fill: hueOf(name),
-            },
-            name,
-          ),
-        );
-    };
-  }
-
-  function pick(arm, scroll) {
-    picked = arm;
-    for (const row of document.querySelectorAll(".suite-row"))
-      row.classList.toggle("current", row.dataset.arm === arm);
-    for (const cell of document.querySelectorAll(".suite-playhead"))
-      cell.hidden = cell.closest(".suite-row").dataset.arm !== arm;
-    const battle = battleOf(picture.name, arm);
-    return api.open(keyOf.get(battle.output), scroll);
-  }
-
-  function choose(name, arm = null, scroll = false) {
-    picture = { name, ...suite.pictures[name], terrain: api.terrainOf(keyOf.get(suite.pictures[name].battles[0].output)) };
+  async function choose(name) {
+    setPlaying(false);
+    closeWatch();
+    current = name;
+    const item = suite.pictures[name];
     for (const line of document.querySelectorAll(".suite-grid tbody tr"))
       line.classList.toggle("current", line.dataset.scenario === name);
-    $("suite-title").textContent = picture.title;
-    $("suite-question").textContent = picture.question;
-    $("suite-why").textContent = picture.why;
-    $("suite-link-note").textContent = picture.link ? `Dashed line: ${picture.link}.` : "";
-    $("suite-map").replaceChildren(diagram());
-    $("suite-jobs").replaceChildren(jobs());
-    $("suite-timeline").replaceChildren(timeline());
-    return pick(arm || order.find((item) => battleOf(name, item)), scroll);
+    $("suite-question").textContent = item.question;
+    $("suite-why").textContent = item.why;
+    $("suite-seen").textContent = page.current ? item.seen : "";
+    const plan = $("suite-plan");
+    plan.replaceChildren(el("b", "The plan (no method sees it):"));
+    for (const part of item.plan) {
+      const entry = el("span");
+      for (const who of part.who) entry.append(swatch(KINDS[who], HUES[who]));
+      entry.append(`${part.who.map((who) => page.controllers[who]).join(", ")}: ${part.job}`);
+      plan.append(entry);
+    }
+    scene = await load(name);
+    if (current !== name) return;
+    const lengths = Object.values(scene).map((run) => run.battle.battle_s);
+    end = Math.max(...lengths);
+    // Open where the battles have already diverged: the moment the first one ended.
+    time = Math.min(...lengths);
+    moved = false;
+    $("suite-time").max = end;
+    // Start on the two most different results; any two can be picked.
+    const ranked = Object.values(scene).sort((a, b) => b.battle.taken - a.battle.taken);
+    pair = [ranked[0], ranked.at(-1)]
+      .map((run) => run.battle.arm)
+      .filter((arm, index, all) => all.indexOf(arm) === index);
+    frameMaps();
+    renderTiles();
+    const big = $("suite-big");
+    big.layer = sheet(big);
+    showPair();
+    draw();
   }
 
   function start() {
@@ -371,36 +481,24 @@ function suitePage(data, api) {
     $("suite-more-body").append($("benchmark-results"));
     const readings = page.readings;
     page.current = readings && readings.plans.join() === page.plans.join();
-    if (page.current) {
-      const list = el("ul", null, "suite-readings");
-      for (const line of readings.lines) list.append(el("li", line));
-      $("suite-reading").replaceChildren(list);
-      $("suite-reading").append(
-        el(
-          "p",
-          "Broke means the share of the enemy dead or routed at the end. A battle ends when one army has gone; none reached the timer. A dash means not played: Three models and Model over scripts were cut off on Rear raid, the battle nobody has won, and Scripts only was never planned for two. One battle per pair, and difficulty was tuned the same night on these methods' earlier battles, so these are leads and rank nothing.",
-          "suite-caveat",
-        ),
-        el(
-          "p",
-          "Groups on the maps are parts of the army, not players. One model commands them all; three models split by unit type, so a group can answer to more than one model.",
-          "suite-caveat",
-        ),
-      );
-    }
+    if (page.current)
+      $("suite-reading").replaceChildren(...readings.lines.map((line) => el("p", line)));
     renderGrid();
-    Viewer.setOverlay(overlay);
-    Viewer.onTime((time) => {
-      if (!picked) return;
-      const battle = battleOf(picture.name, picked),
-        end = Math.max(
-          ...order
-            .map((arm) => battleOf(picture.name, arm))
-            .filter(Boolean)
-            .map((item) => item.battle_s),
-        );
-      const head = document.querySelector(".suite-row.current .suite-playhead");
-      if (head && battle) head.style.left = percent(time / 1000, end);
+    $("suite-key").append(
+      tag("front", HUES.all, "One model, whole army"),
+      tag("front", HUES.front, "Infantry model or rules"),
+      tag("guns", HUES.ranged, "Guns model or rules"),
+      tag("knights", HUES.mobile, "Knights model or rules"),
+      tag("front", HUES.scripts, "Scripts"),
+      tag("enemy", TEAM.enemy, "Enemy"),
+      "Bar: men still fighting",
+    );
+    $("suite-play").addEventListener("click", () => setPlaying(!playing));
+    $("suite-time").addEventListener("input", (event) => {
+      setPlaying(false);
+      moved = true;
+      time = Number(event.target.value);
+      draw();
     });
     document.title = `${page.title} WH3 coordination suite`;
     return choose(pictures[0]);

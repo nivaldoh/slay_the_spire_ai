@@ -29,17 +29,22 @@ The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1
 ## Coordination suite
 
 `benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`. Plans must share battle
-versions. The page leads with who won each battle, in plain method names. Picking a battle states
-its coordination problem: a start map with named groups and the plan, meaning each group's job and
-who depends on whom. Below that "What happened" says how the battles really went, and one row per
-method shows when each group fought and answers the battle's question, such as where the reserve
-went; a row opens that replay, with the groups outlined on the map.
-Every other measure and battle sits behind "Every measure and every battle".
+versions. The page leads with who won each battle and a small picture of who controls what in each
+method. Picking a battle states its question and a one-line plan per model, then shows every
+method's army on one clock, one small map each, and two of them overlapped on a big map: one solid,
+one outlined, each unit's path drawn. The clock opens when the first of those battles ended, where
+they have already diverged; Play starts from 0:00. "Watch" opens one method's full replay. Every
+other measure and battle sits behind "Every measure and every battle".
 
-Groups, jobs, links and the question are hand-written in `report_notes.json`, not in the battle
-declaration: they are our reading of the battle, no controller sees them, and a group is whichever
-declared centre a unit started nearest. Group timelines and answers are computed from the 1 Hz
-recorder by `suite.py`. Older reports are unchanged. Browser check:
+Colour is the controller everywhere: pink for one model holding the whole army, blue, green and
+violet for the infantry, guns and knights models or rule sets, grey for scripts alone, orange for
+the enemy. Who controlled a unit comes from the battle's own partition record (`suite.owners`);
+scripts inside "Model over scripts" are shown as the bar in its picture, since the model chooses
+them. Shapes are unit kinds, so a split army stays readable when colours overlap. Paths are per
+unit: an average over a kind would put an army split over two fronts where nobody stood. The
+question, plan and "seen" lines are hand-written in `report_notes.json`: no controller sees them.
+The map frame uses units still fighting, so a rout's run off the map does not shrink the fight.
+Older reports are unchanged. Browser check:
 `NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_suite_browser.cjs
 runs/twwarhammer3/reports/suite.html`. It checks what the page shows, not that the numbers are
 right; it is proposed, not agreed. The first comparison:

@@ -228,7 +228,11 @@ def commander(trial: dict, definition: dict) -> dict:
 
     # `short` tells rows of one name apart in tight spaces: effort, prompt variant (none for
     # rules only), gateway ("via OpenRouter") and added age.
-    if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
+    # A composed controller on a benchmark battle is a compared method, not a probe: without this
+    # the suite's graph battles left the page without a replay (2026-11-04).
+    scenario = definition.get("scenario") or {}
+    composed = card.get("kind") == "composed" and scenario.get("benchmark")
+    if base in MODEL_POLICIES or composed or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
         display = {"z-ai/glm-5.3": "GLM-5.3", "moonshotai/kimi-k3": "Kimi K3",
                    "stepfun/step-5-preview": "Step 5 Preview"}.get(name, name)

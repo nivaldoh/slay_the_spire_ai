@@ -428,319 +428,156 @@
     "coord-two-fronts": {
       "title": "Two fronts",
       "question": "Two fights at once and one reserve. Where does it go?",
-      "why": "The groups stand 410 m apart, over 2 minutes at a run. The west is even in men, 248 each; the east is 248 against 368. The Knights, the reserve, are about 30 s from either fight but can be in only one at a time.",
-      "groups": [
-        {
-          "name": "West group",
-          "x": -80,
-          "z": -150,
-          "job": "Hold the western force"
-        },
-        {
-          "name": "East group",
-          "x": 330,
-          "z": -150,
-          "job": "Hold the larger eastern force"
-        },
-        {
-          "name": "Reserve",
-          "x": 125,
-          "z": -115,
-          "job": "Pick one fight and tip it"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "West force",
-          "x": -80,
-          "z": -400
-        },
-        {
-          "name": "East force",
-          "x": 330,
-          "z": -400
-        }
-      ],
-      "links": [
-        [
-          "Reserve",
-          "West group"
-        ],
-        [
-          "Reserve",
-          "East group"
-        ]
-      ],
-      "link": "meant to be in only one",
+      "why": "The fights are over 2 minutes apart at a run, and the Knights can be in only one.",
       "heading": "Two fronts",
       "short": "Two fronts",
       "challenge": "Two fights at once and one reserve. Where does it go?",
-      "answer": {
-        "kind": "joined",
-        "who": "Reserve",
-        "among": [
-          "West group",
-          "East group"
-        ]
-      },
-      "seen": "Three methods sent the reserve east and one sent it west. The Three models method left it standing until it was attacked. Only one of the three that went east won."
+      "seen": "Three methods sent the Knights east and one west; Three models left them standing until they were attacked. One of the three that went east won.",
+      "plan": [
+        {
+          "who": [
+            "front",
+            "ranged"
+          ],
+          "job": "Hold both fights"
+        },
+        {
+          "who": [
+            "mobile"
+          ],
+          "job": "Pick one fight and tip it"
+        }
+      ]
     },
     "coord-relief": {
       "title": "Relief",
       "question": "Can the garrison hold until the column arrives?",
-      "why": "The enemy starts about 140 m from the garrison and nearly 500 m from the column. The garrison's 226 men face 540 if no help comes.",
-      "groups": [
-        {
-          "name": "Garrison",
-          "x": 300,
-          "z": -300,
-          "job": "Hold until help comes"
-        },
-        {
-          "name": "Column",
-          "x": -120,
-          "z": -130,
-          "job": "March now and join the garrison's fight"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "South force",
-          "x": 260,
-          "z": -435
-        },
-        {
-          "name": "East force",
-          "x": 430,
-          "z": -340
-        }
-      ],
-      "links": [
-        [
-          "Column",
-          "Garrison"
-        ]
-      ],
-      "link": "meant to arrive in time",
+      "why": "The enemy starts about 140 m from the garrison and nearly 500 m from the column. Alone, the garrison's 226 men face 540.",
       "heading": "Relief",
       "short": "Relief",
       "challenge": "Can the garrison hold until the column arrives?",
-      "answer": {
-        "kind": "reached",
-        "a": "Garrison",
-        "b": "Column",
-        "text": "First help reached the garrison's fight {gap} after it began",
-        "never": "The column never reached the garrison's fight"
-      },
-      "seen": "Model over scripts won even though the column never reached the garrison's fight: it fought the South force about 270 m short."
+      "seen": "Model over scripts won even though the column never reached the garrison's fight: it fought about 270 m short.",
+      "plan": [
+        {
+          "who": [
+            "front"
+          ],
+          "job": "Hold, and march the halberdiers in"
+        },
+        {
+          "who": [
+            "mobile"
+          ],
+          "job": "Hold with the garrison"
+        },
+        {
+          "who": [
+            "ranged"
+          ],
+          "job": "March to the garrison"
+        }
+      ]
     },
     "coord-pincer": {
       "title": "Pincer",
       "question": "Can two groups strike one block at the same moment?",
-      "why": "Each group has 293 men against 698, and our side loses if time runs out.",
-      "groups": [
-        {
-          "name": "West group",
-          "x": -150,
-          "z": -300,
-          "job": "Close in, and arrive with the east group"
-        },
-        {
-          "name": "East group",
-          "x": 440,
-          "z": -300,
-          "job": "Close in, and arrive with the west group"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "Block",
-          "x": 150,
-          "z": -300
-        }
-      ],
-      "links": [
-        [
-          "West group",
-          "East group"
-        ]
-      ],
-      "link": "meant to strike together",
+      "why": "Two groups of 293 men face a block of 698, and our side loses if time runs out.",
       "heading": "Pincer",
       "short": "Pincer",
       "challenge": "Can two groups strike one block at the same moment?",
-      "answer": {
-        "kind": "apart",
-        "a": "West group",
-        "b": "East group",
-        "never": "Only one group reached a fight"
-      },
-      "seen": "In all five battles the block split and the two fights began 430-530 m apart. In four, both had begun by 0:48."
+      "seen": "In all five battles the block split, and the two fights began 430-530 m apart.",
+      "plan": [
+        {
+          "who": [
+            "front",
+            "ranged",
+            "mobile"
+          ],
+          "job": "Reach the block from both sides at once"
+        }
+      ]
     },
     "coord-breakout": {
       "title": "Breakout",
       "question": "Can the army beat one force before the other two close in?",
-      "why": "Three enemy forces converge from the west, east and south, together 526 men against our 451. The army can turn on one or meet all three.",
-      "groups": [
-        {
-          "name": "Line",
-          "x": 150,
-          "z": -300,
-          "job": "Turn on one enemy force"
-        },
-        {
-          "name": "Guns",
-          "x": 150,
-          "z": -255,
-          "job": "Fire on that same force"
-        },
-        {
-          "name": "Knights",
-          "x": 150,
-          "z": -215,
-          "job": "Hit it from the side"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "West force",
-          "x": -60,
-          "z": -280
-        },
-        {
-          "name": "East force",
-          "x": 360,
-          "z": -280
-        },
-        {
-          "name": "South force",
-          "x": 150,
-          "z": -475
-        }
-      ],
-      "links": [
-        [
-          "Guns",
-          "Line"
-        ],
-        [
-          "Knights",
-          "Line"
-        ]
-      ],
-      "link": "meant to share one target",
+      "why": "Three enemy forces converge, together 526 men against our 451.",
       "heading": "Breakout",
       "short": "Breakout",
       "challenge": "Can the army beat one force before the other two close in?",
-      "answer": {
-        "kind": "spread"
-      },
-      "seen": "Neither win kept its Line on one target. Model over scripts routed the West force at 1:16, but it rallied and fought again from 2:12; Scripts only fought all three at once."
+      "seen": "Neither win kept its infantry on one target.",
+      "plan": [
+        {
+          "who": [
+            "front"
+          ],
+          "job": "Turn on one enemy force"
+        },
+        {
+          "who": [
+            "ranged"
+          ],
+          "job": "Fire on that same force"
+        },
+        {
+          "who": [
+            "mobile"
+          ],
+          "job": "Hit it from the side"
+        }
+      ]
     },
     "coord-detail": {
       "title": "Defeat in detail",
       "question": "Can the army finish the near wave before the far wave arrives?",
-      "why": "The near wave of 368 men is 270 m away and the far wave of 225 starts about 250 m behind it. Together they outnumber the army of 496.",
-      "groups": [
-        {
-          "name": "Line",
-          "x": 0,
-          "z": -150,
-          "job": "Hold the near wave"
-        },
-        {
-          "name": "Support",
-          "x": -35,
-          "z": -105,
-          "job": "Help break it, then face the far wave"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "Near wave",
-          "x": 200,
-          "z": -330
-        },
-        {
-          "name": "Far wave",
-          "x": 420,
-          "z": -440
-        }
-      ],
-      "links": [
-        [
-          "Support",
-          "Line"
-        ]
-      ],
-      "link": "meant to finish it together",
+      "why": "A wave of 368 men, then 225 more about 250 m behind it, against our 496.",
       "heading": "Defeat in detail",
       "short": "Defeat in detail",
       "challenge": "Can the army finish the near wave before the far wave arrives?",
-      "answer": {
-        "kind": "waves",
-        "a": "Near wave",
-        "b": "Far wave",
-        "text": "The two waves arrived {gap} apart",
-        "never": "Only one wave reached a fight"
-      },
-      "seen": "In all four battles the two waves reached the army within about 10 s of each other."
+      "seen": "In all four battles the two waves reached the army within about 10 s of each other.",
+      "plan": [
+        {
+          "who": [
+            "front"
+          ],
+          "job": "Hold the near wave"
+        },
+        {
+          "who": [
+            "ranged",
+            "mobile"
+          ],
+          "job": "Help break it, then face the far wave"
+        }
+      ]
     },
     "coord-rear-raid": {
       "title": "Rear raid",
       "question": "Can the army hold its line and guard its guns at the same time?",
-      "why": "Infantry attacks from the south while cavalry comes from 300 m to the north-west, and the Knights start on the far side of the guns. The guns only help if both attacks are kept off them.",
-      "groups": [
-        {
-          "name": "Line",
-          "x": 150,
-          "z": -290,
-          "job": "Hold the southern attack"
-        },
-        {
-          "name": "Guns",
-          "x": 150,
-          "z": -235,
-          "job": "Keep firing"
-        },
-        {
-          "name": "Knights",
-          "x": 260,
-          "z": -200,
-          "job": "Stop the raiders reaching the guns"
-        }
-      ],
-      "enemy": [
-        {
-          "name": "Front",
-          "x": 150,
-          "z": -470
-        },
-        {
-          "name": "Raiders",
-          "x": -120,
-          "z": -110
-        }
-      ],
-      "links": [
-        [
-          "Knights",
-          "Guns"
-        ],
-        [
-          "Line",
-          "Guns"
-        ]
-      ],
-      "link": "meant to protect",
+      "why": "Infantry attacks from the south, cavalry from 300 m to the north-west, and the Knights start on the far side of the guns.",
       "heading": "Rear raid",
       "short": "Rear raid",
       "challenge": "Can the army hold its line and guard its guns at the same time?",
-      "answer": {
-        "kind": "guns",
-        "who": "Guns"
-      },
-      "seen": "One model's guns never fired. In both battles every gun unit was in melee by 2:31, and both lost."
+      "seen": "One model's guns never fired. In both battles every gun unit was in melee by 2:31, and both lost.",
+      "plan": [
+        {
+          "who": [
+            "front"
+          ],
+          "job": "Hold the southern attack"
+        },
+        {
+          "who": [
+            "ranged"
+          ],
+          "job": "Keep firing"
+        },
+        {
+          "who": [
+            "mobile"
+          ],
+          "job": "Stop the raiders reaching the guns"
+        }
+      ]
     }
   },
   "units": {
@@ -1290,28 +1127,48 @@
   },
   "suite": {
     "title": "Can they fight as one army?",
-    "dek": "Six Total War battles built so that parts of one army are apart or outnumbered. Five ways of commanding them, each playing each battle at most once, live and unpaused, with one cheap model, Claude Haiku 5.5. Winning does not prove they worked together: scripts with no plan won two.",
+    "dek": "Five ways of commanding the same army, in six battles. Colour shows who controls each unit.",
     "methods": {
-      "single": [
-        "One model",
-        "Orders every unit itself"
-      ],
-      "team": [
-        "Three models",
-        "One each for infantry, shooters and fast units, acting at once. They cannot talk: each sees the others' units, not their orders"
-      ],
-      "commander": [
-        "Model over scripts",
-        "Re-sets units' standing jobs every few seconds; scripts carry them out. The only method given a page of tactics advice"
-      ],
-      "gap": [
-        "Written rules",
-        "A model writes each unit type's rules first, then only suggests targets. The rules do not talk to each other"
-      ],
-      "skills": [
-        "Scripts only",
-        "No model. Each unit follows a fixed rule for its type; cavalry wait for the first fight"
-      ]
+      "single": {
+        "name": "One model",
+        "note": "controls everything",
+        "models": [
+          "all"
+        ]
+      },
+      "team": {
+        "name": "Three models",
+        "note": "cannot talk to each other",
+        "models": [
+          "front",
+          "ranged",
+          "mobile"
+        ]
+      },
+      "commander": {
+        "name": "Model over scripts",
+        "note": "the only one given battle tips",
+        "models": [
+          "all"
+        ],
+        "scripts": true
+      },
+      "gap": {
+        "name": "Written rules",
+        "note": "written once, before the battle",
+        "models": [
+          "front",
+          "ranged",
+          "mobile"
+        ],
+        "rules": true
+      },
+      "skills": {
+        "name": "Scripts only",
+        "note": "no model at all",
+        "models": [],
+        "scripts": true
+      }
     },
     "order": [
       "single",
@@ -1326,11 +1183,15 @@
         "round-5"
       ],
       "lines": [
-        "On the four battles both played, the model over scripts won 3 and the same scripts alone won 2. The scripts won Pincer, which the model lost, so how much is the model is not settled.",
-        "Only the model over scripts gets a page of tactics advice (gang up, arrive together, come from behind), so its lead over one model mixes the method with the advice.",
-        "One model ordering every unit won 0 of 6. Three models won 1 of 5, at 2.6 times the cost over the same five.",
-        "The written rules won 1 of 6, at about a tenth of one model's cost to play, plus $0.005 a battle to write the rules."
+        "Model over scripts won most, but the same scripts alone won 2 of the 4 they played, and it alone was given battle tips.",
+        "One battle per pair: these are leads, not rankings."
       ]
+    },
+    "controllers": {
+      "all": "Whole army",
+      "front": "Infantry",
+      "ranged": "Guns",
+      "mobile": "Knights"
     }
   }
 }

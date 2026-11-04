@@ -15,6 +15,13 @@ Both games:
   animations to words whenever possible. Pay attention to what's unique about the WH3
   setting. Take inspiration from the paper's ideas as well as their code. Think about how
   we might convey information more easily and cleanly to a human reader."
+- 2026-11-04 (suite page, second direction): page "Not clear yet"; too much to read, and the replay
+  map, timelines, start maps and the battles themselves all fall short. "Saying "west group" or
+  "east group" doesn't help. We should name the models instead and the colors should highlight
+  who is controlling what. We should also experiment with overlapping the visuals for different
+  methods and models (seeing if we can avoid visual clutter) to see if that helps demonstrate
+  coordination and compare differences in decisions by each team". Tips test: "Yes, run it", once
+  the page work is settled: one model given battle tips like commander's, about 6 battles and $1.
 - 2026-11-04 (suite page, after the overnight run): "Make sure the suite is visually clear. For a
   coordination task, it's not visibile who is supposed to be coordinating with who and how or why.
   There's somehow too much info on the screen and yet the most important ideas are missing. Let's
