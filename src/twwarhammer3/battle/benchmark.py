@@ -317,14 +317,14 @@ def collect(plan_path: Path) -> dict:
             "rows": rows}
 
 
-def report(plan_path: Path, output: Path) -> dict:
+def report(plan_path: Path, output: Path, more: list[Path] | None = None) -> dict:
     from twwarhammer3.battle import report as trials
     from twwarhammer3.battle import report_html
 
     if json.loads(plan_path.read_text()).get("benchmark") == SUITE:
         from twwarhammer3.battle import suite
 
-        return suite.report([plan_path], output)
+        return suite.report([plan_path, *(more or [])], output)
     visual = trials.collect([], benchmark_plans=[plan_path])
     data = visual["benchmark_plans"][0]
     text = (f"{VERSION}: {data['completed']}/{data['planned']} engine-completed; "

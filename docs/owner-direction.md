@@ -5,6 +5,8 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (during the overnight run): "Let's test the graph approach btw". The `gap` arm, graphs
+  a model writes before each scenario, is in the running comparison.
 - 2026-11-04 (overnight benchmark goal): "Work on improving our benchmark, focusing on
   multi-agents. I'll leave you running overnight and won't be around to answer questions.
   Use the research materials we collected as references. We should come up with a decent

@@ -742,6 +742,7 @@
         [
           "Method",
           "Won",
+          "Win rate, 95%",
           "Scenarios won",
           "Own",
           "Taken",
@@ -761,6 +762,7 @@
         arms.map(([name, arm]) => [
           name,
           `${arm.wins}/${arm.completed} of ${arm.planned}`,
+          arm.win_text,
           `${arm.scenarios_won}/${arm.scenarios_played}`,
           arm.own,
           arm.taken,

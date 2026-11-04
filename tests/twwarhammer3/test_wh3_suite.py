@@ -66,6 +66,12 @@ def test_the_score_rewards_what_a_loss_took_as_well_as_what_it_kept():
     assert suite.scenario_value(rows[1]) > suite.scenario_value(rows[0])
 
 
+def test_a_win_bound_reads_as_a_range_or_an_upper_bound():
+    assert suite.bound_text(suite.win_bound(0, 10)) == "below 26%"
+    assert suite.bound_text(suite.win_bound(4, 5)) == "38%-96%"
+    assert suite.bound_text(None) is None
+
+
 def test_win_bounds_and_sign_test_match_the_guidelines_worked_values():
     # evaluation-guidelines.md 7.2: 0 of 10 is below 26%; 4 of 5 is 38-96%.
     assert suite.win_bound(0, 10) == {"method": "exact one-sided 95%", "upper": .259}

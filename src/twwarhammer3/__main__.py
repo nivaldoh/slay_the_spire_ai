@@ -115,6 +115,8 @@ def main() -> int:
     benchmark.add_argument("--budget-usd", type=float, default=2,
                            help="cumulative WH3 Anthropic ledger cap, including earlier jobs")
     benchmark.add_argument("--output", type=Path, help="report filename stem")
+    benchmark.add_argument("--also", type=Path, action="append", default=[], metavar="PLAN",
+                           help="suite report: further plans at the same battle versions")
 
     coordinator = commands.add_parser(
         "coordinator", help="Serve one native multiplayer match attempt; stdin takes"
@@ -317,7 +319,8 @@ def main() -> int:
             elif args.action == "plan":
                 data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
             else:
-                data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"))
+                data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"),
+                                        args.also)
         except (ValueError, OSError) as exc:
             parser.error(str(exc))
         print(json.dumps(data, indent=2))

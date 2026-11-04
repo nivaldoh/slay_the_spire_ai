@@ -205,7 +205,8 @@ def coordination(frames):
       not fighting. A shooter firing also reads idle, so shooters are left out.
     - local_share: at each fight, friendly men over all men within LOCAL_M of a friendly unit
       in melee, pooled over the battle. Above 0.5 the army outnumbers the enemy where it
-      fights. Only enemies the recorder can see count.
+      fights. Only enemies the recorder can see count. On 465 recorded battles it mostly
+      restates who won: its first 60 s do not separate wins from losses (benchmark.md).
     """
     joined, friendly_men, enemy_men, idle, seconds = {}, 0, 0, 0, 0
     first = None
@@ -357,6 +358,7 @@ def summarize(rows):
         table[arm] = {
             "planned": len(mine), "completed": len(done), "wins": wins, "draws": draws,
             "losses": len(done) - wins - draws, "win_bound": win_bound(wins, len(done)),
+            "win_text": bound_text(win_bound(wins, len(done))),
             "scenarios_won": len({r["scenario"] for r in done if r["outcome"] == "won"}),
             "scenarios_played": len({r["scenario"] for r in done}),
             "own": points(mean([r["own"] for r in done])),
@@ -391,7 +393,16 @@ def summarize(rows):
     return {"arms": table, "matrix": matrix, "witnessed_by": witnessed}
 
 
-COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"), ("own", lambda a: a["own"]),
+def bound_text(bound):
+    if bound is None:
+        return None
+    if "lower" not in bound:
+        return f"below {bound['upper']:.0%}"
+    return f"{bound['lower']:.0%}-{bound['upper']:.0%}"
+
+
+COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
+           ("win 95%", lambda a: bound_text(a["win_bound"])), ("own", lambda a: a["own"]),
            ("taken", lambda a: a["taken"]), ("$/battle", lambda a: a["usd"]),
            ("$ author", lambda a: a["authoring_usd"]),
            ("calls", lambda a: a["calls"]), ("think s", lambda a: a["think_s"]),

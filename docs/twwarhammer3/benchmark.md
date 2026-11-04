@@ -123,15 +123,24 @@ They do not isolate the cause of a difference, and equal-resource arms come late
 | Cost | dollars, calls, tokens; for `gap`, what writing the graphs cost, shown apart | Ledger-backed result |
 | Speed | median and 90th-percentile order age, observation to engine application | Engine acknowledgements |
 | Reliability | refused orders, forfeits, every failed or unplayed battle | Trace and plan |
-| Coordination | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
+| Coordination (descriptive) | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
 
 `taken` exists because `own` alone rewards fleeing: the mirror's best Haiku condition, 28.4, was an
-army that routed having removed 2% of the enemy. Coordination readings explain results; they are
-never added to a score ([MultiAgentBench](benchmark-references/multiagentbench.md) keeps outcome and
-process apart for the same reason). On 29 recorded battles of the Empire line (`runs/coord-suite-20261104/measure_check.py`)
-`spread_s` averaged 37 s for `rush` against 9 s for walking `attack_nearest`, because running units
-arrive one at a time; `idle_share` measures units held back, including a sound reserve, so a
-high value is not a fault. Neither reading is checked against a human's judgement yet.
+army that routed having removed 2% of the enemy.
+
+Coordination readings describe what happened and are never added to a score
+([MultiAgentBench](benchmark-references/multiagentbench.md) keeps outcome and process apart for the
+same reason). What they are worth so far (`runs/coord-suite-20261104/local_share_check.py`, 465
+recorded battles, 136 wins, AUC of won against lost inside 22 scenarios that have both):
+whole-battle `local_share` 0.79, but over only the first 60 s after contact 0.47, so it mostly
+restates who won. `spread_s` 0.49: it does not go with winning. On 29 battles of the Empire line it
+does tell running from walking (37 s against 9 s), because running units arrive one at a time.
+`idle_share` counts units held back, including a sound reserve. None is checked against a human's
+judgement, and no reading here measures coordination in a way we have shown to matter.
+
+**Arms that share parts.** `commander` is `skills` with a model choosing the skills, so `skills` is
+its control: a `commander` win means little until `skills` has played the same battle. The same
+holds for any method built on another.
 
 **Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`;
 across scenarios, each arm against `single` by how many scenarios it did better or worse on, with
@@ -141,6 +150,14 @@ small-sample methods, which rule out a bootstrap at these sizes. Battles run in 
 per repeat. A battle that fails keeps its row; nothing is replaced. With one or two battles per
 pair these results are exploratory: they rank nothing and show where a confirmation would be worth
 paying for.
+
+**Proposed check, not agreed.** For any finished plan, a script that shares no code with `suite.py`
+would check, from raw records: every planned pair has one row; every authored unit stood within
+25 m of its place in the private first reading; `taken` equals the engine's enemy totals; `own`
+equals a hand recomputation from the first-ending unit records; each battle's cost matches the
+ledger's response ids; and the plan's revision, versions and graph artifacts match each job. It
+would fail on a planted swapped unit, a dropped battle and an altered total. This establishes
+that the suite recorded the battles it says it did, not which method is stronger.
 
 ## Outcome and score
 
