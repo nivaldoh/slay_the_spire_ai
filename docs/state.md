@@ -9,7 +9,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 Checkpoint port: offline review passed; Land/siege live checks held at the owner's request (11-03).
 
 GCP: no VM. Game disk `wh3-mp-20261103d` (us-west1-c, build 26403568, second account's Steam login) kept until 2026-11-06 21:09 UTC (~$0.83/day; owner, 11-03); `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled).
-First two native multiplayer battles PC + VM ran 11-03 ([log](twwarhammer3/log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)); next: [three-step plan](twwarhammer3/mp-next-steps.md) (lobby automation, dropped observations and time drift, a VM-hosted battle), decisions 1-5 answered 11-03; implementation not started (owner). [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
+First two native multiplayer battles PC + VM ran 11-03 ([log](twwarhammer3/log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)); next: [three-step plan](twwarhammer3/mp-next-steps.md) (lobby automation, dropped observations and time drift, a VM-hosted battle), decisions 1-5 answered 11-03; offline parts and lobby map done, live parts in progress. Later (owner): a [multiplayer-friendly mod API](twwarhammer3/mp-next-steps.md#later-a-multiplayer-friendly-mod-api). [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
 
 Initial one-army team test/comparison complete at `c1ad84d`; games closed. [Results/next steps](twwarhammer3/multi-agent-implementation.md#next).
 

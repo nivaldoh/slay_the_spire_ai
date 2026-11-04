@@ -467,11 +467,20 @@ def test_single_player_observation_timing_is_unchanged():
 READY = """
     phase = "Deployment"
     bm.get_current_phase_name = function() return phase end
-    clicks = 0
-    function find_uicomponent(_, name)
-        assert(name == "button_battle_start")
-        return {SimulateLClick = function() clicks = clicks + 1 end}
+    clicks, hidden_clicks = 0, 0
+    function component(id, shown, children, click)
+        return {Id = const(id), Visible = const(shown), ChildCount = const(#children),
+                Find = function(_, i) return children[i + 1] end, SimulateLClick = click}
     end
+    function UIComponent(uic) return uic end
+    -- A hidden panel holds a button of the same id before the shown one (2026-11-03).
+    ui_root = component("root", true, {
+        component("deployment_sp", false, {component("button_battle_start", true, {},
+            function() hidden_clicks = hidden_clicks + 1 end)}),
+        component("hud", true, {component("button_battle_start", true, {},
+            function() clicks = clicks + 1 end)})})
+    core.get_ui_root = function() return ui_root end
+    twwarhammer3_ui.dump = function(step, directory) files[directory .. step.dump] = "tree" end
 """
 
 
@@ -484,7 +493,8 @@ def ready(g, request="q1"):
 def test_control_ready_presses_this_clients_start_battle_in_multiplayer_deployment():
     g = battle({"multiplayer": "control"}, READY)
     seen = ready(g)
-    assert g.clicks == 1 and list(g.trapped.values()) == []
+    assert g.clicks == 1 and g.hidden_clicks == 0 and list(g.trapped.values()) == []
+    assert g.files[BRIDGE + "ready_ui.txt"] == "tree"
     assert seen["seq"] == 1 and seen["phase"] == "Deployment"
     assert seen["orders"]["request"] == "q1"
     assert seen["orders"]["results"] == [{"index": 1, "control": "ready", "ok": True}]

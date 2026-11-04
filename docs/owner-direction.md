@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-03 (multiplayer mod API, later): "We should take a note to investigate later if we
+  can modify the Lua API, the mod, etc in order to make this sort of functionality (e.g.
+  exposing the functionality of the Start Battle button) easier, faster, more reliable and
+  less error-prone. We've been struggling too much with this sort of thing and the mod isn't
+  multiplayer-friendly so there will be many more issues like that (and worse)". Recorded in
+  [mp-next-steps.md](twwarhammer3/mp-next-steps.md#later-a-multiplayer-friendly-mod-api).
 - 2026-11-03 (WH3 checkpoints): "Let's update our checkpoint feature to the new version as
   well" (9.0.5/build 26403568); then "This might be a good time to try the live process".
   Latest: "Let's wait before launching the game again". Finish the offline port; hold

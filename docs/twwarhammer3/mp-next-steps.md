@@ -205,6 +205,17 @@ Remote Desktop and lobby clicks, as on 11-03.
 JUDGEMENT?: Step 3 exits — Claude, 2026-11-03: at least 30 compared grid times while
 moving, B held 10 s, an engine ending. Other bounds change what this battle shows.
 
+## Later: a multiplayer-friendly mod API
+
+Owner, 2026-11-03 ([direction](../owner-direction.md)): investigate changing the Lua side
+(the mod, its API, possibly the game's script hooks) so actions such as Start Battle, lobby
+setup and joining are exposed directly instead of found and clicked in the UI. The mod was
+built for single player; on 11-03 a multiplayer `ready` pressed a hidden button of the same
+name, the lobby needed UI paths mapped by hand, and an AI slot rejected "no lord". Questions
+to answer first: which engine or context functions perform these actions without the UI;
+which of them stay local to one client in multiplayer (and which would desync); and how to
+test them without a second client (the one-human multiplayer battle on the PC). Not started.
+
 ## Not included
 
 The agreed host check on the VM (25 minutes; add it to the session if you want it), 2v2,

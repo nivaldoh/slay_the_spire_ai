@@ -1215,6 +1215,18 @@ local function try_end_deployment()
     log("start button click: " .. (clicked and "ok" or clean_error(err2)))
 end
 
+-- The first shown component with this id, searching only under shown parents: a hidden
+-- panel can hold a component of the same id (find_uicomponent returns the first in the tree;
+-- on 2026-11-03 a multiplayer ready pressed one that was not on screen).
+local function find_shown(uic, id)
+    if not uic:Visible() then return nil end
+    if uic:Id() == id then return uic end
+    for index = 0, uic:ChildCount() - 1 do
+        local found = find_shown(UIComponent(uic:Find(index)), id)
+        if found then return found end
+    end
+end
+
 -- Multiplayer control: press this client's own Start Battle during deployment (owner,
 -- 2026-11-03, docs/twwarhammer3/mp-next-steps.md decision 1). The battle starts when every
 -- player has pressed it. Never end_current_battle_phase, which would act for every peer.
@@ -1229,9 +1241,11 @@ local function ready(message)
     elseif state.ready_pressed then
         result.error = "already_ready"  -- pressing again may un-ready this client
     else
+        -- Evidence of the deployment screen, read-only (a local file, as UI dumps are).
+        pcall(ui.dump, {dump = "ready_ui.txt", depth = 30}, BRIDGE)
         local clicked, err = pcall(function()
-            local button = find_uicomponent(core:get_ui_root(), "button_battle_start")
-            if not button then error("button_battle_start not found") end
+            local button = find_shown(core:get_ui_root(), "button_battle_start")
+            if not button then error("no shown button_battle_start") end
             button:SimulateLClick()
         end)
         result.ok, state.ready_pressed = clicked, clicked
