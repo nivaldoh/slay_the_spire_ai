@@ -2453,8 +2453,9 @@
  "coord-two-fronts": {
   "name": "coord-two-fronts",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Fight two separate battles at once and decide where one reserve goes",
   "brief": "Two Empire groups stand 410 m apart, each facing its own Greenskin group 250 m south; one Knights unit waits between them. Neither group is known to win alone.",
   "split": "development",
@@ -2474,7 +2475,16 @@
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_inf_swordsmen",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",
@@ -2622,9 +2632,9 @@
  "coord-relief": {
   "name": "coord-relief",
   "benchmark": "suite-v1",
-  "scenario_version": 2,
+  "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Round 1a: rush won at 272 s with 287 of 496 men left, so the enemy gains one Big 'Uns and one Boyz unit. Whether the battle is now winnable is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Hold under attack while a distant column marches to the same fight",
   "brief": "A small garrison stands 130 m from a Greenskin force; a relief column starts 460 m away and cannot arrive before contact.",
   "split": "development",
@@ -2644,7 +2654,16 @@
     "wh_main_emp_inf_swordsmen",
     "wh_main_emp_inf_swordsmen",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",
@@ -2784,9 +2803,9 @@
  "coord-pincer": {
   "name": "coord-pincer",
   "benchmark": "suite-v1",
-  "scenario_version": 2,
+  "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Round 1a: rush won at 332 s with 287 of 586 men left, so the block gains one Big 'Uns and one Boyz unit. Whether the battle is now winnable is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Bring two separated groups into one fight at the same time",
   "brief": "Two Empire groups start 590 m apart with a Greenskin block between them and must attack before the timer; each alone is weaker than the block.",
   "split": "development",
@@ -2807,7 +2826,17 @@
     "wh_main_emp_inf_halberdiers",
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",
@@ -2962,8 +2991,9 @@
  "coord-breakout": {
   "name": "coord-breakout",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Concentrate on one of three converging groups before they close",
   "brief": "An Empire force in the open is approached from the west, east and south by three separate Greenskin groups, each weaker than it and starting about 210 m away.",
   "split": "development",
@@ -2982,7 +3012,15 @@
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",
@@ -3115,8 +3153,9 @@
  "coord-detail": {
   "name": "coord-detail",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Beat the near wave before the far wave arrives",
   "brief": "An Empire force faces a near Greenskin wave 270 m away; a second wave of equal size starts another 300 m behind it. Together they outnumber the Empire force.",
   "split": "development",
@@ -3136,7 +3175,16 @@
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_cav_empire_knights",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",
@@ -3284,8 +3332,9 @@
  "coord-rear-raid": {
   "name": "coord-rear-raid",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Protect guns from cavalry behind the line while the line is engaged",
   "brief": "An Empire line with two Great Cannons and Handgunners behind it faces Orcs to the south; Greenskin cavalry starts 300 m behind the guns.",
   "split": "development",
@@ -3305,7 +3354,16 @@
     "wh_main_emp_inf_handgunners",
     "wh_main_emp_art_great_cannon",
     "wh_main_emp_cav_empire_knights"
-   ]
+   ],
+   "experience": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5
+   }
   },
   "enemy": {
    "subculture": "wh_main_sc_grn_greenskins",

@@ -100,7 +100,8 @@ excluded by a win rate: an unwitnessed scenario stays and is shown as unwitnesse
 | Arm | Who decides | What it asks |
 |---|---|---|
 | `hold`, `rush` | Nobody; every unit runs at its nearest enemy | The floor and the naive plan |
-| `skills` | Scripted class skills: shooters shoot, cavalry waits for contact then charges | What a fixed, coordinated script does for $0 |
+| `skills` | Scripted class skills: shooters shoot, cavalry waits for contact then charges | What a fixed script does for $0 |
+| `concentrate` | A script that gathers the army, picks one enemy and hits it together, fast units last | Whether the coordination a battle asks for can win it, and whether the readings notice |
 | `single` | One model orders every unit (`llm_rules`) | The reference for every model arm |
 | `team` | One model per unit class, at the same time | Does dividing the army help? |
 | `commander` | One model gives standing skills; scripts carry them out between its replies | Does a slower planner over fast scripts help? |
