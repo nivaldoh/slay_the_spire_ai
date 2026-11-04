@@ -40,17 +40,19 @@ const STATE = {phase: 0x28, alliance_count: 0x134, alliances: 0x138, ready_count
 const PROVIDER = {buffer: 8, write_offset: 0x5008};
 // Unit fields as the battle_unit Lua getters read them (table 0x3d4ac70): ui id 0x2f22df8,
 // men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0. The morale word is
-// the state 0x303bd08 reads for is_routing. Hit points: 0x310da24 reads unit+0x80 and +0x88
-// among others; these two are raw words. The walk is the one Lua's alliances/armies/units
+// the state 0x303bd08 reads for is_routing. Hit points: unit+0x80 is the maximum (0x310da24);
+// current is the entity sum of 0x310bd50, which some unit classes replace, so a sum that
+// differs from Lua's hit points is not a fault by itself. The walk is the one Lua's alliances/armies/units
 // make, through the model state (0x2ec53d0, 0x2ef796c, 0x2efb448). Reinforcement armies sit
 // elsewhere ([state+0x720]+0xa0), so this walk does not cover them.
 const WORLD = {phase: 0xc8};
 const ALLIANCE = {army_count: 0x34, armies: 0x38};
 const ARMY = {unit_count: 0x164, units: 0x168};
-const UNIT = {hp_a: 0x80, hp_b: 0x88, men: 0xa4, body: 0x32f8, morale: 0x3b70, ammo: 0x3d90,
-              ui_id: 0x3ea0};
+const UNIT = {max_hp: 0x80, men: 0xa4, entities: 0xa8, extra_count: 0xb4, extras: 0xb8,
+              body: 0x32f8, morale: 0x3b70, ammo: 0x3d90, ui_id: 0x3ea0};
 const BODY = {bearing: 0xb70, position: 0xc10, attached: 0xc28, entity: 0xc90};
 const ENTITY = {position: 0x88};
+const SOLDIER = {flags: 0x108, hp: 0xb1c};
 // Rests on JUDGEMENT docs/twwarhammer3/multiplayer-control-foundation.md Raw witness: every
 // ten completed ticks, plus the last completed tick before a local command packet and the
 // first after it. Floats stay as raw 32-bit words, so no rounding hides a difference.
@@ -85,10 +87,25 @@ function failure(where, error) {
 function hook(name, callbacks) {
     listeners.push(Interceptor.attach(addresses[name], callbacks));
 }
+// Not yet read live, so a failure here is a missing value and does not stop the capture.
+function hitPoints(unit) {
+    try {
+        let total = 0;
+        const soldiers = unit.add(UNIT.entities).readPointer();
+        for (let n = 0, count = unit.add(UNIT.men).readU32(); n < count; n++)
+            total += soldiers.add(n * 8).readPointer().add(SOLDIER.hp).readU32();
+        const extras = unit.add(UNIT.extras).readPointer();
+        for (let n = 0, count = unit.add(UNIT.extra_count).readU32(); n < count; n++) {
+            const extra = extras.add(n * 8).readPointer();
+            if (extra.add(SOLDIER.flags).readU8() & 0x10) total += extra.add(SOLDIER.hp).readU32();
+        }
+        return total;
+    } catch (e) { return null; }
+}
 function unitRow(alliance, army, index, unit) {
     const body = unit.add(UNIT.body).readPointer();
     const row = [alliance, army, index, unit.add(UNIT.ui_id).readU32(), unit.add(UNIT.men).readU32(),
-                 unit.add(UNIT.hp_a).readU32(), unit.add(UNIT.hp_b).readU32(),
+                 unit.add(UNIT.max_hp).readU32(), hitPoints(unit),
                  unit.add(UNIT.ammo).readU32(), unit.add(UNIT.morale).readU32()];
     if (body.isNull()) return row;   // a unit with no body on the field has no position
     const entity = body.add(BODY.entity).readPointer();

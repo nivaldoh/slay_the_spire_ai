@@ -321,17 +321,21 @@ class Worker:
         while time.monotonic() < deadline:
             text = self.mailbox.log_since(offset, "menu.log")
             lines = text.splitlines()
+            with self._changed:
+                current = (self.latest or {}).get("battle")
+            ready = body["operation"] == "set_lobby_ready"
+            if ready and current not in (None, battle):
+                self.link.event("command", {"seq": seq, "status": "submitted", "request": request,
+                                            "log": lines, "battle_started": current})
+                return "submitted"
+            if f"menu {request}: failed" in lines and ready and any(
+                    "command " + setup.LOBBY + "ToggleReady" in line for line in lines):
+                raise TimeoutError(f"readiness {request} toggled, its read failed: unknown effect")
             for outcome, status in (("done", "submitted"), ("failed", "rejected")):
                 if f"menu {request}: {outcome}" in lines:
                     self.link.event("command", {"seq": seq, "status": status, "request": request,
                                                 "log": lines})
                     return status
-            with self._changed:
-                current = (self.latest or {}).get("battle")
-            if body["operation"] == "set_lobby_ready" and current not in (None, battle):
-                self.link.event("command", {"seq": seq, "status": "submitted", "request": request,
-                                            "log": lines, "battle_started": current})
-                return "submitted"
             time.sleep(self.mailbox.poll)
         raise TimeoutError(f"frontend operation {request} has an unknown effect")
 
@@ -363,10 +367,10 @@ def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: st
                                    f"{live.get('multiplayer')!r}, not {mode!r}")
         mailbox = Mailbox(bridge, job=live["job"] if attach else f"{match}.{attempt}.{client}")
         worker = Worker(link, mailbox, mode, ack_s=ack_s, menu=menu)
-        link.start(worker.on_command)
         with contextlib.ExitStack() as stack:
             game = None
             if attach:
+                link.start(worker.on_command)
                 link.event("session", {"owned": False, "session": live})
             else:
                 stack.enter_context(runtime.RuntimeLock())
@@ -374,6 +378,7 @@ def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: st
                 mailbox.reset()
                 session = {**SESSION, "multiplayer": mode, **({"menu": True} if menu else {})}
                 stack.enter_context(mailbox.owned_session(session))
+                link.start(worker.on_command)  # after the reset, which deletes menu.json
                 link.event("session", {"owned": True, "session": session})
                 log = ROOT / match / attempt / f"worker-{client}" / "game.log"
                 game = stack.enter_context(runtime.OwnedGame(log, timeout=max_s))

@@ -54,9 +54,11 @@ words.set(army3.add(0x164).value, 1);
 pointers.set(army3.add(0x168).value, units2.add(16).value);
 pointers.set(units2.add(16).value, unit4.value);
 for (const [other, id] of [[unit2, 78], [unit3, 79], [unit4, 80]]) {
-    for (const [offset, value] of [[0x3ea0, id], [0xa4, 1], [0x80, 2], [0x88, 3],
+    for (const [offset, value] of [[0x3ea0, id], [0xa4, 0], [0x80, 2], [0xb4, 0],
                                    [0x3d90, 4], [0x3b70, 1]])
         words.set(other.add(offset).value, value);
+    pointers.set(other.add(0xa8).value, 0);
+    pointers.set(other.add(0xb8).value, 0);
     pointers.set(other.add(0x32f8).value, 0);   // a unit with no body keeps only its first fields
 }
 words.set(alliance.add(0x34).value, 1);
@@ -65,9 +67,21 @@ pointers.set(armies.value, army.value);
 words.set(army.add(0x164).value, 1);
 pointers.set(army.add(0x168).value, units.value);
 pointers.set(units.value, unit.value);
-for (const [offset, value] of [[0x3ea0, 77], [0xa4, 60], [0x80, 1000], [0x88, 900],
+for (const [offset, value] of [[0x3ea0, 77], [0xa4, 2], [0x80, 1000], [0xb4, 2],
                                [0x3d90, 12], [0x3b70, 2]])
     words.set(unit.add(offset).value, value);
+// Current hit points as 0x310bd50 sums them: every soldier, plus flagged extras.
+const soldiers = ptr(0x7d00000), extras = ptr(0x7e00000), one = ptr(0x7f00000);
+const two = ptr(0x8000000), three = ptr(0x8100000), four = ptr(0x8200000);
+pointers.set(unit.add(0xa8).value, soldiers.value);
+pointers.set(unit.add(0xb8).value, extras.value);
+for (const [slot, soldier, hp, flags] of [
+        [soldiers, one, 400, 0], [soldiers.add(8), two, 300, 0],
+        [extras, three, 200, 0x10], [extras.add(8), four, 50, 0]]) {
+    pointers.set(slot.value, soldier.value);
+    words.set(soldier.add(0xb1c).value, hp);
+    words.set(soldier.add(0x108).value, flags);
+}
 pointers.set(unit.add(0x32f8).value, body.value);
 pointers.set(body.add(0xc90).value, entity.value);
 pointers.set(body.add(0xc28).value, 0);
@@ -150,8 +164,9 @@ def test_the_agent_writes_every_tick_scheduled_witnesses_and_the_ones_around_a_c
         ([0, 0, 0], 77), ([1, 0, 0], 78), ([1, 0, 1], 79), ([1, 1, 0], 80)]
     assert len(units[1]) == 9, "no body, no position fields"
     unit = units[0]
-    # alliance, army, index, id, men, hp words, ammo, morale, kind, raw x y z, low 16 of bearing
-    assert unit == [0, 0, 0, 77, 60, 1000, 900, 12, 2, 0, 0x41200000, 0x42000000, 0x43000000,
+    # alliance, army, index, id, men, maximum and current hit points (flagged extra counted,
+    # unflagged not), ammo, morale, kind, raw x y z, low 16 of bearing
+    assert unit == [0, 0, 0, 77, 2, 1000, 900, 12, 2, 0, 0x41200000, 0x42000000, 0x43000000,
                     0x123]
 
 
@@ -160,10 +175,14 @@ def test_the_agent_records_the_decided_winner_once_from_the_tick_it_appears(rows
     assert [(r["tick"], r["winner"]) for r in decided] == [(23, 1)]
 
 
-def test_differing_winners_conflict_and_a_one_sided_ending_is_inconclusive(tmp_path, rows):
+def test_differing_endings_conflict_and_a_one_sided_ending_is_inconclusive(tmp_path, rows):
     def other(second):
         next(r for r in second if r["event"] == "battle_decided")["winner"] = 0
     assert pair(tmp_path, rows, other)["verdict"] == "conflict"
+
+    def later(second):
+        next(r for r in second if r["event"] == "battle_decided")["tick"] = 24
+    assert pair(tmp_path, rows, later)["verdict"] == "conflict", "same winner, another tick"
 
     def none(second):
         return [r for r in second if r["event"] != "battle_decided"]
@@ -303,6 +322,34 @@ def test_submission_counts_catch_a_missing_packet_and_ignore_commands_nobody_nam
     assert submission_problems(capture, {1: 1}) == [{"id": 1, "expected": 1, "observed": 0}]
 
 
+def test_an_adapter_submission_counts_as_its_packet_in_its_own_battle(tmp_path, rows):
+    # The passive hooks miss the adapter's call (foundation-ref8), and its rows carry no
+    # generation: they belong to the battle running then.
+    sent = {"event": "operation_result", "status": "submitted", "operation": "ready_deployment",
+            "last_completed_tick": 5, "adapter": True}
+    refused = {**sent, "status": "refused"}
+    capture = load_capture(write(tmp_path / "a", [*rows, sent, refused]))
+    assert submission_problems(capture, {699787935: 1}) == []
+    twice = load_capture(write(tmp_path / "b", [*rows, sent, sent]))
+    assert submission_problems(twice, {699787935: 1}) == [
+        {"id": 699787935, "expected": 1, "observed": 2}]
+    later = [dict(row, generation=2) for row in rows if "generation" in row]
+    first = load_capture(write(tmp_path / "c", [*rows, sent, *later]), generation=1)
+    second = load_capture(write(tmp_path / "d", [*rows, sent, *later]), generation=2)
+    assert submission_problems(first, {699787935: 1}) == []
+    assert submission_problems(second, {699787935: 0}) == []
+
+
+def test_packet_counts_stay_inside_the_interval(tmp_path, rows):
+    capture = load_capture(write(tmp_path / "a", rows))
+    # Packets after ticks 0, 10 and 12 belong to ticks 1, 11 and 13.
+    assert submission_problems(capture, {0xabc: 2}, range(1, 12)) == []
+    assert submission_problems(capture, {0xabc: 3}, range(1, 14)) == []
+    summary = compare_captures({"A": capture, "B": load_capture(write(tmp_path / "b", rows))},
+                               end=11, expected_packets={"A": {0xabc: 2}})
+    assert summary["submission_problems"] == {"A": []}
+
+
 def test_a_duplicate_packet_fails_the_comparison_even_with_identical_positions(tmp_path, rows):
     duplicate = next(r for r in rows if r["event"] == "command_packet")
     summary = compare_captures(
@@ -364,3 +411,5 @@ def test_the_command_line_takes_native_captures_or_an_attempt_not_both(
         run()
     with pytest.raises(SystemExit):
         run(str(tmp_path), "--native", f"A={a}", f"B={b}")
+    with pytest.raises(SystemExit):
+        run(str(tmp_path), "--end", "20")

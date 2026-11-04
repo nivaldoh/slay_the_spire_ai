@@ -407,9 +407,10 @@ def configure_steps(scenario: dict, *, open_slot: bool = True,
 
 def lobby_ready_steps(ready: bool) -> list[dict]:
     """Bring this client's lobby readiness to ``ready`` with the context command the Ready
-    button binds, no component lookup. A repeat cannot toggle it back. The flag follows the
-    command after a delay (false at once, true within 3 s in foundation-ref6), hence the retried
-    read. With every player ready the battle starts, and the caller may see that first."""
+    button binds, no component lookup. The flag follows the command after a delay (false at
+    once, true within 3 s in foundation-ref6), hence the retried read; the guard protects a
+    repeat only once it has settled. With every player ready the battle starts, and the caller
+    may see that first."""
     flag = LOBBY + "IsLocalPlayerReady"
     return [{"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"},
             {"context": "CcoFrontendRoot", "command": LOBBY + "ToggleReady",

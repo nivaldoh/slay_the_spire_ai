@@ -90,13 +90,15 @@ game for one 30-minute window. [Results table](multiplayer-control-foundation.md
 - Found by following command names: `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` under Start Battle.
 - Built: trace of that path and all command packets, raw unit rows, phase and outcome at
   completed ticks, `compare-peers --native`, the direct `ready_deployment` adapter, typed worker
-  operations, `leave`. Four independent reviews found three blockers before any game ran,
-  among them a wrong unit list and a wrong readiness object.
+  operations, `leave`. Reviews before the window found a wrong ready-count path, a wrong unit
+  list and a lost-row race (`b72514c`, `d98d4cf`, `ee3dcfe`); a later one found three blockers
+  in the typed driver, and a rerun corrected this entry's page before it stood.
 - Live, one client, one human host against one AI: `foundation-ref6` (context lobby ready, real
-  click path, leave); `foundation-ref8` (direct ready with no battle clicks, 1512 ticks no gaps,
-  an engine ending at tick 1508 matching Lua, leave). Witness against Lua: 604 rows, ids exact.
+  click path, leave); `foundation-ref8` (direct ready at phase 0 with no battle clicks, 1512
+  ticks no gaps, an engine ending at tick 1508 matching Lua, leave). Witness against Lua: 604
+  rows, ids and x, z. Current code asks only in phase 4 and sums hit points: neither has run live.
 - Not successes: `foundation-ref5-load-refused` (adapter refused at load; fixed), warm re-entry
-  to the games list failed once, `foundation-ref7` and `foundation-typed1` froze, cause unknown.
+  failed its one attempt, `foundation-ref7` and `foundation-typed1` stalled, cause unknown.
 - Unverified: everything; no agreed check, no second client. Direct create and join not found.
 - Evidence: `runs/wh3-mp-overnight-20261104/` (notes, cards, handoff),
   `runs/twwarhammer3/native-multiplayer/foundation-*`.

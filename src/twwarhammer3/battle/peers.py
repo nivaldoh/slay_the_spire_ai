@@ -65,7 +65,7 @@ Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each 
 compared at every tick of the interval and raw unit rows at every scheduled tick, with no
 tolerance and without nearest-tick matching. The interval defaults to everything any client
 recorded, so a late start or a stall counts as missing; a declared interval can narrow it.
-The verdict is ``conflict`` when a checksum, a raw value, a decided winner, a named packet count
+The verdict is ``conflict`` when a checksum, a raw value, a decided ending, a named packet count
 or a client's own repeated records differ; ``inconclusive`` when evidence is missing, only some
 clients saw an ending, simulated phases differ (their comparability is not calibrated), a
 capture failed, did not stop cleanly, or no tick or no unit row was compared; ``agreed``
@@ -246,6 +246,8 @@ NATIVE_SCHEMA = "native-v1"
 # Raw witness.
 WITNESS_EVERY = 10
 FAILURE_EVENTS = ("probe_error", "frida_error", "capture_error", "detach_error", "detached")
+# The passive hooks miss the adapter's engine call, so its row stands for the packet it wrote.
+OPERATION_COMMANDS = {"ready_deployment": 699787935}  # BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE
 
 
 def load_capture(path: Path, *, generation: int | None = None) -> dict:
@@ -266,16 +268,18 @@ def load_capture(path: Path, *, generation: int | None = None) -> dict:
         if len(found) > 1:
             raise ValueError(f"{path} holds battles {sorted(found)}: name a generation")
         generation = next(iter(found), None)
-    capture = {"ticks": {}, "phases": {}, "witness": {}, "packets": collections.Counter(),
-               "packet_rows": [], "conflicts": [], "failures": [], "generation": generation,
+    capture = {"ticks": {}, "phases": {}, "witness": {}, "packet_rows": [], "conflicts": [],
+               "failures": [], "generation": generation,
                "ending": None,
                "stopped": not torn and any(row.get("event") == "capture_stopped"
                                            and not row.get("failed") for row in rows)}
+    current = None
     for row in rows:
         event = row.get("event")
         if event in FAILURE_EVENTS:
             capture["failures"].append(row)
-        if row.get("generation") != generation:
+        current = row.get("generation", current)  # adapter rows carry none: the battle running
+        if current != generation:
             continue
         if event == "completed_tick":
             tick = row["tick"]
@@ -290,8 +294,11 @@ def load_capture(path: Path, *, generation: int | None = None) -> dict:
         elif event == "battle_decided":
             capture["ending"] = {"tick": row["tick"], "winner": row["winner"]}
         elif event == "command_packet":
-            capture["packets"][row["id"]] += 1
             capture["packet_rows"].append(row)
+        elif event == "operation_result" and row.get("status") == "submitted":
+            operation = row.get("operation", "ready_deployment")
+            capture["packet_rows"].append({"id": OPERATION_COMMANDS[operation],
+                                           "last_completed_tick": row.get("last_completed_tick")})
     return capture
 
 
@@ -321,13 +328,14 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
                "missing_ticks": {client: [] for client in names},
                "missing_witness": {client: [] for client in names},
                "checksum_conflicts": [], "phase_differences": [], "unit_conflicts": [],
-               "submission_problems": {client: submission_problems(captures[client], counts)
-                                       for client, counts in (expected_packets or {}).items()},
-               "ticks_compared": 0,
+               "submission_problems": {}, "ticks_compared": 0,
                "witness_ticks_compared": 0, "units_compared": 0,
                "own_conflicts": {client: capture["conflicts"]
                                  for client, capture in captures.items()}}
     interval = range(low, high + 1) if low is not None and high is not None else range(0)
+    for client, counts in (expected_packets or {}).items():
+        summary["submission_problems"][client] = submission_problems(
+            captures[client], counts, interval)
     for tick in interval:
         for client, capture in captures.items():
             if tick not in capture["ticks"]:
@@ -361,13 +369,14 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
                 summary["unit_conflicts"].append({"tick": tick, "unit": list(unit), "rows": rows})
     failed = any(edge["failures"] or not edge["stopped"] for edge in edges.values())
     missing = any(summary["missing_ticks"].values()) or any(summary["missing_witness"].values())
-    winners = {edge["ending"]["winner"] if edge["ending"] and edge["ending"]["tick"] in interval
-               else None for edge in edges.values()}
+    endings = {(edge["ending"]["tick"], edge["ending"]["winner"])
+               if edge["ending"] and edge["ending"]["tick"] in interval else None
+               for edge in edges.values()}
     if (summary["checksum_conflicts"] or summary["unit_conflicts"]
-            or any(summary["own_conflicts"].values()) or len(winners - {None}) > 1
+            or any(summary["own_conflicts"].values()) or len(endings - {None}) > 1
             or any(summary["submission_problems"].values())):
         summary["verdict"] = "conflict"
-    elif (failed or missing or len(winners) > 1 or summary["phase_differences"]
+    elif (failed or missing or len(endings) > 1 or summary["phase_differences"]
           or not (summary["ticks_compared"] and summary["units_compared"])):
         summary["verdict"] = "inconclusive"
     else:
@@ -375,9 +384,14 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
     return summary
 
 
-def submission_problems(capture: dict, expected: dict[int, int]) -> list[dict]:
+def submission_problems(capture: dict, expected: dict[int, int], interval=None) -> list[dict]:
     """Native packet counts against what a client was told to send, by command id: a duplicate
     can leave positions identical, so counts are checked apart from movement. Only the named
-    ids count, since the engine sends commands of its own (foundation-ref8: seven kinds)."""
-    return [{"id": command, "expected": count, "observed": capture["packets"].get(command, 0)}
-            for command, count in expected.items() if capture["packets"].get(command, 0) != count]
+    ids count, since the engine sends commands of its own (foundation-ref8: seven kinds). A
+    packet after completed tick t belongs to t + 1 when ``interval`` limits the count."""
+    observed = collections.Counter(
+        row["id"] for row in capture["packet_rows"]
+        if interval is None or row["last_completed_tick"] is None
+        or row["last_completed_tick"] + 1 in interval)
+    return [{"id": command, "expected": count, "observed": observed[command]}
+            for command, count in expected.items() if observed[command] != count]

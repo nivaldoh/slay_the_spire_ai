@@ -577,6 +577,8 @@ def main() -> int:
 
         if bool(args.attempt) == bool(args.native):
             parser.error("give an attempt directory or --native, not both")
+        if args.attempt and (args.packets or args.start is not None or args.end is not None):
+            parser.error("--packets, --start and --end need --native")
         try:
             if args.native:
                 captures, expected = {}, {}

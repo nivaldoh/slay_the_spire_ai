@@ -64,6 +64,7 @@ function battle() {
     words.set(env.add(0x3b0).value, 0);
     words.set(env.add(0x3b1).value, 0);
     words.set(stream.add(0x5008).value, 100);
+    words.set(env.add(0x64720).value, 14);
 }
 const send_packet = () => {
     words.set(ui.add(0x15cf).value, 1);
@@ -107,6 +108,8 @@ step();
 assert.deepEqual(calls, [ui.value]);
 assert.equal(results().at(-1).status, 'submitted');
 assert.deepEqual(Array.from(results().at(-1).stream_offset), [100, 120]);
+assert.equal(results().at(-1).operation, 'ready_deployment');
+assert.equal(results().at(-1).last_completed_tick, 14);
 step();
 assert.deepEqual(calls, [ui.value], 'exactly one engine call');
 assert.equal(results().length, 1);

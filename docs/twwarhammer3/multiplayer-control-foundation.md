@@ -89,27 +89,35 @@ is agreed, and each row below rests on the n named.
 | Lobby ready | `CustomBattleLobbyContext.ToggleReady`, no component lookup; the flag follows after a delay | ref6, 1 run |
 | Button | Receiver `0x1c3bc48` compares the component name with `button_battle_start` | ref6, 1 click |
 | Sender | `0x1bfa108(battle interface [0x448f180])`, flag `+0x15cf` set before its checks | ref6, 1 click |
-| Command | `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` (id is the name's hash), written to input stream `env+0x644e8`; every typed command starts at `0x1bd09b0` | ref6 and ref8 |
+| Command | `BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE` (id is the name's hash), written to input stream `env+0x644e8`; every typed command starts at `0x1bd09b0` | Packet seen: ref6, 1 click. ref8: the adapter's call raised the stream offset 0 to 17 and execute ran; the passive packet hooks do not see that call |
 | Execution | Handler `0x2ed483c` gets `[env+0x440]`, counts at `[[env+0x440]+0x150]+0x9b8`, and sets countdown `+0x9b4` to 600 ticks; the count is anonymous | ref6 and ref8 |
 | End of deployment | `0x2db7cc0`: count reaches the human armies; the countdown suggests the engine does not wait forever | static only |
 | Phase | `[env+0x448]+0xc8`, a client-side copy, went 0, 3, 2, 4, 5, then 6, 8 at the ending; click at 4. Simulated phase `[state+0x28]` is recorded from the next capture on | ref6 and ref8 |
 | Outcome | `[0x448f208]+0x5d0` decided, `+0x5cc` zero-based winner; agreed with Lua's result | ref8, 1 battle |
-| Direct ready | Adapter's fixed call to the sender at `session_step`, no click and no component lookup; it needs the battle-interface object, so this does not show headless use | ref8, 1 battle |
-| Leave | Global `QuitToMainMenu`: the game logged `LEAVE GAME REQUEST OK`, `LEAVE SUCCESS`, and the frontend reloaded | ref6 and ref8 |
+| Direct ready | Adapter's fixed call to the sender at `session_step`, no click and no component lookup; it needs the battle-interface object, so this does not show headless use | ref8, 1 battle, at phase 0. Current code asks only in phase 4 and has not run live. No run withheld readiness, so this rests on the count row and timing, not on a control |
+| Leave | Global `QuitToMainMenu` | Ack ok and frontend reloaded, ref6 (from Deployed) and ref8 (from Complete). The game's own leave lines were read during ref6 and not kept |
 | Create, join | Not found below the panels: host request `0x21be4c8` takes widget-built parameters, `mp_automatch` sits in a debug frontend | none |
 
-Two results are not successes. **Warm reset failed once** (ref6): after leaving, the same
-process could not get back to the games list, though the session had left cleanly. **Two of
-five launches froze** (ref7 in the frontend, typed1 before its first frame) with the process
-alive; no cause is known. Passive-only references 1-4 did not freeze, so the adapter stays a
-suspect. The typed worker route (`typed_run.py`) therefore has no live run past `status`.
+Three results are not successes. **Warm reset failed its one attempt** (ref6): after leaving,
+the same process did not get back to the games list; the automatic steps failed at the multiplayer
+menu, two manual retries failed too, and the game was then closed by hand, so only the
+first failure is clean evidence. **Two of the four launches that reached the frontend stalled**:
+ref7 was about 100 s late at its multiplayer click, then silent for 149 s until stopped by hand;
+typed1 stopped logging 21 s after the capture was ready, its frontend script loaded, and it ended
+at its 270 s bound. The cause is unknown. The adapter, the five added passive hooks, fast
+relaunches and the earlier frontend hang with no probe (log, 2026-10-14) are all open.
+**The typed worker route has no live run past `status`**: typed1's `create_lobby` was written
+and its result is unknown. `ref5-load-refused` was a fifth launch, closed at load, since fixed.
 
-Raw witnesses at completed ticks matched Lua's unit rows on one client: ref8, 604 rows, ids
-exact, largest position gap 2.26 m, from comparing nearest ticks while units move. `compare-peers
---native` gives `agreed` for a capture against itself and `conflict` for ref8 against ref6 (118
-of 134 checksums differ); that shows it discriminates, not that two peers agree. Each
-is unverified for two clients: tick origins, unit identity and field comparability need one
-two-client reference.
+On one client, in ref8, raw witness ids and x, z matched Lua's unit rows: 604 rows, ids exact,
+and on the 212 rows at equal times x and z agree within 5e-12. The largest gap elsewhere, 2.26 m
+on an axis, comes from Lua and the witness being up to 200 ms apart on moving units. Men and bearing
+matched at two snapshots. Hit points did not: that capture's words were not hit points (the
+maximum and a zero), so the current code sums soldiers instead, which has not run live.
+`compare-peers --native` gives `agreed` for a capture against itself and `conflict` for ref8
+against ref6 (118 of 134 checksums differ, from tick 16); that shows it tells two different
+battles apart, not that two peers agree. Tick origins, unit identity and field comparability
+all need one two-client reference.
 
 ## Owner decisions and completion
 

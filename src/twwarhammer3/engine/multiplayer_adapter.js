@@ -20,7 +20,8 @@ const BUILD = {
 const VTABLE = {session: 0x3ab9b38};
 const GLOBAL = {battle_interface: 0x448f180};
 const SESSION = {env: 0x20};
-const ENV = {setup: 0x448, provider: 0x644e8, network: 0x645c8, flag_a: 0x3b0, flag_b: 0x3b1};
+const ENV = {setup: 0x448, provider: 0x644e8, network: 0x645c8, flag_a: 0x3b0, flag_b: 0x3b1,
+             tick: 0x64720};
 const UI = {env: 0x418, deployment_flag: 0x15cf};
 const SETUP = {phase: 0xc8};
 const PROVIDER = {write_offset: 0x5008};
@@ -81,9 +82,11 @@ function run(request, session) {
     const before = offset();
     endDeployment(state.ui);
     const after = offset();
-    record('operation_result', {request: request.request,
+    // The passive agent's hooks do not fire for this call, so this row is its only trace.
+    record('operation_result', {request: request.request, operation: 'ready_deployment',
                                 status: after > before ? 'submitted' : 'unknown',
-                                stream_offset: [before, after]});
+                                stream_offset: [before, after],
+                                last_completed_tick: state.env.add(ENV.tick).readU32()});
 }
 function expire() {
     if (!pending || Date.now() <= pending.deadline) return;

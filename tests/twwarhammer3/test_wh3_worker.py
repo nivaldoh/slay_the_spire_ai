@@ -789,3 +789,54 @@ def test_each_frontend_load_is_reported_once():
     mailbox.text += b"frontend loaded for job j\n"
     client.watch()
     assert len(link.events) == 2
+
+
+def test_a_failed_read_after_toggle_ready_is_unknown_never_rejected():
+    tail = ("step 2: command CustomBattleLobbyContext.ToggleReady\n"
+            "step 3: failed: flag is false\nmenu req: failed\n")
+    client = worker.Worker(RecordingLink(), FakeMenuMailbox(tail), "control", menu=True)
+    with pytest.raises(TimeoutError, match="unknown effect"):
+        client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready", "ready": True}})
+
+
+def test_a_new_battle_outranks_a_failed_readiness_read():
+    tail = ("step 2: command CustomBattleLobbyContext.ToggleReady\n"
+            "step 3: failed: no context\nmenu req: failed\n")
+    link = RecordingLink()
+    client = worker.Worker(link, FakeMenuMailbox(tail), "control", menu=True)
+    client.latest = {"battle": "new"}
+    client.mailbox.log_offset = lambda name: setattr(client, "latest", {"battle": "newer"}) or 0
+    assert client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready",
+                                                 "ready": True}}) == "submitted"
+
+
+def test_commands_wait_for_the_mailbox_reset_of_an_owned_session(tmp_path, install, monkeypatch):
+    order = []
+    real_start, real_reset = worker.WorkerLink.start, worker.Mailbox.reset
+    monkeypatch.setattr(worker.WorkerLink, "start",
+                        lambda self, fn: (order.append("commands"), real_start(self, fn))[1])
+    monkeypatch.setattr(worker.Mailbox, "reset",
+                        lambda self: (order.append("reset"), real_reset(self))[1])
+
+    class Game:
+        info = {"pid": 1}
+        process = type("Process", (), {"poll": staticmethod(lambda: 0)})
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    monkeypatch.setattr(worker.runtime, "OwnedGame", Game)
+    monkeypatch.setattr(worker.runtime, "prepare_runtime", lambda: {})
+    monkeypatch.setattr(worker.runtime, "BRIDGE_DIR", tmp_path / "bridge")
+    (tmp_path / "bridge").mkdir()
+    monkeypatch.setattr(worker.runtime, "RuntimeLock", contextlib.nullcontext)
+    with serve(tmp_path) as coordinator:
+        thread, result = start(coordinator, tmp_path / "bridge", attach=False)
+        thread.join(10)
+    assert order[:2] == ["reset", "commands"]
