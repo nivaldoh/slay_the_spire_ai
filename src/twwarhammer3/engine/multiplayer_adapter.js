@@ -10,9 +10,12 @@
 // passive agent's end_deployment_execute row shows the engine's count, which is anonymous.
 'use strict';
 
+const ENTRY = {session_step: 0x2d78568, end_deployment: 0x1bfa108};
+// Checked 0x20 bytes in: the passive agent, loaded first in this session, has already patched
+// both entries (foundation-ref5 refused on a signature at the entry, 2026-11-04).
 const BUILD = {
-    session_step: ['0x2d78568', '48895c241048896c2418565741544156'],
-    end_deployment: ['0x1bfa108', '4c8bdc49895b0849896b104989731849'],
+    session_step: ['0x2d78588', '30488bf1ff904801000084c00f843a01'],
+    end_deployment: ['0x1bfa128', '488bd90f8521010000c681cf15000001'],
 };
 const VTABLE = {session: 0x3ab9b38};
 const GLOBAL = {battle_interface: 0x448f180};
@@ -26,13 +29,12 @@ const REQUEST_MS = 30000;   // rests on JUDGEMENT? multiplayer_adapter.py Reques
 const main = Process.getModuleByName('Warhammer3.exe');
 const hex = bytes => Array.from(new Uint8Array(bytes))
     .map(b => b.toString(16).padStart(2, '0')).join('');
-const addresses = {};
 for (const [name, [rva, bytes]] of Object.entries(BUILD)) {
-    const address = main.base.add(rva);
-    if (hex(address.readByteArray(bytes.length / 2)) !== bytes)
+    if (hex(main.base.add(rva).readByteArray(bytes.length / 2)) !== bytes)
         throw new Error('Unsupported multiplayer adapter signature: ' + name);
-    addresses[name] = address;
 }
+const addresses = {session_step: main.base.add(ENTRY.session_step),
+                    end_deployment: main.base.add(ENTRY.end_deployment)};
 const endDeployment = new NativeFunction(addresses.end_deployment, 'void', ['pointer']);
 
 let sequence = 0, pending = null;
