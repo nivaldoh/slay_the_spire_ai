@@ -193,6 +193,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 `src/twwarhammer3/battle/`, jobs and controllers:
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
 - `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
+- `src/twwarhammer3/battle/suite.py`: the coordination suite: arms, plans, measures and comparison
+- `src/twwarhammer3/battle/reference.py`: `Concentrate`, the suite's scripted coordinated reference
 - `src/twwarhammer3/battle/setup.py`: scenarios with `base` inheritance, lobby steps,
   benchmark checks; its docstring is the scenario field reference
 - `src/twwarhammer3/battle/controllers.py`: policy names, model prompts, rotation, outside
@@ -201,7 +203,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/commander.py`: asynchronous API model over skills
 - `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
 - `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
-- `src/twwarhammer3/battle/team.py`: two independent members sharing one army and one mailbox
+- `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition
 - `src/twwarhammer3/battle/graph.py`: resumable graph nodes
 - `src/twwarhammer3/battle/skill_contracts.py`: typed skills and public effect witnesses
