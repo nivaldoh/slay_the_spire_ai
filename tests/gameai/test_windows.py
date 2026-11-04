@@ -391,3 +391,56 @@ def test_native_windows_controller_locks_and_owns_a_child_without_wsl_tools():
         "child_stopped": True,
         "log_copied": True,
     }
+
+
+# What a native reader must allow (twwarhammer3_battle.lua publish(): write the temporary file,
+# remove the target, rename the temporary file onto it) while it holds the target open.
+SHARED_OPEN = r"""
+import json, os, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from gameai import windows
+def replace_while_open(opener):
+    folder = Path(tempfile.mkdtemp(prefix="gameai-share-"))
+    target, temporary = folder / "observation.json", folder / "observation.json.tmp"
+    target.write_text("old")
+    with opener(target) as reader:
+        temporary.write_text("new")
+        try:
+            os.remove(target)
+        except OSError:
+            pass
+        try:
+            os.rename(temporary, target)
+            outcome = "replaced"
+        except FileExistsError:
+            outcome = "file exists"
+        stamp = os.fstat(reader.fileno()).st_mtime_ns
+        held = reader.read().decode()
+    return {"outcome": outcome, "held": held, "now": target.read_text(), "stamp": stamp > 0}
+missing = None
+try:
+    windows.open_shared(Path(tempfile.gettempdir()) / "gameai-no-such-file.json")
+except FileNotFoundError:
+    missing = "FileNotFoundError"
+print(json.dumps({"plain": replace_while_open(lambda path: open(path, "rb")),
+                  "shared": replace_while_open(windows.open_shared), "missing": missing}))
+"""
+
+
+@pytest.mark.skipif(
+    os.environ.get("GAMEAI_TEST_WINDOWS") != "1" or not windows.WINDOWS_PYTHON.exists(),
+    reason="set GAMEAI_TEST_WINDOWS=1 on WSL to test file sharing under native Windows Python",
+)
+def test_a_shared_native_read_lets_the_game_replace_the_file_a_plain_open_blocks():
+    # The 2026-11-03 VM battles each lost one observation this way ("rename failed: ... File
+    # exists"); the plain case shows this test can see the failure.
+    source = subprocess.check_output(
+        ["wslpath", "-w", str(Path(windows.__file__).parents[1])], text=True).strip()
+    output = subprocess.check_output(
+        [str(windows.WINDOWS_PYTHON), "-B", "-c", SHARED_OPEN, source], text=True, timeout=120,
+        cwd="/mnt/c")
+    assert json.loads(output) == {
+        "plain": {"outcome": "file exists", "held": "old", "now": "old", "stamp": True},
+        "shared": {"outcome": "replaced", "held": "old", "now": "new", "stamp": True},
+        "missing": "FileNotFoundError"}

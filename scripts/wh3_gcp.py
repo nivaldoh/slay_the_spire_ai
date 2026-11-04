@@ -97,8 +97,9 @@ def plan(args, cloud, now):
     if not re.fullmatch(r"windows-server-2022-dc-v[0-9]{8}", args.image):
         raise ValueError("Use a pinned Windows Server 2022 image matching the quote")
     budget, spent, reserve = map(positive, (args.budget_usd, args.spent_usd, args.reserve_usd))
-    if not 0 < budget <= 5 or reserve < 1:
-        raise ValueError("Current boundary: at most $5 total, with at least $1 reserved")
+    # Owner, 2026-11-03: "$10 for now" (docs/owner-direction.md), a new allowance from $0.
+    if not 0 < budget <= 10 or reserve < 1:
+        raise ValueError("Current boundary: at most $10 total, with at least $1 reserved")
     quote = json.loads(args.quotes.read_text())
     # JUDGEMENT: Quote age — Codex, 2026-11-02: refuse rates older than one day.
     # A longer validity period avoids refresh work but risks using changed prices.
@@ -106,6 +107,19 @@ def plan(args, cloud, now):
             quote["quoted_at"]) <= timedelta(days=1):
         raise ValueError("Refresh the USD regional quotes; they must be at most 24 hours old")
     regions = args.regions.split(",") if args.regions else list(quote["regions"])
+    disk, disk_zone = getattr(args, "disk", None), None
+    if disk:
+        # A kept game disk boots only in its own zone; the VM gets another name, so the
+        # cleanup workflow (which deletes the VM and a disk of the VM's name) never names it.
+        if disk == args.name:
+            raise ValueError("Name the VM differently from the kept disk it boots")
+        rows = cloud.call("compute", "disks", "list", f"--filter=name={disk}")
+        if not isinstance(rows, list) or len(rows) != 1:
+            raise ValueError(f"Disk {disk} is not exactly one disk in {PROJECT}")
+        if rows[0].get("users"):
+            raise ValueError(f"Disk {disk} is attached to {rows[0]['users']}")
+        disk_zone = rows[0]["zone"].rsplit("/", 1)[-1]
+        regions = [disk_zone.rsplit("-", 1)[0]]
     unknown = set(regions) - quote["regions"].keys()
     if unknown:
         raise ValueError(f"Quote these regions before adding them: {sorted(unknown)}")
@@ -113,11 +127,14 @@ def plan(args, cloud, now):
     machines = cloud.call("compute", "machine-types", "list", f"--filter=name={MACHINE}")
     ordered, skipped = candidates(quote["regions"], regions, accelerators, machines,
                                   (deadline - now).total_seconds() / 3600, budget, spent, reserve)
+    if disk:
+        ordered = [c for c in ordered if c["zone"] == disk_zone]
     return {"project": PROJECT, "name": args.name, "created_at": now.isoformat(),
             "deadline": deadline.isoformat(),
             "native_deadline": (deadline - timedelta(minutes=5)).isoformat(),
             "budget_usd": budget, "spent_usd": spent, "reserve_usd": reserve,
-            "image": args.image, "quotes": quote, "candidates": ordered, "skipped": skipped}
+            "image": args.image, "disk": disk, "quotes": quote, "candidates": ordered,
+            "skipped": skipped}
 
 
 def absent(cloud, name):
@@ -159,17 +176,21 @@ def arm(cloud, session, zone, directory):
 
 
 def create_args(session, zone):
+    if session.get("disk"):  # set up already: no image, no first-boot script; disk kept
+        boot = [f"--disk=name={session['disk']},boot=yes,auto-delete=no"]
+    else:
+        boot = ["--image-project=windows-cloud", "--image=" + session["image"],
+                "--boot-disk-size=250GB", "--boot-disk-type=pd-balanced",
+                "--boot-disk-auto-delete",
+                f"--metadata-from-file=sysprep-specialize-script-ps1={BOOTSTRAP}"]
     return ["compute", "instances", "create", session["name"], f"--zone={zone}",
             f"--machine-type={MACHINE}", f"--accelerator=type={GPU},count=1",
             "--maintenance-policy=TERMINATE", "--provisioning-model=STANDARD",
             "--no-restart-on-failure", "--termination-time=" + session["native_deadline"],
-            "--instance-termination-action=DELETE", "--image-project=windows-cloud",
-            "--image=" + session["image"], "--boot-disk-size=250GB",
-            "--boot-disk-type=pd-balanced", "--boot-disk-auto-delete",
+            "--instance-termination-action=DELETE", *boot,
             "--no-enable-display-device", "--no-deletion-protection", "--tags=wh3-worker",
             f"--service-account=wh3-vm@{PROJECT}.iam.gserviceaccount.com",
             "--scopes=cloud-platform", "--metadata=enable-windows-ssh=TRUE",
-            f"--metadata-from-file=sysprep-specialize-script-ps1={BOOTSTRAP}",
             "--labels=purpose=wh3-compatibility"]
 
 
@@ -231,7 +252,8 @@ def provision(session, cloud, output, now=lambda: datetime.now(UTC)):
                 continue
             if (len(vm) != 1 or vm[0]["name"] != session["name"]
                     or vm[0]["zone"].rsplit("/", 1)[-1] != zone
-                    or not all(d["autoDelete"] for d in vm[0]["disks"])
+                    or [d["autoDelete"] for d in vm[0]["disks"]]
+                    != ([False] if session.get("disk") else [True] * len(vm[0]["disks"]))
                     or vm[0]["scheduling"]["instanceTerminationAction"] != "DELETE"
                     or timestamp(vm[0]["scheduling"]["terminationTime"])
                     != timestamp(session["native_deadline"])):
@@ -262,6 +284,8 @@ def main():
     # failed-attempt storage. Smaller reserves admit dearer regions; neither is a hard cap.
     parser.add_argument("--reserve-usd", type=float, default=1)
     parser.add_argument("--image", default="windows-server-2022-dc-v20261026")
+    parser.add_argument("--disk", help="boot this kept game disk (its zone only) instead of"
+                        " a new image; the VM's deletion keeps it")
     parser.add_argument("--output", type=Path, help="new evidence directory under runs/")
     parser.add_argument("--create", action="store_true", help="provision; default only previews")
     args = parser.parse_args()

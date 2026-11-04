@@ -156,6 +156,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
+from gameai import windows
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
 SCHEMA = 1
@@ -263,7 +264,7 @@ class Mailbox:
         is the NTFS time the Windows clock stamped (in 100 ns units), which WSL's slow clocks
         do not touch."""
         try:
-            with (self.directory / "observation.json").open("rb") as file:
+            with windows.open_shared(self.directory / "observation.json") as file:
                 data, written_ns = file.read(), os.fstat(file.fileno()).st_mtime_ns
             observation = json.loads(data)
         except (OSError, ValueError):

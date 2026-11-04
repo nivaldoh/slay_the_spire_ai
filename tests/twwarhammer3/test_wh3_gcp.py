@@ -51,8 +51,11 @@ class Cloud:
                     self.leftover = "disks"
                 error = CAPACITY if outcome in ("stockout", "leak") else f"code: {outcome}\n"
                 raise gcp.CommandError(subprocess.CompletedProcess(args, 1, "", error))
+            kept = next((x for x in args if x.startswith("--disk=")), None)
+            auto_delete = "auto-delete=yes" in kept if kept else True
             return [{"name": "wh3-test", "zone": "zones/" + flag(args, "--zone"),
-                     "disks": [{"autoDelete": outcome != "bad_disk"}], "scheduling": {
+                     "disks": [{"autoDelete": auto_delete != (outcome == "bad_disk")}],
+                     "scheduling": {
                          "instanceTerminationAction": "DELETE",
                          "terminationTime": flag(args, "--termination-time")}}]
         return {}
@@ -208,7 +211,7 @@ def test_invalid_spend_plan_stops_before_cloud_calls(tmp_path, change):
     elif change == "unquoted":
         args.regions = "unpriced-region"
     elif change == "budget":
-        args.budget_usd = 6
+        args.budget_usd = 11
     else:
         args.spent_usd = float("nan")
     cloud = Cloud()
@@ -234,3 +237,67 @@ def test_gcloud_always_selects_project_and_retains_failure_evidence(tmp_path, mo
 def test_capacity_code_inside_unrelated_error_message_is_not_retried():
     message = "Permission denied: message mentions ZONE_RESOURCE_POOL_EXHAUSTED"
     assert not gcp.STOCKOUT.search(message)
+
+
+class DiskCloud(Cloud):
+    """A project holding one kept game disk; G2 machines and L4 GPUs in three zones."""
+
+    def __init__(self, outcomes=(), users=None):
+        super().__init__(outcomes)
+        self.users = users
+
+    def call(self, *args, **kwargs):
+        if args[:3] == ("compute", "disks", "list") and args[3] == "--filter=name=wh3-keep":
+            self.calls.append(args)
+            return [{"name": "wh3-keep", "zone": "projects/p/zones/us-west1-c",
+                     **({"users": self.users} if self.users else {})}]
+        if args[:2] in (("compute", "accelerator-types"), ("compute", "machine-types")):
+            self.calls.append(args)
+            name = gcp.GPU if args[1] == "accelerator-types" else gcp.MACHINE
+            return [{"name": name, "zone": f"zones/{zone}"}
+                    for zone in ("us-west1-a", "us-west1-c", "us-east1-b")]
+        return super().call(*args, **kwargs)
+
+
+def disk_arguments(tmp_path):
+    args = arguments(tmp_path)
+    quote = json.loads(args.quotes.read_text())
+    quote["regions"]["us-west1"] = {"hourly_usd": 1.1}
+    args.quotes.write_text(json.dumps(quote))
+    args.disk, args.budget_usd = "wh3-keep", 10
+    return args
+
+
+def test_a_kept_disk_boots_only_in_its_zone_without_an_image_and_is_never_deleted(tmp_path):
+    cloud = DiskCloud(["stockout"])
+    plan = gcp.plan(disk_arguments(tmp_path), cloud, NOW)
+    assert [c["zone"] for c in plan["candidates"]] == ["us-west1-c"]
+    state = gcp.provision(plan, cloud, tmp_path / "s1", now=lambda: NOW)
+    assert state["status"] == "exhausted"  # one zone: a stockout is not retried elsewhere
+    cloud = DiskCloud(["success"])
+    state = gcp.provision(gcp.plan(disk_arguments(tmp_path), cloud, NOW), cloud,
+                          tmp_path / "s2", now=lambda: NOW)
+    assert state["status"] == "created" and state["selected"] == "us-west1-c"
+    [request] = creates(cloud)
+    assert "--disk=name=wh3-keep,boot=yes,auto-delete=no" in request
+    assert not [x for x in request if x.startswith(("--image", "--boot-disk", "--metadata-from"))]
+    # The cleanup workflow deletes the VM and a disk named after the VM, never the kept disk.
+    assert cloud.sources and all("wh3-keep" not in source for source in cloud.sources)
+
+
+def test_a_kept_disk_whose_vm_would_delete_it_is_refused(tmp_path):
+    cloud = DiskCloud(["bad_disk"])
+    with pytest.raises(RuntimeError, match="differs from its deletion plan"):
+        gcp.provision(gcp.plan(disk_arguments(tmp_path), cloud, NOW), cloud, tmp_path / "s",
+                      now=lambda: NOW)
+
+
+@pytest.mark.parametrize("problem", ["attached", "same name"])
+def test_an_attached_or_same_named_kept_disk_stops_before_any_mutation(tmp_path, problem):
+    args = disk_arguments(tmp_path)
+    if problem == "same name":
+        args.name = "wh3-keep"
+    cloud = DiskCloud(users=["zones/us-west1-c/instances/other"] if problem == "attached" else None)
+    with pytest.raises(ValueError):
+        gcp.plan(args, cloud, NOW)
+    assert all(call[1] in ("disks", "accelerator-types", "machine-types") for call in cloud.calls)

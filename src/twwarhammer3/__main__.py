@@ -127,6 +127,9 @@ def main() -> int:
     worker.add_argument("--attach", action="store_true",
                         help="borrow a running game's bridge and session; launch nothing")
     worker.add_argument("--bridge", type=Path, help="with --attach: the bridge folder")
+    worker.add_argument("--menu", action="store_true",
+                        help="owned session only: let the frontend run menu.json steps"
+                        " (twwarhammer3 menu), as for lobby setup")
     worker.add_argument("--max-minutes", type=float, default=None,
                         help="stop the worker and its game after this long"
                         " (default: MAX_MINUTES in engine/worker.py)")
@@ -348,7 +351,8 @@ def main() -> int:
             return run(args.coordinator, args.token_file.read_text().strip(), match=args.match,
                        attempt=args.attempt, client=args.client, mode=args.mode,
                        attach=args.attach, bridge=args.bridge or runtime.BRIDGE_DIR,
-                       max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes))
+                       max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes),
+                       menu=args.menu)
         except (RuntimeError, OSError, ValueError) as error:
             print(f"worker: {error}", file=sys.stderr)
             return 1

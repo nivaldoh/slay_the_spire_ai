@@ -422,3 +422,88 @@ def test_each_observation_carries_the_engines_speed_reading(multiplayer):
     g.callbacks["twwarhammer3_tick"]()
     assert observation(g)["speed"] == 0.5
     assert list(g.trapped.values()) == []
+
+
+def published_times(g, move, ticks):
+    """Battle times of the observations published as the tick runs at each of `ticks`, with
+    one move acknowledged at the second tick (the tick then applies it and publishes)."""
+    g.now = ticks[0]
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    times, seen = [observation(g)["time_ms"]], observation(g)
+    for k, now in enumerate(ticks[1:]):
+        if k == 0:
+            send(g, "orders.json", {"battle": seen["battle"], "request": "r1",
+                                    "based_on": seen["seq"], "orders": [move]})
+        g.now = now
+        g.callbacks["twwarhammer3_tick"]()
+        if observation(g)["time_ms"] != times[-1]:
+            times.append(observation(g)["time_ms"])
+    return times
+
+
+TICKS = [1000, 1300, 1600, 1900, 2200, 2500, 2800, 3100]
+
+
+def test_multiplayer_observations_keep_a_grid_that_an_acknowledgement_does_not_move():
+    # Two clients publish at the same battle times only if an order's acknowledgement (here
+    # at 1300) does not push the regular observation back (mp-next-steps.md, step 2).
+    g = battle({"multiplayer": "control", "observe_ms": 1000}, "grant(own)")
+    move = {"unit": "f1", "type": "move", "x": 10, "z": 20}
+    assert published_times(g, move, TICKS) == [1000, 1300, 2200, 3100]
+
+
+def test_single_player_observation_timing_is_unchanged():
+    # Outside multiplayer the acknowledgement still restarts the 1000 ms wait.
+    g = battle({"observe_ms": 1000}, """
+        is_multiplayer = false
+        grant(allies)
+        bm.modify_battle_speed = function() end
+    """)
+    move = {"unit": "f1", "type": "move", "x": 10, "z": 20}
+    assert published_times(g, move, TICKS) == [1000, 1300, 2500]
+
+
+READY = """
+    phase = "Deployment"
+    bm.get_current_phase_name = function() return phase end
+    clicks = 0
+    function find_uicomponent(_, name)
+        assert(name == "button_battle_start")
+        return {SimulateLClick = function() clicks = clicks + 1 end}
+    end
+"""
+
+
+def ready(g, request="q1"):
+    loading = observation(g)
+    send(g, "orders.json", {"battle": loading["battle"], "request": request, "control": "ready"})
+    return observation(g)
+
+
+def test_control_ready_presses_this_clients_start_battle_in_multiplayer_deployment():
+    g = battle({"multiplayer": "control"}, READY)
+    seen = ready(g)
+    assert g.clicks == 1 and list(g.trapped.values()) == []
+    assert seen["seq"] == 1 and seen["phase"] == "Deployment"
+    assert seen["orders"]["request"] == "q1"
+    assert seen["orders"]["results"] == [{"index": 1, "control": "ready", "ok": True}]
+    assert "multiplayer ready: clicked" in logged(g)
+    # Once the battle has started it no longer clicks.
+    g.phase = "Deployed"
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    send(g, "orders.json", {"battle": seen["battle"], "request": "q2", "control": "ready"})
+    g.callbacks["twwarhammer3_tick"]()
+    assert g.clicks == 1
+    assert observation(g)["orders"]["results"][0]["error"] == "not_deployment"
+
+
+@pytest.mark.parametrize("mode,setup,expected", [
+    ("control", "is_multiplayer = false", "multiplayer ready: single_player"),
+    ("observe", "", "observe: dropped orders.json"),
+])
+def test_ready_is_refused_in_single_player_and_in_observe(mode, setup, expected):
+    g = battle({"multiplayer": mode}, READY + setup)
+    ready(g)
+    assert g.clicks == 0 and expected in logged(g) and list(g.trapped.values()) == []

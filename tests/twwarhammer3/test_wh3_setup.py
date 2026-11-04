@@ -627,3 +627,24 @@ def test_a_failed_menu_step_stops_setup(tmp_path):
     (tmp_path / "menu.log").write_text("step 3: button_battle not found: lobby changed\n")
     with pytest.raises(ProtocolError, match="failed menu step"):
         setup.check_menu({"map": "m"}, tmp_path)
+
+
+# The PC's mp_log.txt lines of the 2026-11-03 battle 1, some source prefixes cut: a lobby left,
+# the lobby the VM joined, then the lobby made at battle start (no ghost line).
+HOST_LOG = """\
+[22:33:15][CW NOTICE]  Steam ghost lobby created for 95c0: 1/0 -> 109775243383243838
+[22:33:15][mp_steam_controller.cpp 2150] created lobby id 491085383233547170
+[22:33:24][CW NOTICE]  left EOS lobby ID 95c0
+[22:33:37][CW NOTICE]  Steam ghost lobby created for 259a: 1/0 -> 109775243383244593
+[22:33:37][mp_steam_controller.cpp 2150] created lobby id 11956461714116990254
+[22:34:36]player 10329449572442569510 joined in slot 1 [alliance 1] [army 0]
+[22:39:20][mp_steam_controller.cpp 2150] created lobby id 3658989883024854637
+"""
+
+
+def test_lobby_ids_pick_the_newest_hosted_lobby_not_the_battle_start_one():
+    assert setup.lobby_ids(HOST_LOG) == {"lobby": "11956461714116990254",
+                                         "steam_lobby": "109775243383244593"}
+    assert setup.lobby_ids(HOST_LOG.split("[22:33:37]")[0]) == {
+        "lobby": "491085383233547170", "steam_lobby": "109775243383243838"}
+    assert setup.lobby_ids("[22:39:20] created lobby id 3658989883024854637\n") is None

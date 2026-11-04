@@ -40,6 +40,32 @@ def windows_path(path: Path) -> str:
     return f"{parts[2].upper()}:/" + "/".join(parts[3:])
 
 
+def open_shared(path: Path):
+    """``path`` opened for binary reading. Natively it is opened with read, write and delete
+    sharing, so a game script may remove and replace the file while it is open: a plain
+    ``open`` makes that remove fail (sharing violation) and the replacing rename then finds the
+    file still there (measured on Windows 11, 2026-11-03; docs/twwarhammer3/mp-next-steps.md,
+    step 2). Under WSL the file is opened normally."""
+    if not NATIVE:
+        return open(path, "rb")
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateFileW.restype = wintypes.HANDLE
+    kernel32.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                     wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD,
+                                     wintypes.HANDLE]
+    generic_read, share_all, open_existing, normal = 0x80000000, 0x7, 3, 0x80
+    handle = kernel32.CreateFileW(str(path), generic_read, share_all, None, open_existing,
+                                  normal, None)
+    if handle == wintypes.HANDLE(-1).value:
+        error = ctypes.get_last_error()
+        if error in (2, 3):  # ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND
+            raise FileNotFoundError(2, "No such file", str(path))
+        raise ctypes.WinError(error)
+    return os.fdopen(msvcrt.open_osfhandle(handle, os.O_RDONLY | os.O_BINARY), "rb")
+
+
 class RuntimeLock:
     """One controller at a time, held around runtime preparation and the owned game.
 

@@ -1215,6 +1215,39 @@ local function try_end_deployment()
     log("start button click: " .. (clicked and "ok" or clean_error(err2)))
 end
 
+-- Multiplayer control: press this client's own Start Battle during deployment (owner,
+-- 2026-11-03, docs/twwarhammer3/mp-next-steps.md decision 1). The battle starts when every
+-- player has pressed it. Never end_current_battle_phase, which would act for every peer.
+-- The tick does not run before the battle starts, so the acknowledgement goes out in a
+-- minimal observation like the Loading one.
+local function ready(message)
+    local result = {index = 1, control = "ready", ok = false}
+    if not get(bm.battle, "is_multiplayer", false) then
+        result.error = "single_player"
+    elseif state.started or bm:get_current_phase_name() ~= "Deployment" then
+        result.error = "not_deployment"
+    else
+        local clicked, err = pcall(function()
+            local button = find_uicomponent(core:get_ui_root(), "button_battle_start")
+            if not button then error("button_battle_start not found") end
+            button:SimulateLClick()
+        end)
+        result.ok = clicked
+        if not clicked then result.error = clean_error(err) end
+    end
+    log("multiplayer ready: " .. (result.ok and "clicked" or result.error))
+    local now = battle_time()
+    state.applied = {request = message.request, based_on = message.based_on, applied_ms = now,
+                     results = {result}}
+    if state.started then state.force_observe = true; return end
+    state.seq = state.seq + 1
+    publish("observation.json", {
+        schema = 1, job = session.job, battle = state.battle, seq = state.seq,
+        phase = bm:get_current_phase_name(), time_ms = now, speed = 1, awaiting_orders = false,
+        friendly = {}, enemy_roster = {}, enemy = {}, orders = state.applied,
+    })
+end
+
 local function finish()
     if state.finished then return end
     local battle = bm.battle
@@ -1405,7 +1438,15 @@ local function tick()
     end
     if state.force_observe or now >= state.next_observe_ms then
         state.force_observe = false
-        state.next_observe_ms = now + (session.observe_ms or 1000)
+        local step = session.observe_ms or 1000
+        if not state.multiplayer then
+            state.next_observe_ms = now + step
+        elseif now >= state.next_observe_ms then
+            -- Multiplayer: a fixed battle-time grid that an acknowledgement does not move, so
+            -- every client publishes at the same times (docs/twwarhammer3/mp-next-steps.md).
+            repeat state.next_observe_ms = state.next_observe_ms + math.max(step, 1)
+            until state.next_observe_ms > now
+        end
         publish_observation(now)
     end
     record_replay(now, false)
@@ -1462,7 +1503,10 @@ local function poll()
         return
     end
     state.last_request = message.request
-    if message.control and state.multiplayer then
+    if message.control == "ready" and state.multiplayer == "control" then
+        ready(message)
+        return
+    elseif message.control and state.multiplayer then
         log("multiplayer: refused control " .. tostring(message.control))
         return
     elseif message.control == "restart" then

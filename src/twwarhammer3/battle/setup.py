@@ -310,6 +310,25 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
     ]
 
 
+# A host's mp_log.txt (runtime.user_dir() / "logs"): each hosted lobby logs its Steam lobby
+# ("ghost lobby") just before the game's own lobby id. The lobby made when the battle starts
+# logs no ghost line, so the newest pair is the lobby a joiner sees (2026-11-03 logs).
+LOBBY_LINES = re.compile(r"Steam ghost lobby created for \w+: \S+ -> (\d+)"
+                         r"|created lobby id (\d+)")
+
+
+def lobby_ids(text: str) -> dict | None:
+    """The newest joinable lobby in a host's mp_log.txt text, as {"lobby", "steam_lobby"}, or
+    None (docs/twwarhammer3/mp-next-steps.md, step 1)."""
+    found = ghost = None
+    for match in LOBBY_LINES.finditer(text):
+        if match[1]:
+            ghost = match[1]
+        elif ghost:
+            found, ghost = {"lobby": match[2], "steam_lobby": ghost}, None
+    return found
+
+
 def battle_units(army: dict) -> list[str]:
     """Recruitment cards become their declared mounted variants in battle."""
     units = list(army["units"])

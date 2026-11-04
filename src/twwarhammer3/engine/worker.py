@@ -25,6 +25,9 @@ included: evidence for the coordinator, never a policy view) with the file's wri
 ``control`` a command body ``{"based_on", "orders"}`` is accepted only with unqueued ``move``
 orders that ``protocol.validate_orders`` allows in the latest observation; it is written to
 ``orders.json`` and reported ``submitted`` only once an observation's ``orders.request`` names it.
+The body ``{"control": "ready"}`` (``READY``) is written and acknowledged the same way; the battle
+Lua then presses this client's own Start Battle, during deployment only. ``--menu`` adds
+``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup).
 Without that acknowledgement within ``ACK_S`` its effect is unknown and the worker stops. When
 the lease ends, the worker closes an owned game, removes its session, closes the link and exits
 1; a borrowed game keeps running. An owned game that exits ends the worker too (1); on that or
@@ -69,6 +72,9 @@ SESSION = {"enabled": True, "observe_ms": 1000, "tick_ms": 250, "record_replay":
 # request (the Lua reads orders.json every 200 ms and answers at its next tick). A shorter bound
 # stops a match on a slow frame; a longer one acts on an unknown effect later.
 ACK_S = 10.0
+# Owner, 2026-11-03 (mp-next-steps.md decision 1): the one control a control client may send,
+# pressing its own Start Battle in deployment; acknowledged like a move.
+READY = {"control": "ready"}
 # JUDGEMENT?: worker run bound — Claude, 2026-10-30: 240 minutes, launch's default game timeout;
 # the worker and its owned game stop then. A shorter bound can cut a long match short.
 MAX_MINUTES = 240
@@ -168,6 +174,8 @@ class Worker:
     def refusal(self, body, observation: dict | None) -> str | None:
         if self.mode != "control":
             return "observe mode takes no commands"
+        if body == READY:
+            return None if observation is not None else "no observation yet"
         if not isinstance(body, dict) or set(body) != {"based_on", "orders"}:
             return 'a command is {"based_on", "orders"}'
         orders = body["orders"]
@@ -192,8 +200,12 @@ class Worker:
         if reason:
             self.link.event("command", {"seq": seq, "status": "rejected", "reason": reason})
             return "rejected"
-        request = self.mailbox.write_orders(observation["battle"], body["based_on"],
-                                            body["orders"], timeout=self.ack_s)
+        if body == READY:
+            request = self.mailbox.write_control(observation["battle"], "ready",
+                                                 timeout=self.ack_s)
+        else:
+            request = self.mailbox.write_orders(observation["battle"], body["based_on"],
+                                                body["orders"], timeout=self.ack_s)
         self.link.event("command", {"seq": seq, "status": "written", "request": request})
         deadline = time.monotonic() + self.ack_s
         with self._changed:
@@ -210,12 +222,14 @@ class Worker:
 
 
 def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: str,
-        attach: bool, bridge: Path, max_s: float, ack_s: float = ACK_S,
+        attach: bool, bridge: Path, max_s: float, ack_s: float = ACK_S, menu: bool = False,
         **link_settings) -> int:
     """One worker until its lease ends (1), its owned game exits (1) or ``max_s`` passes (0)."""
     check_names(match, attempt)
     if mode not in MODES:
         raise ValueError(f"mode is one of {MODES}")
+    if menu and attach:
+        raise ValueError("--menu applies to an owned session; an attached worker writes none")
     stopped = threading.Event()
     link = WorkerLink(url, token, match=match, attempt=attempt, client=client,
                       manifest=host_manifest(), stop=stopped.set, **link_settings)
@@ -241,7 +255,7 @@ def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: st
                 stack.enter_context(runtime.RuntimeLock())
                 link.event("runtime", runtime.prepare_runtime())
                 mailbox.reset()
-                session = {**SESSION, "multiplayer": mode}
+                session = {**SESSION, "multiplayer": mode, **({"menu": True} if menu else {})}
                 stack.enter_context(mailbox.owned_session(session))
                 link.event("session", {"owned": True, "session": session})
                 log = ROOT / match / attempt / f"worker-{client}" / "game.log"

@@ -93,9 +93,12 @@ class FakeGame:
                 continue
             self.requests.append(message)
             if self.ack:
-                results = [{"index": index, "unit": order["unit"], "ok": True}
-                           for index, order in enumerate(message["orders"], 1)]
-                self.applied = {"request": message["request"], "based_on": message["based_on"],
+                results = ([{"index": 1, "control": message["control"], "ok": True}]
+                           if "control" in message else
+                           [{"index": index, "unit": order["unit"], "ok": True}
+                            for index, order in enumerate(message["orders"], 1)])
+                self.applied = {"request": message["request"],
+                                "based_on": message.get("based_on"),
                                 "applied_ms": 1000 * self.seq, "results": results}
             self.publish(self.seq + 1, self.battle)  # without an ack, the last one again
 
@@ -117,13 +120,13 @@ def serve(tmp_path, ttl_s=0.5, **expected):
     return Coordinator(manifest, tmp_path / "a1", ttl_s=ttl_s, poll_s=0.3)
 
 
-def start(coordinator, bridge, *, mode="control", attach=True, ack_s=2.0):
+def start(coordinator, bridge, *, mode="control", attach=True, ack_s=2.0, menu=False):
     result = []
 
     def run():
         result.append(worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
                                  mode=mode, attach=attach, bridge=bridge, max_s=30, ack_s=ack_s,
-                                 heartbeat_s=0.05, poll_s=1.0))
+                                 menu=menu, heartbeat_s=0.05, poll_s=1.0))
 
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
@@ -313,8 +316,9 @@ def test_an_attached_worker_writes_no_orders_into_a_session_of_another_mode(
 
 
 @pytest.mark.parametrize("ending", ["lease", "game exit"])
+@pytest.mark.parametrize("menu", [False, True])
 def test_an_owned_worker_runs_its_game_with_its_session_and_closes_both_when_lease_or_game_ends(
-        tmp_path, install, monkeypatch, ending):
+        tmp_path, install, monkeypatch, ending, menu):
     bridge = runtime.BRIDGE_DIR
     bridge.mkdir(parents=True)
     (bridge / "mod.log").write_text("[0] earlier job\n")
@@ -341,12 +345,12 @@ def test_an_owned_worker_runs_its_game_with_its_session_and_closes_both_when_lea
     monkeypatch.setattr(runtime, "prepare_runtime", prepare)
     monkeypatch.setattr(runtime, "OwnedGame", Game)
     with serve(tmp_path) as coordinator:
-        thread, result = start(coordinator, bridge, mode="observe", attach=False)
+        thread, result = start(coordinator, bridge, mode="observe", attach=False, menu=menu)
         session = wait_for(lambda: (bridge / "session.json").exists()
                            and json.loads((bridge / "session.json").read_text()))
         assert session == {"schema": 1, "job": "m1.a1.A", "enabled": True,
                            "multiplayer": "observe", "observe_ms": 1000, "tick_ms": 250,
-                           "record_replay": False}
+                           "record_replay": False, **({"menu": True} if menu else {})}
         assert not (bridge / "mod.log").exists()  # reset
         game = FakeGame(bridge, "m1.a1.A")
         game.publish(1)
@@ -528,3 +532,40 @@ def test_the_acknowledgement_deadline_runs_from_the_write_not_from_each_new_obse
         for thread in threads:
             if thread.ident is not None:  # A failed start must not mask the original error.
                 thread.join(3)
+
+
+@pytest.mark.parametrize("mode", ["observe", "control"])
+def test_ready_is_written_as_a_control_and_submitted_on_the_games_acknowledgement(
+        tmp_path, install, monkeypatch, mode):
+    # mp-next-steps.md decision 1: a control client presses its own Start Battle; the battle Lua
+    # decides when that is allowed and acknowledges it like a move.
+    refuse_to_launch(monkeypatch)
+    bridge = borrowed_bridge(tmp_path, mode)
+    game = FakeGame(bridge, "live")
+    game.publish(1)
+    with serve(tmp_path) as coordinator:
+        thread, result = start(coordinator, bridge, mode=mode)
+        events(coordinator, "observation", 1)
+        statuses = []
+        for seq, body in enumerate([worker.READY, {"control": "start"}], 1):
+            coordinator.submit("A", body)  # one command in flight at a time
+            statuses.append(status(coordinator, seq))
+    thread.join(5)
+    game.close()
+    if mode == "observe":
+        assert statuses == ["rejected", "rejected"] and game.requests == []
+        return
+    assert statuses == ["submitted", "rejected"]
+    [request] = game.requests
+    assert (request["job"], request["battle"], request["control"]) == ("live", "b1", "ready")
+    assert "orders" not in request
+
+
+def test_an_attached_worker_refuses_menu_before_hello(tmp_path, install, monkeypatch):
+    refuse_to_launch(monkeypatch)
+    with serve(tmp_path) as coordinator:
+        with pytest.raises(ValueError, match="--menu applies to an owned session"):
+            worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
+                       mode="control", attach=True, bridge=borrowed_bridge(tmp_path),
+                       max_s=30, menu=True)
+        assert records(coordinator, "hello") == []
