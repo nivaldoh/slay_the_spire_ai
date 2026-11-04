@@ -66,6 +66,19 @@ def test_the_score_rewards_what_a_loss_took_as_well_as_what_it_kept():
     assert suite.scenario_value(rows[1]) > suite.scenario_value(rows[0])
 
 
+def test_commander_is_also_read_against_skills_its_own_executor():
+    def battle(arm, outcome):
+        return {**row("a", arm, outcome), "status": outcome, **dict.fromkeys(
+            ("battle_s", "usd", "authoring_usd", "calls", "think_s", "age_s", "age_p90_s",
+             "plan_age_s", "orders", "refused", "forfeits", "spread_s", "idle_share",
+             "local_share"))}
+
+    arms = suite.summarize([battle("commander", "lost"), battle("skills", "won")])["arms"]
+    assert arms["commander"]["control"]["against"] == "skills"
+    assert arms["commander"]["control"]["worse"] == 1
+    assert "control" not in arms["skills"]
+
+
 def test_a_win_bound_reads_as_a_range_or_an_upper_bound():
     assert suite.bound_text(suite.win_bound(0, 10)) == "below 26%"
     assert suite.bound_text(suite.win_bound(4, 5)) == "38%-96%"

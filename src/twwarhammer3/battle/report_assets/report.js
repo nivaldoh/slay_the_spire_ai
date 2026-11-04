@@ -780,6 +780,24 @@
           arm.idle_share,
         ]),
       ),
+      el("h3", "Pairs, scenario by scenario"),
+      table(
+        ["Method", "Against", "Better", "Worse", "Tied", "Sign test p", "Taken gap", "t 95%"],
+        arms.flatMap(([name, arm]) =>
+          [arm.paired, arm.control]
+            .filter(Boolean)
+            .map((pair) => [
+              name,
+              pair.against,
+              pair.better,
+              pair.worse,
+              pair.tied,
+              pair.sign_test_p,
+              pair.taken.mean,
+              pair.taken.t_95 ? pair.taken.t_95.join(" to ") : null,
+            ]),
+        ),
+      ),
       el("h3", "Each scenario"),
       el("p", "Outcome, then own / taken, for each battle.", "benchmark-summary"),
       table(

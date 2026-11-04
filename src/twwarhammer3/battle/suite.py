@@ -46,6 +46,7 @@ ARMS = {
     "gap": ["--policy", "configured", *PAID],  # plus each scenario's written artifact
 }
 REFERENCE = "single"
+CONTROLS = {"commander": "skills"}  # the same executor with no model: read its wins against this
 # JUDGEMENT: Local odds radius — Claude, 2026-11-04: men within 80 m (about two unit widths) of a
 # fighting unit count as that fight. A wider radius blends fights and moves the number toward the
 # whole-army ratio; a narrower one misses supporting units.
@@ -341,7 +342,7 @@ def taken_difference(rows, arm, reference, scenarios):
         if a is not None and b is not None:
             gaps.append(a - b)
     interval = mean_interval(gaps)
-    return {"scenarios": len(gaps), "mean": interval["mean"],
+    return {"scenarios": len(gaps), "mean": points(interval["mean"]),
             "t_95": [round(value, 1) for value in interval["ci95"]] if interval["ci95"] else None}
 
 
@@ -382,7 +383,10 @@ def summarize(rows):
             "local_share": mean([r["local_share"] for r in done]),
             **({"paired": {**paired(rows, arm, REFERENCE, scenarios),
                            "taken": taken_difference(rows, arm, REFERENCE, scenarios)}}
-               if arm != REFERENCE and REFERENCE in arms else {})}
+               if arm != REFERENCE and REFERENCE in arms else {}),
+            **({"control": {**paired(rows, arm, CONTROLS[arm], scenarios),
+                            "taken": taken_difference(rows, arm, CONTROLS[arm], scenarios)}}
+               if CONTROLS.get(arm) in arms else {})}
     matrix = {scenario: {arm: [{"outcome": r["outcome"] or r["status"],
                                 "own": None if r["own"] is None else round(r["own"], 1),
                                 "taken": r["taken"]}
@@ -420,13 +424,13 @@ def render(data):
         lines.append(" | ".join([arm, *[str(read(row)) for _, read in COLUMNS]]))
     lines.append("")
     for arm, row in data["summary"]["arms"].items():
-        if row.get("paired"):
-            pair = row["paired"]
-            gap = pair["taken"]
-            lines.append(f"{arm} against {pair['against']}: better on {pair['better']} scenarios,"
-                         f" worse on {pair['worse']}, tied on {pair['tied']};"
-                         f" sign test p={pair['sign_test_p']}; taken {gap['mean']} points,"
-                         f" t 95% {gap['t_95']}, {gap['scenarios']} scenarios.")
+        for pair in (row.get("paired"), row.get("control")):
+            if pair:
+                gap = pair["taken"]
+                lines.append(f"{arm} against {pair['against']}: better on {pair['better']}"
+                             f" scenarios, worse on {pair['worse']}, tied on {pair['tied']};"
+                             f" sign test p={pair['sign_test_p']}; taken {gap['mean']} points,"
+                             f" t 95% {gap['t_95']}, {gap['scenarios']} scenarios.")
     lines.append("")
     for scenario, cells in data["summary"]["matrix"].items():
         text = "; ".join(f"{arm} " + ",".join(
