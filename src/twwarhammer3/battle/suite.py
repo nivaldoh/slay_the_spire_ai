@@ -41,11 +41,11 @@ ARMS = {
     "skills": ["--policy", "skills"],
     "concentrate": ["--policy", "twwarhammer3.battle.reference:Concentrate"],
     "single": ["--policy", f"llm_rules@{MODEL}/{EFFORT}", *PAID],
-    # JUDGEMENT: Tips arm — Claude, 2026-11-04, on the owner's "Yes, run it": one model on the
-    # existing `llm` prompt, whose "How to fight" gives commander's tips in direct-order words.
-    # Commander's own section names skills this arm lacks; another wording could change results,
-    # and any reading of whether tips explain commander's wins rests on this one.
-    "tips": ["--policy", f"llm@{MODEL}/{EFFORT}", *PAID],
+    # JUDGEMENT: Tips arm — Claude, 2026-11-04, on the owner's "Yes, run it": `single`'s prompt
+    # plus only the "How to fight" section of system_prompt.md, which gives commander's tips in
+    # direct-order words. Commander's own section names skills this arm lacks; another wording could
+    # change results, and any reading of whether tips explain commander's wins rests on this one.
+    "tips": ["--policy", f"llm@{MODEL}/{EFFORT}", *PAID],  # controllers.prompt_path
     "team": ["--policy", f"team_llm_rules@{MODEL}/{EFFORT}", *PAID],  # ClassTeam in a suite
     "commander": ["--policy", f"commander@{MODEL}/{EFFORT}", *PAID],
     "gap": ["--policy", "configured", *PAID],  # plus each scenario's written artifact

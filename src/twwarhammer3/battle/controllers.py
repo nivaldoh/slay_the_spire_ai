@@ -28,6 +28,17 @@ BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
 MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PATH,
                  "commander": commander.PROMPT_PATH, "team_llm_rules": llm.RULES_PROMPT_PATH}
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
+
+
+def prompt_path(base: str, profile: str | None) -> Path:
+    """A model policy's prompt. In the suite `llm` is `single`'s prompt plus only the tips, as
+    `team_llm_rules` there is ClassTeam: the suite's own arm, not a new policy name."""
+    from twwarhammer3.battle import benchmark
+
+    return (llm.TIPS_PROMPT_PATH if base == "llm" and profile == benchmark.SUITE
+            else MODEL_PROMPTS[base])
+
+
 VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2",
             "team_llm_rules": "v22+t2"}
 
@@ -191,7 +202,7 @@ def factories(config: dict, *, _ledger=None) -> dict:
                     }.get(base, llm.LLMPolicy)
             if is_suite:
                 def make(kind=kind, model=model, effort=effort,
-                         prompt=MODEL_PROMPTS[base].read_text()):
+                         prompt=prompt_path(base, profile).read_text()):
                     return kind(model, effort, benchmark.suite_budget(ledger), send=send,
                                 provider=provider, system_prompt=prompt, benchmark=True)
 

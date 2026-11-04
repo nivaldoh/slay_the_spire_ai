@@ -1978,8 +1978,8 @@ sup {
 .suite-controls input { width: 100%; }
 .suite-key { display: flex; flex-wrap: wrap; gap: 3px 16px; margin: 8px 0 0; color: var(--stage-muted); font-size: var(--t-xs); }
 .suite-key span { display: inline-flex; align-items: center; gap: 5px; }
-.suite-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 12px 0 0; font-family: var(--sans); font-size: var(--t-s); color: var(--ink); }
-.suite-legend[hidden] { display: none; }
+.suite-legend { display: none; }
+.is-suite .suite-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 0 auto 10px; font-family: var(--sans); font-size: var(--t-s); color: var(--ink); }
 .suite-legend span { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
 .is-suite #watch { display: none; }
 .is-suite.suite-watching #watch { display: block; }

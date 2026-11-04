@@ -57,8 +57,14 @@ methods (owner-direction.md).
 - Bug found on the way: Written rules' battles were classed as diagnostic probes (composed card)
   and left the page, so it had no replay of them. `commander()` now counts a composed controller
   on a benchmark battle as a compared method.
-- Checks: browser check rewritten, passes on 26 battles of the two plans; a planted bug colouring
-  every unit alike failed it ("team: members and the enemy"). 42 tests in `test_wh3_suite.py`.
+- Independent review reran every sentence: all held but Relief's plan (garrison and column swapped)
+  and Two fronts' travel time, both fixed and rerun. It also found stale colours after a table's
+  Watch, dead Watch buttons, a click race and 12 of 26 battles never drawing their last frame.
+- Checks: browser check rewritten, passes on 26 battles of the two plans, and caught all 12 planted
+  bugs (colours, shapes, stale replay, race, end state, hidden replay), after two gaps in it were
+  closed. Plan lines stay hand-written prose, rechecked by rerun, not by a test.
+- `tips` arm added on the owner's yes: `single`'s prompt plus only "How to fight" (a test holds that
+  this is the only difference). Rests on JUDGEMENT suite.py Tips arm. Not played yet.
 - Unverified: whether this reads clearly to the owner. Whether overlap shows coordination at all
   is their call; side by side and overlap are both on the page so they can compare.
 

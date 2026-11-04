@@ -20,6 +20,38 @@ const { chromium } = require("playwright");
   await page.waitForSelector(".suite-tile");
   await page.waitForTimeout(800);
 
+  const setClock = (value) =>
+    page.evaluate((target) => {
+      const time = document.getElementById("suite-time");
+      time.value = target === "end" ? time.max : target;
+      time.dispatchEvent(new Event("input", { bubbles: true }));
+    }, value);
+  const pictures = await page.evaluate(
+    () => JSON.parse(document.getElementById("report-data").textContent).suite.pictures,
+  );
+  const clockText = (seconds) =>
+    `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
+  const ending = (battle) =>
+    `${battle.outcome === "won" ? "Won" : "Lost"} ${clockText(battle.battle_s)}`;
+
+  // Regression, first because it needs an undecoded battle: click one, then the battle already
+  // loaded. The slow load finishes last and must not replace the second battle's data.
+  const rows = page.locator(".suite-grid tbody tr");
+  const nameOf = (index) => rows.nth(index).getAttribute("data-scenario");
+  const lastBattles = pictures[await nameOf(0)].battles;
+  await page.evaluate(() => {
+    const buttons = document.querySelectorAll(".suite-link");
+    buttons[1].click(); // both in one task: a browser click would wait out the first load
+    buttons[0].click();
+  });
+  await page.waitForTimeout(1500);
+  await setClock("end");
+  assert.equal(
+    await page.locator(`.suite-tile[data-arm="${lastBattles[0].arm}"] em`).innerText(),
+    ending(lastBattles[0]),
+    "a slow load replaced the second battle's data",
+  );
+
   // Who won: one row per scenario, with the plain method names and no model id.
   const scenarios = Object.keys(report.summary.matrix);
   assert.equal(await page.locator(".suite-grid tbody tr").count(), scenarios.length);
@@ -48,8 +80,8 @@ const { chromium } = require("playwright");
     assert.equal(await page.locator(".suite-tile").count(), played(name).length, name);
   }
 
-  // Colour is the controller: every unit on every map, against this file's own table of colours
-  // and the battle's partition record, so a swapped colour fails as well as a missing one.
+  // Colour is the controller: each unit and path on the small maps and the big map, against this
+  // file's own table and the battle's partition record, so a swapped colour fails.
   const HUES = {
     all: "#ee8fc4",
     front: "#4aa3e8",
@@ -57,64 +89,71 @@ const { chromium } = require("playwright");
     mobile: "#ae83ee",
     scripts: "#95a3ab",
   };
-  const SHAPES = { front: "circle", ranged: "path", mobile: "rect" };
-  const MODELS = { team: true, gap: true };
+  const SHAPES = { circle: "front", path: "ranged", rect: "mobile" };
   const SINGLE = { single: "all", tips: "all", commander: "all", skills: "scripts" };
-  const pictures = await page.evaluate(
-    () => JSON.parse(document.getElementById("report-data").textContent).suite.pictures,
-  );
+  const memberOf = (battle, unit) => SINGLE[battle.arm] || battle.owners[unit];
+  const drawn = (selector) =>
+    page.evaluate(
+      (query) =>
+        [...document.querySelectorAll(query)].map((mark) => ({
+          unit: mark.dataset.unit,
+          hue: mark.getAttribute("stroke"),
+          tag: mark.tagName,
+          opacity: mark.getAttribute("opacity"),
+        })),
+      selector,
+    );
   for (const [index, link] of links.entries()) {
     await link.click();
     await page.waitForTimeout(700);
-    const name = await page
-      .locator(".suite-grid tbody tr")
-      .nth(index)
-      .getAttribute("data-scenario");
+    const name = await nameOf(index);
+    const pair = await page.evaluate(() =>
+      [...document.querySelectorAll("#suite-big g[data-arm]")].map((item) => item.dataset.arm),
+    );
+    assert.equal(pair.length, Math.min(2, pictures[name].battles.length), `${name} pair`);
     for (const battle of pictures[name].battles) {
-      const marks = await page.evaluate(
-        (arm) =>
-          [...document.querySelectorAll(`.suite-tile[data-arm="${arm}"] [data-unit]`)].map(
-            (mark) => [mark.dataset.unit, mark.getAttribute("stroke"), mark.tagName],
-          ),
-        battle.arm,
-      );
+      const marks = await drawn(`.suite-tile[data-arm="${battle.arm}"] [data-unit]`);
       assert.ok(marks.length, `${name} ${battle.arm} drew no units`);
-      for (const [unit, hue, tag] of marks) {
-        const member = MODELS[battle.arm] ? battle.owners[unit] : SINGLE[battle.arm];
-        assert.equal(hue, HUES[member], `${name} ${battle.arm} ${unit} ${member}`);
-        if (MODELS[battle.arm]) assert.equal(tag, SHAPES[member], `${name} ${unit} shape`);
+      const big = pair.includes(battle.arm)
+        ? await drawn(`#suite-big g[data-arm="${battle.arm}"] [data-unit]`)
+        : [];
+      for (const mark of [...marks, ...big]) {
+        const member = memberOf(battle, mark.unit);
+        assert.equal(mark.hue, HUES[member], `${name} ${battle.arm} ${mark.unit} ${member}`);
+      }
+      // Team and rules members are unit classes, so each mark's shape must match its member.
+      if (!SINGLE[battle.arm])
+        for (const mark of marks)
+          assert.equal(SHAPES[mark.tag], memberOf(battle, mark.unit), `${name} ${mark.unit} shape`);
+    }
+
+    // At the clock's end: each tile's result, an empty bar on a loss, a fuller one on a win, and
+    // the big map's labels name how their battles ended.
+    await setClock("end");
+    for (const battle of pictures[name].battles) {
+      const tile = page.locator(`.suite-tile[data-arm="${battle.arm}"]`);
+      assert.equal(await tile.locator("em").innerText(), ending(battle), `${name} ${battle.arm}`);
+      const width = parseFloat(
+        await tile.locator(".suite-bar i").evaluate((bar) => bar.style.width),
+      );
+      if (battle.outcome === "won") assert.ok(width > 0, `${name} ${battle.arm} won with no army`);
+      else {
+        assert.equal(width, 0, `${name} ${battle.arm} lost with ${width}% still fighting`);
+        const standing = await drawn(`.suite-tile[data-arm="${battle.arm}"] [data-unit]`);
+        assert.ok(
+          standing.every((mark) => mark.opacity !== "1"),
+          `${name} ${battle.arm} still drawn`,
+        );
       }
     }
+    for (const arm of pair) {
+      const battle = pictures[name].battles.find((item) => item.arm === arm);
+      assert.equal(
+        await page.locator(`#suite-pair [data-arm="${arm}"] em`).innerText(),
+        ending(battle),
+      );
+    }
   }
-  await links[0].click();
-  await page.waitForTimeout(700);
-
-  // A finished battle shows its end state: a lost army has no one left fighting at the clock's end.
-  const finish = await page.locator("#suite-time").getAttribute("max");
-  await page.evaluate((value) => {
-    const time = document.getElementById("suite-time");
-    time.value = value;
-    time.dispatchEvent(new Event("input", { bubbles: true }));
-  }, finish);
-  const tiles = await page.evaluate(() =>
-    [...document.querySelectorAll(".suite-tile")].map(
-      (tile) => tile.querySelector("em").textContent,
-    ),
-  );
-  assert.ok(
-    tiles.every((text) => /^(Won|Lost) /.test(text)),
-    `tiles at the end: ${tiles}`,
-  );
-
-  // A second click during a slow load keeps the second battle's maps.
-  await links[1].click();
-  await links[2].click();
-  await page.waitForTimeout(1200);
-  const heading = await page.locator("#suite-question").innerText();
-  const third =
-    pictures[await page.locator(".suite-grid tbody tr").nth(2).getAttribute("data-scenario")];
-  assert.equal(heading, third.question);
-  assert.equal(await page.locator(".suite-tile").count(), third.battles.length);
   await links[0].click();
   await page.waitForTimeout(700);
 
@@ -136,33 +175,62 @@ const { chromium } = require("playwright");
 
   // The clock moves the armies.
   const before = await page.locator("#suite-big").innerHTML();
-  await page.evaluate(() => {
-    const time = document.getElementById("suite-time");
-    time.value = 20;
-    time.dispatchEvent(new Event("input", { bubbles: true }));
-  });
+  await setClock(20);
   assert.notEqual(await page.locator("#suite-big").innerHTML(), before);
 
-  // Watching a method opens its own battle, with its models named.
+  // Each opened replay names its battle and models, and colours its own units by its own record,
+  // whichever way it was opened: a colour left over from the last replay fails.
+  const replayColours = async () => {
+    const legend = page.locator("#suite-legend");
+    const output = await legend.getAttribute("data-output");
+    const battle = Object.values(pictures)
+      .flatMap((item) => item.battles.map((entry) => ({ ...entry, title: item.title })))
+      .find((entry) => entry.output === output);
+    assert.ok((await legend.innerText()).startsWith(battle.title), `${output} names no battle`);
+    const units = await page.evaluate(() =>
+      [...document.querySelectorAll('#map-layer .unit[data-unit^="f"]')].map((unit) => ({
+        unit: unit.dataset.unit,
+        hue: [...unit.children]
+          .map((part) => part.getAttribute("stroke"))
+          .find((value) => value && value !== "#fff"),
+      })),
+    );
+    assert.ok(units.length, `${output} drew no units`);
+    for (const { unit, hue } of units)
+      assert.equal(hue, HUES[memberOf(battle, unit)], `${output} ${unit}`);
+    return battle;
+  };
   assert.equal(await page.locator("#watch").isVisible(), false);
   await page.locator('.suite-tile[data-arm="team"] .suite-watch').click();
   await page.waitForTimeout(800);
   assert.ok(await page.locator("#watch").isVisible());
+  await replayColours();
   const legend = await page.locator("#suite-legend").innerText();
   for (const name of ["Infantry model", "Guns model", "Knights model"])
     assert.ok(legend.includes(name));
   await page.locator(".suite-close").click();
   assert.equal(await page.locator("#watch").isVisible(), false);
 
-  // A table's Watch shows its replay too, in that battle's own colours and names.
+  // The tables' Watch buttons show the replay too, with its key on screen.
   await page.locator("#suite-more > summary").click();
-  await page.locator("#benchmark-results button", { hasText: "Watch" }).first().click();
+  const seen = new Set();
+  const watches = page.locator("#benchmark-results button", { hasText: "Watch" });
+  for (let index = 0; index < 5; index++) {
+    await watches.nth(index).click();
+    await page.waitForTimeout(800);
+    assert.ok(await page.locator("#watch").isVisible(), "a table's Watch shows the replay");
+    seen.add((await replayColours()).arm);
+    await page.evaluate(() => document.querySelector("#suite-more").scrollIntoView());
+  }
+  assert.ok(seen.size > 1, "the replay check covered more than one method");
+  await watches.first().click();
   await page.waitForTimeout(800);
-  assert.ok(await page.locator("#watch").isVisible(), "the table's Watch shows the replay");
-  const shown = await page.locator("#run-line .name").innerText();
-  assert.ok((await page.locator("#suite-legend").innerText()).startsWith(shown), "legend matches");
-  await page.locator("#suite-more > summary").click();
+  const top = await page
+    .locator("#suite-legend")
+    .evaluate((item) => item.getBoundingClientRect().top);
+  assert.ok(top >= 0, "the replay's key is on screen");
   await page.locator(".suite-close").click();
+  await page.locator("#suite-more > summary").click();
 
   // Short by default, with the detail one click away, and nothing overflows a phone.
   const height = await page.evaluate(() => document.documentElement.scrollHeight);

@@ -439,9 +439,15 @@ def test_a_composed_method_on_a_benchmark_battle_is_compared_and_elsewhere_stays
     assert commander(trial, {"scenario": {}})["kind"] == "diagnostic"
 
 
-def test_the_tips_arm_is_one_model_on_the_prompt_that_says_how_to_fight():
+def test_the_tips_arm_differs_from_single_by_the_tips_alone():
     policy = suite.ARMS["tips"][suite.ARMS["tips"].index("--policy") + 1]
     assert policy.split("@")[0] == "llm"
-    prompt = controllers.MODEL_PROMPTS["llm"].read_text()
-    assert "How to fight" in prompt and "How to fight" not in (
-        controllers.MODEL_PROMPTS["llm_rules"].read_text())
+    tips_prompt = controllers.prompt_path("llm", benchmark.SUITE).read_text()
+    rules = controllers.MODEL_PROMPTS["llm_rules"].read_text()
+    system = controllers.prompt_path("llm", None).read_text()
+    assert system == controllers.MODEL_PROMPTS["llm"].read_text()  # only the suite's arm changes
+    start, end = system.index("How to fight:"), system.index("Units shown routing")
+    section = system[start:end]
+    assert section.rstrip().splitlines()[-1].startswith("- Routs:")
+    assert section in tips_prompt
+    assert tips_prompt.replace(section, "") == rules

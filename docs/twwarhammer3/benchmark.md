@@ -108,6 +108,7 @@ kept. An easier or harder setting changes which battles are witnessed and what e
 | `skills` | Scripted class skills: shooters shoot, cavalry waits for contact then charges | What a fixed script does for $0 |
 | `concentrate` | A script that gathers the army, picks one enemy and hits it together, fast units last | Whether the coordination a battle asks for can win it, and whether the readings notice |
 | `single` | One model orders every unit (`llm_rules`) | The reference for every model arm |
+| `tips` | One model orders every unit, on `single`'s prompt plus "How to fight" (`llm` on a suite battle) | Do tips alone explain `commander`'s wins? |
 | `team` | One model per unit class, at the same time | Does dividing the army help? |
 | `commander` | One model gives standing skills; scripts carry them out between its replies. Its prompt also holds a page of tactics advice | Does a slower planner over fast scripts help? |
 | `gap` | Before each scenario a coordinator and one specialist per class write frozen [graphs](gap-plan.md) from its public task; in battle a model only suggests targets every 30 s. What Haiku wrote are rules per unit class, with no map plan | Can rules a model writes once beat thinking throughout? Writing is billed separately |
@@ -146,9 +147,9 @@ holds for any method built on another.
 
 **Arms that differ in advice.** `single` and `team` get the rules-only prompt. `commander`'s prompt
 has a "How to fight" section (arrive together, gang up, come from behind), so comparing them
-mixes the control method with the advice. The `llm` policy has the same kind of advice in
-`system_prompt.md`, so the `tips` arm runs it as a second one-model arm (owner's yes, 2026-11-04;
-rests on JUDGEMENT suite.py Tips arm).
+mixes the control method with the advice. The `tips` arm is `single` plus only that advice, in
+`system_prompt.md`'s direct-order words (owner's yes, 2026-11-04; rests on JUDGEMENT suite.py Tips
+arm). A test holds that the tips section is its only difference from `single`'s prompt.
 
 **What the battles turned out to be.** The authored battles were designed around one problem each,
 and in play several were not that problem (one battle per pair): in `coord-pincer` the enemy block

@@ -29,6 +29,7 @@ from twwarhammer3.protocol import (
 
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/system_prompt.md"
 RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
+TIPS_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("tips_prompt.md")  # the rules plus "How to fight"
 # Every WH3 OpenAI job shares this spend file, and so one budget; OpenRouter jobs use the
 # file below, and Spire keeps its own.
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"

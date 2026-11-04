@@ -17,15 +17,18 @@ function suitePage(data, api) {
   const MARGIN_M = 40;
   const BIG_R = 7,
     SMALL_R = 19; // marker radii in map units: the small maps show at a quarter of the size
-  const order = page.order.filter((arm) => suite.arms[arm]);
+  const order = page.order.filter((arm) => suite.arms[arm]?.completed);
   const rows = data.benchmark_plans.flatMap((plan) => plan.rows);
   const keyOf = new Map(rows.map((row) => [row.output, row.battle_key]));
   const method = (arm) => page.methods[arm];
   const pictures = suite.scenarios;
   const battleOf = new Map(
-    Object.values(suite.pictures)
-      .flatMap((picture) => picture.battles)
-      .map((battle) => [keyOf.get(battle.output), battle]),
+    Object.values(suite.pictures).flatMap((picture) =>
+      picture.battles.map((battle) => [
+        keyOf.get(battle.output),
+        { ...battle, title: picture.title },
+      ]),
+    ),
   );
   const battleIn = (name, arm) =>
     suite.pictures[name].battles.find((battle) => battle.arm === arm) || null;
@@ -312,6 +315,7 @@ function suitePage(data, api) {
       if (seen.length > 1)
         layer.append(
           svg("polyline", {
+            "data-unit": id,
             points: seen
               .map((p) => `${project.x(p.x).toFixed(1)},${project.y(p.z).toFixed(1)}`)
               .join(" "),
@@ -342,9 +346,11 @@ function suitePage(data, api) {
     const big = $("suite-big").layer;
     big.replaceChildren();
     for (const [index, arm] of [...pair].reverse().entries()) {
-      const solid = index === pair.length - 1;
-      drawPaths(big, scene[arm], solid);
-      drawArmy(big, scene[arm], BIG_R, solid);
+      const solid = index === pair.length - 1,
+        group = svg("g", { "data-arm": arm });
+      drawPaths(group, scene[arm], solid);
+      drawArmy(group, scene[arm], BIG_R, solid);
+      big.append(group);
     }
     for (const item of document.querySelectorAll(".suite-pair [data-arm]")) {
       const run = scene[item.dataset.arm];
@@ -428,31 +434,26 @@ function suitePage(data, api) {
     Viewer.setUnitHue(battle ? (id) => memberHue(method(battle.arm), battle.owners[id]) : null);
     const legend = $("suite-legend");
     legend.replaceChildren();
+    legend.dataset.output = battle?.output || "";
     if (!battle) return;
     const m = method(battle.arm),
       split = m.models.length && !m.models.includes("all");
-    legend.append(el("b", m.name));
+    legend.append(el("b", `${battle.title}: ${m.name}`));
     for (const member of split ? m.models : ["front"])
       legend.append(
         tag(split ? KINDS[member] : "front", memberHue(m, member), memberName(m, member)),
       );
     legend.append(button("Close", closeWatch, "suite-close"));
   }
-  function reveal() {
-    document.body.classList.add("suite-watching");
-    $("suite-legend").hidden = false;
-  }
+  const reveal = () => document.body.classList.add("suite-watching");
   function watch(arm) {
     setPlaying(false);
     reveal();
     return api
       .open(keyOf.get(scene[arm].battle.output), false)
-      .then(() => $("suite-legend").scrollIntoView());
+      .then(() => $("watch").scrollIntoView());
   }
-  function closeWatch() {
-    document.body.classList.remove("suite-watching");
-    $("suite-legend").hidden = true;
-  }
+  const closeWatch = () => document.body.classList.remove("suite-watching");
 
   async function choose(name) {
     setPlaying(false);

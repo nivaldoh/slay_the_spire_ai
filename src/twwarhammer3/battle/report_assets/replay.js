@@ -1431,8 +1431,10 @@ const Viewer = (() => {
       el("h3", entry.display),
       el("p", `${entry.role}, ${entry.side === "friendly" ? "friendly" : "enemy"}, ${entry.short}`),
     );
+    const icon = glyph(entry.glyph);
+    if (unitHue) icon.style.color = hueOf(id, entry.side);
     head.append(
-      glyph(entry.glyph),
+      icon,
       title,
       button("Clear selection", () => select(null)),
     );
