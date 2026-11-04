@@ -9,7 +9,8 @@ from threading import Event
 from gameai.ledger import Ledger
 from gameai.llm import APIError, Model, api_key, post
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import graph, graph_goals, team
+from twwarhammer3.battle import benchmark, graph, graph_goals, team
+from twwarhammer3.battle.setup import scenarios
 
 
 def load(path, config):
@@ -142,20 +143,25 @@ def factory(path, config, *, ledger=None):
         config.setdefault("model_routing", {}).update({
             model: routing(provider, model) for model, _ in goal_models})
 
-    def build(node, stop=None):
+    suite = scenarios().get(config.get("scenario"), {}).get("benchmark") == benchmark.SUITE
+    limits = {"failed_resends": 0, "transport_attempts": 1} if suite else {}
+
+    def build(node, stop=None, book=None):
         kind = node["type"]
         if kind == "graph":
             return graph.GraphPolicy(node["graph"])
         if kind == "graph_llm":
-            api = Model(node["model"], node["effort"], ledger, send=goal_send, provider=provider,
+            api = Model(node["model"], node["effort"], book, send=goal_send, provider=provider,
                         instructions=prompts[f"graph_llm@{node['model']}/{node['effort']}"],
-                        max_output_tokens=graph_goals.MAX_OUTPUT_TOKENS, record_exchanges=True)
+                        max_output_tokens=graph_goals.MAX_OUTPUT_TOKENS, record_exchanges=True,
+                        **limits)
             return graph_goals.GraphGoals(node["graph"], api, task=node["task"], stop=stop,
                                           max_requests=node["max_requests"])
         if kind == "team":
             stop = Event()
             return team.TeamPolicy({name: (tuple(member["unit_types"]) if member["unit_types"]
-                                           is not None else None, build(member["controller"], stop))
+                                           is not None else None,
+                                           build(member["controller"], stop, book))
                                     for name, member in node["members"].items()},
                                    stop=stop, army_owner=node["army_owner"],
                                    max_age_ms=node["max_age_ms"], optional=node["optional"])
@@ -176,7 +182,8 @@ def factory(path, config, *, ledger=None):
         return policy
 
     def make():
-        policy = build(frozen)
+        policy = build(frozen, book=benchmark.suite_budget(ledger) if suite and goal_models
+                       else ledger)
         policy.card = {**getattr(policy, "card", {}), "configuration": deepcopy(frozen),
                        "configuration_sha256": graph.digest(frozen)}
         if isinstance(policy, team.TeamPolicy):

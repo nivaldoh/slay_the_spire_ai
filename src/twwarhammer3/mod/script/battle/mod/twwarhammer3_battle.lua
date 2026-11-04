@@ -499,18 +499,54 @@ local function evaluation()
             objectives = state.objective_totals}
 end
 
--- Authored starting positions (private setup). An enemy unit returns to the AI afterwards.
-local function teleport_units(deployment)
-    for side, placements in pairs(deployment or {}) do
-        for _, placement in ipairs(placements) do
-            local entry = assert(state[side][placement.id], "missing authored unit " .. placement.id)
-            local controller = entry.controller or entry.army:create_unit_controller()
-            if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
-            controller:teleport_to_location(vector(placement.x, bm.battle:get_terrain_height(placement.x, placement.z), placement.z),
-                                            placement.bearing, placement.width)
-            if not entry.controller then controller:release_control() end
+-- The unit a placement names: by id, or the next unused unit of its type. The engine does not
+-- keep roster order, so an id says nothing about a plain battle's unit type.
+local function authored_entry(side, placement, used)
+    if placement.id then return assert(state[side][placement.id], "missing authored unit " .. placement.id) end
+    for _, id in ipairs(state[side .. "_ids"]) do
+        local entry = state[side][id]
+        if not used[id] and get(entry.unit, "type", nil) == placement.type then
+            used[id] = true
+            return entry
         end
     end
+    error("missing authored unit " .. tostring(placement.type))
+end
+
+-- Authored starting positions (private setup). An enemy unit returns to the AI one tick later:
+-- a release in the teleport's own tick may discard the queued change (log, 2026-11-02).
+local function teleport_units(deployment)
+    for side, placements in pairs(deployment or {}) do
+        local used = {}
+        for _, placement in ipairs(placements) do
+            local entry = authored_entry(side, placement, used)
+            local controller = entry.controller or entry.army:create_unit_controller()
+            local borrowed = not entry.controller
+            if borrowed then controller:add_units(entry.unit); controller:take_control() end
+            controller:teleport_to_location(vector(placement.x, bm.battle:get_terrain_height(placement.x, placement.z), placement.z),
+                                            placement.bearing, placement.width)
+            if borrowed then
+                bm:callback(function()
+                    local ok, err = pcall(function() controller:release_control() end)
+                    if not ok then log("deployment release failed: " .. clean_error(err)) end
+                end, session.tick_ms or 250)
+            end
+        end
+    end
+end
+
+-- Private positions of every unit, visible or not, for the authored-start check.
+local function deployment_reading()
+    local reading = {}
+    for _, side in ipairs({"friendly", "enemy"}) do
+        reading[side] = {}
+        for _, id in ipairs(state[side .. "_ids"]) do
+            local position = get(state[side][id].unit, "position", nil)
+            reading[side][#reading[side] + 1] = {id = id, type = get(state[side][id].unit, "type", nil),
+                x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1)}
+        end
+    end
+    return reading
 end
 
 -- A single authored objective, not a general mission language. Deployment stays private;
@@ -810,6 +846,10 @@ local function observation(now)
     end
     if session.benchmark and state.setup then
         state.setup.benchmark_release_pending = state.benchmark_release_pending or 0
+    end
+    if session.deployment and state.setup and not state.applied then
+        local read_ok, reading = pcall(deployment_reading)
+        state.setup.deployment_reading = read_ok and reading or {error = clean_error(reading)}
     end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,

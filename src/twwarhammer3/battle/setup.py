@@ -40,8 +40,9 @@ entry, and what reads them:
 - ``custom``: the versioned battery-evacuation rules, asset ids, extraction zone and
   deadline; optional ``deployment`` maps friendly/enemy ids to authored positions.
   Only public rules/progress enter ``mode.custom``; deployment remains private setup.
-- ``deployment``: the same authored positions for a plain battle ({"friendly": [{"id", "x",
-  "z", "bearing", "width"}], "enemy": [...]}); ``check_battle`` reads them back.
+- ``deployment``: authored positions for a plain battle ({"friendly": [{"type", "x", "z",
+  "bearing", "width"}], "enemy": [...]}), the whole roster by type: the engine numbers units
+  in its own order, so an id says nothing about a unit's type. ``check_battle`` reads them back.
 - ``name``, ``family``, ``brief``, ``split``, ``status``: report labels (the HTML report
   shows only scenarios with started trials; its reader text is in report_notes.json);
   ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is
@@ -502,7 +503,7 @@ def validate_declaration(scenario: dict, config: dict) -> None:
     if scenario.get("custom"):
         validate_custom(scenario)
     if scenario.get("deployment"):
-        validate_deployment(scenario, scenario["deployment"])
+        validate_deployment(scenario, scenario["deployment"], by_type=True)
     if not scenario.get("expect"):
         return
     if not scenario.get("map"):
@@ -562,8 +563,9 @@ def validate_custom(scenario: dict) -> None:
     validate_deployment(scenario, goal.get("deployment", {}))
 
 
-def validate_deployment(scenario: dict, deployment: dict) -> None:
-    """Every placement names one unit of its side, once, at finite coordinates."""
+def validate_deployment(scenario: dict, deployment: dict, by_type: bool = False) -> None:
+    """Every placement names one unit of its side at finite coordinates: by id for a custom
+    objective, by type for a plain battle, whose ids follow the engine's order, not the roster's."""
     def finite(value):
         return (isinstance(value, (float, int)) and not isinstance(value, bool)
                 and math.isfinite(value))
@@ -575,12 +577,14 @@ def validate_deployment(scenario: dict, deployment: dict) -> None:
         used = set()
         for placement in placements:
             unit = placement.get("id")
-            if unit not in ids or unit in used or not all(
+            if (not by_type and (unit not in ids or unit in used)) or not all(
                     finite(placement.get(key)) for key in ("x", "z", "bearing", "width")):
                 raise ValueError("invalid or repeated authored deployment")
             if placement["width"] <= 0:
                 raise ValueError("deployment width must be positive")
             used.add(unit)
+        if by_type and Counter(p.get("type") for p in placements) != Counter(army["units"]):
+            raise ValueError(f"{side}: a plain deployment must place the whole roster by type")
 
 
 def menu_checks(scenario: dict) -> list[dict]:
@@ -651,27 +655,33 @@ def check_menu(scenario: dict, directory) -> dict:
 
 
 def check_deployment(scenario: dict, observation: dict) -> dict:
-    """Each authored unit stands near its place in the first observation.
+    """Each placed type has a unit of that type near its place, by the private reading.
 
-    The script's own reading in the teleport's tick still shows native positions (log,
-    2026-10-16), and units re-form 5-13 m behind the spot, so read a moment later, with room
-    for re-forming that still excludes the native start.
+    Policies' enemy lists hold only visible units, so the script reads every unit at the first
+    observation. Its reading in the teleport's own tick still shows native positions (log,
+    2026-10-16), and units re-form 5-13 m behind the spot, so the tolerance allows that and
+    still excludes the native start.
     """
     settings = observation.get("setup") or {}
     if settings.get("deployment_error"):
         raise ProtocolError(f"authored deployment failed: {settings['deployment_error']}")
+    reading = settings.get("deployment_reading") or {}
+    if reading.get("error"):
+        raise ProtocolError(f"authored deployment unread: {reading['error']}")
     measured = {}
     for side, placements in scenario["deployment"].items():
-        actual = {unit["id"]: unit for unit in observation.get(side, [])}
+        left = list(reading.get(side) or [])
         for wanted in placements:
-            found = actual.get(wanted["id"]) or {}
-            if found.get("x") is None or found.get("z") is None:
-                raise ProtocolError(f"authored deployment unread for {side}/{wanted['id']}")
-            error = math.hypot(found["x"] - wanted["x"], found["z"] - wanted["z"])
+            same = [(math.hypot(unit["x"] - wanted["x"], unit["z"] - wanted["z"]), index)
+                    for index, unit in enumerate(left) if unit.get("type") == wanted["type"]
+                    and unit.get("x") is not None and unit.get("z") is not None]
+            if not same:
+                raise ProtocolError(f"authored deployment unread for {side}/{wanted['type']}")
+            error, index = min(same)
             if error > DEPLOYMENT_TOLERANCE_M:
-                raise ProtocolError(f"authored deployment failed for {side}/{wanted['id']}:"
+                raise ProtocolError(f"authored deployment failed for {side}/{wanted['type']}:"
                                     f" {error:.0f} m from its place")
-            measured[wanted["id"]] = round(error, 1)
+            measured[left.pop(index)["id"]] = round(error, 1)
     return measured
 
 

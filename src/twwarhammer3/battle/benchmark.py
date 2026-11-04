@@ -23,11 +23,12 @@ SCENARIO = "emp-mirror-cavalry-v1"
 # Starter limits and inputs, No-retry scope and accounting, and Starter repetition.
 CALL_LIMIT = 200
 BATTLE_USD = 2
-# JUDGEMENT: Suite limits — Claude, 2026-11-04, overnight goal: no call cap (a team makes about
-# twice a single controller's calls and a battle can last 20 minutes), $1.50 a battle at Haiku.
+# JUDGEMENT: Suite limits — Claude, 2026-11-04, overnight goal: no real call cap (a team makes
+# about twice a single controller's calls and a battle can last 20 minutes), $3 a battle at Haiku
+# (one model cost $0.49 on the longest battle, so three members come near $1.50).
 # Lower limits end long or many-member battles early and change what they can show.
 SUITE_CALL_LIMIT = 5000
-SUITE_BATTLE_USD = 1.5
+SUITE_BATTLE_USD = 3
 READ_TIMEOUT_S = 60
 FACTORS = {"wavering": .8, "routing": .5, "shattered": 0}
 OUTCOMES = {"won": 2, "draw": 1, "lost": 0}
@@ -68,10 +69,10 @@ class BattleBudget:
     calls too, so failures cannot evade the call or dollar cap.
     """
 
-    def __init__(self, ledger, call_limit=CALL_LIMIT, battle_usd=BATTLE_USD):
+    def __init__(self, ledger, call_limit=CALL_LIMIT, battle_usd=BATTLE_USD, version=VERSION):
         self.ledger, self.path = ledger, ledger.path
         self.started_spent, self.calls = ledger.spent, 0
-        self.call_limit, self.battle_usd = call_limit, battle_usd
+        self.call_limit, self.battle_usd, self.version = call_limit, battle_usd, version
 
     def reserve(self, usd):
         if self.calls >= self.call_limit:
@@ -87,6 +88,10 @@ class BattleBudget:
 
     def charge(self, usd, **fields):
         self.ledger.charge(usd, **fields)
+
+
+def suite_budget(ledger):
+    return BattleBudget(ledger, SUITE_CALL_LIMIT, SUITE_BATTLE_USD, SUITE)
 
 
 def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:

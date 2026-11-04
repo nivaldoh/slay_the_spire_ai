@@ -603,30 +603,51 @@ def started():
 
 
 def authored():
-    """A plain battle with one authored unit per side and the readback that passes it."""
+    """A plain battle placed by type, and the private reading that passes it."""
     scenario = {"deployment": {
-        "friendly": [{"id": "f1", "x": 0, "z": 0, "bearing": 0, "width": 40}],
-        "enemy": [{"id": "e1", "x": 100, "z": 0, "bearing": 180, "width": 40}]}}
-    state = {"friendly": [{"id": "f1", "x": 8, "z": -6}],
-             "enemy": [{"id": "e1", "x": 100, "z": 13}]}
+        "friendly": [{"type": "sword", "x": 0, "z": 0, "bearing": 0, "width": 40},
+                     {"type": "gun", "x": 50, "z": 0, "bearing": 0, "width": 40}],
+        "enemy": [{"type": "orc", "x": 100, "z": 0, "bearing": 180, "width": 40}]}}
+    # The engine numbered the gun first; only types and places matter.
+    state = {"setup": {"deployment_reading": {
+        "friendly": [{"id": "f1", "type": "gun", "x": 50, "z": 5},
+                     {"id": "f2", "type": "sword", "x": 8, "z": -6}],
+        "enemy": [{"id": "e1", "type": "orc", "x": 100, "z": 13}]}}}
     return scenario, state
 
 
-def test_an_authored_start_allows_re_forming_and_is_recorded():
-    assert setup.check_deployment(*authored()) == {"f1": 10.0, "e1": 13.0}
+def test_an_authored_start_matches_units_by_type_and_allows_re_forming():
+    assert setup.check_deployment(*authored()) == {"f2": 10.0, "f1": 5.0, "e1": 13.0}
+
+
+def reading(state):
+    return state["setup"]["deployment_reading"]
 
 
 # 2026-10-16: an evacuation battle kept its native start, 42-318 m from the authored spots.
+# 2026-11-04 review: the engine reorders rosters, so a wrong unit on a right spot must fail.
 @pytest.mark.parametrize("change,message", [
-    (lambda s, o: o["friendly"][0].update(x=42), "friendly/f1"),
-    (lambda s, o: o["enemy"][0].update(z=None), "unread for enemy/e1"),
-    (lambda s, o: o.update(setup={"deployment_error": "no unit"}), "no unit"),
+    (lambda s, o: reading(o)["friendly"][1].update(x=42), "friendly/sword: 42 m"),
+    (lambda s, o: reading(o)["friendly"][1].update(type="gun"), "unread for friendly/sword"),
+    (lambda s, o: reading(o)["enemy"][0].update(z=None), "unread for enemy/orc"),
+    (lambda s, o: reading(o).clear(), "unread for friendly/sword"),
+    (lambda s, o: o["setup"].update(deployment_reading={"error": "no read"}), "no read"),
+    (lambda s, o: o["setup"].update(deployment_error="no unit"), "no unit"),
 ])
 def test_a_missed_authored_start_stops_the_job(change, message):
     scenario, state = authored()
     change(scenario, state)
     with pytest.raises(ProtocolError, match=message):
         setup.check_deployment(scenario, state)
+
+
+def test_a_plain_deployment_must_place_the_whole_roster_by_type():
+    scenario = {"player": {"units": ["sword", "gun"]},
+                "deployment": authored()[0]["deployment"]}
+    deployment = {"friendly": scenario["deployment"]["friendly"]}
+    setup.validate_deployment(scenario, deployment, by_type=True)
+    with pytest.raises(ValueError, match="whole roster"):
+        setup.validate_deployment(scenario, {"friendly": deployment["friendly"][:1]}, by_type=True)
 
 
 # Removing any one of these startup checks passed every test before

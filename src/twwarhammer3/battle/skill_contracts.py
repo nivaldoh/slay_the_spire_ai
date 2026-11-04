@@ -71,8 +71,8 @@ def preconditions(name, inputs, view):
             return "target unavailable or not visible"
         if name == "charge" and "melee" not in target.get("state", []):
             return "charge target is not in melee"
-        if name == "shoot" and any(not owned[uid].get("ammo") for uid in units):
-            return "no ammunition"
+        if name == "shoot" and not any(owned[uid].get("ammo") for uid in units):
+            return "no ammunition"  # a group with one dry unit keeps firing with the rest
     return None
 
 
@@ -111,10 +111,12 @@ class SkillRun:
                 witness = witness and view["time_ms"] - self.start_ms >= REPEAT_MS
             reason = "inside arrival radius" if self.name == "move" else "at post (may engage)"
         elif self.name == "shoot":
-            witness = all(u.get("target") == target
-                          and self.ammo.get(u["id"], {}).get("target") == target
-                          and u.get("ammo", 0) < self.ammo[u["id"]]["ammo"]
-                          for u in selected)
+            firing = [u for u in selected
+                      if u.get("ammo") or self.ammo.get(u["id"], {}).get("ammo")]
+            witness = bool(firing) and all(u.get("target") == target
+                                           and self.ammo.get(u["id"], {}).get("target") == target
+                                           and u.get("ammo", 0) < self.ammo[u["id"]]["ammo"]
+                                           for u in firing)
             reason = "ammunition decreased between readings of selected target"
         else:
             witness = all(u.get("target") == target and "melee" in u.get("state", [])
@@ -133,6 +135,8 @@ class SkillRun:
         orders = []
         for unit in selected:
             self.ammo[unit["id"]] = {"ammo": unit.get("ammo", 0), "target": unit.get("target")}
+            if self.name == "shoot" and not unit.get("ammo"):
+                continue
             previous = self.sent.get(unit["id"])
             order, _ = skills.RULES[self.name](unit, assignment, enemies, previous)
             if order and (not skills.same(order, previous)

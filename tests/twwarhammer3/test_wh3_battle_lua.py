@@ -968,10 +968,9 @@ def test_the_observed_speed_is_the_engines_reading_and_a_failed_read_is_not_1x()
     assert speed() == "unreadable"
 
 
-def test_authored_starts_teleport_each_unit_and_hand_the_enemy_back():
-    lua = runtime()
+def authored_battle(lua):
     lua.execute("""
-        calls = {}
+        calls, delayed = {}, {}
         local function controller(name)
             local c = {}
             function c:add_units() calls[#calls + 1] = name .. ' add' end
@@ -984,15 +983,43 @@ def test_authored_starts_teleport_each_unit_and_hand_the_enemy_back():
             return c
         end
         function vector(x, y, z) return {x = x, y = y, z = z} end
-        bm = {battle = {get_terrain_height = function() return 7 end}}
-        state = {friendly = {f1 = {controller = controller('ours')}}, enemy = {e1 = {
-            unit = {}, army = {create_unit_controller = function()
-                return controller('theirs') end}}}}
+        function get(unit, method, default) return unit[method] or default end
+        function log() end
+        session = {tick_ms = 250}
+        bm = {battle = {get_terrain_height = function() return 7 end},
+              callback = function(_, fn, ms) delayed[#delayed + 1] = fn end}
+        local function theirs(name, kind)
+            return {unit = {type = kind}, army = {create_unit_controller = function()
+                return controller(name) end}}
+        end
+        state = {friendly_ids = {'f1', 'f2'}, enemy_ids = {'e1', 'e2'},
+                 friendly = {f1 = {unit = {type = 'gun'}, controller = controller('gun')},
+                             f2 = {unit = {type = 'sword'}, controller = controller('sword')}},
+                 enemy = {e1 = theirs('orc', 'orc'), e2 = theirs('goblin', 'goblin')}}
     """)
-    teleport = load_battle(lua, "teleport_units")
-    teleport(lua.eval("""{friendly = {{id = 'f1', x = 1, z = 2, bearing = 90, width = 40}},
-                          enemy = {{id = 'e1', x = 3, z = 4, bearing = 0, width = 50}}}"""))
-    calls = list(lua.globals().calls.values())
-    assert "ours at 1 2 7 90 40" in calls and "ours release" not in calls
-    assert [c for c in calls if c.startswith("theirs")] == [
-        "theirs add", "theirs take", "theirs at 3 4 7 0 50", "theirs release"]
+    return load_battle(lua, "authored_entry", "teleport_units")[1]
+
+
+def test_authored_starts_find_each_unit_by_type_in_any_engine_order():
+    lua = runtime()
+    teleport = authored_battle(lua)
+    teleport(lua.eval("""{friendly = {{type = 'sword', x = 1, z = 2, bearing = 90, width = 40},
+                                      {type = 'gun', x = 5, z = 6, bearing = 90, width = 40}}}"""))
+    assert list(lua.globals().calls.values()) == ["sword at 1 2 7 90 40", "gun at 5 6 7 90 40"]
+
+
+def test_an_enemy_returns_to_the_ai_only_a_tick_after_its_teleport():
+    lua = runtime()
+    teleport = authored_battle(lua)
+    teleport(lua.eval("{enemy = {{type = 'goblin', x = 3, z = 4, bearing = 0, width = 50}}}"))
+    g = lua.globals()
+    assert list(g.calls.values()) == ["goblin add", "goblin take", "goblin at 3 4 7 0 50"]
+    g.delayed[1]()
+    assert list(g.calls.values())[-1] == "goblin release"
+
+
+def test_an_authored_placement_with_no_unit_of_its_type_is_an_error():
+    lua = runtime()
+    teleport = authored_battle(lua)
+    with pytest.raises(LuaError, match="missing authored unit troll"):
+        teleport(lua.eval("{enemy = {{type = 'troll', x = 3, z = 4, bearing = 0, width = 50}}}"))

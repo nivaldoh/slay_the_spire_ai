@@ -2494,49 +2494,49 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -34,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_handgunners",
      "x": -80,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -126,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 376,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 330,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 284,
      "z": -150,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f7",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": 125,
      "z": -115,
      "bearing": 180,
@@ -2545,56 +2545,56 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": -149,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": -103,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": -57,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": -11,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 261,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e6",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 307,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e7",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 353,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e8",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 399,
      "z": -400,
      "bearing": 0,
@@ -2660,49 +2660,49 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": 343,
      "z": -316,
      "bearing": 200,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 300,
      "z": -300,
      "bearing": 200,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 257,
      "z": -284,
      "bearing": 200,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": -86,
      "z": -70,
      "bearing": 120,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -108,
      "z": -110,
      "bearing": 120,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -132,
      "z": -150,
      "bearing": 120,
      "width": 40
     },
     {
-     "id": "f7",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": -154,
      "z": -190,
      "bearing": 120,
@@ -2711,35 +2711,35 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 214,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_big_uns",
      "x": 260,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 306,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 426,
      "z": -363,
      "bearing": 280,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 434,
      "z": -317,
      "bearing": 280,
@@ -2807,56 +2807,56 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -150,
      "z": -231,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": -150,
      "z": -277,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_handgunners",
      "x": -150,
      "z": -323,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": -150,
      "z": -369,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 440,
      "z": -369,
      "bearing": 270,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": 440,
      "z": -323,
      "bearing": 270,
      "width": 40
     },
     {
-     "id": "f7",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 440,
      "z": -277,
      "bearing": 270,
      "width": 40
     },
     {
-     "id": "f8",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": 440,
      "z": -231,
      "bearing": 270,
@@ -2865,42 +2865,42 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 35,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_big_uns",
      "x": 81,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 127,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 173,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 219,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e6",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 265,
      "z": -300,
      "bearing": 0,
@@ -2967,42 +2967,42 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 196,
      "z": -300,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": 150,
      "z": -300,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 104,
      "z": -300,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 173,
      "z": -255,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 127,
      "z": -255,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": 150,
      "z": -215,
      "bearing": 180,
@@ -3011,49 +3011,49 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": -60,
      "z": -257,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": -60,
      "z": -303,
      "bearing": 90,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 360,
      "z": -303,
      "bearing": 270,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 360,
      "z": -257,
      "bearing": 270,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 104,
      "z": -475,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e6",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 150,
      "z": -475,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e7",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 196,
      "z": -475,
      "bearing": 0,
@@ -3122,49 +3122,49 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 49,
      "z": -101,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": 16,
      "z": -134,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": -16,
      "z": -166,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_inf_handgunners",
      "x": -49,
      "z": -199,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_handgunners",
      "x": -2,
      "z": -72,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": -35,
      "z": -105,
      "bearing": 135,
      "width": 40
     },
     {
-     "id": "f7",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": -68,
      "z": -138,
      "bearing": 135,
@@ -3173,56 +3173,56 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 151,
      "z": -379,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 184,
      "z": -346,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 216,
      "z": -314,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 249,
      "z": -281,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 371,
      "z": -489,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e6",
+     "type": "wh_main_grn_inf_orc_big_uns",
      "x": 404,
      "z": -456,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e7",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 436,
      "z": -424,
      "bearing": 315,
      "width": 40
     },
     {
-     "id": "e8",
+     "type": "wh_main_grn_cav_goblin_wolf_riders_0",
      "x": 469,
      "z": -391,
      "bearing": 315,
@@ -3290,49 +3290,49 @@
   "deployment": {
    "friendly": [
     {
-     "id": "f1",
+     "type": "wh_main_emp_inf_halberdiers",
      "x": 196,
      "z": -290,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f2",
+     "type": "wh_main_emp_inf_swordsmen",
      "x": 150,
      "z": -290,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f3",
+     "type": "wh_main_emp_inf_spearmen_1",
      "x": 104,
      "z": -290,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f4",
+     "type": "wh_main_emp_art_great_cannon",
      "x": 196,
      "z": -235,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f5",
+     "type": "wh_main_emp_inf_handgunners",
      "x": 150,
      "z": -235,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f6",
+     "type": "wh_main_emp_art_great_cannon",
      "x": 104,
      "z": -235,
      "bearing": 180,
      "width": 40
     },
     {
-     "id": "f7",
+     "type": "wh_main_emp_cav_empire_knights",
      "x": 260,
      "z": -200,
      "bearing": 180,
@@ -3341,49 +3341,49 @@
    ],
    "enemy": [
     {
-     "id": "e1",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 81,
      "z": -470,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e2",
+     "type": "wh_main_grn_inf_orc_big_uns",
      "x": 127,
      "z": -470,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e3",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 173,
      "z": -470,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e4",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 219,
      "z": -470,
      "bearing": 0,
      "width": 40
     },
     {
-     "id": "e5",
+     "type": "wh_main_grn_cav_goblin_wolf_riders_0",
      "x": -97,
      "z": -70,
      "bearing": 120,
      "width": 40
     },
     {
-     "id": "e6",
+     "type": "wh_main_grn_cav_orc_boar_boyz",
      "x": -120,
      "z": -110,
      "bearing": 120,
      "width": 40
     },
     {
-     "id": "e7",
+     "type": "wh_main_grn_cav_goblin_wolf_riders_0",
      "x": -143,
      "z": -150,
      "bearing": 120,

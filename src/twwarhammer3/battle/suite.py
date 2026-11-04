@@ -57,10 +57,9 @@ def author_task(scenario):
     """
     expect = scenario["expect"]
     role = "defender" if expect["player_defends"] else "attacker"
-    own = scenario.get("deployment", {}).get("friendly") or []
-    places = {place["id"]: f" at x={place['x']}, z={place['z']}" for place in own}
-    units = [f"f{i}: {kind}{places.get(f'f{i}', '')}"
-             for i, kind in enumerate(scenario["player"]["units"], 1)]
+    placed = scenario.get("deployment", {}).get("friendly")
+    units = ([f"{place['type']} at x={place['x']}, z={place['z']}" for place in placed]
+             if placed else scenario["player"]["units"])
     return (f"Win this {scenario.get('battle_type', 'classic')} battle as the {role}: any engine"
             f" win counts, and the {expect['time_limit_s']} s timer ends it. Within an outcome,"
             " keep your own army and destroy or rout the enemy's. Coordinates are metres: x east,"
@@ -221,7 +220,8 @@ def measure(row):
     path = directory / "episode-0000" / "result.json"
     result = json.loads(path.read_text()) if path.exists() else None
     empty = {"own": None, "taken": None, "battle_s": None, "usd": None, "authoring_usd": None,
-             "calls": None, "tokens": None, "age_s": None, "age_p90_s": None, "orders": None,
+             "calls": None, "tokens": None, "think_s": None, "age_s": None, "age_p90_s": None,
+             "plan_age_s": None, "orders": None,
              "refused": None, "forfeits": None, "first_contact_s": None, "spread_s": None,
              "idle_share": None, "local_share": None}
     if result is None or not row["evidence_matches_plan"]:
@@ -233,7 +233,8 @@ def measure(row):
             "usd": llm.get("usd", 0), "authoring_usd": authoring_usd(result),
             "calls": llm.get("calls", 0),
             "tokens": (llm.get("input_tokens") or 0) + (llm.get("output_tokens") or 0),
-            "age_s": metrics["order_age_s"]["p50"], "age_p90_s": metrics["order_age_s"]["p90"],
+            "think_s": metrics["call_seconds"]["p50"], "age_s": metrics["order_age_s"]["p50"],
+            "age_p90_s": metrics["order_age_s"]["p90"], "plan_age_s": metrics["plan_age_s"]["p50"],
             "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
             "forfeits": metrics["reply_validation"]["failed"] + metrics["transport_failures"],
             **coordination(read_frames(path.parent))}
@@ -337,8 +338,10 @@ def summarize(rows):
             "usd_total": round(sum(r["usd"] or 0 for r in mine), 4),
             "usd_per_win": round(sum(r["usd"] or 0 for r in done) / wins, 4) if wins else None,
             "calls": mean([r["calls"] for r in done]),
+            "think_s": median([r["think_s"] for r in done]),
             "age_s": median([r["age_s"] for r in done]),
             "age_p90_s": median([r["age_p90_s"] for r in done]),
+            "plan_age_s": median([r["plan_age_s"] for r in done]),
             "orders": mean([r["orders"] for r in done]),
             "refused_share": (round(sum(r["refused"] for r in decided)
                                     / sum(r["orders"] for r in decided), 3) if decided else None),
@@ -361,8 +364,9 @@ def summarize(rows):
 COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"), ("own", lambda a: a["own"]),
            ("taken", lambda a: a["taken"]), ("$/battle", lambda a: a["usd"]),
            ("$ author", lambda a: a["authoring_usd"]),
-           ("calls", lambda a: a["calls"]), ("age s", lambda a: a["age_s"]),
-           ("p90 s", lambda a: a["age_p90_s"]), ("refused", lambda a: a["refused_share"]),
+           ("calls", lambda a: a["calls"]), ("think s", lambda a: a["think_s"]),
+           ("age s", lambda a: a["age_s"]), ("p90 s", lambda a: a["age_p90_s"]),
+           ("plan s", lambda a: a["plan_age_s"]), ("refused", lambda a: a["refused_share"]),
            ("forfeits", lambda a: a["forfeits"]), ("spread s", lambda a: a["spread_s"]),
            ("idle", lambda a: a["idle_share"]), ("local", lambda a: a["local_share"]))
 

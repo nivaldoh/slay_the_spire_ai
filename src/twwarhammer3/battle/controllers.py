@@ -192,10 +192,8 @@ def factories(config: dict, *, _ledger=None) -> dict:
             if is_suite:
                 def make(kind=kind, model=model, effort=effort,
                          prompt=MODEL_PROMPTS[base].read_text()):
-                    budget = benchmark.BattleBudget(ledger, benchmark.SUITE_CALL_LIMIT,
-                                                    benchmark.SUITE_BATTLE_USD)
-                    return kind(model, effort, budget, send=send, provider=provider,
-                                system_prompt=prompt, benchmark=True)
+                    return kind(model, effort, benchmark.suite_budget(ledger), send=send,
+                                provider=provider, system_prompt=prompt, benchmark=True)
 
                 makers[name] = make
             elif is_benchmark:

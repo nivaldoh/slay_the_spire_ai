@@ -629,7 +629,8 @@ class LLMPolicy:
         if benchmark:
             from twwarhammer3.battle import benchmark as profile
 
-            self.card = {"benchmark": profile.VERSION, "transport_attempts": 1,
+            self.card = {"benchmark": getattr(ledger, "version", profile.VERSION),
+                         "transport_attempts": 1,
                          "failed_resends": 0, "invalid_retries": 0, "salvage": False,
                          "read_timeout_s": profile.READ_TIMEOUT_S,
                          "max_calls": getattr(ledger, "call_limit", profile.CALL_LIMIT),

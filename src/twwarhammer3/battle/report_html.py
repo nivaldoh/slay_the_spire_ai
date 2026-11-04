@@ -155,6 +155,11 @@ def armies(scenario: dict) -> dict:
             "line": f"{friendly} {verb} {enemy}" if friendly and enemy else friendly or enemy}
 
 
+def plan_title(scenario: dict) -> str:
+    """A benchmark scenario's name in the report; the mirror keeps its original label."""
+    return scenario["name"] if scenario.get("tests") else "Empire cavalry"
+
+
 def _json(value: object) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
@@ -462,9 +467,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "battle_type": scenario.get("battle_type") or "unrecorded",
             **({"benchmark": scenario["benchmark"],
                 "scenario_version": scenario.get("scenario_version"),
-                "title": (f"{note.get('title') or 'Empire cavalry'} — "
+                "title": (f"{note.get('title') or plan_title(scenario)} — "
                           f"version {scenario.get('scenario_version', '?')}"),
-                "short": f"Empire cavalry v{scenario.get('scenario_version', '?')}"}
+                "short": f"{plan_title(scenario)} v{scenario.get('scenario_version', '?')}"}
                if scenario.get("benchmark") else {}),
             "armies": armies(scenario), "battles": keys,
             "rows": sorted(rows.values(), key=lambda item: (

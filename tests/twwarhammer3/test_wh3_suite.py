@@ -10,7 +10,7 @@ import pytest
 from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle import benchmark, configured, graph, suite, team
-from twwarhammer3.battle.setup import check_battle, scenarios
+from twwarhammer3.battle.setup import check_battle, scenarios, validate_declaration
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -133,7 +133,7 @@ def test_the_gap_arm_needs_authored_graphs_and_plays_each_scenarios_own(tmp_path
 def test_the_authors_task_is_public():
     scenario = scenarios()["coord-relief"]
     task = suite.author_task(scenario)
-    assert "f1: wh_main_emp_inf_halberdiers at x=" in task and "defender" in task
+    assert "wh_main_emp_inf_halberdiers at x=" in task and "defender" in task
     assert "wh_main_grn_inf_orc_boyz" in task  # the roster is public
     for place in scenario["deployment"]["enemy"]:  # the enemy's start is not
         assert f"x={place['x']}, z={place['z']}" not in task
@@ -174,6 +174,7 @@ def test_each_arm_builds_for_a_suite_scenario_without_a_game_or_a_call(arm, tmp_
     monkeypatch.setattr(configured, "api_key", lambda provider="openai": "test-only")
     (tmp_path / "spend.jsonl").touch()
     args = dict(zip(suite.ARMS[arm][::2], suite.ARMS[arm][1::2]))
+    monkeypatch.chdir(REPO_ROOT)
     config = {"scenario": "coord-relief", "policy": args["--policy"], "episodes": 1,
               "provider": args.get("--provider", "openai"), "budget_usd": 5,
               "ledger": str(tmp_path / "spend.jsonl"), "delay_seconds": "0",
@@ -188,7 +189,9 @@ def test_each_arm_builds_for_a_suite_scenario_without_a_game_or_a_call(arm, tmp_
 def test_every_suite_scenario_declares_a_complete_authored_or_native_start():
     entries = {k: v for k, v in scenarios().items() if v.get("benchmark") == benchmark.SUITE}
     assert len(entries) >= 6
+    limits = {"episode_timeout": 1320, "run_timeout": 2280, "start_timeout": 900, "episodes": 1}
     for scenario in entries.values():
+        validate_declaration(scenario, limits)
         assert scenario.get("tests") and not scenario.get("scoring")
         for side, army in (("friendly", "player"), ("enemy", "enemy")):
             placed = scenario.get("deployment", {}).get(side)
@@ -314,3 +317,37 @@ def test_a_battle_never_started_keeps_its_row_with_no_measures(tmp_path):
     assert data["rows"][0]["status"] == "never_started" and data["rows"][0]["taken"] is None
     assert data["summary"]["arms"]["hold"]["planned"] == 1
     assert data["summary"]["arms"]["hold"]["win_bound"] is None
+
+
+def test_a_suite_goal_model_has_no_retries_and_a_battle_allowance(tmp_path, monkeypatch):
+    from twwarhammer3.battle import controllers
+
+    monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
+    monkeypatch.setattr(configured, "api_key", lambda provider="openai": "test-only")
+    (tmp_path / "spend.jsonl").touch()
+    config = {"scenario": "coord-relief", "provider": "anthropic", "budget_usd": 5,
+              "ledger": str(tmp_path / "spend.jsonl")}
+    make = configured.factory(REPO_ROOT / suite.GRAPH_TEMPLATE, config)
+    policy = make()
+    api = next(iter(policy.members.values())).policy.api
+    assert api.failed_resends == 0 and api.transport_attempts == 1
+    assert isinstance(api.ledger, benchmark.BattleBudget)
+    assert api.ledger.battle_usd == benchmark.SUITE_BATTLE_USD
+    policy.close()
+
+
+def test_a_dry_shooter_no_longer_stops_the_rest_of_its_group():
+    from twwarhammer3.battle.skill_contracts import SkillRun, preconditions
+
+    view = {"time_ms": 1000, "friendly": [
+        {"id": "a", "men": 10, "x": 0, "z": 0, "ammo": 5, "range": 150, "class": "missile"},
+        {"id": "b", "men": 10, "x": 5, "z": 0, "ammo": 0, "range": 150, "class": "missile"}],
+        "enemy": [{"id": "e", "men": 10, "x": 50, "z": 0, "state": []}]}
+    inputs = {"units": ["a", "b"], "target": "e"}
+    assert preconditions("shoot", inputs, view) is None
+    status, orders, _ = SkillRun("shoot", inputs, 0).tick(view)
+    assert status == "running" and [order["unit"] for order in orders] == ["a"]
+    view["friendly"][0]["ammo"] = 0
+    assert preconditions("shoot", inputs, view) == "no ammunition"
+    run = SkillRun("shoot", inputs, 0)
+    assert run.tick(view)[0] == "failed"  # none can fire: not a false success
