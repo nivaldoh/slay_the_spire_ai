@@ -36,6 +36,7 @@ const { chromium } = require("playwright");
     await page.waitForTimeout(200);
     assert.ok((await page.locator("#suite-question").innerText()).endsWith("?"));
     assert.ok((await page.locator(".suite-jobs li").count()) >= 2);
+    assert.ok((await page.locator(".suite-seen").innerText()).length > 20);
     assert.ok((await page.locator(".suite-row").count()) >= 2);
     assert.ok(await page.locator(".suite-map text").count());
     for (const answer of await page.locator(".suite-row-name em").allInnerTexts())

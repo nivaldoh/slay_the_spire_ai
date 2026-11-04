@@ -30,9 +30,10 @@ The dedicated historical cavalry report remains at `runs/twwarhammer3/reports/c1
 
 `benchmark report PLAN --also PLAN` writes `.html`, `.json` and `.txt`. Plans must share battle
 versions. The page leads with who won each battle, in plain method names. Picking a battle states
-its coordination problem: a start map with named groups, each group's job and who depends on whom.
-Below that one row per method shows when each group fought and answers the battle's question,
-such as where the reserve went; a row opens that replay, with the groups outlined on the map.
+its coordination problem: a start map with named groups and the plan, meaning each group's job and
+who depends on whom. Below that "What happened" says how the battles really went, and one row per
+method shows when each group fought and answers the battle's question, such as where the reserve
+went; a row opens that replay, with the groups outlined on the map.
 Every other measure and battle sits behind "Every measure and every battle".
 
 Groups, jobs, links and the question are hand-written in `report_notes.json`, not in the battle

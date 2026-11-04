@@ -200,7 +200,8 @@ function suitePage(data, api) {
       tick.style.left = percent(s, end);
       axis.append(tick);
     }
-    box.append(el("h3", "What each method did"));
+    box.append(el("h3", "What happened"));
+    if (page.current && picture.seen) box.append(el("p", picture.seen, "suite-seen"));
     const key = el("p", null, "suite-key");
     for (const group of picture.groups) {
       const mark = el("span", group.name, "suite-swatch");
@@ -210,7 +211,7 @@ function suitePage(data, api) {
     key.append(
       el(
         "span",
-        "Thick bar: in melee. Thin line: not in melee, including shooting. Nothing: all routed or dead, for now. Black tick: replay position.",
+        "Thick bar: in melee. Thin line: not in melee, including shooting. Nothing: all routed or dead, for now. Click a method to watch its battle below; the black tick is the replay's position.",
       ),
     );
     box.append(key);
@@ -354,8 +355,6 @@ function suitePage(data, api) {
     $("suite-title").textContent = picture.title;
     $("suite-question").textContent = picture.question;
     $("suite-why").textContent = picture.why;
-    $("suite-seen").textContent = page.current ? `What happened: ${picture.seen || ""}` : "";
-    $("suite-seen").hidden = !(page.current && picture.seen);
     $("suite-link-note").textContent = picture.link ? `Dashed line: ${picture.link}.` : "";
     $("suite-map").replaceChildren(diagram());
     $("suite-jobs").replaceChildren(jobs());
@@ -379,12 +378,12 @@ function suitePage(data, api) {
       $("suite-reading").append(
         el(
           "p",
-          "Broke means the share of the enemy dead or routed when the battle ended. One battle per pair, methods did not all play the same battles, and difficulty was tuned the same night on these methods' earlier battles, so these are leads and rank nothing.",
+          "Broke means the share of the enemy dead or routed at the end. A battle ends when one army has gone; none reached the timer. A dash means not played: Three models and Model over scripts were cut off on Rear raid, the battle nobody has won, and Scripts only was never planned for two. One battle per pair, and difficulty was tuned the same night on these methods' earlier battles, so these are leads and rank nothing.",
           "suite-caveat",
         ),
         el(
           "p",
-          "Each battle's jobs and dashed lines are what we meant it to test. No method sees them, and the battles did not always go that way. Groups are parts of the army, not players: one model commands them all, and three models split by unit type, so a group can answer to more than one model.",
+          "Groups on the maps are parts of the army, not players. One model commands them all; three models split by unit type, so a group can answer to more than one model.",
           "suite-caveat",
         ),
       );

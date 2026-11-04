@@ -1946,8 +1946,9 @@ sup {
 .suite-caveat { margin: 6px 0 0; color: var(--muted); font-size: var(--t-s); }
 .suite-title { margin: 0; font-family: var(--sans); color: var(--muted); font-size: var(--t-s); }
 .suite-case h2 { margin: 2px 0 6px; font-size: var(--t-xl); }
-.suite-why { margin: 0 0 4px; max-width: var(--measure); color: var(--ink-2); line-height: 1.5; }
-.suite-seen { margin: 0 0 14px; max-width: var(--measure); color: var(--ink); font-weight: 700; line-height: 1.5; }
+.suite-why { margin: 0 0 14px; max-width: var(--measure); color: var(--ink-2); line-height: 1.5; }
+.suite-seen { margin: 2px 0 4px; max-width: var(--measure); color: var(--ink); font-weight: 700; font-size: var(--t-m); line-height: 1.45; }
+.suite-plan-head { margin: 0 0 2px; font-family: var(--sans); font-size: var(--t-m); }
 .suite-plan { display: grid; grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr); gap: 22px; align-items: center; }
 .suite-map { display: block; width: 100%; background: var(--map); border-radius: 4px; }
 .suite-link-line { stroke-width: 2; stroke-dasharray: 6 5; opacity: .9; }

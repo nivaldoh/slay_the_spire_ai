@@ -483,7 +483,7 @@
           "East group"
         ]
       },
-      "seen": "Three methods sent the reserve east and one sent it west. Three models left it standing until it was attacked. Only one of the three that went east won."
+      "seen": "Three methods sent the reserve east and one sent it west. The Three models method left it standing until it was attacked. Only one of the three that went east won."
     },
     "coord-relief": {
       "title": "Relief",
@@ -532,7 +532,7 @@
         "text": "First help reached the garrison's fight {gap} after it began",
         "never": "The column never reached the garrison's fight"
       },
-      "seen": "Model over scripts won even though the column never reached the garrison's fight."
+      "seen": "Model over scripts won even though the column never reached the garrison's fight: it fought the South force about 270 m short."
     },
     "coord-pincer": {
       "title": "Pincer",
@@ -575,24 +575,24 @@
         "b": "East group",
         "never": "Only one group reached a fight"
       },
-      "seen": "In all five battles the block split and the two fights began 430-530 m apart. In four, both had begun by 0:48."
+      "seen": "In all five battles the block split and the two fights began 430-530 m apart. In four, both had begun 0:48 into the battle."
     },
     "coord-breakout": {
       "title": "Breakout",
-      "question": "Can the army beat one group before the other two close in?",
+      "question": "Can the army beat one force before the other two close in?",
       "why": "Three groups converge from the west, east and south, together 526 men against 451. The army can turn on one or meet all three.",
       "groups": [
         {
           "name": "Line",
           "x": 150,
           "z": -300,
-          "job": "Turn on one enemy group"
+          "job": "Turn on one enemy force"
         },
         {
           "name": "Guns",
           "x": 150,
           "z": -255,
-          "job": "Fire on that same group"
+          "job": "Fire on that same force"
         },
         {
           "name": "Knights",
@@ -635,7 +635,7 @@
       "answer": {
         "kind": "spread"
       },
-      "seen": "Neither win kept its line on one target. Model over scripts broke the West force at 1:16, just before the South force arrived; Scripts only fought all three at once."
+      "seen": "Neither win kept its Line on one target. Model over scripts broke the West force at 1:16, just before the South force arrived; Scripts only fought all three at once."
     },
     "coord-detail": {
       "title": "Defeat in detail",
@@ -740,7 +740,7 @@
         "kind": "guns",
         "who": "Guns"
       },
-      "seen": "One model's guns never fired."
+      "seen": "One model's guns never fired. In both battles every gun unit was in melee by 2:31, and both lost."
     }
   },
   "units": {
@@ -1298,19 +1298,19 @@
       ],
       "team": [
         "Three models",
-        "One each for infantry, shooters and fast units, acting at once"
+        "One each for infantry, shooters and fast units, acting at once. They cannot talk: each sees the others' units, not their orders"
       ],
       "commander": [
         "Model over scripts",
-        "Gives standing jobs; scripts carry them out. The only method given a page of tactics advice"
+        "Re-sets units' standing jobs every few seconds; scripts carry them out. The only method given a page of tactics advice"
       ],
       "gap": [
         "Written rules",
-        "A model writes each unit type's rules first, then only suggests targets"
+        "A model writes each unit type's rules first, then only suggests targets. The rules do not talk to each other"
       ],
       "skills": [
         "Scripts only",
-        "No model at all"
+        "No model. Each unit follows a fixed rule for its type; cavalry wait for the first fight"
       ]
     },
     "order": [
@@ -1329,7 +1329,7 @@
         "On the four battles both played, the model over scripts won 3 and the same scripts alone won 2. The scripts won Pincer, which the model lost, so how much is the model is not settled.",
         "Only the model over scripts gets a page of tactics advice (gang up, arrive together, come from behind), so its lead over one model mixes the method with the advice.",
         "One model ordering every unit won 0 of 6. Three models won 1 of 5, at 2.6 times the cost over the same five.",
-        "The written rules won 1 of 6, at about a tenth of one model's cost to play."
+        "The written rules won 1 of 6, at about a tenth of one model's cost to play, plus $0.005 a battle to write the rules."
       ]
     }
   }

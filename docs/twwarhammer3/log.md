@@ -49,6 +49,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
     lost the same way; my first sentence, that the garrison "fought alone" for a set time, was
     false for those two.
   - One model's guns on `coord-rear-raid` never fired.
+- Team members and graph members exchange no messages: each member sees allied units, not their
+  orders or notes. The page now says so, since it is how those methods can coordinate at all.
 - Checks: `tests/twwarhammer3/check_wh3_suite_browser.cjs` passes (proposed, not agreed); it shows
   the page displays its report, not that the numbers are right. A reviewer's separate code
   recomputed the rows and bars from the 26 replays once; that is a recount, not an agreed check.
