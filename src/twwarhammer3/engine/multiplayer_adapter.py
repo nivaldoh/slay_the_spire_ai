@@ -12,6 +12,7 @@ one could act on an old request after the phase moved on, and the guards would s
 """
 
 import argparse
+import contextlib
 import json
 import shutil
 import subprocess
@@ -40,22 +41,25 @@ class Adapter:
         self.source = AGENT.read_text(encoding="utf-8")
 
     def start(self, script, write) -> threading.Thread:
+        def one(line):
+            try:
+                request = json.loads(line)
+                operation, identity = request["operation"], request["request"]
+                if operation not in OPERATIONS or not isinstance(identity, str):
+                    raise ValueError("unknown operation or request id")
+            except (ValueError, KeyError, TypeError) as error:
+                write({"event": "request_refused", "line": line.strip(), "message": str(error)})
+                return
+            answer = script.exports_sync.submit(operation, identity)
+            write({"event": "request_answer", "request": identity, "answer": answer})
+
         def feed():
-            for line in self.lines:
-                try:
-                    request = json.loads(line)
-                    if request["operation"] not in OPERATIONS:
-                        raise ValueError("unknown operation")
-                    answer = script.exports_sync.submit(request["operation"], request["request"])
-                except (ValueError, KeyError, TypeError) as error:
-                    write({"event": "request_refused", "line": line.strip(),
-                           "message": str(error)})
-                    continue
-                except Exception as error:  # the attachment ended under a late request
-                    write({"event": "request_failed", "line": line.strip(),
-                           "message": str(error)})
-                    return
-                write({"event": "request_answer", "request": request["request"], "answer": answer})
+            try:
+                for line in self.lines:
+                    one(line)
+            except Exception as error:  # stdin broke, or the attachment ended under a request
+                with contextlib.suppress(ValueError):  # the log may have closed already
+                    write({"event": "request_failed", "message": str(error)})
 
         thread = threading.Thread(target=feed, daemon=True)
         thread.start()

@@ -30,8 +30,8 @@ Lua then presses this client's own Start Battle, during deployment only. ``{"con
 (``LEAVE``) likewise asks the battle Lua to quit to the main menu. ``{"operation":
 "ready_deployment"}`` (``READY_DEPLOYMENT``, a worker started with ``native``) goes to the
 experimental direct adapter (engine/multiplayer_adapter.py) instead of a click: refused or expired
-is ``rejected``, submitted is ``submitted``, and the later ``applied`` row arrives as an
-``adapter`` event. ``--menu`` adds
+is ``rejected``, submitted is ``submitted``, and the engine's anonymous ready count arrives as an
+``adapter`` event (``end_deployment_execute``). ``--menu`` adds
 ``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup).
 Without that acknowledgement within ``ACK_S`` its effect is unknown and the worker stops. When
 the lease ends, the worker closes an owned game, removes its session, closes the link and exits
@@ -171,7 +171,8 @@ class Worker:
     def watch(self) -> None:
         if self.adapter is not None:
             for row in self.adapter.poll():
-                if row.get("event") in ("operation_requested", "operation_result"):
+                if row.get("event") in ("operation_requested", "operation_result",
+                                        "end_deployment_execute"):
                     self.link.event("adapter", row)
         observation = self.mailbox.read_observation()
         if observation is None or (observation.get("battle"), observation.get("seq")) == self._seen:
