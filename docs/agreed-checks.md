@@ -223,6 +223,12 @@ revisions written below are the earlier passes.
   comparisons and cached-panel differences are retained. Speed getters describe movement
   capability, not witnessed fatigue-adjusted effective speed. Earlier passes above use
   the original raw-reading rule; logs without the new getters do not pass this method.
+  Extended method passed at `210e356`, build 26403568:
+  `runs/twwarhammer3/checkpoint-check-905-live-values-20261103/` (four completed/closed
+  launches; both identical restores match 2,000 planned native ticks and all nine live
+  readings each; required numeric getters present; changed control first differs at 1303).
+  Independent recount/review agrees. The preceding strict attempt remains failed at
+  `runs/twwarhammer3/checkpoint-check-905-20261103/`; it is not reclassified.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
@@ -241,6 +247,12 @@ revisions written below are the earlier passes.
   changed controls diverged after their orders. Three declared cases, two maps, build
   25961564 only. Source-only manual-tower supplement passed at `fbdba3b`: seven launches,
   construction/completed checkpoints, four exact restores (3,300 ticks each/66 readings).
+  Passed on build 26403568 at `210e356`: `runs/twwarhammer3/siege-905-20261103/`,
+  15 fresh completed/closed launches; eight identical restores match 2,400 planned native
+  ticks each and 194 live readings total; four changed controls diverge after their orders.
+  Siege/field/ownership/spell witnesses pass; saved-evidence recount and independent review
+  agree. Configured unpaused at 1x; capital receipt-timing ratios are about 0.981–0.984.
+  The separate manual-tower supplement has not been rerun on this build.
   [Scope and limits](twwarhammer3/checkpoints.md#siege-check); other cases unverified.
 - WH3 checkpoint-RL step run (restore to the engine ending, exact-tick injection, attribution,
   identical attempts): `uv run --locked python tests/twwarhammer3/check_wh3_restored_episode.py

@@ -4,8 +4,8 @@ Save a running battle at a tick and later continue it from exactly that tick, as
 needed: for benchmarks and training that start several attempts from one battle state.
 The native hooks target 9.0.5 / Steam build 26403568, matching the normal
 runtime [pin](integration.md#pins). The agent checks the game's code bytes and refuses
-other builds. The agreed Land and siege checks still need to pass on this build; historical
-passes below cover build 25961564 only.
+other builds. The agreed Land live-value check and all four declared siege states passed
+on this build at `210e356`; historical passes below cover build 25961564.
 Create new checkpoints on the updated build; compatibility with old-build replay files is
 unverified, and checkpoint-RL library records retain their original executable/agent hashes.
 The public release of the same tool for players and modders is
@@ -57,7 +57,12 @@ finite numeric morale percent and slow/fast movement capabilities. Only the cach
 checksum still match exactly. The full raw comparison and panel differences remain in
 `checks.json` and the native logs. Movement capabilities do not establish fatigue-adjusted
 effective speed. Earlier logs without these getters cannot pass the extended method; the
-first strict 9.0.5 attempt stays failed and needs a fresh live run ([log](log.md)).
+first strict 9.0.5 attempt stays failed ([log](log.md)). The extended method passed at
+`210e356`: `runs/twwarhammer3/checkpoint-check-905-live-values-20261103/`, four completed
+and closed launches. Both identical restores match all 2,000 planned native ticks and all
+nine live readings each; every required numeric getter is present. The changed control
+diverges at tick 1303. Recount and independent review agree; raw panels also match in this
+fresh attempt. This establishes the declared Land case, not other scenarios or builds.
 
 Passed at `7b1e2ed` (`runs/twwarhammer3/checkpoint-check-20261025b/`) and, after the merge
 and the Replays-list fix, at `6fdb271` (`checkpoint-check-20261025c/`): 0 checksum
@@ -115,6 +120,19 @@ stats remain in the evidence: an earlier open-gate restore failed the original s
 comparison at four of 38 readings despite matching every native checksum and every
 other reading field. The native stat-list getter has a refresh cache exceeding two seconds;
 this supports a cache-age explanation without proving every stat difference harmless.
+
+Passed on 9.0.5 / build 26403568 at `210e356`:
+`runs/twwarhammer3/siege-905-20261103/`, 15 fresh completed/closed launches. All eight
+identical restores match 2,400 planned native ticks each and all 194 live readings total;
+all four changed-order controls diverge after their orders. Required siege, field,
+ownership and spell/expiry witnesses pass. Cached panels differ in some restores and
+remain recorded separately. Standalone recount and independent evidence review agree.
+The battles were configured unpaused at 1x. Capital post-handover native-message receipt
+windows measure about 0.981–0.984 simulation seconds per Windows second; these are receipt
+timings, not continuous speed instrumentation. This establishes the declared cases only
+and rests on JUDGEMENT `tests/twwarhammer3/check_wh3_checkpoint_siege.py` `CASES` and
+`tests/twwarhammer3/checkpoint_siege/ground_fire.lua` ground aim. The separate source-only
+manual-tower supplement below has not been rerun on 9.0.5.
 
 Passed at `2e2acbe`: `runs/twwarhammer3/siege-final-20261025b/`, 15 distinct completed
 logs (11 fresh launches plus four reused logs with identical runtime, agent and input

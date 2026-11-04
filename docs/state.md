@@ -1,12 +1,12 @@
 # Project state
 
-Updated 2026-11-03: what runs, where each game stands, what comes next. Status only:
+Updated 2026-11-04: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 
-Checkpoint 9.0.5: first strict Land check failed on cached stat panels; owner approved the live-value rule. Fresh Land/siege checks next (`runs/wh3-checkpoint-905/`).
+Checkpoint 9.0.5: Land and all four declared siege states passed at `210e356`; game closed. [Results and limits](twwarhammer3/checkpoints.md#siege-check); evidence `runs/wh3-checkpoint-905/`.
 
 GCP: no VM. Game disk `wh3-mp-20261103d` (us-west1-c, build 26403568, second account's Steam login) kept until 2026-11-06 21:09 UTC (~$0.83/day; owner, 11-03); `wh3-compat-20261103c` (no game) auto-deletes 2026-11-04 04:20 UTC; `gcp-retry` (`f038dc5`) unmerged. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled).
 First two native multiplayer battles PC + VM ran 11-03 ([log](twwarhammer3/log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)); next: [three-step plan](twwarhammer3/mp-next-steps.md) (lobby automation, dropped observations and time drift, a VM-hosted battle), offline parts built, PC test bed run ($0); next: the paid VM session (kit `runs/twwarhammer3/gcp/next-session-kit/`), stopped there by the owner. Later (owner): a [multiplayer-friendly mod API](twwarhammer3/mp-next-steps.md#later-a-multiplayer-friendly-mod-api). [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
@@ -38,8 +38,8 @@ scores, every planned attempt and the recorded replays; controller ranking remai
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`; its initial comparison is complete.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $0.8216764 (includes one timeout estimate); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
-- Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`;
-  historical passes cover build 25961564; 9.0.5 port awaiting live checks ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
+- Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`,
+  build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 - Native team multiplayer: offline parts built ([status](twwarhammer3/native-multiplayer.md#implementation-status));
   11-03, two live PC+VM battles at `01647bd` (PC hosting, lobbies by hand): Lua moves from each
   client reached the other; battle 1 compared 553/553 readings exact. Unverified (one battle each,

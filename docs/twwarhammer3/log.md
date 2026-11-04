@@ -28,6 +28,37 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: declared siege checkpoint checks pass on 9.0.5
+
+- At `210e356`, build 26403568: all 15 fresh launches completed and closed in
+  `runs/twwarhammer3/siege-905-20261103/`. Eight identical restores match every one of
+  2,400 planned native ticks each and all 194 live readings across four saved states.
+- All required equipment, climbing, gate, construction, supplies, ownership, damage,
+  ammunition and armour/spell-expiry witnesses pass. Four changed controls first diverge
+  at ticks 1211, 1203, 653 and 2303, after orders at 1200, 1200, 650 and 2300 respectively.
+- Raw cached-panel differences are retained separately under the existing agreed rule.
+  Standalone recount and independent evidence review agree (report under
+  `runs/wh3-checkpoint-905/review/`). Original bystander replay hash unchanged; game closed.
+- Configured unpaused at 1x. Capital post-handover receipt windows measure about
+  0.981–0.984 simulation seconds per Windows second; this is not continuous speed evidence.
+- Establishes only these declared cases; rests on JUDGEMENT
+  `tests/twwarhammer3/check_wh3_checkpoint_siege.py` `CASES` and
+  `tests/twwarhammer3/checkpoint_siege/ground_fire.lua` ground aim. Separate manual-tower
+  supplement, other scenarios/builds, old replay compatibility and RL remain unverified. $0.
+
+## 2026-11-03: Land live-value checkpoint check passes on 9.0.5
+
+- Fresh check at `210e356`, build 26403568: four completed/closed launches in
+  `runs/twwarhammer3/checkpoint-check-905-live-values-20261103/`. Both identical restores
+  match all 2,000 planned native ticks and all nine live readings each, with finite numeric
+  morale/speed getters. Raw cached panels also match in both restores in this attempt.
+- Changed control first diverges at 1303. Standalone recount and independent evidence
+  review agree (`runs/wh3-checkpoint-905/review/land-live-values-evidence-review.txt`).
+- Windows native-message timings support approximately 1x after handover; they are receipt
+  times, not continuous speed instrumentation. Fast rebuild only precedes handover.
+- The original strict failure remains unchanged. This pass establishes this declared Land
+  case with the owner's live-value rule; siege and other scenarios remain separate. $0.
+
 ## 2026-11-03: strict Land checkpoint check fails on stat panels; live-value rule extended
 
 - Ran the existing Land check at `8029e1b`, build 26403568, four completed/closed launches:
