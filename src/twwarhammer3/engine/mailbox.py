@@ -15,14 +15,17 @@ Files, by writer:
   ignores ``speed`` and ``pause``, which ``require_realtime`` checks); ``orders.json``, one
   outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
   "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
-  battle through the results popup's rematch); ``menu.json``, UI steps run by the frontend
-  script, or by the battle script during a battle, and deleted when read. Menu requests
-  carry ``job``, ``request`` and ``steps``; each consumer rejects foreign jobs and logs
-  ``menu <request>: done|failed``. ``menu`` waits for its own completion and returns
-  nonzero on failure or timeout. The frontend also retains its standalone ``done`` or
-  ``failed`` marker; setup can instead hand off to the first battle observation.
+  battle through the results popup's rematch; in multiplayer only ``"ready"`` in control mode,
+  which presses this client's own Start Battle once during deployment); ``menu.json``, UI
+  steps run by the frontend script, or by the battle script during a battle, and deleted
+  when read. Menu requests carry ``job``, ``request`` and ``steps``; each consumer rejects
+  foreign jobs and logs ``menu <request>: done|failed``. ``menu`` waits for its own
+  completion and returns nonzero on failure or timeout. The frontend also retains its
+  standalone ``done`` or ``failed`` marker; setup can instead hand off to the first battle
+  observation.
 - game: ``observation.json`` (below), rewritten every ``observe_ms`` of battle time and
-  after each applied request; the append-only ``mod.log`` (``[battle ms] text``) and
+  after each applied request (in multiplayer on a fixed grid of battle time that a request
+  does not move); the append-only ``mod.log`` (``[battle ms] text``) and
   ``menu.log`` (step results, then ``done`` or ``failed``); UI dumps named by ``dump``
   steps; per battle, ``replay-<battle>.jsonl`` (a presentation frame per second, with
   ``record_replay``) and ``imagery-<battle>.json`` (still requests and unit names, with

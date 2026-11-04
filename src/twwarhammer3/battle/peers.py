@@ -29,8 +29,10 @@ outside repository was followed.
 
 This is weaker than that rule: ``time_ms`` is the battle time each client's Lua read when it
 made an observation, not a completed engine tick. Two clients' observations at one
-``time_ms`` may come from different ticks, and each client's observation schedule starts
-at its own first tick, so common times may be few or none (unverified). A passive
+``time_ms`` may come from different ticks. In the multiplayer modes regular observations
+follow a fixed battle-time grid that acknowledgements do not move (since 2026-11-03; on
+11-03 the clients' times parted at each client's first order), so common times need both
+clients' ticks to fall at the same battle times (unverified). A passive
 completed-tick collector is a later, separately reviewed step (plan step 4).
 
 Refusal (ValueError): a client's events holding more than one battle id (each client's Lua

@@ -51,11 +51,8 @@ class Cloud:
                     self.leftover = "disks"
                 error = CAPACITY if outcome in ("stockout", "leak") else f"code: {outcome}\n"
                 raise gcp.CommandError(subprocess.CompletedProcess(args, 1, "", error))
-            kept = next((x for x in args if x.startswith("--disk=")), None)
-            auto_delete = "auto-delete=yes" in kept if kept else True
             return [{"name": "wh3-test", "zone": "zones/" + flag(args, "--zone"),
-                     "disks": [{"autoDelete": auto_delete != (outcome == "bad_disk")}],
-                     "scheduling": {
+                     "disks": [{"autoDelete": outcome != "bad_disk"}], "scheduling": {
                          "instanceTerminationAction": "DELETE",
                          "terminationTime": flag(args, "--termination-time")}}]
         return {}
@@ -256,7 +253,12 @@ class DiskCloud(Cloud):
             name = gcp.GPU if args[1] == "accelerator-types" else gcp.MACHINE
             return [{"name": name, "zone": f"zones/{zone}"}
                     for zone in ("us-west1-a", "us-west1-c", "us-east1-b")]
-        return super().call(*args, **kwargs)
+        result = super().call(*args, **kwargs)
+        if args[:3] == ("compute", "instances", "create"):
+            # The created VM reports what its --disk flag asked for ("bad_disk" the opposite).
+            kept = "auto-delete=yes" in next(x for x in args if x.startswith("--disk="))
+            result[0]["disks"][0]["autoDelete"] = kept != (not result[0]["disks"][0]["autoDelete"])
+        return result
 
 
 def disk_arguments(tmp_path):

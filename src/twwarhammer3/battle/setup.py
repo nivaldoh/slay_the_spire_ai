@@ -159,6 +159,120 @@ def expected_mode(scenario: dict) -> dict:
     return expect
 
 
+def map_steps(scenario: dict) -> list[dict]:
+    """Lobby steps selecting the scenario's battle type and, if it names one, its map."""
+    steps = [
+        {"find": ["tab_buttons", "button_tab_maps"], "click": True, "timeout_ms": 30000},
+        {"wait_ms": 2000},
+        {"find": ["map_type_list", "CcoBattleTypeRecord" + scenario.get("battle_type", "classic")],
+         "click": True, "timeout_ms": 15000},
+        {"wait_ms": 1500},
+    ]
+    if scenario.get("map"):
+        steps += [
+            # Entries scrolled out of the list never read as visible, so this does not wait.
+            {"find": ["map_listview", "CcoCustomBattleMap" + scenario["map"]], "click": True},
+            {"wait_ms": 2500},
+            {"dump": "map_list.txt", "depth": 1, "find": ["map_listview", "list_box"]},
+        ]
+    return steps
+
+
+def army_steps(scenario: dict, side: dict, slot: int, *,
+                build_id: str | None = None) -> list[dict]:
+    """Steps that set lobby slot ``slot`` to army ``side``: race, faction, then recruits or a
+    saved preset (see ``scenario_steps``). A multiplayer host and joiner each run these for
+    their own slot (docs/twwarhammer3/mp-next-steps.md, step 1)."""
+    steps = []
+    ranks = experience_ranks(side)
+    steps += [
+        {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
+         "timeout_ms": 30000},
+    ]
+    context = f"{LOBBY}PlayerSlotList.At({slot})."
+    steps += [{"context": "CcoFrontendRoot", "command": context +
+               f"SetSubculture({context}AvailableSubcultureList.FirstContext(Key == "
+               + json.dumps(side["subculture"]) + "))", "required": True},
+              {"context": "CcoFrontendRoot", "expression": context + "SubcultureContext.Key",
+               "expect": side["subculture"], "timeout_ms": 15000, "required": True}]
+    if side.get("faction"):
+        steps += [{"context": "CcoFrontendRoot", "command": context +
+                   f"SetFaction({context}AvailableFactionsForCurrentSubcultureList."
+                   "FirstContext(Key == "
+                   + json.dumps(side["faction"]) + "))", "required": True},
+                  {"context": "CcoFrontendRoot", "expression":
+                   context + "FactionRecordContext.Key",
+                   "expect": side["faction"], "timeout_ms": 15000, "required": True}]
+    army_start = len(steps)
+    steps += [
+        {"context": "CcoFrontendRoot", "command": context + "ClearMainArmy()",
+         "required": True},
+        {"context": "CcoFrontendRoot", "command": context + "ClearReinforcements()",
+         "required": True},
+        {"context": "CcoFrontendRoot", "command":
+         context + "SetIsRecruitingReinforcements(false)", "required": True},
+    ]
+    if side["units"] is None:
+        steps += [{"find": ["clear_autogen_parent", "button_autogen"], "click": True,
+                   "timeout_ms": 15000},
+                  {"wait_ms": 3000}]
+    if "reinforcements" in side and side["reinforcements"] is None:
+        # Domination and survival will not start without a reinforcing army.
+        steps += [{"find": ["clear_autogen_reinforcement_parent",
+                            "button_clear_reinforcements"], "click": True},
+                  {"wait_ms": 800},
+                  {"find": ["clear_autogen_reinforcement_parent",
+                            "button_autogen_reinforcements"], "click": True,
+                   "timeout_ms": 15000},
+                  {"wait_ms": 3000}]
+    for index, unit in enumerate(side["units"] or []):
+        faction = side.get("recruitment_faction", side["faction"])
+        mounted = (side.get("mounts") or {}).get(str(index))
+        steps.append({"recruit": unit, "faction": faction, "slot": slot, "required": True,
+                      **({"mount": mounted} if mounted else {})})
+    if side.get("experience"):
+        steps.append({"experience": [{"type": unit, "rank": rank} for unit, rank in
+                                     zip(battle_units(side), ranks, strict=True)],
+                      "slot": slot, "required": True})
+    if isinstance(side.get("reinforcements"), list):
+        steps += [
+            {"context": "CcoFrontendRoot", "command":
+             context + "SetIsRecruitingReinforcements(true)"},
+        ]
+        for unit in side["reinforcements"]:
+            faction = side.get("recruitment_faction", side["faction"])
+            steps.append({"recruit": unit, "faction": faction, "slot": slot,
+                          "reinforcements": True, "required": True})
+        steps += [
+            {"context": "CcoFrontendRoot", "expression": context +
+             'ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")',
+             "required": True},
+            {"context": "CcoFrontendRoot", "command":
+             context + "SetIsRecruitingReinforcements(false)"},
+        ]
+    preset = army_preset_name(scenario, side, build_id)
+    if preset:
+        exists = PRESETS + f"ArmyPresetExists({json.dumps(preset)})"
+        fresh = [{**step, "when": "!" + exists} for step in steps[army_start:]]
+        steps[army_start:] = [
+            {"context": "CcoFrontendRoot", "command": PRESETS +
+             f"ArmyPresetList(0).FirstContext(Name == {json.dumps(preset)})."
+             f"LoadForPlayerSlot({LOBBY}PlayerSlotList.At({slot}))",
+             "when": exists, "required": True},
+            *fresh,
+        ]
+    if side["units"]:
+        steps += army_checks(side, slot)
+    if preset:
+        steps += [{"context": "CcoFrontendRoot", "command": PRESETS +
+                   f"SaveArmyPresetForPlayerSlot({json.dumps(preset)}, "
+                   f"{LOBBY}PlayerSlotList.At({slot}))", "when": "!" + exists,
+                   "required": True},
+                  {"context": "CcoFrontendRoot", "expression": exists,
+                   "expect": True, "required": True}]
+    return steps
+
+
 def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
     """Menu steps from the main menu to the start of a custom battle.
 
@@ -173,20 +287,7 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
              {"find": ["buttons_holder", "button_battle"], "click": True, "timeout_ms": 240000},
              {"find": ["battle_frame", "button_practice_battle"], "click": True,
               "timeout_ms": 20000}]
-    steps += [
-        {"find": ["tab_buttons", "button_tab_maps"], "click": True, "timeout_ms": 30000},
-        {"wait_ms": 2000},
-        {"find": ["map_type_list", "CcoBattleTypeRecord" + scenario.get("battle_type", "classic")],
-         "click": True, "timeout_ms": 15000},
-        {"wait_ms": 1500},
-    ]
-    if scenario.get("map"):
-        steps += [
-            # Entries scrolled out of the list never read as visible, so this does not wait.
-            {"find": ["map_listview", "CcoCustomBattleMap" + scenario["map"]], "click": True},
-            {"wait_ms": 2500},
-            {"dump": "map_list.txt", "depth": 1, "find": ["map_listview", "list_box"]},
-        ]
+    steps += map_steps(scenario)
     steps += [{"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
               {"wait_ms": 2000}]
     if scenario.get("expect"):
@@ -206,92 +307,7 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
                    "timeout_ms": 15000, "when": swap},
                   {"wait_ms": 1500}]
     for slot, side in enumerate(armies):
-        ranks = experience_ranks(side)
-        steps += [
-            {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
-             "timeout_ms": 30000},
-        ]
-        context = f"{LOBBY}PlayerSlotList.At({slot})."
-        steps += [{"context": "CcoFrontendRoot", "command": context +
-                   f"SetSubculture({context}AvailableSubcultureList.FirstContext(Key == "
-                   + json.dumps(side["subculture"]) + "))", "required": True},
-                  {"context": "CcoFrontendRoot", "expression": context + "SubcultureContext.Key",
-                   "expect": side["subculture"], "timeout_ms": 15000, "required": True}]
-        if side.get("faction"):
-            steps += [{"context": "CcoFrontendRoot", "command": context +
-                       f"SetFaction({context}AvailableFactionsForCurrentSubcultureList."
-                       "FirstContext(Key == "
-                       + json.dumps(side["faction"]) + "))", "required": True},
-                      {"context": "CcoFrontendRoot", "expression":
-                       context + "FactionRecordContext.Key",
-                       "expect": side["faction"], "timeout_ms": 15000, "required": True}]
-        army_start = len(steps)
-        steps += [
-            {"context": "CcoFrontendRoot", "command": context + "ClearMainArmy()",
-             "required": True},
-            {"context": "CcoFrontendRoot", "command": context + "ClearReinforcements()",
-             "required": True},
-            {"context": "CcoFrontendRoot", "command":
-             context + "SetIsRecruitingReinforcements(false)", "required": True},
-        ]
-        if side["units"] is None:
-            steps += [{"find": ["clear_autogen_parent", "button_autogen"], "click": True,
-                       "timeout_ms": 15000},
-                      {"wait_ms": 3000}]
-        if "reinforcements" in side and side["reinforcements"] is None:
-            # Domination and survival will not start without a reinforcing army.
-            steps += [{"find": ["clear_autogen_reinforcement_parent",
-                                "button_clear_reinforcements"], "click": True},
-                      {"wait_ms": 800},
-                      {"find": ["clear_autogen_reinforcement_parent",
-                                "button_autogen_reinforcements"], "click": True,
-                       "timeout_ms": 15000},
-                      {"wait_ms": 3000}]
-        for index, unit in enumerate(side["units"] or []):
-            faction = side.get("recruitment_faction", side["faction"])
-            mounted = (side.get("mounts") or {}).get(str(index))
-            steps.append({"recruit": unit, "faction": faction, "slot": slot, "required": True,
-                          **({"mount": mounted} if mounted else {})})
-        if side.get("experience"):
-            steps.append({"experience": [{"type": unit, "rank": rank} for unit, rank in
-                                         zip(battle_units(side), ranks, strict=True)],
-                          "slot": slot, "required": True})
-        if isinstance(side.get("reinforcements"), list):
-            steps += [
-                {"context": "CcoFrontendRoot", "command":
-                 context + "SetIsRecruitingReinforcements(true)"},
-            ]
-            for unit in side["reinforcements"]:
-                faction = side.get("recruitment_faction", side["faction"])
-                steps.append({"recruit": unit, "faction": faction, "slot": slot,
-                              "reinforcements": True, "required": True})
-            steps += [
-                {"context": "CcoFrontendRoot", "expression": context +
-                 'ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")',
-                 "required": True},
-                {"context": "CcoFrontendRoot", "command":
-                 context + "SetIsRecruitingReinforcements(false)"},
-            ]
-        preset = army_preset_name(scenario, side, build_id)
-        if preset:
-            exists = PRESETS + f"ArmyPresetExists({json.dumps(preset)})"
-            fresh = [{**step, "when": "!" + exists} for step in steps[army_start:]]
-            steps[army_start:] = [
-                {"context": "CcoFrontendRoot", "command": PRESETS +
-                 f"ArmyPresetList(0).FirstContext(Name == {json.dumps(preset)})."
-                 f"LoadForPlayerSlot({LOBBY}PlayerSlotList.At({slot}))",
-                 "when": exists, "required": True},
-                *fresh,
-            ]
-        if side["units"]:
-            steps += army_checks(side, slot)
-        if preset:
-            steps += [{"context": "CcoFrontendRoot", "command": PRESETS +
-                       f"SaveArmyPresetForPlayerSlot({json.dumps(preset)}, "
-                       f"{LOBBY}PlayerSlotList.At({slot}))", "when": "!" + exists,
-                       "required": True},
-                      {"context": "CcoFrontendRoot", "expression": exists,
-                       "expect": True, "required": True}]
+        steps += army_steps(scenario, side, slot, build_id=build_id)
     steps += [
         {"find": ["teams_parent", "CcoCustomBattlePlayerSlotslot0"], "click": True,
          "timeout_ms": 30000},
@@ -327,6 +343,62 @@ def lobby_ids(text: str) -> dict | None:
         elif ghost:
             found, ghost = {"lobby": match[2], "steam_lobby": ghost}, None
     return found
+
+
+# Multiplayer lobby paths, mapped on the PC on 2026-11-03
+# (runs/twwarhammer3/native-multiplayer/lobby-map-20261103/): the lobby is the single-player
+# custom battle panel and context; the start button reads "Ready". The host dialog keeps the
+# last game name and password; there is no friends-only setting, and "Start without Lord(s)"
+# does not cover AI slots.
+READY_STEP = {"find": ["start_button_frame", "button_start_battle"], "click": True,
+              "timeout_ms": 30000}
+
+
+def host_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
+    """Main menu to a hosted multiplayer battle lobby, then Ready: the host's army
+    (``player``) in slot 0, one open player slot for the joiner (slot 1) and the AI army
+    (``enemy``, which needs a lord or autogeneration) in slot 2
+    (docs/twwarhammer3/mp-next-steps.md, step 1)."""
+    size = LOBBY + "PlayerSlotList.Size"
+    steps = [{"log": "multiplayer host; waiting for the main menu"},
+             {"find": ["buttons_holder", "button_battle"], "timeout_ms": 240000},
+             {"find": ["multiplayer", "button_multiplayer"], "click": True, "timeout_ms": 15000},
+             {"wait_ms": 2000},
+             {"find": ["multiplayer_lobbies", "button_mp_lobbies"], "click": True,
+              "timeout_ms": 15000},
+             {"wait_ms": 6000},
+             {"find": ["buttons_holder_battle", "button_host"], "click": True,
+              "timeout_ms": 30000},
+             {"wait_ms": 3000},
+             {"dump": "host_game.txt", "depth": 1, "find": ["host_game"]},
+             {"find": ["host_game", "button_ok"], "click": True, "timeout_ms": 10000},
+             {"wait_ms": 8000}]
+    steps += map_steps(scenario)
+    steps += [{"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
+              {"wait_ms": 2000},
+              {"find": ["top_team_parent", "button_add_mp_player_slot"], "click": True,
+               "timeout_ms": 15000, "when": f"{size} < 2"},
+              {"wait_ms": 1500},
+              {"find": ["bottom_team_parent", "button_add_ai"], "click": True,
+               "timeout_ms": 15000, "when": f"{size} < 3"},
+              {"wait_ms": 1500},
+              {"context": "CcoFrontendRoot", "expression": size, "expect": 3, "required": True},
+              {"context": "CcoFrontendRoot", "expression": LOBBY + "PlayerSlotList.At(1).IsAI",
+               "expect": False, "required": True},
+              {"context": "CcoFrontendRoot", "expression": LOBBY + "PlayerSlotList.At(2).IsAI",
+               "expect": True, "required": True}]
+    steps += army_steps(scenario, scenario["player"], 0, build_id=build_id)
+    steps += army_steps(scenario, scenario["enemy"], 2, build_id=build_id)
+    return steps + [{"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"},
+                    READY_STEP]
+
+
+def join_steps(scenario: dict, slot: int, *, build_id: str | None = None) -> list[dict]:
+    """In a joined multiplayer lobby: this client's army (``player``) in its own ``slot``,
+    then Ready. Reaching the lobby (game list, Steam join link or invite) comes first."""
+    return [*army_steps(scenario, scenario["player"], slot, build_id=build_id),
+            {"context": "CcoFrontendRoot", "expression": LOBBY + "ReadyStatusText"},
+            READY_STEP]
 
 
 def battle_units(army: dict) -> list[str]:

@@ -1226,13 +1226,15 @@ local function ready(message)
         result.error = "single_player"
     elseif state.started or bm:get_current_phase_name() ~= "Deployment" then
         result.error = "not_deployment"
+    elseif state.ready_pressed then
+        result.error = "already_ready"  -- pressing again may un-ready this client
     else
         local clicked, err = pcall(function()
             local button = find_uicomponent(core:get_ui_root(), "button_battle_start")
             if not button then error("button_battle_start not found") end
             button:SimulateLClick()
         end)
-        result.ok = clicked
+        result.ok, state.ready_pressed = clicked, clicked
         if not clicked then result.error = clean_error(err) end
     end
     log("multiplayer ready: " .. (result.ok and "clicked" or result.error))
@@ -1443,7 +1445,8 @@ local function tick()
             state.next_observe_ms = now + step
         elseif now >= state.next_observe_ms then
             -- Multiplayer: a fixed battle-time grid that an acknowledgement does not move, so
-            -- every client publishes at the same times (docs/twwarhammer3/mp-next-steps.md).
+            -- clients whose ticks fall at the same battle times publish at the same times
+            -- (docs/twwarhammer3/mp-next-steps.md, step 2; untested live).
             repeat state.next_observe_ms = state.next_observe_ms + math.max(step, 1)
             until state.next_observe_ms > now
         end

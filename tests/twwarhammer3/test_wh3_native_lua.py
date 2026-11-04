@@ -489,6 +489,9 @@ def test_control_ready_presses_this_clients_start_battle_in_multiplayer_deployme
     assert seen["orders"]["request"] == "q1"
     assert seen["orders"]["results"] == [{"index": 1, "control": "ready", "ok": True}]
     assert "multiplayer ready: clicked" in logged(g)
+    # A second press could un-ready this client, so a repeat is refused.
+    seen = ready(g, "q1b")
+    assert g.clicks == 1 and seen["orders"]["results"][0]["error"] == "already_ready"
     # Once the battle has started it no longer clicks.
     g.phase = "Deployed"
     g.phases["Deployed"]()
