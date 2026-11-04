@@ -260,6 +260,7 @@ def main() -> int:
                        help="completed-tick mode: each client's native.jsonl, instead of attempt")
     peers.add_argument("--start", type=int, help="first tick of the declared interval")
     peers.add_argument("--end", type=int, help="last tick of the declared interval")
+    peers.add_argument("--generation", type=int, help="which battle of a multi-battle capture")
 
     report = commands.add_parser(
         "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
@@ -578,14 +579,15 @@ def main() -> int:
             if args.native:
                 captures = dict(item.split("=", 1) for item in args.native)
                 summary = compare_captures(
-                    {client: load_capture(Path(path)) for client, path in captures.items()},
+                    {client: load_capture(Path(path), generation=args.generation)
+                     for client, path in captures.items()},
                     start=args.start, end=args.end)
             else:
                 summary = compare(args.attempt)
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
         except (KeyError, TypeError, AttributeError) as exc:  # a shape unreadable() lets by
-            parser.error(f"{args.attempt}: evidence the comparison cannot read: "
+            parser.error(f"{args.attempt or args.native}: evidence the comparison cannot read: "
                          f"{type(exc).__name__}: {exc}")
         print(json.dumps(summary, indent=1))
         return 0

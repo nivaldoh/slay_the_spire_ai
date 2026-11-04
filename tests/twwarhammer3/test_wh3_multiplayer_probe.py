@@ -131,10 +131,13 @@ def test_probe_only_emits_joined_completed_ticks_and_forgets_old_sessions():
 load(`
 const env = ptr(0x6000000), session = ptr(0x6100000);
 const checks = ptr(0x6200000), entry = ptr(0x6300000), world = ptr(0x6600000);
+const model = ptr(0x6700000), state = ptr(0x6800000);
 pointers.set(session.value, VTABLE.session);
 pointers.set(env.add(ENV.setup).value, world.value);
-pointers.set(world.add(WORLD.alliances).value, 0);
-words.set(world.add(WORLD.alliance_count).value, 0);
+pointers.set(env.add(ENV.model).value, model.value);
+pointers.set(model.add(MODEL.state).value, state.value);
+pointers.set(state.add(STATE.alliances).value, 0);
+words.set(state.add(STATE.alliance_count).value, 0);
 words.set(world.add(WORLD.phase).value, 4);
 pointers.set(session.add(0x20).value, env.value);
 pointers.set(env.add(ENV.checksums).value, checks.value);

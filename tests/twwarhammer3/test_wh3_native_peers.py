@@ -21,7 +21,8 @@ const env = ptr(0x6000000), session = ptr(0x6100000), checks = ptr(0x6200000);
 const entry = ptr(0x6300000), world = ptr(0x6600000), table = ptr(0x6700000);
 const alliance = ptr(0x6800000), armies = ptr(0x6900000), army = ptr(0x6a00000);
 const units = ptr(0x6b00000), unit = ptr(0x6c00000), body = ptr(0x6d00000);
-const entity = ptr(0x6e00000), id = ptr(0x6f00000);
+const entity = ptr(0x6e00000), id = ptr(0x6f00000), model = ptr(0x7200000);
+const state = ptr(0x7300000);
 pointers.set(session.value, VTABLE.session);
 pointers.set(session.add(0x20).value, env.value);
 pointers.set(env.add(ENV.checksums).value, checks.value);
@@ -29,15 +30,18 @@ pointers.set(checks.add(0x48).value, entry.value);
 pointers.set(env.add(ENV.worker_job).value, 0);
 pointers.set(env.add(ENV.setup).value, world.value);
 pointers.set(env.add(ENV.provider).value, 0x7000000);
-pointers.set(world.add(0x108).value, table.value);
-words.set(world.add(0x104).value, 1);
+// The walk Lua's alliances, armies and units getters make (0x2ec53d0, 0x2dd8f28, 0x2ed0708).
+pointers.set(env.add(0x440).value, model.value);
+pointers.set(model.add(0x150).value, state.value);
+pointers.set(state.add(0x138).value, table.value);
+words.set(state.add(0x134).value, 1);
 words.set(world.add(0xc8).value, 5);
 pointers.set(table.value, alliance.value);
-words.set(alliance.add(0x1c).value, 1);
-pointers.set(alliance.add(0x20).value, armies.value);
+words.set(alliance.add(0x34).value, 1);
+pointers.set(alliance.add(0x38).value, armies.value);
 pointers.set(armies.value, army.value);
-words.set(army.add(0x68c).value, 1);
-pointers.set(army.add(0x690).value, units.value);
+words.set(army.add(0x164).value, 1);
+pointers.set(army.add(0x168).value, units.value);
 pointers.set(units.value, unit.value);
 for (const [offset, value] of [[0x3ea0, 77], [0xa4, 60], [0x80, 1000], [0x88, 900],
                                [0x3d90, 12], [0x3b70, 2]])
@@ -62,7 +66,7 @@ for (let t = 1; t <= 24; t++) {
     words.set(env.add(ENV.tick).value, t);
     words.set(entry.add(0x18).value, t);
     words.set(entry.add(0x14).value, 1000 + t);
-    if (t === 13) {
+    if (t === 13 || t === 1 || t === 11) {
         words.set(ptr(0x7000000).add(0x5008).value, 8);
         hooks.get(Number(BUILD.command_packet[0])).onEnter.call(
             {}, [ptr(1), ptr(0x7000008), id, ptr(1)]);
@@ -101,9 +105,14 @@ def test_the_agent_writes_every_tick_scheduled_witnesses_and_the_ones_around_a_c
     assert ticks == list(range(1, 25))
     assert all(r["phase"] == 5 for r in rows if r["event"] == "completed_tick")
     witnesses = [(r["tick"], r["reason"]) for r in rows if r["event"] == "witness"]
-    assert witnesses == [(10, "schedule"), (12, "before_command"), (13, "after_command"),
-                         (20, "schedule")]
-    unit = next(r for r in rows if r["event"] == "witness")["units"][0]
+    # A packet before tick 1 has no earlier state and says so; one right after a sent tick
+    # needs no second "before" row.
+    assert witnesses == [(1, "after_command"), (10, "schedule"), (11, "after_command"),
+                         (12, "before_command"), (13, "after_command"), (20, "schedule")]
+    availability = [r["before_available"] for r in rows if r["event"] == "witness"
+                    and r["reason"] == "after_command"]
+    assert availability == [False, True, True]
+    unit = next(r for r in rows if r["event"] == "witness" and r["tick"] == 10)["units"][0]
     # alliance, army, index, id, men, hp words, ammo, morale, kind, raw x y z, low 16 of bearing
     assert unit == [0, 0, 0, 77, 60, 1000, 900, 12, 2, 0, 0x41200000, 0x42000000, 0x43000000,
                     0x123]
@@ -115,6 +124,7 @@ def test_identical_captures_agree_and_cover_every_tick(tmp_path, rows):
     assert summary["ticks_compared"] == 24
     assert summary["witness_ticks_compared"] == 2
     assert summary["units_compared"] == 2
+    assert not summary["phase_conflicts"]
     assert summary["interval"] == [1, 24]
 
 
@@ -153,13 +163,46 @@ def test_a_gap_inside_the_interval_is_inconclusive_never_agreed(tmp_path, rows):
     assert gone["verdict"] == "inconclusive" and gone["missing_witness"]["B"] == [20]
 
 
-def test_a_stalled_peer_cannot_hide_behind_the_overlap_of_a_declared_interval(tmp_path, rows):
+def test_a_stalled_or_late_peer_is_never_agreed_by_default(tmp_path, rows):
     def stall(second):
         return [r for r in second if r.get("tick", 0) <= 15]
-    assert pair(tmp_path, rows, stall)["clients"]["B"]["last_tick"] == 15
-    declared = pair(tmp_path, rows, stall, start=1, end=24)
-    assert declared["verdict"] == "inconclusive"
-    assert declared["missing_ticks"]["B"] == list(range(16, 25))
+
+    def late(second):
+        return [r for r in second if r.get("tick", 99) > 10]
+    stalled = pair(tmp_path, rows, stall)
+    assert stalled["verdict"] == "inconclusive" and stalled["clients"]["B"]["last_tick"] == 15
+    assert stalled["missing_ticks"]["B"] == list(range(16, 25))
+    assert pair(tmp_path, rows, stall, start=1)["verdict"] == "inconclusive"
+    assert pair(tmp_path, rows, late)["verdict"] == "inconclusive"
+    narrowed = pair(tmp_path, rows, stall, start=1, end=15)
+    assert narrowed["verdict"] == "agreed", "only when the interval is declared"
+
+
+def test_no_raw_evidence_compared_is_inconclusive_not_agreed(tmp_path, rows):
+    no_schedule = pair(tmp_path, rows, start=11, end=19)
+    assert no_schedule["ticks_compared"] == 9 and no_schedule["witness_ticks_compared"] == 0
+    assert no_schedule["verdict"] == "inconclusive"
+
+    def empty(both):
+        for row in both:
+            if row["event"] == "witness":
+                row["units"] = []
+    unitless = json.loads(json.dumps(rows))
+    empty(unitless)
+    summary = pair(tmp_path, unitless, empty)
+    assert summary["witness_ticks_compared"] == 2 and summary["units_compared"] == 0
+    assert summary["verdict"] == "inconclusive"
+
+
+def test_a_phase_difference_conflicts_between_clients_and_within_one(tmp_path, rows):
+    def other(second):
+        next(r for r in second if r["event"] == "completed_tick" and r["tick"] == 3)["phase"] = 6
+    summary = pair(tmp_path, rows, other)
+    assert summary["verdict"] == "conflict" and summary["phase_conflicts"][0]["tick"] == 3
+
+    def repeat(second):
+        return [*second, dict(next(r for r in second if r["event"] == "completed_tick"), phase=6)]
+    assert pair(tmp_path, rows, repeat)["own_conflicts"]["B"] == [{"tick": 1, "kind": "phase"}]
 
 
 def test_a_missing_participant_or_failed_capture_is_inconclusive(tmp_path, rows):
@@ -184,11 +227,18 @@ def test_a_client_repeating_a_tick_with_another_value_conflicts(tmp_path, rows):
 
 def test_submission_counts_catch_a_duplicate_packet(tmp_path, rows):
     capture = load_capture(write(tmp_path / "a", rows))
-    assert submission_problems(capture, {0xabc: 1}) == []
+    assert submission_problems(capture, {0xabc: 3}) == []
     duplicate = next(r for r in rows if r["event"] == "command_packet")
     twice = load_capture(write(tmp_path / "b", [*rows, duplicate]))
-    assert submission_problems(twice, {0xabc: 1}) == [
-        {"id": 0xabc, "expected": 1, "observed": 2}]
+    assert submission_problems(twice, {0xabc: 3}) == [
+        {"id": 0xabc, "expected": 3, "observed": 4}]
+
+
+def test_submission_counts_catch_a_missing_or_unexpected_packet(tmp_path, rows):
+    capture = load_capture(write(tmp_path / "a", rows))
+    assert submission_problems(capture, {0xabc: 4}) == [
+        {"id": 0xabc, "expected": 4, "observed": 3}]
+    assert submission_problems(capture, {}) == [{"id": 0xabc, "expected": 0, "observed": 3}]
 
 
 def test_two_battles_in_one_capture_need_a_named_generation(tmp_path, rows):
@@ -196,7 +246,12 @@ def test_two_battles_in_one_capture_need_a_named_generation(tmp_path, rows):
     path = write(tmp_path / "a", [*rows, *second])
     with pytest.raises(ValueError, match="generation"):
         load_capture(path)
-    assert load_capture(path, generation=2)["generation"] == 2
+    second_only = load_capture(path, generation=2)
+    assert second_only["generation"] == 2 and sorted(second_only["ticks"]) == list(range(1, 25))
+    # The first battle's rows must not mix in: rewrite one, it stays out of the second.
+    changed = [dict(r, checksum=7) if r["event"] == "completed_tick" else r for r in rows]
+    mixed = load_capture(write(tmp_path / "b", [*changed, *second]), generation=2)
+    assert mixed["conflicts"] == [] and mixed["ticks"] == second_only["ticks"]
 
 
 def test_a_torn_last_line_is_an_unclean_stop_and_a_torn_earlier_line_refuses(tmp_path, rows):

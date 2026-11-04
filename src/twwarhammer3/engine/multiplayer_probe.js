@@ -31,22 +31,25 @@ const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x44
 const UI = {env: 0x418, deployment_flag: 0x15cf};
 // The tick hands each command handler [env+0x440] (0x2ddab54 -> 0x2f0b580 -> call rax).
 const MODEL = {state: 0x150};
-const STATE = {ready_count: 0x9b8, ready_countdown: 0x9b4};
+const STATE = {alliance_count: 0x134, alliances: 0x138, ready_count: 0x9b8,
+               ready_countdown: 0x9b4};
 const PROVIDER = {buffer: 8, write_offset: 0x5008};
 // Unit fields as the battle_unit Lua getters read them (table 0x3d4ac70): ui id 0x2f22df8,
-// men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0 and morale 0x303bd08.
-// Hit points: 0x310da24 reads unit+0x80 and +0x88 among others; these two are raw words.
-const WORLD = {phase: 0xc8, alliance_count: 0x104, alliances: 0x108};
-const ALLIANCE = {army_count: 0x1c, armies: 0x20};
-const ARMY = {unit_count: 0x68c, units: 0x690};
+// men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0. The morale word is
+// the state 0x303bd08 reads for is_routing. Hit points: 0x310da24 reads unit+0x80 and +0x88
+// among others; these two are raw words. The walk is the one Lua's alliances/armies/units
+// make, through the model state: 0x2ec53d0, 0x2dd8f28, 0x2ed0708.
+const WORLD = {phase: 0xc8};
+const ALLIANCE = {army_count: 0x34, armies: 0x38};
+const ARMY = {unit_count: 0x164, units: 0x168};
 const UNIT = {hp_a: 0x80, hp_b: 0x88, men: 0xa4, body: 0x32f8, morale: 0x3b70, ammo: 0x3d90,
               ui_id: 0x3ea0};
 const BODY = {bearing: 0xb70, position: 0xc10, attached: 0xc28, entity: 0xc90};
 const ENTITY = {position: 0x88};
-// JUDGEMENT: Raw witness rests on docs/twwarhammer3/multiplayer-control-foundation.md Raw
-// witness: every ten completed ticks, plus the last completed tick before a local command
-// packet and the first after it. Floats stay as raw 32-bit words, so no rounding hides a
-// difference. Evaluator-only: this reaches native.jsonl, never a policy.
+// Rests on JUDGEMENT docs/twwarhammer3/multiplayer-control-foundation.md Raw witness: every
+// ten completed ticks, plus the last completed tick before a local command packet and the
+// first after it. Floats stay as raw 32-bit words, so no rounding hides a difference.
+// Evaluator-only: this reaches native.jsonl, never a policy.
 const WITNESS_EVERY = 10;
 const main = Process.getModuleByName('Warhammer3.exe');
 const hex = bytes => Array.from(new Uint8Array(bytes))
@@ -92,9 +95,10 @@ function unitRow(alliance, army, index, unit) {
              body.add(BODY.bearing).readU32() & 0xffff);
     return row;
 }
-function witnessRows(world) {
-    const rows = [], alliances = world.add(WORLD.alliances).readPointer();
-    for (let a = 0, n = world.add(WORLD.alliance_count).readU32(); a < n; a++) {
+function witnessRows(env) {
+    const state = env.add(ENV.model).readPointer().add(MODEL.state).readPointer();
+    const rows = [], alliances = state.add(STATE.alliances).readPointer();
+    for (let a = 0, n = state.add(STATE.alliance_count).readU32(); a < n; a++) {
         const alliance = alliances.add(a * 8).readPointer();
         const armies = alliance.add(ALLIANCE.armies).readPointer();
         for (let b = 0, m = alliance.add(ALLIANCE.army_count).readU32(); b < m; b++) {
@@ -210,13 +214,14 @@ try {
                 b.emitted = p.tick;
                 const world = env.add(ENV.setup).readPointer();
                 record('completed_tick', {...p, phase: world.add(WORLD.phase).readU32()});
-                const sample = {tick: p.tick, units: witnessRows(world), sent: false};
+                const sample = {tick: p.tick, units: witnessRows(env), sent: false};
                 if (b.commanded && b.last && !b.last.sent)
                     record('witness', {tick: b.last.tick, units: b.last.units,
                                        reason: 'before_command'});
                 if (b.commanded || p.tick % WITNESS_EVERY === 0) {
                     record('witness', {tick: sample.tick, units: sample.units,
-                                       reason: b.commanded ? 'after_command' : 'schedule'});
+                                       reason: b.commanded ? 'after_command' : 'schedule',
+                                       before_available: !b.commanded || !!b.last});
                     sample.sent = true;
                 }
                 b.commanded = false;
