@@ -17,6 +17,7 @@ the changed restore diverges after its changed order. Agreed by the owner on 202
 Owner, 2026-11-03: use live numeric morale/speed as in siege; raw cached stat-panel
 differences remain diagnostics. All other readings still compare exactly.
 Recount saved evidence without launching: --recount EXISTING_OUTPUT.
+For the original strict rule only: --recount OLD_OUTPUT --legacy-raw-recount.
 """
 import argparse
 import copy
@@ -173,28 +174,29 @@ def compare_live(source: list[dict], restore: list[dict]) -> dict:
     return result
 
 
-def assess(output: Path) -> dict:
+def assess(output: Path, *, legacy_raw: bool = False) -> dict:
     source = checkpoint.events(output / "source")
-    checks = {"reading_comparison": "live-values-v1",
+    checks = {"reading_comparison": "raw-v1" if legacy_raw else "live-values-v1",
               "source_saved": any(e.get("event") == "saved" and e["tick"] == CHECKPOINT
                                   for e in source),
               "source_complete": completeness(source, stop_tick=STOP, reading_every=100)}
     for run in ("restore-a", "restore-b", "changed"):
         rows = checkpoint.events(output / run)
-        result = compare_live(source, rows)
+        result = checkpoint.compare(source, rows) if legacy_raw else compare_live(source, rows)
         result["complete"] = completeness(rows, stop_tick=STOP, reading_every=100,
                                           restored_at=CHECKPOINT)
         checks[run] = result
         restored = result["restored_at"] == CHECKPOINT and result["seed_matches"] is True
+        getters_complete = legacy_raw or result["live_getters_complete"]
         if run == "changed":
             result["pass"] = (restored and result["complete"]["pass"]
-                              and result["live_getters_complete"]
+                              and getters_complete
                               and result["checksum_mismatches"] > 0
                               and result["first_mismatch"] > CHANGED_TICK
                               and bool(result["readings_unequal"]))
         else:
             result["pass"] = (restored and result["complete"]["pass"]
-                              and result["live_getters_complete"]
+                              and getters_complete
                               and result["checksum_mismatches"] == 0
                               and not result["readings_unequal"])
     manifests = [json.loads((output / run / "manifest.json").read_text())
@@ -213,9 +215,13 @@ def main() -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--recount", type=Path, help="assess an existing output without launching")
+    parser.add_argument("--legacy-raw-recount", action="store_true",
+                        help="use the historical strict raw-reading rule; requires --recount")
     args = parser.parse_args()
+    if args.legacy_raw_recount and not args.recount:
+        parser.error("--legacy-raw-recount requires --recount")
     if args.recount:
-        checks = assess(args.recount.resolve())
+        checks = assess(args.recount.resolve(), legacy_raw=args.legacy_raw_recount)
     else:
         output = args.output.resolve()
         output.mkdir(parents=True)

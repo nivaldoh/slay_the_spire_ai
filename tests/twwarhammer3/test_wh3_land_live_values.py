@@ -1,5 +1,6 @@
 """Owner-approved live-value comparison; synthetic logs do not prove game mechanics."""
 import copy
+import sys
 
 import pytest
 from test_wh3_checkpoint import battle, check, source, write
@@ -129,3 +130,27 @@ def test_every_unit_needs_live_values_not_just_the_first(tmp_path):
     assert not result["pass"]
     assert any(missing.get("id") == "second"
                for missing in result["restore-a"]["missing_live_getters"])
+
+
+def test_historical_raw_recount_keeps_its_exact_rule_and_method_label(tmp_path):
+    logs = runs()
+    for rows in logs.values():
+        for row in rows:
+            if row.get("event") == "reading":
+                for field in ("slow_speed", "fast_speed", "morale_percent"):
+                    row["value"]["units"][0].pop(field)
+    output = write(tmp_path / "old", logs)
+    raw = check.assess(output, legacy_raw=True)
+    assert raw["pass"] and raw["reading_comparison"] == "raw-v1"
+    current = check.assess(output)
+    assert not current["pass"] and current["reading_comparison"] == "live-values-v1"
+    unit(logs["restore-a"])["stats"] = "stat_morale=50/50"
+    assert not check.assess(write(tmp_path / "different", logs), legacy_raw=True)["pass"]
+
+
+def test_legacy_raw_option_requires_recount_before_any_launch(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["check", "--legacy-raw-recount", "--output", "new"])
+    with pytest.raises(SystemExit) as error:
+        check.main()
+    assert error.value.code == 2
+    assert "--legacy-raw-recount requires --recount" in capsys.readouterr().err

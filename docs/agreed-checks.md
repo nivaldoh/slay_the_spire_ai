@@ -229,6 +229,8 @@ revisions written below are the earlier passes.
   readings each; required numeric getters present; changed control first differs at 1303).
   Independent recount/review agrees. The preceding strict attempt remains failed at
   `runs/twwarhammer3/checkpoint-check-905-20261103/`; it is not reclassified.
+  Original-rule historical recounts use `--recount OLD_OUTPUT --legacy-raw-recount`
+  and are labelled `raw-v1`; this cannot run a live job or give a new-method pass.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`

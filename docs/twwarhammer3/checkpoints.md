@@ -64,6 +64,11 @@ nine live readings each; every required numeric getter is present. The changed c
 diverges at tick 1303. Recount and independent review agree; raw panels also match in this
 fresh attempt. This establishes the declared Land case, not other scenarios or builds.
 
+Historical recordings can still be recounted under their original exact raw-reading rule:
+`--recount OLD_OUTPUT --legacy-raw-recount`. The result is labelled `raw-v1`; it does not
+establish a live-value pass. New runs and default recounts always require the live getters.
+The legacy option is accepted only with `--recount` and cannot launch a game.
+
 Passed at `7b1e2ed` (`runs/twwarhammer3/checkpoint-check-20261025b/`) and, after the merge
 and the Replays-list fix, at `6fdb271` (`checkpoint-check-20261025c/`): 0 checksum
 mismatches over 2,001 ticks and 9/9 equal readings per restore; the changed restore diverged

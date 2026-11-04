@@ -28,6 +28,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: preserve historical Land recounts under their original rule
+
+- The final main gate at `f36cc0b` caught a compatibility regression absent from the
+  worktree's local evidence: the retained Oct25c raw-rule recording lacks new live getters.
+  Failed output is retained in `runs/wh3-checkpoint-905/gate-main-final.txt`.
+- Added explicit recount-only `--legacy-raw-recount`, labelled `raw-v1`, preserving all
+  original raw comparisons and completeness/seed/control requirements. Default recounts
+  and every new live run still require the approved live getters; no missing-field fallback.
+- Existing retained-evidence assertions are unchanged; their command selects its original
+  method. Added regressions for exact raw panels, method labels and refusing a legacy
+  launch. No runtime/native-agent change or live rerun; declared live passes stay at `210e356`.
+
 ## 2026-11-04: declared siege checkpoint checks pass on 9.0.5
 
 - At `210e356`, build 26403568: all 15 fresh launches completed and closed in

@@ -471,6 +471,8 @@ def test_the_recount_of_the_agreed_check_is_unchanged():
     changed = checkpoint.compare(source, checkpoint.events(EVIDENCE / "changed"))
     assert (changed["ticks"], changed["checksum_mismatches"]) == (2001, 699)
     script = REPO_ROOT / "tests/twwarhammer3/check_wh3_checkpoint.py"
-    done = subprocess.run([sys.executable, str(script), "--recount", str(EVIDENCE)],
+    # This retained recording passed the original raw rule, before live getters existed.
+    done = subprocess.run([sys.executable, str(script), "--recount", str(EVIDENCE),
+                           "--legacy-raw-recount"],
                           capture_output=True, text=True)
     assert done.returncode == 0 and json.loads(done.stdout)["pass"] is True
