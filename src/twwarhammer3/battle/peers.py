@@ -33,7 +33,7 @@ made an observation, not a completed engine tick. Two clients' observations at o
 follow a fixed battle-time grid that acknowledgements do not move (since 2026-11-03; on
 11-03 the clients' times parted at each client's first order), so common times need both
 clients' ticks to fall at the same battle times (unverified). A passive
-completed-tick collector is a later, separately reviewed step (plan step 4).
+completed-tick collector is now available through multiplayer_probe and --native (below).
 
 Refusal (ValueError): a client's events holding more than one battle id (each client's Lua
 makes its own id, so ids never match across clients; one battle per attempt), or an events

@@ -3,8 +3,9 @@
 Run with the existing Windows Frida Python, while the caller owns the game process.
 Attach before entering a new battle: already-constructed sessions are deliberately not
 guessed from memory. This diagnostic cannot issue commands or decide readiness/synchrony.
-The worker/runner integration follows the native operation discovery; this is not a way
-to borrow a game for operational matches. No launch, cleanup of games, or cloud spending.
+For direct readiness, multiplayer_adapter adds a fixed operation on top of this capture;
+the worker's --native-adapter integrates that helper. Usage and event fields:
+docs/twwarhammer3/multiplayer-tools.md. No launch, cleanup of games, or cloud spending here.
 """
 
 import argparse

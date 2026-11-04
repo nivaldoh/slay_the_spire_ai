@@ -47,6 +47,8 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [robot-team-plan.md](robot-team-plan.md) | staged Empire experiment plan: establish useful recovery, compare allocation, then test delayed plans or learning; evidence, measures and stop conditions |
 | [multi-agent-plan.md](multi-agent-plan.md) | proposed evaluation of independent teammates: split army, single-client steps, native team battles and multiplayer campaigns; contracts, comparisons, checks and stages |
 | [native-multiplayer.md](native-multiplayer.md) | initial native team-battle assessment: unattended versus headless clients, synchronization probes, cloud costs and risks |
+| [multiplayer-tools.md](multiplayer-tools.md) | built native multiplayer tools: worker operations, passive/native capture, raw witnesses and offline comparison; shared `wh3-multiplayer` skill |
+| [multiplayer-control-foundation.md](multiplayer-control-foundation.md) | current foundation evidence and limits, discovery history and proposed next stages |
 | [Cloud usage](../cloud.md) / [GCP setup](gcp-client-setup.md) | project, spending boundary and cleanup proposals / Windows game-host installation |
 | [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
 | [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
@@ -175,11 +177,16 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/engine/checkpoint_frida.py`: runs the checkpoint Frida agent in the
   owned game (Windows side)
 - `src/twwarhammer3/engine/link.py`: native multiplayer: the coordinator's link
-- `src/twwarhammer3/engine/worker.py`: native multiplayer: the per-client worker
+- `src/twwarhammer3/engine/worker.py`: native multiplayer: per-client worker, typed lobby
+  operations, readiness and leave; contracts in its docstring and multiplayer-tools.md
 - `src/twwarhammer3/engine/multiplayer_probe.py`: bounded Windows reference capture;
   checks the actual process image and runs the passive multiplayer discovery agent
-- `src/twwarhammer3/engine/multiplayer_probe.js`: deployment callback discovery and
-  scoped click targets, diagnostic completed-tick checksums; no lifecycle operations
+- `src/twwarhammer3/engine/multiplayer_probe.js`: passive deployment/command traces,
+  completed-tick checksums, raw unit witnesses, phases and outcome
+- `src/twwarhammer3/engine/multiplayer_adapter.py`: Windows Frida helper and stdin requests
+  for direct deployment readiness, plus passive capture
+- `src/twwarhammer3/engine/multiplayer_adapter.js`: fixed readiness sender on the game thread;
+  phase/layout guards and submission evidence; unverified
 
 `src/twwarhammer3/mod/`, Lua scripts packed into the game:
 - `src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua`: the battle script:
@@ -233,7 +240,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/report_html.py`: the offline HTML report
 - `src/twwarhammer3/battle/replay.py`: the report's replay: public recorded frames and events
 - `src/twwarhammer3/battle/report_assets/`: the report's page, script, style and replay
-- `src/twwarhammer3/battle/peers.py`: native multiplayer: what two clients observed, compared
+- `src/twwarhammer3/battle/peers.py`: native multiplayer: Lua-observation comparison and
+  completed-tick/raw-witness comparison (`compare-peers --native`)
 
 `configs/twwarhammer3/`:
 - `configs/twwarhammer3/system_prompt.md`: the llm prompt
@@ -316,10 +324,11 @@ uv run python -m twwarhammer3 menu [--battle] --steps steps.json  # tails menu.l
 uv run python -m twwarhammer3 pack --list PACK            # --extract PACK NAME; bare: build
 uv run --locked pytest -ra tests/twwarhammer3              # Lua and image tests; show skip reasons
 uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-NAME  # 4 launches
-# Native multiplayer (native-multiplayer.md#implementation-status): unverified, no live use yet
+# Native multiplayer: usage/limits in multiplayer-tools.md; live evidence remains unverified
 uv run python -m twwarhammer3 coordinator --match M --attempt A1 --clients A,B  # stdin: {"client", "body"}
 python -m twwarhammer3 worker --coordinator URL --token-file F --match M --attempt A1 --client A --mode observe
 uv run python -m twwarhammer3 compare-peers runs/twwarhammer3/native-multiplayer/M/A1  # offline
+uv run python -m twwarhammer3 compare-peers --native A=runs/CAPTURE_A/native.jsonl B=runs/CAPTURE_B/native.jsonl  # offline
 uv run --locked --extra llm python -m twwarhammer3 rl PHASE PLAN --output ...  # checkpoint RL (checkpoint-rl-plan.md)
 ```
 

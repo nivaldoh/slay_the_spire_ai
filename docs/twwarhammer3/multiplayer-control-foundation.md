@@ -13,6 +13,13 @@ not the status of its already-built code. The paid VM continuation remains stopp
 
 ## Implementation status
 
+Use the [tool reference](multiplayer-tools.md) for commands, worker bodies and capture fields;
+the shared `wh3-multiplayer` skill routes both Codex and Claude Code there. Current evidence
+is in [Overnight implementation](#overnight-implementation); earlier discovery notes below
+are retained as history, not the current capability list.
+
+### Discovery history
+
 2026-11-04, branch `wh3-multiplayer-foundation`: stage 1 in progress. A bounded passive
 reference probe (`engine/multiplayer_probe.py` and `.js`) follows deployment callback
 dispatch to its dynamically resolved handler. It hashes the actual process image, checks
@@ -76,6 +83,8 @@ handlers emit signals through `0x9070c0`. Next bounded question is which signal 
 handles readiness, before promoting any operation. Targets before instructions do not
 establish submission, direct control, passivity or replication. Owner stopped this work
 for continuation in another session; handoff `runs/wh3-multiplayer-foundation/handoff.md`.
+
+### Overnight implementation
 
 Overnight 2026-11-04 (Claude; evidence and notes in
 `runs/wh3-mp-overnight-20261104/` and `runs/twwarhammer3/native-multiplayer/foundation-ref5-load-refused`,
