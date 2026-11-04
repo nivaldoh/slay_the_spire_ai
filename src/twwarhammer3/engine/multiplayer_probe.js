@@ -18,9 +18,19 @@ const BUILD = {
     click_callback: ['0x22bad3a', '498bd7ff50684883c378493bde75d240'],
     click_component: ['0x22bad5e', 'ff90f800000080bf5c03000000741548'],
     click_event: ['0x22bae58', 'e89fd208ff90488d4de0e8d99523fe90'],
+    end_deployment_receiver: ['0x1c3bc48', '40534883ec50488d05bb16e00148c744'],
+    end_deployment: ['0x1bfa108', '4c8bdc49895b0849896b104989731849'],
+    end_deployment_command: ['0x1bc9350', '48895c2418574883ec408b0544f04a02'],
+    command_packet: ['0x1bd09b0', '48895c24084c8bda488bd94c89590833'],
+    end_deployment_execute: ['0x2ed483c', '48895c2410574883ec2041b904000000'],
 };
 const VTABLE = {deployment: 0x37c45f0, session: 0x3ab9b38};
-const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810};
+const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x448, model: 0x150,
+             network: 0x645c8, provider: 0x644e8, local_entries: 0x3a8, local_index: 0x3b4,
+             flag_a: 0x3b0, flag_b: 0x3b1};
+const UI = {env: 0x418, deployment_sent: 0x15cf};
+const MODEL = {ready_count: 0x9b8, ready_countdown: 0x9b4};
+const PROVIDER = {buffer: 8, write_offset: 0x5008};
 const main = Process.getModuleByName('Warhammer3.exe');
 const hex = bytes => Array.from(new Uint8Array(bytes))
     .map(b => b.toString(16).padStart(2, '0')).join('');
@@ -216,6 +226,95 @@ try {
             } catch (e) { failure(site, e); }
         });
     }
+    // Readiness path read from the pinned disassembly: button signal -> receiver 0x1c3bc48
+    // -> 0x1bfa108 (one-shot, local army) -> typed command BCQ_ARMY_ORDER_END_DEPLOYMENT_PHASE
+    // 0x1bc9350 -> packet 0x1bd09b0 on the input provider; its execute handler is 0x2ed483c.
+    // Function entries, so args are ABI arguments. Whether this is the path a real click
+    // takes is what this trace checks; it says nothing of other peers or of the session.
+    const tick = () => battle ? battle.emitted : null;
+    hook('end_deployment_receiver', {
+        onEnter(args) {
+            record('end_deployment_receiver', {receiver: args[0].toString(),
+                                                last_completed_tick: tick()});
+        },
+    });
+    hook('end_deployment', {
+        onEnter(args) {
+            try {
+                this.ui = args[0];
+                const env = this.ui.add(UI.env).readPointer();
+                const entries = env.add(ENV.local_entries).readPointer();
+                const index = env.add(ENV.local_index).readU32();
+                record('end_deployment_enter', {
+                    sent_before: this.ui.add(UI.deployment_sent).readU8(),
+                    same_env: !!battle && env.equals(battle.env),
+                    setup_kind: env.add(ENV.setup).readPointer().add(0xc8).readU32(),
+                    flags: [env.add(ENV.flag_a).readU8(), env.add(ENV.flag_b).readU8()],
+                    network: env.add(ENV.network).readPointer().toString(),
+                    local_index: index,
+                    local_entry: entries.isNull() ? null : [entries.add(index * 8).readU32(),
+                                                            entries.add(index * 8 + 4).readU32()],
+                    last_completed_tick: tick(),
+                });
+            } catch (e) { this.ui = null; failure('end_deployment', e); }
+        },
+        onLeave() {
+            if (!this.ui) return;
+            try {
+                record('end_deployment_return', {
+                    sent_after: this.ui.add(UI.deployment_sent).readU8()});
+            } catch (e) { failure('end_deployment', e); }
+        },
+    });
+    hook('end_deployment_command', {
+        onEnter(args) {
+            try {
+                const vtable = args[1].readPointer();
+                record('end_deployment_command', {
+                    provider_is_env: !!battle && args[0].equals(
+                        battle.env.add(ENV.provider).readPointer()),
+                    command_vtable: vtable.sub(main.base).toString(),
+                    fields: [args[1].add(8).readU32(), args[1].add(12).readU32()],
+                    last_completed_tick: tick(),
+                });
+            } catch (e) { failure('end_deployment_command', e); }
+        },
+    });
+    hook('command_packet', {
+        onEnter(args) {
+            if (!battle || battle.failed) return;
+            try {
+                record('command_packet', {
+                    id: args[2].readU32(), flags: args[3].toInt32() & 0xff,
+                    on_provider: args[1].equals(battle.env.add(ENV.provider).readPointer()
+                                                .add(PROVIDER.buffer)),
+                    offset: args[1].add(PROVIDER.write_offset - PROVIDER.buffer).readU32(),
+                    last_completed_tick: tick(),
+                });
+            } catch (e) { failure('command_packet', e); }
+        },
+    });
+    hook('end_deployment_execute', {
+        onEnter(args) {
+            try {
+                this.model = args[1].add(ENV.model).readPointer();
+                this.same_env = !!battle && args[1].equals(battle.env);
+                this.before = [this.model.add(MODEL.ready_count).readU32(),
+                               this.model.add(MODEL.ready_countdown).readU32()];
+            } catch (e) { this.model = null; failure('end_deployment_execute', e); }
+        },
+        onLeave() {
+            if (!this.model) return;
+            try {
+                record('end_deployment_execute', {
+                    same_env: this.same_env, before: this.before,
+                    after: [this.model.add(MODEL.ready_count).readU32(),
+                            this.model.add(MODEL.ready_countdown).readU32()],
+                    last_completed_tick: tick(),
+                });
+            } catch (e) { failure('end_deployment_execute', e); }
+        },
+    });
 } catch (e) {
     for (const listener of listeners) listener.detach();
     throw e;
