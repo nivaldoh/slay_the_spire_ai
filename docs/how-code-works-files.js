@@ -71,8 +71,32 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/engine/worker.py",
-   "text": "native multiplayer: the per-client worker",
+   "text": "native multiplayer: per-client worker, typed lobby operations, readiness and leave; contracts in its docstring and multiplayer-tools.md",
    "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/engine/multiplayer_probe.py",
+   "text": "bounded Windows reference capture; checks the actual process image and runs the passive multiplayer discovery agent",
+   "box": "map.runtime",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/engine/multiplayer_probe.js",
+   "text": "passive deployment/command traces, completed-tick checksums, raw unit witnesses, phases and outcome",
+   "box": "map.runtime",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/engine/multiplayer_adapter.py",
+   "text": "Windows Frida helper and stdin requests for direct deployment readiness, plus passive capture",
+   "box": "map.runtime",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/engine/multiplayer_adapter.js",
+   "text": "fixed readiness sender on the game thread; phase/layout guards and submission evidence; unverified",
+   "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -118,6 +142,24 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/benchmark.py",
+   "text": "initial mirror evaluator, limits, plans and reports",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/suite.py",
+   "text": "the coordination suite: arms, plans, measures and comparison",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/reference.py",
+   "text": "`Concentrate`, the suite's scripted coordinated reference",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/setup.py",
    "text": "scenarios with `base` inheritance, lobby steps, benchmark checks; its docstring is the scenario field reference",
    "box": "map.setup",
@@ -155,7 +197,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/team.py",
-   "text": "two independent members sharing one army and one mailbox",
+   "text": "independent members sharing one army and one mailbox",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -305,7 +347,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/peers.py",
-   "text": "native multiplayer: what two clients observed, compared",
+   "text": "native multiplayer: Lua-observation comparison and completed-tick/raw-witness comparison (`compare-peers --native`)",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },

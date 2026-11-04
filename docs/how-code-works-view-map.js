@@ -15,6 +15,8 @@ DIAGRAM.tabs.push({
     "A WH3 play job runs one battle at a time in the real game; most other parts prepare, check or read those battles. Slay the Spire, the repo's other game, is not drawn.",
   "summary":
     "Eleven areas, in the bands where they run. Click a box for what it does, the command that starts it, its stories and its files.",
+  "banner":
+    "The full-map review date below is 1 Nov. Current status and file-list updates were source-reviewed on 4 Nov; historical rate examples keep their original dates.",
   "commit": "7bf32e6",
   "reviewed": "2026-11-01",
   "facts": {
@@ -162,7 +164,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "A battle plan written as a graph of steps, each pointing to the next by outcome; a model can write or revise one offline, and an optional model can suggest a visible target while it runs (one live probe and one battle so far). A temporary check rejects a written graph whose named initiator cannot attack before contact. graph-view draws a recorded battle's graph and orders, with no game or model call.",
+        "A battle plan written as a graph of steps, each pointing to the next by outcome; a model can write or revise one offline, and an optional model can suggest a visible target while it runs. A temporary check rejects a written graph whose named initiator cannot attack before contact. graph-view draws a recorded battle's graph and orders, with no game or model call.",
       "command":
         "twwarhammer3 play --policy configured --controller-config FILE ...; to look: twwarhammer3 graph-view JOB --output runs/twwarhammer3/reports/NAME.html",
       "stories": ["methods", "graph", "members"],
@@ -239,6 +241,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/commander.py",
         "src/twwarhammer3/battle/skills.py",
         "src/twwarhammer3/battle/scripted.py",
+        "src/twwarhammer3/battle/reference.py",
         "src/twwarhammer3/battle/team.py",
         "src/twwarhammer3/battle/configured.py",
         "configs/twwarhammer3/system_prompt.md",
@@ -246,13 +249,14 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/commander_prompt.md"
       ],
       "status":
-        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); no agreed check covers the model controllers",
+        "agreed live check: scripted team; direct model-team mechanics passed one declared case at c1ad84d. Strength remains unverified",
+      "commit": "bdfee38",
       "refs": [
         "src/twwarhammer3/battle/play.py:1",
         "src/twwarhammer3/battle/controllers.py:1",
         "src/twwarhammer3/protocol.py:45",
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-287",
-        "docs/agreed-checks.md:48-60"
+        "docs/agreed-checks.md:143-172"
       ]
     },
     {
@@ -267,10 +271,12 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "Each episode appends one results.csv row. digest and report read a job's recorded files offline, and stats reads results.csv; they print tables or write an HTML report.",
+        "Each episode appends one results.csv row. digest and report read recorded files, and stats reads results.csv. benchmark and suite declare planned attempts, enforce their limits around live jobs, and measure and report the recorded results.",
       "command": "uv run python -m twwarhammer3 report JOB --output runs/twwarhammer3/reports/NAME",
       "stories": ["job"],
       "files": [
+        "src/twwarhammer3/battle/benchmark.py",
+        "src/twwarhammer3/battle/suite.py",
         "src/twwarhammer3/battle/report.py",
         "src/twwarhammer3/battle/report_html.py",
         "src/twwarhammer3/battle/replay.py",
@@ -284,10 +290,13 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/benchmark_jobs.json"
       ],
       "status": "built, component tests only",
+      "commit": "bdfee38",
       "refs": [
         "src/twwarhammer3/battle/stats.py:1-3",
         "src/twwarhammer3/battle/report.py:1",
-        "docs/twwarhammer3/results.csv"
+        "docs/twwarhammer3/results.csv",
+        "src/twwarhammer3/battle/benchmark.py:1-6",
+        "src/twwarhammer3/battle/suite.py:1-11"
       ]
     },
     {
@@ -302,7 +311,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "state": "runs today",
       "note":
-        "Saves a running battle at a tick and rebuilds it later from that tick. The checkpoint-RL experiment built on it is paused.",
+        "Saves a running battle at a tick, then replays its inputs to that tick before returning live control. The checkpoint-RL experiment built on it is paused.",
       "command": "uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output DIR",
       "files": [
         "src/twwarhammer3/battle/checkpoint.py",
@@ -315,11 +324,14 @@ DIAGRAM.tabs.push({
         "src/gameai/lm.py"
       ],
       "status":
-        "agreed live check: WH3 battle checkpoints restore exactly (docs/agreed-checks.md:87)",
+        "agreed live check: Land and siege live-value checks passed for their declared states and readings; other states remain unverified (docs/twwarhammer3/checkpoints.md)",
+      "commit": "bdfee38",
       "refs": [
         "src/twwarhammer3/battle/checkpoint.py:1",
         "src/twwarhammer3/battle/rl.py:1",
-        "docs/agreed-checks.md:87-105"
+        "docs/twwarhammer3/checkpoints.md:1-14",
+        "docs/agreed-checks.md:199-237",
+        "docs/agreed-checks.md:239-264"
       ]
     },
     {
@@ -332,10 +344,10 @@ DIAGRAM.tabs.push({
       "y": 240,
       "w": 230,
       "h": 64,
-      "ran": false,
-      "state": "built, never run",
+      "ran": true,
+      "state": "ran, unverified",
       "note":
-        "Two game clients, one worker beside each, joined by a coordinator, so two controllers can share one real multiplayer battle. No multiplayer battle has run.",
+        "Each game client has a worker, joined by a coordinator. PC-hosted battles with a VM peer are recorded; full control remains unverified.",
       "command": "uv run python -m twwarhammer3 coordinator --match M --attempt A1 --clients A,B",
       "files": [
         "src/twwarhammer3/engine/link.py",
@@ -343,10 +355,11 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/peers.py"
       ],
       "status": "built, unverified",
+      "commit": "bdfee38",
       "refs": [
         "src/twwarhammer3/engine/worker.py:1-3",
         "src/twwarhammer3/battle/peers.py:1-3",
-        "docs/state.md:51-53"
+        "docs/twwarhammer3/log.md:364-387"
       ]
     },
     {
@@ -528,7 +541,7 @@ DIAGRAM.tabs.push({
       "from": "map.play",
       "to": "map.models",
       "label": "model calls",
-      "payload": "A model controller asks for orders.",
+      "payload": "The direct model controller in the dated example asks for orders. Commander and graph target hints use other timings.",
       "status": "built, component tests only",
       "rate": {
         "kind": "seconds",

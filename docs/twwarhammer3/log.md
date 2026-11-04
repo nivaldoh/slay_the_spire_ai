@@ -28,6 +28,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: code map omissions and current claims corrected
+
+The map now assigns the benchmark/suite/reference modules to boxes, and its generated file
+list includes the current native multiplayer tools. Team, multiplayer, checkpoint and graph
+notes follow recorded checks and limits; the model-call wire identifies the direct example.
+Changed boxes cite current source; historical story data and review dates stay unchanged.
+Evidence/card/review: `runs/repo-upkeep/`. Offline display/source checks only; no new live claim.
+
 ## 2026-11-04: repository upkeep
 
 Shorten repeated inventories in AGENTS.md; reconcile workflow, current controller status and
