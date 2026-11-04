@@ -28,6 +28,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: move two native input hooks before short call instructions
+
+`foundation-ref2` at `5bf2424`, build 26403568, failed before native-ready/lobby setup:
+Frida could not intercept `0x22bad02`. The capture helper exited 1 and the owned game
+closed; no readiness action or battle observation. Preserve the failed attempt at
+`runs/twwarhammer3/native-multiplayer/foundation-ref2/` ($0).
+Move the first two scoped hooks to `0x22bacfd` and `0x22bad3a`, before argument setup;
+R9/RAX already contain the same targets. Raw snapshots are not function arguments.
+Card: `runs/wh3-multiplayer-foundation/click-hook-fix-card.md`. Existing tests unchanged;
+checks/review in the commit. Native patchability remains unverified until the fresh
+reference; no lifecycle operation or acceptance pass claimed.
+
 ## 2026-11-04: trace the actual native path beneath a deployment click
 
 Extend the passive foundation probe with a `SimulateLClick` scope and four call-site

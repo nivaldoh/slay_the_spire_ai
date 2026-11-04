@@ -14,8 +14,8 @@ const BUILD = {
     post_tick: ['0x2dda3ac', '488bc44889580848897010488978184c'],
     session_step: ['0x2d78568', '48895c241048896c2418565741544156'],
     simulate_click: ['0x22d1ed0', '48895c2410574883ec20488bf9c6051d'],
-    click_extension: ['0x22bad02', '41ffd1488b9f000200008b8ffc010000'],
-    click_callback: ['0x22bad3d', 'ff50684883c378493bde75d24084f674'],
+    click_extension: ['0x22bacfd', '4d8bc733d241ffd1488b9f000200008b'],
+    click_callback: ['0x22bad3a', '498bd7ff50684883c378493bde75d240'],
     click_component: ['0x22bad5e', 'ff90f800000080bf5c03000000741548'],
     click_event: ['0x22bae58', 'e89fd208ff90488d4de0e8d99523fe90'],
 };
@@ -182,8 +182,10 @@ try {
         },
     });
     for (const site of ['click_extension', 'click_callback', 'click_component', 'click_event']) {
-        // These hooks are AT call instructions, not ABI function entries. Frida supplies
-        // the actual registers in this.context; args would be misleading mid-function.
+        // These are points before call instructions, not ABI function entries. The first
+        // two precede final argument setup (short call sites could not be intercepted in
+        // foundation-ref2); R9/RAX already hold the targets. Snapshots are raw registers,
+        // not function arguments. Frida supplies this.context; ignore args mid-function.
         hook(site, function () {
             const call = currentClick();
             if (!call) return;

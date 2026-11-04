@@ -56,7 +56,12 @@ The next passive trace scopes those input-dispatch call sites to a battle's
 instructions, with distinct duplicate/nested click IDs; it rejects stale environment
 generations. All eleven signatures are checked before attaching. These records are
 candidate call targets, not native-submission counts or completed readiness actions.
-The new trace has component checks only until its ordinary reference runs.
+The first attempt with that trace (`foundation-ref2`, `5bf2424`) aborted before native
+ready or lobby setup: Frida could not intercept the short call instruction `0x22bad02`.
+The helper reported failure and closed the owned game. The first two hooks now sit at
+`0x22bacfd` and `0x22bad3a`, where R9/RAX are populated before final argument setup.
+Raw register snapshots are not function arguments. This patch-site change remains
+unverified until a fresh reference; the failed attempt is retained.
 
 ## Owner decisions and completion
 
