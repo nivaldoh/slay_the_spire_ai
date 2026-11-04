@@ -58,8 +58,21 @@ numbers reinforcement armies across alliances, its army and index still name the
 and ``differences`` (every compared unit that is not exact:
 ``{"time_ms", "unit": [alliance, army, index], "dx", "dz", "type"?: [A, B], "ui_id"?: [A,
 B]}``).
+
+Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each client's
+``native.jsonl`` from engine/multiplayer_probe.py, not Lua observations, so it is the plan's
+"same tick" rule (docs/twwarhammer3/multiplayer-control-foundation.md, stage 2). Checksums are
+compared at every tick of the interval and raw unit rows at every scheduled tick, with no
+tolerance and without nearest-tick matching. The interval defaults to the ticks all clients
+share and can be declared; each client's boundaries are reported so that picking an overlap
+cannot hide a late start or a stall. The verdict is ``conflict`` when a checksum, a raw value
+or a client's own repeated records differ; ``inconclusive`` when evidence is missing, a
+capture failed, did not stop cleanly or the interval is empty; ``agreed`` otherwise. Tick
+origins, unit order and field comparability have no two-client calibration yet, so
+``agreed`` covers only the evidence compared. It is not a synchronization proof.
 """
 
+import collections
 import itertools
 import json
 from pathlib import Path
@@ -224,3 +237,126 @@ def compare(directory: Path) -> dict:
             "clients": {client: counts for client, (_, counts) in loaded.items()},
             "pairs": [compare_pair(a, loaded[a][0], b, loaded[b][0])
                       for a, b in itertools.combinations(clients, 2)]}
+
+
+NATIVE_SCHEMA = "native-v1"
+WITNESS_EVERY = 10  # as multiplayer_probe.js; rests on JUDGEMENT plan Raw witness
+FAILURE_EVENTS = ("probe_error", "frida_error", "capture_error", "detach_error", "detached")
+
+
+def load_capture(path: Path, *, generation: int | None = None) -> dict:
+    """One battle of one client's native.jsonl: ticks, witnesses, command packets, failures.
+    A capture with several battles needs ``generation``; a torn final line counts as an
+    unclean stop, a torn earlier line refuses."""
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    rows, torn = [], False
+    for number, line in enumerate(lines, 1):
+        try:
+            rows.append(json.loads(line))
+        except ValueError as exc:
+            if number != len(lines):
+                raise ValueError(f"{path} line {number} is not JSON: {exc}") from exc
+            torn = True
+    found = {row["generation"] for row in rows if row.get("event") == "completed_tick"}
+    if generation is None:
+        if len(found) > 1:
+            raise ValueError(f"{path} holds battles {sorted(found)}: name a generation")
+        generation = next(iter(found), None)
+    capture = {"ticks": {}, "phases": {}, "witness": {}, "packets": collections.Counter(),
+               "packet_rows": [], "conflicts": [], "failures": [], "generation": generation,
+               "stopped": not torn and any(row.get("event") == "capture_stopped"
+                                           and not row.get("failed") for row in rows)}
+    for row in rows:
+        event = row.get("event")
+        if event in FAILURE_EVENTS:
+            capture["failures"].append(row)
+        if row.get("generation") != generation:
+            continue
+        if event == "completed_tick":
+            tick = row["tick"]
+            if capture["ticks"].setdefault(tick, row["checksum"]) != row["checksum"]:
+                capture["conflicts"].append({"tick": tick, "kind": "checksum"})
+            capture["phases"][tick] = row["phase"]
+        elif event == "witness":
+            units = {tuple(unit[:3]): unit[3:] for unit in row["units"]}
+            if capture["witness"].setdefault(row["tick"], units) != units:
+                capture["conflicts"].append({"tick": row["tick"], "kind": "witness"})
+        elif event == "command_packet":
+            capture["packets"][row["id"]] += 1
+            capture["packet_rows"].append(row)
+    return capture
+
+
+def boundaries(capture: dict) -> dict:
+    ticks = capture["ticks"]
+    return {"first_tick": min(ticks, default=None), "last_tick": max(ticks, default=None),
+            "ticks": len(ticks), "witness_ticks": len(capture["witness"]),
+            "first_phase": capture["phases"].get(min(ticks, default=None)),
+            "last_phase": capture["phases"].get(max(ticks, default=None)),
+            "failures": len(capture["failures"]), "stopped": capture["stopped"]}
+
+
+def compare_captures(captures: dict[str, dict], *, start: int | None = None,
+                     end: int | None = None) -> dict:
+    """Completed-tick comparison of loaded captures, client -> ``load_capture`` (docstring)."""
+    if len(captures) < 2:
+        raise ValueError("a comparison needs at least two clients")
+    names = list(captures)
+    edges = {client: boundaries(capture) for client, capture in captures.items()}
+    known = [edge for edge in edges.values() if edge["ticks"]]
+    low = start if start is not None else (
+        max(edge["first_tick"] for edge in known) if len(known) == len(names) else None)
+    high = end if end is not None else (
+        min(edge["last_tick"] for edge in known) if len(known) == len(names) else None)
+    summary = {"schema": NATIVE_SCHEMA, "clients": edges, "interval": [low, high],
+               "missing_ticks": {client: [] for client in names},
+               "missing_witness": {client: [] for client in names},
+               "checksum_conflicts": [], "unit_conflicts": [], "ticks_compared": 0,
+               "witness_ticks_compared": 0, "units_compared": 0,
+               "own_conflicts": {client: capture["conflicts"]
+                                 for client, capture in captures.items()}}
+    interval = range(low, high + 1) if low is not None and high is not None else range(0)
+    for tick in interval:
+        for client, capture in captures.items():
+            if tick not in capture["ticks"]:
+                summary["missing_ticks"][client].append(tick)
+        present = [capture["ticks"][tick] for capture in captures.values()
+                   if tick in capture["ticks"]]
+        if len(present) == len(names):
+            summary["ticks_compared"] += 1
+        if len(set(present)) > 1:
+            summary["checksum_conflicts"].append(
+                {"tick": tick, "values": {client: capture["ticks"].get(tick)
+                                          for client, capture in captures.items()}})
+        if tick % WITNESS_EVERY:
+            continue
+        for client, capture in captures.items():
+            if tick not in capture["witness"]:
+                summary["missing_witness"][client].append(tick)
+        tables = {client: capture["witness"][tick] for client, capture in captures.items()
+                  if tick in capture["witness"]}
+        if len(tables) < len(names):
+            continue
+        summary["witness_ticks_compared"] += 1
+        for unit in sorted(set().union(*tables.values()), key=str):
+            rows = {client: table.get(unit) for client, table in tables.items()}
+            summary["units_compared"] += 1
+            if len({None if row is None else tuple(row) for row in rows.values()}) > 1:
+                summary["unit_conflicts"].append({"tick": tick, "unit": list(unit), "rows": rows})
+    failed = any(edge["failures"] or not edge["stopped"] for edge in edges.values())
+    missing = any(summary["missing_ticks"].values()) or any(summary["missing_witness"].values())
+    if (summary["checksum_conflicts"] or summary["unit_conflicts"]
+            or any(summary["own_conflicts"].values())):
+        summary["verdict"] = "conflict"
+    elif failed or missing or not summary["ticks_compared"]:
+        summary["verdict"] = "inconclusive"
+    else:
+        summary["verdict"] = "agreed"
+    return summary
+
+
+def submission_problems(capture: dict, expected: dict[int, int]) -> list[dict]:
+    """Native packet counts against what a client was told to send, by command id: a duplicate
+    can leave positions identical, so counts are checked apart from movement."""
+    return [{"id": command, "expected": count, "observed": capture["packets"].get(command, 0)}
+            for command, count in expected.items() if capture["packets"].get(command, 0) != count]

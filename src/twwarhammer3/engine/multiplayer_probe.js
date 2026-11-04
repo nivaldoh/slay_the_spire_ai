@@ -31,6 +31,21 @@ const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x44
 const UI = {env: 0x418, deployment_sent: 0x15cf};
 const MODEL = {ready_count: 0x9b8, ready_countdown: 0x9b4};
 const PROVIDER = {buffer: 8, write_offset: 0x5008};
+// Unit fields as the battle_unit Lua getters read them (table 0x3d4ac70): ui id 0x2f22df8,
+// men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0 and morale 0x303bd08.
+// Hit points: 0x310da24 reads unit+0x80 and +0x88 among others; these two are raw words.
+const WORLD = {phase: 0xc8, alliance_count: 0x104, alliances: 0x108};
+const ALLIANCE = {army_count: 0x1c, armies: 0x20};
+const ARMY = {unit_count: 0x68c, units: 0x690};
+const UNIT = {hp_a: 0x80, hp_b: 0x88, men: 0xa4, body: 0x32f8, morale: 0x3b70, ammo: 0x3d90,
+              ui_id: 0x3ea0};
+const BODY = {bearing: 0xb70, position: 0xc10, attached: 0xc28, entity: 0xc90};
+const ENTITY = {position: 0x88};
+// JUDGEMENT: Raw witness rests on docs/twwarhammer3/multiplayer-control-foundation.md Raw
+// witness: every ten completed ticks, plus the last completed tick before a local command
+// packet and the first after it. Floats stay as raw 32-bit words, so no rounding hides a
+// difference. Evaluator-only: this reaches native.jsonl, never a policy.
+const WITNESS_EVERY = 10;
 const main = Process.getModuleByName('Warhammer3.exe');
 const hex = bytes => Array.from(new Uint8Array(bytes))
     .map(b => b.toString(16).padStart(2, '0')).join('');
@@ -59,6 +74,35 @@ function failure(where, error) {
 }
 function hook(name, callbacks) {
     listeners.push(Interceptor.attach(addresses[name], callbacks));
+}
+function unitRow(alliance, army, index, unit) {
+    const body = unit.add(UNIT.body).readPointer();
+    const row = [alliance, army, index, unit.add(UNIT.ui_id).readU32(), unit.add(UNIT.men).readU32(),
+                 unit.add(UNIT.hp_a).readU32(), unit.add(UNIT.hp_b).readU32(),
+                 unit.add(UNIT.ammo).readU32(), unit.add(UNIT.morale).readU32()];
+    if (body.isNull()) return row;   // a unit with no body on the field has no position
+    const entity = body.add(BODY.entity).readPointer();
+    const attached = !body.add(BODY.attached).readPointer().isNull();
+    // Position kind: 0 entity, 1 the unit's own, 2 attached to something (0x31296c4 asks it).
+    const kind = entity.isNull() ? (attached ? 2 : 1) : 0;
+    const at = entity.isNull() ? body.add(BODY.position) : entity.add(ENTITY.position);
+    row.push(kind, at.readU32(), at.add(4).readU32(), at.add(8).readU32(),
+             body.add(BODY.bearing).readU32() & 0xffff);
+    return row;
+}
+function witnessRows(world) {
+    const rows = [], alliances = world.add(WORLD.alliances).readPointer();
+    for (let a = 0, n = world.add(WORLD.alliance_count).readU32(); a < n; a++) {
+        const alliance = alliances.add(a * 8).readPointer();
+        const armies = alliance.add(ALLIANCE.armies).readPointer();
+        for (let b = 0, m = alliance.add(ALLIANCE.army_count).readU32(); b < m; b++) {
+            const army = armies.add(b * 8).readPointer();
+            const units = army.add(ARMY.units).readPointer();
+            for (let c = 0, k = army.add(ARMY.unit_count).readU32(); c < k; c++)
+                rows.push(unitRow(a, b, c, units.add(c * 8).readPointer()));
+        }
+    }
+    return rows;
 }
 function currentClick() {
     const stack = clicks.get(Process.getCurrentThreadId());
@@ -117,7 +161,8 @@ try {
         onEnter(args) { this.env = args[0]; },
         onLeave() {
             generation++;
-            battle = {env: this.env, session: null, pending: null, emitted: 0, failed: false};
+            battle = {env: this.env, session: null, pending: null, emitted: 0, failed: false,
+                      last: null, commanded: false};
             record('environment_created');
         },
     });
@@ -161,7 +206,19 @@ try {
                 if (!env.equals(b.env) || !env.add(ENV.worker_job).readPointer().isNull() ||
                     env.add(ENV.tick).readU32() !== p.tick || p.tick <= b.emitted) return;
                 b.emitted = p.tick;
-                record('completed_tick', p);
+                const world = env.add(ENV.setup).readPointer();
+                record('completed_tick', {...p, phase: world.add(WORLD.phase).readU32()});
+                const sample = {tick: p.tick, units: witnessRows(world), sent: false};
+                if (b.commanded && b.last && !b.last.sent)
+                    record('witness', {tick: b.last.tick, units: b.last.units,
+                                       reason: 'before_command'});
+                if (b.commanded || p.tick % WITNESS_EVERY === 0) {
+                    record('witness', {tick: sample.tick, units: sample.units,
+                                       reason: b.commanded ? 'after_command' : 'schedule'});
+                    sample.sent = true;
+                }
+                b.commanded = false;
+                b.last = sample;
             } catch (e) { failure('session_step', e); }
         },
     });
@@ -284,6 +341,7 @@ try {
         onEnter(args) {
             if (!battle || battle.failed) return;
             try {
+                battle.commanded = true;
                 record('command_packet', {
                     id: args[2].readU32(), flags: args[3].toInt32() & 0xff,
                     on_provider: args[1].equals(battle.env.add(ENV.provider).readPointer()
@@ -320,5 +378,5 @@ try {
     throw e;
 }
 record('ready', {base: main.base.toString(), path: main.path, diagnostic_only: true,
-                 capabilities: [], missing: ['native lifecycle operations', 'raw witnesses',
-                     'submission tracing', 'phase and ending readback', 'peer calibration']});
+                 capabilities: [], missing: ['native lifecycle operations', 'ending readback',
+                                             'peer calibration']});

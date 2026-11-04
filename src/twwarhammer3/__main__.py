@@ -251,8 +251,12 @@ def main() -> int:
 
     peers = commands.add_parser(
         "compare-peers", help="Compare what the clients of one native match attempt observed")
-    peers.add_argument("attempt", type=Path,
+    peers.add_argument("attempt", type=Path, nargs="?",
                        help="the coordinator's attempt directory (match.jsonl, events-*.jsonl)")
+    peers.add_argument("--native", nargs="+", metavar="CLIENT=PATH",
+                       help="completed-tick mode: each client's native.jsonl, instead of attempt")
+    peers.add_argument("--start", type=int, help="first tick of the declared interval")
+    peers.add_argument("--end", type=int, help="last tick of the declared interval")
 
     report = commands.add_parser(
         "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
@@ -563,10 +567,18 @@ def main() -> int:
         return 0
 
     if args.command == "compare-peers":
-        from twwarhammer3.battle.peers import compare
+        from twwarhammer3.battle.peers import compare, compare_captures, load_capture
 
+        if bool(args.attempt) == bool(args.native):
+            parser.error("give an attempt directory or --native, not both")
         try:
-            summary = compare(args.attempt)
+            if args.native:
+                captures = dict(item.split("=", 1) for item in args.native)
+                summary = compare_captures(
+                    {client: load_capture(Path(path)) for client, path in captures.items()},
+                    start=args.start, end=args.end)
+            else:
+                summary = compare(args.attempt)
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
         except (KeyError, TypeError, AttributeError) as exc:  # a shape unreadable() lets by
