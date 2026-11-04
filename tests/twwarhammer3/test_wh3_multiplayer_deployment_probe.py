@@ -13,8 +13,11 @@ def test_probe_records_each_step_of_the_readiness_path_without_acting():
 load(`
 const env = ptr(0x6000000), session = ptr(0x6100000), ui = ptr(0x6200000), setup = ptr(0x6300000);
 const entries = ptr(0x6400000), provider = ptr(0x6500000), command = ptr(0x6600000);
-const model = ptr(0x6700000), id = ptr(0x6800000);
-battle = {env, session, emitted: 5, failed: false};
+const model = ptr(0x6700000), id = ptr(0x6800000), state = ptr(0x6900000);
+battle = {env, session, emitted: 5, failed: false, provider: null};
+hooks.get(Number(BUILD.end_deployment_receiver[0])).onEnter.call({}, [ptr(0xbeef), ptr(1)]);
+const received = messages.find(r => r.event === 'end_deployment_receiver');
+assert.deepEqual([received.receiver, received.last_completed_tick], ['0xbeef', 5]);
 // Offsets as read from 0x1bfa108: ui+0x418 env, env+0x448 setup, +0xc8 kind,
 // env+0x3a8/0x3b4 local list and index, env+0x645c8 network, env+0x644e8 provider.
 pointers.set(ui.add(0x418).value, env.value);
@@ -24,7 +27,7 @@ pointers.set(env.add(0x645c8).value, 0x9000000);
 pointers.set(env.add(0x644e8).value, provider.value);
 words.set(env.add(0x3b4).value, 1);
 words.set(env.add(0x3b0).value, 0);
-words.set(env.add(0x3b1).value, 0);
+words.set(env.add(0x3b1).value, 1);
 words.set(setup.add(0xc8).value, 4);
 words.set(entries.add(8).value, 3);
 words.set(entries.add(12).value, 2);
@@ -34,10 +37,11 @@ hooks.get(Number(BUILD.end_deployment[0])).onEnter.call(enter, [ui]);
 words.set(ui.add(0x15cf).value, 1);
 hooks.get(Number(BUILD.end_deployment[0])).onLeave.call(enter);
 const entered = messages.find(r => r.event === 'end_deployment_enter');
-assert.deepEqual([entered.sent_before, entered.same_env, entered.setup_kind, entered.local_index,
-                  Array.from(entered.local_entry), entered.network, entered.last_completed_tick],
-                 [0, true, 4, 1, [3, 2], '0x9000000', 5]);
-assert.equal(messages.find(r => r.event === 'end_deployment_return').sent_after, 1);
+assert.deepEqual([entered.flag_before, entered.same_env, entered.setup_kind, entered.local_index,
+                  Array.from(entered.local_entry), entered.network, entered.last_completed_tick,
+                  Array.from(entered.flags)],
+                 [0, true, 4, 1, [3, 2], '0x9000000', 5, [0, 1]]);
+assert.equal(messages.find(r => r.event === 'end_deployment_return').flag_after, 1);
 // Command object from 0x1bfa1a0: vtable, then two u32 fields at +8 and +0xc.
 pointers.set(command.value, 0x37c3ef0);
 words.set(command.add(8).value, 2);
@@ -53,19 +57,30 @@ words.set(provider.add(0x5008).value, 40);
 hooks.get(Number(BUILD.command_packet[0])).onEnter.call(
     {}, [ptr(1), provider.add(8), id, ptr(0x101)]);
 const packet = messages.find(r => r.event === 'command_packet');
-assert.deepEqual([packet.id, packet.flags, packet.on_provider, packet.offset],
-                 [0xabcd, 1, true, 40]);
-// Execute handler 0x2ed483c: rdx+0x150 model, count +0x9b8, countdown +0x9b4.
-pointers.set(env.add(0x150).value, model.value);
-words.set(model.add(0x9b8).value, 0);
-words.set(model.add(0x9b4).value, 0xffffffff);
+assert.deepEqual([packet.id, packet.flags, packet.offset], [0xabcd, 1, 40]);
+// A packet on another queue is not this battle's input.
+const count = messages.length;
+hooks.get(Number(BUILD.command_packet[0])).onEnter.call({}, [ptr(1), ptr(0x7000008), id, ptr(0)]);
+assert.equal(messages.length, count);
+// Once the provider is known, a packet never reads the environment, which may be freed.
+pointers.delete(env.add(0x644e8).value);
+hooks.get(Number(BUILD.command_packet[0])).onEnter.call(
+    {}, [ptr(1), provider.add(8), id, ptr(0x101)]);
+assert.equal(messages.at(-1).event, 'command_packet');
+pointers.set(env.add(0x644e8).value, provider.value);
+// Execute handler 0x2ed483c gets [env+0x440] (0x2ddab54): +0x150 state, count +0x9b8,
+// countdown +0x9b4.
+pointers.set(env.add(0x440).value, model.value);
+pointers.set(model.add(0x150).value, state.value);
+words.set(state.add(0x9b8).value, 0);
+words.set(state.add(0x9b4).value, 0xffffffff);
 const execute = {};
-hooks.get(Number(BUILD.end_deployment_execute[0])).onEnter.call(execute, [ptr(1), env]);
-words.set(model.add(0x9b8).value, 1);
-words.set(model.add(0x9b4).value, 600);
+hooks.get(Number(BUILD.end_deployment_execute[0])).onEnter.call(execute, [ptr(1), model]);
+words.set(state.add(0x9b8).value, 1);
+words.set(state.add(0x9b4).value, 600);
 hooks.get(Number(BUILD.end_deployment_execute[0])).onLeave.call(execute);
 const done = messages.find(r => r.event === 'end_deployment_execute');
-assert.equal(done.same_env, true);
+assert.equal(done.same_model, true);
 assert.deepEqual([Array.from(done.before), Array.from(done.after)],
                  [[0, 0xffffffff], [1, 600]]);
 assert.ok(!messages.some(r => r.event === 'probe_error'));

@@ -25,11 +25,13 @@ const BUILD = {
     end_deployment_execute: ['0x2ed483c', '48895c2410574883ec2041b904000000'],
 };
 const VTABLE = {deployment: 0x37c45f0, session: 0x3ab9b38};
-const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x448, model: 0x150,
+const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810, setup: 0x448, model: 0x440,
              network: 0x645c8, provider: 0x644e8, local_entries: 0x3a8, local_index: 0x3b4,
              flag_a: 0x3b0, flag_b: 0x3b1};
-const UI = {env: 0x418, deployment_sent: 0x15cf};
-const MODEL = {ready_count: 0x9b8, ready_countdown: 0x9b4};
+const UI = {env: 0x418, deployment_flag: 0x15cf};
+// The tick hands each command handler [env+0x440] (0x2ddab54 -> 0x2f0b580 -> call rax).
+const MODEL = {state: 0x150};
+const STATE = {ready_count: 0x9b8, ready_countdown: 0x9b4};
 const PROVIDER = {buffer: 8, write_offset: 0x5008};
 // Unit fields as the battle_unit Lua getters read them (table 0x3d4ac70): ui id 0x2f22df8,
 // men 0x2f03cdc, ammo 0x2ec5688, bearing 0x2ec9c88, position 0x30409f0 and morale 0x303bd08.
@@ -162,7 +164,7 @@ try {
         onLeave() {
             generation++;
             battle = {env: this.env, session: null, pending: null, emitted: 0, failed: false,
-                      last: null, commanded: false};
+                      last: null, commanded: false, provider: null};
             record('environment_created');
         },
     });
@@ -302,8 +304,10 @@ try {
                 const env = this.ui.add(UI.env).readPointer();
                 const entries = env.add(ENV.local_entries).readPointer();
                 const index = env.add(ENV.local_index).readU32();
+                // 0x1bfa108 sets this flag before its checks: 1 afterwards does not prove a
+                // command went out; end_deployment_command and command_packet do.
                 record('end_deployment_enter', {
-                    sent_before: this.ui.add(UI.deployment_sent).readU8(),
+                    flag_before: this.ui.add(UI.deployment_flag).readU8(),
                     same_env: !!battle && env.equals(battle.env),
                     setup_kind: env.add(ENV.setup).readPointer().add(0xc8).readU32(),
                     flags: [env.add(ENV.flag_a).readU8(), env.add(ENV.flag_b).readU8()],
@@ -319,7 +323,7 @@ try {
             if (!this.ui) return;
             try {
                 record('end_deployment_return', {
-                    sent_after: this.ui.add(UI.deployment_sent).readU8()});
+                    flag_after: this.ui.add(UI.deployment_flag).readU8()});
             } catch (e) { failure('end_deployment', e); }
         },
     });
@@ -331,6 +335,7 @@ try {
                     provider_is_env: !!battle && args[0].equals(
                         battle.env.add(ENV.provider).readPointer()),
                     command_vtable: vtable.sub(main.base).toString(),
+                    // Stored reversed from local_entry: 0x1bfa198..0x1bfa1ac.
                     fields: [args[1].add(8).readU32(), args[1].add(12).readU32()],
                     last_completed_tick: tick(),
                 });
@@ -341,11 +346,14 @@ try {
         onEnter(args) {
             if (!battle || battle.failed) return;
             try {
+                // Kept once read: a packet after the battle ended must not touch its freed
+                // environment (0x1bd09b0 also serves the campaign queue).
+                if (!battle.provider || battle.provider.isNull())
+                    battle.provider = battle.env.add(ENV.provider).readPointer();
+                if (!args[1].equals(battle.provider.add(PROVIDER.buffer))) return;
                 battle.commanded = true;
                 record('command_packet', {
                     id: args[2].readU32(), flags: args[3].toInt32() & 0xff,
-                    on_provider: args[1].equals(battle.env.add(ENV.provider).readPointer()
-                                                .add(PROVIDER.buffer)),
                     offset: args[1].add(PROVIDER.write_offset - PROVIDER.buffer).readU32(),
                     last_completed_tick: tick(),
                 });
@@ -355,19 +363,20 @@ try {
     hook('end_deployment_execute', {
         onEnter(args) {
             try {
-                this.model = args[1].add(ENV.model).readPointer();
-                this.same_env = !!battle && args[1].equals(battle.env);
-                this.before = [this.model.add(MODEL.ready_count).readU32(),
-                               this.model.add(MODEL.ready_countdown).readU32()];
-            } catch (e) { this.model = null; failure('end_deployment_execute', e); }
+                this.state = args[1].add(MODEL.state).readPointer();
+                this.same_model = !!battle && args[1].equals(
+                    battle.env.add(ENV.model).readPointer());
+                this.before = [this.state.add(STATE.ready_count).readU32(),
+                               this.state.add(STATE.ready_countdown).readU32()];
+            } catch (e) { this.state = null; failure('end_deployment_execute', e); }
         },
         onLeave() {
-            if (!this.model) return;
+            if (!this.state) return;
             try {
                 record('end_deployment_execute', {
-                    same_env: this.same_env, before: this.before,
-                    after: [this.model.add(MODEL.ready_count).readU32(),
-                            this.model.add(MODEL.ready_countdown).readU32()],
+                    same_model: this.same_model, before: this.before,
+                    after: [this.state.add(STATE.ready_count).readU32(),
+                            this.state.add(STATE.ready_countdown).readU32()],
                     last_completed_tick: tick(),
                 });
             } catch (e) { failure('end_deployment_execute', e); }

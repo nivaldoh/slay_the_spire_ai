@@ -49,20 +49,21 @@ class Pointer {
 }
 const ptr = x => new Pointer(x);
 const session = ptr(0x6000000), env = ptr(0x6100000), ui = ptr(0x6200000), setup = ptr(0x6300000);
-const model = ptr(0x6400000);
+const model = ptr(0x6400000), state = ptr(0x6500000);
 function battle() {
     pointers.set(session.value, 0x3ab9b38);
     pointers.set(session.add(0x20).value, env.value);
     pointers.set(0x448f180, ui.value);
     pointers.set(ui.add(0x418).value, env.value);
     pointers.set(env.add(0x448).value, setup.value);
-    pointers.set(env.add(0x150).value, model.value);
+    pointers.set(env.add(0x440).value, model.value);
+    pointers.set(model.add(0x150).value, state.value);
     pointers.set(env.add(0x645c8).value, 0x9000000);
     words.set(setup.add(0xc8).value, 4);
     words.set(ui.add(0x15cf).value, 0);
     words.set(env.add(0x3b0).value, 0);
     words.set(env.add(0x3b1).value, 0);
-    words.set(model.add(0x9b8).value, 0);
+    words.set(state.add(0x9b8).value, 0);
 }
 function load() {
     const context = {
@@ -102,7 +103,7 @@ assert.deepEqual(calls, [ui.value]);
 assert.equal(results().at(-1).status, 'submitted');
 step();
 assert.equal(results().length, 1, 'a native return is not readiness');
-words.set(model.add(0x9b8).value, 1);
+words.set(state.add(0x9b8).value, 1);
 step();
 assert.equal(results().at(-1).status, 'applied');
 step();
@@ -160,7 +161,7 @@ step();
 assert.equal(api.submit('ready_deployment', 'r3'), 'busy', 'still waiting for the game');
 pointers.set(session.add(0x20).value, 0x7100000);
 pointers.set(ui.add(0x418).value, 0x7100000);
-pointers.set(ptr(0x7100000).add(0x150).value, model.value);
+pointers.set(ptr(0x7100000).add(0x440).value, model.value);
 step();
 assert.equal(results().at(-1).status, 'unknown');
 assert.match(results().at(-1).reason, /battle changed/);
@@ -253,3 +254,40 @@ def test_a_passive_capture_loads_no_operations_and_an_adapter_capture_loads_them
     assert len(active.sources) == 2 and active.sources[1] == adapter.AGENT.read_text()
     manifest = json.loads((tmp_path / "active/manifest.json").read_text())
     assert manifest["diagnostic_only"] is False and manifest["adapter_sha256"]
+
+
+class Process:
+    def __init__(self, *args, **kwargs):
+        self.argv, self.stdin = args[0], io.StringIO()
+        self.waited = False
+
+    def poll(self):
+        return None
+
+    def wait(self, timeout):
+        self.waited = True
+
+
+def test_the_helper_reads_whole_lines_tracks_requests_and_keeps_the_evidence(tmp_path, monkeypatch):
+    monkeypatch.setattr(adapter, "CAPTURES", tmp_path / "windows")
+    monkeypatch.setattr(adapter, "source_path", lambda: "C:/source")
+    monkeypatch.setattr(adapter.windows, "windows_path", lambda path: str(path))
+    helper = adapter.Helper(321, "m.a.A", tmp_path / "evidence", seconds=9, run=Process)
+    assert helper.process.argv[-6:] == ["--pid", "321", "--output",
+                                        str(tmp_path / "windows/m.a.A"), "--seconds", "9"]
+    assert helper.poll() == [], "no file yet"
+    helper.native.mkdir(parents=True)
+    path = helper.native / "native.jsonl"
+    path.write_bytes(b'{"event": "adapter_ready"}\n{"event": "opera')
+    assert [row["event"] for row in helper.poll()] == ["adapter_ready"]
+    helper.wait_ready(seconds=0)
+    with path.open("ab") as file:
+        file.write(b'tion_result", "request": "x", "status": "submitted"}\n')
+    assert helper.result("x", ("submitted",), 0)["status"] == "submitted"
+    assert helper.result("x", ("applied",), 0) is None, "a later status has not arrived"
+    request = helper.request("ready_deployment")
+    assert json.loads(helper.process.stdin.getvalue()) == {"operation": "ready_deployment",
+                                                           "request": request}
+    helper.close()
+    assert helper.process.waited and (helper.native / "STOP").exists()
+    assert (tmp_path / "evidence/native.jsonl").read_bytes() == path.read_bytes()
