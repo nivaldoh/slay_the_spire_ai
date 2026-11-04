@@ -179,7 +179,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/engine/multiplayer_probe.py`: bounded Windows reference capture;
   checks the actual process image and runs the passive multiplayer discovery agent
 - `src/twwarhammer3/engine/multiplayer_probe.js`: deployment callback discovery and
-  diagnostic completed-tick checksums; no lifecycle operations or raw-state acceptance
+  scoped click targets, diagnostic completed-tick checksums; no lifecycle operations
 
 `src/twwarhammer3/mod/`, Lua scripts packed into the game:
 - `src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua`: the battle script:

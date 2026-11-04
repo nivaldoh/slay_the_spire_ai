@@ -28,6 +28,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: trace the actual native path beneath a deployment click
+
+Extend the passive foundation probe with a `SimulateLClick` scope and four call-site
+target records. Filter to the originating thread and identified battle environment;
+keep duplicate/nested invocations distinct and reject stale generations. Validate all
+eleven native signatures before hooks. No game actions or operational adapter added.
+Reference: pinned executable registration and call instructions; same exact-binary guard
+on either machine. No VM compatibility claim. New target records precede instructions,
+so they do not establish native submission or readiness completion.
+Card/evidence: `runs/wh3-multiplayer-foundation/click-card.md`; component tests and review
+are recorded in the commit. Next: fresh local ordinary reference, preserving ref1.
+Native ABI, observer passivity, replication and full acceptance remain unverified.
+
 ## 2026-11-04: first foundation reference misses the deployment handler
 
 Local reference `foundation-ref1` at `77124d4`, build 26403568 ($0), then game closed:

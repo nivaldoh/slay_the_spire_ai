@@ -51,6 +51,13 @@ to `0x22d1ed0`. That routine calls `0x22ba824`, `0x22bab38` and `0x22bb900`; ide
 call submits local readiness, with a normal reference, before promoting any binding.
 These are discovery leads, not operational addresses. No cloud job has run here.
 
+The next passive trace scopes those input-dispatch call sites to a battle's
+`SimulateLClick` invocation and originating thread. It records targets before the call
+instructions, with distinct duplicate/nested click IDs; it rejects stale environment
+generations. All eleven signatures are checked before attaching. These records are
+candidate call targets, not native-submission counts or completed readiness actions.
+The new trace has component checks only until its ordinary reference runs.
+
 ## Owner decisions and completion
 
 The owner selected these directions during the investigation:

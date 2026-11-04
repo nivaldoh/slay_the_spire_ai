@@ -13,6 +13,11 @@ const BUILD = {
     session_ctor: ['0x2d20c68', '48895c24084889742410574883ec3048'],
     post_tick: ['0x2dda3ac', '488bc44889580848897010488978184c'],
     session_step: ['0x2d78568', '48895c241048896c2418565741544156'],
+    simulate_click: ['0x22d1ed0', '48895c2410574883ec20488bf9c6051d'],
+    click_extension: ['0x22bad02', '41ffd1488b9f000200008b8ffc010000'],
+    click_callback: ['0x22bad3d', 'ff50684883c378493bde75d24084f674'],
+    click_component: ['0x22bad5e', 'ff90f800000080bf5c03000000741548'],
+    click_event: ['0x22bae58', 'e89fd208ff90488d4de0e8d99523fe90'],
 };
 const VTABLE = {deployment: 0x37c45f0, session: 0x3ab9b38};
 const ENV = {tick: 0x64720, checksums: 0x64598, worker_job: 0x64810};
@@ -31,7 +36,7 @@ if (!main.base.add(VTABLE.deployment + 0x188).readPointer().equals(addresses.dep
     throw new Error('Unsupported multiplayer deployment layout');
 
 let sequence = 0, callId = 0, generation = 0, battle = null;
-const active = new Map(), listeners = [];
+const active = new Map(), clicks = new Map(), listeners = [];
 function record(event, data = {}) {
     // Date.now is sampled IN the Windows process, before transport/file handling.
     // It is a wall clock, not tick alignment or proof of simulation rate.
@@ -44,6 +49,12 @@ function failure(where, error) {
 }
 function hook(name, callbacks) {
     listeners.push(Interceptor.attach(addresses[name], callbacks));
+}
+function currentClick() {
+    const stack = clicks.get(Process.getCurrentThreadId());
+    const call = stack && stack[stack.length - 1];
+    return call && call.generation === generation && call.battle === battle &&
+        battle && !battle.failed && battle.session && battle.session.equals(call.session) ? call : null;
 }
 
 try {
@@ -144,6 +155,63 @@ try {
             } catch (e) { failure('session_step', e); }
         },
     });
+    // Reference-only input tracing. The generic named-event dispatcher above was absent
+    // from foundation-ref1, so observe the SimulateLClick path actually used by the mod.
+    // These are UI component calls, not a UI-independent readiness operation.
+    hook('simulate_click', {
+        onEnter(args) {
+            this.click = null;
+            if (!battle || battle.failed || !battle.session) return;
+            const stack = clicks.get(Process.getCurrentThreadId()) || [];
+            this.click = {call: ++callId, battle, session: battle.session, generation};
+            stack.push(this.click);
+            clicks.set(Process.getCurrentThreadId(), stack);
+            record('ui_click_enter', {call: this.click.call, component: args[0].toString(),
+                                     last_completed_tick: battle.emitted});
+        },
+        onLeave() {
+            if (!this.click) return;
+            const thread = Process.getCurrentThreadId(), stack = clicks.get(thread);
+            if (!stack || stack.pop() !== this.click) {
+                failure('simulate_click', 'unmatched return');
+                return;
+            }
+            if (!stack.length) clicks.delete(thread);
+            record('ui_click_return', {call: this.click.call, generation: this.click.generation,
+                stale: this.click.generation !== generation || this.click.battle !== battle});
+        },
+    });
+    for (const site of ['click_extension', 'click_callback', 'click_component', 'click_event']) {
+        // These hooks are AT call instructions, not ABI function entries. Frida supplies
+        // the actual registers in this.context; args would be misleading mid-function.
+        hook(site, function () {
+            const call = currentClick();
+            if (!call) return;
+            try {
+                const c = this.context;
+                let target;
+                if (site === 'click_extension') target = c.r9;
+                else if (site === 'click_callback') target = c.rax.add(0x68).readPointer();
+                else if (site === 'click_component') target = c.rax.add(0xf8).readPointer();
+                else target = main.base.add(0x13480fc);
+                const inMain = target.compare(main.base) >= 0 &&
+                    target.compare(main.base.add(main.size)) < 0;
+                // A DLL target is valid discovery evidence too, but an unreadable address
+                // must fail capture just like one in the executable. Retain its module base
+                // so a later process's load address cannot be mistaken for the same offset.
+                const bytes = hex(target.readByteArray(16));
+                const module = inMain ? main : Process.findModuleByAddress(target);
+                record('ui_call_target', {call: call.call, site, target: target.toString(),
+                    rva: inMain ? target.sub(main.base).toString() : null,
+                    bytes, module: module ? {name: module.name, path: module.path,
+                        base: module.base.toString(), rva: target.sub(module.base).toString()} : null,
+                    registers: {rcx: c.rcx.toString(), rdx: c.rdx.toString(),
+                                r8: c.r8.toString(), r9: c.r9.toString()},
+                    last_completed_tick: battle.emitted,
+                    evidence: 'target_before_call_instruction'});
+            } catch (e) { failure(site, e); }
+        });
+    }
 } catch (e) {
     for (const listener of listeners) listener.detach();
     throw e;
