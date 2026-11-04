@@ -91,8 +91,8 @@ game for one 30-minute window. [Results table](multiplayer-control-foundation.md
 - Built: trace of that path and all command packets, raw unit rows, phase and outcome at
   completed ticks, `compare-peers --native`, the direct `ready_deployment` adapter, typed worker
   operations, `leave`. Reviews before the window found a wrong ready-count path, a wrong unit
-  list and a lost-row race (`b72514c`, `d98d4cf`, `ee3dcfe`); a later one found three blockers
-  in the typed driver, and a rerun corrected this entry's page before it stood.
+  list and a lost-row race; a later one found three blockers in the typed driver, and a
+  rerun corrected this entry's page before it stood.
 - Live, one client, one human host against one AI: `foundation-ref6` (context lobby ready, real
   click path, leave); `foundation-ref8` (direct ready at phase 0 with no battle clicks, 1512
   ticks no gaps, an engine ending at tick 1508 matching Lua, leave). Witness against Lua: 604
