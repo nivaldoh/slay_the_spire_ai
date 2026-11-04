@@ -585,6 +585,9 @@ class FakeAdapter:
         self.outcome, self.requests = outcome, []
 
     def poll(self):
+        pass
+
+    def rows_from(self, index):
         return []
 
     def request(self, operation):
@@ -709,3 +712,80 @@ def test_frontend_operations_need_a_menu_session_and_status_only_reports():
         {"seq": 2, "body": worker.STATUS}) == "submitted"
     assert link.events[-1] == {"seq": 2, "latest": None, "menu": True, "adapter": False}
     assert mailbox.written == []
+
+
+def test_readiness_that_starts_the_battle_counts_without_the_frontends_last_line():
+    link, mailbox = RecordingLink(), FakeMenuMailbox("step 3: command\n")
+    client = worker.Worker(link, mailbox, "control", menu=True, frontend_s=5)
+    client.latest = {"battle": "old"}
+    thread = threading.Timer(0.05, lambda: setattr(client, "latest", {"battle": "new"}))
+    thread.start()
+    assert client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready",
+                                                 "ready": True}}) == "submitted"
+    thread.join()
+    assert link.events[-1]["battle_started"] == "new"
+
+
+def test_a_new_battle_does_not_finish_any_other_frontend_operation():
+    client = worker.Worker(RecordingLink(), FakeMenuMailbox(""), "control", menu=True,
+                           frontend_s=0.1)
+    client.latest = {"battle": "old"}
+    threading.Timer(0.02, lambda: setattr(client, "latest", {"battle": "new"})).start()
+    with pytest.raises(TimeoutError, match="unknown effect"):
+        client.on_command({"seq": 1, "body": {"operation": "configure", "scenario": SCENARIO,
+                                              "open_slot": False}})
+
+
+class FakeRows:
+    """Rows as the Helper keeps them: each new poll may arrive through another thread's call."""
+
+    def __init__(self):
+        self.rows = []
+
+    def poll(self):
+        pass
+
+    def rows_from(self, index):
+        return self.rows[index:]
+
+
+def test_the_worker_forwards_each_operation_row_once_whoever_polled_it(tmp_path):
+    link = RecordingLink()
+
+    class Mailbox:
+        def read_observation(self):
+            return None
+
+    client = worker.Worker(link, Mailbox(), "control")
+    client.adapter = FakeRows()
+    client.adapter.rows = [{"event": "adapter_ready"}, {"event": "operation_result", "seq": 1}]
+    client.watch()
+    client.watch()
+    client.adapter.rows.append({"event": "end_deployment_execute", "seq": 2})
+    client.watch()
+    assert [row["seq"] for row in link.events] == [1, 2]
+
+
+def test_each_frontend_load_is_reported_once():
+    link = RecordingLink()
+
+    class Mailbox:
+        text = b"frontend loaded for job j\nstep 1: x\n"
+
+        def read_observation(self):
+            return None
+
+        def log_offset(self, name):
+            return len(self.text)
+
+        def log_since(self, offset, name):
+            return self.text[offset:].decode()
+
+    mailbox = Mailbox()
+    client = worker.Worker(link, mailbox, "control", menu=True)
+    client.watch()
+    client.watch()
+    assert link.events == [{"line": "frontend loaded for job j"}]
+    mailbox.text += b"frontend loaded for job j\n"
+    client.watch()
+    assert len(link.events) == 2

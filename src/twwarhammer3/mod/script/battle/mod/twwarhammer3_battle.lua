@@ -1315,8 +1315,9 @@ end
 
 -- Multiplayer control: leave this client's session through the global context command
 -- QuitToMainMenu ("from battle or campaign"), with no component lookup. The acknowledgement
--- goes out at once, since no later tick is sure to run. The worker reads completion from the
--- frontend, not from this reply.
+-- goes out at once, since no later tick is sure to run. This reply says only that the call
+-- raised no error. The worker reports the frontend loading; if that never comes the caller
+-- closes the owned game, since a repeat here is refused.
 local function leave(message)
     local result = {index = 1, control = "leave", ok = false}
     if not get(bm.battle, "is_multiplayer", false) then

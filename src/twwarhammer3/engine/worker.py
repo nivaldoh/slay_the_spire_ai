@@ -31,7 +31,8 @@ Lua then presses this client's own Start Battle, during deployment only. ``{"con
 "ready_deployment"}`` (``READY_DEPLOYMENT``, a worker started with ``native``) goes to the
 experimental direct adapter (engine/multiplayer_adapter.py) instead of a click: refused or expired
 is ``rejected``, submitted is ``submitted``, and the engine's anonymous ready count arrives as an
-``adapter`` event (``end_deployment_execute``). ``--menu`` adds
+``adapter`` event (``end_deployment_execute``). A frontend that loads is a ``frontend`` event,
+which is how a leave is seen to finish. ``--menu`` adds
 ``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup); such
 a worker also takes the typed frontend operations in ``frontend_steps``, each a fixed step list
 from ``battle/setup.py``, not arbitrary steps: submitted when the menu log says done, rejected
@@ -191,14 +192,24 @@ class Worker:
         self.link, self.mailbox, self.mode, self.ack_s = link, mailbox, mode, ack_s
         self.menu, self.frontend_s = menu, frontend_s
         self.latest = self._seen = self.adapter = None
+        self._forwarded = self._menu_read = 0
         self._changed = threading.Condition()
 
     def watch(self) -> None:
         if self.adapter is not None:
-            for row in self.adapter.poll():
+            self.adapter.poll()
+            rows = self.adapter.rows_from(self._forwarded)
+            self._forwarded += len(rows)
+            for row in rows:
                 if row.get("event") in ("operation_requested", "operation_result",
-                                        "end_deployment_execute"):
+                                        "end_deployment_execute", "battle_decided"):
                     self.link.event("adapter", row)
+        if self.menu and self.mailbox.log_offset("menu.log") > self._menu_read:
+            text = self.mailbox.log_since(self._menu_read, "menu.log")
+            self._menu_read += len(text.encode())
+            for line in text.splitlines():
+                if line.startswith("frontend loaded"):  # how a leave is seen to finish
+                    self.link.event("frontend", {"line": line})
         observation = self.mailbox.read_observation()
         if observation is None or (observation.get("battle"), observation.get("seq")) == self._seen:
             return
@@ -298,7 +309,11 @@ class Worker:
 
     def run_frontend(self, seq: int, body: dict) -> str:
         """One typed frontend operation. Its end is the frontend's own log line for this
-        request; a missing line stays unknown, since steps may have acted."""
+        request; a missing line stays unknown, since steps may have acted. The exception:
+        readiness can start the battle and unload the frontend before that line, and a new
+        battle's observation is then the proof."""
+        with self._changed:
+            battle = (self.latest or {}).get("battle")
         offset = self.mailbox.log_offset("menu.log")
         request = self.mailbox.write_menu(frontend_steps(body, runtime.PINS["steam_build_id"]))
         self.link.event("command", {"seq": seq, "status": "written", "request": request})
@@ -311,6 +326,12 @@ class Worker:
                     self.link.event("command", {"seq": seq, "status": status, "request": request,
                                                 "log": lines})
                     return status
+            with self._changed:
+                current = (self.latest or {}).get("battle")
+            if body["operation"] == "set_lobby_ready" and current not in (None, battle):
+                self.link.event("command", {"seq": seq, "status": "submitted", "request": request,
+                                            "log": lines, "battle_started": current})
+                return "submitted"
             time.sleep(self.mailbox.poll)
         raise TimeoutError(f"frontend operation {request} has an unknown effect")
 

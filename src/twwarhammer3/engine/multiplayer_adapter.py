@@ -31,6 +31,7 @@ OPERATIONS = ("ready_deployment",)
 REQUEST_S = 30.0  # as REQUEST_MS in the agent; rests on the Request bound above
 FRIDA_PYTHON = runtime.RUNTIME_DIR / "checkpoint-frida-venv/Scripts/python.exe"
 CAPTURES = runtime.RUNTIME_DIR / "native-capture"
+PER_TICK = ("completed_tick", "witness")
 
 
 class Adapter:
@@ -76,40 +77,49 @@ def source_path() -> str:
 
 class Helper:
     """The caller's side: the Windows Frida process beside one owned game. It writes to a
-    Windows folder (WSL paths are slow from there), then ``close`` copies the evidence out."""
+    Windows folder (WSL paths are slow from there), then ``close`` copies the evidence out.
+    The worker's main loop and its command thread both call ``poll``, hence the lock."""
 
     def __init__(self, pid: int, name: str, evidence: Path, *, seconds: float,
                  run=subprocess.Popen):
         self.native, self.evidence = CAPTURES / name, evidence
         self.position, self.pending, self.rows = 0, b"", []
+        self.lock = threading.Lock()
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        self.console = evidence.with_name("helper-console.txt").open("w")
         code = (f"import sys; sys.path.insert(0, {source_path()!r}); "
                 "from twwarhammer3.engine.multiplayer_adapter import main; "
                 "raise SystemExit(main())")
         self.process = run([str(FRIDA_PYTHON), "-c", code, "--pid", str(pid),
                             "--output", windows.windows_path(self.native),
                             "--seconds", str(seconds)],
-                           stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                           stdin=subprocess.PIPE, stdout=self.console,
                            stderr=subprocess.STDOUT, text=True)
 
-    def poll(self) -> list[dict]:
-        """New rows of native.jsonl; a line still being written waits for the next poll."""
+    def poll(self) -> None:
+        """Take in new rows of native.jsonl, all but the per-tick ones, which stay in the
+        file. A line still being written waits for the next poll."""
         path = self.native / "native.jsonl"
-        if not path.exists():
-            return []
-        with path.open("rb") as file:
-            file.seek(self.position)
-            data = file.read()
-        self.position += len(data)
-        *lines, self.pending = (self.pending + data).split(b"\n")
-        rows = [json.loads(line) for line in lines if line]
-        self.rows += rows
-        return rows
+        with self.lock:
+            if not path.exists():
+                return
+            with path.open("rb") as file:
+                file.seek(self.position)
+                data = file.read()
+            self.position += len(data)
+            *lines, self.pending = (self.pending + data).split(b"\n")
+            rows = [json.loads(line) for line in lines if line]
+            self.rows += [row for row in rows if row.get("event") not in PER_TICK]
+
+    def rows_from(self, index: int) -> list[dict]:
+        with self.lock:
+            return self.rows[index:]
 
     def wait_ready(self, seconds: float = 40) -> None:
         deadline = time.monotonic() + seconds
         while True:
             self.poll()
-            if any(row.get("event") == "adapter_ready" for row in self.rows):
+            if any(row.get("event") == "adapter_ready" for row in self.rows_from(0)):
                 return
             if self.process.poll() is not None:
                 raise RuntimeError("the adapter helper exited before it was ready")
@@ -128,7 +138,7 @@ class Helper:
         deadline = time.monotonic() + seconds
         while True:
             self.poll()
-            for row in self.rows:
+            for row in self.rows_from(0):
                 if (row.get("event") == "operation_result" and row.get("request") == request
                         and row.get("status") in statuses):
                     return row
@@ -149,6 +159,7 @@ class Helper:
         except subprocess.TimeoutExpired:
             self.process.kill()
             self.process.wait(timeout=5)
+        self.console.close()
         if self.native.exists():
             shutil.copytree(self.native, self.evidence, dirs_exist_ok=True)
 

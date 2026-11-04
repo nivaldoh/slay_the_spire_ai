@@ -1,7 +1,7 @@
 """Direct operation guards: bookkeeping and refusals, not ABI correctness or replication.
 
 Reference: the plan's rule that a repeated request never repeats the engine action, that
-requested, submitted and applied stay separate, and the checks of native 0x1bfa108 and
+requested and submitted stay separate, and the checks of native 0x1bfa108 and
 IsDeploymentPhase 0x1e8933c (runs/wh3-mp-overnight-20261104/notes.md). A live reference and
 the other client's readback decide whether the call does what the button does.
 """
@@ -10,6 +10,7 @@ import io
 import json
 import shutil
 import subprocess
+import threading
 
 from twwarhammer3.engine import multiplayer_adapter as adapter
 from twwarhammer3.engine import multiplayer_probe as probe
@@ -323,13 +324,17 @@ def test_the_helper_reads_whole_lines_tracks_requests_and_keeps_the_evidence(tmp
     monkeypatch.setattr(adapter, "source_path", lambda: "C:/source")
     monkeypatch.setattr(adapter.windows, "windows_path", lambda path: str(path))
     helper = adapter.Helper(321, "m.a.A", tmp_path / "evidence", seconds=9, run=Process)
+    assert (tmp_path / "helper-console.txt").exists(), "a start failure must leave its output"
     assert helper.process.argv[-6:] == ["--pid", "321", "--output",
                                         str(tmp_path / "windows/m.a.A"), "--seconds", "9"]
-    assert helper.poll() == [], "no file yet"
+    helper.poll()
+    assert helper.rows_from(0) == [], "no file yet"
     helper.native.mkdir(parents=True)
     path = helper.native / "native.jsonl"
-    path.write_bytes(b'{"event": "adapter_ready"}\n{"event": "opera')
-    assert [row["event"] for row in helper.poll()] == ["adapter_ready"]
+    path.write_bytes(b'{"event": "adapter_ready"}\n{"event": "completed_tick"}\n'
+                     b'{"event": "opera')
+    helper.poll()
+    assert [row["event"] for row in helper.rows_from(0)] == ["adapter_ready"]
     helper.wait_ready(seconds=0)
     with path.open("ab") as file:
         file.write(b'tion_result", "request": "x", "status": "submitted"}\n')
@@ -341,3 +346,30 @@ def test_the_helper_reads_whole_lines_tracks_requests_and_keeps_the_evidence(tmp
     helper.close()
     assert helper.process.waited and (helper.native / "STOP").exists()
     assert (tmp_path / "evidence/native.jsonl").read_bytes() == path.read_bytes()
+
+
+def test_two_threads_polling_read_every_row_exactly_once(tmp_path, monkeypatch):
+    monkeypatch.setattr(adapter, "CAPTURES", tmp_path / "windows")
+    monkeypatch.setattr(adapter, "source_path", lambda: "C:/source")
+    monkeypatch.setattr(adapter.windows, "windows_path", lambda path: str(path))
+    helper = adapter.Helper(1, "m.a.A", tmp_path / "evidence", seconds=9, run=Process)
+    helper.native.mkdir(parents=True)
+    path = helper.native / "native.jsonl"
+    path.write_bytes(b"")
+    stop = threading.Event()
+
+    def reader():
+        while not stop.is_set():
+            helper.poll()
+
+    threads = [threading.Thread(target=reader) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    with path.open("ab", buffering=0) as file:
+        for n in range(2000):
+            file.write(json.dumps({"event": "operation_result", "n": n}).encode() + b"\n")
+    stop.set()
+    for thread in threads:
+        thread.join(timeout=10)
+    helper.poll()
+    assert [row["n"] for row in helper.rows_from(0)] == list(range(2000))
