@@ -151,7 +151,8 @@ mixes the control method with the advice. The `llm` policy has the same kind of 
 
 **What the battles turned out to be.** The authored battles were designed around one problem each,
 and in play several were not that problem (one battle per pair): in `coord-pincer` the enemy block
-split and fought both groups, in `coord-detail` the far wave caught up before contact, and in
+split and fought both groups, in `coord-detail` the two waves reached the army within about 10 s of
+each other, and in
 `coord-breakout` neither win kept its line on one enemy group. Read a battle by what its report
 page shows under "What happened", not by its name in the table above.
 

@@ -353,16 +353,19 @@ def answer(rule, frames, members, foes):
         groups = len(set(foes.values()))
         if len(times) < groups:
             return f"Reached {len(times)} of {groups} enemy groups"
-        broke = first_broken(frames, foes)
-        first = f"{broke[0]} broke at {clock(broke[1])}" if broke else "No enemy group broke"
+        routed = first_routed(frames, foes)
+        first = (f"{routed[0]} first routed at {clock(routed[1])}" if routed
+                 else "No enemy force routed")
         return f"{first}; all {groups} in contact by {clock(max(times))}"
     who = rule["who"]
     first = f"first in melee at {clock(ours[who][0])}" if who in ours else "never in melee"
     return f"{who} {first}; fired {spent(frames, members, who)}% of their ammunition"
 
 
-def first_broken(frames, foes):
-    """The first enemy group, and second, with every unit in sight routing or shattered."""
+def first_routed(frames, foes):
+    """The first enemy group, and second, with every unit in sight routing or shattered.
+
+    Routed units can rally, so this says when, not that the group stayed beaten."""
     fought = set()
     for frame in frames:
         units = [unit for unit in frame.get("enemy") or [] if unit.get("id") in foes]

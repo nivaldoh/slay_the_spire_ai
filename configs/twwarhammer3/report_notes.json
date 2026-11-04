@@ -575,12 +575,12 @@
         "b": "East group",
         "never": "Only one group reached a fight"
       },
-      "seen": "In all five battles the block split and the two fights began 430-530 m apart. In four, both had begun 0:48 into the battle."
+      "seen": "In all five battles the block split and the two fights began 430-530 m apart. In four, both had begun by 0:48."
     },
     "coord-breakout": {
       "title": "Breakout",
       "question": "Can the army beat one force before the other two close in?",
-      "why": "Three groups converge from the west, east and south, together 526 men against 451. The army can turn on one or meet all three.",
+      "why": "Three enemy forces converge from the west, east and south, together 526 men against our 451. The army can turn on one or meet all three.",
       "groups": [
         {
           "name": "Line",
@@ -631,11 +631,11 @@
       "link": "meant to share one target",
       "heading": "Breakout",
       "short": "Breakout",
-      "challenge": "Can the army beat one group before the other two close in?",
+      "challenge": "Can the army beat one force before the other two close in?",
       "answer": {
         "kind": "spread"
       },
-      "seen": "Neither win kept its Line on one target. Model over scripts broke the West force at 1:16, just before the South force arrived; Scripts only fought all three at once."
+      "seen": "Neither win kept its Line on one target. Model over scripts routed the West force at 1:16, but it rallied and fought again from 2:12; Scripts only fought all three at once."
     },
     "coord-detail": {
       "title": "Defeat in detail",
@@ -684,7 +684,7 @@
         "text": "The two waves arrived {gap} apart",
         "never": "Only one wave reached a fight"
       },
-      "seen": "In all four battles the far wave had caught up before first contact."
+      "seen": "In all four battles the two waves reached the army within about 10 s of each other."
     },
     "coord-rear-raid": {
       "title": "Rear raid",
@@ -1290,7 +1290,7 @@
   },
   "suite": {
     "title": "Can they fight as one army?",
-    "dek": "Six Total War battles built so that parts of one army are apart or outnumbered. Five ways of commanding them, at most once per battle, live and unpaused, with one cheap model, Claude Haiku 5.5. Winning does not prove they worked together: scripts with no plan won two.",
+    "dek": "Six Total War battles built so that parts of one army are apart or outnumbered. Five ways of commanding them, each playing each battle at most once, live and unpaused, with one cheap model, Claude Haiku 5.5. Winning does not prove they worked together: scripts with no plan won two.",
     "methods": {
       "single": [
         "One model",

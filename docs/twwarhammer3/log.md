@@ -53,8 +53,8 @@ Offline evidence only; no new agreed method or live-game/strength claim. No JUDG
     rules. Their template also carries one line of advice per class, such as charging an engaged
     enemy, and `author_task` adds that a waiting graph needs another member to start the fight.
   - Battles did not always play as designed: in `coord-pincer` the block split in all five battles
-    and the two fights began 430-530 m apart; in `coord-detail` the far wave had caught up before
-    first contact in all four; in `coord-breakout` neither win kept its line on one enemy group.
+    and the two fights began 430-530 m apart; in `coord-detail` the two waves reached the army within
+    about 10 s of each other in all four; in `coord-breakout` neither win kept its Line on one force.
   - `coord-relief`: `commander` won with the column never reaching the garrison's fight, and `team`
     lost the same way; my first sentence, that the garrison "fought alone" for a set time, was
     false for those two.

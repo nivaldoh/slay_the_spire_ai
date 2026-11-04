@@ -486,17 +486,17 @@ def test_enemy_groups_are_read_from_their_own_first_contact():
     waves = {"kind": "waves", "a": "Near", "b": "Far", "text": "{gap} apart", "never": "One wave"}
     assert suite.answer(waves, frames, {}, foes) == "0:04 apart"
     assert suite.answer({"kind": "spread"}, frames, {}, foes) == (
-        "No enemy group broke; all 3 in contact by 1:35")
+        "No enemy force routed; all 3 in contact by 1:35")
     assert suite.answer({"kind": "spread"}, frames[:2], {}, foes) == (
         "Reached 2 of 3 enemy groups")
     broken = [*frames, frame(120, [], [unit("e1", ["routing"]), unit("e3", ["melee"])])]
     assert suite.answer({"kind": "spread"}, broken, {}, foes) == (
-        "Near broke at 2:00; all 3 in contact by 1:35")
+        "Near first routed at 2:00; all 3 in contact by 1:35")
 
 
-def test_a_group_never_seen_fighting_is_not_called_broken():
+def test_a_group_never_seen_fighting_is_not_called_routed():
     foes = {"e1": "West"}
-    assert suite.first_broken([frame(9, [], [unit("e1", ["routing"])])], foes) is None
+    assert suite.first_routed([frame(9, [], [unit("e1", ["routing"])])], foes) is None
 
 
 def test_guns_report_their_first_melee_and_the_ammunition_they_spent():
