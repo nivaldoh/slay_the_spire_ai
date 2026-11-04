@@ -96,7 +96,7 @@ is agreed, and each row below rests on the n named.
 | Outcome | `[0x448f208]+0x5d0` decided, `+0x5cc` zero-based winner; agreed with Lua's result | ref8, 1 battle |
 | Direct ready | Adapter's fixed call to the sender at `session_step`, no click and no component lookup; it needs the battle-interface object, so this does not show headless use | ref8, 1 battle, at phase 0. Current code asks only in phase 4 and has not run live. No run withheld readiness, so this rests on the count row and timing, not on a control |
 | Leave | Global `QuitToMainMenu` | Ack ok and frontend reloaded, ref6 (from Deployed) and ref8 (from Complete). The game's own leave lines were read during ref6 and not kept |
-| Create, join | Not found below the panels: host request `0x21be4c8` takes widget-built parameters, `mp_automatch` sits in a debug frontend | none |
+| Create, join | No direct route yet. Host request `0x21be4c8` is a native call, but the host popup object assembles its arguments (name and password from its settings, a preset from its own list, then `0x21ece30` and `0x21b6068`); `mp_automatch` sits in a debug frontend. A direct create would have to rebuild those, which needs live iteration | none |
 
 Three results are not successes. **Warm reset failed its one attempt** (ref6): after leaving,
 the same process did not get back to the games list; the automatic steps failed at the multiplayer
