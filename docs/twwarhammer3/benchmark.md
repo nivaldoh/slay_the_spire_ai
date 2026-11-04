@@ -95,6 +95,10 @@ simple scripts play too, so a battle a fixed rule can win shows up as one.
 A scenario is *witnessed* once any arm wins it at this build. Nothing here is admitted or
 excluded by a win rate: an unwitnessed scenario stays and is shown as unwitnessed.
 
+JUDGEMENT: Authored calibration — Claude, 2026-11-04, overnight goal: rank-5 player units and
+enemy men 1.09-1.20 times the player's, after 22 straight losses on harder versions; very hard AI
+kept. An easier or harder setting changes which battles are witnessed and what each arm can show.
+
 **Control methods.** `suite.ARMS` freezes them; all use Haiku 5.5 low where a model plays.
 
 | Arm | Who decides | What it asks |

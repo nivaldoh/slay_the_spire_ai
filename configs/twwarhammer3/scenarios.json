@@ -2453,9 +2453,9 @@
  "coord-two-fronts": {
   "name": "coord-two-fronts",
   "benchmark": "suite-v1",
-  "scenario_version": 2,
+  "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown. Then, with rank 5 still losing (5 of 5 battles read), the enemy goes to 1.1-1.2 times the player's men: the Empire line, the winnable lordless battle on record, is near 1.0, and these four stood at 1.27-1.55.",
   "tests": "Fight two separate battles at once and decide where one reserve goes",
   "brief": "Two Empire groups stand 410 m apart, each facing its own Greenskin group 250 m south; one Knights unit waits between them. Neither group is known to win alone.",
   "split": "development",
@@ -2494,7 +2494,6 @@
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_arrer_boyz",
     "wh_main_grn_inf_orc_boyz",
-    "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_arrer_boyz",
@@ -2556,28 +2555,21 @@
    "enemy": [
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": -149,
+     "x": -126,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_arrer_boyz",
-     "x": -103,
+     "x": -80,
      "z": -400,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": -57,
-     "z": -400,
-     "bearing": 0,
-     "width": 40
-    },
-    {
-     "type": "wh_main_grn_inf_goblin_spearmen",
-     "x": -11,
+     "x": -34,
      "z": -400,
      "bearing": 0,
      "width": 40
@@ -2632,9 +2624,9 @@
  "coord-relief": {
   "name": "coord-relief",
   "benchmark": "suite-v1",
-  "scenario_version": 3,
+  "scenario_version": 4,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown. Then, with rank 5 still losing (5 of 5 battles read), the enemy goes to 1.1-1.2 times the player's men: the Empire line, the winnable lordless battle on record, is near 1.0, and these four stood at 1.27-1.55.",
   "tests": "Hold under attack while a distant column marches to the same fight",
   "brief": "A small garrison stands 130 m from a Greenskin force; a relief column starts 460 m away and cannot arrive before contact.",
   "split": "development",
@@ -2674,7 +2666,6 @@
     "wh_main_grn_inf_orc_big_uns",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_big_uns",
-    "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_goblin_spearmen"
    ]
@@ -2762,22 +2753,15 @@
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 422,
-     "z": -385,
-     "bearing": 280,
-     "width": 40
-    },
-    {
-     "type": "wh_main_grn_inf_orc_boyz",
-     "x": 430,
-     "z": -340,
+     "x": 426,
+     "z": -363,
      "bearing": 280,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_goblin_spearmen",
-     "x": 438,
-     "z": -295,
+     "x": 434,
+     "z": -317,
      "bearing": 280,
      "width": 40
     }
@@ -2805,7 +2789,7 @@
   "benchmark": "suite-v1",
   "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Bring two separated groups into one fight at the same time",
   "brief": "Two Empire groups start 590 m apart with a Greenskin block between them and must attack before the timer; each alone is weaker than the block.",
   "split": "development",
@@ -2991,9 +2975,9 @@
  "coord-breakout": {
   "name": "coord-breakout",
   "benchmark": "suite-v1",
-  "scenario_version": 2,
+  "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown. Then, with rank 5 still losing (5 of 5 battles read), the enemy goes to 1.1-1.2 times the player's men: the Empire line, the winnable lordless battle on record, is near 1.0, and these four stood at 1.27-1.55.",
   "tests": "Concentrate on one of three converging groups before they close",
   "brief": "An Empire force in the open is approached from the west, east and south by three separate Greenskin groups, each weaker than it and starting about 210 m away.",
   "split": "development",
@@ -3030,10 +3014,9 @@
     "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_boyz",
-    "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_inf_orc_arrer_boyz",
-    "wh_main_grn_inf_orc_boyz",
-    "wh_main_grn_inf_goblin_spearmen"
+    "wh_main_grn_inf_orc_arrer_boyz",
+    "wh_main_grn_inf_orc_boyz"
    ]
   },
   "deployment": {
@@ -3104,7 +3087,7 @@
      "width": 40
     },
     {
-     "type": "wh_main_grn_inf_goblin_spearmen",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 360,
      "z": -257,
      "bearing": 270,
@@ -3112,21 +3095,14 @@
     },
     {
      "type": "wh_main_grn_inf_orc_arrer_boyz",
-     "x": 104,
+     "x": 127,
      "z": -475,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 150,
-     "z": -475,
-     "bearing": 0,
-     "width": 40
-    },
-    {
-     "type": "wh_main_grn_inf_goblin_spearmen",
-     "x": 196,
+     "x": 173,
      "z": -475,
      "bearing": 0,
      "width": 40
@@ -3153,9 +3129,9 @@
  "coord-detail": {
   "name": "coord-detail",
   "benchmark": "suite-v1",
-  "scenario_version": 2,
+  "scenario_version": 3,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown. Then, with rank 5 still losing (5 of 5 battles read), the enemy goes to 1.1-1.2 times the player's men: the Empire line, the winnable lordless battle on record, is near 1.0, and these four stood at 1.27-1.55.",
   "tests": "Beat the near wave before the far wave arrives",
   "brief": "An Empire force faces a near Greenskin wave 270 m away; a second wave of equal size starts another 300 m behind it. Together they outnumber the Empire force.",
   "split": "development",
@@ -3197,7 +3173,6 @@
     "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_big_uns",
-    "wh_main_grn_inf_goblin_spearmen",
     "wh_main_grn_cav_goblin_wolf_riders_0"
    ]
   },
@@ -3284,29 +3259,22 @@
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 371,
-     "z": -489,
+     "x": 387,
+     "z": -473,
      "bearing": 315,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_big_uns",
-     "x": 404,
-     "z": -456,
-     "bearing": 315,
-     "width": 40
-    },
-    {
-     "type": "wh_main_grn_inf_goblin_spearmen",
-     "x": 436,
-     "z": -424,
+     "x": 420,
+     "z": -440,
      "bearing": 315,
      "width": 40
     },
     {
      "type": "wh_main_grn_cav_goblin_wolf_riders_0",
-     "x": 469,
-     "z": -391,
+     "x": 453,
+     "z": -407,
      "bearing": 315,
      "width": 40
     }
@@ -3334,7 +3302,7 @@
   "benchmark": "suite-v1",
   "scenario_version": 2,
   "family": "coordination",
-  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at about 45% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
+  "calibration_change": "Rounds 1 and 2: all 22 battles on the previous versions were lost, by every arm that played, with armies routing at 24-62% of their men, so every player unit goes to experience rank 5, the knob the owner named on 2026-10-19, used for the Empire line in the register. One factor; enemy unchanged. Winnability is unknown.",
   "tests": "Protect guns from cavalry behind the line while the line is engaged",
   "brief": "An Empire line with two Great Cannons and Handgunners behind it faces Orcs to the south; Greenskin cavalry starts 300 m behind the guns.",
   "split": "development",

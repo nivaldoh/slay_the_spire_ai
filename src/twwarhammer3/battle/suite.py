@@ -426,44 +426,14 @@ def render(data):
 
 
 def gather(plans):
-    """Rows of every plan. A later plan continues an earlier stopped one: its ``supersedes``
-    names battles replayed after a fix, kept and listed but no longer counted, and a pair it
-    plays replaces that pair's never-started row."""
-    rows, superseded = [], {}
+    rows, planned = [], 0
     for plan in plans:
-        superseded.update(json.loads(Path(plan).read_text()).get("supersedes") or {})
-        rows += [{**row, **measure(row)} for row in collect(Path(plan))["rows"]]
-    set_aside = [{"output": row["output"], "outcome": row["outcome"],
-                  "reason": superseded[row["output"]]}
-                 for row in rows if row["output"] in superseded]
-    played = {(row["scenario"], row["arm"]) for row in rows if row["started"]
-              and row["output"] not in superseded}
-    rows = [row for row in rows if row["output"] not in superseded
-            and (row["started"] or (row["scenario"], row["arm"]) not in played)]
-    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": len(rows),
+        data = collect(Path(plan))
+        planned += data["planned"]
+        rows += [{**row, **measure(row)} for row in data["rows"]]
+    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": planned,
             "completed": sum(bool(row["outcome"]) for row in rows), "rows": rows,
-            "superseded": set_aside, "summary": summarize(rows)}
-
-
-def make_continuation(output, earlier, replay, budget_usd, *, seed, start_before=None, graphs=None):
-    """A plan for what a stopped plan did not play, plus named battles replayed after a fix."""
-    plan = json.loads(Path(earlier).read_text())
-    state = json.loads(Path(earlier).with_name(Path(earlier).stem + "-state.json").read_text())
-    finished = {str((REPO_ROOT / row["output"]).resolve()) for row in state["completed"]}
-    pairs = [(job["scenario"], job["arm"]) for job in plan["jobs"]
-             if str((REPO_ROOT / job["output"]).resolve()) not in finished or job["arm"] in replay]
-    fresh = make_plan(output, sorted({pair[0] for pair in pairs}),
-                      sorted({pair[1] for pair in pairs}), 1, budget_usd, seed=seed,
-                      start_before=start_before, graphs=graphs)
-    fresh["jobs"] = [job for job in fresh["jobs"] if (job["scenario"], job["arm"]) in pairs]
-    fresh["continues"] = str(earlier)
-    fresh["supersedes"] = replay_reasons = {}
-    for job in plan["jobs"]:
-        output_path = str((REPO_ROOT / job["output"]).resolve())
-        if job["arm"] in replay and output_path in finished:
-            replay_reasons[output_path] = replay[job["arm"]]
-    write_json(output, fresh)
-    return fresh
+            "summary": summarize(rows)}
 
 
 def report(plans, output):

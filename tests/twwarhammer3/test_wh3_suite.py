@@ -367,36 +367,3 @@ def test_a_class_member_is_told_which_ids_it_may_order_and_a_two_member_team_is_
     told = team.ClassTeamLLM.section_of(view)
     assert "The only ids you may order: f2, f7." in told
     assert team.TeamLLM.section_of(view) == team.team_section(view)
-
-
-def played(tmp_path, name, scenario, arm, *, started=True):
-    """A job folder of the kind a plan row points at; never-started rows have none."""
-    return {"output": str(tmp_path / name), "arm": arm, "scenario": scenario, "controller": arm}
-
-
-def test_a_continuation_replays_what_changed_and_keeps_the_superseded_row_visible(
-        tmp_path, monkeypatch):
-    earlier = {"benchmark": benchmark.SUITE, "source_revision": "x",
-               "scenarios": {"coord-relief": {}, "coord-pincer": {}}, "jobs": [
-                   played(tmp_path, "coord-relief--team--1", "coord-relief", "team"),
-                   played(tmp_path, "coord-relief--single--1", "coord-relief", "single"),
-                   played(tmp_path, "coord-pincer--team--1", "coord-pincer", "team"),
-                   played(tmp_path, "coord-pincer--single--1", "coord-pincer", "single")]}
-    path = tmp_path / "round.json"
-    path.write_text(json.dumps(earlier))
-    (tmp_path / "round-state.json").write_text(json.dumps({"completed": [
-        {"output": earlier["jobs"][0]["output"]}, {"output": earlier["jobs"][1]["output"]}]}))
-    monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
-    next_plan = suite.make_continuation(tmp_path / "next.json", path, {"team": "prompt fixed"}, 5,
-                                        seed=1)
-    pairs = {(job["scenario"], job["arm"]) for job in next_plan["jobs"]}
-    assert pairs == {("coord-relief", "team"), ("coord-pincer", "team"),
-                     ("coord-pincer", "single")}  # the played single stands
-    old = earlier["jobs"][0]["output"]
-    assert next_plan["supersedes"] == {old: "prompt fixed"}
-    assert next_plan["continues"] == str(path)
-    data = suite.gather([path, tmp_path / "next.json"])
-    assert data["superseded"] == [{"output": old, "outcome": None, "reason": "prompt fixed"}]
-    # the replay shares the old battle's folder name, and only the old row is set aside
-    assert str(tmp_path / "next/coord-relief--team--1") in [row["output"] for row in data["rows"]]
-    assert old not in [row["output"] for row in data["rows"]]
