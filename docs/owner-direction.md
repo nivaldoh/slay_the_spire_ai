@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (cooperation research goal): "Use our collected research materials to identify
+  ways to improve our WH3 benchmark. Don't overcomplicate. Don't overengineer. No bloat,
+  no slop. Let's improve the ways we measure and visualize real-time agent cooperation
+  and potentially coordination. Consider carefully how the WH3 setting relates to robotics,
+  multi-agent systems, and other topics in these different domains. Also consider carefully
+  how our setting differs from them to avoid making wrong comparisons. Let's get simpler,
+  more fundamental points right before thinking about details. I prefer visuals and
+  animations to words whenever possible. Pay attention to what's unique about the WH3
+  setting. Take inspiration from the paper's ideas as well as their code. Think about how
+  we might convey information more easily and cleanly to a human reader."
 - 2026-11-04 (suite page, after the overnight run): "Make sure the suite is visually clear. For a
   coordination task, it's not visibile who is supposed to be coordinating with who and how or why.
   There's somehow too much info on the screen and yet the most important ideas are missing. Let's

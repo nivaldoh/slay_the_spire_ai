@@ -28,6 +28,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: cooperation research and animated evidence proposal
+
+The [proposal](benchmark-references.md#make-cooperation-inspectable-before-scoring-it) uses
+RoCo, MultiAgentBench and SMACv2 papers/code: show actual ownership, inspect continuing
+support and keep descriptive activity separate from causal benefit. Robotics/transfer limits
+and a proposed fidelity check are explicit; no score, controller or experiment changed.
+The [animated figure](reports.md#cooperation-evidence-proposal) uses one recorded pincer team
+battle: independent raw recount matched 368 member inputs, 366 engine receipts, two discarded
+calls and 314 recorder frames. Browser fidelity checked every frame/call on desktop and phone;
+four planted data errors were rejected. A separate UI check passed playback, selection, seeking,
+download and offline copying. Two research-wording findings were corrected. Evidence, source
+audit, reviews and gate output: `runs/cooperation-evidence/`. No game or paid call ran.
+No existing test/check/scorer changed. Two proposal/example JUDGEMENT markers were added.
+The check is not agreed; display fidelity and cooperation quality remain unverified under
+the owner's rule. This is a research sketch for the existing report, not adoption of a metric.
+
 ## 2026-11-04: code map omissions and current claims corrected
 
 The map now assigns the benchmark/suite/reference modules to boxes, and its generated file

@@ -72,3 +72,60 @@ the decisions these references help frame:
 
 After those choices, use the existing [implementation phases](benchmark-implementation.md#phases).
 This research does not select a new paid experiment or a sample count.
+
+## Make cooperation inspectable before scoring it
+
+Owner, 2026-11-04: use the collected papers **and code** to improve measurement and
+visualisation, starting with simple fundamentals. The [animated research figure](reports.md#cooperation-evidence-proposal)
+uses one saved team battle to make the following proposals concrete. It changes no benchmark rule.
+
+JUDGEMENT: Cooperation evidence proposal — Codex, 2026-11-04: proposes owner-specific
+timelines and continuing-support inspection before another coordination score. An aggregate
+score is an alternative; the display and comparison proposals below remain unadopted.
+
+**First identify the agent.** In the current split-army team, an agent owns regiments;
+it is neither a soldier nor the game's movement controller. In native multiplayer it can
+own an army, with separate client and army resources. The report's geographic groups are
+another grouping: a class-based agent can own units on both wings. Show ownership explicitly.
+
+Use **cooperation** for the shared task; investigate **coordination** through how choices
+depend on teammates' capabilities, state and timing. These are working distinctions, not
+new scores. A shared victory, concurrent calls and useful interdependence are different claims.
+
+| Question for the reader | Small display or measurement | Research idea and WH3 limit |
+|---|---|---|
+| Who knew what when they acted? | A lane per owner: member source observation → engine receipt, linked to its units and older positions. Keep empty, refused and unsent batches visible. | [MultiAgentBench](benchmark-references/multiagentbench.md) makes identities explicit. Its inspected graph loop is sequential; WH3 members can act independently. A model API exchange is not a teammate message. |
+| Did one group remain able to support another? | Put sampled melee/routing states beside orders and the map. Inspect an interval, with unknowns; do not infer protection from nearby units. | [RoCo](benchmark-references/rocobench.md)'s cabinet requires continuing support. Its `task_cabinet.py` distinguishes holding from opening; `prompting/display_utils.py` pairs attributed dialogue with execution video. WH3 support can fail through morale, casualties, hidden enemies or hostile action during inference. |
+| Did adaptation improve the shared result? | Keep engine outcomes and attempt counts beside the existing simple-controller comparisons. A replay illustrates a possible mechanism; it does not isolate its benefit. | [SMACv2](benchmark-references/smacv2.md) tests whether feedback is needed. Its `step(actions)` advances joint steps, whereas WH3 charges real inference delay and preserves standing orders. |
+
+This suggests a concrete report improvement: select an actual owner in the existing replay,
+then inspect its own view and calls on the same clock as the units. Reuse the existing map
+and group timelines; a second reporting framework is unnecessary. The figure is a design
+example, not a replacement report. Its selected battle and fidelity check remain unverified
+under the owner's rule; selection rests on JUDGEMENT `runs/cooperation-evidence/build.py`
+Figure example. Source audit: `runs/cooperation-evidence/source-audit.md`.
+
+Two existing labels need care: `suite.py`'s **ready** means a living unit neither routing
+nor shattered exists, with none of those units in melee; it does not establish readiness to help. Use **not in melee**
+in a future display. A scenario's intended tactic is a hypothesis, not an observed action.
+The existing [coordination diagnostics](benchmark.md#the-coordination-suite-suite-v1)
+already document their limits; low idle time, tight arrival timing or local numerical
+advantage should not become a quality ranking without a check that establishes their meaning.
+
+**For a later causal comparison**, the simplest question is whether reacting to a teammate
+helps over a declared fixed plan with the same army, information access and executor.
+The exact disabled feedback, timing, budget and repeats need agreement: existing single/team
+arms also differ in information and concurrency. Removing messages becomes meaningful only
+after a message channel exists. Preserve every failure and attempt; several calls in one
+battle are not independent trials. Checkpoint interventions additionally need a declared
+continuation and baseline: “no new orders” leaves standing orders active. A saved state alone
+does not validate causal credit. No such comparison is scheduled by this proposal.
+
+The closest robotics connection is supervision of heterogeneous resources through delayed
+telemetry, not low-level physical control. [Real-Time Chunking](https://arxiv.org/abs/2506.07339)
+offers the principle of conditioning on actions that will execute during inference;
+its continuous-action inpainting is not an adapter for WH3's discrete targets. The collected
+[game-to-robot study](../thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot)
+instead motivates naming what transfers and testing it across interfaces. WH3's game rules,
+pathfinding, opponent and shared army vision do not establish robot perception, motion safety
+or independent local sensing. There is no cross-domain transfer result here.

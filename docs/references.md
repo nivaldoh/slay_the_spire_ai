@@ -53,6 +53,13 @@ Mandi, Jain and Song, [RoCo](https://doi.org/10.1109/ICRA57147.2024.10610855), I
 **RoCoBench** tests robot cooperation through task dependencies, different capabilities
 and shared space. The [overview](twwarhammer3/benchmark-references/rocobench.md) maps these
 to WH3 unit-group owners and allied army owners, with timing limits and pinned code.
+The [cooperation display proposal](twwarhammer3/benchmark-references.md#make-cooperation-inspectable-before-scoring-it)
+also uses `task_cabinet.py` (continuing support) and `prompting/display_utils.py` (attributed
+decisions beside execution) at the overview's pin. Independent source audit:
+`runs/cooperation-evidence/source-audit.md`. No experiment reproduced.
+Black, Galliker and Levine, [Real-Time Chunking](https://arxiv.org/abs/2506.07339v2),
+NeurIPS 2025: condition new plans on execution during inference; continuous-action inpainting
+is not directly applicable to WH3 orders. Used as an execution principle in that proposal.
 Literature reference only; no experiment or verification method adopted.
 
 ## Cross-domain research reference (2026-11-02)

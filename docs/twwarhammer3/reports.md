@@ -52,6 +52,23 @@ uv run --locked python -m twwarhammer3 benchmark report runs/coord-suite-2026110
 Open `runs/twwarhammer3/reports/suite.html`. On Windows:
 `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\twwarhammer3\reports\suite.html`.
 
+## Cooperation evidence proposal
+
+The offline animated figure `runs/cooperation-evidence/cooperation.html` illustrates the
+[research proposal](benchmark-references.md#make-cooperation-inspectable-before-scoring-it):
+select an actual agent, inspect its older view, and follow source observation → engine receipt
+beside the recorded unit positions. Start/first melee/last sample buttons and the time slider
+navigate the battle; coloured intervals select member calls. Hollow endpoints are empty
+batches; calls without receipt remain visible. The example is the class team in
+`coord-pincer--team--1`, selected to show ownership crossing geographic wings, not performance.
+
+Open on Windows:
+`\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\runs\cooperation-evidence\cooperation.html`.
+Build: `python runs/cooperation-evidence/build.py`. Template, JSON with source hashes, source
+audit and independent checks live beside it. This is a reviewable sketch for the existing
+report, not an adopted measure or another reporting system. Fidelity checks are proposed,
+not agreed; useful coordination and cross-domain transfer remain unverified.
+
 ## Initial benchmark visuals
 
 `benchmark report PLAN` writes the visual page alongside the original planned-attempt
