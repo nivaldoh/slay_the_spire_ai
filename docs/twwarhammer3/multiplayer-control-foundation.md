@@ -5,10 +5,38 @@ conditional on identifying and checking a few native engine operations.** Keep W
 multiplayer transport and simulation, expose its missing session operations, and establish
 a trustworthy synchronization check before expanding control.
 
-The owner requested investigation and a document for later implementation only. Nothing
-here authorizes implementation, game launches or new spending. This supersedes the
+The original request was investigation and a document for later implementation only.
+On 2026-11-04 the owner requested implementation of this plan. The paid VM continuation
+remains stopped; new spending is not authorized by this document. This supersedes the
 "not started" API investigation in [the earlier next steps](mp-next-steps.md#later-a-multiplayer-friendly-mod-api),
 not the status of its already-built code. The paid VM continuation remains stopped.
+
+## Implementation status
+
+2026-11-04, branch `wh3-multiplayer-foundation`: stage 1 in progress. A bounded passive
+reference probe (`engine/multiplayer_probe.py` and `.js`) follows deployment callback
+dispatch to its dynamically resolved handler. It hashes the actual process image, checks
+all hook signatures/layouts before attaching, and records source-side Windows wall times,
+per-invocation identities and diagnostic completed-tick checksums after worker join.
+It exposes no commands and does not execute Lua or checkpoint restoration.
+
+Static trace on pinned 26403568: the `BattleDeploymentEndMP` constructor at RVA `0x1bdebc8`
+installs vtable `0x37c45f0`; its `+0x188` dispatcher at `0x1bef0c0` resolves named handlers
+through `0x22db234` and runtime table `0x448ff18`. That table's values are not available
+from the retained file image. A normal reference action must identify the handler before
+the underlying session operation can be traced or invoked. No native lifecycle operation
+has been promoted to an adapter. Evidence: `runs/wh3-multiplayer-foundation/`.
+
+The capture helper runs under the existing Windows Frida Python as
+`python -m twwarhammer3.engine.multiplayer_probe --pid OWNED_PID --output FRESH_DIR --seconds N`.
+Its caller must own the game; attach before constructing the reference battle. It never
+launches or closes a game. A `STOP` file ends capture. An error or missing `ready` exits
+nonzero; zero means only that capture ran, not readiness, synchrony or acceptance.
+
+The initial component checks exercise guards and bookkeeping, not ABI correctness.
+Raw witnesses, native submission counting, phase/ending readback, peer calibration,
+confirmed operations, warm reset and the complete acceptance cohort remain outstanding.
+Historical `compare-peers` behavior is unchanged. No live probe or cloud job has run here.
 
 ## Owner decisions and completion
 

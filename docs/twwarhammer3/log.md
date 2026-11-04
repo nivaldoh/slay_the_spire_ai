@@ -28,6 +28,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: start the multiplayer foundation with a passive native reference probe
+
+Foundation stage 1: built a bounded Windows Frida capture helper and read-only native
+probe for deployment callback resolution and diagnostic completed-tick checksums.
+The actual process image is hashed; all six signatures and the deployment vtable slot
+are checked before any hook. No commands, Lua execution or restore path is exposed.
+Static reference: retained pinned 26403568 executable. Independent review checked its
+hash, six signatures, vtable and session-step return-buffer instructions. Review found
+two errors (Boolean versus buffer return; crash-object serialization); both corrected.
+Focused checks: 8 passed, none failed/skipped; reviewer caught 6/6 planted regressions.
+Initial whole gate failed on sandbox loopback sockets; unrestricted rerun passed but
+files changed during it, so its pass was not recorded. Final gate is in the commit.
+Evidence/card/review: `runs/wh3-multiplayer-foundation/`. No live probe or spend yet.
+Native ABI, passivity and replication remain unverified; the probe cannot establish
+raw-state synchrony or acceptance. Next: owner-authorized local deployment reference;
+the paid VM continuation remains stopped. Full plan and both completion criteria remain.
+
 ## 2026-11-04: preserve historical Land recounts under their original rule
 
 - The final main gate at `f36cc0b` caught a compatibility regression absent from the

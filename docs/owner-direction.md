@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (multiplayer foundation implementation): "Implement
+  runs/wh3-multiplayer-foundation-plan/worktree/docs/twwarhammer3/multiplayer-control-foundation.md".
+  Supersedes that document's planning-only restriction. Implement the full foundation;
+  the separately stopped paid VM continuation is not restarted by this request.
+- 2026-11-04 (foundation reference probe): owner chose "Use a local window after the
+  current game closes" for a bounded deployment-readiness reference probe, with no cloud
+  VM or paid calls. The previous checkpoint game has since closed; recheck before launch.
 - 2026-11-03 (multiplayer foundation plan): "Remember that here we will not implement
   anything. We will just write the plan to implement later." Save the
   [plan](twwarhammer3/multiplayer-control-foundation.md) and summarize the approach and tests

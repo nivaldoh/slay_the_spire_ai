@@ -176,6 +176,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   owned game (Windows side)
 - `src/twwarhammer3/engine/link.py`: native multiplayer: the coordinator's link
 - `src/twwarhammer3/engine/worker.py`: native multiplayer: the per-client worker
+- `src/twwarhammer3/engine/multiplayer_probe.py`: bounded Windows reference capture;
+  checks the actual process image and runs the passive multiplayer discovery agent
+- `src/twwarhammer3/engine/multiplayer_probe.js`: deployment callback discovery and
+  diagnostic completed-tick checksums; no lifecycle operations or raw-state acceptance
 
 `src/twwarhammer3/mod/`, Lua scripts packed into the game:
 - `src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua`: the battle script:
