@@ -520,3 +520,44 @@ def test_ready_is_refused_in_single_player_and_in_observe(mode, setup, expected)
     g = battle({"multiplayer": mode}, READY + setup)
     ready(g)
     assert g.clicks == 0 and expected in logged(g) and list(g.trapped.values()) == []
+
+
+LEAVE = READY + """
+    context_calls = {}
+    common.call_context_command = function(context, id, command)
+        context_calls[#context_calls + 1] = context .. "|" .. id .. "|" .. command
+    end
+"""
+
+
+def leave(g, request="l1"):
+    send(g, "orders.json", {"battle": observation(g)["battle"], "request": request,
+                            "control": "leave"})
+    return observation(g)
+
+
+def test_control_leave_calls_quit_once_and_replies_at_once_in_a_running_battle():
+    g = battle({"multiplayer": "control"}, LEAVE)
+    g.phase = "Deployed"
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    seen = leave(g)
+    assert list(g.context_calls.values()) == ["CcoBattleRoot||QuitToMainMenu"]
+    assert seen["orders"]["request"] == "l1"
+    assert seen["orders"]["results"] == [{"index": 1, "control": "leave", "ok": True}]
+    assert leave(g, "l2")["orders"]["results"][0]["error"] == "already_leaving"
+    assert len(g.context_calls) == 1
+    assert list(g.trapped.values()) == []
+
+
+def test_leave_reports_a_refused_command_and_is_refused_outside_multiplayer_control():
+    g = battle({"multiplayer": "control"}, LEAVE + """
+        common.call_context_command = function() error("no such context") end""")
+    assert "no such context" in leave(g)["orders"]["results"][0]["error"]
+    assert "already_leaving" not in str(leave(g, "l2")["orders"]["results"])
+    g = battle({"multiplayer": "control"}, LEAVE + "is_multiplayer = false")
+    assert leave(g)["orders"]["results"][0]["error"] == "single_player"
+    assert len(g.context_calls) == 0
+    g = battle({"multiplayer": "observe"}, LEAVE)
+    leave(g)
+    assert len(g.context_calls) == 0 and "observe: dropped orders.json" in logged(g)

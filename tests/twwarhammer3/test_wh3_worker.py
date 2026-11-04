@@ -569,3 +569,78 @@ def test_an_attached_worker_refuses_menu_before_hello(tmp_path, install, monkeyp
                        mode="control", attach=True, bridge=borrowed_bridge(tmp_path),
                        max_s=30, menu=True)
         assert records(coordinator, "hello") == []
+
+
+class RecordingLink:
+    def __init__(self):
+        self.events = []
+
+    def event(self, kind, data):
+        self.events.append(data)
+
+
+class FakeAdapter:
+    def __init__(self, outcome):
+        self.outcome, self.requests = outcome, []
+
+    def poll(self):
+        return []
+
+    def request(self, operation):
+        self.requests.append(operation)
+        return f"r{len(self.requests)}"
+
+    def result(self, request, statuses, seconds):
+        assert seconds >= worker.REQUEST_S, "the agent can hold a request this long"
+        return {"status": self.outcome, "request": request} if self.outcome else None
+
+
+@pytest.mark.parametrize("outcome,expected", [("submitted", "submitted"),
+                                              ("refused", "rejected"), ("expired", "rejected")])
+def test_a_direct_operation_reports_the_adapters_outcome(tmp_path, outcome, expected):
+    link = RecordingLink()
+    client = worker.Worker(link, None, "control")
+    client.adapter = FakeAdapter(outcome)
+    assert client.on_command({"seq": 1, "body": worker.READY_DEPLOYMENT}) == expected
+    assert client.adapter.requests == ["ready_deployment"]
+    assert [event["status"] for event in link.events] == ["written", expected]
+
+
+@pytest.mark.parametrize("outcome", ["unknown", None])
+def test_a_direct_operation_with_no_clear_outcome_stays_unknown(outcome):
+    client = worker.Worker(RecordingLink(), None, "control")
+    client.adapter = FakeAdapter(outcome)
+    with pytest.raises(TimeoutError, match="unknown effect"):
+        client.on_command({"seq": 1, "body": worker.READY_DEPLOYMENT})
+
+
+def test_a_worker_without_an_adapter_rejects_the_operation_and_observe_rejects_all():
+    link = RecordingLink()
+    assert worker.Worker(link, None, "control").on_command(
+        {"seq": 1, "body": worker.READY_DEPLOYMENT}) == "rejected"
+    observe = worker.Worker(link, None, "observe")
+    observe.adapter = FakeAdapter("submitted")
+    assert observe.on_command({"seq": 2, "body": worker.READY_DEPLOYMENT}) == "rejected"
+    assert observe.adapter.requests == []
+
+
+def test_leave_is_a_control_written_and_acknowledged_like_ready(tmp_path, install, monkeypatch):
+    refuse_to_launch(monkeypatch)
+    bridge = borrowed_bridge(tmp_path)
+    game = FakeGame(bridge, "live")
+    game.publish(1)
+    with serve(tmp_path) as coordinator:
+        thread, _ = start(coordinator, bridge)
+        events(coordinator, "observation", 1)
+        coordinator.submit("A", worker.LEAVE)
+        assert status(coordinator, 1) == "submitted"
+    thread.join(5)
+    game.close()
+    assert [request["control"] for request in game.requests] == ["leave"]
+
+
+@pytest.mark.parametrize("attach,mode", [(True, "control"), (False, "observe")])
+def test_the_native_adapter_needs_an_owned_control_session(attach, mode):
+    with pytest.raises(ValueError, match="owned control"):
+        worker.run("http://x", TOKEN, match="m", attempt="a", client="A", mode=mode, attach=attach,
+                   bridge=None, max_s=1, native=True)

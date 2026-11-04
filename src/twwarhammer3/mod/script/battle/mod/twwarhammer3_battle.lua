@@ -1272,11 +1272,24 @@ local function find_shown(uic, id)
     end
 end
 
+-- The reply to a multiplayer control. A running battle sends it with its next observation;
+-- before that no tick runs, so it goes out in a minimal observation like the Loading one.
+local function acknowledge(message, result, at_once)
+    state.applied = {request = message.request, based_on = message.based_on,
+                     applied_ms = battle_time(), results = {result}}
+    if state.started and not at_once then state.force_observe = true; return end
+    state.seq = state.seq + 1
+    publish("observation.json", {
+        schema = 1, job = session.job, battle = state.battle, seq = state.seq,
+        phase = bm:get_current_phase_name(), time_ms = state.applied.applied_ms, speed = 1,
+        awaiting_orders = false, friendly = {}, enemy_roster = {}, enemy = {},
+        orders = state.applied,
+    })
+end
+
 -- Multiplayer control: press this client's own Start Battle during deployment (owner,
 -- 2026-11-03, docs/twwarhammer3/mp-next-steps.md decision 1). The battle starts when every
 -- player has pressed it. Never end_current_battle_phase, which would act for every peer.
--- The tick does not run before the battle starts, so the acknowledgement goes out in a
--- minimal observation like the Loading one.
 local function ready(message)
     local result = {index = 1, control = "ready", ok = false}
     if not get(bm.battle, "is_multiplayer", false) then
@@ -1297,16 +1310,26 @@ local function ready(message)
         if not clicked then result.error = clean_error(err) end
     end
     log("multiplayer ready: " .. (result.ok and "clicked" or result.error))
-    local now = battle_time()
-    state.applied = {request = message.request, based_on = message.based_on, applied_ms = now,
-                     results = {result}}
-    if state.started then state.force_observe = true; return end
-    state.seq = state.seq + 1
-    publish("observation.json", {
-        schema = 1, job = session.job, battle = state.battle, seq = state.seq,
-        phase = bm:get_current_phase_name(), time_ms = now, speed = 1, awaiting_orders = false,
-        friendly = {}, enemy_roster = {}, enemy = {}, orders = state.applied,
-    })
+    acknowledge(message, result)
+end
+
+-- Multiplayer control: leave this client's session through the global context command
+-- QuitToMainMenu ("from battle or campaign"), with no component lookup. The acknowledgement
+-- goes out at once, since no later tick is sure to run. The worker reads completion from the
+-- frontend, not from this reply.
+local function leave(message)
+    local result = {index = 1, control = "leave", ok = false}
+    if not get(bm.battle, "is_multiplayer", false) then
+        result.error = "single_player"
+    elseif state.leaving then
+        result.error = "already_leaving"
+    else
+        local called, err = pcall(common.call_context_command, "CcoBattleRoot", "", "QuitToMainMenu")
+        result.ok, state.leaving = called, called
+        if not called then result.error = clean_error(err) end
+    end
+    log("multiplayer leave: " .. (result.ok and "requested" or result.error))
+    acknowledge(message, result, true)
 end
 
 local function finish()
@@ -1567,6 +1590,9 @@ local function poll()
     state.last_request = message.request
     if message.control == "ready" and state.multiplayer == "control" then
         ready(message)
+        return
+    elseif message.control == "leave" and state.multiplayer == "control" then
+        leave(message)
         return
     elseif message.control and state.multiplayer then
         log("multiplayer: refused control " .. tostring(message.control))

@@ -13,14 +13,23 @@ one could act on an old request after the phase moved on, and the guards would s
 
 import argparse
 import json
+import shutil
+import subprocess
 import sys
 import threading
+import time
+import uuid
 from pathlib import Path
 
+from gameai import windows
 from twwarhammer3.engine import multiplayer_probe as probe
+from twwarhammer3.engine import runtime
 
 AGENT = Path(__file__).with_suffix(".js")
 OPERATIONS = ("ready_deployment",)
+REQUEST_S = 30.0  # as REQUEST_MS in the agent; rests on the Request bound above
+FRIDA_PYTHON = runtime.RUNTIME_DIR / "checkpoint-frida-venv/Scripts/python.exe"
+CAPTURES = runtime.RUNTIME_DIR / "native-capture"
 
 
 class Adapter:
@@ -51,6 +60,93 @@ class Adapter:
         thread = threading.Thread(target=feed, daemon=True)
         thread.start()
         return thread
+
+
+def source_path() -> str:
+    """This checkout's ``src`` as the Windows Python spells it."""
+    source = Path(__file__).resolve().parents[2]
+    if windows.NATIVE:
+        return str(source)
+    return subprocess.check_output(["wslpath", "-w", str(source)], text=True).strip()
+
+
+class Helper:
+    """The caller's side: the Windows Frida process beside one owned game. It writes to a
+    Windows folder (WSL paths are slow from there), then ``close`` copies the evidence out."""
+
+    def __init__(self, pid: int, name: str, evidence: Path, *, seconds: float,
+                 run=subprocess.Popen):
+        self.native, self.evidence = CAPTURES / name, evidence
+        self.position, self.pending, self.rows = 0, b"", []
+        code = (f"import sys; sys.path.insert(0, {source_path()!r}); "
+                "from twwarhammer3.engine.multiplayer_adapter import main; "
+                "raise SystemExit(main())")
+        self.process = run([str(FRIDA_PYTHON), "-c", code, "--pid", str(pid),
+                            "--output", windows.windows_path(self.native),
+                            "--seconds", str(seconds)],
+                           stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                           stderr=subprocess.STDOUT, text=True)
+
+    def poll(self) -> list[dict]:
+        """New rows of native.jsonl; a line still being written waits for the next poll."""
+        path = self.native / "native.jsonl"
+        if not path.exists():
+            return []
+        with path.open("rb") as file:
+            file.seek(self.position)
+            data = file.read()
+        self.position += len(data)
+        *lines, self.pending = (self.pending + data).split(b"\n")
+        rows = [json.loads(line) for line in lines if line]
+        self.rows += rows
+        return rows
+
+    def wait_ready(self, seconds: float = 40) -> None:
+        deadline = time.monotonic() + seconds
+        while True:
+            self.poll()
+            if any(row.get("event") == "adapter_ready" for row in self.rows):
+                return
+            if self.process.poll() is not None:
+                raise RuntimeError("the adapter helper exited before it was ready")
+            if time.monotonic() > deadline:
+                raise TimeoutError("the adapter helper was not ready")
+            time.sleep(0.2)
+
+    def request(self, operation: str) -> str:
+        request = uuid.uuid4().hex
+        self.process.stdin.write(json.dumps({"operation": operation, "request": request}) + "\n")
+        self.process.stdin.flush()
+        return request
+
+    def result(self, request: str, statuses: tuple, seconds: float) -> dict | None:
+        """The first row for ``request`` with one of ``statuses``, or None after ``seconds``."""
+        deadline = time.monotonic() + seconds
+        while True:
+            self.poll()
+            for row in self.rows:
+                if (row.get("event") == "operation_result" and row.get("request") == request
+                        and row.get("status") in statuses):
+                    return row
+            if time.monotonic() > deadline or self.process.poll() is not None:
+                return None
+            time.sleep(0.1)
+
+    def close(self) -> None:
+        """Ask the helper to detach, then keep every row it wrote; never touches the game."""
+        if self.native.exists():
+            (self.native / "STOP").touch()
+        try:
+            self.process.stdin.close()
+        except OSError:
+            pass
+        try:
+            self.process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait(timeout=5)
+        if self.native.exists():
+            shutil.copytree(self.native, self.evidence, dirs_exist_ok=True)
 
 
 def main() -> int:

@@ -26,7 +26,12 @@ included: evidence for the coordinator, never a policy view) with the file's wri
 orders that ``protocol.validate_orders`` allows in the latest observation; it is written to
 ``orders.json`` and reported ``submitted`` only once an observation's ``orders.request`` names it.
 The body ``{"control": "ready"}`` (``READY``) is written and acknowledged the same way; the battle
-Lua then presses this client's own Start Battle, during deployment only. ``--menu`` adds
+Lua then presses this client's own Start Battle, during deployment only. ``{"control": "leave"}``
+(``LEAVE``) likewise asks the battle Lua to quit to the main menu. ``{"operation":
+"ready_deployment"}`` (``READY_DEPLOYMENT``, a worker started with ``native``) goes to the
+experimental direct adapter (engine/multiplayer_adapter.py) instead of a click: refused or expired
+is ``rejected``, submitted is ``submitted``, and the later ``applied`` row arrives as an
+``adapter`` event. ``--menu`` adds
 ``"menu": true`` to an owned session so the frontend runs ``menu.json`` steps (lobby setup).
 Without that acknowledgement within ``ACK_S`` its effect is unknown and the worker stops. When
 the lease ends, the worker closes an owned game, removes its session, closes the link and exits
@@ -60,6 +65,7 @@ from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.engine import pack, runtime
 from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 from twwarhammer3.engine.mailbox import Mailbox
+from twwarhammer3.engine.multiplayer_adapter import REQUEST_S, Helper
 from twwarhammer3.protocol import IllegalActionError, validate_orders
 
 ROOT = REPO_ROOT / "runs/twwarhammer3/native-multiplayer"
@@ -75,6 +81,8 @@ ACK_S = 10.0
 # Owner, 2026-11-03 (mp-next-steps.md decision 1): the one control a control client may send,
 # pressing its own Start Battle in deployment; acknowledged like a move.
 READY = {"control": "ready"}
+LEAVE = {"control": "leave"}
+READY_DEPLOYMENT = {"operation": "ready_deployment"}
 # JUDGEMENT?: worker run bound — Claude, 2026-10-30: 240 minutes, launch's default game timeout;
 # the worker and its owned game stop then. A shorter bound can cut a long match short.
 MAX_MINUTES = 240
@@ -157,10 +165,14 @@ class Worker:
 
     def __init__(self, link: WorkerLink, mailbox: Mailbox, mode: str, *, ack_s: float = ACK_S):
         self.link, self.mailbox, self.mode, self.ack_s = link, mailbox, mode, ack_s
-        self.latest = self._seen = None
+        self.latest = self._seen = self.adapter = None
         self._changed = threading.Condition()
 
     def watch(self) -> None:
+        if self.adapter is not None:
+            for row in self.adapter.poll():
+                if row.get("event") in ("operation_requested", "operation_result"):
+                    self.link.event("adapter", row)
         observation = self.mailbox.read_observation()
         if observation is None or (observation.get("battle"), observation.get("seq")) == self._seen:
             return
@@ -174,7 +186,9 @@ class Worker:
     def refusal(self, body, observation: dict | None) -> str | None:
         if self.mode != "control":
             return "observe mode takes no commands"
-        if body == READY:
+        if body == READY_DEPLOYMENT:
+            return None if self.adapter is not None else "this worker has no native adapter"
+        if body in (READY, LEAVE):
             return None if observation is not None else "no observation yet"
         if not isinstance(body, dict) or set(body) != {"based_on", "orders"}:
             return 'a command is {"based_on", "orders"}'
@@ -200,8 +214,10 @@ class Worker:
         if reason:
             self.link.event("command", {"seq": seq, "status": "rejected", "reason": reason})
             return "rejected"
-        if body == READY:
-            request = self.mailbox.write_control(observation["battle"], "ready",
+        if body == READY_DEPLOYMENT:
+            return self.run_operation(seq, body["operation"])
+        if body in (READY, LEAVE):
+            request = self.mailbox.write_control(observation["battle"], body["control"],
                                                  timeout=self.ack_s)
         else:
             request = self.mailbox.write_orders(observation["battle"], body["based_on"],
@@ -221,15 +237,32 @@ class Worker:
         return "submitted"
 
 
+    def run_operation(self, seq: int, operation: str) -> str:
+        """One adapter request. Its guards refuse or expire it without an engine call, so
+        those are "rejected"; anything else unresolved raises and stays unknown."""
+        request = self.adapter.request(operation)
+        self.link.event("command", {"seq": seq, "status": "written", "request": request})
+        row = self.adapter.result(request, ("refused", "expired", "submitted", "unknown"),
+                                  REQUEST_S + self.ack_s)
+        if row is None or row["status"] == "unknown":
+            raise TimeoutError(f"operation {request} has an unknown effect: {row}")
+        status = "submitted" if row["status"] == "submitted" else "rejected"
+        self.link.event("command", {"seq": seq, "status": status, "request": request,
+                                    "result": row})
+        return status
+
+
 def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: str,
         attach: bool, bridge: Path, max_s: float, ack_s: float = ACK_S, menu: bool = False,
-        **link_settings) -> int:
+        native: bool = False, **link_settings) -> int:
     """One worker until its lease ends (1), its owned game exits (1) or ``max_s`` passes (0)."""
     check_names(match, attempt)
     if mode not in MODES:
         raise ValueError(f"mode is one of {MODES}")
     if menu and attach:
         raise ValueError("--menu applies to an owned session; an attached worker writes none")
+    if native and (attach or mode != "control"):
+        raise ValueError("--native-adapter needs an owned control session")
     stopped = threading.Event()
     link = WorkerLink(url, token, match=match, attempt=attempt, client=client,
                       manifest=host_manifest(), stop=stopped.set, **link_settings)
@@ -261,6 +294,13 @@ def run(url: str, token: str, *, match: str, attempt: str, client: str, mode: st
                 log = ROOT / match / attempt / f"worker-{client}" / "game.log"
                 game = stack.enter_context(runtime.OwnedGame(log, timeout=max_s))
                 link.event("game", game.info)
+                if native:
+                    helper = Helper(game.info["pid"], f"{match}.{attempt}.{client}",
+                                    log.parent / "native", seconds=max_s)
+                    stack.callback(helper.close)
+                    helper.wait_ready()
+                    worker.adapter = helper
+                    link.event("adapter", {"event": "ready"})
             while not stopped.is_set():
                 if time.monotonic() >= deadline:
                     print("worker: run bound reached", file=sys.stderr)

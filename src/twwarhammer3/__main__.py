@@ -139,6 +139,9 @@ def main() -> int:
     worker.add_argument("--menu", action="store_true",
                         help="owned session only: let the frontend run menu.json steps"
                         " (twwarhammer3 menu), as for lobby setup")
+    worker.add_argument("--native-adapter", action="store_true",
+                        help="owned control session only: run the experimental direct adapter"
+                        " beside the game (Windows Frida Python; records native evidence)")
     worker.add_argument("--max-minutes", type=float, default=None,
                         help="stop the worker and its game after this long"
                         " (default: MAX_MINUTES in engine/worker.py)")
@@ -382,7 +385,7 @@ def main() -> int:
                        attempt=args.attempt, client=args.client, mode=args.mode,
                        attach=args.attach, bridge=args.bridge or runtime.BRIDGE_DIR,
                        max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes),
-                       menu=args.menu)
+                       menu=args.menu, native=args.native_adapter)
         except (RuntimeError, OSError, ValueError) as error:
             print(f"worker: {error}", file=sys.stderr)
             return 1
