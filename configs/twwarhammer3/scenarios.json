@@ -2622,8 +2622,9 @@
  "coord-relief": {
   "name": "coord-relief",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Round 1a: rush won at 272 s with 287 of 496 men left, so the enemy gains one Big 'Uns and one Boyz unit. Whether the battle is now winnable is unknown.",
   "tests": "Hold under attack while a distant column marches to the same fight",
   "brief": "A small garrison stands 130 m from a Greenskin force; a relief column starts 460 m away and cannot arrive before contact.",
   "split": "development",
@@ -2650,6 +2651,8 @@
    "faction": "wh_main_grn_greenskins",
    "lord": false,
    "units": [
+    "wh_main_grn_inf_orc_boyz",
+    "wh_main_grn_inf_orc_big_uns",
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_big_uns",
     "wh_main_grn_inf_orc_boyz",
@@ -2712,36 +2715,50 @@
    "enemy": [
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 214,
+     "x": 191,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_big_uns",
-     "x": 260,
+     "x": 237,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 306,
+     "x": 283,
+     "z": -435,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_grn_inf_orc_big_uns",
+     "x": 329,
      "z": -435,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 426,
-     "z": -363,
+     "x": 422,
+     "z": -385,
+     "bearing": 280,
+     "width": 40
+    },
+    {
+     "type": "wh_main_grn_inf_orc_boyz",
+     "x": 430,
+     "z": -340,
      "bearing": 280,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_goblin_spearmen",
-     "x": 434,
-     "z": -317,
+     "x": 438,
+     "z": -295,
      "bearing": 280,
      "width": 40
     }
@@ -2767,8 +2784,9 @@
  "coord-pincer": {
   "name": "coord-pincer",
   "benchmark": "suite-v1",
-  "scenario_version": 1,
+  "scenario_version": 2,
   "family": "coordination",
+  "calibration_change": "Round 1a: rush won at 332 s with 287 of 586 men left, so the block gains one Big 'Uns and one Boyz unit. Whether the battle is now winnable is unknown.",
   "tests": "Bring two separated groups into one fight at the same time",
   "brief": "Two Empire groups start 590 m apart with a Greenskin block between them and must attack before the timer; each alone is weaker than the block.",
   "split": "development",
@@ -2801,7 +2819,9 @@
     "wh_main_grn_inf_orc_boyz",
     "wh_main_grn_inf_orc_arrer_boyz",
     "wh_main_grn_inf_orc_boyz",
-    "wh_main_grn_inf_goblin_spearmen"
+    "wh_main_grn_inf_goblin_spearmen",
+    "wh_main_grn_inf_orc_big_uns",
+    "wh_main_grn_inf_orc_boyz"
    ]
   },
   "deployment": {
@@ -2866,42 +2886,56 @@
    "enemy": [
     {
      "type": "wh_main_grn_inf_orc_boyz",
-     "x": 35,
+     "x": -11,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
      "type": "wh_main_grn_inf_orc_big_uns",
+     "x": 35,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 81,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "type": "wh_main_grn_inf_orc_boyz",
+     "type": "wh_main_grn_inf_orc_arrer_boyz",
      "x": 127,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "type": "wh_main_grn_inf_orc_arrer_boyz",
+     "type": "wh_main_grn_inf_orc_boyz",
      "x": 173,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "type": "wh_main_grn_inf_orc_boyz",
+     "type": "wh_main_grn_inf_goblin_spearmen",
      "x": 219,
      "z": -300,
      "bearing": 0,
      "width": 40
     },
     {
-     "type": "wh_main_grn_inf_goblin_spearmen",
+     "type": "wh_main_grn_inf_orc_big_uns",
      "x": 265,
+     "z": -300,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_grn_inf_orc_boyz",
+     "x": 311,
      "z": -300,
      "bearing": 0,
      "width": 40
