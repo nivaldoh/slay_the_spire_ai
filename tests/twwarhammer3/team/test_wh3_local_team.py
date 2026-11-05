@@ -317,3 +317,100 @@ def test_malformed_model_envelopes_are_forfeits_instead_of_python_crashes(tmp_pa
     member = local_team.LocalModel(policy)
     with pytest.raises(PolicyFailure):
         member.decide(state())
+
+
+class MemberSend(FakeSend):
+    """Keeps each member's real requests. Centre halts f1, left infantry sends a near and a far
+    courier, and every member writes its own notes."""
+
+    def __init__(self):
+        super().__init__()
+        self.requests = {}
+
+    def __call__(self, body):
+        member = json.loads(body["input"][0]["content"])["observation"]["command"]["member"]
+        self.requests.setdefault(member, []).append(body)
+        orders = [{"unit": "f1", "type": "halt"}] if member == "centre" else []
+        mail = [{"channel": "courier", "to": to, "text": "Peer report"}
+                for to in ("decisive_cavalry", "right_infantry") if member == "left_infantry"]
+        self.replies = [json.dumps({"orders": orders, "reason": f"{member} reason",
+                                    "notes": f"{member} private notes", "messages": mail})]
+        return super().__call__(body)
+
+
+def centre_second_request(ledger, change=lambda observation: None, *, peer_replied=False):
+    """Centre's second full model request, after its first order's feedback, from real
+    LocalModels in a real LocalTeam. `change` edits each frame after the binding one."""
+    def frame(seq, time_ms):
+        observation = state(seq, time_ms)
+        observation["magic"] = {"current": 40, "reserve": 60}
+        for unit in observation["friendly"]:
+            unit["morale"] = {"fraction": .9, "effect": "Steady"}
+        if seq > 1:
+            observation["orders"] = {"request": "r0", "based_on": 0, "applied_ms": 5000,
+                                     "results": []}
+            change(observation)
+        return observation
+
+    send, ledger, workers = MemberSend(), Ledger(ledger, 1), Workers()
+    members = {name: local_team.LocalModel(llm.LLMPolicy("gpt-6-luna", "low", ledger, send=send))
+               for name in local.GROUP_SLOTS}
+    policy = local_team.LocalTeam(members, scenario=scenario(), executor=workers,
+                                  clock=lambda: 0)
+
+    def finish(name):
+        workers.finish(next(i for i, (future, _, args) in enumerate(workers.tasks)
+                            if args[0] is policy.members[name] and not future.done()))
+
+    try:
+        policy.decide(frame(1, 5200))
+        finish("centre")
+        if peer_replied:
+            finish("containing_cavalry")
+            finish("left_infantry")
+        assert policy.decide(frame(2, 5500)) == [{"unit": "f1", "type": "halt"}]
+        ack(policy, applied=5600)
+        policy.decide(frame(3, 12000))
+        ack(policy, applied=12100)  # the peer's batch when it replied, else an idle poll
+        finish("centre")
+        if peer_replied:  # the peer mail compared: one courier unread, one still travelling
+            assert [m["text"] for m in policy.router.inbox("decisive_cavalry")] == ["Peer report"]
+            assert [p["recipients"] for p in policy.router.pending] == [["right_infantry"]]
+        return send.requests["centre"][1]
+    finally:
+        policy.close()
+
+
+def test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue(tmp_path):
+    def distant(observation):
+        observation["magic"] = {"current": 1, "reserve": 2}
+        # Lua's last applied batch is army-wide, so it can name a peer's regiment.
+        observation["orders"] = {"request": "r9", "based_on": 1, "applied_ms": 5400,
+                                 "results": [{"unit": "f9", "ok": True, "index": 1}]}
+        # Another member sees e2 die: Lua drops its contact row and marks its roster row for
+        # the whole alliance. Two more regiments appear, as Lua adds them on sight.
+        del observation["enemy"][1]
+        observation["enemy_roster"][1]["dead"] = True
+        observation["enemy"] += [{"id": "e3", "type": "horse", "x": 900, "z": -900, "men": 45},
+                                 {"id": "e4", "type": "horse", "x": 460, "z": -465, "men": 1,
+                                  "state": ["routing"]}]
+        observation["enemy_roster"] += [{"id": "e3", "type": "horse"},
+                                        {"id": "e4", "type": "horse"}]
+        # f9, the whole containing cavalry, 271 m from centre's anchor, routs out of view.
+        # Own rows stay equal: an own row's morale.effect label is an open owner decision
+        # (audit leak-morale-effect), so this test says nothing about it.
+        observation["friendly"][8].update(x=-60, men=1, state=["routing"],
+                                          morale={"fraction": .1, "effect": "Routing"})
+
+    def in_view(observation):
+        observation["enemy"][1].update(x=100, z=-175)
+
+    base = centre_second_request(tmp_path / "base.jsonl")
+    changed = centre_second_request(tmp_path / "changed.jsonl", distant, peer_replied=True)
+    assert json.dumps(changed, sort_keys=True) == json.dumps(base, sort_keys=True)
+    # A permitted cue does change the request, and by that contact's row alone.
+    cue = centre_second_request(tmp_path / "cue.jsonl", in_view)
+    seen = json.loads(cue["input"][0]["content"])
+    assert [unit["id"] for unit in seen["observation"]["enemy"]] == ["e1", "e2"]
+    seen["observation"]["enemy"].pop()
+    assert seen == json.loads(base["input"][0]["content"])

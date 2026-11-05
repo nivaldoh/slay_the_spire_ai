@@ -181,3 +181,86 @@ def test_fast_text_ignores_remote_rendezvous_and_silent_arm_has_no_explicit_chan
     assert silent.send("a", {"channel": "courier", "to": "b", "text": "help"},
                        0, positions)["accepted"] is False
     assert not silent.pending
+
+
+def courier_due(metres):
+    return local.PROFILE["dispatch_ms"] + metres / local.PROFILE["courier_m_s"] * 1000
+
+
+def test_courier_time_comes_from_the_published_rendezvous_and_it_is_never_a_tick_early():
+    channel, positions = router(), current()
+    positions["b"]["x"] = 400  # elsewhere at send; the sender cannot know that
+    channel.send("a", {"channel": "courier", "to": "b", "text": "Report"}, 0, positions)
+    positions["b"]["x"] = 200
+    due = courier_due(200)
+    channel.advance(due - 1, positions)
+    assert channel.inbox("b") == []
+    channel.advance(due, positions)
+    assert [m["arrived_ms"] for m in channel.inbox("b")] == [due]
+
+
+def test_courier_travel_starts_from_the_senders_anchor_frozen_at_send():
+    channel, positions = router(), current()
+    positions["a"]["x"] = -100  # off its rendezvous at send, back on it by delivery
+    channel.send("a", {"channel": "courier", "to": "b", "text": "Report"}, 0, positions)
+    positions["a"]["x"] = 0
+    due = courier_due(300)
+    channel.advance(due - 1, positions)
+    assert channel.inbox("b") == []
+    channel.advance(due, positions)
+    assert [m["arrived_ms"] for m in channel.inbox("b")] == [due]
+
+
+def test_a_courier_delivers_the_accepted_text_not_a_later_edit_of_the_message():
+    channel, positions = router(), current()
+    message = {"channel": "courier", "to": "b", "text": "Original"}
+    assert channel.send("a", message, 0, positions)["accepted"] is True
+    message["text"] = "Edited in flight"
+    channel.advance(courier_due(200), positions)
+    assert [m["text"] for m in channel.inbox("b")] == ["Original"]
+
+
+def test_a_relay_needs_the_senders_own_receipt_and_a_free_courier_slot():
+    channel, positions = router(), current()
+    channel.send("a", {"channel": "courier", "to": "b", "text": "Report"}, 0, positions)
+    now = courier_due(200)
+    channel.advance(now, positions)
+    assert channel.inbox("b")[0]["text"] == "Report"
+    relay = {"channel": "courier", "to": "a", "relay": {"sender": "a", "send": 1}}
+    assert channel.send("c", relay, now, positions)["accepted"] is False  # only b holds it
+    for _ in range(local.PROFILE["courier_slots"]):
+        own = {"channel": "courier", "to": "c", "text": "Own report"}
+        assert channel.send("b", own, now, positions)["accepted"] is True
+    assert channel.send("b", relay, now, positions)["accepted"] is False
+    now += courier_due(300)  # its own couriers arrive at c and free the slots
+    channel.advance(now, positions)
+    assert channel.send("b", relay, now, positions)["accepted"] is True
+
+
+def test_a_signal_never_reaches_its_sender():
+    channel, positions = router(), current()
+    channel.send("a", {"channel": "signal", "code": "HELP"}, 0, positions)
+    channel.advance(local.PROFILE["signal_delay_ms"], positions)
+    assert channel.inbox("a") == []
+    assert [m["code"] for m in channel.inbox("b")] == ["HELP"]
+
+
+# JUDGEMENT?: Closed channel bounds — Claude, 2026-11-05: exactly at signal_m or rendezvous_m is
+# in range, as local_command.py's <= has it; the page says only "within". An open bound differs
+# only at exact equality. These two tests and their open-boundary plants rest on it.
+@pytest.mark.parametrize("beyond, heard", ((0, True), (1, False)))
+def test_a_signal_reaches_exactly_its_published_range(beyond, heard):
+    channel, positions = router(), current()
+    positions["b"]["x"] = local.PROFILE["signal_m"] + beyond
+    channel.send("a", {"channel": "signal", "code": "HELP"}, 0, positions)
+    channel.advance(local.PROFILE["signal_delay_ms"], positions)
+    assert bool(channel.inbox("b")) is heard
+
+
+@pytest.mark.parametrize("beyond, delivered", ((0, True), (1, False)))
+def test_a_courier_reaches_exactly_the_published_rendezvous_radius(beyond, delivered):
+    channel, positions = router(), current()
+    channel.send("a", {"channel": "courier", "to": "b", "text": "Report"}, 0, positions)
+    positions["b"]["x"] += local.PROFILE["rendezvous_m"] + beyond
+    channel.advance(courier_due(200), positions)
+    assert bool(channel.inbox("b")) is delivered

@@ -3474,3 +3474,300 @@ old = "conflicting_observations(samples[key], obs)"
 new = "samples[key] != obs"
 tests = ["tests/twwarhammer3/test_wh3_support_public_copies.py::test_compatible_public_and_raw_observations_preserve_event_evidence"]
 source = "2026-11-04 live pilot02: raw roster and public decision copies of seq1"
+
+[[plant]]
+id = "local-input-carries-the-magic-summary"
+guards = "A member's full model request does not change with army-wide magic"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''"remaining_ms"))'''
+new = '''"remaining_ms", "magic"))'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m01"
+
+[[plant]]
+id = "local-input-counts-every-contact"
+guards = "A member's full model request does not change with the alliance's contact count"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''result["input_version"] = "local-command-v1"'''
+new = '''result["input_version"] = "local-command-v1"
+    result["contacts"] = len(observation.get("enemy", []))'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m02"
+
+[[plant]]
+id = "local-input-sums-the-armys-men"
+guards = "A member's full model request does not change with an army-wide men total"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''result["input_version"] = "local-command-v1"'''
+new = '''result["input_version"] = "local-command-v1"
+    result["army_men"] = sum(u.get("men", 0) for u in observation["friendly"])'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m03"
+
+[[plant]]
+id = "local-input-summarizes-the-armys-morale"
+guards = "A member's full model request does not change with a distant unit's morale"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''result["input_version"] = "local-command-v1"'''
+new = '''result["input_version"] = "local-command-v1"
+    result["army_morale"] = min(u["morale"]["fraction"] for u in observation["friendly"]
+                                if "morale" in u)'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests: the card names morale among the distant changes"
+
+[[plant]]
+id = "local-command-block-shows-peer-anchors"
+guards = "A member's command block carries no peer position"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
+new = '''"rendezvous": deepcopy(self.router.rendezvous), "peers": deepcopy(self.current),'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m04"
+
+[[plant]]
+id = "local-command-block-shows-which-peers-stand"
+guards = "A member's command block does not say whether a distant peer still has an anchor"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
+new = '''"rendezvous": deepcopy(self.router.rendezvous),
+                           "peers_up": {n: a is not None for n, a in self.current.items()},'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m05"
+
+[[plant]]
+id = "team-feedback-lists-ready-peers"
+guards = "Order feedback does not tell a member which peers have replied"
+file = "src/twwarhammer3/battle/team.py"
+old = '''self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)'''
+new = '''ack = {**ack, "peer_ready": [n for n, m in self.members.items() if m.ready is not None]}
+        self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m06"
+
+[[plant]]
+id = "local-models-share-one-history"
+guards = "A peer's replies do not enter a member's history"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''self.history = deque(maxlen=llm.HISTORY_LENGTH)'''
+new = '''self.history = vars(self.api.ledger).setdefault("history",
+                                                        deque(maxlen=llm.HISTORY_LENGTH))'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m07, one team's members sharing"
+
+[[plant]]
+id = "local-model-prompt-reads-peer-notes"
+guards = "A peer's notes do not enter a member's prompt"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''self.behavior = {}
+
+    def decide(self, observation):
+        prompt = json.dumps({"observation": observation, "notes": self.notes,'''
+new = '''self.behavior = {}
+        self.team = vars(self.api.ledger).setdefault("members", [])
+        self.team.append(self)
+
+    def decide(self, observation):
+        prompt = json.dumps({"observation": observation,
+                             "notes": " ".join(m.notes for m in self.team),'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 benchmark audit, boundary m08, one team's members sharing"
+
+[[plant]]
+id = "courier-arrives-at-half-travel-time"
+guards = "A courier is not available one tick before dispatch plus travel"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''+ distance(origin, point) / self.profile["courier_m_s"] * 1000)'''
+new = '''+ distance(origin, point) / self.profile["courier_m_s"] * 500)'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_time_comes_from_the_published_rendezvous_and_it_is_never_a_tick_early"]
+source = "2026-11-05 benchmark audit, boundary m14"
+
+[[plant]]
+id = "courier-time-tracks-the-recipients-live-position"
+guards = "Courier travel uses the published rendezvous, not a secret live position"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''point = self.rendezvous[recipient]'''
+new = '''point = current.get(recipient) or self.rendezvous[recipient]'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_time_comes_from_the_published_rendezvous_and_it_is_never_a_tick_early"]
+source = "2026-11-05 benchmark audit, boundary m28"
+
+[[plant]]
+id = "courier-text-read-at-delivery"
+guards = "A courier delivers the text accepted at send, not a later edit of the message"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''"recipients": recipients, "payload": deepcopy(payload)})'''
+new = '''"recipients": recipients,
+                                 "payload": message if "text" in message else deepcopy(payload)})'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_courier_delivers_the_accepted_text_not_a_later_edit_of_the_message"]
+source = "2026-11-05 benchmark audit, boundary m16 and m16b"
+
+[[plant]]
+id = "relay-uses-no-courier-slot"
+guards = "A relay is refused when the sender's courier slots are full"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''active = sum(p["sender"] == sender and p["channel"] == channel'''
+new = '''active = 0 if "relay" in message else sum(p["sender"] == sender and p["channel"] == channel'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_relay_needs_the_senders_own_receipt_and_a_free_courier_slot"]
+source = "2026-11-05 benchmark audit, boundary m15"
+
+[[plant]]
+id = "relay-without-own-receipt"
+guards = "A member relays only a message delivered to that member"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''previous = self.known[sender].get((relay["sender"], relay["send"]))'''
+new = '''previous = next((k.get((relay["sender"], relay["send"])) for k in self.known.values()
+                                     if k.get((relay["sender"], relay["send"]))), None)'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_relay_needs_the_senders_own_receipt_and_a_free_courier_slot"]
+source = "2026-11-05 benchmark audit, boundary m25"
+
+[[plant]]
+id = "signal-delivered-to-its-sender"
+guards = "A signal reaches only other members"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''for name, anchor in current.items() if name != sender
+                              and anchor is not None'''
+new = '''for name, anchor in current.items() if anchor is not None'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_signal_never_reaches_its_sender"]
+source = "2026-11-05 benchmark audit, boundary m19"
+
+[[plant]]
+id = "signal-range-open-boundary"
+guards = "A member exactly at signal_m hears the signal (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_local_command.py Closed channel bounds)"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''distance(origin, anchor) <= self.profile["signal_m"]]'''
+new = '''distance(origin, anchor) < self.profile["signal_m"]]'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_signal_reaches_exactly_its_published_range"]
+source = "2026-11-05 benchmark audit, boundary m20"
+
+[[plant]]
+id = "signal-range-a-metre-wide"
+guards = "A member past signal_m does not hear the signal"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''distance(origin, anchor) <= self.profile["signal_m"]]'''
+new = '''distance(origin, anchor) <= self.profile["signal_m"] + 1]'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_signal_reaches_exactly_its_published_range"]
+source = "2026-11-05 card-tests: the far side of the exact range"
+
+[[plant]]
+id = "rendezvous-open-boundary"
+guards = "A recipient exactly at rendezvous_m gets the courier (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_local_command.py Closed channel bounds)"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''<= self.profile["rendezvous_m"])'''
+new = '''< self.profile["rendezvous_m"])'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_courier_reaches_exactly_the_published_rendezvous_radius"]
+source = "2026-11-05 benchmark audit, boundary m21"
+
+[[plant]]
+id = "rendezvous-radius-a-metre-wide"
+guards = "A recipient past rendezvous_m misses the courier"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''<= self.profile["rendezvous_m"])'''
+new = '''<= self.profile["rendezvous_m"] + 1)'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_courier_reaches_exactly_the_published_rendezvous_radius"]
+source = "2026-11-05 card-tests: the far side of the exact radius"
+
+[[plant]]
+id = "public-copies-the-reserve-side-into-mode"
+guards = "A branch label nested in the public mode section fails B's input differentials (cannae-comparison.md item 1)"
+file = "src/twwarhammer3/battle/play.py"
+old = '''view["reserve_briefing"] = briefing(scenario)'''
+new = '''view["reserve_briefing"] = briefing(scenario)
+        view["mode"] = {**(view.get("mode") or {}), "side": scenario["reserve"].get("side")}'''
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_complete_policy_inputs_do_not_depend_on_future_assignment_and_a_nested_plant_is_detected", "tests/twwarhammer3/test_wh3_foreknowledge.py::test_public_rules_invariant_but_announced_choice_matches_same_episode_activation"]
+source = "2026-11-05 benchmark audit, boundary m30; replaces the two dict plants in those tests"
+
+[[plant]]
+id = "lua-observation-carries-the-reserve-side"
+guards = "The real Lua observation before the trigger does not change with B's draw"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''orders = state.applied, result = state.result, final = state.final,'''
+new = '''orders = state.applied, result = state.result, final = state.final,
+        reserve_side = session.reserve and session.reserve.side,'''
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_real_lua_observation_before_the_trigger_is_identical_under_every_draw"]
+source = "2026-11-05 benchmark audit, boundary m32"
+
+[[plant]]
+id = "lua-mode-section-carries-the-reserve-side"
+guards = "The real Lua mode section before the trigger does not change with B's draw"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''army = army, mode = section,'''
+new = '''army = army, mode = (function() section.reserve_side = session.reserve and session.reserve.side; return section end)(),'''
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_real_lua_observation_before_the_trigger_is_identical_under_every_draw"]
+source = "2026-11-05 benchmark audit, boundary m33"
+
+[[plant]]
+id = "lua-reserve-trigger-waits-after-a-policy-order"
+guards = "B's trigger fires on engine time whatever the policy has ordered"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''if not evidence.triggered_ms and now >= config.trigger_ms then'''
+new = '''if not evidence.triggered_ms and now >= config.trigger_ms + (state.applied and 3000 or 0) then'''
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_lua_trigger_fires_on_engine_time_after_a_policy_order_too"]
+source = "2026-11-05 benchmark audit, boundary m34"
+
+[[plant]]
+id = "local-input-reads-the-last-applied-batch"
+guards = "A member does not read the last applied batch, which names peers' regiments"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''"remaining_ms"))'''
+new = '''"remaining_ms", "orders"))'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests review: top-level orders"
+
+[[plant]]
+id = "local-input-marks-distant-deaths-on-the-roster"
+guards = "A distant death marked on the alliance roster stays out of a member's roster"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''global_view=self.arm == "global")
+        if for_input'''
+new = '''global_view=self.arm == "global")
+        dead = {row["id"] for row in observation.get("enemy_roster", []) if row.get("dead")}
+        for row in view["enemy_roster"]:
+            if row["id"] in dead:
+                row["dead"] = True
+        if for_input'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests review: roster dead flag"
+
+[[plant]]
+id = "local-input-reads-the-live-roster"
+guards = "A regiment sighted elsewhere stays out of a member's bound roster"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''self.current[name], self.roster,'''
+new = '''self.current[name], observation["enemy_roster"],'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests review: the same roster channel"
+
+[[plant]]
+id = "local-command-block-counts-couriers-in-flight"
+guards = "A member cannot tell that an unseen peer has a courier out"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
+new = '''"rendezvous": deepcopy(self.router.rendezvous), "in_flight": len(self.router.pending),'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests review: peer pending state"
+
+[[plant]]
+id = "local-command-block-counts-peer-mail"
+guards = "A member cannot tell that a peer holds unread mail"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
+new = '''"rendezvous": deepcopy(self.router.rendezvous), "unread": sum(map(len, self.router.inboxes.values())),'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
+source = "2026-11-05 card-tests review: peer inbox, the page's peer row"
+
+[[plant]]
+id = "courier-time-starts-at-the-senders-rendezvous"
+guards = "Courier travel starts at the sender's anchor frozen at send, not at its rendezvous"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''+ distance(origin, point) / self.profile["courier_m_s"] * 1000)'''
+new = '''+ distance(self.rendezvous[sender], point) / self.profile["courier_m_s"] * 1000)'''
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_travel_starts_from_the_senders_anchor_frozen_at_send"]
+source = "2026-11-05 card-tests review: moved sender"
+
+[[plant]]
+id = "lua-reserve-trigger-waits-on-the-applied-time"
+guards = "B's trigger does not depend on any state field the order path sets"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''if not evidence.triggered_ms and now >= config.trigger_ms then'''
+new = '''if not evidence.triggered_ms and now >= config.trigger_ms + (state.applied_ms and 3000 or 0) then'''
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_lua_trigger_fires_on_engine_time_after_a_policy_order_too"]
+source = "2026-11-05 card-tests review: the sibling field applied_ms"

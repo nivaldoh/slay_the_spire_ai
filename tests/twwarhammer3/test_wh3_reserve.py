@@ -6,6 +6,7 @@ from copy import deepcopy
 from types import SimpleNamespace
 
 import pytest
+import wh3_lua
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 from wh3_lua import load_battle, runtime
 
@@ -54,6 +55,62 @@ def test_complete_policy_inputs_do_not_depend_on_future_assignment_and_a_nested_
     planted["mode"]["reserve_seed"] = draw["seed"]
     with pytest.raises(AssertionError):
         assert planted == inputs[0]
+
+
+def lua_frame(base, draw):
+    """The real Lua observation one tick before the trigger under `draw`, through the mod's
+    JSON encoder: the raw frame and its play.public view. Only engine reads are stubbed."""
+    lua, tick = engine(draw)
+    lua.execute("""
+        SLOT_LIST, BEHAVIOURS = 'slots', {}
+        function context_rows() return {} end
+        function get_context() return nil end
+        function bm:get_current_phase_name() return 'Deployed' end
+        function bm:get_player_army() return {} end
+        function bm:get_first_non_player_army() return {} end
+        bm.battle.current_battle_speed = function() return 1 end
+        bm.battle.remaining_conflict_time = function() return 1200 end
+        session.job = 'neutral-job'
+        state.battle, state.seq, state.alliance = 'b1', 0, 1
+        state.info = {alliances = 2, type = 'land_normal', role = 'defender'}
+        state.army_abilities, state.slots, state.objective_totals = {}, {}, {}
+        state.setup = {reserve = {ok = true}}
+        for _, entry in pairs(state.enemy) do
+            local u = entry.unit
+            entry.initial = true
+            function u:is_in_melee() return false end
+            function u:is_moving() return false end
+            function u:bearing() return 270 end
+            function u:unary_hitpoints() return 1 end
+            function u:is_visible_to_alliance() return true end
+        end
+        state.friendly.f1 = {unit = state.enemy.e1.unit, ui_id = 'f1', setup = {}}
+        state.friendly_ids[1] = 'f1'
+    """)
+    *_, observation = load_battle(lua, "strength", "evaluation", "visible_to_player",
+                                  "unit_record", "enemy_observation", "mode_section",
+                                  "sample_countdown", "terminal_countdown", "battle_speed",
+                                  "player_army", "deployment_reading", "observation")
+    codec = lua.execute((wh3_lua.MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
+    now = draw["trigger_ms"] - 1
+    tick(now)
+    raw = json.loads(codec.encode(observation(now)))
+    return raw, public(raw, reserve.episode_scenario(base, draw))
+
+
+def test_real_lua_observation_before_the_trigger_is_identical_under_every_draw():
+    base = setup.scenarios()["emp-envelopment-b-v3"]
+    draws = {(d["region"], d["side"], d["count"]): d
+             for d in (reserve.materialize(base, seed=seed) for seed in range(100))}
+    assert set(draws) == set(reserve.CATALOGUE)
+    frames = [lua_frame(base, draw) for draw in draws.values()]
+    # The draw is live in this Lua: its private section carries it, its public view must not.
+    assert [raw["evaluation"]["reserve"]["config"]["seed"] for raw, _ in frames] == [
+        draw["seed"] for draw in draws.values()]
+    views = [view for _, view in frames]
+    assert {"e3", "e4"} <= {unit["id"] for unit in views[0]["enemy"]}
+    assert "error" not in views[0]["mode"] and "error" not in views[0]["friendly"][0]
+    assert all(view == views[0] for view in views)
 
 
 def test_job_activates_and_saves_each_fresh_draw_before_launch_or_rematch(tmp_path, monkeypatch):
@@ -203,6 +260,20 @@ def test_terminal_lua_never_triggers_an_event():
     lua.globals().state["finished"] = True
     tick(draw["trigger_ms"] + 1000)
     assert len(lua.globals().commands) == 0
+
+
+def test_lua_trigger_fires_on_engine_time_after_a_policy_order_too():
+    draw = reserve.materialize(scenario(), seed=1)
+    lua, tick = engine(draw)
+    apply_pending = load_battle(lua, "apply_pending")  # the real order path sets each state field
+    lua.execute("function apply_order(order) return {unit = order.unit, ok = true} end")
+    lua.globals().state["pending"] = lua.table_from(
+        {"request": "r1", "based_on": 1, "orders": [{"unit": "f1", "type": "halt"}]},
+        recursive=True)
+    apply_pending(draw["trigger_ms"] - 500)
+    assert lua.globals().state["applied"]["results"][1]["ok"] is True
+    tick(draw["trigger_ms"])
+    assert lua.globals().state["reserve"]["evidence"]["triggered_ms"] == draw["trigger_ms"]
 
 
 @pytest.mark.parametrize("condition", ("destroyed", "routing", "shattered", "unreadable"))
