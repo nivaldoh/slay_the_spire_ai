@@ -219,6 +219,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/commander.py`: asynchronous API model over skills
 - `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
 - `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
+- `src/twwarhammer3/battle/evade.py`: `Evade`, a free control: every unit runs from visible enemies
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router
 - `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probe

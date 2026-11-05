@@ -15,6 +15,7 @@ from wh3_team_fixtures import Script, Workers, ack
 from gameai.ledger import Ledger
 from twwarhammer3.battle import controllers, llm, local_team, play, setup
 from twwarhammer3.battle import local_command as local
+from twwarhammer3.battle.scripted import RushNearest
 from twwarhammer3.protocol import PolicyFailure
 
 
@@ -307,6 +308,35 @@ def test_a_quiet_poll_that_writes_team_rows_keeps_its_global_frame(
     sources = {row.get("source_ms", row.get("time_ms")) for row in rows if row["kind"] == "team"
                and row["event"] in ("input", "communication")}
     assert poll_ms in sources and sources <= framed
+
+
+def test_rush_config_makes_five_plain_local_rushers_that_send_nothing_on_the_silent_arm():
+    path = setup.SCENARIOS_PATH.parent / "controllers/cannae-local-rush.json"
+    config = {"policy": "configured", "controller_config": str(path),
+              "scenario": "emp-envelopment-c-silent-v1"}
+    local_team.validate_config(scenario("silent"), config)
+    policy = controllers.factories(config)["configured"]()
+    workers = policy.pool = Workers()
+    try:
+        assert policy.arm == "silent"
+        assert all(type(member.policy) is RushNearest for member in policy.members.values())
+        policy.decide(state())
+        for index in range(len(local.GROUP_SLOTS)):
+            workers.finish(index)
+        calls = {name: next(future.result() for future, _, args in workers.tasks
+                            if args[0] is member) for name, member in policy.members.items()}
+        assert all(call["messages"] == [] for call in calls.values())
+        # e1 is within the centre's 160 m view only, and e2 within nobody's.
+        assert calls.pop("centre")["orders"] == [{"unit": f"f{i}", "type": "attack",
+                                                  "target": "e1", "run": True}
+                                                 for i in (1, 2, 3, 4)]
+        assert all(call["orders"] == [] for call in calls.values())
+        policy.decide(state(2, 5500))
+        ack(policy, applied=5600)
+        assert not policy.router.pending and not any(policy.router.inboxes.values())
+        assert not [e for e in policy.drain_events() if e["event"] == "communication"]
+    finally:
+        policy.close()
 
 
 @pytest.mark.parametrize("bad", ({"orders": []}, [], {"orders": [], "reason": "wait",

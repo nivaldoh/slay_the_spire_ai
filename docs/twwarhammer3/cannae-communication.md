@@ -273,6 +273,14 @@ interface probe. `cannae-local-model.json` selects five `llm_rules` model leaves
 the ordinary job ledger; add the normal model/provider/budget arguments only within a
 named budget. A C declaration refuses ordinary global-view controllers before launching.
 
+`cannae-local-rush.json` is a free control for evidence item 3's "independent local rules":
+each of the five members is a plain `rush_nearest` on its local view and sends no message.
+It is unplayed. A member orders nothing until an enemy enters its 160 m view.
+
+JUDGEMENT: Local rush control — Claude Code, 2026-11-05: `cannae-local-rush.json` on
+`emp-envelopment-c-silent-v1` stands for independent local rules. Another rule set could
+change whether simple plans win without messages; no claim rests on it yet.
+
 Every member gets the same frozen `configs/twwarhammer3/cannae_shared_plan.md`, ownership
 map, channel rules and prearranged rendezvous. Model replies add up to two messages to
 the ordinary orders/reason/notes envelope, resting on Member message batch in
