@@ -482,6 +482,27 @@ independent enemy groups is not established. Full soldier footprints and enemy d
 loadouts were unavailable. These two losses do not establish difficulty or winnability;
 raw audit: `runs/cannae-build/review/air-live/`. The proposed dependency remains unverified.
 
+JUDGEMENT: Air priority witness — Codex, 2026-11-05: selects existing PriorityStrike
+for the one optional witness, concentrating flyers on a visible commander instead of
+adding a divided-reserve heuristic. A shortcut win is retained, not a flight-necessity result.
+
+`battle.calibration:PriorityStrike` is unchanged: flyers attack visible artillery, else a
+real Lord, retaining an eligible priority target; otherwise they choose the lowest visible
+men fraction. Ground units wait while a priority target is visible, then attack nearest
+in melee, including bowmen. This is a disclosed diagnostic, not a tuned ranged-force oracle.
+A captured initial air view produces three valid attacks on the visible General; removing
+that contact releases all twelve units without targeting the remembered roster entry.
+
+One unchanged-profile episode is conditional on the final B queue's actual exit, checks,
+and a start before 12:35 UTC, with 600/1320/2000 s limits. Otherwise record not started.
+The 12:35 plus 2000 s arithmetic is 13:08:20; supervisor preparation adds time, so this is
+planning arithmetic, not an exact observed watchdog deadline. Actively keep the 13:25 game
+cutoff. No more game jobs follow this optional witness in the window.
+The witness was not started: the final B queue completed at 12:32:27 UTC, leaving
+insufficient time for terminal records and both required gates before 12:35. Its existing
+component and captured-view checks passed, but they supply no live witness outcome.
+Both air-pilot losses and the stated evidence gaps remain; no more games are scheduled.
+
 ## Limits that matter across tactics
 
 The game handles entity movement, collision, combat, pathfinding and automatic responses.

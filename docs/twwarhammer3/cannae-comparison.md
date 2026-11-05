@@ -328,7 +328,8 @@ This can supply a winning witness, not an isolated remedy or evidence of adaptat
 Prospective card: one attempt per root 106 case, outside/south/two then centre/north/two,
 with B3's force, geometry, AI and intervention unchanged. Keep the six prior losses;
 trajectories are not paired or held out. Run $0, unpaused 1x, with 600/1320/3400 s
-start/episode/job bounds, starting by 11:30 UTC (watchdog end 12:26:40). Stop on an
+start/episode/job bounds, starting by 11:30 UTC (adding 3400 s gives a planning time of
+12:26:40). Stop on an
 infrastructure failure or the time bound. Optional air pilots follow only if their
 declared window still fits. No adopted suite/check or model comparison.
 
@@ -351,10 +352,19 @@ second commitment on both disclosed cases, without another roster or case search
 Any difference includes fresh engine trajectories; it is not an isolated causal result.
 
 Run the same root 106 cases once each, $0, unpaused 1x, with 600/1320/3400 s bounds,
-only after the air queue's actual exit and full gates. Start by 12:15 UTC; its watchdog
-ends by 13:11:40 before the 13:25 UTC game cutoff. If late, record not started. This is
+only after the air queue's actual exit and full gates. Start by 12:15 UTC; adding 3400 s
+gives a planning time of 13:11:40 before the 13:25 UTC game cutoff. Supervisor preparation
+adds time; this is not an observed watchdog deadline. If late, record not started. This is
 the final planned B construction probe in this window; no model comparison, score,
 agreed check or suite adoption. Raw card/checks: `runs/cannae-build/`.
+
+At `932c0a4`, the dispatch passed the queue bound at 12:14:59.387832 UTC; the child
+manifest was created at 12:15:00.875797. Both cases ended in engine wins at 472.9/466.0 s,
+with nine/zero invalid orders and $0. All nine refusals were `target_not_visible`; source
+candidate checks still matched. The exact-source audit covered 815 recorded batches and
+159 attacks, including all refused orders; it does not cover every quiet poll. This gives
+a legal winning trajectory for each selected case, not for the other six B3 combinations
+or a demonstration of necessary adaptation. No further B probe is scheduled this window.
 
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the

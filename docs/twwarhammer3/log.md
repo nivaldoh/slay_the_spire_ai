@@ -29,6 +29,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Final B cavalry-priority screen
+
+- At `932c0a4`, CentreSupport won both selected development cases: outside/south/two
+  at 472.9 s, centre/north/two at 466.0 s. Native engine endings, timers unexpired, $0.
+  Invalid counts nine/zero: all nine are outside-case engine `target_not_visible` refusals.
+- Independent exact-source/card/identity/cache replay and both CSV rows match. The trace
+  contains 815 logged batches, not all 3,036 calls: 159 attacks, 150 accepted and nine refused.
+  All four reserve instances arrived within 25 m; quiet-poll and visibility gaps remain.
+- In both cases, f7/f8 infantry attacks at 70.0 s applied at 70.3 s and had matching
+  target/melee at 71.2 s. Of 150 accepted attack windows, 138 show a matching later target
+  before replacement/end; twelve lack that readback, including eight accepted at the ending.
+  Acceptance is not a complete physical-effect claim.
+- This supplies winning trajectories for these two cases, not all eight B3 combinations,
+  adaptation, controller superiority or an isolated causal effect. All six original losses
+  and WingSupport's win/loss remain. No suite adoption or agreed readiness check.
+- Queue dispatch was 12:14:59.387832 UTC; child manifest followed at 12:15:00.875797.
+  Dispatch-plus-cap times are planning arithmetic, not exact supervisor deadlines. Actual
+  session 83345 returned zero; the job/queue completed and the game is closed.
+- The optional unchanged PriorityStrike air witness is not started: final records and
+  required gates cannot finish before its 12:35 start bound. Both air losses remain;
+  winnability, footprints/loadouts and explicit flight-toggle effects are unverified.
+- Raw cards, counterexamples, audits and checks: `runs/cannae-build/`. No further games
+  or paid calls are planned in this window. C model smoke remains $0.9382392 of approved $5.
+
 ## 2026-11-05: Support witness and first flying-reserve pilots
 
 - At `19b1534`, WingSupport won the outside/south/two case at 534.5 s and lost the

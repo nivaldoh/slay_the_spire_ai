@@ -1,16 +1,9 @@
 # Project state
 
-Updated 2026-11-05: what runs, where each game stands, what comes next. Status only:
-History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
-Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-05. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-[Cannae A/B/C](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05): branch `cannae-build`, worktree `runs/cannae-build/worktree`; evidence `runs/cannae-build/`.
-The six-attempt [harder B screen](twwarhammer3/cannae-comparison.md#harder-development-screen-2026-11-05) lost all six cases at `3a3f195`. The [support witness](twwarhammer3/cannae-comparison.md#additional-public-witness-2026-11-05) then won the outside case and lost the centre case at `19b1534`, $0; centre-case winnability remains open.
-[Air relief](twwarhammer3/tactics-reference.md#air-relief-development-candidate-2026-11-05) Hold/RushNearest pilots lost at `19b1534`, $0; flight/attack interactions have bounded live evidence, full footprints/toggles remain unchecked. Queue exited; game closed.
-C's model smoke spent $0.9382392 of the approved $5; no further paid call planned. Its saved prompt/mail audit finished with missing-source limits.
-A/B/C remain unverified; [evidence and limits](twwarhammer3/log.md#2026-11-05-c-model-interface-smoke). A final [cavalry-priority probe](twwarhammer3/cannae-comparison.md#final-cavalry-priority-construction-probe) is prepared in the worktree, conditional on air exit, checks and a 12:15 UTC start; then finish the handoff.
-Game cutoff 2026-11-05 13:25 UTC.
+[Cannae A/B/C](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05) implementation and construction runs finished; all games are closed. A has infantry-flank evidence; harder B has winning trajectories for the two selected cases under CentreSupport, while adaptation and six other B3 cases remain open. C has bounded five-controller/provider evidence. The separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-development-candidate-2026-11-05) lost both pilots; its optional witness was not started before the declared bound. All remain unverified; next review deciding methods and remaining winnability questions. [Final evidence/limits](twwarhammer3/log.md#2026-11-05-final-b-cavalry-priority-screen). C's sole model smoke cost $0.9382392 of the approved $5; no further paid calls or games are scheduled. Raw handoff: `runs/cannae-build/handoff.md`. Game window cutoff remains 2026-11-05 13:25 UTC.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
