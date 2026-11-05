@@ -740,3 +740,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-05,a-rush-01,episode-0000,emp-envelopment-a-v1,rush_nearest,,,,d7003f3,realtime,1.0,0.0,won,468,0.52,0.23,1509,0,0.31,0,classic,,,,,0.382,0.0,0.0,engine_result,
 2026-11-05,b-mechanics-01,episode-0000,emp-envelopment-b-v1,rush_nearest,,,,354e796,realtime,1.0,0.0,won,339,0.59,0.43,1090,0,0.31,0,classic,,,,,0.591,0.0,0.0,engine_result,
 2026-11-05,b-mechanics-01,episode-0001,emp-envelopment-b-v1,rush_nearest,,,,354e796,realtime,1.0,0.0,won,261,0.72,0.46,824,0,0.31,0,classic,,,,,0.72,0.0,0.0,engine_result,
+2026-11-05,c-bounded-probe-01,episode-0000,emp-envelopment-c-v1,configured,,,,8f6dc0b,realtime,1.0,0.0,won,521,0.39,0.25,1688,5,1.53,0,classic,,,,,0.308,0.0,0.0,engine_result,

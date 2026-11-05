@@ -4041,5 +4041,17 @@
     "version": 1,
     "arm": "global"
   }
+},
+ "emp-envelopment-b-v2": {
+  "base": "emp-envelopment-b-v1",
+  "name": "emp-envelopment-b-v2",
+  "scenario_version": 2,
+  "reserve": {
+    "version": 2,
+    "slots": [
+      7,
+      8
+    ]
+  }
 }
 }

@@ -4,7 +4,7 @@ Owner direction, 2026-11-05: add a third, separate Cannae-inspired battle studyi
 multiple agents execute a complex plan through synchronized manoeuvres despite limited
 communication. This is the single-army setting, with one client and disjoint command
 groups. **Development implementation: local views, channels and asynchronous/model
-integration have component evidence; live C usability is still unverified.** Any faction
+integration have component evidence and one scripted live case; readiness is unverified.** Any faction
 and lords may be considered. The owner requested construction/testing in the away window;
 no paid model comparison is scheduled.
 
@@ -293,6 +293,16 @@ effect probe in `local_team.py`. It can check delivery-to-order effects, not tac
 usefulness or communication improving outcomes. The silent arm deliberately never
 releases that diagnostic move; its outcome is not a competent no-message baseline.
 Card, component checks, review and live evidence belong in `runs/cannae-build/`.
+
+At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
+520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs
+against their source observations, fixed ownership and the 160 m anchor boundary.
+Five refusals were three local target-visibility checks and two engine routing refusals.
+The centre courier's composing input was at 5.2 s, send at 5.5 s, arrival at 11.5 s and
+the next left-infantry input at 12.4 s. Its move was applied at 13.9 s. Replay readings
+approached the requested point before a replacement order, supporting one delivery-to-
+movement chain. This is not an exact displacement claim, useful tactical synchronization,
+model/provider behavior or communication improving the outcome. Recount: `review/c-live/`.
 
 Follow the separation of per-agent observations from shared state in the research code
 [SMAC, `smac/env/starcraft2/starcraft2.py`, `get_obs_agent`](https://github.com/oxwhirl/smac/blob/master/smac/env/starcraft2/starcraft2.py),

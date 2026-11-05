@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Cannae C live interface and B route-completion version
+
+- C at `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/`: one engine win at 520.6 s
+  (521 rounded), $0. Five refusals: three latest-local target checks, two engine routing.
+  All 1,692 recorded member inputs matched ownership and the 160 m anchor boundary
+  against their full public source observations. Register/replay/stills retained.
+- Centre courier: source 5.2 s, send 5.5, arrival 11.5, next left input 12.4; its own move
+  applied at 13.9 s. Replay approached the requested point before the next order.
+  This establishes one recorded interface chain, not tactical benefit or model quality.
+- B v2 retains v1's opening/catalogue but releases committed reserves on observed arrival,
+  unavailability or the hard bound; uncommitted units remain held until the bound.
+  Release reasons/positions remain private. Rests on JUDGEMENT `battle/reserve.py`
+  Reserve route completion. V1's original timing is preserved as its own version.
+- `--reserve-seed` reproduces private episode selections independently of setup/rotation;
+  it does not reproduce engine trajectories. Default episodes retain separate entropy seeds.
+- B v2 regression failed before the fix; 194 focused tests passed after it. Reviewer caught
+  an early uncommitted-unit release, fixed and rechecked. Fixed-release plant is caught.
+  Checks, independent recounts and full-gate outputs: `runs/cannae-build/`.
+- Next: B v2 all-case construction and A's envelopment witness/routes. No paid comparison,
+  agreed readiness method, adaptation requirement or communication benefit is established.
+
 ## 2026-11-05: Cannae C interface and B outside-route evidence
 
 - B v1 at `354e796`: `runs/cannae-build/b-mechanics-01/`, two nearest-enemy wins,

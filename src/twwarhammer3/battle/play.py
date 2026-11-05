@@ -122,9 +122,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     files = source_fingerprints(SOURCES)
     reserve_draws = None
     if scenario.get("reserve"):
-        from twwarhammer3.battle.reserve import materialize
+        from twwarhammer3.battle.reserve import sequence
 
-        reserve_draws = [materialize(scenario) for _ in trials]
+        reserve_draws = sequence(scenario, len(trials), seed=config.get("reserve_seed"))
     output.mkdir(parents=True)
     write_json(output / "environment.json", environment)
     manifest = {

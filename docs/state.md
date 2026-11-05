@@ -7,10 +7,11 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 ## Active work
 [Cannae A/B/C implementation](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05):
 branch `cannae-build`, worktree `runs/cannae-build/worktree`; evidence `runs/cannae-build/`.
-A and both B construction attempts won under nearest-enemy control; B's outside reserves
-were still en route at release. C's local views/channels/model integration have offline evidence;
-live checks and B calibration are next. Game closed; $0 paid calls; no readiness claim.
-Game cutoff 2026-11-05 13:25 UTC. [Log](twwarhammer3/log.md#2026-11-05-cannae-c-interface-and-b-outside-route-evidence).
+A and both B v1 attempts won under nearest-enemy control; B's outside reserves were still
+en route at release. C's scripted live probe won and showed a courier-to-movement chain.
+B v2 arrival-based release and A's envelopment witness/routes are next. Game closed;
+$0 paid calls; no readiness claim. Game cutoff 2026-11-05 13:25 UTC.
+[Log](twwarhammer3/log.md#2026-11-05-cannae-c-live-interface-and-b-route-completion-version).
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 

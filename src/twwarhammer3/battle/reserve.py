@@ -16,12 +16,16 @@ from twwarhammer3.protocol import ProtocolError
 # Other counts/times/routes change the response problem; adaptation remains unverified.
 CATALOGUE = tuple((region, side, count) for region in ("centre", "outside")
                   for side in ("north", "south") for count in (1, 2))
+# JUDGEMENT: Reserve route completion — Codex, 2026-11-05: v2 releases a committed
+# reserve within 25 m of its final region, when unavailable, or at 360 s; others hold
+# to the bound. A fixed guessed duration differs; v1's outside routes were incomplete at 165 s.
+ARRIVAL_M, HARD_RELEASE_MS = 25, 360000
 
 
 def materialize(scenario, *, seed=None):
     """A fresh episode's evaluator-only configuration, with an independent 128-bit seed."""
     profile = scenario["reserve"]
-    if profile != {"version": 1, "slots": [7, 8]}:
+    if profile not in ({"version": 1, "slots": [7, 8]}, {"version": 2, "slots": [7, 8]}):
         raise ValueError("unsupported reserve profile")
     placements = scenario["deployment"]["enemy"]
     if any(placements[slot - 1]["type"] != "wh_main_emp_inf_swordsmen"
@@ -35,7 +39,22 @@ def materialize(scenario, *, seed=None):
         z = -55 if side == "north" else -465
         route = [{"x": 355, "z": z}, {"x": -25, "z": z}]
     return {**deepcopy(profile), "seed": str(seed), "region": region, "side": side,
-            "count": count, "trigger_ms": 45000, "release_ms": 165000, "route": route}
+            "count": count, "trigger_ms": 45000,
+            "release_ms": 165000 if profile["version"] == 1 else HARD_RELEASE_MS, "route": route,
+            **({"arrival_m": ARRIVAL_M} if profile["version"] == 2 else {})}
+
+
+def sequence(scenario, count, *, seed=None):
+    """An optional private sequence seed reproduces draws, independently of other RNGs.
+
+    Default attempts still use separate OS-entropy seeds. An explicit root seed is for
+    construction and matched continuations; it does not reproduce engine trajectories.
+    """
+    if seed is not None and (type(seed) is not int or seed < 0):
+        raise ValueError("reserve sequence seed must be a nonnegative integer")
+    rng = random.Random(seed) if seed is not None else None
+    return [materialize(scenario, seed=rng.getrandbits(128) if rng else None)
+            for _ in range(count)]
 
 
 def episode_scenario(scenario, draw):

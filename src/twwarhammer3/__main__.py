@@ -191,6 +191,8 @@ def main() -> int:
                       help="a battle in configs/twwarhammer3/scenarios.json; random entries"
                       " draw a map and every race, and autogenerate the armies")
     play.add_argument("--seed", type=int, default=None, help="the draw of a random scenario")
+    play.add_argument("--reserve-seed", type=int, default=None,
+                      help="private reserve draw sequence; independent of setup/rotation seed")
     add_session_arguments(play)
     play.add_argument("--interval-ms", type=int, default=0,
                       help="optional battle-time wait after orders apply (default: none)")

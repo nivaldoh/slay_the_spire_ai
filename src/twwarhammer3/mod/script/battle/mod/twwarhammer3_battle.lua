@@ -610,7 +610,45 @@ local function tick_reserve(now)
             end
         end
     end
-    if not evidence.released_ms and now >= config.release_ms then
+    if config.version == 2 and evidence.triggered_ms then
+        reserve.released = reserve.released or {}
+        evidence.releases = evidence.releases or {}
+        for index, entry in ipairs(reserve.entries) do
+            if not reserve.released[index] then
+                local reason, x, z
+                local ok, err = pcall(function()
+                    local disposition = reserve_disposition(entry)
+                    local position = get(entry.unit, "position", nil)
+                    if position then x, z = position:get_x(), position:get_z() end
+                    if disposition ~= "available" then
+                        if index <= config.count or now >= config.release_ms then
+                            reason = disposition
+                        end
+                    else
+                        assert(round(x, 1) ~= nil and round(z, 1) ~= nil,
+                               "unreadable reserve coordinates")
+                        if now >= config.release_ms then reason = "deadline"
+                        elseif index <= config.count then
+                            local point = config.route[#config.route]
+                            if (x - point.x)^2 + (z - point.z)^2 <= config.arrival_m^2 then
+                                reason = "arrived"
+                            end
+                        end
+                    end
+                    if reason and disposition ~= "destroyed" then entry.controller:release_control() end
+                end)
+                if reason or not ok then
+                    reserve.released[index] = true
+                    evidence.releases[#evidence.releases + 1] = {id = evidence.units[index].id,
+                        reason = reason, released_ms = now, x = x, z = z,
+                        ok = ok, error = not ok and clean_error(err) or nil}
+                end
+            end
+        end
+        if #evidence.releases == #reserve.entries and not evidence.released_ms then
+            evidence.released_ms = now
+        end
+    elseif config.version ~= 2 and not evidence.released_ms and now >= config.release_ms then
         evidence.released_ms = now
         evidence.releases = {}
         for index, entry in ipairs(reserve.entries) do

@@ -239,6 +239,23 @@ controllers can accept a move without moving; their tests explicitly retain sepa
 position readings. Live routes, event cues and the crossed tactical comparisons remain.
 No new procedure is entered in agreed checks. Card and raw evidence: `runs/cannae-build/`.
 
+`emp-envelopment-b-v2` keeps v1's rosters, opening, catalogue and trigger. It changes release
+using only the reserve's own condition and position, resting on JUDGEMENT
+`src/twwarhammer3/battle/reserve.py` Reserve route completion: a committed regiment
+returns to native AI within 25 m of the final route point, when unavailable, or at the
+360 s bound. Uncommitted regiments stay controlled through routing/rally until that bound.
+Each release records its own time, position, reason and submission status; the aggregate
+`released_ms` means all reserve entries have a release disposition. A bound without arrival
+is retained as an incomplete route, not silently counted as a completed intervention.
+V1 retains its original fixed release; do not pool versions for readiness or strength.
+
+`play --reserve-seed N` supplies an optional private construction/matched-sequence seed.
+Each episode still gets a separate drawn seed and configuration; setup/rotation RNGs are
+not reused. Repeating N reproduces selection only, not engine trajectories. The root seed
+and every draw stay in the evaluator manifest/configuration, not policy observations.
+Default runs still use independent OS-entropy seeds. Construction will cover every declared
+case before the response comparisons; this does not create a held-out set or verify adaptation.
+
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the
 enemy back to native AI; it cannot schedule these commitments. Planning B does not claim
