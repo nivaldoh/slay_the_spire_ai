@@ -359,7 +359,7 @@ Applied model moves and an attack had sampled movement/melee effects; frequent r
 orders prevent broad completion claims. These are bounded interface observations, not
 tactical usefulness or model strength. C remains unverified; raw audit: `review/c-model-live/`.
 
-These two `configured` rows predate the register's `configuration` column, so their model
+The `c-slow-probe-01` and `c-model-smoke-02` rows predate the register's `configuration` column, so their model
 fields stay blank and the CSV summary keeps them apart by job name (rests on JUDGEMENT?
 `stats.py` Summary identity). Neither row is a Haiku rate or a matched controller comparison.
 Use the separate jobs and their controller configurations, member cards and raw manifests; no
@@ -370,8 +370,8 @@ page omits them; the text and JSON report keep them.
 The two missing inputs and 184 unchecked arrivals have one cause. Team rows were written on every
 poll, and global frames only on polls with orders, an error, new metadata or a 1 s gap. Both inputs
 were retries after a forfeit, and all 184 arrivals landed on quiet polls. b53 logs a frame on any
-team poll that wrote rows, so this should not recur; no live battle has shown that, and scripted
-probes do not reach this path. For this job the corrected coverage is 456 arrivals exact from trace
+team poll that wrote rows, so this should not recur; no live battle has shown that, and the two
+scripted probes logged every poll, so they cannot show it. For this job the corrected coverage is 456 arrivals exact from trace
 frames, 60 checked on the anchor rule from same-time replay rows and 124 bracketed by the frames
 either side; 727 inputs exact, centre-22 matched on its compared fields from replay and centre-72
 in shape only. In the seven model team jobs of the coordination suite 49 of 2,449 inputs have
@@ -379,7 +379,8 @@ the same gap, all retries.
 
 JUDGEMENT?: Own-unit morale label — Claude, 2026-11-05: records that `project()` passes the engine's
 `morale.effect` to members. In the one model battle "Lord recently died" or "Lord dead" reached an
-own or ally row in 103 of 729 requests with the commanding regiment out of view, up to 369 m away.
+own or ally row, up to 369 m from the commanding regiment, in 103 of the 295 requests (729 in all)
+that had it out of view.
 "Full condition" for own units and "not a global command channel" conflict here; the owner decides.
 
 The likely trigger is the death of the one soldier carrying the commander flag, which no engine
@@ -388,12 +389,13 @@ news of the commander; that is weak evidence. Dropping the field would not close
 `morale.fraction` also stepped down across the army in all three C battles. Two weaker channels
 exist in the same battle: latency feedback reflects a count of peer batches, and a courier's timing
 implies the sender's distance. No scenario id, job name or Cannae wording reached a model in its 729
-requests; the supplied plan does describe the manoeuvre.
+requests; the supplied plan does describe the manoeuvre and calls it the enclosure plan in all 729.
 
-The two scripted wins on this declaration do not test communication: every member fights by a
-nearest-enemy rule after one poll, each job's last message arrived by 21.7 s, and only left
-infantry reads one courier as a release, so 8 of 9 regiments ignore all mail. A plain local-rule
-control now exists for the silent arm (above), and has not been played.
+The two scripted wins on this declaration do not test communication: every member follows a
+nearest-enemy rule after one poll (the containing cavalry stayed idle in all 517 and 478 recorded
+frames), each job's last message arrived by 21.7 s, and only left infantry reads one courier as a
+release, so 8 of 9 regiments ignore all mail. The local-rush control above would test this without
+messages.
 
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs

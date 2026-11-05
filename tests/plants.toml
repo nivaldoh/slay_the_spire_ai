@@ -3771,3 +3771,12 @@ old = '''if not evidence.triggered_ms and now >= config.trigger_ms then'''
 new = '''if not evidence.triggered_ms and now >= config.trigger_ms + (state.applied_ms and 3000 or 0) then'''
 tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_lua_trigger_fires_on_engine_time_after_a_policy_order_too"]
 source = "2026-11-05 card-tests review: the sibling field applied_ms"
+
+[[plant]]
+id = "evade-all-refused-forfeits-silently"
+guards = "A fully refused Evade ends its episode instead of holding and earning a timer win"
+file = "src/twwarhammer3/battle/evade.py"
+old = "                from RuntimeError(\"no open point left\")"
+new = "                from None"
+tests = ["tests/twwarhammer3/test_wh3_evade.py"]
+source = "2026-11-05 integration review of the Cannae controls"

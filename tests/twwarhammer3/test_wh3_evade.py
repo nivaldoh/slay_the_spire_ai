@@ -1,8 +1,9 @@
 """Evade's order rules on observations shaped like saved jobs; no live game or tactical claim."""
 
 import pytest
+from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-from twwarhammer3.battle import controllers
+from twwarhammer3.battle import controllers, play
 from twwarhammer3.battle.evade import RETRY_MS, Evade
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
 
@@ -163,6 +164,29 @@ def test_with_all_eight_points_refused_the_job_fails_rather_than_holding_silentl
             policy.acknowledge(refused(*orders), {})
             tried += [(order["x"], order["z"]) for order in orders]
     assert len(tried) == len(set(tried)) == 8
+
+
+class RefusingMailbox(FakeMailbox):
+    """Every order comes back refused as unreachable, as a move into rock does."""
+
+    def wait_observation(self, *, battle, after_seq, timeout):
+        item = super().wait_observation(battle=battle, after_seq=after_seq, timeout=timeout)
+        for result in (item.get("orders") or {}).get("results", []):
+            result.update(ok=False, error="unreachable")
+        return item
+
+
+def test_through_the_play_loop_a_fully_refused_evade_ends_the_episode_and_earns_no_win(tmp_path):
+    frames = [bridge_observation(0, 0, phase="Loading", enemy=False),
+              bridge_observation(1, 0, phase="Deployment")]
+    frames += [{**bridge_observation(seq, seq * RETRY_MS, ack=True), "terrain": {"bounds": MAP}}
+               for seq in range(2, 14)]
+    frames.append(bridge_observation(14, 14 * RETRY_MS, result="won"))
+    config = {**CONFIG, "interval_ms": 0}
+    result = play.play_episode(tmp_path / "e", config, Evade, RefusingMailbox(frames),
+                               not_battle=None)
+    assert result["status"] == "policy_failure" and "refused all eight" in result["error"]
+    assert not any('"kind": "forfeit"' in row for row in (tmp_path / "e/trace.jsonl").open())
 
 
 def test_only_able_units_get_orders():

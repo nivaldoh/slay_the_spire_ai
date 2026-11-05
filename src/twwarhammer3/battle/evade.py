@@ -28,7 +28,7 @@ class Evade:
             return []
         bounds = (observation.get("terrain") or {}).get("bounds")
         if not bounds:
-            raise PolicyFailure("Evade needs public terrain bounds")
+            raise PolicyFailure("Evade needs public terrain bounds") from ValueError("no bounds")
         xs = (bounds["min_x"] + INSET_M, (bounds["min_x"] + bounds["max_x"]) / 2,
               bounds["max_x"] - INSET_M)
         zs = (bounds["min_z"] + INSET_M, (bounds["min_z"] + bounds["max_z"]) / 2,
@@ -36,7 +36,10 @@ class Evade:
         points = [{"x": x, "z": z} for x in xs for z in zs if (x, z) != (xs[1], zs[1])]
         points = [point for point in points if point not in self.refused]
         if not points:
-            raise PolicyFailure("Evade: the engine refused all eight points")
+            # The cause ends the episode: a bare PolicyFailure is a forfeit, which would leave
+            # the army on its last orders and credit any timer win to Evade.
+            raise PolicyFailure("Evade: the engine refused all eight points") \
+                from RuntimeError("no open point left")
         clearance = [min(distance(point, enemy) for enemy in enemies) for point in points]
         farthest = [point for point, value in zip(points, clearance) if value == max(clearance)]
         now = observation["time_ms"]

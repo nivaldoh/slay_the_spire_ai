@@ -490,31 +490,6 @@ adding a divided-reserve heuristic. A shortcut win is retained, not a flight-nec
 real Lord, retaining an eligible priority target; otherwise they choose the lowest visible
 men fraction. Ground units wait while a priority target is visible, then attack nearest
 in melee, including bowmen. This is a disclosed diagnostic, not a tuned ranged-force oracle.
-
-#### Air relief audit, 2026-11-05
-
-From the two pilots (one Hold, one RushNearest), each rerun by a separate skeptic; `runs/benchmark-improve-20261105/`:
-
-- Two separate ground fights happened. East broke first both times (all routing at 97.0 / 80.2 s),
-  before any East unit crossed x=0, and enemy ground units first crossed at 252.1 / 198.1 s.
-  The transfer to West took about 180-200 s.
-- The reserve's allocation is untested. Hold gave it no orders, and Rush sent all three flyers
-  west in its first decision. Rush routed three West enemy units; the flyers' share is unknown.
-- The reserve sits 200 m from West and 340 m from East, and the sides differ in gap, contact
-  time, commanders and force ratio. Which way that pulls allocation is unknown.
-- The ridge delays a ground transfer by about 15-43% on the saved grid and has open corridors on
-  both sides. Observed transfers were 2-12% longer than straight. Distance and flyer speed
-  explain most of the flyers' advantage. No tracked code checks routes offline.
-- The defender wins at the timer, so a timer win is an untested shortcut. Flyers alone probably
-  lose it to the ground-force morale drain (.3 to 1%/s, one trajectory); one unshattered ground
-  unit may be what matters, and whether one can last 1,200 s is unknown. `Evade` can test this.
-- PriorityStrike runs at this revision, but its card's window has passed. Over saved frames it
-  would release all ground units, bowmen in melee mode, at about 15-21 s when the General leaves
-  sight briefly, so a result would show flyers at the General then an all-in rush, and would not
-  test a held ground line.
-- The candidate lacks a decision cue, winnability evidence, controls, measurements, variation and
-  a validation plan. It came from the owner's "if you finish early" direction, before A/B/C
-  were finished, so keeping or parking it is the owner's next decision.
 A captured initial air view produces three valid attacks on the visible General; removing
 that contact releases all twelve units without targeting the remembered roster entry.
 
@@ -527,6 +502,31 @@ The witness was not started: the final B queue completed at 12:32:27 UTC, leavin
 insufficient time for terminal records and both required gates before 12:35. Its existing
 component and captured-view checks passed, but they supply no live witness outcome.
 Both air-pilot losses and the stated evidence gaps remain; no more games are scheduled.
+
+#### Air relief audit, 2026-11-05
+
+From the two pilots (one Hold, one RushNearest), unverified, with each audit finding rerun by a separate skeptic; evidence in `runs/benchmark-improve-20261105/`:
+
+- Two separate ground fights happened. East broke first both times (all routing at 97.0 / 80.2 s),
+  before any East unit crossed x=0, and enemy ground units first crossed at 252.1 / 198.1 s.
+  The transfer to West took about 180-200 s.
+- The reserve's allocation is untested. Hold gave it no orders, and Rush sent all three flyers
+  west in its first decision. Rush routed three West enemy units; the flyers' share is unknown.
+- The reserve sits 200 m from West and 340 m from East, and the sides differ in gap, contact
+  time, commanders and force ratio. Which way that pulls allocation is unknown.
+- The ridge delays a ground transfer by about 15-43% on the saved grid and has open corridors on
+  both sides. Three observed transfers were about 2-18% longer than straight at 10 s samples. Distance and flyer speed
+  explain most of the flyers' advantage. No tracked code checks routes offline.
+- The defender wins at the timer, so a timer win is an untested shortcut. Flyers alone probably
+  lose it to the ground-force morale drain (.3 to 1%/s, one trajectory); one unshattered ground
+  unit may be what matters, and whether one can last 1,200 s is unknown. `Evade` can test this.
+- PriorityStrike runs at this revision, but its card's window has passed. Over saved frames it
+  would release all ground units, bowmen in melee mode, at about 15-21 s when the General leaves
+  sight briefly, so a result would show flyers at the General then an all-in rush, and would not
+  test a held ground line.
+- The candidate lacks a decision cue, winnability evidence, controls, measurements, variation and
+  a validation plan. It came from the owner's "if you finish early" direction, before A/B/C
+  were finished, so keeping or parking it is the owner's next decision.
 
 ## Limits that matter across tactics
 

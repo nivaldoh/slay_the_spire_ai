@@ -368,12 +368,12 @@ or a demonstration of necessary adaptation. No further B probe is scheduled this
 
 ### What the B evidence supports now, 2026-11-05
 
-`scripts/wh3_reserve_cells.py JOB...` rebuilds this from raw manifests and results. There are 20
+`scripts/wh3_reserve_cells.py JOB...` rebuilds the rows and cell tally from raw manifests and results. There are 20
 B battles (v1 2, v2 8, v3 10), one attempt per cell, all engine-ended.
 
 Each job is one game launch. Inside a job, rematches matched in all 41 shared samples up to the
-45 s trigger in 28 of 28 v2 pairs. RushNearest's orders landed on different ticks from about
-15.4 s, so its positions differed from 16.0 s. Hold's 8 of 8 and each v3 controller's two attempts
+45 s trigger in 28 of 28 v2 pairs. On v3, RushNearest's orders landed on different ticks at 15.4
+and 15.7 s, so its positions differed from 16.0 s; on v1 they differed from 27.1 s. Hold's 8 of 8 and each v3 controller's two attempts
 therefore rest on one launch and are not independent; count launches beside attempts.
 
 | v3 controller (one launch each) | Outside/south/2 | Centre/north/2 |
@@ -391,11 +391,11 @@ outcomes on those same two cases, covers two of eight, and reads public state, s
 conditional-rule type of control. It gave no order at a reserve regiment before 425.5 s and
 462.7 s. Case, controller and launch cannot be separated in these ten runs. There is no baseline
 without the reserve, so the reserve's own effect is unmeasured. A regiment routed before the
-reserve first fought in 6 of 7 v3 losses, and that also happened in wins. Centre north and south
+reserve first fought in 6 of 7 v3 losses and in 2 of 3 v3 wins. Centre north and south
 release about 45 m apart at the same time; whether they are physically distinct cases is unknown.
 The announced control is declared on v2 only and has no battles, and no controller that reads
-the briefing has played B, so its value is unknown. The next step is row 3 of the
-[proposed deciding checks](cannae-eval.md#proposed-deciding-checks-2026-11-05).
+the briefing has played B, so its value is unknown. All of this is unverified. The proposed next
+step, if the owner accepts it, is row 3 of the [proposed deciding checks](cannae-eval.md#proposed-deciding-checks-2026-11-05).
 
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the

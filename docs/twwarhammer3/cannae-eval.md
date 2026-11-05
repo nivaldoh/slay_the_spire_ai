@@ -275,9 +275,10 @@ first point sent both Knights into enemy infantry: they stopped about 25 s after
 fought 26-30 s, lost 11 men each and routed. In v2 they left the melee flag but stalled 40-60 m
 out, and the cause is unknown. All four route orders were given to units in melee (n=4, no
 contrast), and the witness never re-issues a move whose moving flag cleared. Routing the enemy
-horse does not free the Knights by itself: across 26 battles 24 of 46 routed horses rallied and
-20 fought again. Reported cavalry positions can also step impossibly (304 of 38,577 Knights
-records), so route and closest-approach readings for cavalry fights inherit that limit.
+horse does not free the Knights by itself: across 26 battles at least 24 of 46 routed horses
+rallied and 20 fought before their next rout (A 4 of 6 rallied, C 0 of 4). Reported cavalry positions
+can also step impossibly (304 of 38,577 friendly Knights records), so route and closest-approach
+readings for cavalry fights inherit that limit.
 That live construction card was one A attempt with v2, $0, unpaused 1x; start
 timeout 600 s, episode wall limit 1320 s and job watchdog 2000 s, before the 13:25 UTC
 game cutoff. Retain every failure and inspect observation, order, application, route
@@ -331,7 +332,8 @@ or report unknown; it must not turn a pleasing shape into a successful envelopme
 Where each candidate stands against the [claim table](scenario-guidelines.md#claims-and-eligibility),
 then a proposed check for each next claim. None is agreed. `agreed-checks.md` gains no row
 until the owner accepts a row's cases, counts and pass rule. Evidence and counts:
-`runs/benchmark-improve-20261105/audit-result.json`, with each finding rerun by a separate skeptic.
+`runs/benchmark-improve-20261105/audit-result.json`, where each audit finding was rerun by a
+separate skeptic and the critic's findings were not. Every reading in the first table is unverified.
 
 | Claim | A | B3 | C | Air |
 |---|---|---|---|---|
@@ -346,14 +348,15 @@ accept or change. Other rules change what each candidate may claim; every label 
 
 | # | Next claim | Cases and command | Count and rule | What the result means |
 |---|---|---|---|---|
-| 1 | Constructed | Every battle below; `check_deployment` records bearing and ordered width | Existing position tolerance, bearing within 5 degrees and ordered width within 2 m, for each unit on both sides | A unit outside fails that battle's setup. An unread enemy width stays unread. Ordered width is not achieved frontage; that needs one low-camera still or the owner's video |
-| 2 | Human win | `python -m twwarhammer3.battle.manual_demo record --scenario S`, for A, then air if kept | One engine win per configuration; every attempt kept; pauses labelled from video | A person can win this exact battle. It says nothing about the automated interface |
-| 3 | Fixed rule on B3 | `emp-envelopment-b-v3`, CentreSupport, `--reserve-seed` 4, 9, 38, 18, 3, 0, 7, 1, one launch per case | All eight reported; no repeats; a loss stands | Eight wins mean this fixed rule suffices on these drawn cases, so B3 cannot carry the adaptation label without a redesign. A loss means only that this rule fell short there; the crossed table comes next. Six new wins would bound a per-case win rate above about 0.61 at 95%, if attempts are independent |
-| 4 | Shortcuts | A with Hold and Evade; B3 outside/south/2 with Evade; air with Evade; `emp-envelopment-c-silent-v1` with `cannae-local-rush.json`; one launch each | Reported only; no pass rule | A win stays a win and narrows that candidate's label. A timer win by Evade means the task can be passed without fighting; a change of task needs the owner and a checked scorer |
-| 5 | C capture | The next C model battle; scripted probes do not reach this path | No member input, send or router row without its global frame | The evidence is complete. It says nothing about coordination |
+| 1 | Constructed | Every battle below; `read_formation` records bearing and ordered width in `setup_checks.deployment_formation` | Existing position tolerance, bearing within 5 degrees and ordered width within 2 m, for each unit on both sides | A unit outside fails this check for that battle; the job itself is not refused. An unread enemy width stays unread. Ordered width is not achieved frontage; that needs one low-camera still or the owner's video. On air, saved friendly rows already fall outside (foot lord 1.4 m against 20 declared, flyers 3.9-4.0 m narrower), so air's declared widths or this tolerance must change if air is kept |
+| 2 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario S --output DIR --ffmpeg FFMPEG --timeout SECONDS`, for A, then air if kept | One engine win per configuration; every attempt kept; pauses labelled from video | A person can win this exact battle. It says nothing about the automated interface |
+| 3 | Fixed rule on B3 | `emp-envelopment-b-v3`, CentreSupport, `--reserve-seed` 4, 9, 38, 18, 3, 0, 7, 1, one launch per case | Eight fresh launches, all reported; no repeats; a loss stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan | Eight wins mean this fixed rule suffices on these eight catalogue cases, so B3 cannot carry the adaptation label without a redesign. A loss means only that this rule fell short there, and other fixed rules would need trying on that case. Two of the cases selected this controller, so only six count for a bound: six wins would put a one-sided 95% lower bound of about 0.61 on a win rate shared by those cases, if attempts are independent |
+| 4 | Shortcuts | A with Hold and Evade; B3 outside/south/2 with Evade; air with Evade; `emp-envelopment-c-silent-v1` with `cannae-local-rush.json`; one launch each | Reported only; no pass rule | A win is recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be passed without fighting; a change of task needs the owner and a checked scorer. A loss by Evade shows only that this Evade failed |
+| 5 | C capture | The next C model battle; the two scripted probes logged every poll, so they cannot show this | No member input, send or router row without its global frame | Each member input, send and router row has its frame. It says nothing about coordination |
 
 The first decision statements, in the [specification form](scenario-guidelines.md#the-scenario-specification).
-Each uses only what saved battles support and is a prediction for the checks to test.
+Each is a prediction that no check above tests yet; the cue rests on saved battles in A and B, and
+has not yet occurred in C.
 
 - **A.** When the Knights' opposing horse is routing or gone while the infantry lines are in
   melee, the Knights can pursue it or go for the enemy infantry's rear. If the horse stays out of
@@ -363,20 +366,25 @@ Each uses only what saved battles support and is a prediction for the checks to 
   shows its region by 50 s (35 of 35) and an outside case's side (19 of 19). The controller can
   keep pressing or send Greatswords or Knights to meet it. From 50 s a centre/north case leaves
   67-73 s before the reserve joins native control and an outside case 170-200 s, so a late
-  response should cost more in a centre case. If the main fight is already decided by then, as
-  routs before the reserve fought in 6 of 7 B3 losses suggest, the prediction disappears.
-- **C.** When the containing cavalry's fight starts to fail, only that group can see it. A HELP
-  signal or courier lets the decisive cavalry choose between assisting it and going for the enemy
-  rear. If the message arrives before the containing group routs, assisting should keep the wing.
-  If a plain local rule wins without messages, this dependency is absent on this force. Two
-  scripted probes already won with all messages sent by 21.7 s and 8 of 9 regiments ignoring mail.
+  response should cost more in a centre case. If the main fight is already decided by then, the
+  prediction disappears; a regiment routed before the reserve fought in 6 of 7 B3 losses and also
+  in 2 of 3 B3 wins, so that order does not show when a fight is decided.
+- **C.** When the containing cavalry's fight starts to fail, the decisive cavalry may not see it. A
+  HELP signal or courier lets the decisive cavalry choose between assisting it and going for the
+  enemy rear. If the message arrives before the containing group routs, assisting should keep the
+  wing. If a plain local rule wins without messages, this dependency is absent on this force. The
+  containing cavalry fought in none of the three saved C battles, so the cue has not yet occurred
+  under the local view, and two scripted probes won with all messages delivered by 21.7 s and 8
+  of 9 regiments ignoring mail.
 
 Air has no statement until the owner decides to keep it ([specification gaps](tactics-reference.md#air-relief-development-candidate-2026-11-05)).
 
 Settings facts for the difficulty question: 14 of the 102 scenarios declaring settings are Normal,
-all envelopment ones among them, with no recorded reason. At modifier 1.0, recorded unit stats
-differ between Normal and Very Hard only by 4 less player leadership; a change in AI behaviour
-is unmeasured. Doctor's `battle_ai_stats_modifier=1.1` is a stored preference: A's battles ran at
+all envelopment ones among them, with no recorded reason. At modifier 1.0, recorded stats for the
+units read at both settings differ between Normal and Very Hard only by 4 less player leadership.
+No Very Hard battle at 1.0 has enemy Empire Knights, which read melee attack 20.8 and scalar speed
+62.4 against 26 and 78 for friendly Knights in all 13 Normal jobs, for no recorded reason. A change
+in AI behaviour is unmeasured. Doctor's `battle_ai_stats_modifier=1.1` is a stored preference: A's battles ran at
 1.0 by lobby and battle readback. A has had no calibration step and no Hold attempt. All four
 candidates use one map and are large battles; the smaller `emp-knights-emp-swordsmen` tests
 pin-and-rear-charge without the horse fight (13 register rows, 1 win).
@@ -557,7 +565,7 @@ neither a historical narrative nor a green repository check settles those.
 | Construction order and scale | Settle the canonical battle, then validate B's event mechanism before expanding its combinations; decide how much of the proposed force/geometry to retain |
 | Comparison method | Settle recognition and adaptation controls; for C settle command groups, local sensing, signals/couriers and channel controls; optional anticipation remains separate |
 | Construction and evidence | Accept or change the [proposed deciding checks](#proposed-deciding-checks-2026-11-05); review the roster/settings; decide what additional evidence makes the scenario ready |
-| Force for A and C | Keep A's force, where every scripted controller won, or give A and C B3's four front Greatswords as one ladder step; C's channel comparison has no room on the present force |
+| Force for A and C | Keep A's force, where every scripted controller won, or give A and C B3's four front Greatswords as one ladder step; on the present force two scripted wins needed no tactical message and the one model team lost, so whether a channel comparison has room there is unknown |
 
 After those choices, settle arms/resources, optional forecasts, variation,
 ranking formula and trial budget in their respective stages. The proposed contribution
