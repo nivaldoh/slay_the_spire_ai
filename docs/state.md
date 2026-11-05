@@ -5,6 +5,13 @@ History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [f
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+[Cannae A/B/C implementation](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05)
+started at the owner's request for the away window. Branch `cannae-build`, worktree
+`runs/cannae-build/worktree`; brief/card/evidence `runs/cannae-build/`. First construct A's
+fixed roster and routes, then B's private reserve event and C's local command/message
+interfaces. Free scripted construction checks only; no paid comparison or readiness
+claim. Game cutoff 2026-11-05 13:25 UTC. Battle C's plan is being finished separately.
+
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
 Overnight benchmark run ended 2026-11-04 11:00 -03; [suite page rebuilt](twwarhammer3/log.md#2026-11-04-suite-page-rebuilt-so-colour-shows-who-controls-what), owner: ok for now, reviews later; no more battles for now. [Tips test](twwarhammer3/log.md#2026-11-04-one-model-with-tips-won-none-of-six): 0 of 6. [Suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1), [results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods), handoff `runs/coord-suite-20261104/handoff.md`. [Scenario guidelines](twwarhammer3/scenario-guidelines.md): owner replies recorded: simple then complex, tentative manual wins, judge research; plan only, no evaluations scheduled.

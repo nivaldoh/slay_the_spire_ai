@@ -1,6 +1,6 @@
 # Cannae inspired evaluation plan
 
-Draft, 2026-11-05. **Candidate only; no scenario implemented or battle run.** This proposes
+Draft, 2026-11-05. **Candidate only; A's declaration is implemented, with no live battle yet.** This proposes
 three separate evaluations following the owner's directions:
 **A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
 require fresh contingent decisions**, plus **C, coordinated execution by agents sharing
@@ -211,6 +211,28 @@ running during inference. Keep generation, execution and measurement separate, u
 the existing scenario/queue/report structure rather than a parallel benchmark framework.
 
 ## Development and repeatable validation
+
+### Construction in progress, 2026-11-05
+
+The owner requested implementation of A, B and C during an approximately ten-hour away
+window. A's first development declaration is `emp-envelopment-a-v1` in
+[`scenarios.json`](../../configs/twwarhammer3/scenarios.json). It uses the proposed nine
+friendly and ten enemy regiments, native AI and ordinary engine outcomes. B's reserve
+adapter and C's local views/channels are subsequent implementation work. None has an
+agreed readiness check; these remain unverified candidates outside existing suites.
+
+JUDGEMENT: Initial resolved geometry — Codex, 2026-11-05: selects the open negative-z strip
+on the proposed map, with friendly facing east and enemy west; the centre projects 20 m.
+Other spacing/orientation can change useful routes and difficulty; live construction rests on this.
+
+The friendly centre occupies x=60–80, z=-175 to -325, with Greatswords at x=0,
+z=-125/-375. Two cavalry start at z=-85 and one at z=-425. Enemy infantry uses two
+four-regiment ranks at x=245/290, cavalry outside them. Infantry widths are 40 m;
+cavalry widths are 30 m. This rotates the schematic above to avoid the origin's cliff.
+The prior support battle's saved 32 m terrain grid suggests the strip is clear; it does
+not establish complete formation footprints or routes. The first live attempt checks
+recruitment, setup, native AI behaviour and movement before tactical strength claims.
+Task brief/card and raw evidence: `runs/cannae-build/`.
 
 JUDGEMENT: Readiness procedure — Codex, 2026-11-05: proposes the staged checks below,
 starting with setup and owner demonstration before capability claims. Outcome-only readiness
