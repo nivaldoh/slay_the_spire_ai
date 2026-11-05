@@ -231,6 +231,12 @@ check at that time. The initial direct-model check and paid comparison are now c
 
 ## Next
 
+Owner direction, 2026-11-05: [Cannae battle C](cannae-communication.md) is a separate
+planning track for one army with local command groups and limited signals/couriers.
+The existing team supplies shared alliance observations and has no teammate-message
+channel; regiment-specific ownership, local views and transport need new implementation.
+No game or paid comparison is scheduled by that design.
+
 The initial direct model-team test and comparison are complete (owner, 2026-11-02).
 `report` and `export` read member records; the first paid case passed its agreed
 [seven-point check](../agreed-checks.md) at `c1ad84d`: 90 component cases and one fresh

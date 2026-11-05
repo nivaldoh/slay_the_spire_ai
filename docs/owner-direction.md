@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (Cannae limited communication): add a third separate battle studying a complex
+  plan executed through synchronized manoeuvres by multiple agents sharing one army, with
+  limited communication inspired by ancient methods. [Battle C](twwarhammer3/cannae-communication.md)
+  separates prebattle agreement, local initiative and signals/couriers from recognition (A)
+  and adaptation (B). Exact historical channels are not established; the proposed partition,
+  sensing, transport rules and deciding checks await selection. Planning only; no run scheduled.
 - 2026-11-05 (Cannae recognition and improvisation): distinguish tactics an LLM might
   recognize or have memorized from a situation requiring decisions on the spot; use
   separate eval battles to compare them. [Two-battle design](twwarhammer3/cannae-comparison.md)

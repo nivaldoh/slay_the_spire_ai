@@ -6,9 +6,9 @@ can be checked, including game mechanics, engine quirks and multi-agent control.
 The [wrap-up](support-timing.md#stopped-comparison-and-next-steps) retains the implementation,
 seven completed comparison battles, one owner interruption and ten unstarted attempts.
 The earlier timing question remains stopped.
-The owner selected a [Cannae comparison](cannae-comparison.md): separate familiar-tactic and
-adaptation battles. Their construction, deciding checks and place in the development
-sequence remain proposed; neither battle is scheduled.
+The owner selected a [Cannae comparison](cannae-comparison.md): separate familiar-tactic,
+adaptation and [limited-communication team battles](cannae-communication.md). Their construction,
+deciding checks and place in the development sequence remain proposed; no battle is scheduled.
 The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
 and deployment, public structured observations, permitted orders, engine wins including
 timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
@@ -51,8 +51,9 @@ candidate; the sequential-development guidance below does not schedule a replace
 3. Once the first is judged ready under those checks, add the more complex scenario. Choose
    the added difficulty deliberately, such as dependent jobs or concurrent threats, rather
    than assuming extra units alone prove greater reasoning demand. Its actual design is open.
-4. Reconsider further scenarios after experience with these two. The coverage matrix is a
-   menu for those decisions, not a commitment to build a large suite now.
+4. The owner subsequently requested a third Cannae design for limited-communication teams
+   (2026-11-05). Its construction order remains open; keep the sequential-development
+   principle. The coverage matrix does not commit to building further scenarios.
 
 These are planning steps. They schedule no human session, game launch, paid judge call or
 policy run. The manual recording path is implemented but its handover remains unverified; do not
@@ -316,6 +317,10 @@ A scripted diagnostic may establish a mechanism without establishing performance
 native AI. No such opponent or event system is authorized for implementation by this page.
 
 ## Multi-agent scenarios
+
+The owner's [third Cannae battle](cannae-communication.md) studies a single army whose
+command groups coordinate through prebattle plans, local views, signals and couriers.
+Those channels and views are proposed additions, not capabilities of the current team.
 
 Define an agent by action authority: which regiments or armies it controls, its observations,
 memory, communication, resources and executor. Geographic groups need not match owners;

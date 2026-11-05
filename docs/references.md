@@ -35,6 +35,22 @@ uses the same SMACv2 fixed-plan warning and code reference, plus:
   Motivates a declared exposure boundary, not a claim that generated WH3 cases are valid,
   difficult or absent from pretraining. Follow-up source/design audit: `runs/cannae-improvisation/`.
 
+For [battle C's limited communication design](twwarhammer3/cannae-communication.md),
+sources inspected 2026-11-05; no upstream experiment reproduced:
+- Polybius 3.114–116 above: command at centre/wings, local response by flanking infantry,
+  and Hasdrubal's redeployment motivate distributed execution and initiative. These passages
+  do not specify a message log, codebook, range or latency for Cannae.
+- Polybius, [Histories 6.40](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Polybius/6%2A.html#40),
+  Paton translation: "On the second signal they load the pack animals". Successive Roman
+  camp-departure signals illustrate prearranged meanings, not Hannibal's battlefield protocol.
+- [SMAC `smac/env/starcraft2/starcraft2.py`](https://github.com/oxwhirl/smac/blob/master/smac/env/starcraft2/starcraft2.py),
+  `get_obs_agent` docstring: "Agents should have access only to their local observations".
+  Research-code reference for the member-information boundary; its unit perception and
+  stepped environment do not establish WH3 local sight or its asynchronous timing.
+- Das et al., [TarMAC](https://proceedings.mlr.press/v97/das19a.html), abstract distinguishes
+  "what messages to send and whom to address them to". Motivates content/recipient controls;
+  its rounds before environment actions are not adopted in an unpaused WH3 battle.
+
 ## Tactic-judge research (2026-11-04)
 
 For the [WH3 judge proposal](twwarhammer3/tactic-judges.md). All six sources independently

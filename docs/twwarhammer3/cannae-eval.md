@@ -1,10 +1,12 @@
 # Cannae inspired evaluation plan
 
 Draft, 2026-11-05. **Candidate only; no scenario implemented or battle run.** This proposes
-two separate evaluations following the owner's familiar-versus-improvised direction:
+three separate evaluations following the owner's directions:
 **A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
-require fresh contingent decisions**. The [comparison design](cannae-comparison.md)
-specifies the second battle, controls and evidence needed for that claim. The canonical
+require fresh contingent decisions**, plus **C, coordinated execution by agents sharing
+one army under limited communication**. The [comparison design](cannae-comparison.md)
+specifies A/B's controls; [battle C](cannae-communication.md) separates prebattle agreement,
+local initiative, signals and couriers. All three need construction and deciding checks. The canonical
 construction below puts the controller on the enveloping side of Hannibal's battle at Cannae in
 [216 BCE](https://sourcebooks.web.fordham.edu/ancient/polybius-cannae.asp). The difficult decision is how to turn success on one wing into victory in the
 main fight while the centre remains under pressure. The controller must decide which
@@ -20,10 +22,10 @@ This follows the [scenario guidelines](scenario-guidelines.md) and
 [benchmark contract](benchmark.md). The owner stopped the earlier
 [support-timing investigation](support-timing.md#stopped-comparison-and-next-steps);
 this is a separate proposal, not a scheduled replacement or a continuation of that test.
-The simpler-then-complex direction remains, with neither battle scheduled. The owner has
-selected the familiar-versus-improvised comparison; the exact construction and deciding
-checks remain open. Anticipation and model-team studies can use both battles without
-assuming either is the final thesis question.
+The simpler-then-complex direction remains, with no battle scheduled. The owner has
+selected the familiar-versus-improvised comparison and a separate limited-communication
+team battle; the exact construction and deciding checks remain open. Anticipation can
+still be studied separately without treating any design as the final thesis question.
 
 ## Historical situation and what WH3 would preserve
 
@@ -418,18 +420,19 @@ engine, map, pack, interface, executor or detector changes; retain old versioned
 
 ## Decisions for owner review
 
-The owner has selected separate familiar-tactic and adaptation battles. Implementation
-details rest on the named JUDGEMENT choices in this file and the comparison page. The next
-decisions concern construction and the evidence that distinguishes the two conditions;
+The owner has selected separate familiar-tactic, adaptation and limited-communication
+battles. Implementation details rest on the named JUDGEMENT choices in this file and the
+linked A/B and C designs. The next decisions concern construction and evidence for each demand;
 neither a historical narrative nor a green repository check settles those.
 
 | Decision | Options and consequence |
 |---|---|
 | Construction order and scale | Settle the canonical battle, then validate B's event mechanism before expanding its combinations; decide how much of the proposed force/geometry to retain |
-| Comparison method | Settle the proposed recognition, foreknowledge and fixed/conditional-controller controls; optional anticipation and team studies remain separate |
+| Comparison method | Settle recognition and adaptation controls; for C settle command groups, local sensing, signals/couriers and channel controls; optional anticipation remains separate |
 | Construction and evidence | Review the proposed roster/settings, then settle exact terrain/geometry and the first setup/demo check; decide what additional evidence makes the scenario ready |
 
-After those choices, settle arms/resources, optional forecasts or messages, variation,
+After those choices, settle arms/resources, optional forecasts, variation,
 ranking formula and trial budget in their respective stages. The proposed contribution
 is an inspectable comparison of executing a familiar tactical pattern and adapting to
-fresh conditions, contingent on demonstrating that the two battles exercise those demands.
+fresh conditions, with a third battle isolating distributed execution under limited
+communication. Demonstrating each battle's advertised demand remains future work.

@@ -2,8 +2,10 @@
 
 Owner direction, 2026-11-05: distinguish a recognizable, potentially memorized tactic
 from a situation requiring decisions on the spot, using separate eval battles. This
-extends the [Cannae plan](cannae-eval.md). **Two battle designs, neither implemented or
-validated.** Any faction and lords remain available. No game or paid run is scheduled.
+extends the [Cannae plan](cannae-eval.md). The owner subsequently selected a third design,
+[C: one-army coordination with limited communication](cannae-communication.md).
+**All three designs are unimplemented and unvalidated.** This page details A/B; C has
+its own specification. Any faction and lords remain available. No run is scheduled.
 
 The comparison should make prior tactical knowledge useful in one case and insufficient
 to select the concrete response in the other. A controller can still use learned concepts
@@ -13,12 +15,13 @@ Here, **improvisation means composing or revising a plan from newly observed con
 Evidence for that is stronger than unfamiliar scenery, and narrower than reasoning from
 no prior knowledge. The outcome report must preserve that distinction.
 
-## The two battles
+## The three battles
 
 | Design | What stays familiar | What the controller must resolve | Evidence needed for its label |
 |---|---|---|---|
 | A: Cannae pattern | Projected centre, stronger flank reserves, cavalry advantage and opportunity to turn inward | Execute a recognizable double-envelopment plan with normal battle feedback | A checked winning witness and evidence that the historical manoeuvre is useful, without requiring it for victory |
 | B: Changing reserve commitments | The same tactical vocabulary and a comparable opening | After the battle begins, read a fresh combination of enemy commitments and friendly condition, then choose where to concentrate, reinforce or abandon the enclosure | Unrevealed future assignments, public cues with feasible responses, conflicting useful choices across cases, and a demonstrated benefit from fresh information over specified controls |
+| [C: Limited communication](cannae-communication.md) | A shared Cannae-style plan and agreed signals | Separate command groups coordinate dependent manoeuvres with local views, delayed reports and local initiative | Useful temporal dependencies, audited local inputs/channel delivery and comparisons holding views/plan fixed while changing communication |
 
 A is the existing [construction proposal](cannae-eval.md#proposed-battle-specification),
 initially against native AI. It is **familiarity-compatible**, not a pure memory test:
@@ -31,6 +34,11 @@ The original Cannae account is an intentional source of prior knowledge in A. Re
 units, rotating the picture or omitting the historical name does not remove the structure.
 Conversely, a different faction or a random army does not establish a need to improvise.
 The distinction rests on changed consequences of choices, not the scenario labels.
+
+C separates communication and distributed execution from this A/B question. It may
+supply the same plan to all agents and use native AI throughout, so recognizing the
+historical tactic or discovering B's hidden reserve commitment is not its defining demand.
+Compare communication regimes within C; a raw A/B/C outcome gap mixes several changes.
 
 ## Battle B construction
 

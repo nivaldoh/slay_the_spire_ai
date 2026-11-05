@@ -29,6 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Add a limited-communication Cannae team battle design
+
+- Owner selected a [third separate battle](cannae-communication.md): agents sharing one
+  army execute dependent manoeuvres using a prebattle plan, local initiative and limited
+  communication. A/B retain their recognition and adaptation questions.
+- Proposed five command groups, local views, signals and delayed couriers; historical
+  accounts motivate the study but do not establish those exact channel rules or timings.
+- Added within-battle controls, information/helper audits, delivery and action-effect
+  checks. Four new design choices remain marked; existing decision blocks are unchanged.
+- Current team code has shared alliance views and no message channel; C needs new
+  projection, regiment ownership and transport. No code, scorer or agreed check changed.
+- Independent source/code/design audit and offline check evidence: `runs/cannae-communication/`.
+  Zero games and paid calls. Construction and communication/synchronization effects are unverified.
+
 ## 2026-11-05: Separate familiar tactics from adaptation in the Cannae plan
 
 - Owner selected [two battle designs](cannae-comparison.md): a recognizable Cannae pattern
