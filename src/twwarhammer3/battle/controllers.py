@@ -225,5 +225,12 @@ def factories(config: dict, *, _ledger=None) -> dict:
 
             makers[name] = factory(config["controller_config"], config, ledger=ledger)
         else:
-            makers[name] = controller_class(name)
+            kind = controller_class(name)
+            if scenarios().get(config.get("scenario"), {}).get("communication"):
+                from twwarhammer3.battle.local_team import LocalTeam
+
+                if issubclass(kind, LocalTeam):
+                    makers[name] = partial(kind, scenario=scenarios()[config["scenario"]])
+                    continue
+            makers[name] = kind
     return makers

@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (Cannae implementation window): "Implement the 3 planned versions for the
+  battle of Cannae eval in WH3. Test them and make sure they work well. Battle C is having
+  its plan finished by Codex in a parallel session as we speak. I'll be away for like 10
+  hours. If you finish early, research and implement different battles (historical or
+  otherwise) that would prove interesting, highly challenging tactical settings. These
+  battles should be diverse to test many different aspects of tactics, and we should
+  take advantage of WH3's unique setting whenever possible. Take note of the repo's goal
+  overall: I'm trying to better understand these models, test their capabilities, etc,
+  while building a portfolio and potentially publishable research project along the way."
+  Implementation/evidence: [Cannae construction](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05).
 - 2026-11-05 (Cannae limited communication): add a third separate battle studying a complex
   plan executed through synchronized manoeuvres by multiple agents sharing one army, with
   limited communication inspired by ancient methods. [Battle C](twwarhammer3/cannae-communication.md)

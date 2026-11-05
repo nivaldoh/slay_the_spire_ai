@@ -45,6 +45,8 @@ entry, and what reads them:
 - ``deployment``: authored positions for a plain battle ({"friendly": [{"type", "x", "z",
   "bearing", "width"}], "enemy": [...]}), the whole roster by type: the engine numbers units
   in its own order, so an id says nothing about a unit's type. ``check_battle`` reads them back.
+- ``communication``: C's versioned local-command arm; ``local_team`` and ``configured``
+  enforce its member interface. It changes Python sensing/channels, not Lua's opponent.
 - ``name``, ``family``, ``brief``, ``split``, ``status``: report labels (the HTML report
   shows only scenarios with started trials; its reader text is in report_notes.json);
   ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is

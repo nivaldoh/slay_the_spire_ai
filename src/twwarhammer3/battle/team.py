@@ -300,6 +300,10 @@ class TeamPolicy:
             self.events.extend({"event": "member_event", "member": name, "record": record}
                                for record in drain())
 
+    def _view(self, observation, member, *, army=False, for_input=False):
+        """One projection path for both member inputs and fresh dispatch guards."""
+        return project(observation, member.units, army=army)
+
     def _validate(self, member, observation):
         if (self.max_age_ms is not None
                 and observation["time_ms"] - member.call["source_ms"] >= self.max_age_ms):
@@ -310,8 +314,8 @@ class TeamPolicy:
         validate_orders(member.ready["orders"], member.ready["view"])
         guard = getattr(member.policy, "dispatch_guard", None)
         if guard is not None:
-            latest = project(observation, member.units,
-                             army=member is self.members.get(self.army_owner))
+            latest = self._view(observation, member,
+                                army=member is self.members.get(self.army_owner))
             guard(member.ready["orders"], latest)
 
     def _feedback(self, name, ack, source):
@@ -351,7 +355,7 @@ class TeamPolicy:
                 except IllegalActionError as exc:
                     self._feedback(name, refused(member.ready["orders"], str(exc)), "local")
             if member.call is None:
-                view = project(observation, member.units, army=name == self.army_owner)
+                view = self._view(observation, member, army=name == self.army_owner, for_input=True)
                 if name != self.army_owner and all(u.get("men") == 0 for u in view["friendly"]):
                     continue  # its units are all destroyed: nothing to order, so no call
                 member.count += 1

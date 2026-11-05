@@ -110,6 +110,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     scenario = load_scenario(config)
     fill_timeouts(scenario, config)
     validate_declaration(scenario, config)
+    from twwarhammer3.battle.local_team import validate_config as validate_local_config
+
+    validate_local_config(scenario, config)
     from twwarhammer3.battle.benchmark import validate_config
 
     validate_config(scenario, config)

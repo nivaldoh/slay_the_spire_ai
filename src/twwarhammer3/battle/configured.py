@@ -40,6 +40,24 @@ def load(path, config):
         if not isinstance(node, dict) or not isinstance(node.get("type"), str):
             raise ValueError("controller needs a type")
         kind = node["type"]
+        if kind == "local_team":
+            from twwarhammer3.battle import local_team
+
+            local_team.declaration(scenarios().get(config.get("scenario"), {}))
+            if set(node) != {"type", "members"} or not isinstance(node["members"], dict):
+                raise ValueError("local_team needs only its five members")
+            if set(node["members"]) != set(local_team.local.GROUP_SLOTS):
+                raise ValueError("local_team needs the five declared command groups")
+            members = {}
+            for name, member in node["members"].items():
+                child = prepare(member)
+                if child["type"] in {"team", "local_team", "graph", "graph_llm"}:
+                    raise ValueError("local_team members must be direct local controllers")
+                base = controllers.policy_parts(child["type"], config)[0]
+                if base in controllers.MODEL_POLICIES and base not in {"llm", "llm_rules"}:
+                    raise ValueError("local_team model members use llm or llm_rules")
+                members[name] = {"controller": child}
+            return {"type": kind, "members": members}
         if kind in ("graph", "graph_llm"):
             allowed = {"type", "graph"}
             if kind == "graph_llm":
@@ -134,6 +152,11 @@ def factory(path, config, *, ledger=None):
     prompts = {
         name: controllers.MODEL_PROMPTS[controllers.policy_parts(name, config)[0]].read_text()
         for name in sorted(models)}
+    if frozen["type"] == "local_team":
+        from twwarhammer3.battle import local_team
+
+        prompts = {name: prompt + "\n\n" + local_team.PROMPT_PATH.read_text()
+                   for name, prompt in prompts.items()}
     goal_send = None
     if goal_models:
         goal_send = partial(post, api_key(provider), attempts=1, provider=provider,
@@ -148,6 +171,18 @@ def factory(path, config, *, ledger=None):
 
     def build(node, stop=None, book=None):
         kind = node["type"]
+        if kind == "local_team":
+            from twwarhammer3.battle import local_team
+
+            stop = Event()
+            members = {}
+            for name, member in node["members"].items():
+                policy = build(member["controller"], stop, book)
+                if getattr(policy, "api", None) is not None:
+                    policy = local_team.LocalModel(policy)
+                members[name] = policy
+            return local_team.LocalTeam(members, scenario=scenarios()[config["scenario"]],
+                                         stop=stop)
         if kind == "graph":
             return graph.GraphPolicy(node["graph"])
         if kind == "graph_llm":
@@ -191,6 +226,10 @@ def factory(path, config, *, ledger=None):
                 name: controllers.card(frozen["members"][name]["controller"]["type"],
                                        member.policy, config)
                 for name, member in policy.members.items()}
+            if frozen["type"] == "local_team":
+                for member in policy.card["member_controllers"].values():
+                    member["version"] = "local-command-v1"
+                policy.card.update(invalid_retries=0, salvage=False)
         policy.card["paid_calls"] = bool(models or goal_models)
         policy.card["model_prompts"] = deepcopy(prompts)
         if artifact is not None:

@@ -5,13 +5,12 @@ History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [f
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-[Cannae A/B/C implementation](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05)
-started at the owner's request for the away window. Branch `cannae-build`, worktree
-`runs/cannae-build/worktree`; brief/card/evidence `runs/cannae-build/`. First construct A's
-fixed roster and routes, then B's private reserve event and C's local command/message
-interfaces. A's first rush attempt won; game closed. B passed focused offline checks and
-awaits a live check; C's plan has landed. No paid comparison or readiness claim.
-Game cutoff 2026-11-05 13:25 UTC. See [log](twwarhammer3/log.md#2026-11-05-cannae-construction-first-a-attempt-and-b-adapter).
+[Cannae A/B/C implementation](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05):
+branch `cannae-build`, worktree `runs/cannae-build/worktree`; evidence `runs/cannae-build/`.
+A and both B construction attempts won under nearest-enemy control; B's outside reserves
+were still en route at release. C's local views/channels/model integration have offline evidence;
+live checks and B calibration are next. Game closed; $0 paid calls; no readiness claim.
+Game cutoff 2026-11-05 13:25 UTC. [Log](twwarhammer3/log.md#2026-11-05-cannae-c-interface-and-b-outside-route-evidence).
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
@@ -31,7 +30,7 @@ Completed work and review handoffs: [review queue](review-queue.md#completed-wor
 Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.
 
 WH3 first; Spire waits behind it; post-training is secondary.
-[Cannae evaluation plan](twwarhammer3/cannae-eval.md): owner selected [familiar-tactic and adaptation battles](twwarhammer3/cannae-comparison.md), plus [C: one-army coordination with limited communication](twwarhammer3/cannae-communication.md). Designs only; construction, local views/channels and deciding checks remain proposed, no games scheduled. Any faction and lords may be considered; [Boris-only proposals](twwarhammer3/boris-scenarios.md) concern the multiplayer VM account. Next settle the mechanisms and evidence for each demand.
+Any faction/lord may be considered for Cannae; [Boris-only proposals](twwarhammer3/boris-scenarios.md) concern the multiplayer VM account.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews; correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)). Added [cross-domain design reference](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot); WH3 transfer remains open. Added [RoCoBench](twwarhammer3/benchmark-references/rocobench.md), with robot coordination parallels to both WH3 team setups.
 

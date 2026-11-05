@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Cannae C interface and B outside-route evidence
+
+- B v1 at `354e796`: `runs/cannae-build/b-mechanics-01/`, two nearest-enemy wins,
+  339 and 261 battle seconds, zero invalid orders, $0. Draws: outside south/two
+  reserves, then outside north/one. Both register rows and all recordings retained.
+- Sampled private positions stayed unchanged before the 45 s trigger. Both
+  triggered at 45.1 s and released at 165.1 s; release calls were accepted without errors.
+  The committed units were still short of the final waypoint. A new timing/route version
+  is needed before claiming this outside intervention works; centre approaches remain untested.
+- These nearest-enemy wins do not establish a need for adaptation. Keep them as controls.
+- C adds fixed regiment identities, anchor-local views, bounded signals/couriers and
+  explicit relays preserving original content/age; the existing dispatcher remains asynchronous.
+  Four declarations hold physical setup fixed across bounded, silent, fast-text and global
+  contact controls. Only the global control changes target availability with information.
+- Configured C teams support five model or scripted members, one mailbox and a shared
+  ledger. Fixed prebattle plan, source/time/message traces and normal model accounting are
+  recorded; no paid calls were made. Profile choices remain marked, without suite adoption.
+- Focused C/related checks: 257 passed, including fake API, ownership, blocked peers,
+  immutable pending inputs and distant-target refusal. Full-gate outputs/review in
+  `runs/cannae-build/`. Live C effects and scenario readiness remain unverified; no check agreed.
+
 ## 2026-11-05: Cannae construction, first A attempt and B adapter
 
 - Owner requested implementation/testing of A/B/C during an approximately ten-hour away

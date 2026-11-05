@@ -4005,5 +4005,41 @@
       8
     ]
   }
+},
+ "emp-envelopment-c-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-v1",
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "bounded"
+  }
+},
+ "emp-envelopment-c-silent-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-silent-v1",
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "silent"
+  }
+},
+ "emp-envelopment-c-fast-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-fast-v1",
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "fast"
+  }
+},
+ "emp-envelopment-c-global-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-global-v1",
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "global"
+  }
 }
 }

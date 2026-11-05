@@ -3,8 +3,10 @@
 Owner direction, 2026-11-05: add a third, separate Cannae-inspired battle studying how
 multiple agents execute a complex plan through synchronized manoeuvres despite limited
 communication. This is the single-army setting, with one client and disjoint command
-groups. **Design only: no scenario, channel or local-view controller implemented or tested.**
-Any faction and lords may be considered. No game or paid run is scheduled.
+groups. **Development implementation: local views, channels and asynchronous/model
+integration have component evidence; live C usability is still unverified.** Any faction
+and lords may be considered. The owner requested construction/testing in the away window;
+no paid model comparison is scheduled.
 
 [A studies a familiar tactic and B studies adaptation to fresh information](cannae-comparison.md).
 C asks how much coordinated execution can come from a shared plan, local initiative,
@@ -233,12 +235,64 @@ aggregate coordination score before its meaning and deciding check are agreed.
 
 ## Implementation boundary and proposed checks
 
-The current team controller is a starting point for ownership and asynchronous execution,
-not an implementation of this design. `battle/team.py:83–107` projects all allied units and
-alliance-visible enemies, and there is no teammate-message channel. Type-based partitioning
-cannot by itself assign identical infantry to different wings. Local sensing, regiment
-assignment and communication require explicit new interfaces; model-team tests do not
-verify these additions. See [current team implementation](multi-agent-implementation.md).
+The base team controller retains its alliance-wide projection and type partitions.
+`battle/local_command.py` adds C's authored regiment binding, anchor sensing and router;
+`battle/local_team.py` uses the same asynchronous `TeamPolicy` through its member-view
+hook. Both the input and fresh dispatch guard use that hook. Existing model-team tests
+do not verify these additions. See [current team implementation](multi-agent-implementation.md).
+
+### Development interface, 2026-11-05
+
+`emp-envelopment-c-v1`, `emp-envelopment-c-silent-v1`, `emp-envelopment-c-fast-v1` and
+`emp-envelopment-c-global-v1` share A's physical declaration and native AI. They select
+local bounded channels, local no-message control, local fast text and global contacts
+without messages, respectively. The global control changes target availability as well
+as information, so its difference is not a channel-only effect. No existing suite adopts C.
+
+The concrete numerical profile rests on JUDGEMENT `src/twwarhammer3/battle/local_command.py`
+Local command development profile and Fast text control. Couriers initially use the
+published starting-anchor rendezvous, not a refreshed peer location. Router events keep
+acceptance, source observation, arrival and delivery disposition. Original content/time
+survives explicit courier relays, which require a message already delivered to the sender.
+Delivery is processed at the first dispatcher observation at/after its due time; actual
+receipt time is recorded. Ordering/expiry ties rest on Local channel ordering in that file.
+
+The fixed command groups and fallback order are the authored slots in `GROUP_SLOTS`.
+Own telemetry remains available when no anchor is usable, but there are no local contacts
+or channel transmissions/receptions then. Memory of enemy roster types/identities comes
+from the initial public roster; remote observed-death updates do not enter C. Navigation,
+queue and destination readbacks are removed rather than refreshing unseen targets.
+New orders must pass the source and latest local views, resting on JUDGEMENT
+`src/twwarhammer3/battle/local_team.py` Local target authority; persistent engine orders
+continue normally. A remote target cannot be queried through fresh orders or error text.
+
+Run via the existing configured controller interface:
+`play --scenario emp-envelopment-c-v1 --policy configured --controller-config
+configs/twwarhammer3/controllers/cannae-local-probe.json --output NEW_JOB` for the free
+interface probe. `cannae-local-model.json` selects five `llm_rules` model leaves sharing
+the ordinary job ledger; add the normal model/provider/budget arguments only within a
+named budget. A C declaration refuses ordinary global-view controllers before launching.
+
+Every member gets the same frozen `configs/twwarhammer3/cannae_shared_plan.md`, ownership
+map, channel rules and prearranged rendezvous. Model replies add up to two messages to
+the ordinary orders/reason/notes envelope, resting on Member message batch in
+`local_team.py`. Their orders and memories use only that member's view. Invalid model
+envelopes forfeit the decision with no partial salvage or invalid-reply retries; normal
+provider transport accounting still applies. Supplied preparation is free and fixed;
+there are no unrecorded model planning calls. All preparation/inference in later studies
+must still count against their declared resource policy.
+
+The dispatcher transports messages independently of stale-order dispatch: a factual
+report retains the composing observation time even when its associated orders become
+stale. Newly delivered messages/acceptance reports enter only a later immutable member
+input, then leave its unread inbox. Explicit relays can reference earlier received mail.
+The probe sends initial READY/couriers. Left infantry waits for a centre courier, then
+issues one eastward move before using local nearest attacks; the other groups use local
+nearest attacks immediately after their initial sends. This diagnostic rests on Message
+effect probe in `local_team.py`. It can check delivery-to-order effects, not tactical
+usefulness or communication improving outcomes. The silent arm deliberately never
+releases that diagnostic move; its outcome is not a competent no-message baseline.
+Card, component checks, review and live evidence belong in `runs/cannae-build/`.
 
 Follow the separation of per-agent observations from shared state in the research code
 [SMAC, `smac/env/starcraft2/starcraft2.py`, `get_obs_agent`](https://github.com/oxwhirl/smac/blob/master/smac/env/starcraft2/starcraft2.py),
