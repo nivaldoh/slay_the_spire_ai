@@ -368,34 +368,55 @@ or a demonstration of necessary adaptation. No further B probe is scheduled this
 
 ### What the B evidence supports now, 2026-11-05
 
-`scripts/wh3_reserve_cells.py JOB...` rebuilds the rows and cell tally from raw manifests and results. There are 20
-B battles (v1 2, v2 8, v3 10), one attempt per cell, all engine-ended.
+`scripts/wh3_reserve_cells.py JOB...` rebuilds the rows and cell tally from raw manifests and results.
+There are 29 B battles (v1 2, v2 8, v3 19), one attempt per cell except two repeated v3 cases, all
+engine-ended. All of this is unverified.
 
-Each job is one game launch. Inside a job, rematches matched in all 41 shared samples up to the
-45 s trigger in 28 of 28 v2 pairs. On v3, RushNearest's orders landed on different ticks at 15.4
-and 15.7 s, so its positions differed from 16.0 s; on v1 they differed from 27.1 s. Hold's 8 of 8 and each v3 controller's two attempts
-therefore rest on one launch and are not independent; count launches beside attempts.
+Each construction job was one game launch. Inside a job, rematches matched in all 41 shared samples
+up to the 45 s trigger in 28 of 28 v2 pairs. On v3, RushNearest's orders landed on different ticks at
+15.4 and 15.7 s, so its positions differed from 16.0 s; on v1 they differed from 27.1 s. Hold's 8 of
+8 and each construction v3 controller's two attempts therefore rest on one launch and are not
+independent; count launches beside attempts. Window 1 used one launch per battle.
 
-| v3 controller (one launch each) | Outside/south/2 | Centre/north/2 |
+| v3 controller | Outside/south/2 | Centre/north/2 |
 |---|---|---|
-| Hold | Lost, 377.4 s | Lost, 330.5 s |
-| RushNearest | Lost, 334.3 s | Lost, 498.7 s |
-| Envelop | Lost, 390.3 s | Lost, 456.2 s |
-| WingSupport | Won, 534.5 s | Lost, 353.2 s |
-| CentreSupport | Won, 472.9 s | Won, 466.0 s |
+| Hold (one launch) | Lost, 377.4 s | Lost, 330.5 s |
+| RushNearest (one launch) | Lost, 334.3 s | Lost, 498.7 s |
+| Envelop (one launch) | Lost, 390.3 s | Lost, 456.2 s |
+| WingSupport (one launch) | Won, 534.5 s | Lost, 353.2 s |
+| CentreSupport (one launch) | Won, 472.9 s | Won, 466.0 s |
+| CentreSupport, window 1 (a launch each) | Won, 519.9 s | Won, 527.7 s |
+| Evade, window 1 | Lost, 477.9 s | Not played |
 
-On each version one fixed public-state controller won every case it tried: Hold 8 of 8 on v2,
-RushNearest 2 of 2 on v1, CentreSupport 2 of 2 on v3. Nothing yet shows a fresh contingent
-response is needed. Nothing shows it is unneeded on v3 either: CentreSupport was chosen after
-outcomes on those same two cases, covers two of eight, and reads public state, so it is the
-conditional-rule type of control. It gave no order at a reserve regiment before 425.5 s and
-462.7 s. Case, controller and launch cannot be separated in these ten runs. There is no baseline
-without the reserve, so the reserve's own effect is unmeasured. A regiment routed before the
-reserve first fought in 6 of 7 v3 losses and in 2 of 3 v3 wins. Centre north and south
-release about 45 m apart at the same time; whether they are physically distinct cases is unknown.
-The announced control is declared on v2 only and has no battles, and no controller that reads
-the briefing has played B, so its value is unknown. All of this is unverified. The proposed next
-step, if the owner accepts it, is row 3 of the [proposed deciding checks](cannae-eval.md#proposed-deciding-checks-2026-11-05).
+| Case in window 1, CentreSupport, one launch each | Result |
+|---|---|
+| Centre/north/1 | Won, 450.4 s |
+| Centre/south/1 | Lost, 474.8 s |
+| Centre/south/2 | Won, 540.7 s |
+| Outside/north/1 | Lost, 874.7 s |
+| Outside/north/2 | Lost, 357.2 s |
+| Outside/south/1 | Won, 537.2 s |
+
+On v1 and v2 one fixed public-state controller won every case it tried: Hold 8 of 8 on v2, RushNearest
+2 of 2 on v1. On v3 no tested controller has: CentreSupport won 5 of 8, and only 3 of the 6 cases that
+did not select it. Nothing shows a fresh contingent response is needed or unneeded, because no other
+fixed rule has played the three lost cases on v3. CentreSupport reads public state, so it is the
+conditional-rule type of control, and a rule that reads visible reserves would be the same type.
+
+Whether the case matters remains open; the [window results](cannae-eval.md#window-1-results-2026-11-05)
+explain why the outside/north and outside/south split is not a finding. There is no baseline
+without the reserve, so the reserve's own effect is unmeasured. The two selected cases won in both of
+their launches, which cannot be read onto the other six. In the first ten v3 battles a regiment routed
+before the reserve first fought in 6 of 7 losses and in 2 of 3 wins, and CentreSupport gave no order at
+a reserve regiment before 425.5 s and 462.7 s.
+
+Of the 46 regiments committed on v2 and v3, 45 arrived. In the centre/south/2 win, e3 came within
+26 m of its route end at about 134 s, one metre outside the 25 m arrival rule, stood 41-45 m away
+from about 180 s and was released at the 360 s bound, so that battle was not a full two-regiment
+test, and what stopped it is unknown. Centre
+north and south release about 45 m apart at the same time; whether they are physically distinct cases
+is unknown. The announced control is declared on v2 only and has no battles, and no controller that
+reads the briefing has played B, so its value is unknown.
 
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the

@@ -331,9 +331,9 @@ or report unknown; it must not turn a pleasing shape into a successful envelopme
 
 The owner chose to give A and C B3's four front Greatswords before the first window. `emp-envelopment-a-v2`
 and the four `emp-envelopment-c-*-v2` arms keep A's native AI and every placement, so unlike B3 the
-rear regiments stay at x=290 and no reserve exists. Type binding should move the ordinary enemy
-commander 45 m rearward as it did on B3; the first setup reading will show whether it does. The v1
-declarations stay. Nothing about difficulty or winnability follows from the declarations.
+rear regiments stay at x=290 and no reserve exists. Type binding moved the ordinary enemy commander
+45 m rearward as it did on B3: window 1's setup readings put it at (291.6, -175) on A v2 and C v2,
+against (246.6, -175) on A v1. The v1 declarations stay. Nothing about difficulty or winnability follows from the declarations.
 
 ### Proposed deciding checks, 2026-11-05
 
@@ -345,9 +345,9 @@ separate skeptic and the critic's findings were not. Every reading in the first 
 
 | Claim | A | B3 | C | Air |
 |---|---|---|---|---|
-| Constructed | Setup read back; infantry routes 4 of 4, Knights 0 of 4; achieved formation unread | Setup read back; 32 of 32 committed reserve regiments arrived on v2 and v3 | Physically A; local views replayed on 3 jobs | Typed rosters read back; routes and enemy loadouts unread |
+| Constructed | Setup read back on v1 and v2; on v1 infantry routes 4 of 4, Knights 0 of 4; achieved formation unread | Setup read back; 45 of 46 committed reserve regiments arrived on v2 and v3 | Physically A; local views replayed on 4 jobs | Typed rosters read back; 5 units outside row 1 on width; routes and enemy loadouts unread |
 | Human win | None | None; the recorder refuses reserve battles | None | None |
-| Interface win | 3 wins from 3 scripted attempts | 2 of 8 cases, CentreSupport, one attempt each | 2 scripted wins, 1 model loss | 0 of 2 |
+| Interface win | v1: 3 wins from 3 scripted attempts. v2: none from 2 attempts, neither trying to win | CentreSupport won 5 of 8 cases in one window: 3 of the 6 unselected cases and both selected cases again | v1: 2 scripted wins, 1 model loss. v2: none from 1 attempt | 0 of 3 |
 | Reproducible, names a decision, generalizes | None | None | None | None |
 
 JUDGEMENT: Deciding checks draft — Claude, 2026-11-05: proposes the five rows below, with one
@@ -356,11 +356,11 @@ accept or change. Other rules change what each candidate may claim; every label 
 
 | # | Next claim | Cases and command | Count and rule | What the result means |
 |---|---|---|---|---|
-| 1 | Constructed | Every battle below; `read_formation` records bearing and ordered width in `setup_checks.deployment_formation` | Existing position tolerance, bearing within 5 degrees and ordered width within 2 m, for each unit on both sides | A unit outside fails this check for that battle; the job itself is not refused. An unread enemy width stays unread. Ordered width is not achieved frontage; that needs one low-camera still or the owner's video. On air, saved friendly rows already fall outside (foot lord 1.4 m against 20 declared, flyers 3.9-4.0 m narrower), so air's declared widths or this tolerance must change if air is kept |
+| 1 | Constructed | Every battle below; `read_formation` records bearing and ordered width in `setup_checks.deployment_formation` | Existing position tolerance, bearing within 5 degrees and ordered width within 2 m, for each unit on both sides | A unit outside fails this check for that battle; the job itself is not refused. An unread enemy width stays unread. Ordered width is not achieved frontage; that needs one low-camera still or the owner's video. On air, both lords (1.4 m against 20 declared) and the flyers (3.9-4.0 m narrower) fall outside, so air's declared widths or this tolerance must change if air is kept |
 | 2 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario S --output DIR --ffmpeg FFMPEG --timeout SECONDS`, for A, then air if kept | One engine win per configuration; every attempt kept; pauses labelled from video | A person can win this exact battle. It says nothing about the automated interface |
 | 3 | Fixed rule on B3 | `emp-envelopment-b-v3`, CentreSupport, `--reserve-seed` 4, 9, 38, 18, 3, 0, 7, 1, one launch per case | Eight fresh launches, all reported; no repeats; a loss stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan | Eight wins mean this fixed rule suffices on these eight catalogue cases, so B3 cannot carry the adaptation label without a redesign. A loss means only that this rule fell short there, and other fixed rules would need trying on that case. Two of the cases selected this controller, so only six count for a bound: six wins would put a one-sided 95% lower bound of about 0.61 on a win rate shared by those cases, if attempts are independent |
 | 4 | Shortcuts | `emp-envelopment-a-v2` with Hold and Evade; B3 outside/south/2 with Evade; air with Evade; `emp-envelopment-c-silent-v2` with `cannae-local-rush.json`; one launch each | Reported only; no pass rule | A win is recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be passed without fighting; a change of task needs the owner and a checked scorer. A loss by Evade shows only that this Evade failed |
-| 5 | C capture | The next C model battle; the two scripted probes logged every poll, so they cannot show this | No member input, send or router row without its global frame | Each member input, send and router row has its frame. It says nothing about coordination |
+| 5 | C capture | The next C model battle; the three scripted C jobs answered every poll, so they cannot show this | No member input, send or router row without its global frame | Each member input, send and router row has its frame. It says nothing about coordination |
 
 The first decision statements, in the [specification form](scenario-guidelines.md#the-scenario-specification).
 Each is a prediction that no check above tests yet; the cue rests on saved battles in A and B, and
@@ -373,17 +373,18 @@ has not yet occurred in C.
 - **B.** When the reserve starts moving (47.5-49.0 s, 35 of 35 committed regiments), its direction
   shows its region by 50 s (35 of 35) and an outside case's side (19 of 19). The controller can
   keep pressing or send Greatswords or Knights to meet it. From 50 s a centre/north case leaves
-  67-73 s before the reserve joins native control and an outside case 170-200 s, so a late
+  67-73 s before the reserve joins native control and an outside case 170-208 s, so a late
   response should cost more in a centre case. If the main fight is already decided by then, the
-  prediction disappears; a regiment routed before the reserve fought in 6 of 7 B3 losses and also
-  in 2 of 3 B3 wins, so that order does not show when a fight is decided.
+  prediction disappears; a regiment routed before the reserve fought in 6 of 7 losses and in 2 of 3
+  wins of the first ten B3 battles, so that order does not show when a fight is decided.
 - **C.** When the containing cavalry's fight starts to fail, the decisive cavalry may not see it. A
   HELP signal or courier lets the decisive cavalry choose between assisting it and going for the
   enemy rear. If the message arrives before the containing group routs, assisting should keep the
   wing. If a plain local rule wins without messages, this dependency is absent on this force. The
-  containing cavalry fought in none of the three saved C battles, so the cue has not yet occurred
-  under the local view, and two scripted probes won with all messages delivered by 21.7 s and 8
-  of 9 regiments ignoring mail.
+  containing cavalry fought in none of the three v1 C battles. In the one v2 battle it fought from
+  212.2 s and routed at 314.2 s, but stayed in the decisive cavalry's local view in 66 of their 67
+  inputs, so the unseen failure this cue needs has not yet occurred. Two scripted probes won v1 with
+  all messages delivered by 21.7 s and 8 of 9 regiments ignoring mail.
 
 Air has no statement until the owner decides to keep it ([specification gaps](tactics-reference.md#air-relief-development-candidate-2026-11-05)).
 
@@ -391,11 +392,44 @@ Settings facts for the difficulty question: 14 of the 102 scenarios declaring se
 all envelopment ones among them, with no recorded reason. At modifier 1.0, recorded stats for the
 units read at both settings differ between Normal and Very Hard only by 4 less player leadership.
 No Very Hard battle at 1.0 has enemy Empire Knights, which read melee attack 20.8 and scalar speed
-62.4 against 26 and 78 for friendly Knights in all 13 Normal jobs that field them, for no recorded reason. A change
+62.4 against 26 and 78 for friendly Knights in all 25 Normal jobs that field them, for no recorded reason. A change
 in AI behaviour is unmeasured. Doctor's `battle_ai_stats_modifier=1.1` is a stored preference: A's battles ran at
-1.0 by lobby and battle readback. A has had no calibration step and no Hold attempt. All four
+1.0 by lobby and battle readback. A has had no calibration step; its only Hold attempt is window 1's on v2, lost at 534.4 s. All four
 candidates use one map and are large battles; the smaller `emp-knights-emp-swordsmen` tests
 pin-and-rear-charge without the horse fight (13 register rows, 1 win).
+
+### Window 1 results, 2026-11-05
+
+Window 1 ran at `d3ddc7b` with thirteen launches, one battle each, $0, unpaused at 1x, and every
+ending was an engine outcome: 5 won, 8 lost, none at the timer. Rebuilding the 13 register rows
+through the project's own reader gave 0 differences in 416 cells, and a separate rebuild of 12
+fields from raw files gave none. The rows above are proposals, so these results verify nothing.
+These readings rest on JUDGEMENT cannae-eval.md Deciding checks draft, Evade's battles on JUDGEMENT
+evade.py Evade parameters and Evade refused points, and the local rush on JUDGEMENT
+cannae-communication.md Local rush control. Evidence: `runs/cannae-window-1/`, `runs/benchmark-improve-20261105/window-review.json`.
+
+- **Row 1.** Twelve battles had every unit inside the tolerances. Air had 5 units outside on width.
+  Enemy width read on all 131 rows. Bearing error is a constant 2.8 degrees on nearly every unit, for
+  a reason unknown, so a tolerance tighter than that would fail nearly every unit.
+- **Row 3.** CentreSupport won 5 of 8, so the rule fell short once each on centre/south/1,
+  outside/north/1 and outside/north/2, and other fixed rules would need trying there. Three of the
+  six unselected cases won, so the six-win bound does not apply. This does not show B3 needs
+  adaptation: no other fixed rule has played those three cases on v3. Row 3 does not say how a win
+  counts when a committed regiment never arrived, as on centre/south/2; the engine win stands and
+  the owner decides how it reads.
+- **Outside split.** Both outside/north cases lost and both outside/south cases won, which these
+  eight battles can neither support nor exclude as a case effect. Three losses fill some region/side
+  pair in 24 of 56 placements, launches already differ by a median 16.0 m per unit before the 45 s
+  trigger, and the Knights did not meet the reserve before the first friendly rout in either
+  outside/north battle (routs at 190.0 and 224.2 s, reserve within 30 m at 299.2 and 305.2 s).
+- **Row 4.** No shortcut won: Hold lost at 534.4 s on A v2, Evade at 451.0 s on A v2, 477.9 s on B3 and
+  273.7 s on air, and local rush at 371.8 s on C silent v2. These battles show this Evade's flip
+  clearly but cannot say how much of each loss it caused: it recomputes one army-wide point and
+  flips it during a chase, and no foot regiment reached a point while not routing. A timer win is still open. The rush's three Knights had no order until
+  175.9 s, so that loss says little about the force.
+- **Winnability.** A v2 and C v2 have no win, so under the owner's rule neither is admissible yet. A
+  v2's two attempts were non-attacking controls, so nothing has yet tried to win it, and these
+  losses are no evidence that it is too hard.
 
 ## Controls and optional research directions
 

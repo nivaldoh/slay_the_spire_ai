@@ -275,11 +275,12 @@ named budget. A C declaration refuses ordinary global-view controllers before la
 
 `cannae-local-rush.json` is a free control for evidence item 3's "independent local rules":
 each of the five members is a plain `rush_nearest` on its local view and sends no message.
-It is unplayed. A member orders nothing until an enemy enters its 160 m view.
+It has played once, as `c-silent-rush-01` on `emp-envelopment-c-silent-v2`. A member orders nothing
+until an enemy enters its 160 m view.
 
 JUDGEMENT: Local rush control — Claude Code, 2026-11-05: `cannae-local-rush.json` on
 `emp-envelopment-c-silent-v1` stands for independent local rules. Another rule set could
-change whether simple plans win without messages; no claim rests on it yet.
+change whether simple plans win without messages; window 1's `c-silent-rush-01` on v2 rests on it.
 
 Every member gets the same frozen `configs/twwarhammer3/cannae_shared_plan.md`, ownership
 map, channel rules and prearranged rendezvous. Model replies add up to two messages to
@@ -370,8 +371,8 @@ page omits them; the text and JSON report keep them.
 The two missing inputs and 184 unchecked arrivals have one cause. Team rows were written on every
 poll, and global frames only on polls with orders, an error, new metadata or a 1 s gap. Both inputs
 were retries after a forfeit, and all 184 arrivals landed on quiet polls. b53 logs a frame on any
-team poll that wrote rows, so this should not recur; no live battle has shown that, and the two
-scripted probes logged every poll, so they cannot show it. For this job the corrected coverage is 456 arrivals exact from trace
+team poll that wrote rows, so this should not recur; no live battle has shown that, and the three
+scripted C jobs answered every poll, so they cannot show it. For this job the corrected coverage is 456 arrivals exact from trace
 frames, 60 checked on the anchor rule from same-time replay rows and 124 bracketed by the frames
 either side; 727 inputs exact, centre-22 matched on its compared fields from replay and centre-72
 in shape only. In the seven model team jobs of the coordination suite 49 of 2,449 inputs have
@@ -386,7 +387,7 @@ that had it out of view.
 The likely trigger is the death of the one soldier carrying the commander flag, which no engine
 reading proves. Replies show models noting the label as a unit property, and none decoding it as
 news of the commander; that is weak evidence. Dropping the field would not close the signal, since
-`morale.fraction` also stepped down across the army in all three C battles. Two weaker channels
+`morale.fraction` also stepped down across the army in all three v1 C battles. Two weaker channels
 exist in the same battle: latency feedback reflects a count of peer batches, and a courier's timing
 implies the sender's distance. No scenario id, job name or Cannae wording reached a model in its 729
 requests; the supplied plan does describe the manoeuvre and calls it the enclosure plan in all 729.
@@ -394,8 +395,10 @@ requests; the supplied plan does describe the manoeuvre and calls it the enclosu
 The two scripted wins on this declaration do not test communication: every member follows a
 nearest-enemy rule after one poll (the containing cavalry stayed idle in all 517 and 478 recorded
 frames), each job's last message arrived by 21.7 s, and only left infantry reads one courier as a
-release, so 8 of 9 regiments ignore all mail. The local-rush control above would test this without
-messages.
+release, so 8 of 9 regiments ignore all mail. On the harder force, `c-silent-rush-01` lost at 371.8 s
+with no messages. Its three Knights had no order until 175.9 s, so it is a weaker army than rush on
+A or B3, and only the silent arm has played v2, so the harder force does not yet give a channel
+comparison its room. No scripted member reacts to a message except the probe's 40 m move.
 
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs

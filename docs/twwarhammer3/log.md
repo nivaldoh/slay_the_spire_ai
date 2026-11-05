@@ -29,6 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Window 1: CentreSupport 5 of 8, no shortcut won
+
+- Owner: "Yes, start now"; A and C take the harder force first; checks reviewed after. Thirteen
+  launches at `d3ddc7b`, one battle each, $0, unpaused 1x, 19:27 to 21:34 UTC. Every ending was an
+  engine outcome: 5 won, 8 lost, none at the timer. Queue exit 0. Register rows here; the project's reader
+  gave 0 differences in 416 cells, a separate 12-field rebuild gave none, and the 766 older rows
+  are byte-identical.
+- B3 row 3, CentreSupport: won centre/north/1, centre/south/2, outside/south/1, centre/north/2,
+  outside/south/2; lost centre/south/1, outside/north/1 (874.7 s, 30 v 20 men), outside/north/2.
+  Three of the six unselected cases won. No other fixed rule has played the three lost cases.
+- The outside/north against outside/south split is not a finding: 24 of 56 placements of three losses
+  fill some region/side pair, launches differ by a median 16.0 m per unit before the trigger, and
+  the Knights did not meet the reserve before the first rout in either outside/north battle.
+- Row 4: no shortcut won. Hold 534.4 s on A v2; Evade 451.0 s on A v2, 477.9 s on B3, 273.7 s on air;
+  local rush 371.8 s on C silent v2. Evade flips one army-wide point during a chase; how much of each
+  loss that caused is untested. Closest of the 13 to the timer was 874.7 s, so a timer win is still open.
+- A v2 and C v2 have no win, so neither is admissible yet. A v2's two attempts did not try to win.
+- b53 ran live on all 13. Row 1: 251 unit rows, 251 inside position and bearing, 246 inside width;
+  all 5 outside are on air. Enemy width read on 131 of 131 rows. Bearing error reads 2.8 degrees on
+  248 of 251 rows, cause unknown. The capture fix stays unshown: scripted members answer every poll.
+- Reserve arrivals are now 45 of 46: e3 on the centre/south/2 win stalled, cause unknown. All 39
+  refused orders are accounted for by reason: 33 unreachable, 2 `unit_routing`, 1 `target_not_visible`, 3 local.
+- Unverified: no check is agreed, and each cell is one battle. Review:
+  `runs/benchmark-improve-20261105/window-review.json`.
+
 ## 2026-11-05: Audit of the Cannae candidates and harness b53
 
 - Owner `/goal`: improve the benchmarks from the Cannae handoff. Six audits at `ea0491d`, each

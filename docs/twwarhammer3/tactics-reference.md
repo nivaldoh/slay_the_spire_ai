@@ -519,11 +519,15 @@ From the two pilots (one Hold, one RushNearest), unverified, with each audit fin
   explain most of the flyers' advantage. No tracked code checks routes offline.
 - The defender wins at the timer, so a timer win is an untested shortcut. Flyers alone probably
   lose it to the ground-force morale drain (.3 to 1%/s, one trajectory); one unshattered ground
-  unit may be what matters, and whether one can last 1,200 s is unknown. `Evade` can test this.
+  unit may be what matters, and whether one can last 1,200 s is unknown. Window 1's Evade ended at
+  273.7 s, so this is still untested.
 - PriorityStrike runs at this revision, but its card's window has passed. Over saved frames it
   would release all ground units, bowmen in melee mode, at about 15-21 s when the General leaves
   sight briefly, so a result would show flyers at the General then an all-in rush, and would not
   test a held ground line.
+- Window 1's Evade lost at 273.7 s and adds nothing on relief, since Evade sends flyers to the same
+  army-wide point as everyone else and never allocates them to a fight. Air now has 0 wins from 3 battles. On width, both lords and the three flyers fall
+  outside the proposed tolerance.
 - The candidate lacks a decision cue, winnability evidence, controls, measurements, variation and
   a validation plan. It came from the owner's "if you finish early" direction, before A/B/C
   were finished, so keeping or parking it is the owner's next decision.

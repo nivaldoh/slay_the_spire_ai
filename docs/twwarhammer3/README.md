@@ -38,7 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [scenario-guidelines.md](scenario-guidelines.md) | proposed scenario coverage, winnability and capability checks, engine and team requirements, release criteria and owner decisions |
-| [cannae-eval.md](cannae-eval.md) | Cannae-inspired candidates: familiar tactics, adaptation and one-army communication; construction and validation plans, all unimplemented |
+| [cannae-eval.md](cannae-eval.md) | Cannae-inspired candidates: familiar tactics, adaptation and one-army communication; construction and validation plans, candidates played, all unverified |
 | [cannae-comparison.md](cannae-comparison.md) | separate familiar-tactic and adaptation battle designs, fresh-information checks and controls for recognition, conditional rules and task difficulty |
 | [cannae-communication.md](cannae-communication.md) | third battle design: prebattle plans, local command, signals/couriers and checks for coordinated execution under limited communication |
 | [tactic-judges.md](tactic-judges.md) | research and proposed checks for LLM/VLM tactic annotations; no judge or score adopted |
