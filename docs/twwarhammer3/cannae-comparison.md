@@ -4,8 +4,10 @@ Owner direction, 2026-11-05: distinguish a recognizable, potentially memorized t
 from a situation requiring decisions on the spot, using separate eval battles. This
 extends the [Cannae plan](cannae-eval.md). The owner subsequently selected a third design,
 [C: one-army coordination with limited communication](cannae-communication.md).
-**All three designs are unimplemented and unvalidated.** This page details A/B; C has
-its own specification. Any faction and lords remain available. No run is scheduled.
+**Development implementation is in progress; the scientific labels remain unverified.**
+This page details A/B; C has its own specification. Any faction and lords remain available.
+The owner requested construction and testing during the current away window; no paid
+model comparison is scheduled.
 
 The comparison should make prior tactical knowledge useful in one case and insufficient
 to select the concrete response in the other. A controller can still use learned concepts
@@ -204,6 +206,38 @@ about Cannae before play can itself prime recognition, and an explanation after 
 does not reveal faithful internal reasoning. No chain-of-thought judge is the oracle.
 
 ## Implementation boundary and checks
+
+### Development adapter, 2026-11-05
+
+`emp-envelopment-b-v1` retains A's rosters, settings and friendly deployment, moving only
+two enemy Swordsmen to the rear before launch. Their one-based authored placement slots
+are bound to actual engine identities by the same type-occurrence procedure used for
+teleporting. The Lua adapter takes those two controllers before placement; all other
+enemies return to native AI. No extra troops, stat changes or mid-battle teleport occur.
+
+The concrete development catalogue and timings rest on JUDGEMENT
+`src/twwarhammer3/battle/reserve.py` Reserve development catalogue. It crosses centre versus
+outside approach, north versus south and one versus both reserve regiments committed.
+The routes are fixed ground regions; the script never reads friendly units to select a
+target. It holds the reserve, issues running waypoint orders at the fixed trigger, then
+releases both regiments to native AI at the fixed release time. Uncommitted regiments stay
+held until release. These choices need live calibration and do not establish that fresh
+reasoning is necessary or that every case has a winning response.
+
+Each planned episode gets a separate independently seeded prelaunch draw, saved in the
+ordinary job manifest's `reserve_draws`; the appropriate activation is written before
+the first launch or subsequent rematch. The public scenario/job names contain no draw.
+Private `evaluation.reserve` records identity, chosen configuration, submission status,
+initial positions and the latest actual position reading. The public boundary drops all
+evaluation/setup/final data. A configuration, identity or submission failure stops the
+job as infrastructure evidence while retaining any engine ending already observed.
+Adapters remain trusted Python code, without an arbitrary filesystem/tool sandbox.
+
+Focused component tests cover draws, immutable openings, private-input differences,
+controller ownership, holding, one-shot trigger/release and terminal suppression. Fake
+controllers can accept a move without moving; their tests explicitly retain separate
+position readings. Live routes, event cues and the crossed tactical comparisons remain.
+No new procedure is entered in agreed checks. Card and raw evidence: `runs/cannae-build/`.
 
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the

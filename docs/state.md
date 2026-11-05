@@ -9,8 +9,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 started at the owner's request for the away window. Branch `cannae-build`, worktree
 `runs/cannae-build/worktree`; brief/card/evidence `runs/cannae-build/`. First construct A's
 fixed roster and routes, then B's private reserve event and C's local command/message
-interfaces. Free scripted construction checks only; no paid comparison or readiness
-claim. Game cutoff 2026-11-05 13:25 UTC. Battle C's plan is being finished separately.
+interfaces. A's first rush attempt won; game closed. B passed focused offline checks and
+awaits a live check; C's plan has landed. No paid comparison or readiness claim.
+Game cutoff 2026-11-05 13:25 UTC. See [log](twwarhammer3/log.md#2026-11-05-cannae-construction-first-a-attempt-and-b-adapter).
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 

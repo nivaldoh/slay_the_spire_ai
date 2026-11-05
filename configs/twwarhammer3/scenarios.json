@@ -3854,5 +3854,156 @@
     "realism": false,
     "player_defends": true
   }
+},
+ "emp-envelopment-b-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-b-v1",
+  "family": "reserve_adaptation",
+  "deployment": {
+    "friendly": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -175,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -225,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -275,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -325,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -125,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -375,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -100,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -425,
+        "bearing": 90,
+        "width": 30
+      }
+    ],
+    "enemy": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -325,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 355,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 355,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -95,
+        "bearing": 270,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -415,
+        "bearing": 270,
+        "width": 30
+      }
+    ]
+  },
+  "reserve": {
+    "version": 1,
+    "slots": [
+      7,
+      8
+    ]
+  }
 }
 }

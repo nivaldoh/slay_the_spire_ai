@@ -1,6 +1,6 @@
 # Cannae inspired evaluation plan
 
-Draft, 2026-11-05. **Candidate only; A's declaration is implemented, with no live battle yet.** This proposes
+Draft, 2026-11-05. **Candidates under construction; A has one scripted live attempt.** This proposes
 three separate evaluations following the owner's directions:
 **A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
 require fresh contingent decisions**, plus **C, coordinated execution by agents sharing
@@ -233,6 +233,13 @@ The prior support battle's saved 32 m terrain grid suggests the strip is clear; 
 not establish complete formation footprints or routes. The first live attempt checks
 recruitment, setup, native AI behaviour and movement before tactical strength claims.
 Task brief/card and raw evidence: `runs/cannae-build/`.
+
+At `d7003f3`, one native-AI battle with `rush_nearest` recruited and placed all nineteen
+regiments and ended with an engine win at 468 battle seconds, zero invalid orders and
+$0 model spend (`runs/cannae-build/a-rush-01/`). This demonstrates a working construction
+attempt, not readiness or difficulty. A nearest-enemy controller succeeded without an
+explicit envelopment plan; retain it as a challenge to that interpretation. The manoeuvre
+witness, route checks and repeatable readiness procedure remain outstanding.
 
 JUDGEMENT: Readiness procedure — Codex, 2026-11-05: proposes the staged checks below,
 starting with setup and owner demonstration before capability claims. Outcome-only readiness

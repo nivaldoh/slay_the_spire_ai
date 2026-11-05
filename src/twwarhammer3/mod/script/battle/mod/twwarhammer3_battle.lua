@@ -521,7 +521,7 @@ end
 
 local function evaluation()
     return {version = 2, friendly = strength(state.friendly), enemy = strength(state.enemy),
-            objectives = state.objective_totals}
+            objectives = state.objective_totals, reserve = state.reserve and state.reserve.evidence}
 end
 
 -- The unit a placement names: by id, or the next unused unit of its type. The engine does not
@@ -536,6 +536,106 @@ local function authored_entry(side, placement, used)
         end
     end
     error("missing authored unit " .. tostring(placement.type))
+end
+
+-- B's private evaluator adapter: bind explicit authored slots before teleporting. Every
+-- other enemy is borrowed/released by teleport_units as usual. Never reads friendly state.
+local function setup_reserve()
+    if not session.reserve then return end
+    assert(not state.multiplayer and not session.custom, "reserve requires a plain single-player battle")
+    local config, selected, used = session.reserve, {}, {}
+    for _, slot in ipairs(config.slots) do
+        assert(not selected[slot], "duplicate reserve slot")
+        selected[slot] = true
+    end
+    state.reserve = {entries = {}, evidence = {config = config, units = {}, orders = {}}}
+    for slot, placement in ipairs(session.deployment.enemy) do
+        local entry = authored_entry("enemy", placement, used)
+        if selected[slot] then
+            local controller = entry.army:create_unit_controller()
+            controller:add_units(entry.unit)
+            controller:take_control()
+            controller:halt()
+            entry.controller = controller
+            state.reserve.entries[#state.reserve.entries + 1] = entry
+            local identity = {slot = slot, type = get(entry.unit, "type", "?")}
+            -- Bind by object identity; enemy ids do not follow recruitment order.
+            for _, id in ipairs(state.enemy_ids) do
+                if state.enemy[id] == entry then
+                    identity.id = id
+                end
+            end
+            assert(identity.id, "reserve has no enemy identity")
+            state.reserve.evidence.units[#state.reserve.evidence.units + 1] = identity
+        end
+    end
+    assert(#state.reserve.entries == #config.slots, "missing reserve slots")
+end
+
+-- Uses engine time, including while the Python controller is thinking. Routes are fixed
+-- regions, not omniscient attack targets; native AI resumes at the declared release time.
+local function reserve_disposition(entry)
+    local men = get(entry.unit, "number_of_men_alive", nil)
+    assert(type(men) == "number", "unreadable reserve strength")
+    if men == 0 then return "destroyed" end
+    for _, flag in ipairs({"is_routing", "is_shattered"}) do
+        local value = get(entry.unit, flag, nil)
+        assert(type(value) == "boolean", "unreadable reserve " .. flag)
+        if value then return flag == "is_routing" and "routing" or "shattered" end
+    end
+    return "available"
+end
+
+local function tick_reserve(now)
+    local reserve = state.reserve
+    if not reserve or state.finished then return end
+    local evidence, config = reserve.evidence, reserve.evidence.config
+    if not evidence.triggered_ms and now >= config.trigger_ms then
+        evidence.triggered_ms = now
+        for index, entry in ipairs(reserve.entries) do
+            if index <= config.count then
+                local disposition
+                local ok, err = pcall(function()
+                    disposition = reserve_disposition(entry)
+                    if disposition ~= "available" then return end
+                    for waypoint, point in ipairs(config.route) do
+                        local destination = vector(point.x, bm.battle:get_terrain_height(point.x, point.z), point.z)
+                        if waypoint == 1 then entry.controller:goto_location(destination, true)
+                        else entry.controller:goto_location_q(destination, true) end
+                    end
+                end)
+                evidence.orders[#evidence.orders + 1] = {id = evidence.units[index].id,
+                    checked_ms = now, issued_ms = disposition == "available" and now or nil,
+                    disposition = disposition, ok = ok, error = not ok and clean_error(err) or nil}
+            end
+        end
+    end
+    if not evidence.released_ms and now >= config.release_ms then
+        evidence.released_ms = now
+        evidence.releases = {}
+        for index, entry in ipairs(reserve.entries) do
+            local ok, err = pcall(function()
+                local disposition = reserve_disposition(entry)
+                if disposition ~= "destroyed" then entry.controller:release_control() end
+            end)
+            evidence.releases[#evidence.releases + 1] = {id = evidence.units[index].id,
+                ok = ok, error = not ok and clean_error(err) or nil}
+        end
+    end
+    -- Private engine readings: submission is not proof of movement.
+    if not reserve.next_read_ms or now >= reserve.next_read_ms then
+        reserve.next_read_ms = now + 1000
+        local reading = {time_ms = now, units = {}}
+        for index, entry in ipairs(reserve.entries) do
+            local position = get(entry.unit, "position", nil)
+            reading.units[#reading.units + 1] = {id = evidence.units[index].id,
+                x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1),
+                men = get(entry.unit, "number_of_men_alive", nil)}
+        end
+        -- Keep one current reading per observation, plus the pre-event reference.
+        evidence.latest = reading
+        if not evidence.initial then evidence.initial = reading end
+    end
 end
 
 -- Authored starting positions (private setup). An enemy unit returns to the AI one tick later:
@@ -1381,6 +1481,11 @@ local function finish()
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end
+    if state.reserve then
+        for _, entry in ipairs(state.reserve.entries) do
+            pcall(function() entry.controller:release_control() end)
+        end
+    end
     -- Flush the terminal presentation frame before the result releases the harness.
     record_replay(battle_time(), true)
     record_imagery(battle_time(), true)
@@ -1539,6 +1644,10 @@ local function tick()
     end
     sample_custom(now)
     if state.finished then return end
+    if session.reserve then
+        local reserve_ok, reserve_error = pcall(tick_reserve, now)
+        if not reserve_ok and state.reserve then state.reserve.evidence.error = clean_error(reserve_error) end
+    end
     -- Its own timer: a policy that decides every tick forces an observation with each
     -- acknowledgement, which keeps pushing the regular observation back.
     if now >= state.next_scan_ms then
@@ -1649,12 +1758,20 @@ local function start()
     if not scanned then log("scan failed: " .. clean_error(err)) end
     local custom_ok, custom_error = pcall(setup_custom)
     if not custom_ok then log("custom setup failed: " .. clean_error(custom_error)) end
+    local reserve_ok, reserve_error = true, nil
+    if session.reserve then
+        reserve_ok, reserve_error = pcall(setup_reserve)
+        if not reserve_ok then log("reserve setup failed: " .. clean_error(reserve_error)) end
+    end
     local deployed, deployment_error = pcall(teleport_units, session.deployment)
     if not deployed then log("deployment failed: " .. clean_error(deployment_error)) end
     state.started_ms = battle_time()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender"),
                    deployment_error = not deployed and clean_error(deployment_error) or nil}
+    if session.reserve then
+        state.setup.reserve = {ok = reserve_ok, error = not reserve_ok and clean_error(reserve_error) or nil}
+    end
     if session.benchmark then
         local toggles_ok, toggles = pcall(benchmark_behaviours, true, false, "friendly")
         state.setup.benchmark_behaviours = toggles_ok and toggles or {error = clean_error(toggles)}

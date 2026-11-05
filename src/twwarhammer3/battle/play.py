@@ -117,6 +117,11 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     steps = scenario_steps(scenario, build_id=environment.get("game", {}).get("steam_build_id"))
     revision = committed_revision("attributable battles", SOURCES)
     files = source_fingerprints(SOURCES)
+    reserve_draws = None
+    if scenario.get("reserve"):
+        from twwarhammer3.battle.reserve import materialize
+
+        reserve_draws = [materialize(scenario) for _ in trials]
     output.mkdir(parents=True)
     write_json(output / "environment.json", environment)
     manifest = {
@@ -134,6 +139,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
         "episodes": [],
         "recorder": recording_settings(config),
         "imagery": imagery_settings(config),
+        **({"reserve_draws": reserve_draws} if reserve_draws is not None else {}),
     }
     bases = {policy_parts(name, config)[0] for name in config["policy"].split(",")}
     for name in sorted(bases & MODEL_POLICIES):  # one prompt per base, whatever its models
@@ -147,6 +153,13 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
         for index, trial in enumerate(trials):
             if source_fingerprints(SOURCES) != manifest["source_files"]:
                 raise RuntimeError("Implementation changed during the job; stopped")
+            trial_scenario = scenario
+            if scenario.get("reserve"):
+                from twwarhammer3.battle.reserve import episode_scenario
+
+                draw = manifest["reserve_draws"][index]
+                mailbox.write_session({**settings, "reserve": draw})
+                trial_scenario = episode_scenario(scenario, draw)
             if index:
                 mailbox.write_control(previous, "restart")
             directory = output / f"episode-{index:04d}"
@@ -154,7 +167,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
             try:
                 result = play_episode(directory, {**config, **trial, "slot": index},
                                       makers[trial["policy"]], mailbox, not_battle=previous,
-                                      scenario=scenario, start_reference=reference)
+                                      scenario=trial_scenario, start_reference=reference)
             finally:
                 # KeyboardInterrupt still leaves the started trial in both records.
                 if (directory / "result.json").exists():
@@ -208,6 +221,8 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                     settings["benchmark"] = scenario.get("benchmark") or "behaviour-defaults"
                 if scenario.get("deployment"):
                     settings["deployment"] = scenario["deployment"]
+                if scenario.get("reserve"):
+                    settings["reserve"] = manifest["reserve_draws"][0]
                 with (mailbox.owned_session(settings),
                       OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game):
                     manifest["game"] = game.info
@@ -676,6 +691,14 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             # from here on still sets the status, and engine_ending keeps what ended.
             record_ending(result, observation, scenario)
             timer, ended_by = observation.get("timer") or {}, result["engine_ending"]["ended_by"]
+        if scenario.get("reserve") and "scenario" in result:
+            from twwarhammer3.battle.reserve import check
+
+            evidence = (observation.get("evaluation") or {}).get("reserve")
+            if evidence != result.get("reserve"):
+                event("reserve", time_ms=observation["time_ms"], evidence=evidence)
+            result["reserve"] = evidence
+            check(scenario, observation)
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             applied_ms = _acknowledge(result, outstanding, ack, policy, event)

@@ -737,3 +737,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-05,block-1-none,episode-0000,emp-support-timing-v2,twwarhammer3.battle.support_timing:NoneIntervention,,,,28eec6c,realtime,1.0,0.0,lost,259,0.39,0.82,814,0,0.31,0,classic,,,,,0.0,0.822,0.0,engine_result,
 2026-11-05,block-2-opening,episode-0000,emp-support-timing-v2,twwarhammer3.battle.support_timing:Opening,,,,28eec6c,realtime,1.0,0.0,won,88,0.76,0.72,274,0,0.3,0,classic,,,,,0.763,0.0,0.0,engine_result,
 2026-11-05,block-2-scheduled,episode-0000,emp-support-timing-v2,twwarhammer3.battle.support_timing:Scheduled,,,,28eec6c,realtime,1.0,0.0,interrupted,20,1.0,1.0,49,0,0.31,0,classic,,,,,1.0,1.0,0.0,,
+2026-11-05,a-rush-01,episode-0000,emp-envelopment-a-v1,rush_nearest,,,,d7003f3,realtime,1.0,0.0,won,468,0.52,0.23,1509,0,0.31,0,classic,,,,,0.382,0.0,0.0,engine_result,

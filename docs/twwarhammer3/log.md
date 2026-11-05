@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Cannae construction, first A attempt and B adapter
+
+- Owner requested implementation/testing of A/B/C during an approximately ten-hour away
+  window. Brief/cards/evidence: `runs/cannae-build/`; game cutoff 13:25 UTC, $0 model spend.
+- A `emp-envelopment-a-v1`, `d7003f3`: one `rush_nearest` battle won at 468 battle seconds,
+  zero invalid orders. All nineteen regiments recruited and placed within the existing
+  setup tolerance. Independent starting widths/routes and tactical difficulty remain unverified.
+- Saved trace, replay and four stills: `runs/cannae-build/a-rush-01/`. Windows clock ratio
+  1.0000 overall. Game closed normally; register row retained.
+- A nearest-enemy controller won without an explicit envelopment plan. Keep this counterexample;
+  no readiness, coordination-necessity or frontier-model claim follows from this attempt.
+- B `emp-envelopment-b-v1` adds a separately seeded per-episode private reserve draw,
+  bounded enemy controllers, fixed engine-time route/release and private effect records.
+  Rests on JUDGEMENT `battle/reserve.py` Reserve development catalogue; no suite adoption.
+- Focused B checks: 266 passed. Reviewer found two defects, fixed with new regressions:
+  discarded private movement readings and orders to destroyed reserves. Re-review: no findings.
+  Full-gate outputs are in `runs/cannae-build/`; live B routes/cues remain pending.
+  C's plan is landed; implementation follows.
+- Cards/check methods were not individually agreed. Scenario readiness and the proposed
+  recognition, adaptation and communication interpretations remain unverified.
+
 ## 2026-11-05: Add a limited-communication Cannae team battle design
 
 - Owner selected a [third separate battle](cannae-communication.md): agents sharing one
