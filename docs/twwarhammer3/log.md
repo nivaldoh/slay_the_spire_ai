@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Stop the support-timing investigation at the owner's request
+
+- Owner no longer considers timing interesting for now; queue stopped, game closed and
+  further timing work unscheduled. No replacement scenario or benchmark meaning selected.
+- Frozen comparison at `28eec6c`, build 26403568: seven engine endings, one owner interruption
+  (`block-2-scheduled`, about 19.9 battle seconds), ten unstarted slots; $0 model spend.
+- Opening won 2/2 (stored H 0.475, 0.685). Direct, Scheduled, Contact, Delayed and No intervention
+  each lost their one completed attempt. Both earlier pilots remain outside these counts.
+- Independent first primary pair: delayed orders withheld exactly 12 battle seconds;
+  cavalry melee about 71.8 s versus 81.8 s, both after infantry routing. Contact lost and
+  native H difference is 0.008914832, already excluding the agreed numerical readiness rule.
+  The full check remains incomplete; no reliable effect size, ranking or timing-need claim.
+- All 18 slots and raw artifacts retained: `runs/support-timing-live/comparison-v2/`;
+  independent reviews/recounts: `runs/support-verify/review/comparison-v2/`.
+- Source gate: 3,021 passed, 44 skipped. No source/test changes in this wrap-up; the register
+  includes all eight started attempts. [Findings and next steps](support-timing.md#stopped-comparison-and-next-steps).
+
 ## 2026-11-04: Translated pilot runs and exposes a reader projection bug
 
 - One Contact pilot of v2 at `1432bbf` passed setup and ended in an engine loss at 287.2 s,

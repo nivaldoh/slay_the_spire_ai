@@ -2,7 +2,10 @@
 
 Owner request, 2026-11-04: diverse scenarios whose winnability and intended measurement
 can be checked, including game mechanics, engine quirks and multi-agent control.
-**Owner directions below; the first candidate implementation is linked below. No live evaluation yet.**
+**Owner stopped the timing investigation on 2026-11-05; no further scenario run is scheduled.**
+The [wrap-up](support-timing.md#stopped-comparison-and-next-steps) retains the implementation,
+seven completed comparison battles, one owner interruption and ten unstarted attempts.
+The next research question remains open.
 The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
 and deployment, public structured observations, permitted orders, engine wins including
 timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
@@ -30,7 +33,10 @@ not blanket approval of the earlier procedures.
 
 ## First two scenarios
 
-Implementation of the owner-selected first candidate: [infantry support and cavalry timing](support-timing.md). It remains unverified; the exact live check is proposed and no battles have run.
+The first candidate, [infantry support and cavalry timing](support-timing.md), was implemented
+and partly tested. The owner stopped it because timing is not interesting for now. It has
+no passing readiness revision. Revisit the intended coordination capability before another
+candidate; the sequential-development guidance below does not schedule a replacement.
 
 1. Plan the simpler scenario first: a small, inspectable decision problem with a clear
    engine objective and few interacting mechanics. Select its concrete setup with the owner;
@@ -46,7 +52,7 @@ Implementation of the owner-selected first candidate: [infantry support and cava
    menu for those decisions, not a commitment to build a large suite now.
 
 These are planning steps. They schedule no human session, game launch, paid judge call or
-policy run. The manual recording path and any pause evidence still need design; do not
+policy run. The manual recording path is implemented but its handover remains unverified; do not
 disable `require_realtime` or change a live controller to obtain the owner's demonstration.
 
 A useful scenario has a consequential decision, a legal winning witness and evidence

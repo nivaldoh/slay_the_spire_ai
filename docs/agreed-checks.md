@@ -25,7 +25,11 @@ revisions written below are the earlier passes.
   Commands, configuration, failure retention and artifacts:
   [support-timing procedure](twwarhammer3/support-timing.md#repeatable-live-check).
   This is exploratory usefulness, not an effect-size estimate or controller ranking.
-  No passing revision yet. Existing numerical JUDGEMENT markers remain visible.
+  No passing revision. Owner stopped timing work on 2026-11-05: at `28eec6c`, seven
+  comparison battles completed, one was interrupted and ten were unstarted. The valid
+  first primary pair already excludes the numerical criterion, but the full check is
+  incomplete. [Results and limits](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps).
+  Existing numerical JUDGEMENT markers remain visible.
 
 - WH3 GCP VM compatibility (agreed 2026-11-02, owner: "Use this check"):
   one small unpaused battle, measuring 120 seconds with Remote Desktop connected and

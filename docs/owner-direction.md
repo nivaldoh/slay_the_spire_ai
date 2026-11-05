@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (stop timing investigation): "I actually don't think the problem of studying
+  timing is that interesting for now. Let's wrap it up and take note of next steps."
+  This supersedes continuing the 18-attempt comparison: stop the queue, retain completed,
+  interrupted and unstarted attempts, record the findings and leave further timing work
+  unscheduled. [Wrap-up and next steps](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps).
 - 2026-11-04 (first pilot placement repair): "Use the proposed translation (Recommended)"
   after a failed setup check and a video showing a cliff edge. Shift all three starts by
   z = −160 m: Swordsmen `(0,-160)`, Knights `(-100,-100)`, Greatswords `(0,-320)`.

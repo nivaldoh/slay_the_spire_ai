@@ -1,9 +1,10 @@
 # First candidate: infantry support and cavalry timing
 
-Implemented from the owner's supplied plan, 2026-11-04. **Development candidate,
-unverified; v2 pilot passed setup and lost.** On 2026-11-04 the owner selected "Use the proposed
-exploratory rule" for the procedure below, after setup and action-effect checks. It is now
-listed in [agreed-checks.md](../agreed-checks.md). The second scenario waits.
+Implemented from the owner's supplied plan, 2026-11-04. **Development candidate; timing
+work stopped by the owner on 2026-11-05.** Seven comparison battles finished, one was
+interrupted and ten never started. The owner no longer considers timing a current research
+priority. The implementation and evidence remain available; no further run is scheduled.
+[Findings and next steps](#stopped-comparison-and-next-steps).
 
 Question: can a controller judge whether supporting infantry will remain effective long
 enough for a cavalry manoeuvre to pay off? This candidate first asks whether commitment
@@ -17,8 +18,9 @@ The owner's selected directions are manoeuvre timing, an Empire mirror, unrestri
 legal tactics, and timing affecting outcome or army condition. The current entry is
 `configs/twwarhammer3/scenarios.json` → `emp-support-timing-v2`; v1 retains the failed pilot setup. Public task: win and preserve
 the army where possible; engine timer wins count. The entry selects no benchmark scorer,
-controller restriction, reserved split or ranking formula. Greatswords' superiority and
-winnability are unknown until demonstrated.
+controller restriction, reserved split or ranking formula. The completed Opening control
+won two fresh battles; this is demonstrated scripted winnability on the tested setup,
+not a general strength ordering inferred from unit names.
 
 JUDGEMENT: Starting geometry and settings — Codex, 2026-11-04, supplied plan: these are
 construction defaults requiring live checks. Different spacing, widths or difficulty can
@@ -73,7 +75,8 @@ these details. No live feasibility claim follows from legal orders alone.
 
 ## Repeatable live check
 
-Owner agreed 2026-11-04: "Use the proposed exploratory rule". The earlier JUDGEMENT markers
+The procedure below is retained for reproducibility, not authorization to resume. The
+owner stopped this investigation on 2026-11-05. Owner agreed 2026-11-04: "Use the proposed exploratory rule". The earlier JUDGEMENT markers
 remain visible; the agreement does not establish that the candidate works.
 Run from committed main after landing, with no other game controller/queue. Retain every
 attempt and the full source/configuration/game/mod provenance. `doctor` is read-only; tell
@@ -81,11 +84,11 @@ the owner about any build mismatch and do not re-pin automatically.
 
 ```bash
 uv run --locked python -m twwarhammer3 doctor
-uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/translated-v2/plan.json
+uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/comparison-v2/plan.json
 # Owner-agreed exploratory comparison, after setup/action-effect checks:
-uv run --locked python scripts/wh3_queue.py runs/support-timing-live/translated-v2/plan.json
-uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/translated-v2/plan.json runs/support-timing-live/translated-v2/annotations.json
-uv run --locked python -m twwarhammer3 report runs/support-timing-live/translated-v2/block-* --output runs/support-timing-live/report
+uv run --locked python scripts/wh3_queue.py runs/support-timing-live/comparison-v2/plan.json
+uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/comparison-v2/plan.json runs/support-timing-live/comparison-v2/annotations.json
+uv run --locked python -m twwarhammer3 report runs/support-timing-live/comparison-v2/block-* --output runs/support-timing-live/report
 ```
 
 For the current verification session, `runs/support-verify/audit_play.py` wraps ordinary
@@ -102,7 +105,7 @@ in the pilot, then freeze the same instrumentation for every comparison arm.
 ```bash
 uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v2 --policy twwarhammer3.battle.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-02
 # After independently checking the pilot, use the ordinary queue with the observer:
-uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/translated-v2/plan.json
+uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/comparison-v2/plan.json
 ```
 
 Before the comparison, inspect the pilot's `audit/video/video.mkv`, Windows clock journal,
@@ -203,11 +206,74 @@ fields strictly and every private field present in both copies, then merges comp
 copies. Conflicting sensor/HP values still remain unknown. Retain the original rejection
 and the repaired reread under `runs/support-verify/`; this repair changes no game behavior.
 
-The early v1 and v2 plan files remain stopped and unstarted. Freeze the comparison after
-this reader repair and review, using the same scenario, six treatments and instrumentation.
+The early v1 and v2 plan files remain stopped and unstarted. The 18-attempt comparison is
+frozen at `28eec6c` in `runs/support-timing-live/comparison-v2/plan.json`, using the same
+scenario, six treatments and instrumentation. The repaired reader passed the main gate
+(3,021 passed, 44 skipped); independent pilot review found no remaining setup, execution
+or measurement blocker for this comparison.
 Review movement legs, native target IDs and visible unit/card states; the wide camera alone
 cannot time individual soldiers' contact precisely. Independent event review is required
 for every primary attempt before readiness can pass.
+
+## Stopped comparison and next steps
+
+Owner, 2026-11-05: "I actually don't think the problem of studying timing is that interesting
+for now. Let's wrap it up and take note of next steps." The queue was stopped gracefully
+at source `28eec6c`, with pinned game build 26403568. Seven comparison battles reached an
+engine ending; `block-2-scheduled` was interrupted at about 19.9 battle seconds and has no
+engine outcome. Ten planned attempts never started. Neither interruption nor non-start is
+a gameplay loss. Both earlier pilots remain separate. No paid model calls were made.
+
+| Arm | Completed outcomes | Ending H, stored | Other attempts |
+|---|---|---|---|
+| Direct | 1 loss | 0.195 | 2 unstarted |
+| Opening | 2 wins | 0.475, 0.685 | 1 unstarted |
+| Scheduled | 1 loss | 0.165 | 1 owner-interrupted, 1 unstarted |
+| Contact | 1 loss | 0.165 | 2 unstarted |
+| Delayed | 1 loss | 0.155 | 2 unstarted |
+| No intervention | 1 loss | 0.235 | 2 unstarted |
+
+H remains the proposed equal-regiment ending HP diagnostic, not a ranking score. Native
+unrounded values are retained independently. Opening's two fixed-plan wins demonstrate
+scripted winnability here; two runs cannot establish a reliable win rate or a need for feedback.
+
+The first primary pair already prevents the agreed numerical criterion from passing.
+Contact lost, excluding 3/3 Contact wins. Across any completion of the remaining attempts,
+`min(Contact H) - max(Delayed H)` cannot exceed this pair's stored difference of about 0.010;
+its unrounded native difference is 0.008914832, also below 0.10. The full 18-attempt check
+remains incomplete and has no passing revision.
+
+Independent readings and video confirm the delayed route was frozen at its 32.5 s cue,
+submitted at 44.5 s, and executed. First cavalry melee was (71.7,71.8] s for Contact and
+(81.7,81.8] s for Delayed, with reciprocal targeting confirmed by 81.9 s in Delayed.
+Infantry had already routed in both: (64.6,64.7] s and (66.6,66.7] s respectively.
+Thus this pair compares two arrivals after the first loss of support. It does not establish
+the intended benefit of judging whether support will last. A routing infantry regiment
+can retain a melee flag; flag overlap alone is insufficient evidence of useful support.
+
+The seven completed ordinary annotations report no evidence conflicts. Independent review
+checks declaration/readbacks, actual route movement, unit identities, public/native values,
+first-ending HP, clocks and video; retained review is under
+`runs/support-verify/review/comparison-v2/`. The source repair's main offline gate passed
+3,021 tests, with 44 skipped. These checks support the recorded executions and measurements;
+they do not establish a robust effect size, controller ranking or manual-control handover.
+
+Artifacts: `runs/support-timing-live/comparison-v2/plan.json`, `plan-state.json`, `plan-stop`,
+`annotations.json` (all 18 planned slots), and `report.html`/`.json`/`.txt` (eight started
+attempts). Each started directory retains configuration, provenance, traces, native readings
+and video. `runs/support-verify/review/comparison-v2/readiness-bound.md` gives the numerical
+bound independently. The interruption is owner-directed, not a setup or executor failure.
+
+Next steps:
+
+1. Keep this development candidate and its evidence; leave the remaining timing runs,
+   retuning, paid evaluations and the separate manual demonstration unscheduled.
+2. Return to the open research question: decide which coordination capability is worth
+   investigating before selecting another scenario. No replacement capability or metric
+   has been adopted in this wrap-up.
+3. Once that question is chosen, agree a small scenario and a repeatable check, reusing
+   the scenario, public-interface, recording and independent-review infrastructure.
+   Retain simple fixed controls and verify action effects before interpreting outcomes.
 
 ## Owner demonstration
 
@@ -228,7 +294,8 @@ uv run --locked python -m twwarhammer3.battle.manual_demo record --output runs/s
 ```
 
 The installed Windows FFmpeg reports `gfxcapture` and `dup_frames` in its filter help
-(`runs/support-timing/ffmpeg-gfxcapture.txt`); actual capture remains untested. The recorder
+(`runs/support-timing/ffmpeg-gfxcapture.txt`); the two diagnostic pilots exercised this
+capture path, while the owner-control handover remains untested. The recorder
 also requires libx264. The timeout
 is an explicit Windows watchdog budget chosen for this session, including menus and owner
 pauses. This command captures the owned game window, never focuses it or sends desktop

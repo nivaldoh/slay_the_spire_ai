@@ -1,11 +1,11 @@
 # Project state
 
-Updated 2026-11-04: what runs, where each game stands, what comes next. Status only:
+Updated 2026-11-05: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-First scenario verification: [infantry support timing](twwarhammer3/support-timing.md), branch `support-verify`. The translated v2 pilot passed setup but lost after cavalry arrived following infantry rout. Correcting the offline reader's raw/public-copy comparison; then run the owner-agreed 18 attempts with independent witnesses. Evidence: `runs/support-timing-live/pilot-contact-02/`. Usefulness remains unverified.
+[Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
 Overnight benchmark run ended 2026-11-04 11:00 -03; [suite page rebuilt](twwarhammer3/log.md#2026-11-04-suite-page-rebuilt-so-colour-shows-who-controls-what), owner: ok for now, reviews later; no more battles for now. [Tips test](twwarhammer3/log.md#2026-11-04-one-model-with-tips-won-none-of-six): 0 of 6. [Suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1), [results](twwarhammer3/log.md#2026-11-04-first-comparison-of-control-methods), handoff `runs/coord-suite-20261104/handoff.md`. [Scenario guidelines](twwarhammer3/scenario-guidelines.md): owner replies recorded: simple then complex, tentative manual wins, judge research; plan only, no evaluations scheduled.
 Checkpoint 9.0.5: Land and all four declared siege states passed at `210e356`; game closed. [Results and limits](twwarhammer3/checkpoints.md#siege-check); evidence `runs/wh3-checkpoint-905/`.
