@@ -243,6 +243,8 @@ class WingSupport(Envelop):
     marked development rules. No route is started or claimed completed by this class.
     """
 
+    cavalry_order = ("north", "south", "infantry")
+
     def decide(self, observation):
         self.now = observation["time_ms"]
         roster = observation.get("friendly")
@@ -264,7 +266,10 @@ class WingSupport(Envelop):
         cavalry = [e for e in enemies if e.get("class") == "cavalry"]
         north = [e for e in cavalry if self.enemy_wings[e["id"]] == "north"]
         south = [e for e in cavalry if self.enemy_wings[e["id"]] == "south"]
-        self.cavalry_stage = "north" if north else "south" if south else "infantry"
+        cavalry_sets = {"north": north, "south": south, "infantry": infantry}
+        self.cavalry_stage = next((key for key in self.cavalry_order if cavalry_sets[key]),
+                                  "infantry")
+        cavalry_targets = cavalry_sets[self.cavalry_stage]
         orders = []
         for role, identities in self.groups.items():
             for identity in identities:
@@ -275,7 +280,7 @@ class WingSupport(Envelop):
                 elif role == "left":
                     candidates = north or infantry
                 elif role == "decisive":
-                    candidates = north or south or infantry
+                    candidates = cavalry_targets
                 elif role == "right":
                     candidates = infantry
                 else:
@@ -290,3 +295,15 @@ class WingSupport(Envelop):
         return deepcopy({"type": "cannae_wing_support", "version": 1,
                          "groups": self.groups, "enemy_wings": self.enemy_wings,
                          "cavalry_priority": self.cavalry_stage, "targets": self.targets})
+
+
+# JUDGEMENT: B cavalry follow-up — Codex, 2026-11-05: this separate controller sends
+# northern Knights to infantry before the other horse wing. Other commitments change
+# outcomes; one further disclosed screen is not an isolated causal or strength claim.
+class CentreSupport(WingSupport):
+    """After currently eligible north horse, prefer infantry to the other horse wing."""
+
+    cavalry_order = ("north", "infantry", "south")
+
+    def metadata(self):
+        return {**super().metadata(), "type": "cannae_centre_support"}

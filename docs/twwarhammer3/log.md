@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Support witness and first flying-reserve pilots
+
+- At `19b1534`, WingSupport won the outside/south/two case at 534.5 s and lost the
+  centre/north/two case at 353.2 s; both zero invalid/$0. One legal winning trajectory
+  exists; centre-case winnability remains open. Previous six losses stay in the register.
+- Independent audit matched 750 logged batches, 137 attacks/137 successful acknowledgements
+  and both CSV rows. Quiet polls are omitted; this is not every decision call. Both cases'
+  reserves actually arrived. No route-completion, causal remedy or strength claim follows.
+- Separate air-relief Hold/Rush pilots lost at 573.8/320.8 s, zero invalid/$0, same source.
+  Actual typed rosters and foot-lord keys match; three flyers began airborne. Hold issued
+  no orders; routing movement is automatic. Rush had 282 attacks/282 successful acknowledgements,
+  with sampled flyer movement, automatic landing/melee and later ground/air transitions.
+- Active enemy Greatswords crossed the centre at different z positions. Neither an
+  impassable crossing nor fixed separate enemy groups is established. The terrain grid
+  does not prove full footprints; enemy loadouts and explicit flight-toggle effects lack evidence.
+  These are two construction losses, not measured difficulty or model weakness.
+- One final prospective B control, CentreSupport, changes only the northern Knights'
+  secondary priority to infantry before south horse. Rests on B cavalry follow-up and
+  Final B construction probe; two disclosed cases only if air exit/gates permit a 12:15 start.
+- Raw audits/cards: `runs/cannae-build/`. No new agreed check, suite adoption or paid call.
+
 ## 2026-11-05: Additional B witness and air-relief draft
 
 - `battle.cannae:WingSupport` is a separate public-state tactic: northern Greatswords

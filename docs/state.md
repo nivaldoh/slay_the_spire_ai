@@ -6,10 +6,10 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 [Cannae A/B/C](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05): branch `cannae-build`, worktree `runs/cannae-build/worktree`; evidence `runs/cannae-build/`.
-The six-attempt [harder B screen](twwarhammer3/cannae-comparison.md#harder-development-screen-2026-11-05) ended at `3a3f195`: all six Hold/RushNearest/Envelop cases lost. Game closed. Next: the separate [public support witness](twwarhammer3/cannae-comparison.md#additional-public-witness-2026-11-05), two disclosed cases, $0, unpaused 1x, after gates.
-[Air relief](twwarhammer3/tactics-reference.md#air-relief-development-candidate-2026-11-05) is drafted in the worktree for the owner's follow-on battle request; live construction waits for the additional B witness and enough time before the cutoff.
+The six-attempt [harder B screen](twwarhammer3/cannae-comparison.md#harder-development-screen-2026-11-05) lost all six cases at `3a3f195`. The [support witness](twwarhammer3/cannae-comparison.md#additional-public-witness-2026-11-05) then won the outside case and lost the centre case at `19b1534`, $0; centre-case winnability remains open.
+[Air relief](twwarhammer3/tactics-reference.md#air-relief-development-candidate-2026-11-05) Hold/RushNearest pilots lost at `19b1534`, $0; flight/attack interactions have bounded live evidence, full footprints/toggles remain unchecked. Queue exited; game closed.
 C's model smoke spent $0.9382392 of the approved $5; no further paid call planned. Its saved prompt/mail audit finished with missing-source limits.
-A/B/C remain unverified; [construction evidence and limitations](twwarhammer3/log.md#2026-11-05-c-model-interface-smoke). Next: audit the additional witness and any air pilots, then finish the handoff.
+A/B/C remain unverified; [evidence and limits](twwarhammer3/log.md#2026-11-05-c-model-interface-smoke). A final [cavalry-priority probe](twwarhammer3/cannae-comparison.md#final-cavalry-priority-construction-probe) is prepared in the worktree, conditional on air exit, checks and a 12:15 UTC start; then finish the handoff.
 Game cutoff 2026-11-05 13:25 UTC.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.

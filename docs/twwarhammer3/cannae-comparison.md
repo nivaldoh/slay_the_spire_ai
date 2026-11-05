@@ -332,6 +332,30 @@ start/episode/job bounds, starting by 11:30 UTC (watchdog end 12:26:40). Stop on
 infrastructure failure or the time bound. Optional air pilots follow only if their
 declared window still fits. No adopted suite/check or model comparison.
 
+### Final cavalry-priority construction probe
+
+WingSupport won the outside case at 534.5 s and lost the centre case at 353.2 s, with
+zero invalid orders in both. This supplies one legal winning trajectory, not a winning
+reference for every B3 case. Preserve the previous six losses and both new results.
+
+`battle.cannae:CentreSupport` is one further separate control, resting on JUDGEMENT
+`src/twwarhammer3/battle/cannae.py` B cavalry follow-up. Only the two northern Knights'
+candidate priority changes: currently eligible visible north horse, then infantry, then
+south horse. WingSupport keeps north/south/infantry. Other roles, binding, current target
+sets, cache handling and attack primitives stay the same. Absence is not known death;
+the same horse can reappear or rally. Source replay checks the prior WingSupport batches
+after extracting its unchanged priority order into a class attribute.
+
+JUDGEMENT: Final B construction probe — Codex, 2026-11-05: tries this one alternative
+second commitment on both disclosed cases, without another roster or case search.
+Any difference includes fresh engine trajectories; it is not an isolated causal result.
+
+Run the same root 106 cases once each, $0, unpaused 1x, with 600/1320/3400 s bounds,
+only after the air queue's actual exit and full gates. Start by 12:15 UTC; its watchdog
+ends by 13:11:40 before the 13:25 UTC game cutoff. If late, record not started. This is
+the final planned B construction probe in this window; no model comparison, score,
+agreed check or suite adoption. Raw card/checks: `runs/cannae-build/`.
+
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the
 enemy back to native AI; it cannot schedule these commitments. Planning B does not claim

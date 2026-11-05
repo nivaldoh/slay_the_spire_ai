@@ -5,7 +5,7 @@ from copy import deepcopy
 import pytest
 from test_wh3_cannae import opening
 
-from twwarhammer3.battle.cannae import WingSupport
+from twwarhammer3.battle.cannae import CentreSupport, WingSupport
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 
@@ -85,6 +85,34 @@ def test_support_ignores_private_draws_and_retains_own_roles_after_reordering_an
     assert first.decide(view) == second.decide(other)
     assert first.groups == second.groups
     assert first.groups["left"] == ["left"]
+
+
+def test_centre_variant_changes_only_the_northern_knights_second_commitment():
+    view, wing, centre = opening(), WingSupport(), CentreSupport()
+    assert wing.decide(view) == centre.decide(view)
+    view["enemy"][0]["state"] = ["routing"]
+    view["time_ms"] += 10000
+    old_orders, new_orders = wing.decide(view), centre.decide(view)
+    validate_orders(old_orders, view)
+    validate_orders(new_orders, view)
+    assert {o["unit"]: o["target"] for o in old_orders if o["unit"] in {"k1", "k2"}} == {
+        "k1": "south", "k2": "south"}
+    assert {o["unit"]: o["target"] for o in new_orders if o["unit"] in {"k1", "k2"}} == {
+        "k1": "e0", "k2": "e0"}
+    assert [o for o in old_orders if o["unit"] not in {"k1", "k2"}] == [
+        o for o in new_orders if o["unit"] not in {"k1", "k2"}]
+    assert centre.metadata()["type"] == "cannae_centre_support"
+    assert centre.metadata()["cavalry_priority"] == "infantry"
+
+
+def test_centre_variant_keeps_the_other_horse_fallback_when_infantry_is_not_visible():
+    view, policy = opening(), CentreSupport()
+    view["enemy"] = [u for u in view["enemy"] if u["id"] == "south"]
+    orders = policy.decide(view)
+    validate_orders(orders, view)
+    assert {o["unit"]: o["target"] for o in orders} == {
+        "k1": "south", "k2": "south", "k3": "south"}
+    assert policy.metadata()["cavalry_priority"] == "south"
 
 
 @pytest.mark.parametrize("change", ("duplicate", "identity", "type", "missing"))

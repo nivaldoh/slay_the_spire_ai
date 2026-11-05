@@ -473,6 +473,15 @@ No model comparison or agreed readiness check. Raw card, read-only current-build
 rows and pinned decoder schema: `runs/cannae-build/research/`. Configuration follows the
 SMACv2 `wrapper.py` explicit-environment pattern; no seeded engine replay is assumed.
 
+At `19b1534`, the first Hold/Rush pilots lost at 573.8/320.8 s, zero invalid orders and
+$0. All typed rosters and foot-lord keys matched, and the three flyers began airborne.
+Rush attacks produced sampled movement, automatic landing/melee and later ground/air
+transitions. No explicit flight-toggle action was issued. Active enemy infantry also
+crossed the midline via different z regions, so a completely blocked crossing or fixed
+independent enemy groups is not established. Full soldier footprints and enemy default
+loadouts were unavailable. These two losses do not establish difficulty or winnability;
+raw audit: `runs/cannae-build/review/air-live/`. The proposed dependency remains unverified.
+
 ## Limits that matter across tactics
 
 The game handles entity movement, collision, combat, pathfinding and automatic responses.
