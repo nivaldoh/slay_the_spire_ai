@@ -366,6 +366,37 @@ candidate checks still matched. The exact-source audit covered 815 recorded batc
 a legal winning trajectory for each selected case, not for the other six B3 combinations
 or a demonstration of necessary adaptation. No further B probe is scheduled this window.
 
+### What the B evidence supports now, 2026-11-05
+
+`scripts/wh3_reserve_cells.py JOB...` rebuilds this from raw manifests and results. There are 20
+B battles (v1 2, v2 8, v3 10), one attempt per cell, all engine-ended.
+
+Each job is one game launch. Inside a job, rematches matched in all 41 shared samples up to the
+45 s trigger in 28 of 28 v2 pairs. RushNearest's orders landed on different ticks from about
+15.4 s, so its positions differed from 16.0 s. Hold's 8 of 8 and each v3 controller's two attempts
+therefore rest on one launch and are not independent; count launches beside attempts.
+
+| v3 controller (one launch each) | Outside/south/2 | Centre/north/2 |
+|---|---|---|
+| Hold | Lost, 377.4 s | Lost, 330.5 s |
+| RushNearest | Lost, 334.3 s | Lost, 498.7 s |
+| Envelop | Lost, 390.3 s | Lost, 456.2 s |
+| WingSupport | Won, 534.5 s | Lost, 353.2 s |
+| CentreSupport | Won, 472.9 s | Won, 466.0 s |
+
+On each version one fixed public-state controller won every case it tried: Hold 8 of 8 on v2,
+RushNearest 2 of 2 on v1, CentreSupport 2 of 2 on v3. Nothing yet shows a fresh contingent
+response is needed. Nothing shows it is unneeded on v3 either: CentreSupport was chosen after
+outcomes on those same two cases, covers two of eight, and reads public state, so it is the
+conditional-rule type of control. It gave no order at a reserve regiment before 425.5 s and
+462.7 s. Case, controller and launch cannot be separated in these ten runs. There is no baseline
+without the reserve, so the reserve's own effect is unmeasured. A regiment routed before the
+reserve first fought in 6 of 7 v3 losses, and that also happened in wins. Centre north and south
+release about 45 m apart at the same time; whether they are physically distinct cases is unknown.
+The announced control is declared on v2 only and has no battles, and no controller that reads
+the briefing has played B, so its value is unknown. The next step is row 3 of the
+[proposed deciding checks](cannae-eval.md#proposed-deciding-checks-2026-11-05).
+
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the
 enemy back to native AI; it cannot schedule these commitments. Planning B does not claim

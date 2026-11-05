@@ -10,6 +10,8 @@ Both games:
   16:29 UTC, unattached, with no snapshot or image, so any later VM session starts from a new game
   install and Steam login. "The Steam terms are fine here." This answers the question raised that
   day about Steam Subscriber Agreement section 4.C (updated 2026-09-10) for this project.
+- 2026-11-05 (benchmark improvement): `/goal` "Read runs/cannae-build/handoff.md and improve the
+  benchmarks." Named no game plan or spend; carried out offline ([proposed deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05)).
 - 2026-11-05 (harder Cannae construction): selected "Screen the harder Cannae candidate
   (Recommended)": replace the four front enemy Swordsmen with Greatswords and screen
   passive hold, nearest-enemy and the existing witness as a separate unverified candidate.

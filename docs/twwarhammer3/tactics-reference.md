@@ -433,8 +433,8 @@ when it changes something measured or observed; do not assume rain alters gunpow
 ### Air relief development candidate, 2026-11-05
 
 `brt-air-relief-v1` is a separate candidate, outside suites, using two ground pockets
-and a central flying reserve. It is being prepared in the Cannae worktree while the main
-checkout's B3 queue stays frozen. No follow-on game starts before that queue exits.
+and a flying reserve near the map centre. Its [audit](#air-relief-audit-2026-11-05) lists what the two pilots showed
+and what the design still lacks.
 
 JUDGEMENT: Air relief development profile — Codex, 2026-11-05: proposes two ground
 pockets and three central flying regiments against two native-AI groups. Other force
@@ -490,6 +490,31 @@ adding a divided-reserve heuristic. A shortcut win is retained, not a flight-nec
 real Lord, retaining an eligible priority target; otherwise they choose the lowest visible
 men fraction. Ground units wait while a priority target is visible, then attack nearest
 in melee, including bowmen. This is a disclosed diagnostic, not a tuned ranged-force oracle.
+
+#### Air relief audit, 2026-11-05
+
+From the two pilots (one Hold, one RushNearest), each rerun by a separate skeptic; `runs/benchmark-improve-20261105/`:
+
+- Two separate ground fights happened. East broke first both times (all routing at 97.0 / 80.2 s),
+  before any East unit crossed x=0, and enemy ground units first crossed at 252.1 / 198.1 s.
+  The transfer to West took about 180-200 s.
+- The reserve's allocation is untested. Hold gave it no orders, and Rush sent all three flyers
+  west in its first decision. Rush routed three West enemy units; the flyers' share is unknown.
+- The reserve sits 200 m from West and 340 m from East, and the sides differ in gap, contact
+  time, commanders and force ratio. Which way that pulls allocation is unknown.
+- The ridge delays a ground transfer by about 15-43% on the saved grid and has open corridors on
+  both sides. Observed transfers were 2-12% longer than straight. Distance and flyer speed
+  explain most of the flyers' advantage. No tracked code checks routes offline.
+- The defender wins at the timer, so a timer win is an untested shortcut. Flyers alone probably
+  lose it to the ground-force morale drain (.3 to 1%/s, one trajectory); one unshattered ground
+  unit may be what matters, and whether one can last 1,200 s is unknown. `Evade` can test this.
+- PriorityStrike runs at this revision, but its card's window has passed. Over saved frames it
+  would release all ground units, bowmen in melee mode, at about 15-21 s when the General leaves
+  sight briefly, so a result would show flyers at the General then an all-in rush, and would not
+  test a held ground line.
+- The candidate lacks a decision cue, winnability evidence, controls, measurements, variation and
+  a validation plan. It came from the owner's "if you finish early" direction, before A/B/C
+  were finished, so keeping or parking it is the owner's next decision.
 A captured initial air view produces three valid attacks on the visible General; removing
 that contact releases all twelve units without targeting the remembered roster entry.
 

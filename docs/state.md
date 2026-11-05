@@ -3,7 +3,7 @@
 Updated 2026-11-05. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-[Cannae A/B/C](twwarhammer3/cannae-eval.md#construction-in-progress-2026-11-05) implementation and construction runs finished; all games are closed. A has infantry-flank evidence; harder B has winning trajectories for the two selected cases under CentreSupport, while adaptation and six other B3 cases remain open. C has bounded five-controller/provider evidence. The separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-development-candidate-2026-11-05) lost both pilots; its optional witness was not started before the declared bound. All remain unverified; next review deciding methods and remaining winnability questions. [Final evidence/limits](twwarhammer3/log.md#2026-11-05-final-b-cavalry-priority-screen). C's sole model smoke cost $0.9382392 of the approved $5; no further paid calls or games are scheduled. Raw handoff: `runs/cannae-build/handoff.md`. Game window cutoff remains 2026-11-05 13:25 UTC.
+[Cannae A/B/C](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; all games are closed and none is scheduled. A offline audit (11-05, no game, $0) closed the handoff's capture and identity gaps, opened the owner's recorder to A, C and air (harness b53), added untested Evade and local-rush controls and 30 test plants, and drafted the [deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05). Fixed public-state rules won every B case tried on each version, so B's need for fresh responses is unsupported; six B3 cases are unplayed. [Log](twwarhammer3/log.md#2026-11-05-audit-of-the-cannae-candidates-and-harness-b53); handoff `runs/benchmark-improve-20261105/handoff.md`; next: decision 13.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
@@ -34,7 +34,7 @@ The [visual report](twwarhammer3/reports.md#initial-benchmark-visuals) includes 
 scores, every planned attempt and the recorded replays; controller ranking remains unverified.
 [Coordination suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) (`suite-v1`): 12 scenarios, 6 played, first comparison 26 of 28 battles, one per pair; exploratory, no ranking.
 
-- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b52; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
+- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b53; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
@@ -96,6 +96,7 @@ Numbers are unchanged; open the relevant item before acting.
 10. **Thesis/RL:** research question and environment details remain open.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
 12. **Factory:** test edits and approval for edits to `check.py` remain open.
+13. **Cannae:** accept or change the deciding checks, a $0 game window, and whether A and C take B3's force.
 
 ## Runtime and ownership
 

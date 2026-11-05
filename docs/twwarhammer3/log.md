@@ -29,6 +29,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Audit of the Cannae candidates and harness b53
+
+- Owner `/goal`: improve the benchmarks from the Cannae handoff. Six audits at `ea0491d`, each
+  finding rerun by a separate skeptic, plus one completeness critic. No game, $0. Evidence:
+  `runs/benchmark-improve-20261105/` (`audit-result.json`, `build-result.json`, cards, handoff).
+- b53 recording, offline only: a team poll that wrote rows keeps its global frame, closing the
+  gap behind the 2 missing inputs and 184 unchecked arrivals in `c-model-smoke-02`. Scripted
+  repro 3/1/3 frameless rows before, 0/0/0 after; no live or model battle has confirmed it.
+  Deployment now reads bearing and ordered width for both sides, with no refusal (rests on
+  JUDGEMENT? `setup.py` Formation readback); enemy width may be unreadable, unknown until live.
+- The owner's recorder was fixed to one scenario: `manual_demo record --scenario S` now covers
+  A, C and air. Reserve and custom battles are refused, since the mod runs neither under the
+  observer session. Whether observe mode behaves the same on S needs one live setup readback.
+- New free controls, unplayed: `battle.evade:Evade` (timer defence, listed on A, B and C with 0
+  battles; every candidate has the player defending, with `timeout_winner` us) and
+  `cannae-local-rush.json` (independent local rules on C's silent arm).
+- Tests: 30 new plants, all caught, on C's full member request, the router and the Lua
+  observation of B; all additive. Before them 18 of 41 planted wrong versions passed the suite.
+  The two self-fulfilling dict checks in the B tests stay until the owner agrees to remove them.
+- Findings for the pages: one launch per job, so Hold's 8 of 8 and each v3 pair are not independent;
+  own-unit `morale.effect` carried a Lord label in 103 of 729 C requests with the commander out
+  of view; no scenario id or Cannae wording reached a model (729 real requests, 92 offline
+  renders); the Public task sentence reaches C through its plan but no A/B prompt.
+- Proposed, not agreed: [deciding checks](cannae-eval.md#proposed-deciding-checks-2026-11-05).
+  All candidates remain unverified. `review/c-model-live/recount.py` now stops on its own job,
+  because it asserts `play.py` equals `3667fa3`; its saved output stands.
+
 ## 2026-11-05: Register configuration and case columns, B cell table
 
 - `results.csv` gains `configuration` (a composition's spec digest or an external class file's
@@ -119,8 +146,9 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-11-05: Harder B construction screen
 
 - At `3a3f195`, the owner-selected four front Greatswords candidate keeps B v2 reserve
-  mechanics. Fixed disclosed draws: outside/south/two, then centre/north/two; fresh engine
-  trajectories, no held-out or paired study. Rests on the marked construction screen.
+  mechanics. Fixed disclosed draws: outside/south/two, then centre/north/two; one launch per
+  controller, so its two attempts share an opening until the reserve trigger (corrected
+  2026-11-05), no held-out or paired study. Rests on the marked construction screen.
 - Hold lost both attempts at 377.4/330.5 s, zero invalid orders. RushNearest lost both at
   334.3/498.7 s; invalid counts three/zero, with three engine `unit_routing` refusals.
   Envelop lost both at 390.3/456.2 s, zero invalid. All six cases cost $0; independent
@@ -1748,7 +1776,7 @@ visuals for those too."
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py` | [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
-| benchmark harness | b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| benchmark harness | b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
 | checkpoint RL | merged 2026-10-28 (`6b942a3`) | `battle/rl.py`, `candidates.py`, `audit.py`, `confirm.py`, `checkpoint.py`, `gameai/lm.py`, mod export `twwarhammer3_inject` | Stage 1 and closed-loop checks agreed 2026-10-26 ([agreed-checks.md](../agreed-checks.md)); learning collapsed, held-out 0.76 ([2026-10-26](#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses); decision 11) |
