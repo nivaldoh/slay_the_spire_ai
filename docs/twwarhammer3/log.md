@@ -29,6 +29,43 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: C model interface smoke
+
+- `c-model-smoke-02` at `3667fa3`: one engine loss at 405.5 s (CSV 406 rounded),
+  711 member feedback batches, result.invalid 11, $0.9382392 incremental Anthropic cost.
+- All 729 provider calls completed with Haiku 5.5. Thirteen source-invalid replies tried
+  foreign-owned regiments and forfeited their calls; five completed closing calls were
+  discarded. These counters are separate from invalid orders: two latest-local batches
+  and nine engine `unit_routing` refusals. No partial salvage or invalid-reply retry.
+- Independent ending/full CSV recount matched. All 729 new ledger charges matched their
+  responses and pinned-rate accounting; the prior ledger prefix was unchanged. WH3 total
+  $7.1042605, Spire $0, provider smoke $0.0210962, within the shared $200 allowance.
+- The owner approved up to $5 for this one smoke. No further paid job is planned.
+  Preflight `c-model-smoke-01` stopped for missing credential env configuration before
+  output directory/game/API; no charge. The documented file loader then supplied credentials.
+- Raw cards/checks/accounting: `runs/cannae-build/`; complete model prompt/mail/effect audit
+  is pending. Real provider acceptance has one-run evidence; C correctness, useful
+  communication and model strength remain unverified. No agreed check or suite adoption.
+
+## 2026-11-05: C slow worker and harder B preparation
+
+- `c-slow-probe-01` at `3667fa3`: one engine win at 481.2 s, four invalid-order events,
+  $0. Independent recount covered 1,545 public inputs, 1,550 complete projections and
+  source-replayed outputs, and 478 replay frames. Ten sends accepted; all delivered.
+- Left infantry's 9.7 s input had no courier. Delivery at 11.5 s did not change its
+  pending call; ten peer calls completed across four roles. Its 14.2 s input received
+  mail, the move applied at 18.7 s, and sampled goal distance fell 43.5 to 3.5 m before
+  replacement. All 105 slow spans included peer input progress; no tactical-benefit claim.
+- The owner selected harder B: four front enemy Swordsmen become Greatswords in separate
+  candidate `emp-envelopment-b-v3`; B v2 reserve semantics and other physical fields stay.
+  Declared next: Hold/RushNearest/existing Envelop, two disclosed cases each, $0, at 1x.
+  Rests on JUDGEMENT `cannae-comparison.md` Harder B construction screen; no suite adoption.
+- Resolved declaration/draw comparison passed; 42 focused reserve/witness tests passed.
+  At the prior revision, main's full gate first hit an unrelated worker ACK-timeout test;
+  its isolated retry and unchanged full retry passed. That does not establish stability.
+- Cards, raw failed/passed checks and independent audits: `runs/cannae-build/`.
+  C correctness/readiness, useful communication and B adaptation remain unverified.
+
 ## 2026-11-05: Second A witness and C runtime probes
 
 - `a-envelop-v2-01` at `b79c8ce`: one engine win at 234.3 s (234 rounded), zero invalid

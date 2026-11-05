@@ -1,6 +1,6 @@
 # Cannae inspired evaluation plan
 
-Draft, 2026-11-05. **Candidates under construction; A has one scripted live attempt.** This proposes
+Draft, 2026-11-05. **Candidates under construction; live evidence remains unverified.** This proposes
 three separate evaluations following the owner's directions:
 **A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
 require fresh contingent decisions**, plus **C, coordinated execution by agents sharing

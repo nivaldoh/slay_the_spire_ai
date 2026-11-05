@@ -297,14 +297,24 @@ Card, component checks, review and live evidence belong in `runs/cannae-build/`.
 The Anthropic wire schema omits its unsupported `maxItems` keyword; the local parser and
 dispatcher still reject more than two messages. Other providers retain the wire bound.
 Official provider contracts and a fake transport regression support this compatibility
-fix; real provider acceptance remains unverified and no paid C call has been made.
+fix. The later model smoke below supplies real acceptance evidence; this is still
+unverified under the owner's rule because no repeatable C check has been agreed.
 
-The next free live card uses `cannae-local-slow-probe.json`: only left infantry uses
+The free slow-worker card uses `cannae-local-slow-probe.json`: only left infantry uses
 `SlowProbeMember`, sleeping three wall seconds inside its worker per decision. The other
 four use the ordinary probe. Inspect overlapping peer inputs, mail arriving during the
 slow call, its unchanged pending input and first later usable input/order/effect. The
 engine stays unpaused at 1x. This rests on JUDGEMENT `local_team.py` Slow member diagnostic;
 it is a scheduling check, not an inference-latency estimate or tactical comparison.
+
+At `3667fa3`, `c-slow-probe-01` won at 481.2 s with four invalid-order events and $0.
+The independent audit checked all 1,550 complete projections and source-replayed outputs.
+Left infantry's second input at 9.7 s had no courier. Mail arrived at 11.5 s while that
+worker was pending; ten peer calls completed across the other four roles. Its next
+input at 14.2 s carried the courier, and the move applied at 18.7 s. Before replacement
+at 36.4 s, sampled distance to the goal fell from 43.5 m to 3.5 m. All 105 slow spans
+included peer input progress. This supports scheduling and one message-to-movement chain,
+not communication improving tactics. Raw independent recount: `review/c-slow-live/`.
 
 JUDGEMENT?: C model interface allowance — Codex, 2026-11-05: one subsequent model smoke
 uses less than five additional ledger dollars under existing spending authorization.
@@ -315,11 +325,24 @@ The model smoke selects the existing `claude-haiku-5-5/low` setup, resting on JU
 totals were $6.1660213/$0, plus $0.02 provider smoke spend; its WH3 cumulative cap is
 $11.16 under the shared $200. Recheck both ledgers before starting. This uses existing
 paid-API authorization in [state](../state.md#runtime-and-ownership); the earlier optional
-budget question was unnecessary, and silence is not treated as new permission.
+budget question was unnecessary, and silence is not treated as new permission. The owner
+subsequently selected "Up to $5 from the existing Anthropic allowance (Recommended)".
 The [official model overview](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
 supports the pinned small-context rates; no provider-price or model-map change is made.
 Both live cards are one attempt with 600/1320/2000 s bounds, before 13:25 UTC. Retain every
 failure and its cost. Neither card is agreed; no model-strength/readiness claim follows.
+
+`c-model-smoke-02` at `3667fa3` ended with an engine loss at 405.5 s. All 729 provider
+responses completed using Haiku 5.5; 13 source-invalid envelopes attempted foreign-owned
+regiments and forfeited their calls. There were 711 member feedback batches and five
+discarded closing calls. The result's 11 invalid-order events are separate: two latest-
+local invalid batches and nine engine `unit_routing` refusals. Independent ending/CSV and
+per-response accounting matched. Incremental cost was $0.9382392, within the owner's $5;
+the WH3 Anthropic ledger reached $7.1042605, with Spire at $0 and provider smoke $0.0210962.
+No further paid call is planned. The first preflight stopped for missing credential env
+configuration before an output directory, game or paid call; that failure is retained.
+Complete model prompt/mail/effect audit is pending. Acceptance and this one loss do not
+establish tactical quality, useful communication or strength; C remains unverified.
 
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs

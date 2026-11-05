@@ -11,11 +11,13 @@ A and both B v1 attempts won under nearest-enemy control; B's outside reserves w
 en route at release. C's scripted live probe won and showed a courier-to-movement chain.
 B v2's eight-case passive-hold construction run ended at `1788fc6`: all eight attempts
 won, challenging the intended adaptation requirement. A's two witnesses won with completed
-infantry paths; cavalry routes failed/ended pending. Game closed; C's slow-worker probe is
-claimed next, then one Haiku model-interface smoke under existing provider caps. Each is
-one attempt with 600/1320/2000 s limits; [cards](twwarhammer3/cannae-communication.md).
-$0 paid calls so far; no readiness claim. Game cutoff 2026-11-05 13:25 UTC.
-[Log](twwarhammer3/log.md#2026-11-05-second-a-witness-and-c-runtime-probes).
+infantry paths; cavalry routes failed/ended pending. C's slow-worker and paid model-interface
+smokes ended; model prompt/mail effects are still being audited. The owner selected a harder B
+candidate with four front enemy Greatswords. Next: Hold, RushNearest and the existing witness,
+two disclosed reserve cases each, $0, at 1x; [card](twwarhammer3/cannae-comparison.md#harder-development-screen-2026-11-05).
+Game closed during preparation. C model smoke spent $0.9382392 of the approved $5;
+no further paid call planned. No readiness claim. Game cutoff 2026-11-05 13:25 UTC.
+[Log](twwarhammer3/log.md#2026-11-05-c-model-interface-smoke).
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
@@ -51,7 +53,7 @@ scores, every planned attempt and the recorded replays; controller ranking remai
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`; its initial comparison is complete.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $5.4714 (includes estimates for failed calls); the key also spent $0.02 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $7.1043 (includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`,
   build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 - Native team multiplayer: offline parts built ([status](twwarhammer3/native-multiplayer.md#implementation-status));

@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (harder Cannae construction): selected "Screen the harder Cannae candidate
+  (Recommended)": replace the four front enemy Swordsmen with Greatswords and screen
+  passive hold, nearest-enemy and the existing witness as a separate unverified candidate.
+- 2026-11-05 (C model-interface smoke budget): selected "Up to $5 from the existing
+  Anthropic allowance (Recommended)" for one C interface smoke checking real model
+  replies and latency, without a model-strength claim.
 - 2026-11-05 (Cannae implementation window): "Implement the 3 planned versions for the
   battle of Cannae eval in WH3. Test them and make sure they work well. Battle C is having
   its plan finished by Codex in a parallel session as we speak. I'll be away for like 10

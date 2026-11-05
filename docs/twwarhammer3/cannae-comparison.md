@@ -267,6 +267,37 @@ and every draw stay in the evaluator manifest/configuration, not policy observat
 Default runs still use independent OS-entropy seeds. Construction will cover every declared
 case before the response comparisons; this does not create a held-out set or verify adaptation.
 
+### Harder development screen, 2026-11-05
+
+The owner selected a separate `emp-envelopment-b-v3` candidate after passive hold won
+all eight B v2 construction cases. Only the four front enemy Swordsmen become Greatswords,
+in both the roster and deployment types. All other units, slots, placements, settings and
+B v2 reserve mechanics stay fixed; slots 7/8 remain Swordsmen. Scenario version 3 does
+not change the reserve adapter's version 2. This candidate is outside existing suites.
+
+JUDGEMENT: Harder B construction screen — Codex, 2026-11-05: selects two disclosed
+development cases and one attempt per control, rather than the full catalogue/repeats.
+Six attempts can expose shortcuts or a broken witness; they cannot establish adaptation.
+
+JUDGEMENT: Harder B launch window — Codex, 2026-11-05: sets the initial queue bound
+at 10:20 UTC, leaving 15 minutes after three full 3400 s watchdogs for game cleanup.
+Halving case coverage is an alternative; live attempt counts rest on this scheduling choice.
+
+Run Hold, RushNearest and the existing Envelop witness for two episodes each, using
+root 106's first two reserve draws: outside/south/two, then centre/north/two. These cases
+were disclosed by earlier B construction, not held out. Matching draws do not pair engine
+randomness. Envelop has incomplete cavalry routes and is not a winning oracle for this
+new force. Retain every engine result, including passive wins and failed witness paths;
+do not silently retune the roster to make weak controls lose.
+
+The card checks the resolved declaration, recruitment/settings/placements, reserve
+identity and actual route/release dispositions, then each control's actions and ending.
+Each two-episode job is $0, unpaused 1x, with start/episode/job limits of 600/1320/3400 s.
+Start the three-job queue by 10:20 UTC, stop on infrastructure failure, and start no job
+after 12:05 UTC; retain time for cleanup before the 13:25 UTC game cutoff. If preparation
+runs late, narrow the declared count before launching. Raw card/checks/review/evidence:
+`runs/cannae-build/`. No agreed check, adoption or difficulty claim follows from this screen.
+
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the
 enemy back to native AI; it cannot schedule these commitments. Planning B does not claim
