@@ -203,6 +203,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
 - `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
 - `src/twwarhammer3/battle/suite.py`: the coordination suite: arms, plans, measures and comparison
+- `src/twwarhammer3/battle/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
+- `src/twwarhammer3/battle/support_evidence.py`: offline event brackets and proposed numerical contrast
+- `src/twwarhammer3/battle/manual_demo.py`: separate owner demonstration recorder and pause labels
+- `src/twwarhammer3/engine/manual_capture.py`: passive Windows video and state journal for demonstrations
 - `src/twwarhammer3/battle/reference.py`: `Concentrate`, the suite's scripted coordinated reference
 - `src/twwarhammer3/battle/setup.py`: scenarios with `base` inheritance, lobby steps,
   benchmark checks; its docstring is the scenario field reference

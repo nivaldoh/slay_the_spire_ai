@@ -34,6 +34,8 @@ entry, and what reads them:
   play. The battle independently checks ``unit_scale``, ``realism``, ``player_defends``,
   every army's ``ai_stats_modifier`` and, for a null ``time_limit_s``, that no countdown
   runs (``check_battle``).
+- ``behaviour_defaults``: apply the existing friendly benchmark toggles and read both
+  armies back, without selecting a benchmark scorer or restricting controllers.
 - ``protected``: unit types whose survival the report and replay measure.
 - ``scoring``: ``"contact"`` for a card that counts only contact wins; the play loop adds
   it to the controller's ``mode`` and the model prompt says a timer win does not count.
@@ -722,7 +724,7 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     checks = {}
     if scenario.get("deployment"):
         checks["deployment_error_m"] = check_deployment(scenario, observation)
-    if scenario.get("benchmark"):
+    if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
         toggles = settings.get("benchmark_behaviours") or {}
         if toggles.get("error") or settings.get("benchmark_release_pending"):
             raise ProtocolError("setup benchmark behaviour handover failed: "
@@ -740,7 +742,7 @@ def check_battle(scenario: dict, observation: dict) -> dict:
                     crossbow = "crossbowmen" in unit.get("type", "")
                     ranged = crossbow or "great_cannon" in unit.get("type", "")
                     # The mirror's roster is fixed; a suite army reads what its units support.
-                    required = (scenario["benchmark"] == "mirror-v1"
+                    required = (scenario.get("benchmark") == "mirror-v1"
                                 and (key == "defend" or key == "fire_at_will" and ranged
                                      or key == "skirmish" and crossbow))
                     if required and type(values.get(key)) is not bool:

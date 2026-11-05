@@ -3310,3 +3310,77 @@ old = '''            for unit in value["units"]:'''
 new = '''            for unit in value["units"][:1]:'''
 tests = ["tests/twwarhammer3/test_wh3_land_live_values.py::test_every_unit_needs_live_values_not_just_the_first"]
 source = "2026-11-03 independent Land live-value review: first-unit-only mutant"
+
+# Support timing: independent review regressions and the planned delay challenge.
+
+[[plant]]
+id = "support-stamp-from-later-read"
+guards = "Observation IDs and Windows stamps must name the same read"
+file = "src/twwarhammer3/battle/play.py"
+old = "latest_written_windows_ns=observation_written_ns"
+new = "latest_written_windows_ns=mailbox.written_ns"
+tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_play_logs_windows_stamp_of_the_named_observation"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-measurement-error-erases-outcome"
+guards = "A measurement failure cannot erase a known engine ending"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "\"engine_result\": outcome, \"H\": None"
+new = "\"engine_result\": None, \"H\": None"
+tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_unreadable_intermediate_identity_does_not_erase_engine_outcome"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-partial-trace-erases-outcome"
+guards = "A partial trace preserves the separately recorded ending"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "            except ValueError as exc:\n                issues.append(f\"trace line {number} unreadable: {exc}\")"
+new = "            except ValueError:\n                raise"
+tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_partial_trace_does_not_erase_independently_recorded_engine_ending"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-terminal-feedback-erases-condition"
+guards = "Terminal feedback failure retains first-ending condition"
+file = "src/twwarhammer3/battle/play.py"
+old = "    if scenario.get(\"behaviour_defaults\"):\n        result[\"terminal_condition\"]"
+new = "    if False:\n        result[\"terminal_condition\"]"
+tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_terminal_ack_failure_retains_engine_outcome_and_condition"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-manual-speed-after-startup"
+guards = "Owner pause permission does not allow half/double speed"
+file = "src/twwarhammer3/battle/manual_demo.py"
+old = "                            if observation.get(\"speed\") not in (0, 1):"
+new = "                            if False:"
+tests = ["tests/twwarhammer3/test_wh3_manual_demo.py::test_manual_play_only_allows_normal_speed_and_owner_pauses"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-manual-loses-failed-readback"
+guards = "Failed setup retains the raw readback independently of sampling"
+file = "src/twwarhammer3/battle/manual_demo.py"
+old = "                                manifest[\"initial_observation\"] = observation\n                                write_json(output / \"initial-observation.json\", observation)"
+new = "                                pass  # lost raw initial readback"
+tests = ["tests/twwarhammer3/test_wh3_manual_demo.py::test_record_keeps_success_and_failed_setup_and_never_sends_orders"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-manual-foreign-ending"
+guards = "A foreign battle ending is never attributed to the original attempt"
+file = "src/twwarhammer3/battle/manual_demo.py"
+old = "                            if observation[\"battle\"] != manifest.setdefault("
+new = "                            if observation.get(\"result\"):\n                                manifest[\"engine_ending\"] = engine_ending(observation)\n                            if observation[\"battle\"] != manifest.setdefault("
+tests = ["tests/twwarhammer3/test_wh3_manual_demo.py::test_restarted_manual_battle_keeps_original_identity_and_does_not_claim_foreign_win"]
+source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-delay-submits-at-cue"
+guards = "Delayed cavalry waits twelve battle seconds with unchanged route"
+file = "src/twwarhammer3/battle/support_timing.py"
+old = "now >= self.cue[\"time_ms\"] + delay"
+new = "now >= self.cue[\"time_ms\"]"
+tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_delayed_freezes_public_cue_route_and_waits_full_battle_delay"]
+source = "2026-11-04 support-timing implementation and independent review"

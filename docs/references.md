@@ -872,3 +872,7 @@ For `.github/workflows/check.yml` (2026-10-29):
 ### Launcher failure contract tests (2026-10-31)
 
 Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.
+
+- [FFmpeg gfxcapture documentation](https://ffmpeg.org/ffmpeg-filters.html#gfxcapture)
+  (read 2026-11-04): native-window selection, D3D11 download and duplicate frames for the
+  support-timing manual recorder. Local live capture is unverified.

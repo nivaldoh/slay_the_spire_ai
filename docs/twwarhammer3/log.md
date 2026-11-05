@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: Implement the first support-timing candidate offline
+
+- Built [emp-support-timing-v1](support-timing.md), six diagnostics sharing one executor,
+  fresh-launch plan generation, independent event brackets and the proposed HP contrast.
+  The scenario applies friendly defaults without selecting a benchmark scorer or ranking.
+- Added a separate owner recorder: same declared setup, passive Windows video/state,
+  explicit independent pause labels and retained failed attempts. No game launches or spend.
+- Initial full gate before review fixes: 2925 passed, 70 skipped. Review regressions now
+  cover timestamp association, retained engine endings with damaged measurements/trace,
+  unsupported manual speed and raw failed setup. Final gate: `runs/support-timing/gate-final.txt`.
+- Setup/play refusal sweeps caught 50/50 and 14/14 removals (no hangs); a removed cavalry
+  wait failed its regression. Raw outputs, card and review: `runs/support-timing/`.
+- Added two test files and regression plants; existing test assertions, snapshots, scorers
+  and agreed checks were unchanged.
+  All new numerical choices rest on the judgments in the scenario page and diagnostic modules.
+- Unverified: recruitment, combined manual handover/geometry, video fidelity, live action
+  effects, winnability and the timing mechanism. Exact live/readiness procedure remains proposed.
+
 ## 2026-11-04: scenario plan updated from the owner's replies
 
 - Plan only: [two scenarios in sequence](scenario-guidelines.md#first-two-scenarios), simpler

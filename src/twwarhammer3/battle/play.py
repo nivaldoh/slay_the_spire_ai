@@ -204,8 +204,8 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 mailbox.reset()
                 settings = {**session(config), **({"custom": scenario["custom"]}
                                                  if scenario.get("custom") else {})}
-                if scenario.get("benchmark"):
-                    settings["benchmark"] = scenario["benchmark"]
+                if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
+                    settings["benchmark"] = scenario.get("benchmark") or "behaviour-defaults"
                 if scenario.get("deployment"):
                     settings["deployment"] = scenario["deployment"]
                 with (mailbox.owned_session(settings),
@@ -573,6 +573,9 @@ def record_ending(result: dict, observation: dict, scenario: dict) -> None:
     if result.get("engine_ending"):
         return
     result["engine_ending"] = engine_ending(observation)
+    if scenario.get("behaviour_defaults"):
+        result["terminal_condition"] = (observation.get("final") or {}).get("benchmark")
+        result["terminal_friendly"] = observation.get("friendly")
     if scenario.get("benchmark"):
         result["benchmark"] = {**((observation.get("final") or {}).get("benchmark") or {}),
                                "version": scenario["benchmark"]}
@@ -625,6 +628,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         remaining = max(deadline - time.time(), 0)
         observation = mailbox.wait_observation(
             battle=battle, after_seq=seq, timeout=min(config["observation_timeout"], remaining))
+        observation_written_ns = mailbox.written_ns
         if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
             raise ProtocolError("WH3 observation is not from an unpaused 1x battle")
         seq = observation["seq"]
@@ -752,7 +756,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                   or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
             event("observation", observation=basis, since_previous_applied_ms=since,
-                  decision_time_ms=observation["time_ms"])
+                  decision_time_ms=observation["time_ms"], latest_seq=observation["seq"],
+                  latest_written_windows_ns=observation_written_ns)
             if invalid:
                 event("invalid", **invalid)
         say = caption(basis, behavior, orders) if config.get("show") else None

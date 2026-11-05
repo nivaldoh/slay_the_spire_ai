@@ -3530,4 +3530,79 @@
   "split": "development",
   "scoring": null
  }
+,
+  "emp-support-timing-v1": {
+    "name": "emp-support-timing-v1",
+    "scenario_version": 1,
+    "family": "infantry_support_timing",
+    "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
+    "split": "development",
+    "status": "candidate_unverified",
+    "battle_type": "classic",
+    "attacker": "enemy",
+    "behaviour_defaults": true,
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_cav_empire_knights"
+      ],
+      "experience": {
+        "0": 0,
+        "1": 0
+      }
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_greatswords"
+      ],
+      "experience": {
+        "0": 0
+      }
+    },
+    "deployment": {
+      "friendly": [
+        {
+          "type": "wh_main_emp_inf_swordsmen",
+          "x": 0,
+          "z": 0,
+          "bearing": 180,
+          "width": 40
+        },
+        {
+          "type": "wh_main_emp_cav_empire_knights",
+          "x": -100,
+          "z": 60,
+          "bearing": 180,
+          "width": 30
+        }
+      ],
+      "enemy": [
+        {
+          "type": "wh_main_emp_inf_greatswords",
+          "x": 0,
+          "z": -160,
+          "bearing": 0,
+          "width": 40
+        }
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_normal",
+      "funds": "funds_custom",
+      "funds_amount": 2000,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": 1.0,
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": true
+    }
+  }
 }

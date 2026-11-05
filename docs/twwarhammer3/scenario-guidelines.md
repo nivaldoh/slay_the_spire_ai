@@ -2,7 +2,7 @@
 
 Owner request, 2026-11-04: diverse scenarios whose winnability and intended measurement
 can be checked, including game mechanics, engine quirks and multi-agent control.
-**Plan updated from the owner's replies below; no implementation or evaluation yet.**
+**Owner directions below; the first candidate implementation is linked below. No live evaluation yet.**
 The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
 and deployment, public structured observations, permitted orders, engine wins including
 timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
@@ -29,6 +29,8 @@ not blanket approval of the earlier procedures.
 | 9 Rechecks | Expect to recheck after changes such as game updates | Trigger scope and concrete rerun procedure |
 
 ## First two scenarios
+
+Implementation of the owner-selected first candidate: [infantry support and cavalry timing](support-timing.md). It remains unverified; the exact live check is proposed and no battles have run.
 
 1. Plan the simpler scenario first: a small, inspectable decision problem with a clear
    engine objective and few interacting mechanics. Select its concrete setup with the owner;

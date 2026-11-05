@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (first-scenario implementation): "Implement the plan in a fresh context."
+  Build the supplied infantry-support/cavalry-timing candidate, diagnostics, separate
+  owner-demonstration recorder and event annotations. This supersedes the earlier
+  planning-only boundary for that implementation. Numerical choices remain proposed
+  judgments; the exact live procedure must be agreed before game work. See
+  [the implementation and proposed check](twwarhammer3/support-timing.md).
 - 2026-11-04 (scenario-plan replies): "Update the plan accordingly, without implementing
   anything yet." Start with two scenarios, simpler then more complex, adding the next only
   when the previous seems complete, reliable, trustworthy and validated. Eventual scope is
