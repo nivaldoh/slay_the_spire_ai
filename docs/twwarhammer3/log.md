@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Register configuration and case columns, B cell table
+
+- `results.csv` gains `configuration` (a composition's spec digest or an external class file's
+  hash, 12 hex) and `case` (the episode's own reserve draw). Only line 1 changed; lines 2-767
+  are byte-identical and no old row is rewritten. New `configured` rows take model, effort and
+  provider from the member cards, which say what was declared, not what ran.
+- The summary splits on scenario and case and on policy and configuration, the job name standing
+  in for old configured rows (rests on JUDGEMENT? `stats.py` Summary identity). On the register
+  494 groups became 497: 13 configured rows replaced by 16, no other row changed. Report labels
+  use the same digest: 16 composed jobs give 14 groups and 16 controller rows, up from 14.
+- `scripts/wh3_reserve_cells.py JOB...` prints one row per episode and a tally per cell from
+  manifests and results. A cell keeps apart all a summary row does (rests on JUDGEMENT?
+  `scripts/wh3_reserve_cells.py` Cell tally). A timer ending keeps the engine's result, for
+  example `won (time_limit)`. On the 7 saved B jobs: 20 rows, 0 differ from the audit's recount,
+  6 policy hashes match their cards, 20 cells of one attempt each.
+- Evidence: unit tests on jobs from the real job loop with the battle stubbed, and 56 planted
+  wrong versions, all caught. Harness fingerprint unchanged, `907f4bea` on `c-model-smoke-02`.
+  Unverified: no agreed check, no live row has these columns, no saved reserve row ended on the
+  timer. A bare top-level model leaf has no member cards, so its model stays blank (0 of 16
+  rows). No game, $0.
+
 ## 2026-11-05: Final B cavalry-priority screen
 
 - At `932c0a4`, CentreSupport won both selected development cases: outside/south/two

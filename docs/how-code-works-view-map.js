@@ -286,6 +286,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/watch.py",
         "src/twwarhammer3/battle/export.py",
         "src/twwarhammer3/battle/capture.py",
+        "scripts/wh3_reserve_cells.py",
         "configs/twwarhammer3/report_notes.json",
         "configs/twwarhammer3/benchmark_jobs.json"
       ],

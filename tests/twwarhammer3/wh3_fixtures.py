@@ -3,7 +3,9 @@ import json
 import re
 from collections import deque
 from contextlib import nullcontext
+from types import SimpleNamespace
 
+from twwarhammer3.battle import controllers, play, setup
 from twwarhammer3.engine import runtime
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
@@ -195,6 +197,61 @@ def configured_job(tmp_path, name, model="model-a", effort="low", **changes):
     (job / "environment.json").write_text(json.dumps({
         "game": {"steam_build_id": "123", "sha256": "game-hash"}}))
     return job
+
+
+def played_job(path, monkeypatch, episodes=({},), *, pid=18724, **options):
+    """A job from the real job loop: play.play writes its manifest, draws and register rows, and
+    controllers builds its controllers and cards. Only the battle is stubbed: each entry of
+    ``episodes`` updates a result.json shaped like a saved one (runs/cannae-build/b3-support-01).
+    ``options`` update the job's flags; the register is results.csv beside the job."""
+    changes = iter(episodes)
+
+    def battle(directory, config, make_policy, mailbox, *, scenario, **kwargs):
+        policy = make_policy()
+        directory.mkdir()
+        result = {"episode": directory.name, "status": "won", "policy": config["policy"],
+                  "battle": f"b{config['slot']}", "battle_ms": 534500, "invalid": 0,
+                  "ended_by": "engine_result", "delay_ms": 0, "llm": {},
+                  "card": controllers.card(config["policy"], policy, config),
+                  "final": {"friendly": {"men": 248, "men0": 675},
+                            "enemy": {"men": 140, "men0": 810}},
+                  **next(changes)}
+        getattr(policy, "close", lambda: None)()
+        (directory / "result.json").write_text(json.dumps(result))
+        return result
+
+    monkeypatch.setattr(controllers, "api_key", lambda *args: "unused")
+    monkeypatch.setattr(play, "play_episode", battle)
+    monkeypatch.setattr(play, "Mailbox", lambda *args, job: FakeMailbox([], job=job))
+    monkeypatch.setattr(play, "RuntimeLock", nullcontext)
+    monkeypatch.setattr(play, "OwnedGame", lambda *args, **kwargs: nullcontext(
+        SimpleNamespace(info={"pid": pid})))
+    monkeypatch.setattr(play, "PassiveCapture", lambda *args, **kwargs: nullcontext())
+    monkeypatch.setattr(play, "prepare_runtime", lambda: {})
+    monkeypatch.setattr(play, "collect_diagnostics", lambda: {})
+    monkeypatch.setattr(play, "committed_revision", lambda *args: "3667fa34423878482c60")
+    monkeypatch.setattr(play, "source_fingerprints", lambda *args: {})
+    monkeypatch.setattr(play, "start_frontend", lambda *args: None)
+    monkeypatch.setattr(play, "check_menu", lambda *args: {})
+    config = {**CONFIG, "scenario": "emp-envelopment-b-v3", "episodes": len(episodes),
+              "interval_ms": 0, "episode_timeout": 1320, "run_timeout": 3000, "seed": None,
+              "rotation_seed": 1, "results": str(path.parent / "results.csv"), **options}
+    controllers.rotation(config)
+    play.play(path, config, makers=controllers.factories(config))
+    return path
+
+
+def team_job(path, monkeypatch, controller, **changes):
+    """A one-episode C job of a saved controller file (or a path, suffix left off) under
+    c-model-smoke-02's flags, so jobs of different files have equal flags, as the two saved C
+    jobs would with one --model."""
+    ledger = path.parent / "spend.jsonl"
+    ledger.touch()
+    return played_job(path, monkeypatch, [changes], policy="configured",
+                      scenario="emp-envelopment-c-v1", model="claude-haiku-5-5", effort="low",
+                      provider="anthropic", ledger=str(ledger), budget_usd=1,
+                      controller_config=str(
+                          setup.SCENARIOS_PATH.parent / "controllers" / f"{controller}.json"))
 
 
 def embedded(html):

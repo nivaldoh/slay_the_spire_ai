@@ -351,10 +351,11 @@ Applied model moves and an attack had sampled movement/melee effects; frequent r
 orders prevent broad completion claims. These are bounded interface observations, not
 tactical usefulness or model strength. C remains unverified; raw audit: `review/c-model-live/`.
 
-The existing CSV summary groups these two `configured` rows together at `3667fa3` because
-their top-level model fields are blank. Its pooled win/loss row is not a Haiku rate or a
-matched controller comparison. Use the separate jobs and their controller configurations,
-member cards and raw manifests; no historical row or grouping rule is changed here.
+These two `configured` rows predate the register's `configuration` column, so their model
+fields stay blank and the CSV summary keeps them apart by job name (rests on JUDGEMENT?
+`stats.py` Summary identity). Neither row is a Haiku rate or a matched controller comparison.
+Use the separate jobs and their controller configurations, member cards and raw manifests;
+no historical row is changed.
 The field report also filters these composed C controls and external Envelop as
 diagnostics, so it omits them from its battle view. Use per-job evidence/current logs;
 no combined report or display-rule change is made for these construction attempts.

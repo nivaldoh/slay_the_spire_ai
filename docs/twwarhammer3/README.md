@@ -286,6 +286,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   last pass
 - `scripts/wh3_queue.py`: runs a frozen plan of `twwarhammer3 play` jobs one at a time
 - `scripts/wh3_db.py`: reads rows of a WH3 database table from the game's db.pack
+- `scripts/wh3_reserve_cells.py`: one row per reserve episode and a tally per cell, from saved jobs
 - `scripts/refusal_sweep.py`: removes one refusal at a time and lists those no test catches
 - `scripts/diagram_files.py`: the page's file lists, from these lists and the map's boxes
 - `scripts/diagram_examples.py`: small excerpts of a recorded battle for the page's stories,

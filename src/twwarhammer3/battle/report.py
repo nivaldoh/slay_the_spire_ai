@@ -14,7 +14,7 @@ from pathlib import Path
 
 from twwarhammer3.battle.benchmark import collect as collect_plan
 from twwarhammer3.battle.benchmark import evaluate
-from twwarhammer3.battle.stats import active_left
+from twwarhammer3.battle.stats import active_left, configuration
 
 OUTCOMES = {"won", "lost", "draw"}
 T95 = (0, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262,
@@ -341,8 +341,9 @@ def collect(jobs: list[Path], *, benchmark_plans: list[Path] | None = None) -> d
             delay = result.get("delay_ms", declared.get("delay_ms", 0))
             label = f"{policy} / +{delay / 1000:g}s"
             card = result.get("card") or {}
-            if card.get("kind") == "external":
-                label += " / " + str(card.get("source_sha256", "unknown"))[:12]
+            # Rests on JUDGEMENT? src/twwarhammer3/battle/stats.py Summary identity.
+            if card.get("kind") in ("external", "composed"):
+                label += " / " + (configuration(result) or "unknown")
             # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent
             # unrecorded; flagged by Codex, 2026-10-23): only engine-ended trials count.
             # Including card forfeits changes the rate; this remains a diagnostic.
