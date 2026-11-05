@@ -15,6 +15,30 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 Cannae fixed rule on harder B (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"):
+  `emp-envelopment-b-v3` with `twwarhammer3.battle.cannae:CentreSupport`, `--reserve-seed` 4, 9, 38,
+  18, 3, 0, 7 and 1 for the eight catalogue cases, one fresh launch per case, $0, unpaused at 1x, with
+  600/1320/2000 s start, episode and job limits. All eight are reported, with no repeats, and a loss
+  stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan. Two
+  cases selected this controller, so only six count toward any bound. Eight wins mean this rule
+  suffices on these eight cases, so B3 cannot carry the adaptation label without a redesign. A loss
+  means only that this rule fell short there, and other fixed rules need trying on that case. A win
+  in which a committed reserve regiment never arrived stays a win and is labelled an incomplete route.
+  `scripts/wh3_reserve_cells.py` prints the table. This decides one rule's sufficiency; it is no
+  verdict on adaptation or strength. Ran complete at `d3ddc7b`, before agreement, with the rules
+  fixed in its plan: 5 of 8, so sufficiency is not shown; the centre/south/2 win is an incomplete
+  route. Evidence: `runs/cannae-window-1/`; [results](twwarhammer3/cannae-eval.md#window-1-results-2026-11-05).
+
+- WH3 Cannae shortcut challenges (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"): one launch each, $0,
+  unpaused at 1x, 600/1320/2000 s limits: `emp-envelopment-a-v2` with Hold and with
+  `twwarhammer3.battle.evade:Evade`, `emp-envelopment-b-v3` with `--reserve-seed` 1 and Evade,
+  `brt-air-relief-v1` with Evade, and `emp-envelopment-c-silent-v2` with
+  `configs/twwarhammer3/controllers/cannae-local-rush.json`. Reported only, with no pass rule. A win is
+  recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be
+  passed without fighting, and a change of task needs the owner and a checked scorer. A loss by Evade
+  shows only that this Evade failed. Ran at `d3ddc7b`, before agreement: all five lost, none at
+  the timer. Owner, 2026-11-05, on trying a committed timer run: "No". Evidence: `runs/cannae-window-1/`.
+
 - WH3 support-timing exploratory usefulness (agreed 2026-11-04, owner: "Use the proposed
   exploratory rule"): first independently check setup, measurement and order effects;
   then three fresh launches per six arms in rotated blocks. All six Contact/Delayed

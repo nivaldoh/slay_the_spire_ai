@@ -338,8 +338,9 @@ against (246.6, -175) on A v1. The v1 declarations stay. Nothing about difficult
 ### Proposed deciding checks, 2026-11-05
 
 Where each candidate stands against the [claim table](scenario-guidelines.md#claims-and-eligibility),
-then a proposed check for each next claim. None is agreed. `agreed-checks.md` gains no row
-until the owner accepts a row's cases, counts and pass rule. Evidence and counts:
+then a proposed check for each next claim. The owner accepted rows 3 and 4 on 2026-11-05, with a win
+that lacks a committed reserve regiment standing as a win labelled an incomplete route; both are in
+[agreed checks](../agreed-checks.md). Rows 1, 2 and 5 stay proposals. Evidence and counts:
 `runs/benchmark-improve-20261105/audit-result.json`, where each audit finding was rerun by a
 separate skeptic and the critic's findings were not. Every reading in the first table is unverified.
 
@@ -403,7 +404,8 @@ pin-and-rear-charge without the horse fight (13 register rows, 1 win).
 Window 1 ran at `d3ddc7b` with thirteen launches, one battle each, $0, unpaused at 1x, and every
 ending was an engine outcome: 5 won, 8 lost, none at the timer. Rebuilding the 13 register rows
 through the project's own reader gave 0 differences in 416 cells, and a separate rebuild of 12
-fields from raw files gave none. The rows above are proposals, so these results verify nothing.
+fields from raw files gave none. Rows 3 and 4 were agreed after this window ran, with their rules unchanged. Each cell is
+one battle, and these results verify nothing else.
 These readings rest on JUDGEMENT cannae-eval.md Deciding checks draft, Evade's battles on JUDGEMENT
 evade.py Evade parameters and Evade refused points, and the local rush on JUDGEMENT
 cannae-communication.md Local rush control. Evidence: `runs/cannae-window-1/`, `runs/benchmark-improve-20261105/window-review.json`.
@@ -414,9 +416,9 @@ cannae-communication.md Local rush control. Evidence: `runs/cannae-window-1/`, `
 - **Row 3.** CentreSupport won 5 of 8, so the rule fell short once each on centre/south/1,
   outside/north/1 and outside/north/2, and other fixed rules would need trying there. Three of the
   six unselected cases won, so the six-win bound does not apply. This does not show B3 needs
-  adaptation: no other fixed rule has played those three cases on v3. Row 3 does not say how a win
-  counts when a committed regiment never arrived, as on centre/south/2; the engine win stands and
-  the owner decides how it reads.
+  adaptation: no other fixed rule has played those three cases on v3. The owner chose that a win
+  with a committed regiment that never arrived stays a win, labelled an incomplete route, so
+  centre/south/2 reads that way.
 - **Outside split.** Both outside/north cases lost and both outside/south cases won, which these
   eight battles can neither support nor exclude as a case effect. Three losses fill some region/side
   pair in 24 of 56 placements, launches already differ by a median 16.0 m per unit before the 45 s
@@ -426,7 +428,8 @@ cannae-communication.md Local rush control. Evidence: `runs/cannae-window-1/`, `
   273.7 s on air, and local rush at 371.8 s on C silent v2. These battles show this Evade's flip
   clearly but cannot say how much of each loss it caused: it recomputes one army-wide point and
   flips it during a chase, and no foot regiment reached a point while not routing. A timer win is still open. The rush's three Knights had no order until
-  175.9 s, so that loss says little about the force.
+  175.9 s, so that loss says little about the force. The owner chose not to test a committed timer
+  run, so whether a timer win is possible stays unknown.
 - **Winnability.** A v2 and C v2 have no win, so under the owner's rule neither is admissible yet. A
   v2's two attempts were non-attacking controls, so nothing has yet tried to win it, and these
   losses are no evidence that it is too hard.

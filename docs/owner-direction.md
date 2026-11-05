@@ -10,6 +10,9 @@ Both games:
   16:29 UTC, unattached, with no snapshot or image, so any later VM session starts from a new game
   install and Steam login. "The Steam terms are fine here." This answers the question raised that
   day about Steam Subscriber Agreement section 4.C (updated 2026-09-10) for this project.
+- 2026-11-05 (after window 1, four answers): second $0 screen "Yes, start now (Recommended)"; trying
+  for a timer win "No"; deciding checks "Accept rows 3 and 4, win stands (Recommended)"; the goal
+  "Yes, once the choices above are done (Recommended)".
 - 2026-11-05 (Cannae window, answers to three questions): game window "Yes, start now (Recommended)";
   harder force for A and C "Yes, before the window (Recommended)"; deciding checks "Review after the
   window (Recommended)". Nothing is agreed in `agreed-checks.md`.

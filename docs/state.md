@@ -3,7 +3,7 @@
 Updated 2026-11-05. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-[Cannae A/B/C](twwarhammer3/cannae-eval.md#window-1-results-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; all games are closed and none is scheduled. Window 1 (11-05, 13 battles, $0, `d3ddc7b`): CentreSupport won 5 of 8 B3 cases, no shortcut won, and A v2 and C v2 have no win, so neither is admissible yet. Whether B needs fresh responses is unestablished. An offline audit before it changed the recording and register (harness b53; the capture change is unshown live), opened the owner's recorder to A, C and air, and drafted the [deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05). [Log](twwarhammer3/log.md#2026-11-05-window-1-centresupport-5-of-8-no-shortcut-won); handoff `runs/benchmark-improve-20261105/handoff.md`; next: decision 13.
+[Cannae A/B/C](twwarhammer3/cannae-eval.md#window-1-results-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; **Game in use (owner, 11-05):** Claude Code runs the $0 window 2 from the main checkout, cutoff 01:30 UTC 11-06; commit or merge nothing in that checkout until it ends. Window 1 (11-05, 13 battles, $0, `d3ddc7b`): CentreSupport won 5 of 8 B3 cases, no shortcut won, and A v2 and C v2 have no win, so neither is admissible yet. Whether B needs fresh responses is unestablished. An offline audit before it changed the recording and register (harness b53; the capture change is unshown live), opened the owner's recorder to A, C and air, and drafted the [deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05). [Log](twwarhammer3/log.md#2026-11-05-window-1-centresupport-5-of-8-no-shortcut-won); handoff `runs/benchmark-improve-20261105/handoff.md`; next: decision 13.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 
@@ -95,7 +95,7 @@ Numbers are unchanged; open the relevant item before acting.
 10. **Thesis/RL:** research question and environment details remain open.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
 12. **Factory:** test edits and approval for edits to `check.py` remain open.
-13. **Cannae:** review the deciding checks; choose the next $0 screen.
+13. **Cannae:** rows 1, 2 and 5 of the deciding checks stay proposals; window 2 runs.
 
 ## Runtime and ownership
 
