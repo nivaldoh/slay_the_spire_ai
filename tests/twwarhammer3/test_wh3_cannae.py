@@ -153,3 +153,56 @@ def test_first_visible_routed_horse_keeps_its_wing_label_after_rallying_across_c
     orders = policy.decide(view)
     validate_orders(orders, view)
     assert policy.enemy_wings["north"] == "north"
+
+
+@pytest.mark.parametrize("current_x", (150, 400))
+def test_cavalry_already_among_infantry_exits_outward_before_crossing_the_rear(current_x):
+    # a-envelop-01/c4db660: accepted inward exit orders reached no waypoint before rout.
+    # Proposed v2 route contract: exit beyond the visible infantry rear/current cavalry
+    # position, rather than heading west back through the contested centre.
+    policy, view = Envelop(), opening()
+    policy.decide(view)
+    view["time_ms"] = 165400
+    for u in view["friendly"]:
+        if u["id"] in {"k1", "k2"}:
+            u.update(x=current_x, z=-205, state=["melee"])
+    for u in view["enemy"]:
+        if u["class"] == "cavalry":
+            u["state"] = ["routing"]
+        else:
+            u["x"] = 120 if u["id"] in {"e0", "e2"} else 170
+    orders = policy.decide(view)
+    validate_orders(orders, view)
+    for identity in ("k1", "k2"):
+        first = policy.routes[identity]["points"][0]
+        assert first["x"] > 170 and first["x"] > current_x
+        assert first["z"] > -175
+
+
+@pytest.mark.parametrize("edge", ("cavalry_x", "infantry_x", "infantry_z"))
+def test_map_clipping_cannot_turn_a_failed_exit_into_a_backwards_or_inside_move(edge):
+    policy, view = Envelop(), opening()
+    policy.decide(view)
+    view["time_ms"] = 165400
+    for u in view["friendly"]:
+        if u["id"] in {"k1", "k2"}:
+            u.update(x=500 if edge == "cavalry_x" else 150, z=-205, state=["melee"])
+    for u in view["enemy"]:
+        if u["class"] == "cavalry":
+            u["state"] = ["routing"]
+        elif edge == "infantry_x":
+            u["x"] = 500
+        elif edge == "infantry_z":
+            u["z"] = 500
+    orders = policy.decide(view)
+    validate_orders(orders, view)
+    for identity in ("k1", "k2"):
+        assert policy.routes[identity]["status"] == "no_exit"
+        assert not policy.routes[identity]["arrivals"]
+        assert not any(o["unit"] == identity and o["type"] == "move" for o in orders)
+    # A rejected candidate route is neither completed nor an army-wide stop. On the next
+    # input, the ordinary eligible-target fallback remains available to that regiment.
+    view["time_ms"] += 1000
+    orders = policy.decide(view)
+    validate_orders(orders, view)
+    assert {o["unit"] for o in orders if o["type"] == "attack"} >= {"k1", "k2"}

@@ -252,7 +252,19 @@ Cannae witness development rules and Enemy wing labels. Waypoints freeze from cu
 visible infantry geometry; metadata records actual position arrivals, unavailable units
 and deadlines separately. A win or accepted order is not a completed-envelopment claim.
 
-Next live construction card: one A attempt with this witness, $0, unpaused 1x; start
+At `c4db660`, `a-envelop-01` won at 381.3 s with no refused orders. Both Greatswords
+completed all three waypoints by 150.1 s, then attacked and entered melee. Both cavalry
+redeployment moves were accepted but reached no waypoint before routing; they later
+rallied without completing those routes. This supports infantry path/engagement effects,
+not completed cavalry redeployment, assistance to the other wing or useful envelopment.
+
+Witness v2 changes only the cavalry exit geometry: its first point lies beyond the
+visible infantry rear and its current x before sweeping along that rear. The infantry
+paths, targets, trigger rules and physical scenario stay the same. This rests on JUDGEMENT
+`battle/cannae.py` Cavalry exit v2; the first failure does not prove this is the remedy.
+If map clipping reverses the declared outward geometry, it records `no_exit` and falls
+back to an ordinary eligible-target attack rather than marking that route arrived.
+Next live construction card: one A attempt with v2, $0, unpaused 1x; start
 timeout 600 s, episode wall limit 1320 s and job watchdog 2000 s, before the 13:25 UTC
 game cutoff. Retain every failure and inspect observation, order, application, route
 positions and engagements from trace/replay. No tactical-necessity or strength comparison

@@ -749,3 +749,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-05,b2-catalogue-hold-01,episode-0005,emp-envelopment-b-v2,hold,,,,1788fc6,realtime,1.0,0.0,won,854,0.25,0.22,2770,0,0.31,0,classic,,,,,0.215,0.0,0.0,engine_result,
 2026-11-05,b2-catalogue-hold-01,episode-0006,emp-envelopment-b-v2,hold,,,,1788fc6,realtime,1.0,0.0,won,809,0.14,0.22,2626,0,0.31,0,classic,,,,,0.136,0.0,0.0,engine_result,
 2026-11-05,b2-catalogue-hold-01,episode-0007,emp-envelopment-b-v2,hold,,,,1788fc6,realtime,1.0,0.0,won,889,0.2,0.24,2884,0,0.31,0,classic,,,,,0.199,0.0,0.0,engine_result,
+2026-11-05,a-envelop-01,episode-0000,emp-envelopment-a-v1,twwarhammer3.battle.cannae:Envelop,,,,c4db660,realtime,1.0,0.0,won,381,0.44,0.32,1223,0,0.31,0,classic,,,,,0.407,0.0,0.0,engine_result,

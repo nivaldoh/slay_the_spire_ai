@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: First A witness completed infantry flanks but failed cavalry exits
+
+- `a-envelop-01` at `c4db660`: one engine win at 381.3 s (381 rounded), zero invalid
+  orders/refusals and $0. Register row, trace, replay and four stills retained.
+- Independent recount matched all nine identities and every logged order/metadata record.
+  Both Greatswords reached three waypoints each by 150.1 s (13.78–14.90 m from each point),
+  then attacked e8; public melee appeared at 186.1/190.9 s. This supports path/engagement.
+- Both opposing horse were visible alive/routing at 165.4 s; the decisive cavalry's
+  accepted redeployment moves reached no waypoint. Routes became unavailable at
+  215.5/220.3 s, remaining failed after rally. No completed cavalry/other-wing support claim.
+- V2 sends cavalry outward toward the visible infantry rear before sweeping along it;
+  infantry paths, targets, triggers and setup stay fixed. Rests on JUDGEMENT
+  `battle/cannae.py` Cavalry exit v2. This is a candidate geometry change, not a proved cause.
+- Outward-exit and three clipping regressions failed before their fixes. Clipping that
+  reverses the exit records `no_exit`, retaining ordinary attack fallback. 21 focused tests passed.
+  Raw cards, independent recount/review and gate evidence: `runs/cannae-build/`.
+- One fresh v2 A attempt is claimed next, $0, at 1x with 600/1320/2000 s bounds. Retain
+  failures. Cards not agreed; readiness, useful envelopment and policy strength unverified.
+
 ## 2026-11-05: Passive hold won every B v2 development case
 
 - At `1788fc6`, `runs/cannae-build/b2-catalogue-hold-01/` covered all eight reserve

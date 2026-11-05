@@ -27,7 +27,7 @@ KNIGHTS = "wh_main_emp_cav_empire_knights"
 
 
 class Envelop:
-    """Hold the centre, turn in the Greatswords and redirect the successful cavalry wing."""
+    """Hold the centre, turn in the Greatswords and redirect cavalry around the rear."""
 
     def __init__(self):
         self.groups = None
@@ -81,8 +81,10 @@ class Envelop:
                                  "mode": "auto", "run": True, "queue": False})
 
     def _begin(self, unit, points, purpose):
-        self.routes[unit["id"]] = {"purpose": purpose, "points": points, "next": 0,
-                                    "started_ms": self.now, "arrivals": [], "status": "pending"}
+        self.routes[unit["id"]] = {"purpose": purpose, "points": points or [], "next": 0,
+                                    "started_ms": self.now, "arrivals": [],
+                                    "status": "pending" if points else "no_exit",
+                                    **({"ended_ms": self.now} if not points else {})}
         self.sent.pop(unit["id"], None)
 
     def _route(self, unit):
@@ -112,7 +114,7 @@ class Envelop:
                                  **route["points"][route["next"]], "facing": None,
                                  "width": None, "run": True, "queue": False})
 
-    def _points(self, observation, infantry, side, *, cross_z=None):
+    def _points(self, observation, infantry, side, *, cross_z=None, cavalry=None):
         # Geometry is derived from currently visible infantry and then frozen for this
         # route. The public terrain bounds limit waypoints, not hidden enemy positions.
         bounds = (observation.get("terrain") or {}).get("bounds")
@@ -125,13 +127,26 @@ class Envelop:
                     "z": round(min(bounds["max_z"] - ARRIVED_M,
                                     max(bounds["min_z"] + ARRIVED_M, z)), 1)}
 
-        front, rear = min(e["x"] for e in infantry), max(e["x"] for e in infantry) + REAR_M
-        z = (max(e["z"] for e in infantry) + FLANK_M if side == "left"
-             else min(e["z"] for e in infantry) - FLANK_M)
+        front, infantry_rear = min(e["x"] for e in infantry), max(e["x"] for e in infantry)
+        rear = infantry_rear + REAR_M
+        edge = (max(e["z"] for e in infantry) if side == "left"
+                else min(e["z"] for e in infantry))
+        z = edge + (FLANK_M if side == "left" else -FLANK_M)
+        end_z = cross_z if cross_z is not None else edge
+        if cavalry is not None:
+            # JUDGEMENT: Cavalry exit v2 — Codex, 2026-11-05: exit toward the visible
+            # infantry rear/current x + REAR_M before the sweep. V1's first point lay west;
+            # both routes ended in rout. This candidate changes geometry, not a proved cause.
+            rear = max(rear, cavalry["x"] + REAR_M)
+            first = point(rear, z)
+            outside = first["z"] > edge if side == "left" else first["z"] < edge
+            # Clipping cannot turn the declared exit into an inward move. Record a
+            # failed candidate; this does not assert that no other legal route exists.
+            if first["x"] <= max(cavalry["x"], infantry_rear) or not outside:
+                return None
+            return [first, point(rear, end_z)]
         return [point(front - REAR_M, z), point(rear, z),
-                point(rear, cross_z if cross_z is not None else
-                      (max(e["z"] for e in infantry) if side == "left"
-                       else min(e["z"] for e in infantry)))]
+                point(rear, end_z)]
 
     def decide(self, observation):
         self.now = observation["time_ms"]
@@ -194,7 +209,8 @@ class Envelop:
                         orders += self._attack(unit, north)
                     elif route is None and infantry:
                         z = sum(e["z"] for e in south) / len(south) if south else None
-                        self._begin(unit, self._points(observation, infantry, "left", cross_z=z),
+                        self._begin(unit, self._points(observation, infantry, "left", cross_z=z,
+                                                       cavalry=unit),
                                     "cavalry_redeployment")
                         orders += self._route(unit) or []
                     else:
@@ -210,7 +226,7 @@ class Envelop:
                 self.sent.pop(result.get("unit"), None)
 
     def metadata(self):
-        return deepcopy({"type": "cannae_envelop", "groups": self.groups,
+        return deepcopy({"type": "cannae_envelop", "version": 2, "groups": self.groups,
                          "contact_ms": self.contact_ms, "cavalry_stage": self.cavalry_stage,
                          "seen_north": self.seen_north,
                          "enemy_wings": self.enemy_wings,
