@@ -231,3 +231,62 @@ class Envelop:
                          "seen_north": self.seen_north,
                          "enemy_wings": self.enemy_wings,
                          "routes": self.routes, "targets": self.targets})
+
+
+# JUDGEMENT: B support witness — Codex, 2026-11-05: direct Greatsword support and
+# horse focus replace flank/exit routes in this separate controller. Other assignments
+# change outcomes; this is an alternate tactic, not an isolated causal fix or required win.
+class WingSupport(Envelop):
+    """Support the northern horse fight and centre directly, using public state only.
+
+    Binding, first-seen horse labels and target persistence rest on the parent module's
+    marked development rules. No route is started or claimed completed by this class.
+    """
+
+    def decide(self, observation):
+        self.now = observation["time_ms"]
+        roster = observation.get("friendly")
+        if (not isinstance(roster, list) or any(not isinstance(u, dict)
+                or not isinstance(u.get("id"), str) or not u["id"] for u in roster)
+                or len({u["id"] for u in roster}) != len(roster)):
+            raise PolicyFailure("Cannae support witness received a malformed own roster")
+        units = friendly_units(observation)
+        if self.groups is None:
+            self._bind(units)
+        elif {identity: u.get("type") for identity, u in units.items()} != self.types:
+            raise PolicyFailure("Cannae support witness regiment identity or type changed")
+        visible = list(visible_enemies(observation).values())
+        for enemy in (e for e in visible if e.get("class") == "cavalry"):
+            self.enemy_wings.setdefault(enemy["id"], "north" if enemy["z"] >= self.mid_z
+                                         else "south")
+        enemies = [e for e in visible if able(e)]
+        infantry = [e for e in enemies if e.get("class") == "infantry"]
+        cavalry = [e for e in enemies if e.get("class") == "cavalry"]
+        north = [e for e in cavalry if self.enemy_wings[e["id"]] == "north"]
+        south = [e for e in cavalry if self.enemy_wings[e["id"]] == "south"]
+        self.cavalry_stage = "north" if north else "south" if south else "infantry"
+        orders = []
+        for role, identities in self.groups.items():
+            for identity in identities:
+                unit = units[identity]
+                if role == "centre":
+                    candidates = (enemies if enemies and min(distance(unit, e) for e in enemies)
+                                  <= CLOSE_M else [])
+                elif role == "left":
+                    candidates = north or infantry
+                elif role == "decisive":
+                    candidates = north or south or infantry
+                elif role == "right":
+                    candidates = infantry
+                else:
+                    candidates = south or infantry
+                if self.targets.get(identity) not in {e["id"] for e in candidates}:
+                    self.targets.pop(identity, None)
+                if able(unit):
+                    orders += self._attack(unit, candidates)
+        return orders
+
+    def metadata(self):
+        return deepcopy({"type": "cannae_wing_support", "version": 1,
+                         "groups": self.groups, "enemy_wings": self.enemy_wings,
+                         "cavalry_priority": self.cavalry_stage, "targets": self.targets})

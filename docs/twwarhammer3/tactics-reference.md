@@ -430,6 +430,49 @@ is undecided. Separate attacker/defender roles, engine AI difficulty/stat modifi
 human opponents. A landscape skin or weather label should become a test factor only
 when it changes something measured or observed; do not assume rain alters gunpowder.
 
+### Air relief development candidate, 2026-11-05
+
+`brt-air-relief-v1` is a separate candidate, outside suites, using two ground pockets
+and a central flying reserve. It is being prepared in the Cannae worktree while the main
+checkout's B3 queue stays frozen. No follow-on game starts before that queue exits.
+
+JUDGEMENT: Air relief development profile — Codex, 2026-11-05: proposes two ground
+pockets and three central flying regiments against two native-AI groups. Other force
+splits/spacing/routes change the decisions; no tactical-necessity claim follows.
+
+The player has a foot Bretonnian Lord, four shielded Spearmen-at-Arms, four ordinary
+Peasant Bowmen, two Pegasus Knights and one Royal Hippogryph Knights regiment. Each pocket
+gets two spears/two bows; the Lord is west. The enemy has a foot Empire General in the
+west, six Greatswords and four Handgunners, three/two per group. The publisher's
+[Bretonnia page](https://store.steampowered.com/app/534330/Total_War_WARHAMMER__Bretonnia/)
+lists the flying regiments; its historical description is not a current-build stat oracle.
+
+JUDGEMENT: Air relief force freeze — Codex, 2026-11-05: selects six Greatswords/four
+Handguns plus a General before any outcome, rather than the four/two draft. Base database
+costs are 8,100 enemy/7,800 player; similar cost is a prior, not evidence of balance.
+
+The full typed declaration fixes every placement, rank zero and default foot-lord
+loadouts, normal AI/1.0 modifier, large units, 20,000 funds and a 1,200 s timer. It reuses
+the pinned map; no new score or tactic requirement. Every legal engine win counts.
+The first A terrain sample shows a positive-z island of path restrictions between the
+pockets. Its 32 m grid/16 m sample squares cannot prove formation footprints, a blocked
+crossing or an air travel advantage. First observe real movement, flight and engagements.
+Native AI may combine its groups, or simple control may win; retain either finding.
+
+JUDGEMENT: Air relief construction screen — Codex, 2026-11-05: selects one Hold/one
+RushNearest attempt and at most one later public witness if time permits. Repeats or a
+different control set change what can be concluded; these are construction attempts.
+
+The conditional card first runs one Hold and one RushNearest attempt, $0, unpaused 1x,
+with 600/1320/2000 s start/episode/job limits. Inspect recruitment, settings, foot mounts,
+initial flight state, positions and actual routes; never treat an accepted order as arrival.
+A public-interface allocation witness follows only if the setup works and time remains.
+Begin the pilot queue by 11:45 UTC, start no pilot after 12:15 UTC, and start no optional
+witness after 12:35 UTC; all game work ends before 13:25 UTC. Preserve missing attempts.
+No model comparison or agreed readiness check. Raw card, read-only current-build database
+rows and pinned decoder schema: `runs/cannae-build/research/`. Configuration follows the
+SMACv2 `wrapper.py` explicit-environment pattern; no seeded engine replay is assumed.
+
 ## Limits that matter across tactics
 
 The game handles entity movement, collision, combat, pathfinding and automatic responses.

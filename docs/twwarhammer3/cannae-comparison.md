@@ -275,6 +275,13 @@ in both the roster and deployment types. All other units, slots, placements, set
 B v2 reserve mechanics stay fixed; slots 7/8 remain Swordsmen. Scenario version 3 does
 not change the reserve adapter's version 2. This candidate is outside existing suites.
 
+First live setup at `3a3f195` shows an additional engine consequence of replacing types:
+the ordinary enemy commander is still Swordsman e1, now bound to rear placement slot 5
+at (291.6, -175), rather than B v2's front slot 1 at (246.6, -175). The 45 m change
+comes from type-based identity binding. Reserve slots 7/8 correctly bind e3/e4. Preserve
+this consequence; the live contrast does not isolate troop quality or centre pressure,
+and these positions alone do not establish a commander/morale effect.
+
 JUDGEMENT: Harder B construction screen — Codex, 2026-11-05: selects two disclosed
 development cases and one attempt per control, rather than the full catalogue/repeats.
 Six attempts can expose shortcuts or a broken witness; they cannot establish adaptation.
@@ -297,6 +304,33 @@ Start the three-job queue by 10:20 UTC, stop on infrastructure failure, and star
 after 12:05 UTC; retain time for cleanup before the 13:25 UTC game cutoff. If preparation
 runs late, narrow the declared count before launching. Raw card/checks/review/evidence:
 `runs/cannae-build/`. No agreed check, adoption or difficulty claim follows from this screen.
+
+### Additional public witness, 2026-11-05
+
+The first harder screen lost all six attempts, including both original Envelop cases.
+Its infantry routes reached deadlines and cavalry redeployment never started. This does
+not establish a cause or impossibility. `battle.cannae:WingSupport` is a separate candidate
+whole tactic, resting on JUDGEMENT `src/twwarhammer3/battle/cannae.py` B support witness.
+Envelop's definitions remain unchanged. Stable own binding, first-seen horse labels and
+target persistence inherit the parent's marked development rules.
+
+The northern Greatswords support the currently eligible visible north horse. The other
+Greatswords attack infantry directly; the centre keeps its existing engagement rule.
+The two northern Knights prioritize north horse, then south horse, then infantry; the
+containing Knight prioritizes south horse, then infantry. Routing/dead/departed targets
+are excluded, and disappearing contacts are not treated as known dead. No waypoint route
+or movement completion is claimed. The controller reads no private reserve draw/evaluation.
+
+JUDGEMENT: Additional B witness screen — Codex, 2026-11-05: repeats the two disclosed
+cases with one alternate public tactic rather than changing forces or expanding cases.
+This can supply a winning witness, not an isolated remedy or evidence of adaptation.
+
+Prospective card: one attempt per root 106 case, outside/south/two then centre/north/two,
+with B3's force, geometry, AI and intervention unchanged. Keep the six prior losses;
+trajectories are not paired or held out. Run $0, unpaused 1x, with 600/1320/3400 s
+start/episode/job bounds, starting by 11:30 UTC (watchdog end 12:26:40). Stop on an
+infrastructure failure or the time bound. Optional air pilots follow only if their
+declared window still fits. No adopted suite/check or model comparison.
 
 A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
 B needs **new, bounded enemy-reserve control**. Current authored deployment releases the

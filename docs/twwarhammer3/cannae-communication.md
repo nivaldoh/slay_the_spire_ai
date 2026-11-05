@@ -341,8 +341,23 @@ per-response accounting matched. Incremental cost was $0.9382392, within the own
 the WH3 Anthropic ledger reached $7.1042605, with Spire at $0 and provider smoke $0.0210962.
 No further paid call is planned. The first preflight stopped for missing credential env
 configuration before an output directory, game or paid call; that failure is retained.
-Complete model prompt/mail/effect audit is pending. Acceptance and this one loss do not
-establish tactical quality, useful communication or strength; C remains unverified.
+The saved-evidence audit matched 727 exact global-to-local projections and all 729 API
+payloads against their member inputs and private memory. Two complete source snapshots
+are missing. Of 463 send dispositions, 223 were accepted and 240 rejected; target
+dispositions were 636 delivered and four missed. All 636 delivered copies entered the
+first later recipient prompt. Physical arrival-anchor checks covered 456/640 target
+dispositions; 184 lacked global snapshots. Source/send/arrival provenance matched all.
+Applied model moves and an attack had sampled movement/melee effects; frequent replacement
+orders prevent broad completion claims. These are bounded interface observations, not
+tactical usefulness or model strength. C remains unverified; raw audit: `review/c-model-live/`.
+
+The existing CSV summary groups these two `configured` rows together at `3667fa3` because
+their top-level model fields are blank. Its pooled win/loss row is not a Haiku rate or a
+matched controller comparison. Use the separate jobs and their controller configurations,
+member cards and raw manifests; no historical row or grouping rule is changed here.
+The field report also filters these composed C controls and external Envelop as
+diagnostics, so it omits them from its battle view. Use per-job evidence/current logs;
+no combined report or display-rule change is made for these construction attempts.
 
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs

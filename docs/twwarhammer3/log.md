@@ -29,6 +29,45 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Additional B witness and air-relief draft
+
+- `battle.cannae:WingSupport` is a separate public-state tactic: northern Greatswords
+  support the horse fight, other Greatswords join infantry directly, and cavalry attack
+  eligible horse/infantry without flank waypoints. Old Envelop definitions are unchanged.
+  Rests on JUDGEMENT `cannae.py` B support witness; this is not an isolated causal remedy.
+- Review reproduced out-of-role fallback targets and stale target preference after a
+  visibility gap. Both regressions failed before fixes; 24 focused witness checks pass.
+  No new attack uses an absent/routing target; ordinary engine order persistence remains.
+- Prospective additional B3 screen: both disclosed root 106 cases once, unchanged forces
+  and intervention, $0, unpaused 1x, with 600/1320/3400 s limits, starting by 11:30 UTC.
+  Keep all six previous losses. No held-out pairing, adopted check or strength claim.
+- Follow-on `brt-air-relief-v1` is drafted for the owner's diverse-battle request: two
+  ground pockets and a central flying reserve. Rests on its three marked design choices.
+  Independent raw DB/declaration review found 7,800/8,100 base costs, 23 typed placements;
+  82 setup tests pass and eight negative cases were refused. Coarse terrain is no route proof.
+- Air pilots wait for B and their declared window. No air game has yet run. Recruitment,
+  actual flight/routes, native AI allocation and difficulty remain unverified.
+- Cards, before/after failures, source snapshots and independent reviews: `runs/cannae-build/`.
+  All candidates remain outside suites; no new agreed check or paid model call.
+
+## 2026-11-05: Harder B construction screen
+
+- At `3a3f195`, the owner-selected four front Greatswords candidate keeps B v2 reserve
+  mechanics. Fixed disclosed draws: outside/south/two, then centre/north/two; fresh engine
+  trajectories, no held-out or paired study. Rests on the marked construction screen.
+- Hold lost both attempts at 377.4/330.5 s, zero invalid orders. RushNearest lost both at
+  334.3/498.7 s; invalid counts three/zero, with three engine `unit_routing` refusals.
+  Envelop lost both at 390.3/456.2 s, zero invalid. All six cases cost $0; independent
+  full CSV/source/setup/action recounts match.
+- All twelve committed reserve instances arrived within 25 m before release. Neither
+  Envelop case completed an infantry route; both hit deadlines. Cavalry redeployment was
+  never initiated. Do not call this candidate winnable, ready or an adaptation test.
+- Actual type binding places the ordinary enemy Swordsman commander in rear slot 5, about
+  45 m behind its B v2 front slot. This contrast does not isolate troop quality or pressure;
+  no commander/morale effect is established. Every loss and every later shortcut stays.
+- The three-job queue returned actual exit zero after all six games; the game is closed.
+  Raw card/checks/independent recounts: `runs/cannae-build/`. All candidates unverified.
+
 ## 2026-11-05: C model interface smoke
 
 - `c-model-smoke-02` at `3667fa3`: one engine loss at 405.5 s (CSV 406 rounded),
@@ -43,9 +82,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - The owner approved up to $5 for this one smoke. No further paid job is planned.
   Preflight `c-model-smoke-01` stopped for missing credential env configuration before
   output directory/game/API; no charge. The documented file loader then supplied credentials.
-- Raw cards/checks/accounting: `runs/cannae-build/`; complete model prompt/mail/effect audit
-  is pending. Real provider acceptance has one-run evidence; C correctness, useful
-  communication and model strength remain unverified. No agreed check or suite adoption.
+- Saved audit matched 727 full source projections and all 729 API payload/private-memory
+  replays; two source snapshots are missing. Sends: 223 accepted/240 rejected; target
+  dispositions: 636 delivered/four missed. All delivered copies entered the next prompt;
+  physical arrival checks cover 456/640 dispositions; 184 lack a global source snapshot.
+- Raw cards/checks/accounting: `runs/cannae-build/`. Sampled model move/attack effects exist;
+  correctness, useful communication and strength remain unverified. No agreed check/adoption.
 
 ## 2026-11-05: C slow worker and harder B preparation
 

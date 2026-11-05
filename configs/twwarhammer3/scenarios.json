@@ -4152,5 +4152,260 @@
      ]
    },
    "calibration_change": "Owner-selected front-line pressure screen, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords. Keep B v2 mechanics and all other physical settings. A separate unverified development candidate, outside existing suites; every legal engine win counts."
+ },
+ "brt-air-relief-v1": {
+   "name": "brt-air-relief-v1",
+   "scenario_version": 1,
+   "family": "flying reserve across separated ground fights",
+   "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
+   "split": "development",
+   "status": "candidate_unverified",
+   "battle_type": "classic",
+   "attacker": "enemy",
+   "behaviour_defaults": true,
+   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+   "player": {
+     "subculture": "wh_main_sc_brt_bretonnia",
+     "faction": "wh_main_brt_bretonnia",
+     "lord": true,
+     "units": [
+       "wh_main_brt_cha_lord_0",
+       "wh_main_brt_inf_spearmen_at_arms",
+       "wh_main_brt_inf_spearmen_at_arms",
+       "wh_main_brt_inf_spearmen_at_arms",
+       "wh_main_brt_inf_spearmen_at_arms",
+       "wh_main_brt_inf_peasant_bowmen",
+       "wh_main_brt_inf_peasant_bowmen",
+       "wh_main_brt_inf_peasant_bowmen",
+       "wh_main_brt_inf_peasant_bowmen",
+       "wh_main_brt_cav_pegasus_knights",
+       "wh_main_brt_cav_pegasus_knights",
+       "wh_dlc07_brt_cav_royal_hippogryph_knights_0"
+     ],
+     "experience": {
+       "0": 0,
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0,
+       "6": 0,
+       "7": 0,
+       "8": 0,
+       "9": 0,
+       "10": 0,
+       "11": 0
+     }
+   },
+   "enemy": {
+     "subculture": "wh_main_sc_emp_empire",
+     "faction": "wh_main_emp_empire",
+     "lord": true,
+     "units": [
+       "wh_main_emp_cha_general_0",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_handgunners",
+       "wh_main_emp_inf_handgunners",
+       "wh_main_emp_inf_handgunners",
+       "wh_main_emp_inf_handgunners"
+     ],
+     "experience": {
+       "0": 0,
+       "1": 0,
+       "2": 0,
+       "3": 0,
+       "4": 0,
+       "5": 0,
+       "6": 0,
+       "7": 0,
+       "8": 0,
+       "9": 0,
+       "10": 0
+     }
+   },
+   "deployment": {
+     "friendly": [
+       {
+         "type": "wh_main_brt_cha_lord_0",
+         "x": -135,
+         "z": 100,
+         "bearing": 270,
+         "width": 20
+       },
+       {
+         "type": "wh_main_brt_inf_spearmen_at_arms",
+         "x": -200,
+         "z": 60,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_spearmen_at_arms",
+         "x": -200,
+         "z": 140,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_spearmen_at_arms",
+         "x": 340,
+         "z": 60,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_spearmen_at_arms",
+         "x": 340,
+         "z": 140,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_peasant_bowmen",
+         "x": -160,
+         "z": 40,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_peasant_bowmen",
+         "x": -160,
+         "z": 160,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_peasant_bowmen",
+         "x": 300,
+         "z": 40,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_inf_peasant_bowmen",
+         "x": 300,
+         "z": 160,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_brt_cav_pegasus_knights",
+         "x": -40,
+         "z": -100,
+         "bearing": 0,
+         "width": 30
+       },
+       {
+         "type": "wh_main_brt_cav_pegasus_knights",
+         "x": 40,
+         "z": -100,
+         "bearing": 0,
+         "width": 30
+       },
+       {
+         "type": "wh_dlc07_brt_cav_royal_hippogryph_knights_0",
+         "x": 0,
+         "z": -80,
+         "bearing": 0,
+         "width": 30
+       }
+     ],
+     "enemy": [
+       {
+         "type": "wh_main_emp_cha_general_0",
+         "x": -405,
+         "z": 100,
+         "bearing": 90,
+         "width": 20
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": -340,
+         "z": 40,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": -340,
+         "z": 100,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": -340,
+         "z": 160,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 440,
+         "z": 40,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 440,
+         "z": 100,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 440,
+         "z": 160,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_handgunners",
+         "x": -380,
+         "z": 60,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_handgunners",
+         "x": -380,
+         "z": 140,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_handgunners",
+         "x": 480,
+         "z": 60,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_handgunners",
+         "x": 480,
+         "z": 140,
+         "bearing": 270,
+         "width": 40
+       }
+     ]
+   },
+   "expect": {
+     "battle_type": "land_normal",
+     "difficulty": "ai_level_normal",
+     "funds": "funds_custom",
+     "funds_amount": 20000,
+     "time_limit_s": 1200,
+     "ai_stats_modifier": 1.0,
+     "unit_scale": 0.75,
+     "realism": false,
+     "player_defends": true
+   },
+   "construction_profile": "Provisional air-relief development profile and force freeze, Codex 2026-11-05; rests on JUDGEMENT docs/twwarhammer3/tactics-reference.md Air relief development profile, Air relief force freeze and Air relief construction screen. Native AI allocation, routes, flight and difficulty unverified; outside suites. Follow SMACv2 wrapper.py explicit authored configuration; no engine-seed claim."
  }
 }

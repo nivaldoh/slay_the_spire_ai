@@ -59,6 +59,19 @@ sources inspected 2026-11-05; no upstream experiment reproduced:
   supports the keyword on the standard models here; C retains it for that provider.
   Documentation and fake transport checks do not establish real provider acceptance.
 
+## Flying reserve construction sources (2026-11-05)
+
+- SEGA/Creative Assembly [Bretonnia Steam description](https://store.steampowered.com/app/534330/Total_War_WARHAMMER__Bretonnia/):
+  publisher-controlled 2017 roster names Pegasus/Royal Pegasus/Royal Hippogryph flying
+  cavalry. Historical category evidence, not current stats or host recruitment. *Read.*
+- Creative Assembly [Deployment and terrain tutorial](https://academy.totalwar.com/battle-deployment-and-battle-terrain/):
+  generic deployment, concealment and high-ground discussion; no oracle for this map's
+  ground or air routes. *Read.*
+- RPFM [schema repository](https://github.com/Frodo45127/rpfm-schemas), `schema_wh3.ron`
+  at `42290ba010661ce3ac426a307fd8d6b3ea0f2c5b`: existing `scripts/wh3_db.py` decoded
+  current-build main/land unit records with no leftover bytes. Task-local schema/hash
+  and raw evidence stay under `runs/cannae-build/research/`; no tool installed. *Used.*
+
 ## Tactic-judge research (2026-11-04)
 
 For the [WH3 judge proposal](twwarhammer3/tactic-judges.md). All six sources independently
