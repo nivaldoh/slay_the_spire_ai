@@ -383,7 +383,7 @@ Settings facts for the difficulty question: 14 of the 102 scenarios declaring se
 all envelopment ones among them, with no recorded reason. At modifier 1.0, recorded stats for the
 units read at both settings differ between Normal and Very Hard only by 4 less player leadership.
 No Very Hard battle at 1.0 has enemy Empire Knights, which read melee attack 20.8 and scalar speed
-62.4 against 26 and 78 for friendly Knights in all 13 Normal jobs, for no recorded reason. A change
+62.4 against 26 and 78 for friendly Knights in all 13 Normal jobs that field them, for no recorded reason. A change
 in AI behaviour is unmeasured. Doctor's `battle_ai_stats_modifier=1.1` is a stored preference: A's battles ran at
 1.0 by lobby and battle readback. A has had no calibration step and no Hold attempt. All four
 candidates use one map and are large battles; the smaller `emp-knights-emp-swordsmen` tests
@@ -565,7 +565,7 @@ neither a historical narrative nor a green repository check settles those.
 | Construction order and scale | Settle the canonical battle, then validate B's event mechanism before expanding its combinations; decide how much of the proposed force/geometry to retain |
 | Comparison method | Settle recognition and adaptation controls; for C settle command groups, local sensing, signals/couriers and channel controls; optional anticipation remains separate |
 | Construction and evidence | Accept or change the [proposed deciding checks](#proposed-deciding-checks-2026-11-05); review the roster/settings; decide what additional evidence makes the scenario ready |
-| Force for A and C | Keep A's force, where every scripted controller won, or give A and C B3's four front Greatswords as one ladder step; on the present force two scripted wins needed no tactical message and the one model team lost, so whether a channel comparison has room there is unknown |
+| Force for A and C | Keep A's force, where all five scripted attempts won and Hold is untried, or give A and C B3's four front Greatswords as one difficulty step; on the present force two scripted wins needed no tactical message and the one model team lost, so whether a channel comparison has room there is unknown |
 
 After those choices, settle arms/resources, optional forecasts, variation,
 ranking formula and trial budget in their respective stages. The proposed contribution

@@ -34,8 +34,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - Owner `/goal`: improve the benchmarks from the Cannae handoff. Six audits at `ea0491d`, each
   finding rerun by a separate skeptic, plus one completeness critic. No game, $0. Evidence:
   `runs/benchmark-improve-20261105/` (`audit-result.json`, `build-result.json`, cards, handoff).
-- b53 recording, offline only: a team poll that wrote rows keeps its global frame, closing the
-  gap behind the 2 missing inputs and 184 unchecked arrivals in `c-model-smoke-02`. Scripted
+- b53 recording, offline only: a team poll that wrote rows keeps its global frame, addressing the
+  cause of the 2 missing inputs and 184 unchecked arrivals in `c-model-smoke-02`. Scripted
   repro 3/1/3 frameless rows before, 0/0/0 after; no live or model battle has confirmed it.
   Deployment now reads bearing and ordered width for both sides, with no refusal (rests on
   JUDGEMENT? `setup.py` Formation readback); enemy width may be unreadable, unknown until live.
@@ -48,7 +48,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   `cannae-local-rush.json` (independent local rules on C's silent arm).
 - Tests: 31 new plants, all caught, on C's full member request, the router, the Lua observation
   of B and a fully refused Evade; all additive. The replay at 407 plants missed two older mailbox
-  plants, as it did at `8029e1b` on 11-03; `mailbox.py` is unchanged here. Before them 18 of 41 planted wrong versions passed the suite.
+  plants, as it did at `8029e1b` on 11-03; `mailbox.py` is unchanged here. Before these tests, 18 of the audit's 41 planted wrong versions on C and B passed the WH3 suite.
   The two self-fulfilling dict checks in the B tests stay until the owner agrees to remove them.
 - Findings for the pages: one launch per job, so Hold's 8 of 8 and each v3 pair are not independent;
   `morale.effect` carried a Lord label on an own row in 68 and on an own or ally row in 103 of 729 C
@@ -77,7 +77,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   6 policy hashes match their cards, 20 cells of one attempt each.
 - Evidence: unit tests on jobs from the real job loop with the battle stubbed, and 56 planted
   wrong versions, all caught. This reader change leaves the harness fingerprint at `907f4bea` on `c-model-smoke-02`; the b53
-  files in the entry above move it (`7f6b6904` by the same reading), so later jobs form new report groups.
+  files in the entry above move it (`14c0e868` by the same reading), so later jobs form new report groups.
   Unverified: no agreed check, no live row has these columns, no saved reserve row ended on the
   timer. A bare top-level model leaf has no member cards, so its model stays blank (0 of 16
   rows). No game, $0.
