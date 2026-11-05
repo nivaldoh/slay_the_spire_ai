@@ -3398,7 +3398,7 @@ source = "2026-11-04 independent support-timing verification audit"
 id = "support-audit-conflict-overwrites"
 guards = "conflicting sequence is unknown but keeps engine ending"
 file = "src/twwarhammer3/battle/support_evidence.py"
-old = "if key in samples and samples[key] != obs:"
+old = "if key in samples and conflicting_observations(samples[key], obs):"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_conflicting_sequence_is_unknown_but_keeps_engine_ending"]
 source = "2026-11-04 independent support-timing verification audit"
@@ -3465,3 +3465,12 @@ old = "upper = min(upper, recorded_time)"
 new = "upper = upper"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_recorded_first_ending_also_bounds_the_frozen_hp"]
 source = "2026-11-04 independent support-timing verification review"
+
+[[plant]]
+id = "support-audit-public-copy-conflict"
+guards = "A private-field projection is not a contradictory sensor reading"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "conflicting_observations(samples[key], obs)"
+new = "samples[key] != obs"
+tests = ["tests/twwarhammer3/test_wh3_support_public_copies.py::test_compatible_public_and_raw_observations_preserve_event_evidence"]
+source = "2026-11-04 live pilot02: raw roster and public decision copies of seq1"

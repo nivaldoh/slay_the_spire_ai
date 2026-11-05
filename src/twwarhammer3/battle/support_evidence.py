@@ -13,7 +13,7 @@ from pathlib import Path
 
 from gameai.provenance import sha256
 from twwarhammer3.battle.support_timing import OUT, TYPES, able, identities
-from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.protocol import HIDDEN_KEYS, ProtocolError
 
 
 def finite(value):
@@ -60,6 +60,16 @@ def together(observation, ids):
     return all(flags) and all(able(unit) for unit in eligible)
 
 
+def conflicting_observations(left, right):
+    # play logs both raw roster snapshots and public decision snapshots. The documented
+    # information boundary strips only these private fields; it does not change sensors.
+    private = set(HIDDEN_KEYS)
+    if ({k: v for k, v in left.items() if k not in private}
+            != {k: v for k, v in right.items() if k not in private}):
+        return True
+    return any(left[key] != right[key] for key in private & left.keys() & right.keys())
+
+
 def annotate(episode: Path):
     paths = [episode / "trace.jsonl", episode / "result.json"]
     if not any(p.exists() for p in paths):
@@ -95,10 +105,10 @@ def annotate(episode: Path):
         obs = row.get("observation")
         if obs and obs.get("friendly") and finite(obs.get("time_ms")):
             key = (obs.get("battle"), obs.get("seq"))
-            if key in samples and samples[key] != obs:
+            if key in samples and conflicting_observations(samples[key], obs):
                 issues.append(f"conflicting observation at {key}")
             else:
-                samples[key] = obs
+                samples[key] = {**samples.get(key, {}), **obs}
     ordered = sorted(samples.values(), key=lambda o: (o["time_ms"], o.get("seq", 0)))
     report = {"status": result.get("status"), "engine_result": outcome, "H": None,
               "input_sha256": {p.name: sha256(p) for p in paths if p.exists()}, "issues": issues,

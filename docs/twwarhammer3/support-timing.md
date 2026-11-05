@@ -1,7 +1,7 @@
 # First candidate: infantry support and cavalry timing
 
 Implemented from the owner's supplied plan, 2026-11-04. **Development candidate,
-unverified; first pilot failed setup before orders.** On 2026-11-04 the owner selected "Use the proposed
+unverified; v2 pilot passed setup and lost.** On 2026-11-04 the owner selected "Use the proposed
 exploratory rule" for the procedure below, after setup and action-effect checks. It is now
 listed in [agreed-checks.md](../agreed-checks.md). The second scenario waits.
 
@@ -182,6 +182,32 @@ on 2026-11-04: "Use the proposed translation (Recommended)".
 The new positions and opening waypoints have nearby clear coarse samples, not proof of usable
 formations/routes or absence of forests. Freeze a new source/plan and repeat
 the pilot before the comparison. Preserve the original failed attempt and unstarted plan.
+
+## Translated pilot and comparison
+
+`runs/support-timing-live/pilot-contact-02/` ran v2 at `1432bbf`. Setup passed, then the
+Contact diagnostic lost at 287,200 battle ms. Native readings place first infantry melee
+at 32,700 ms, infantry routing at 61,700 ms and cavalry melee at 71,600 ms. The infantry
+later rallied idle. This one pilot missed the continuing-support window; it does not
+establish the proposed primary contrast. Preserve the other arms and the agreed test.
+
+First-ending native HP was 0.3616747260 (Swordsmen) and 0.1010288075 (Knights), sampled at
+the same 287,200 ms as the mod's frozen condition. The stored two-decimal values give
+`H ≈ 0.23`; unrounded native H is approximately 0.231351767. Per-unit rounding can change
+an H difference by up to 0.010, so a threshold-boundary claim needs contemporaneous native
+readings. No health value is inferred from the video.
+
+The first offline reread rejected seq 1: the raw roster snapshot contains private fields
+that the public decision snapshot correctly omits. The repaired reader compares all public
+fields strictly and every private field present in both copies, then merges compatible
+copies. Conflicting sensor/HP values still remain unknown. Retain the original rejection
+and the repaired reread under `runs/support-verify/`; this repair changes no game behavior.
+
+The early v1 and v2 plan files remain stopped and unstarted. Freeze the comparison after
+this reader repair and review, using the same scenario, six treatments and instrumentation.
+Review movement legs, native target IDs and visible unit/card states; the wide camera alone
+cannot time individual soldiers' contact precisely. Independent event review is required
+for every primary attempt before readiness can pass.
 
 ## Owner demonstration
 

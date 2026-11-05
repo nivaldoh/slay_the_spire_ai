@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: Translated pilot runs and exposes a reader projection bug
+
+- One Contact pilot of v2 at `1432bbf` passed setup and ended in an engine loss at 287.2 s,
+  with zero invalid orders and $0 spend. This is separate from the 18 comparison attempts.
+- Independent native first melee: infantry 32.7 s, cavalry 71.6 s; infantry routed at 61.7 s
+  and later rallied idle. This pilot missed the intended continuing-support window.
+- Native and stored ending HP agree after two-decimal rounding at the same 287.2 s:
+  Swordsmen 0.3616747260, Knights 0.1010288075 native; stored H ≈ 0.23. Health comes from the API.
+- Offline reread wrongly called the raw/public copies of initial seq 1 a conflict. Two new
+  regression cases fail before repair; shared public values and shared private values must
+  still agree. No existing assertions changed; the saved conflict plant's match text is
+  updated to the new predicate, with its behavior/test unchanged.
+- Evidence, original rejection, repaired reread and independent review: `runs/support-verify/`
+  and `runs/support-timing-live/pilot-contact-02/`. The stopped early plans remain unstarted;
+  freeze the full comparison after repair/review. No readiness or reliable-effect claim.
+
 ## 2026-11-04: First support-timing pilot stops on deployment
 
 - One fresh Contact pilot at `b3eb799`, pinned build 26403568, stopped before any policy
