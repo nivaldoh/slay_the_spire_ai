@@ -236,13 +236,20 @@ def test_proposed_contrast_never_establishes_readiness_and_checks_provenance(
         terminal["result"] = "won" if is_contact else delayed_result
         for unit in terminal["final"]["benchmark"]["units"]:
             unit["hp"] = .6 if is_contact else delayed_hp
-        ep = episode(directory, [view(), terminal])
+        initial = view()
+        initial["battle"] = terminal["battle"] = directory.name
+        ep = episode(directory, [initial, terminal])
         (ep / "result.json").write_text(json.dumps({
             "status": terminal["result"], "setup_checks": {"passed": True},
             "policy": job["args"][job["args"].index("--policy") + 1]}))
         (directory / "manifest.json").write_text(json.dumps({
             k: plan[k] for k in ("source_revision", "source_files", "scenario")} |
-            {"setup_checks": {"passed": True}}))
+            {"setup_checks": {"passed": True}, "config": {
+                "policy": job["args"][job["args"].index("--policy") + 1],
+                "episodes": 1, "observe_ms": 1000, "tick_ms": 250, "interval_ms": 0,
+                "start_timeout": 900, "episode_timeout": 1320, "run_timeout": 2280,
+                "speed": 1, "pause": False, "delay_seconds": "0", "record_replay": True,
+                "stills": False, "attach": False}}))
     report = evidence.summarize(path)
     assert report["proposed_numerical_contrast"] is numeric
     assert report["readiness"] == "unverified"

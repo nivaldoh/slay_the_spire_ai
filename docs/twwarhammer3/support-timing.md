@@ -1,9 +1,9 @@
 # First candidate: infantry support and cavalry timing
 
 Implemented from the owner's supplied plan, 2026-11-04. **Development candidate,
-unverified; no live attempts yet.** The implementation request authorizes the code. The
-numerical choices and exact live procedure below remain proposals; nothing has been added
-to [agreed-checks.md](../agreed-checks.md). The second scenario waits.
+unverified; no live attempts yet.** On 2026-11-04 the owner selected "Use the proposed
+exploratory rule" for the procedure below, after setup and action-effect checks. It is now
+listed in [agreed-checks.md](../agreed-checks.md). The second scenario waits.
 
 Question: can a controller judge whether supporting infantry will remain effective long
 enough for a cavalry manoeuvre to pay off? This candidate first asks whether commitment
@@ -71,9 +71,10 @@ route implement the supplied simple executor. Walking, waypoint-by-waypoint disp
 reissuing attacks could change arrival time and outcomes; all diagnostic results depend on
 these details. No live feasibility claim follows from legal orders alone.
 
-## Proposed repeatable live check
+## Repeatable live check
 
-These commands are reviewable, **not yet an agreed check or authorization to launch**.
+Owner agreed 2026-11-04: "Use the proposed exploratory rule". The earlier JUDGEMENT markers
+remain visible; the agreement does not establish that the candidate works.
 Run from committed main after landing, with no other game controller/queue. Retain every
 attempt and the full source/configuration/game/mod provenance. `doctor` is read-only; tell
 the owner about any build mismatch and do not re-pin automatically.
@@ -81,7 +82,7 @@ the owner about any build mismatch and do not re-pin automatically.
 ```bash
 uv run --locked python -m twwarhammer3 doctor
 uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/plan.json
-# Only after agreement to this procedure and its game window:
+# Owner-agreed exploratory comparison, after setup/action-effect checks:
 uv run --locked python scripts/wh3_queue.py runs/support-timing-live/plan.json
 uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/plan.json runs/support-timing-live/annotations.json
 uv run --locked python -m twwarhammer3 report runs/support-timing-live/block-* --output runs/support-timing-live/report

@@ -15,6 +15,18 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+- WH3 support-timing exploratory usefulness (agreed 2026-11-04, owner: "Use the proposed
+  exploratory rule"): first independently check setup, measurement and order effects;
+  then three fresh launches per six arms in rotated blocks. All six Contact/Delayed
+  attempts need interpretable endings and independently confirmed later cavalry contact
+  in Delayed, with timelines supporting the infantry–cavalry interaction. Accept either
+  Contact 3/3 wins and Delayed 0/3, or the same engine ending in all six and every Contact
+  H exceeds every Delayed H by at least 0.10, H the equal-regiment mean HP fraction.
+  Commands, configuration, failure retention and artifacts:
+  [support-timing procedure](twwarhammer3/support-timing.md#repeatable-live-check).
+  This is exploratory usefulness, not an effect-size estimate or controller ranking.
+  No passing revision yet. Existing numerical JUDGEMENT markers remain visible.
+
 - WH3 GCP VM compatibility (agreed 2026-11-02, owner: "Use this check"):
   one small unpaused battle, measuring 120 seconds with Remote Desktop connected and
   120 seconds after disconnecting, then reconnecting to confirm rendering. Pass: no

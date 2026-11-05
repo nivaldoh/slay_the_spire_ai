@@ -145,7 +145,11 @@ def test_morale_warning_and_flight_readiness_are_friendly_only():
         end
     """)
     record = load_battle(lua, "unit_record")
-    unit = lua.table_from({"can_fly": True, "is_currently_flying": True})
+    unit = lua.table_from({"can_fly": True, "is_currently_flying": True,
+                           "number_of_men_alive": 1, "unary_hitpoints": 1, "bearing": 0,
+                           "is_in_melee": False, "is_routing": False,
+                           "is_shattered": False, "is_moving": False})
+    unit["position"] = lua.eval("{get_x=function() return 0 end, get_z=function() return 0 end}")
     friendly = record("f1", unit, True, "lord")
     assert dict(friendly["morale"]) == {"fraction": .3, "effect": "You must attack by land!"}
     assert dict(friendly["flight"]) == {"can_toggle": False, "cooldown_s": 6.5}

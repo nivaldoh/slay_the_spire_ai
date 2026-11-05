@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (support-timing verification): "Let's carefully verify the new scenario.
+  Ensure it is working properly and measuring things correcly. We have to ensure that it
+  is useful and reliable." Then "Use the proposed exploratory rule": the 18-attempt
+  procedure, 3/3 versus 0/3 wins or the stated HP contrast, and independently confirmed
+  later contact. Check setup and action effects first. This authorizes this scenario's
+  live checks; three attempts per arm do not establish a reliable effect size or ranking.
+  [Agreed procedure](twwarhammer3/support-timing.md#repeatable-live-check).
 - 2026-11-04 (first-scenario implementation): "Implement the plan in a fresh context."
   Build the supplied infantry-support/cavalry-timing candidate, diagnostics, separate
   owner-demonstration recorder and event annotations. This supersedes the earlier
