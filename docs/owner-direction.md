@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (Cannae recognition and improvisation): distinguish tactics an LLM might
+  recognize or have memorized from a situation requiring decisions on the spot; use
+  separate eval battles to compare them. [Two-battle design](twwarhammer3/cannae-comparison.md)
+  proposes fresh commitments and controls. The direction is selected; exact mechanisms,
+  checks and runs remain unselected, and no claim about training provenance is established.
 - 2026-11-05 (eval content scope): "For this we can consider any faction as well as lords.
   Those restrictions were just for multiplayer battles on a VM, which you should adjust
   in our notes." General local evals and single-client model teams are unrestricted by

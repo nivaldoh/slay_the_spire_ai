@@ -29,6 +29,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Separate familiar tactics from adaptation in the Cannae plan
+
+- Owner selected [two battle designs](cannae-comparison.md): a recognizable Cannae pattern
+  and fresh reserve commitments requiring different responses. Construction remains proposed.
+- Added information-isolation, opportunity and response-reversal checks, fixed/conditional
+  controls, explicit exposure rules and comparisons within each battle. Different raw win
+  rates cannot establish memorization, and model explanations cannot prove internal reasoning.
+- Four new design choices remain marked. No existing marker, scorer or agreed check changed.
+  B's bounded enemy control is a new proposed prerequisite, not an existing capability.
+- Source/design review and repository check output: `runs/cannae-improvisation/`.
+  Zero games and paid calls; both battles' validity and the adaptation claim are unverified.
+
 ## 2026-11-05: Plan a Cannae inspired evaluation
 
 - Added the [candidate plan](cannae-eval.md): historical motivation, proposed armies,

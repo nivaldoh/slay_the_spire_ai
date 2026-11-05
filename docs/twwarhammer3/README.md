@@ -39,6 +39,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [scenario-guidelines.md](scenario-guidelines.md) | proposed scenario coverage, winnability and capability checks, engine and team requirements, release criteria and owner decisions |
 | [cannae-eval.md](cannae-eval.md) | Cannae-inspired candidate: dependent manoeuvres, implementation and validation plan, optional decision/anticipation/team studies; unimplemented |
+| [cannae-comparison.md](cannae-comparison.md) | separate familiar-tactic and adaptation battle designs, fresh-information checks and controls for recognition, conditional rules and task difficulty |
 | [tactic-judges.md](tactic-judges.md) | research and proposed checks for LLM/VLM tactic annotations; no judge or score adopted |
 | [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
 | [tactics-reference.md](tactics-reference.md) | researched historical, Total War and Warhammer tactics; faction/composition and terrain/mode variants; linked evaluation proposals and source notes |

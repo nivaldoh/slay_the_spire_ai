@@ -25,6 +25,16 @@ For the [candidate plan](twwarhammer3/cannae-eval.md), not a live-game verificat
   adopted. The existing [profile](twwarhammer3/benchmark-references/smacv2.md) gives context.
   Source and code audit: `runs/cannae-eval-plan/`; no upstream experiments reproduced.
 
+The [recognition/adaptation comparison](twwarhammer3/cannae-comparison.md), 2026-11-05,
+uses the same SMACv2 fixed-plan warning and code reference, plus:
+- Ribeiro et al., [CheckList](https://aclanthology.org/2020.acl-main.442.pdf), section 2.2:
+  directional tests expect a label to "change in a certain way". This motivates testing
+  whether a changed WH3 situation reverses a useful choice; that reversal needs engine evidence.
+- Cobbe et al., [Procgen](https://arxiv.org/abs/1912.01588), abstract: a benchmark of
+  "16 procedurally generated game-like environments" for "sample efficiency and generalization".
+  Motivates a declared exposure boundary, not a claim that generated WH3 cases are valid,
+  difficult or absent from pretraining. Follow-up source/design audit: `runs/cannae-improvisation/`.
+
 ## Tactic-judge research (2026-11-04)
 
 For the [WH3 judge proposal](twwarhammer3/tactic-judges.md). All six sources independently

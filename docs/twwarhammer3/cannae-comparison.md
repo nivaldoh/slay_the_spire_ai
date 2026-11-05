@@ -1,0 +1,257 @@
+# Comparing familiar tactics and adaptation in Cannae evaluations
+
+Owner direction, 2026-11-05: distinguish a recognizable, potentially memorized tactic
+from a situation requiring decisions on the spot, using separate eval battles. This
+extends the [Cannae plan](cannae-eval.md). **Two battle designs, neither implemented or
+validated.** Any faction and lords remain available. No game or paid run is scheduled.
+
+The comparison should make prior tactical knowledge useful in one case and insufficient
+to select the concrete response in the other. A controller can still use learned concepts
+in both. We can test whether it uses fresh information and changes its actions usefully;
+we cannot inspect an unknown training corpus or prove that it invented a tactic internally.
+Here, **improvisation means composing or revising a plan from newly observed conditions**.
+Evidence for that is stronger than unfamiliar scenery, and narrower than reasoning from
+no prior knowledge. The outcome report must preserve that distinction.
+
+## The two battles
+
+| Design | What stays familiar | What the controller must resolve | Evidence needed for its label |
+|---|---|---|---|
+| A: Cannae pattern | Projected centre, stronger flank reserves, cavalry advantage and opportunity to turn inward | Execute a recognizable double-envelopment plan with normal battle feedback | A checked winning witness and evidence that the historical manoeuvre is useful, without requiring it for victory |
+| B: Changing reserve commitments | The same tactical vocabulary and a comparable opening | After the battle begins, read a fresh combination of enemy commitments and friendly condition, then choose where to concentrate, reinforce or abandon the enclosure | Unrevealed future assignments, public cues with feasible responses, conflicting useful choices across cases, and a demonstrated benefit from fresh information over specified controls |
+
+A is the existing [construction proposal](cannae-eval.md#proposed-battle-specification),
+initially against native AI. It is **familiarity-compatible**, not a pure memory test:
+recognition is possible, but a win could come from another tactic or ordinary feedback.
+B is a separate scenario family, with each concrete configuration and attempt retained.
+One permanently published surprise becomes another familiar scenario after exposure, so
+B needs fresh combinations and controlled exposure as well as separate battle IDs.
+
+The original Cannae account is an intentional source of prior knowledge in A. Renaming
+units, rotating the picture or omitting the historical name does not remove the structure.
+Conversely, a different faction or a random army does not establish a need to improvise.
+The distinction rests on changed consequences of choices, not the scenario labels.
+
+## Battle B construction
+
+JUDGEMENT: Reserve mechanism — Codex, 2026-11-05: proposes late enemy reserve commitments
+with competing friendly responses. Native-AI-only surprises or an unrelated new battle
+would differ; the adaptation claim rests on the implemented mechanism and its checks.
+
+Start from A's roster and map, then designate part of the existing enemy army as a reserve
+behind the main line. Do not add hidden troops, change unit statistics mid-battle or
+teleport an obstacle into an already committed route. The full roster is declared normally;
+enemy movement and condition reach the model only through the permitted visibility rules.
+The reserve's starting location, identities and force split are frozen during construction,
+and match across B's alternative continuations. The remaining enemy army uses native AI.
+
+The proposed event controller holds only the declared reserve until a predeclared window
+in battle time, then assigns it a route and target region. It chooses the commitment from
+private episode randomness after the friendly controller and its preparation are frozen.
+Draw before launch, independently of the engine/setup RNG, model identity and reply timing,
+and seal the assignment from all controller access until its physical effects are visible.
+This also permits a matched foreknowledge control with exactly the same selection procedure.
+The controller may know that reserves can move and the family of possibilities; it does
+not receive the selected future assignment or a symbolic instruction naming the response.
+
+The actual manoeuvre is the cue: successive public positions, bearings, visible types and
+engagements reveal what the enemy is doing. The intervention cannot wait for an LLM reply,
+require a pause or use private friendly morale to manufacture a last-moment failure.
+Trigger time, command authority, destination rules and any subsequent targeting use must
+be specified before trials. Full action/effect records remain private to the evaluator.
+
+| Possible commitment | Intended conflict for the friendly controller | Condition that can reverse the useful response |
+|---|---|---|
+| Reserve joins the pressured central fight | Continue the enclosure or divert flank/cavalry support to keep the centre viable | If the centre is already secure, abandoning an available flank attack may waste the opportunity |
+| Reserve approaches outside one friendly wing | Continue turning inward or retain/redirect units to prevent the outer threat | If that threat is weak or cannot arrive while the main fight is decided, committing a reserve to it may be costly |
+
+These are hypotheses for construction, not a solution lookup table. The first engineering
+check can use two continuations to test information isolation and differing consequences.
+Those two cases alone would support a small contingent-response task. To justify the
+stronger improvisation study, vary a **combination** of commitment, approach side and the
+portion of the declared reserve committed, with the rest following a declared hold/support
+rule. Also evaluate different public friendly conditions produced by ordinary play.
+The same visible advance should sometimes warrant interception and sometimes continued
+pressure, depending on relative strength, distance and the condition of the centre.
+
+JUDGEMENT: Composition and exposure — Codex, 2026-11-05: proposes reserved combinations
+of otherwise familiar commitments and configurations, drawn after controller freeze.
+Repeating known combinations is cheaper; broader adaptation claims depend on this split.
+
+Use a finite, curator-validated catalogue first. Each configuration fixes the map, forces,
+starting geometry and legal continuation menu. Materialize the selected commitment before
+launch, execute it at the event and preserve the draw. Never discard a draw because it
+produced a difficult result. Keep full reserve totals constant within comparisons. Different opening geometry
+or roster is another configuration, not a hidden change during a battle.
+
+Develop mechanics and controllers on disclosed combinations. Freeze prompts, skills,
+graphs, tools and memory policy before drawing confirmation cases. Reserve combinations
+that require integrating known factors rather than only reversing left and right. Record
+all author/agent exposure and keep confirmation records out of subsequent tuning. In a
+public repository this protects against declared development exposure; it does not certify
+absence from pretraining. Fresh event randomness protects the exact future assignment
+even if the model knows every rule of the generator.
+
+## What would justify confidence in online adaptation
+
+JUDGEMENT: Adaptation evidence — Codex, 2026-11-05: proposes the checks below before the
+improvisation label. Outcome-only comparison is an alternative; the claimed need for fresh
+decisions depends on information isolation, feasible alternatives and measured controls.
+
+1. **No advance knowledge of the realized branch.** For the same friendly action history,
+   changing a future assignment must not change any earlier public input, prompt, tool
+   result or harness behavior. Inspect model-visible job/scenario names, random seeds,
+   timestamps, ordering, caches and files accessible to tool-using controllers. Inspect
+   nested fields too: current `play.public()` removes top-level private keys and the team
+   projection forwards most `mode` fields, so a new nested branch field could leak. Private
+   evaluator manifests are outside their access. Plant a branch label in metadata to
+   show that the audit catches it. Existing Python policy adapters are not a sandbox;
+   any broader filesystem/tool access needs explicit isolation before this claim holds.
+2. **A legal opportunity to distinguish the cases.** Independently identify the first
+   usable public cue and the latest feasible response, using observed order effects and
+   routes. There must be enough battle time for the declared interface to act at 1x.
+   A hidden choice requiring commitment before it can be known is a gamble, not a test
+   of improvisation. Choosing a robust reserve beforehand is valid tactical play.
+3. **Consequences that depend on the case.** Cross candidate response plans against every
+   declared continuation. A fixed rear attack, centre reinforcement and outer interception
+   should have different consequences across cases, with a valid winning route in each.
+   Demonstrate effects and engine outcomes; do not declare the intended action correct
+   from its name. Agree the required separation, counts and uncertainty before confirmation.
+4. **Challenge plans that bypass the choice.** Try concentration, an opening rush,
+   destroying the reserve early, waiting, timer defence, splitting forces to cover all
+   branches and always reinforcing the centre. Test a competent fixed Cannae plan and a
+   simple public-state rule library. A universal solution stays a win and weakens the
+   improvisation claim. Do not add a hidden requirement to wait for or obey the event.
+5. **Show that new information helps the model's decisions.** Compare live replanning with
+   an opening-only plan executed by the same legal executor, then with a prewritten
+   contingent policy using that executor. Log which component reads new evidence and
+   selects each response. If a shared helper handles the branch, improvement belongs to
+   that helper or whole system unless a matched test isolates the LLM's contribution.
+
+A useful construction artifact is a response-by-continuation table: each cell contains
+wins/attempts, condition, errors and independently checked action effects. Show the best
+tested fixed plan across the whole mixture beside the plans that respond to the event.
+Freeze selection of that best fixed plan on development data. A crossed table can rule
+out those concrete alternatives; finite testing cannot prove that **every** legal winning
+policy must adapt. Do not present a hypothetical 50% guessing ceiling without proving the
+action restrictions and absence of a common winning response under the actual task.
+
+Fresh launches do not produce identical engine trajectories. The no-leakage requirement
+is conditional on the same prior action history; controllers can legitimately create
+different openings. Offline input tests establish the branch code's noninterference,
+not live-state equivalence. Checkpoint continuations are optional only after checks of
+this battle's complete relevant state; a successful restore elsewhere is insufficient.
+Otherwise report randomized launch comparisons and residual state variation honestly.
+
+If friendly actions prevent or neutralize the event, keep the attempt and the win. Record
+that disposition without filtering the main comparison to battles where the script's
+desired story occurred. A broken intervention and a successfully prevented threat are
+different outcomes. Opportunity-conditioned exploratory analyses must retain their full
+denominator and cannot replace the outcome over all planned attempts.
+
+## Separating recognition from task difficulty
+
+JUDGEMENT: Comparison controls — Codex, 2026-11-05: proposes briefing and information
+controls within each battle, plus separate predictable/live versions of B. Other matching
+choices change attribution; raw A-versus-B score differences cannot identify memorization.
+
+Both battles get the same engine objective, information/action track, model/harness
+version and resource policy, except the explicitly declared foreknowledge treatment.
+Start each trial with a fresh conversation and cleared episodic/team memory; frozen
+tactical instructions remain available. Carryover learning would be a separate arm.
+Report their outcomes separately. B can change opponent
+behavior, force availability and difficulty, so a lower win rate there does not measure
+how much A was memorized. Use the following comparisons for narrower claims:
+
+| Comparison | Keep fixed | What a difference means |
+|---|---|---|
+| A neutral briefing versus A explicitly identified as Cannae-inspired | Physical setup, rules, controller and resources; change only the factual historical cue | Benefit or harm from a recognition cue; not proof that the unprompted model retrieved a training example |
+| The same A conditions with a concise supplied tactic | Advice text identical across compared harnesses | Ability to use supplied tactical knowledge; this is a separate advice treatment, not a recognition-only contrast |
+| B with its reserve commitment announced before play versus B with it learned from the live cue | Event distribution, scripted authority, setup and controller | Value of knowing the future commitment early; announce only what the intervention controls, not the engine trajectory |
+| B live model replanning versus opening-only plan and frozen conditional rules | Same legal executor, game information available to that executor and declared accounting | Added value of online model decisions beyond the stated automation; a strong conditional rule can explain success without extended reasoning |
+| Single controller versus model team within A and within B | Same condition, factual/tactical advice and explicitly chosen resource policy | Whether the team advantage changes across these tasks; cost, concurrency and projection differences remain visible |
+
+Retain the original plan's JUDGEMENT `docs/twwarhammer3/cannae-eval.md` Public presentation
+for the neutral base briefing. Its named and advised alternatives become explicit controls
+here, rather than being mixed into one arm. All arms know the game's rules and the possibility
+of enemy reserves. Optional naming/advice calls must not leak the realized B commitment.
+
+For the opening-only plan, the shared executor handles legal IDs, basic targeting/pathing
+and the frozen action vocabulary. Document any feedback it uses. For the conditional-rule
+control, publish the frozen predicates and decisions; it is deliberately allowed to use
+fresh state. If that control works as well as live models, report that online contingency
+selection was sufficient. Do not call it evidence for difficult improvisation. If a model
+writes a new contingent controller before every battle, its preparation is part of the
+system; test that preparation method and include its cost and exposure.
+
+Do not blind the executor by deleting visible enemies: that changes valid target IDs and
+therefore the legal action set. The planning component can stop receiving new tactical
+information while the common validator/executor keeps the normal public state. Persistent
+attack orders already track targets through engine behavior; credit that feedback to the
+executor/engine. Include a case where another commitment is needed to test model replanning.
+
+Record public observation basis, chosen actions, application/effect and changed assignments.
+Use model explanations and optional recognition questions only as ancillary data. Asking
+about Cannae before play can itself prime recognition, and an explanation after the win
+does not reveal faithful internal reasoning. No chain-of-thought judge is the oracle.
+
+## Implementation boundary and checks
+
+A initially reuses the native-AI route in the [base implementation plan](cannae-eval.md#implementation-using-the-current-repository).
+B needs **new, bounded enemy-reserve control**. Current authored deployment releases the
+enemy back to native AI; it cannot schedule these commitments. Planning B does not claim
+that API, checkpoint equivalence or controlled opponent already exists. This is a proposed
+exception to the initial preference for native AI, resting on Reserve mechanism above;
+the owner selects it before implementation. If selected, use this sequence:
+
+1. Add separate A/B declarations and provenance for opponent type, reserve membership,
+   trigger distribution and continuation catalogue. Bind actual unit identities and keep
+   the reserve ownership stable. Pin troop/loadout changes and validate both rosters.
+2. Add a Lua opponent adapter confined to declared enemy units. Check controller acquisition,
+   holding, actual route/attack effects, AI interference and cleanup. Never let it order
+   the friendly army or write the policy mailbox. Define exactly which controls it retains
+   after the event and which state it can read; do not grant accidental omniscience.
+3. Add private event-draw and action/effect records with source/configuration hashes and
+   reproducible audit data. Check every policy input and authorized tool path for leaks.
+   A separate RNG seed reproduces selection, not the entire engine battle.
+4. Check true/false/ambiguous cues, wrong identities, rejected and accepted-but-ineffective
+   orders, missing public visibility, events after the ending, prevented threats and
+   mismatched announcement versus actual assignment. A fast or slow model must not change
+   the event distribution just by changing its reply timing.
+5. Complete setup, owner-manual demonstrations and the selected adaptation evidence before
+   model comparison. Freeze concrete counts, thresholds, uncertainty, failure dispositions,
+   budget and stop rules through the existing agreement process. No check is agreed here.
+
+For scenario materialization, use the [SMACv2 code reference](benchmark-references/smacv2.md#code-to-consult),
+especially `wrapper.py` and `distributions.py` at the recorded pin. The WH3 adaptation must
+retain every draw and failure and keep continuous 1x execution; SMACv2's reset retries and
+stepped execution do not transfer. Use existing queue/manifests/reports and extend only
+the event data needed for this experiment.
+
+## Reporting and decisions still open
+
+Report A and B as separate battles, with B's cases also visible individually. Engine wins
+remain wins, including alternative tactics and timer endings. Show first-ending condition,
+latency, cost and errors beside them; no new aggregate score or hidden adaptation bonus is
+introduced. For any claim about changed decisions, show the public cue and action effects
+alongside the relevant control and uncertainty. Repeated frames, decisions or branches
+from one restored state are not independent battles.
+
+The result can support three progressively stronger statements: the future assignment
+was unavailable in advance; this controller responded to its public consequences; those
+responses helped beyond the tested fixed and conditional controls on reserved cases.
+Even all three would leave open whether its useful reasoning was learned, retrieved or
+newly composed. They would provide concrete evidence that replaying the opening Cannae
+plan was insufficient under the tested conditions.
+
+The owner has selected the familiar-versus-improvised comparison. Remaining choices are
+the reserve mechanism and concrete armies/geometry, what counts as sufficient adaptation
+evidence, and the arm/resource/exposure plan. Name-only, cosmetic and difficulty-only
+substitutes do not meet this direction. Start with the canonical battle and validate the
+event mechanics before expanding B's combinations; this schedules neither battle.
+
+Research basis: [SMACv2](https://arxiv.org/abs/2212.07489v2) motivates challenging a fixed
+schedule; [CheckList](https://aclanthology.org/2020.acl-main.442/) motivates behavioral cases
+whose consequences should change; [Procgen](https://arxiv.org/abs/1912.01588) motivates
+explicit development/evaluation exposure for generated instances. These are design
+adaptations, not evidence that WH3 or a particular model satisfies this plan.

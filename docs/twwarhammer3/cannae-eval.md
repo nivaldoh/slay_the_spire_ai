@@ -1,7 +1,11 @@
 # Cannae inspired evaluation plan
 
 Draft, 2026-11-05. **Candidate only; no scenario implemented or battle run.** This proposes
-commanding the enveloping army in a WH3 adaptation of Hannibal's battle at Cannae in
+two separate evaluations following the owner's familiar-versus-improvised direction:
+**A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
+require fresh contingent decisions**. The [comparison design](cannae-comparison.md)
+specifies the second battle, controls and evidence needed for that claim. The canonical
+construction below puts the controller on the enveloping side of Hannibal's battle at Cannae in
 [216 BCE](https://sourcebooks.web.fordham.edu/ancient/polybius-cannae.asp). The difficult decision is how to turn success on one wing into victory in the
 main fight while the centre remains under pressure. The controller must decide which
 local fight to finish, which to leave, where to keep reserves and when to abandon its plan.
@@ -16,9 +20,10 @@ This follows the [scenario guidelines](scenario-guidelines.md) and
 [benchmark contract](benchmark.md). The owner stopped the earlier
 [support-timing investigation](support-timing.md#stopped-comparison-and-next-steps);
 this is a separate proposal, not a scheduled replacement or a continuation of that test.
-The simpler-then-complex direction remains; selection of this larger case and its place in
-that sequence are open. Research on decisions, anticipation and model teams can use the
-same battle, but none is selected as the thesis question here.
+The simpler-then-complex direction remains, with neither battle scheduled. The owner has
+selected the familiar-versus-improvised comparison; the exact construction and deciding
+checks remain open. Anticipation and model-team studies can use both battles without
+assuming either is the final thesis question.
 
 ## Historical situation and what WH3 would preserve
 
@@ -48,7 +53,10 @@ competent controller to reject double envelopment when the opponent does not coo
 The historical name creates a memorization risk. We can ask whether familiar tactical
 knowledge transfers into contingent control, but cannot call the task novel reasoning
 merely because its coordinates are new. A fixed plan and simple feedback rules are
-essential comparisons. [SMACv2](https://arxiv.org/abs/2212.07489v2) showed that timestep-only
+essential comparisons. The [two-battle design](cannae-comparison.md#what-would-justify-confidence-in-online-adaptation)
+adds a test of fresh information and contingent response beyond recognition: appearance
+alone does not identify either memorization or improvisation.
+[SMACv2](https://arxiv.org/abs/2212.07489v2) showed that timestep-only
 policies could do well on several original SMAC scenarios; that motivates this challenge
 to our interpretation, without establishing what will happen in WH3.
 
@@ -185,12 +193,13 @@ placement and movement code provides a plausible route, with important checks st
 | [`battle/team.py`](../../src/twwarhammer3/battle/team.py), [`battle/controllers.py`](../../src/twwarhammer3/battle/controllers.py) | Asynchronous members, ownership validation, one mailbox writer; current Knights/rest or suite class split | Selecting a general class team needs an explicit adapter/profile; separate centre/wing owners of identical types need a new checked partition |
 | Existing trace, replay and [`reports.md`](reports.md) workflow | Outcomes, unit condition, visible paths, member identities, decisions and order evidence | Add only the selected event annotations/readers. The regular recorder does not provide an omniscient enemy timeline |
 
-Do not implement an enemy choreographer as part of the initial construction. Native AI
+Battle A initially retains native AI, with no enemy choreographer. Native AI
 is free to attack a flank, spread out or stay out of the intended pocket. In that case,
-retain the attempts and reconsider the Cannae interpretation. If a controlled opponent
-later becomes worth studying, obtain a separate design decision: disclose its public or
-private information, triggers and remaining freedom, and report it separately. An enemy
-that cooperates by script cannot establish performance against native AI.
+retain the attempts and reconsider the Cannae interpretation. Battle B's
+[bounded reserve controller](cannae-comparison.md#implementation-boundary-and-checks) is a
+new proposed implementation, with its control scope and verification still for owner
+review. It must disclose information, triggers and remaining enemy freedom, and be reported
+separately. Scripted-opponent evidence does not establish performance against native AI.
 
 For any later variant generator, follow the explicit configuration pattern in the
 well-known [SMACv2 repository, `StarCraftCapabilityEnvWrapper.reset`](https://github.com/oxwhirl/smacv2/blob/577ab5a2cff2391f8df582da5731ea9cd6adf3c6/smacv2/env/starcraft2/wrapper.py):
@@ -262,7 +271,10 @@ The first controls need to expose easy solutions and test the interpretation:
   dependency with the remaining executor unchanged. These are interventions to interpret
   the battle, not obligatory losing baselines or hidden conditions on model victory.
 
-Potential model studies can then be chosen independently:
+The owner has selected the familiar-versus-improvised comparison. Its
+[within-battle controls](cannae-comparison.md#separating-recognition-from-task-difficulty)
+prevent raw differences between A and B being read as a measure of memorization. The
+following remain additional research options:
 
 | Direction | Comparison | Claim it could support and remaining confound |
 |---|---|---|
@@ -358,12 +370,14 @@ JUDGEMENT: Variant design — Codex, 2026-11-05: proposes constrained, materiali
 after the base case works. A single familiar layout is an alternative; adaptation and
 generalization claims rest on the declared exposure boundary and validity of each instance.
 
-Possible interventions include swapping which wing has the cavalry advantage, changing
+For A, possible interventions include swapping which wing has the cavalry advantage, changing
 available space for the centre, or changing one enemy wing's strength. Predict in advance
 which choice should change and why. Changing several properties at once is transfer to
 another battle, not isolation of a single mechanism. Physical reflection is not presumed
 equivalent on real terrain; consistent ID/list renaming is a separate presentation test.
-No generator is required for the first case.
+No generator is required for the first canonical case. These changes alone do not establish
+improvisation; B's [reserved combinations and fresh assignments](cannae-comparison.md#battle-b-construction)
+must change which response is useful and pass the adaptation evidence checks.
 
 Until the owner chooses a reservation policy, all inspected/tuned instances are development
 and carry no held-out claim. Later freeze exact instances, validation history, rejection
@@ -404,18 +418,18 @@ engine, map, pack, interface, executor or detector changes; retain old versioned
 
 ## Decisions for owner review
 
-All implementation and experimental proposals above rest on the named JUDGEMENT choices
-in this file. The nearest next decision is which question makes this situation worth
-building; neither a historical narrative nor a green repository check decides that.
+The owner has selected separate familiar-tactic and adaptation battles. Implementation
+details rest on the named JUDGEMENT choices in this file and the comparison page. The next
+decisions concern construction and the evidence that distinguishes the two conditions;
+neither a historical narrative nor a green repository check settles those.
 
 | Decision | Options and consequence |
 |---|---|
-| Situation and place in the scenario sequence | Select this Cannae abstraction for later development, revise its scale/side, or keep it as a research candidate while another simpler case is chosen |
-| Initial research question | Study adaptive decisions, explicit anticipation, or benefits of model teams; each needs a different primary comparison, while the engine task can stay the same |
+| Construction order and scale | Settle the canonical battle, then validate B's event mechanism before expanding its combinations; decide how much of the proposed force/geometry to retain |
+| Comparison method | Settle the proposed recognition, foreknowledge and fixed/conditional-controller controls; optional anticipation and team studies remain separate |
 | Construction and evidence | Review the proposed roster/settings, then settle exact terrain/geometry and the first setup/demo check; decide what additional evidence makes the scenario ready |
 
 After those choices, settle arms/resources, optional forecasts or messages, variation,
-ranking formula and trial budget in their respective stages. No immediate answers are
-needed to retain this plan. The proposed contribution is a difficult, inspectable setting
-for studying how controllers coordinate dependent decisions, contingent on demonstrating
-that WH3 produces those decisions and that feasible play can resolve them.
+ranking formula and trial budget in their respective stages. The proposed contribution
+is an inspectable comparison of executing a familiar tactical pattern and adapting to
+fresh conditions, contingent on demonstrating that the two battles exercise those demands.

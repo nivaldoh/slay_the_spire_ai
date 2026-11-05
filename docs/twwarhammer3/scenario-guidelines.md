@@ -5,9 +5,10 @@ can be checked, including game mechanics, engine quirks and multi-agent control.
 **Owner stopped the timing investigation on 2026-11-05; no further scenario run is scheduled.**
 The [wrap-up](support-timing.md#stopped-comparison-and-next-steps) retains the implementation,
 seven completed comparison battles, one owner interruption and ten unstarted attempts.
-The next research question remains open.
-The [Cannae-inspired proposal](cannae-eval.md) offers a separate historical situation for
-adaptive decisions and dependent manoeuvres; it selects no next scenario or research track.
+The earlier timing question remains stopped.
+The owner selected a [Cannae comparison](cannae-comparison.md): separate familiar-tactic and
+adaptation battles. Their construction, deciding checks and place in the development
+sequence remain proposed; neither battle is scheduled.
 The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
 and deployment, public structured observations, permitted orders, engine wins including
 timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
