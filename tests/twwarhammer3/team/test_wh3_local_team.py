@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import wh3_fixtures
 from wh3_fixtures import CONFIG, FakeSend
 from wh3_team_fixtures import Script, Workers, ack
 
@@ -247,6 +248,65 @@ def test_configured_model_members_share_ledger_but_have_private_notes_and_local_
         assert len(policy.card["model_prompts"]) == 1
     finally:
         policy.close()
+
+
+class QuietPolls(wh3_fixtures.FakeMailbox):
+    """Observations 300 ms apart from 5200 ms, each acknowledging the last request. ``finish``
+    maps a time to the call that runs as that observation is read; with ``result_in_call`` the
+    result is already published when the decide call on the last observation returns."""
+
+    def __init__(self, finish, last_ms, result_in_call):
+        super().__init__([])
+        self.finish, self.last_ms, self.result_in_call = finish, last_ms, result_in_call
+        self.seq, self.ms = 1, 5200
+
+    def wait_new_battle(self, *, not_battle, timeout):
+        return state(0, 5000)
+
+    def wait_observation(self, *, battle, after_seq, timeout):
+        if self.ms > self.last_ms:
+            return {**state(self.seq, self.ms), "result": "lost", "final": {}}
+        item = state(self.seq, self.ms)
+        if self.pending:
+            item["orders"] = {"request": self.pending[0], "based_on": 0,
+                              "applied_ms": self.ms, "results": []}
+            self.pending = None
+        if self.ms in self.finish:
+            self.finish[self.ms]()
+        self.seq, self.ms = self.seq + 1, self.ms + 300
+        return item
+
+    def read_observation(self):
+        return {"result": "lost"} if self.result_in_call and self.ms > self.last_ms else None
+
+
+class Forfeits(Sender):
+    def decide(self, observation):
+        raise PolicyFailure("no valid reply")
+
+
+SIGNAL = {"channel": "signal", "code": "READY"}
+
+
+# Found in c-model-smoke-02: 2 of 729 inputs and 184 of 640 arrivals had no frame. Members stay
+# idle, because a scripted member that replies on every poll never leaves a quiet poll.
+@pytest.mark.parametrize("centre,finish_ms,poll_ms,last_ms,result_in_call", [
+    (lambda: Sender([SIGNAL], []), 5500, 7600, 8000, False),  # sent 5500, due 7500
+    (Forfeits, 6100, 6100, 6700, False),  # the retry input lands on the forfeit's quiet poll
+    (lambda: Sender([SIGNAL], []), 5500, 7600, 7600, True),  # the arrival poll closes the battle
+], ids=["signal-arrival", "forfeit-retry", "closing-race"])
+def test_a_quiet_poll_that_writes_team_rows_keeps_its_global_frame(
+        tmp_path, centre, finish_ms, poll_ms, last_ms, result_in_call):
+    policy, workers, _ = team(centre=centre())
+    mailbox = QuietPolls({finish_ms: lambda: workers.finish(0)}, last_ms, result_in_call)
+    play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0, "policy": "configured"},
+                      lambda: policy, mailbox, not_battle=None)
+    rows = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
+    framed = {row["observation"]["time_ms"] for row in rows
+              if row["kind"] in ("roster", "observation")}
+    sources = {row.get("source_ms", row.get("time_ms")) for row in rows if row["kind"] == "team"
+               and row["event"] in ("input", "communication")}
+    assert poll_ms in sources and sources <= framed
 
 
 @pytest.mark.parametrize("bad", ({"orders": []}, [], {"orders": [], "reason": "wait",

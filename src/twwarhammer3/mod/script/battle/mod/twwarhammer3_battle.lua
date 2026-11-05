@@ -698,15 +698,19 @@ local function teleport_units(deployment)
     end
 end
 
--- Private positions of every unit, visible or not, for the authored-start check.
+-- Private positions, bearings and ordered widths of every unit, visible or not, for the
+-- authored-start check. A value the engine does not give stays absent, not zero.
 local function deployment_reading()
     local reading = {}
     for _, side in ipairs({"friendly", "enemy"}) do
         reading[side] = {}
         for _, id in ipairs(state[side .. "_ids"]) do
-            local position = get(state[side][id].unit, "position", nil)
-            reading[side][#reading[side] + 1] = {id = id, type = get(state[side][id].unit, "type", nil),
-                x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1)}
+            local unit = state[side][id].unit
+            local position = get(unit, "position", nil)
+            reading[side][#reading[side] + 1] = {id = id, type = get(unit, "type", nil),
+                x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1),
+                bearing = round(get(unit, "bearing", nil), 1),
+                width = round(get(unit, "ordered_width", nil), 1)}
         end
     end
     return reading

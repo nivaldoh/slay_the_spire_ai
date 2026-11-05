@@ -689,8 +689,9 @@ def check_menu(scenario: dict, directory) -> dict:
     return checks
 
 
-def check_deployment(scenario: dict, observation: dict) -> dict:
-    """Each placed type has a unit of that type near its place, by the private reading.
+def match_deployment(scenario: dict, observation: dict) -> list[tuple[dict, dict, float]]:
+    """Each placed type has a unit of that type near its place, by the private reading:
+    (placement, unit, metres apart) for each placement.
 
     Policies' enemy lists hold only visible units, so the script reads every unit at the first
     observation. Its reading in the teleport's own tick still shows native positions (log,
@@ -703,7 +704,7 @@ def check_deployment(scenario: dict, observation: dict) -> dict:
     reading = settings.get("deployment_reading") or {}
     if reading.get("error"):
         raise ProtocolError(f"authored deployment unread: {reading['error']}")
-    measured = {}
+    matches = []
     for side, placements in scenario["deployment"].items():
         left = list(reading.get(side) or [])
         for wanted in placements:
@@ -716,8 +717,30 @@ def check_deployment(scenario: dict, observation: dict) -> dict:
             if error > DEPLOYMENT_TOLERANCE_M:
                 raise ProtocolError(f"authored deployment failed for {side}/{wanted['type']}:"
                                     f" {error:.0f} m from its place")
-            measured[left.pop(index)["id"]] = round(error, 1)
-    return measured
+            matches.append((wanted, left.pop(index), error))
+    return matches
+
+
+def check_deployment(scenario: dict, observation: dict) -> dict:
+    """Metres from its place per unit; ``match_deployment`` refuses a missed start."""
+    return {unit["id"]: round(error, 1)
+            for _, unit, error in match_deployment(scenario, observation)}
+
+
+# JUDGEMENT?: Formation readback — Claude, 2026-11-05: reads bearing and ordered width at the
+# first observation and records them, with no tolerance and no refusal. A pass rule or a
+# later reading would change which starts count; "constructed correctly" claims rest on this.
+def read_formation(scenario: dict, observation: dict) -> dict:
+    """Per unit, its bearing's distance from its placement and its ordered width minus the
+    placement's; None for a field the reading lacks. Ordered width is not achieved frontage."""
+    formation = {}
+    for wanted, unit, _ in match_deployment(scenario, observation):
+        bearing, width = unit.get("bearing"), unit.get("width")
+        formation[unit["id"]] = {
+            "bearing_error_deg": None if bearing is None else round(
+                abs((bearing - wanted["bearing"] + 180) % 360 - 180), 1),
+            "width_difference_m": None if width is None else round(width - wanted["width"], 1)}
+    return formation
 
 
 def check_battle(scenario: dict, observation: dict) -> dict:
@@ -726,6 +749,7 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     checks = {}
     if scenario.get("deployment"):
         checks["deployment_error_m"] = check_deployment(scenario, observation)
+        checks["deployment_formation"] = read_formation(scenario, observation)
     if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
         toggles = settings.get("benchmark_behaviours") or {}
         if toggles.get("error") or settings.get("benchmark_release_pending"):

@@ -10,6 +10,8 @@ import pytest
 from lupa.lua51 import LuaError
 from wh3_lua import MOD, load_battle, runtime
 
+from twwarhammer3.battle.setup import read_formation
+
 
 def test_terrain_grid_uses_engine_bounds_without_math_huge():
     lua = runtime()
@@ -156,6 +158,38 @@ def test_morale_warning_and_flight_readiness_are_friendly_only():
     enemy = record("e1", unit, False, "lord")
     assert enemy["morale"] is None and enemy["flight"] is None
     assert lua.globals().morale_queries == 1
+
+
+def test_deployment_reading_brings_both_sides_formation_into_the_setup_record():
+    lua = runtime()
+    lua.execute("""
+        local function regiment(kind, x, bearing, width)
+            local position = {get_x = function() return x end, get_z = function() return 0 end}
+            return {unit = {type = function() return kind end,
+                            position = function() return position end,
+                            bearing = function() return bearing end,
+                            ordered_width = width and function() return width end}}
+        end
+        state = {friendly_ids = {"f1"}, enemy_ids = {"e1", "e2"},
+                 friendly = {f1 = regiment("sword", 0, 359.04, 38.84)},
+                 enemy = {e1 = regiment("orc", 100, 181.26),  -- no width from the engine
+                          e2 = regiment("gun", 200, 90, 26.06)}}
+    """)
+    reading = load_battle(lua, "get", "round", "deployment_reading")[-1]()
+    private = {side: [dict(row) for row in reading[side].values()]
+               for side in ("friendly", "enemy")}
+    assert private == {
+        "friendly": [{"id": "f1", "type": "sword", "x": 0, "z": 0, "bearing": 359, "width": 38.8}],
+        "enemy": [{"id": "e1", "type": "orc", "x": 100, "z": 0, "bearing": 181.3},
+                  {"id": "e2", "type": "gun", "x": 200, "z": 0, "bearing": 90, "width": 26.1}]}
+    scenario = {"deployment": {
+        "friendly": [{"type": "sword", "x": 0, "z": 0, "bearing": 1, "width": 40}],
+        "enemy": [{"type": "orc", "x": 100, "z": 0, "bearing": 180, "width": 40},
+                  {"type": "gun", "x": 200, "z": 0, "bearing": 90, "width": 30}]}}
+    assert read_formation(scenario, {"setup": {"deployment_reading": private}}) == {
+        "f1": {"bearing_error_deg": 2, "width_difference_m": -1.2},
+        "e1": {"bearing_error_deg": 1.3, "width_difference_m": None},
+        "e2": {"bearing_error_deg": 0, "width_difference_m": -3.9}}
 
 
 def test_ownership_integrates_time_across_changes_and_ignores_duplicate_samples():

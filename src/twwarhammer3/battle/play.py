@@ -14,8 +14,9 @@ orders being issued (or queued); one still unacknowledged when the episode ends 
 neither. A team (a policy with ``records``) records its members' batches instead, and
 the dispatcher's requests under ``polls``. A fast policy decides at the mod's tick rate, so
 the trace keeps every decision with orders, an error or new metadata, and quiet ones once
-per ``observe_ms``. Only an engine-reported result is a gameplay outcome. ``setup`` turns
-the scenario into lobby steps and checks.
+per ``observe_ms``; a team poll that wrote team rows also keeps its frame, so each member input
+and router row names a retained state. Only an engine-reported result is a gameplay outcome.
+``setup`` turns the scenario into lobby steps and checks.
 """
 
 import json
@@ -100,6 +101,16 @@ def session(config: dict) -> dict:
     """session.json: the job's settings and the mod's switches, all on."""
     return {"enabled": True, "autostart": True, "menu": True,
             **{key: config[key] for key in SESSION_KEYS}}
+
+
+def battle_session(scenario: dict) -> dict:
+    """The session fields that shape the battle, here and in the owner's recorder."""
+    settings = {"custom": scenario["custom"]} if scenario.get("custom") else {}
+    if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
+        settings["benchmark"] = scenario.get("benchmark") or "behaviour-defaults"
+    if scenario.get("deployment"):
+        settings["deployment"] = scenario["deployment"]
+    return settings
 
 
 def play(output: Path, config: dict, *, makers: dict) -> dict:
@@ -218,12 +229,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 write_json(output / "manifest.json", manifest)
                 mailbox = Mailbox(BRIDGE_DIR, job=output.name)
                 mailbox.reset()
-                settings = {**session(config), **({"custom": scenario["custom"]}
-                                                 if scenario.get("custom") else {})}
-                if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
-                    settings["benchmark"] = scenario.get("benchmark") or "behaviour-defaults"
-                if scenario.get("deployment"):
-                    settings["deployment"] = scenario["deployment"]
+                settings = {**session(config), **battle_session(scenario)}
                 if scenario.get("reserve"):
                     settings["reserve"] = manifest["reserve_draws"][0]
                 with (mailbox.owned_session(settings),
@@ -519,14 +525,18 @@ def _start(result: dict, observation: dict, scenario: dict, event) -> None:
                                 f" the scenario wants {wanted!r}")
 
 
-def record_exchanges(policy, event) -> None:
+def record_exchanges(policy, event) -> bool:
+    """Write the policy's pending rows; True when it wrote any ``team`` row."""
+    recorded = False
     if hasattr(policy, "drain_events"):
         for record in policy.drain_events():
             event("team", **record)
+            recorded = True
     api = getattr(policy, "api", policy)  # a team drains its members' exchanges itself
     if hasattr(api, "drain_exchanges"):
         for exchange in api.drain_exchanges():
             event("model_exchange", **exchange)
+    return recorded
 
 
 def _acknowledge(result: dict, outstanding: dict, ack: dict, policy, event) -> int:
@@ -753,10 +763,13 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                     record_ending(result, latest, scenario)
             raise
         finally:
-            record_exchanges(policy, event)
+            # GraphPolicy and GraphGoals drain events too; their polls stay sampled.
+            sourced = record_exchanges(policy, event) and isinstance(policy, TeamPolicy)
         # The mod publishes the result observation last, so a battle that ended during the
         # call shows it now: the result stands and whatever the call returned is not sent.
         if (mailbox.read_observation() or {}).get("result"):
+            if sourced:
+                event("observation", observation=basis, since_previous_applied_ms=since)
             continue
         if failure:
             event("observation", observation=basis, since_previous_applied_ms=since)
@@ -780,10 +793,10 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             refusal = refused(orders, str(exc))
             orders = []
         behavior = policy_call(policy, "metadata")
-        # A fast policy decides at the tick rate: quiet decisions are logged once per
-        # observe_ms, and every decision with orders, an error or new metadata is logged.
+        # A fast policy decides at the tick rate: quiet decisions are logged once per observe_ms,
+        # and every decision with orders, an error, new metadata or team rows is logged.
         logged = (orders or invalid or behavior != logged_behavior or logged_ms is None
-                  or observation["time_ms"] - logged_ms >= config["observe_ms"])
+                  or sourced or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
             event("observation", observation=basis, since_previous_applied_ms=since,
                   decision_time_ms=observation["time_ms"], latest_seq=observation["seq"],

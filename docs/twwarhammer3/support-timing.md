@@ -293,6 +293,11 @@ or resource load changes evidence quality; recorder readiness and fidelity requi
 uv run --locked python -m twwarhammer3.battle.manual_demo record --output runs/support-timing-live/manual-01 --ffmpeg 'C:/Users/niv/AppData/Local/universal-modder/ffmpeg/bin/ffmpeg.exe' --timeout 3600
 ```
 
+`--scenario S` records another scenario with automatic play's battle-shaping session fields. A
+scenario with a reserve or custom objective is refused before launch: the mod runs neither
+under the observer session. A scenario with no `expect` is refused too, because the recorder's
+setup checks read it. Whether observe mode behaves the same on S is unverified.
+
 The installed Windows FFmpeg reports `gfxcapture` and `dup_frames` in its filter help
 (`runs/support-timing/ffmpeg-gfxcapture.txt`); the two diagnostic pilots exercised this
 capture path, while the owner-control handover remains untested. The recorder

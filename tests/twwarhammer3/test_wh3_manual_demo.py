@@ -58,6 +58,14 @@ def test_defaults_are_checked_without_adopting_a_benchmark_scorer():
         setup.check_battle(scenario, obs)
 
 
+def test_a_start_far_from_its_declared_formation_is_recorded_and_stops_no_job():
+    scenario = setup.scenarios()["emp-support-timing-v1"]  # swordsmen declared at 180, width 40
+    obs = readback()
+    obs["setup"]["deployment_reading"]["friendly"][0].update(bearing=350, width=10)
+    assert setup.check_battle(scenario, obs)["deployment_formation"]["f9"] == {
+        "bearing_error_deg": 170, "width_difference_m": -30}
+
+
 def fake_recording(tmp_path, monkeypatch, states):
     output, bridge = tmp_path / "attempt", tmp_path / "bridge"
     bridge.mkdir()
@@ -65,6 +73,8 @@ def fake_recording(tmp_path, monkeypatch, states):
     consumed = []
 
     class Mailbox:
+        sessions = []
+
         def __init__(self, directory, job):
             self.job = job
 
@@ -73,6 +83,7 @@ def fake_recording(tmp_path, monkeypatch, states):
 
         def owned_session(self, settings):
             assert settings["multiplayer"] == "observe"
+            self.sessions.append(settings)
             return nullcontext()
 
         def read_observation(self):
@@ -131,8 +142,50 @@ def test_record_keeps_success_and_failed_setup_and_never_sends_orders(
     assert (output / "stop-capture").exists()
     assert manifest["pause_intervals"] is None
     assert len(consumed) == (1 if bad_setup else 2)
+    if not bad_setup:
+        assert set(manifest["setup_checks"]["deployment_formation"]) == {"f9", "f2", "e8"}
     raw = json.loads((output / "initial-observation.json").read_text())
     assert raw["setup"]["unit_scale"] == (.5 if bad_setup else .75)
+
+
+@pytest.mark.parametrize("name,used", [("emp-envelopment-a-v1", "emp-envelopment-a-v1"),
+                                       (None, "emp-support-timing-v1")])  # fake_recording's default
+def test_record_uses_the_named_scenario_in_every_step(tmp_path, monkeypatch, name, used):
+    output, _ = fake_recording(tmp_path, monkeypatch, [readback(), ending()])
+    seen = {}
+
+    def seeing(step, result):
+        return lambda scenario, *a, **k: seen.update({step: scenario}) or result
+
+    monkeypatch.setattr(manual_demo, "validate_declaration", seeing("validation", None))
+    monkeypatch.setattr(manual_demo, "scenario_steps", seeing("steps", []))
+    monkeypatch.setattr(manual_demo, "check_menu", seeing("menu", {"passed": True}))
+    monkeypatch.setattr(manual_demo, "check_battle", seeing("battle", {"passed": True}))
+    monkeypatch.setattr(manual_demo, "expected_mode", seeing("mode", {}))
+    monkeypatch.setattr("sys.argv", ["manual_demo", "record", "--output", str(output),
+                                     "--ffmpeg", "ffmpeg.exe", "--timeout", "3600",
+                                     *(["--scenario", name] if name else [])])
+    assert manual_demo.main() == 0
+    scenario = setup.scenarios()[used]
+    assert seen == dict.fromkeys(("validation", "steps", "menu", "battle", "mode"), scenario)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["scenario"] == scenario
+    assert manifest["session"] == manual_demo.settings(scenario)
+    assert manual_demo.Mailbox.sessions == [manual_demo.settings(scenario)]
+
+
+# setup_reserve asserts no multiplayer mode, so B's two held slots would fall to native AI.
+# check_menu and check_battle read expect, so kho5-dwf5 would otherwise fail after its launch.
+@pytest.mark.parametrize("name,why", [("emp-envelopment-b-v3", "the mod refuses reserve"),
+                                      ("emp-battery-wef-evacuation", "the mod refuses custom"),
+                                      ("kho5-dwf5", "it declares no expect")])
+def test_a_scenario_the_observer_cannot_run_is_refused_before_any_output(
+        tmp_path, monkeypatch, name, why):
+    output, _ = fake_recording(tmp_path, monkeypatch, [])
+    with pytest.raises(ValueError, match=f"{name} cannot be recorded: {why}"):
+        manual_demo.record(output, "ffmpeg.exe", 3600, name)
+    assert not output.exists()
+    assert manual_demo.Mailbox.sessions == []
 
 
 def test_capture_identity_and_windows_timestamps_are_preserved(tmp_path):

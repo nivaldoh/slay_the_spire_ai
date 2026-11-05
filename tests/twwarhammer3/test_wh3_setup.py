@@ -641,6 +641,15 @@ def test_a_missed_authored_start_stops_the_job(change, message):
         setup.check_deployment(scenario, state)
 
 
+def test_formation_is_recorded_with_no_refusal_and_a_reading_without_it_still_passes():
+    scenario, state = authored()
+    reading(state)["friendly"][1].update(bearing=170, width=10)  # the sword, far from declared
+    assert setup.read_formation(scenario, state) == {
+        "f2": {"bearing_error_deg": 170, "width_difference_m": -30},
+        "f1": {"bearing_error_deg": None, "width_difference_m": None},
+        "e1": {"bearing_error_deg": None, "width_difference_m": None}}
+
+
 def test_a_plain_deployment_must_place_the_whole_roster_by_type():
     scenario = {"player": {"units": ["sword", "gun"]},
                 "deployment": authored()[0]["deployment"]}

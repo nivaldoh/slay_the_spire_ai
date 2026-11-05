@@ -1,6 +1,7 @@
-"""Record an owner-played support timing attempt, separate from automatic play/scoring.
+"""Record an owner-played attempt at a scenario, separate from automatic play/scoring.
 
-The existing single-player-compatible observer borrows controllers only for authored
+Support timing by default; ``--scenario`` names another. The existing
+single-player-compatible observer borrows controllers only for authored
 setup and releases them. The owner starts deployment and may pause; this driver never
 sends battle orders or speed changes. Video and Windows samples retain pause/stall
 ambiguity for independent labels. No result here establishes automatic-interface feasibility.
@@ -15,7 +16,7 @@ from pathlib import Path
 from gameai import windows
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.capture import copy_recording
-from twwarhammer3.battle.play import SOURCES, engine_ending, start_frontend
+from twwarhammer3.battle.play import SOURCES, battle_session, engine_ending, start_frontend
 from twwarhammer3.battle.setup import (
     check_battle,
     check_menu,
@@ -30,6 +31,10 @@ from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 from twwarhammer3.protocol import ProtocolError
 
+# The mod runs neither under the observer session: setup_reserve asserts no multiplayer mode and
+# load() goes inactive on custom. A session without them would record a different battle.
+OBSERVER_REFUSES = ("reserve", "custom")
+
 
 def windows_name(path):
     if windows.NATIVE:
@@ -42,13 +47,24 @@ def settings(scenario):
     # drops battle orders, leaves speed alone, and disables checkpoint injection/UI actions.
     return {"enabled": True, "menu": True, "autostart": False, "multiplayer": "observe",
             "observe_ms": 1000, "tick_ms": 250, "record_replay": True, "stills": False,
-            "benchmark": "behaviour-defaults", "deployment": scenario["deployment"]}
+            **battle_session(scenario)}
 
 
-def record(output, ffmpeg, timeout):
+def record(output, ffmpeg, timeout, name=None):
     if timeout <= 0:
         raise ValueError("timeout must be positive")
-    scenario = scenarios()[SCENARIO]
+    name = name or SCENARIO
+    scenario = scenarios()[name]
+    for key in OBSERVER_REFUSES:
+        if scenario.get(key):
+            raise ValueError(f"{name} cannot be recorded: the mod refuses {key} under the observer"
+                             " session, and a session without it is a different battle")
+    # JUDGEMENT?: Recorder needs expect — Claude, 2026-11-05: no `expect` means a refusal here.
+    # Skipping its checks, as play does, would keep videos of a setup nothing read back;
+    # which owner demonstrations can exist rests on this.
+    if not scenario.get("expect"):
+        raise ValueError(f"{name} cannot be recorded: it declares no expect, so its setup cannot"
+                         " be checked")
     config = {"attach": False, "skip_menu": False, "episode_timeout": 1320, "start_timeout": 900,
               "run_timeout": timeout, "episodes": 1}
     validate_declaration(scenario, config)
@@ -194,6 +210,7 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     run = commands.add_parser("record")
     run.add_argument("--output", required=True, type=Path)
+    run.add_argument("--scenario", help=f"scenario to record (default {SCENARIO})")
     run.add_argument("--ffmpeg", required=True, help="Windows FFmpeg executable with gfxcapture")
     run.add_argument("--timeout", required=True, type=float, help="Windows watchdog seconds")
     label = commands.add_parser("label-pauses")
@@ -203,7 +220,7 @@ def main():
     if args.command == "label-pauses":
         label_pauses(args.directory, args.labels)
         return 0
-    result = record(args.output.resolve(), args.ffmpeg, args.timeout)
+    result = record(args.output.resolve(), args.ffmpeg, args.timeout, args.scenario)
     return 0 if result["status"] == "engine_ended" else 1
 
 

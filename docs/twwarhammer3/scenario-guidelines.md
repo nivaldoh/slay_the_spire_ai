@@ -280,7 +280,7 @@ that those checks are implemented or already passed.
 | Mechanic or quirk | Scenario requirement |
 |---|---|
 | Lobby persistence and content | Set and read back map, role, mode, difficulty, stats modifier, scale, timer and funds. Confirm recruitable unit keys, mounts, rank and loadout on the executing installation; a visible DLC card is insufficient |
-| Identity and authored starts | Match types and identities through recruitment, placement and observation; engine IDs need not follow roster order. Check both armies privately, including hidden enemies. Check facing/usable formation when material; the current placement check tests x/z, not all geometry |
+| Identity and authored starts | Match types and identities through recruitment, placement and observation; engine IDs need not follow roster order. Check both armies privately, including hidden enemies. Check facing/usable formation when material; the current placement check tests x/z and only records bearing and ordered width, not all geometry |
 | Native AI after placement | Confirm attack/defence incentives and actual behavior. Teleporting a block does not make it hold together; distance does not schedule a wave. Preserve engine timer wins even when they bypass a tactic |
 | Movement and terrain | Check required paths with the relevant units, widths and speeds. Coarse clear cells do not prove reachability or projectile line of sight; narrow passages, map edges and obstacles can invalidate assumed routes |
 | Positions and engagement | A reported unit centre can jump between separated squads. Nearby centres do not prove contact, flanking, blocking, bracing or support; ordered width does not prove achieved formation |

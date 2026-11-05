@@ -8,6 +8,7 @@ from contextlib import nullcontext
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation, observation
 
+import twwarhammer3.battle.manual_demo as manual_demo
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from twwarhammer3.battle import commander, digest, llm, play, report, setup, stats
@@ -443,6 +444,34 @@ def harness(tmp_path, monkeypatch):
     monkeypatch.setattr(play, "Mailbox", mailbox_factory)
     return boxes
 
+
+
+class SessionWritten(Exception):
+    pass
+
+
+# The observer's own switches and what the recorder keeps; everything else is the battle's.
+OBSERVE_AND_RECORDING = {"autostart", "multiplayer", "pause", "record_replay", "speed", "stills"}
+
+
+@pytest.mark.parametrize("name", ["emp-support-timing-v2", "emp-envelopment-a-v1",
+                                  "brt-air-relief-v1", "coord-pincer", "emp-mirror-cavalry-v1",
+                                  "brt-cavalry-emp-pikes"])
+def test_the_recorder_session_equals_automatic_plays_apart_from_observe_and_recording(
+        tmp_path, harness, monkeypatch, name):
+    def stop(*args):
+        raise SessionWritten
+
+    mailbox = FakeMailbox([])
+    harness.append(mailbox)
+    monkeypatch.setattr(play, "start_frontend", stop)
+    config = {**CONFIG, "scenario": name, "interval_ms": 0, "start_timeout": 900,
+              "episode_timeout": None, "run_timeout": None}
+    with pytest.raises(SessionWritten):
+        play.play(tmp_path / "job", config, makers={})
+    recorder = manual_demo.settings(setup.scenarios()[name])
+    for key in recorder.keys() | mailbox.session.keys():
+        assert key in OBSERVE_AND_RECORDING or recorder.get(key) == mailbox.session.get(key), key
 
 
 def test_a_job_stops_before_its_next_episode_when_its_source_changes(
@@ -1061,6 +1090,25 @@ def test_a_decision_inside_observe_ms_is_logged_when_it_was_refused_or_its_metad
     assert result["decisions"] == 4 and result["invalid"] == 1
     assert [e["time_ms"] for e in events if e["kind"] == "decision"] == [1000, 1250, 1500]
     assert [e["kind"] for e in events].count("invalid") == 1
+
+
+def test_quiet_polls_of_a_non_team_policy_stay_once_per_observe_ms_whatever_it_drains(tmp_path):
+    # GraphPolicy has drain_events too; only a team's rows force a frame. The last poll (2250) is
+    # a closing race, the one frame written outside ``logged``, and stays unframed here.
+    class Eventful(Hold):
+        def drain_events(self):
+            return [{"event": "tick"}]
+
+    states = [bridge_observation(0, 0), bridge_observation(1, 1000),
+              *(bridge_observation(i, 1000 + 250 * (i - 1), ack=True) for i in range(2, 7)),
+              bridge_observation(7, 2500, result="won")]
+    mailbox = FakeMailbox(states)
+    mailbox.read_observation = lambda: mailbox.queue[0] if len(mailbox.queue) == 1 else None
+    play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0}, Eventful, mailbox,
+                      not_battle=None)
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    assert [e["time_ms"] for e in events if e["kind"] == "decision"] == [1000, 2000]
+    assert 2250 not in [e["observation"]["time_ms"] for e in events if e["kind"] == "observation"]
 
 
 def test_each_observation_wait_is_bounded_by_the_observation_timeout(tmp_path):
