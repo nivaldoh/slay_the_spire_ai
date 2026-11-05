@@ -4153,6 +4153,136 @@
    },
    "calibration_change": "Owner-selected front-line pressure screen, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords. Keep B v2 mechanics and all other physical settings. A separate unverified development candidate, outside existing suites; every legal engine win counts."
  },
+ "emp-envelopment-a-v2": {
+   "base": "emp-envelopment-a-v1",
+   "name": "emp-envelopment-a-v2",
+   "scenario_version": 2,
+   "enemy": {
+     "units": [
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_cav_empire_knights",
+       "wh_main_emp_cav_empire_knights"
+     ]
+   },
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -95,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -415,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Owner-selected harder force, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords, as in emp-envelopment-b-v3, keeping A's native AI and all of A's placements. A separate unverified development candidate, outside existing suites; every legal engine win counts."
+ },
+ "emp-envelopment-c-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "bounded"
+   }
+ },
+ "emp-envelopment-c-silent-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-silent-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-envelopment-c-fast-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-fast-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "fast"
+   }
+ },
+ "emp-envelopment-c-global-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-global-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "global"
+   }
+ },
  "brt-air-relief-v1": {
    "name": "brt-air-relief-v1",
    "scenario_version": 1,

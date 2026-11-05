@@ -10,6 +10,9 @@ Both games:
   16:29 UTC, unattached, with no snapshot or image, so any later VM session starts from a new game
   install and Steam login. "The Steam terms are fine here." This answers the question raised that
   day about Steam Subscriber Agreement section 4.C (updated 2026-09-10) for this project.
+- 2026-11-05 (Cannae window, answers to three questions): game window "Yes, start now (Recommended)";
+  harder force for A and C "Yes, before the window (Recommended)"; deciding checks "Review after the
+  window (Recommended)". Nothing is agreed in `agreed-checks.md`.
 - 2026-11-05 (benchmark improvement): `/goal` "Read runs/cannae-build/handoff.md and improve the
   benchmarks." Named no game plan or spend; carried out offline ([proposed deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05)).
 - 2026-11-05 (harder Cannae construction): selected "Screen the harder Cannae candidate

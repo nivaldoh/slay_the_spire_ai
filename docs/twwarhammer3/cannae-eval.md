@@ -327,6 +327,14 @@ separate duels. Include obscured enemies, a rally after rout, missing frames and
 whose sampling brackets overlap. A detector must distinguish these from useful engagement
 or report unknown; it must not turn a pleasing shape into a successful envelopment.
 
+### Harder force for A and C, 2026-11-05
+
+The owner chose to give A and C B3's four front Greatswords before the first window. `emp-envelopment-a-v2`
+and the four `emp-envelopment-c-*-v2` arms keep A's native AI and every placement, so unlike B3 the
+rear regiments stay at x=290 and no reserve exists. Type binding should move the ordinary enemy
+commander 45 m rearward as it did on B3; the first setup reading will show whether it does. The v1
+declarations stay. Nothing about difficulty or winnability follows from the declarations.
+
 ### Proposed deciding checks, 2026-11-05
 
 Where each candidate stands against the [claim table](scenario-guidelines.md#claims-and-eligibility),
@@ -351,7 +359,7 @@ accept or change. Other rules change what each candidate may claim; every label 
 | 1 | Constructed | Every battle below; `read_formation` records bearing and ordered width in `setup_checks.deployment_formation` | Existing position tolerance, bearing within 5 degrees and ordered width within 2 m, for each unit on both sides | A unit outside fails this check for that battle; the job itself is not refused. An unread enemy width stays unread. Ordered width is not achieved frontage; that needs one low-camera still or the owner's video. On air, saved friendly rows already fall outside (foot lord 1.4 m against 20 declared, flyers 3.9-4.0 m narrower), so air's declared widths or this tolerance must change if air is kept |
 | 2 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario S --output DIR --ffmpeg FFMPEG --timeout SECONDS`, for A, then air if kept | One engine win per configuration; every attempt kept; pauses labelled from video | A person can win this exact battle. It says nothing about the automated interface |
 | 3 | Fixed rule on B3 | `emp-envelopment-b-v3`, CentreSupport, `--reserve-seed` 4, 9, 38, 18, 3, 0, 7, 1, one launch per case | Eight fresh launches, all reported; no repeats; a loss stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan | Eight wins mean this fixed rule suffices on these eight catalogue cases, so B3 cannot carry the adaptation label without a redesign. A loss means only that this rule fell short there, and other fixed rules would need trying on that case. Two of the cases selected this controller, so only six count for a bound: six wins would put a one-sided 95% lower bound of about 0.61 on a win rate shared by those cases, if attempts are independent |
-| 4 | Shortcuts | A with Hold and Evade; B3 outside/south/2 with Evade; air with Evade; `emp-envelopment-c-silent-v1` with `cannae-local-rush.json`; one launch each | Reported only; no pass rule | A win is recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be passed without fighting; a change of task needs the owner and a checked scorer. A loss by Evade shows only that this Evade failed |
+| 4 | Shortcuts | `emp-envelopment-a-v2` with Hold and Evade; B3 outside/south/2 with Evade; air with Evade; `emp-envelopment-c-silent-v2` with `cannae-local-rush.json`; one launch each | Reported only; no pass rule | A win is recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be passed without fighting; a change of task needs the owner and a checked scorer. A loss by Evade shows only that this Evade failed |
 | 5 | C capture | The next C model battle; the two scripted probes logged every poll, so they cannot show this | No member input, send or router row without its global frame | Each member input, send and router row has its frame. It says nothing about coordination |
 
 The first decision statements, in the [specification form](scenario-guidelines.md#the-scenario-specification).
@@ -565,7 +573,7 @@ neither a historical narrative nor a green repository check settles those.
 | Construction order and scale | Settle the canonical battle, then validate B's event mechanism before expanding its combinations; decide how much of the proposed force/geometry to retain |
 | Comparison method | Settle recognition and adaptation controls; for C settle command groups, local sensing, signals/couriers and channel controls; optional anticipation remains separate |
 | Construction and evidence | Accept or change the [proposed deciding checks](#proposed-deciding-checks-2026-11-05); review the roster/settings; decide what additional evidence makes the scenario ready |
-| Force for A and C | Keep A's force, where all five scripted attempts won and Hold is untried, or give A and C B3's four front Greatswords as one difficulty step; on the present force two scripted wins needed no tactical message and the one model team lost, so whether a channel comparison has room there is unknown |
+| Force for A and C | Chosen by the owner, 2026-11-05: the [harder force](#harder-force-for-a-and-c-2026-11-05) |
 
 After those choices, settle arms/resources, optional forecasts, variation,
 ranking formula and trial budget in their respective stages. The proposed contribution
