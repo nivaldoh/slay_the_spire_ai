@@ -23,7 +23,7 @@ Completed work and review handoffs: [review queue](review-queue.md#completed-wor
 Later planning: [session context](workflow.md#session-context-improvements) and the remaining [concurrent work](workflow.md#concurrent-work-improvements) proposals.
 
 WH3 first; Spire waits behind it; post-training is secondary.
-Boris-only [battle proposals](twwarhammer3/boris-scenarios.md): unverified candidates for owner selection; no games scheduled.
+[Cannae evaluation plan](twwarhammer3/cannae-eval.md): unverified candidate; decisions, anticipation and team studies remain open, no games scheduled. Owner: any faction and lords may be considered. The [Boris-only proposals](twwarhammer3/boris-scenarios.md) concern the multiplayer VM account. Next select the question and construction/check choices.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews; correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)). Added [cross-domain design reference](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot); WH3 transfer remains open. Added [RoCoBench](twwarhammer3/benchmark-references/rocobench.md), with robot coordination parallels to both WH3 team setups.
 

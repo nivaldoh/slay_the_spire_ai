@@ -6,6 +6,8 @@ can be checked, including game mechanics, engine quirks and multi-agent control.
 The [wrap-up](support-timing.md#stopped-comparison-and-next-steps) retains the implementation,
 seven completed comparison battles, one owner interruption and ten unstarted attempts.
 The next research question remains open.
+The [Cannae-inspired proposal](cannae-eval.md) offers a separate historical situation for
+adaptive decisions and dependent manoeuvres; it selects no next scenario or research track.
 The [benchmark definition](benchmark.md) still governs automated controllers: fixed armies
 and deployment, public structured observations, permitted orders, engine wins including
 timer wins, and unpaused 1x play. The owner alone may pause a manual winnability demonstration.
@@ -147,6 +149,11 @@ candidates for owner selection. Mark unsupported information, actions, content a
 measurements as prerequisites, not losses. Diversity cannot justify a broken scenario.
 
 ## The scenario specification
+
+Owner clarification, 2026-11-05: general local evals may consider any faction and lords.
+The Boris-only content restrictions and no-lord fixtures concern multiplayer battles on
+the VM, not all WH3 benchmarks or single-client model teams. Choose factions and characters
+for the intended decision, then check the exact setup on the executing installation.
 
 Keep one short specification beside the scenario's documentation, with links to its
 resolved JSON and evidence. Reuse the manifest and existing reports; no new runtime schema

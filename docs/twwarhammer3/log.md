@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Plan a Cannae inspired evaluation
+
+- Added the [candidate plan](cannae-eval.md): historical motivation, proposed armies,
+  native-AI constraints, implementation path, repeatable validation and optional studies
+  of adaptive decisions, forecasts and model teams. Nine choices remain marked for review.
+- Owner clarified that any faction and lords may be considered; restricted content and
+  no-lord fixtures apply to multiplayer VM work. Updated general and VM notes accordingly.
+- One independent reviewer checked the full proposal against current code/guidelines and
+  re-fetched four source pages. Fixed missing faction/lordless pins; final review found
+  no remaining findings. Evidence: `runs/cannae-eval-plan/review.md`.
+- Repository check outputs, including sandbox failures, are retained in
+  `runs/cannae-eval-plan/`. No runtime, scorer, test or agreed-check changes.
+- Zero battles or paid calls. Construction, winnability, intended measurement and frontier
+  difficulty remain unverified; research direction and any future run require selection.
+  The stopped support-timing work remains stopped.
+
 ## 2026-11-05: Stop the support-timing investigation at the owner's request
 
 - Owner no longer considers timing interesting for now; queue stopped, game closed and

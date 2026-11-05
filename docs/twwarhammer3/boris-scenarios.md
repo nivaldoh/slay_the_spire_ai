@@ -1,4 +1,9 @@
-# Boris Todbringer battle scenarios for model evaluation
+# Boris Todbringer battle scenarios for the multiplayer VM
+
+Scope clarification from the owner, 2026-11-05: this restricted-content catalogue concerns
+multiplayer work using the second account on the VM. General local evals, including the
+[Cannae proposal](cannae-eval.md), may use any faction and lords. The no-lord VM diagnostic
+fixtures are also local to those checks; this catalogue already includes lord-led candidates.
 
 The Boris-only account is enough to propose a varied benchmark: traditional Empire guns
 and cavalry, the new Ulric infantry and support units, and Bretonnian opponents. The most

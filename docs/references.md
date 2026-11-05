@@ -6,6 +6,25 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Cannae evaluation proposal (2026-11-05)
+
+For the [candidate plan](twwarhammer3/cannae-eval.md), not a live-game verification:
+- Polybius, [Histories 3.113–116](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Polybius/3%2A.html#113),
+  Paton translation, Loeb 1922: advanced centre, inward-turning infantry and cavalry
+  redeployment. In 3.115 the Romans are "caught between the two divisions of the enemy";
+  in 3.116 Hasdrubal "led his squadrons on to where the infantry were engaged".
+  Historical motivation only; this does not establish WH3 withdrawal or encirclement effects.
+  Fordham's [sourcebook heading](https://sourcebooks.web.fordham.edu/ancient/polybius-cannae.asp)
+  identifies the event as "The Battle of Cannae, 216 BCE".
+- Ellis et al., [SMACv2](https://arxiv.org/abs/2212.07489v2), abstract: "an open-loop policy
+  conditioned only on the timestep can achieve non-trivial win rates for many SMAC scenarios".
+  Motivates a fixed-plan control; no WH3 conclusion follows from its StarCraft findings.
+- [SMACv2 wrapper.py at 577ab5a](https://github.com/oxwhirl/smacv2/blob/577ab5a2cff2391f8df582da5731ea9cd6adf3c6/smacv2/env/starcraft2/wrapper.py),
+  `StarCraftCapabilityEnvWrapper.reset`: merges generated configuration before resetting.
+  Reference for materialized variants; its automatic reset retry and stepped clock are not
+  adopted. The existing [profile](twwarhammer3/benchmark-references/smacv2.md) gives context.
+  Source and code audit: `runs/cannae-eval-plan/`; no upstream experiments reproduced.
+
 ## Tactic-judge research (2026-11-04)
 
 For the [WH3 judge proposal](twwarhammer3/tactic-judges.md). All six sources independently

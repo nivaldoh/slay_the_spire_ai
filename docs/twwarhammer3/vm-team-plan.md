@@ -10,6 +10,11 @@ party), inferred.
 [log](log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)). The next steps
 are planned in [mp-next-steps.md](mp-next-steps.md).
 
+Owner clarification, 2026-11-05: the restricted rosters and no-lord fixtures in this plan
+apply to multiplayer battles on the VM. General local evals can consider any faction and
+lords, including model teams sharing one client. Do not carry these VM constraints into
+the [scenario guidelines](scenario-guidelines.md) or [Cannae candidate](cannae-eval.md).
+
 ## End state
 
 At one frozen revision on build 26403568 (patch 9.0.5), one WSL coordinator runs a private native

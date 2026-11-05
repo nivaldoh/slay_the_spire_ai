@@ -38,10 +38,11 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [scenario-guidelines.md](scenario-guidelines.md) | proposed scenario coverage, winnability and capability checks, engine and team requirements, release criteria and owner decisions |
+| [cannae-eval.md](cannae-eval.md) | Cannae-inspired candidate: dependent manoeuvres, implementation and validation plan, optional decision/anticipation/team studies; unimplemented |
 | [tactic-judges.md](tactic-judges.md) | research and proposed checks for LLM/VLM tactic annotations; no judge or score adopted |
 | [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
 | [tactics-reference.md](tactics-reference.md) | researched historical, Total War and Warhammer tactics; faction/composition and terrain/mode variants; linked evaluation proposals and source notes |
-| [boris-scenarios.md](boris-scenarios.md) | Boris-only content boundaries and concrete battle proposals for tactical decisions and model cooperation, with armies, terrain and prerequisites |
+| [boris-scenarios.md](boris-scenarios.md) | content boundaries for the multiplayer VM account and its battle proposals; general local evals can use any faction and lords |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
 | [../thesis/](../thesis/proposal.md) | the proposed master's thesis (moved 2026-10-27): proposal, candidate directions, related work and the earlier memory proposal |

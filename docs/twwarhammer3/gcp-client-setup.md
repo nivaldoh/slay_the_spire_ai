@@ -294,6 +294,8 @@ The VM account has game access through Boris Todbringer — Lords of the Endtime
 faction on that client: its Khorne list exposed only Blood Keepers; Middenland Swordsmen
 and Spearmen returned recruitable. Even `kho5-kho5` includes DLC20 cavalry. The local
 account's roster availability is not evidence for this account.
+Owner clarification, 2026-11-05: these content restrictions and the pilot's no-lord setup
+apply to multiplayer VM work. General local evals may consider any faction and lords.
 
 Do not reboot expecting automatic login unless auto-logon has actually been configured
 and checked. The pilot needed the owner to open RDP; SSH alone did not create its desktop.

@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (eval content scope): "For this we can consider any faction as well as lords.
+  Those restrictions were just for multiplayer battles on a VM, which you should adjust
+  in our notes." General local evals and single-client model teams are unrestricted by
+  those VM fixtures. [Scenario scope](twwarhammer3/scenario-guidelines.md#the-scenario-specification)
+  and [VM plan](twwarhammer3/vm-team-plan.md) distinguish the contexts.
+- 2026-11-05 (historical tactical eval plan): identify one well-known, difficult situation
+  reasonably adaptable to WH3; write a detailed repo plan following the eval guidelines,
+  with judgement calls left for the owner. Research direction stays open, including
+  decisions, anticipation and multi-agent harnesses. [Cannae proposal](twwarhammer3/cannae-eval.md);
+  planning only, no implementation, live run or measurement method selected.
 - 2026-11-05 (stop timing investigation): "I actually don't think the problem of studying
   timing is that interesting for now. Let's wrap it up and take note of next steps."
   This supersedes continuing the 18-attempt comparison: stop the queue, retain completed,
