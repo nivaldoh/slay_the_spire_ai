@@ -249,6 +249,17 @@ Each release records its own time, position, reason and submission status; the a
 is retained as an incomplete route, not silently counted as a completed intervention.
 V1 retains its original fixed release; do not pool versions for readiness or strength.
 
+Reserve briefing v1 supplies the same factual catalogue/trigger/release rules to both
+information arms. `emp-envelopment-b-announced-v2` inherits v2's entire physical setup
+and intervention, adding the realized region, side, count and fixed ground route to the
+briefing before play. The ordinary arm has no realized commitment field. The announcement
+comes from the very draw activated for that episode; it does not predict native AI after
+release or reveal a seed, runtime identities, private health or actual hidden positions.
+This disclosure rests on JUDGEMENT `battle/reserve.py` Foreknowledge disclosure.
+The single-model renderer and ordinary team projection carry it to actual requests;
+captured fake requests check matching announcements and ordinary-arm noninterference.
+Old jobs predate this briefing; no model/live foreknowledge effect has been measured.
+
 `play --reserve-seed N` supplies an optional private construction/matched-sequence seed.
 Each episode still gets a separate drawn seed and configuration; setup/rotation RNGs are
 not reused. Repeating N reproduces selection only, not engine trajectories. The root seed

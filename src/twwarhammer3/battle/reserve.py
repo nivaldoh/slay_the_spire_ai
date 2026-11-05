@@ -16,10 +16,33 @@ from twwarhammer3.protocol import ProtocolError
 # Other counts/times/routes change the response problem; adaptation remains unverified.
 CATALOGUE = tuple((region, side, count) for region in ("centre", "outside")
                   for side in ("north", "south") for count in (1, 2))
+TRIGGER_MS, V1_RELEASE_MS = 45000, 165000
 # JUDGEMENT: Reserve route completion — Codex, 2026-11-05: v2 releases a committed
 # reserve within 25 m of its final region, when unavailable, or at 360 s; others hold
 # to the bound. A fixed guessed duration differs; v1's outside routes were incomplete at 165 s.
 ARRIVAL_M, HARD_RELEASE_MS = 25, 360000
+
+
+def briefing(scenario):
+    """Public rules and an explicit foreknowledge control, never the private draw wholesale."""
+    draw = scenario["reserve"]
+    release = {"bound_ms": V1_RELEASE_MS if draw["version"] == 1 else HARD_RELEASE_MS}
+    if draw["version"] == 2:
+        release.update(arrival_m=ARRIVAL_M, unavailable=True)
+    result = {"version": 1, "rules": {
+        "unit_type": "wh_main_emp_inf_swordsmen", "controlled_regiments": 2,
+        "catalogue": [{"region": region, "side": side, "count": count}
+                      for region, side, count in CATALOGUE],
+        "trigger_ms": TRIGGER_MS, "release": release,
+        "uncommitted": "held until bound, including routing and rally",
+        "after_release": "native AI; future targets and trajectory are not prescribed"}}
+    # JUDGEMENT: Foreknowledge disclosure — Codex, 2026-11-05: announced arm exposes the
+    # realized region/side/count/ground route and timing, not seed or runtime state. A
+    # narrower announcement changes the information contrast; no adaptation claim follows.
+    if scenario.get("reserve_information") == "announced":
+        result["commitment"] = {key: deepcopy(draw[key])
+                                for key in ("region", "side", "count", "route", "trigger_ms")}
+    return result
 
 
 def materialize(scenario, *, seed=None):
@@ -39,8 +62,9 @@ def materialize(scenario, *, seed=None):
         z = -55 if side == "north" else -465
         route = [{"x": 355, "z": z}, {"x": -25, "z": z}]
     return {**deepcopy(profile), "seed": str(seed), "region": region, "side": side,
-            "count": count, "trigger_ms": 45000,
-            "release_ms": 165000 if profile["version"] == 1 else HARD_RELEASE_MS, "route": route,
+            "count": count, "trigger_ms": TRIGGER_MS,
+            "release_ms": V1_RELEASE_MS if profile["version"] == 1 else HARD_RELEASE_MS,
+            "route": route,
             **({"arrival_m": ARRIVAL_M} if profile["version"] == 2 else {})}
 
 

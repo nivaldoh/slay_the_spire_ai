@@ -167,7 +167,7 @@ class LocalTeam(TeamPolicy):
         self._mail_events()
 
 
-def reply_schema():
+def reply_schema(provider="openai"):
     def message(**properties):
         return {"type": "object", "properties": properties, "required": list(properties),
                 "additionalProperties": False}
@@ -183,6 +183,11 @@ def reply_schema():
                     relay=message(sender={"type": "string"}, send={"type": "integer"})),
         ]}}
     schema["required"].append("messages")
+    if provider == "anthropic":
+        # Claude's structured-output subset rejects maxItems. The parser and dispatcher
+        # still enforce MAX_MESSAGES; this changes only the accepted wire schema.
+        # https://platform.claude.com/docs/en/build-with-claude/structured-outputs
+        schema["properties"]["messages"].pop("maxItems")
     return schema
 
 
@@ -206,8 +211,10 @@ class LocalModel:
                          "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
                          "model": self.api.name, "effort": self.api.effort}
 
+        schema = reply_schema(self.api.provider)
+
         def parse(text):
-            value = check_fields(json.loads(text), reply_schema())
+            value = check_fields(json.loads(text), schema)
             messages = value.pop("messages")
             if (not isinstance(messages, list) or len(messages) > MAX_MESSAGES
                     or any(not isinstance(m, dict) for m in messages)):
@@ -217,7 +224,7 @@ class LocalModel:
 
         try:
             # No partial-order salvage: the local decision and its messages form one reply.
-            reply, attempts = self.api.ask(prompt, reply_schema(), parse, 0)
+            reply, attempts = self.api.ask(prompt, schema, parse, 0)
         except InvalidReply as error:
             raise llm.invalid_reply(error) from None
         self.messages = deepcopy(reply["messages"])

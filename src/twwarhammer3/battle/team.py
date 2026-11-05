@@ -90,6 +90,8 @@ def project(observation, owned, *, army=False):
 
     result = fields(observation, ("schema", "battle", "seq", "phase", "time_ms", "speed",
                                   "remaining_ms", "enemy_roster", "magic"))
+    if "reserve_briefing" in observation:
+        result["reserve_briefing"] = deepcopy(observation["reserve_briefing"])
     result["input_version"] = INPUT_VERSION
     result["friendly"] = [unit(row) for row in observation["friendly"] if row["id"] in owned]
     result["allies"] = [unit(row, ALLY_FIELDS) for row in observation["friendly"]

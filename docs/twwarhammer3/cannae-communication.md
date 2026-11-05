@@ -294,6 +294,11 @@ usefulness or communication improving outcomes. The silent arm deliberately neve
 releases that diagnostic move; its outcome is not a competent no-message baseline.
 Card, component checks, review and live evidence belong in `runs/cannae-build/`.
 
+The Anthropic wire schema omits its unsupported `maxItems` keyword; the local parser and
+dispatcher still reject more than two messages. Other providers retain the wire bound.
+Official provider contracts and a fake transport regression support this compatibility
+fix; real provider acceptance remains unverified and no paid C call has been made.
+
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs
 against their source observations, fixed ownership and the 160 m anchor boundary.

@@ -29,6 +29,47 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Passive hold won every B v2 development case
+
+- At `1788fc6`, `runs/cannae-build/b2-catalogue-hold-01/` covered all eight reserve
+  catalogue cases once: eight engine wins, zero invalid orders and $0 paid calls.
+  Rounded battle seconds: 451, 827, 817, 401, 600, 854, 809, 889. All rows retained.
+- Sequence root 106 was selected from configuration labels before these games to cover
+  all eight cases. This is curated development coverage, not a random-mixture win rate
+  or held-out study. It rests on Reserve development catalogue and Reserve route
+  completion in `battle/reserve.py`; the engine trajectories were not seeded.
+- Independent raw trace/replay recount checks starting identities, pre-trigger samples,
+  route waypoints, per-unit release circles/bounds, public inputs and engine endings.
+  Twelve committed reserves arrived inside the final circle; four uncommitted released
+  at the bound. Each case has 34 unique unchanged pre-trigger position samples. Later
+  uncommitted sampled displacement stayed below 2.31 m; holding permits physical drift.
+  Raw checks and recount: `runs/cannae-build/review/a-witness/b2-live-recount.json`.
+- These wins challenge the intended adaptation requirement. They are retained without a
+  hidden manoeuvre rule. Different responses helping across cases remains unestablished;
+  do not present this construction as an improvisation benchmark or policy-strength study.
+- Game closed normally. Next: A's public-interface envelopment witness, then reconsider
+  difficulty and coupled consequences before a model comparison. Readiness is unverified.
+
+## 2026-11-05: Cannae witness and model information interfaces
+
+- A adds `battle.cannae:Envelop`: public-state centre holding, two infantry flank routes
+  and cavalry redeployment. Rests on its marked development rules and enemy wing labels.
+  Actual waypoint positions advance routes; acknowledgements do not. Live attempt is next.
+- Duplicate own rows and changed bound types reproduced under review and now fail before
+  orders. A crossing enemy horse keeps its identity; its regression failed before the fix.
+  A plus C-schema focused checks: 12 passed; an ACK-as-arrival plant was caught.
+- B reserve briefing v1 states common rules; the announced-v2 declaration exposes its
+  activated choice only in the explicit foreknowledge arm. A dropped renderer/team field
+  reproduced with captured requests, fixed and checked through actual model adapters.
+  Related checks: 174 passed; renderer/commander/play/configured checks: 113 passed,
+  including unchanged prompt snapshots. These sets overlap and are not a combined count.
+- C omits Anthropic's unsupported array `maxItems` wire keyword, retaining the local
+  two-message bound. Official contracts and fake requests support this; 31 focused tests
+  passed, and removing the parser bound was caught. No paid provider call was made.
+- Cards, raw regressions, independent reviews and gate outputs: `runs/cannae-build/`.
+  Cards were not agreed; live witness routes, provider acceptance, information-treatment
+  effects, challenge and readiness remain unverified. No suite or score adoption.
+
 ## 2026-11-05: Cannae C live interface and B route-completion version
 
 - C at `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/`: one engine win at 520.6 s
@@ -1521,6 +1562,7 @@ visuals for those too."
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages unimplemented; [native multiplayer](native-multiplayer.md) is a separate track |
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
+| Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py` | [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
 | benchmark harness | b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |

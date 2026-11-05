@@ -218,7 +218,7 @@ The owner requested implementation of A, B and C during an approximately ten-hou
 window. A's first development declaration is `emp-envelopment-a-v1` in
 [`scenarios.json`](../../configs/twwarhammer3/scenarios.json). It uses the proposed nine
 friendly and ten enemy regiments, native AI and ordinary engine outcomes. B's reserve
-adapter and C's local views/channels are subsequent implementation work. None has an
+adapter and C's local views/channels are implemented as development profiles. None has an
 agreed readiness check; these remain unverified candidates outside existing suites.
 
 JUDGEMENT: Initial resolved geometry — Codex, 2026-11-05: selects the open negative-z strip
@@ -240,6 +240,23 @@ $0 model spend (`runs/cannae-build/a-rush-01/`). This demonstrates a working con
 attempt, not readiness or difficulty. A nearest-enemy controller succeeded without an
 explicit envelopment plan; retain it as a challenge to that interpretation. The manoeuvre
 witness, route checks and repeatable readiness procedure remain outstanding.
+
+The public-state development witness is `twwarhammer3.battle.cannae:Envelop`. It binds
+the nine friendly identities once, holds the centre until enemies approach, starts
+Greatsword flank routes after observed centre melee and redirects the decisive cavalry
+after its first-seen opposing wing has no currently eligible visible horse. That cue
+does not mean an unseen enemy is dead. It first assists the other visible cavalry fight
+when present, then attacks infantry. It uses ordinary move/attack orders and no retreat.
+Its candidate limits and enemy wing labels rest on JUDGEMENT `battle/cannae.py`
+Cannae witness development rules and Enemy wing labels. Waypoints freeze from current
+visible infantry geometry; metadata records actual position arrivals, unavailable units
+and deadlines separately. A win or accepted order is not a completed-envelopment claim.
+
+Next live construction card: one A attempt with this witness, $0, unpaused 1x; start
+timeout 600 s, episode wall limit 1320 s and job watchdog 2000 s, before the 13:25 UTC
+game cutoff. Retain every failure and inspect observation, order, application, route
+positions and engagements from trace/replay. No tactical-necessity or strength comparison
+is scheduled by this card. Raw card/check/review evidence: `runs/cannae-build/`.
 
 JUDGEMENT: Readiness procedure — Codex, 2026-11-05: proposes the staged checks below,
 starting with setup and owner demonstration before capability claims. Outcome-only readiness

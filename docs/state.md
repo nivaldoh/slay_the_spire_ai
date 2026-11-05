@@ -9,9 +9,12 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 branch `cannae-build`, worktree `runs/cannae-build/worktree`; evidence `runs/cannae-build/`.
 A and both B v1 attempts won under nearest-enemy control; B's outside reserves were still
 en route at release. C's scripted live probe won and showed a courier-to-movement chain.
-B v2 arrival-based release and A's envelopment witness/routes are next. Game closed;
+B v2's eight-case passive-hold construction run ended at `1788fc6`: all eight attempts
+won, challenging the intended adaptation requirement. B's game closed; A's single witness
+attempt is claimed next (600/1320/2000 s limits). Its code, B's briefing and C's schema fix
+are reviewed; source and case audits remain in `runs/cannae-build/`.
 $0 paid calls; no readiness claim. Game cutoff 2026-11-05 13:25 UTC.
-[Log](twwarhammer3/log.md#2026-11-05-cannae-c-live-interface-and-b-route-completion-version).
+[Log](twwarhammer3/log.md#2026-11-05-passive-hold-won-every-b-v2-development-case).
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
 

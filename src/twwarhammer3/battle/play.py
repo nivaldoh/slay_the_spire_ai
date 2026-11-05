@@ -572,6 +572,10 @@ def public(observation: dict, scenario: dict) -> dict:
         view["mode"] = {**view["mode"], "scoring": scenario["scoring"]}
     if scenario.get("benchmark") and view.get("mode"):
         view["mode"] = {**view["mode"], "benchmark": scenario["benchmark"]}
+    if scenario.get("reserve"):
+        from twwarhammer3.battle.reserve import briefing
+
+        view["reserve_briefing"] = briefing(scenario)
     return view
 
 

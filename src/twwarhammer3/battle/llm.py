@@ -411,6 +411,9 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     mode = render_mode(observation.get("mode"))
     if mode:
         lines.append(mode)
+    if observation.get("reserve_briefing"):
+        lines.append("Reserve briefing: " + json.dumps(observation["reserve_briefing"],
+                                                       sort_keys=True))
     if (observation.get("army") or {}).get("abilities"):
         lines.append(render_army(observation["army"], observation.get("time_ms")))
     magic = observation.get("magic") or {}

@@ -47,9 +47,17 @@ sources inspected 2026-11-05; no upstream experiment reproduced:
   `get_obs_agent` docstring: "Agents should have access only to their local observations".
   Research-code reference for the member-information boundary; its unit perception and
   stepped environment do not establish WH3 local sight or its asynchronous timing.
+- The same file's `get_agent_action_heuristic` keeps a selected target until unavailable.
+  Code-structure reference for A's scripted witness target memory; WH3 uses only current
+  visible, able contacts. Its tactical strength and global enemy access do not transfer.
 - Das et al., [TarMAC](https://proceedings.mlr.press/v97/das19a.html), abstract distinguishes
   "what messages to send and whom to address them to". Motivates content/recipient controls;
   its rounds before environment actions are not adopted in an unpaused WH3 battle.
+- [Anthropic structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs#json-schema-limitations),
+  checked 2026-11-05: array `maxItems` is unsupported. C omits that wire keyword for
+  Anthropic while retaining its parser/dispatcher bound. [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs#supported-schemas)
+  supports the keyword on the standard models here; C retains it for that provider.
+  Documentation and fake transport checks do not establish real provider acceptance.
 
 ## Tactic-judge research (2026-11-04)
 
