@@ -51,6 +51,8 @@ UNIT_READS = {"unique_ui_id", "type", "unit_class", "is_commanding_unit", "can_f
 function unit(id, x, alliance)
     local values = {unique_ui_id = id, type = "wh_main_emp_inf_spearmen_0",
         unit_class = "inf_mel", number_of_men_alive = 60, initial_number_of_men = 60,
+        bearing = 0, unary_hitpoints = 1, is_routing = false, is_shattered = false,
+        is_in_melee = false, is_moving = false,
         is_deployed = true, is_valid_target = true, can_reach_position = true,
         is_visible_to_alliance = true, alliance_index = alliance}
     local methods = {position = function()
