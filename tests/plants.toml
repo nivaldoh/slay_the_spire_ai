@@ -3384,3 +3384,84 @@ old = "now >= self.cue[\"time_ms\"] + delay"
 new = "now >= self.cue[\"time_ms\"]"
 tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_delayed_freezes_public_cue_route_and_waits_full_battle_delay"]
 source = "2026-11-04 support-timing implementation and independent review"
+
+[[plant]]
+id = "support-audit-cue-ignores-routing"
+guards = "contact annotation requires usable infantry"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "return all(flags) and all(able(unit) for unit in eligible)"
+new = "return all(flags)"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_contact_annotation_requires_usable_infantry"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-conflict-overwrites"
+guards = "conflicting sequence is unknown but keeps engine ending"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "if key in samples and samples[key] != obs:"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_conflicting_sequence_is_unknown_but_keeps_engine_ending"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-terminal-time-unchecked"
+guards = "terminal time must fit between last live and first ending"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "if (not finite(frozen) or not finite(upper) or frozen > upper\n            or lower is not None and frozen < lower):"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_terminal_time_must_fit_between_last_live_and_first_ending"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-terminal-copy-unchecked"
+guards = "conflicting terminal copies cannot select the more favourable"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "if any(copy != terminal for copy in copies):"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_conflicting_terminal_copies_cannot_select_the_more_favourable"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-config-unchecked"
+guards = "comparison rejects changed run configuration"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "if actual_config.get(key) != value:"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_comparison_rejects_changed_run_configuration"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-battle-reused"
+guards = "copied battle in distinct directories is not a fresh launch"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "if battle and sum(a.get(\"battle\") == battle for a in attempts) > 1:"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_copied_battle_in_distinct_directories_is_not_a_fresh_launch"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-native-read-defaults"
+guards = "failed core native getter cannot fabricate support or geometry"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "error(\"unreadable unit field \" .. method)\n        end\n        return value"
+new = "value = 0\n        end\n        return value"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_failed_core_native_getter_cannot_fabricate_support_or_geometry"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-invalid-cli-flag"
+guards = "generated jobs parse with the actual cli"
+file = "src/twwarhammer3/battle/support_timing.py"
+old = "\"--run-timeout\", \"2280\", \"--record-replay\"]"
+new = "\"--run-timeout\", \"2280\", \"--record-replay\", \"--no-stills\"]"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_generated_jobs_parse_with_the_actual_cli"]
+source = "2026-11-04 independent support-timing verification audit"
+
+[[plant]]
+id = "support-audit-earliest-ending"
+guards = "Frozen HP cannot follow the separately recorded first engine ending"
+file = "src/twwarhammer3/battle/support_evidence.py"
+old = "upper = min(upper, recorded_time)"
+new = "upper = upper"
+tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_recorded_first_ending_also_bounds_the_frozen_hp"]
+source = "2026-11-04 independent support-timing verification review"

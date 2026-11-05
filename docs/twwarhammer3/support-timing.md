@@ -88,6 +88,30 @@ uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timi
 uv run --locked python -m twwarhammer3 report runs/support-timing-live/block-* --output runs/support-timing-live/report
 ```
 
+For the current verification session, `runs/support-verify/audit_play.py` wraps ordinary
+`play` with passive Windows video/state capture and independent native API readings.
+Its `reading.lua` enumerates native unit IDs instead of calling the mod's unit recorder.
+The scripts and their hashes are retained with each attempt's `audit/instrumentation.json`.
+They submit no orders or speed changes. This evidence is private to verification.
+
+JUDGEMENT: Verification sampling — Codex, 2026-11-04: read three units every completed
+100 ms engine tick, with the recorder's existing 30 fps video and 0.2 s Windows samples.
+Coarser sampling costs less but widens event brackets. Check overhead and video fidelity
+in the pilot, then freeze the same instrumentation for every comparison arm.
+
+```bash
+uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v1 --policy twwarhammer3.battle.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-01
+# After independently checking the pilot, use the ordinary queue with the observer:
+uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/plan.json
+```
+
+Before the comparison, inspect the pilot's `audit/video/video.mkv`, Windows clock journal,
+`audit/native/native.jsonl`, initial setup readback and first engine ending. Preserve the
+pilot separately from the 18 attempts. A native/capture failure fails the instrumented job
+while retaining its engine result. No normal ready signal alone proves useful recording.
+Review video clock transitions against state samples; do not infer contact from distance,
+or treat a later native read as the first-ending value. A disagreement stops the check.
+
 The plan generator writes only files; it requires committed sources. It records every
 attempt with a distinct directory, one episode per fresh launch, and `keep_going: false`.
 Each `block-N-ARM/episode-0000/` retains trace, replay, result and mod log. Manifest and

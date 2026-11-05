@@ -188,16 +188,39 @@ local function unit_class(unit)
 end
 
 local function unit_record(id, unit, mine, class)
-    local position = get(unit, "position", nil)
+    -- A failed core read is an unreadable unit (the caller's existing {id,error} path),
+    -- never death, absence of melee, or invented route geometry. Optional UI reads below
+    -- retain their defaults. Read each native value once; no check-then-reread race.
+    local function required(object, method, kind)
+        local value = get(object, method, nil)
+        if value == nil or (kind and type(value) ~= kind)
+                or (kind == "number" and (value ~= value or math.abs(value) == math.huge)) then
+            error("unreadable unit field " .. method)
+        end
+        return value
+    end
+    local position = required(unit, "position")
+    local function coordinate(method)
+        local value = position[method](position)
+        if type(value) ~= "number" or value ~= value or math.abs(value) == math.huge then
+            error("unreadable unit field " .. method)
+        end
+        return round(value, 1)
+    end
+    local core_flags = {}
+    for _, method in ipairs({"is_routing", "is_shattered", "is_in_melee", "is_moving"}) do
+        core_flags[method] = required(unit, method, "boolean")
+    end
     local record = {
         id = id, type = get(unit, "type", "?"), class = class,
         commander = get(unit, "is_commanding_unit", false),
         can_fly = get(unit, "can_fly", false),
         flying = get(unit, "is_currently_flying", false),
-        x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1),
-        bearing = round(get(unit, "bearing", 0)),
-        men = get(unit, "number_of_men_alive", 0), men0 = get(unit, "initial_number_of_men", 0),
-        hp = round(get(unit, "unary_hitpoints", 0), 2), state = {},
+        x = coordinate("get_x"), z = coordinate("get_z"),
+        bearing = round(required(unit, "bearing", "number")),
+        men = required(unit, "number_of_men_alive", "number"),
+        men0 = get(unit, "initial_number_of_men", 0),
+        hp = round(required(unit, "unary_hitpoints", "number"), 2), state = {},
     }
     -- Only called for friendlies or currently visible enemies. Barrier HP is a
     -- separate, replenishable resource; ordinary hitpoints do not include it.
@@ -214,10 +237,12 @@ local function unit_record(id, unit, mine, class)
         {"is_rampaging", "rampaging"},
     }
     for _, flag in ipairs(flags) do
-        if get(unit, flag[1], false) then record.state[#record.state + 1] = flag[2] end
+        local value = core_flags[flag[1]]
+        if value == nil then value = get(unit, flag[1], false) end
+        if value then record.state[#record.state + 1] = flag[2] end
     end
     -- is_moving_fast follows the run setting, also while the unit stands.
-    if get(unit, "is_moving", false) and get(unit, "is_moving_fast", false) then
+    if core_flags.is_moving and get(unit, "is_moving_fast", false) then
         record.state[#record.state + 1] = "running"
     end
     record.range = round(get(unit, "missile_range", 0))

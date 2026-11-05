@@ -12,7 +12,7 @@ import math
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle.support_timing import OUT, TYPES, identities
+from twwarhammer3.battle.support_timing import OUT, TYPES, able, identities
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -54,7 +54,10 @@ def together(observation, ids):
     flags = [melee(observation, ids[role]) for role in ("infantry", "enemy")]
     if None in flags:
         return None
-    return all(flags)
+    eligible = [unit_at(observation, ids[role]) for role in ("infantry", "enemy")]
+    if any(unit is None or "men" not in unit for unit in eligible):
+        return None
+    return all(flags) and all(able(unit) for unit in eligible)
 
 
 def annotate(episode: Path):
@@ -91,7 +94,11 @@ def annotate(episode: Path):
     for row in rows:
         obs = row.get("observation")
         if obs and obs.get("friendly") and finite(obs.get("time_ms")):
-            samples[(obs.get("battle"), obs.get("seq"))] = obs
+            key = (obs.get("battle"), obs.get("seq"))
+            if key in samples and samples[key] != obs:
+                issues.append(f"conflicting observation at {key}")
+            else:
+                samples[key] = obs
     ordered = sorted(samples.values(), key=lambda o: (o["time_ms"], o.get("seq", 0)))
     report = {"status": result.get("status"), "engine_result": outcome, "H": None,
               "input_sha256": {p.name: sha256(p) for p in paths if p.exists()}, "issues": issues,
@@ -105,6 +112,8 @@ def annotate(episode: Path):
         report["issues"].append("invalid or rejected orders")
     if result.get("status") not in ("won", "lost", "draw"):
         report["issues"].append("attempt did not complete cleanly")
+    if any(issue.startswith("conflicting observation") for issue in issues):
+        return report
     if not ordered:
         report["issues"].append("no observations")
         return report
@@ -118,6 +127,7 @@ def annotate(episode: Path):
         report["issues"].append(str(exc))
         return report
     report["ids"] = ids
+    report["battle"] = ordered[0].get("battle")
     report["initial_observation"] = ordered[0]
     report["cue"] = first_bracket(ordered, lambda o: together(o, ids))
     report["cavalry_melee"] = first_bracket(ordered, lambda o: melee(o, ids["cavalry"]))
@@ -148,6 +158,25 @@ def annotate(episode: Path):
         report["issues"].append("inconsistent engine endings")
     # The final private read is frozen by the engine-ending callback, not the last moving frame.
     terminal = (ending.get("final") or {}).get("benchmark") or {}
+    copies = [(o.get("final") or {}).get("benchmark") for o in endings]
+    if result.get("terminal_condition") is not None:
+        copies.append(result["terminal_condition"])
+    if any(copy != terminal for copy in copies):
+        issues.append("conflicting terminal condition copies")
+        return report
+    lower = max((o["time_ms"] for o in ordered if not o.get("result")), default=None)
+    frozen, upper = terminal.get("time_ms"), ending.get("time_ms")
+    recorded_time = (result.get("engine_ending") or {}).get("battle_ms")
+    if finite(recorded_time) and finite(upper):
+        upper = min(upper, recorded_time)
+    report["terminal_interval_ms"] = [lower, upper]
+    if (not finite(frozen) or not finite(upper) or frozen > upper
+            or lower is not None and frozen < lower):
+        issues.append("first-ending time outside observed interval or unavailable")
+        return report
+    if lower is None:
+        issues.append("no live observation to bound first-ending time")
+        return report
     by_id = {u.get("id"): u for u in terminal.get("units", [])}
     report["ending_units"] = []
     hp = []
@@ -183,6 +212,16 @@ def summarize(plan_path: Path):
                     if manifest.get(key) != plan.get(key):
                         evidence.setdefault("issues", []).append(
                             f"manifest {key} differs from plan")
+                expected_config = job.get("config")
+                actual_config = manifest.get("config")
+                if not expected_config or not isinstance(actual_config, dict):
+                    evidence.setdefault("issues", []).append(
+                        "run config unavailable in plan/manifest")
+                else:
+                    for key, value in expected_config.items():
+                        if actual_config.get(key) != value:
+                            evidence.setdefault("issues", []).append(
+                                f"manifest config {key} differs from plan")
                 if not manifest.get("setup_checks"):
                     evidence.setdefault("issues", []).append("lobby setup checks unavailable")
                 result = json.loads((directory / "episode-0000/result.json").read_text())
@@ -196,6 +235,14 @@ def summarize(plan_path: Path):
             evidence.setdefault("issues", []).append(str(exc))
         attempts.append({"block": job["block"], "arm": job["arm"],
                          "output": job["output"], **evidence})
+    # Separate trajectories, never multiple rows for the same launch or copied battle.
+    for attempt in attempts:
+        path = Path(attempt["output"]).resolve()
+        if sum(Path(a["output"]).resolve() == path for a in attempts) > 1:
+            attempt.setdefault("issues", []).append("reused attempt output")
+        battle = attempt.get("battle")
+        if battle and sum(a.get("battle") == battle for a in attempts) > 1:
+            attempt.setdefault("issues", []).append("reused battle identity")
     primary = [a for a in attempts if a["arm"] in ("contact", "delayed")]
     contact = [a for a in primary if a["arm"] == "contact"]
     delayed = [a for a in primary if a["arm"] == "delayed"]

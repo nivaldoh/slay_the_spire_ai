@@ -175,10 +175,18 @@ def make_plan(output: Path):
                                   f"{__name__}:{CLASSES[arm].__name__}", "--episodes", "1",
                                   "--observe-ms", "1000", "--tick-ms", "250", "--interval-ms", "0",
                                   "--start-timeout", "900", "--episode-timeout", "1320",
-                                  "--run-timeout", "2280", "--record-replay", "--no-stills"]})
+                                  "--run-timeout", "2280", "--record-replay"],
+                         # Rests on JUDGEMENT Diagnostic launch caps above and Diagnostic
+                         # design in docs/twwarhammer3/support-timing.md. Pin CLI defaults too.
+                         "config": {"policy": f"{__name__}:{CLASSES[arm].__name__}",
+                                    "episodes": 1, "observe_ms": 1000, "tick_ms": 250,
+                                    "interval_ms": 0, "start_timeout": 900,
+                                    "episode_timeout": 1320, "run_timeout": 2280,
+                                    "speed": 1, "pause": False, "delay_seconds": "0",
+                                    "record_replay": True, "stills": False, "attach": False}})
     plan = {"kind": SCENARIO, "source_revision": revision,
             "source_files": source_fingerprints(SOURCES), "scenario": scenarios()[SCENARIO],
-            "status": "proposed_check_not_agreed", "keep_going": False, "jobs": jobs}
+            "status": "owner_agreed_exploratory_check", "keep_going": False, "jobs": jobs}
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x") as file:
         json.dump(plan, file, indent=2)

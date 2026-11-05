@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: Audit support timing before live verification
+
+- Owner selected the [exploratory usefulness rule](support-timing.md#repeatable-live-check).
+  No live pass yet. Independent audit: `runs/support-verify/review/audit.md`.
+- A separate prerequisite commit completed synthetic run configuration, distinct battle IDs
+  and neutral unit-read fixtures without changing assertions or production behavior.
+- New regressions exposed 30 failures in the old implementation. Fixes preserve unknowns
+  on failed core engine reads, conflicting observations/terminal copies, invalid ending
+  times, repeated battles and mismatched configurations. Annotation cues require usable
+  infantry, like the executor. Plans now use CLI-supported arguments.
+- Focused checks, guard removals, saved wrong versions and full-gate output are retained
+  in `runs/support-verify/`. Live witnesses use independent native IDs/API reads and passive
+  video, with the normal public controller. HP remains an API measurement.
+- These repairs establish offline behavior only. Recruitment, placement/facing, order
+  effects, capture fidelity, winnability and the timing contrast await the live check.
+
 ## 2026-11-04: Implement the first support-timing candidate offline
 
 - Built [emp-support-timing-v1](support-timing.md), six diagnostics sharing one executor,
