@@ -9,8 +9,8 @@ hosted by the VM. Labels: checked (read or run on 2026-11-03), read (from a doc)
 Order: step 2 and the offline parts of steps 1 and 3 first ($0, no game), then one PC
 game window for the lobby map (step 1, $0), then one paid VM session that tests joining
 and runs the VM-hosted battle (steps 1 and 3 together). The kept game disk
-`wh3-mp-20261103d` is deleted at 2026-11-06 21:09 UTC, so that session must start before
-then or the disk must be kept longer (decision 5).
+`wh3-mp-20261103d` was deleted on 2026-11-05 at the owner's request, with no snapshot, so that
+session must first build a new disk (fresh install and Steam login).
 
 JUDGEMENT?: Session grouping — Claude, 2026-11-03: offline work, one $0 PC window, then one
 paid session for the join test and the VM-hosted battle. A separate join session costs a
@@ -40,8 +40,8 @@ version; nothing here is verified under the hard rule.
 Answered 2026-11-03 ([direction](../owner-direction.md)); implementation not started:
 1 yes ("Sure"); 2 yes; 3 left to Claude, who takes the proposed reverse SSH forward and
 falls back to two coordinators with a two-directory `compare-peers`; 4 yes ("Seems fine");
-5 keep the disk for now. The disk's deletion job is still armed for 2026-11-06 21:09 UTC;
-cancelling or moving it is a cloud change not yet made.
+5 keep the disk for now. The owner reversed 5 on 2026-11-05: the disk is deleted, and its
+expiry job treats the missing disk as done.
 
 JUDGEMENT: Worker link — Claude, 2026-11-03, delegated by the owner ("do whatever works
 best"): reverse SSH forward in the IAP tunnel; two coordinators if it fails. Tailscale
@@ -183,7 +183,7 @@ Goal: the 11-03 battle-2 phases with the VM hosting and slot order swapped, each
 army moved by its own driver, played to an ending the engine reports on both clients.
 
 Changes before the session (offline):
-1. `scripts/wh3_gcp.py --disk wh3-mp-20261103d`: boot that disk in its zone (us-west1-c)
+1. `scripts/wh3_gcp.py --disk wh3-mp-20261103d` (disk deleted 2026-11-05; use a new one): boot that disk in its zone (us-west1-c)
    with `--disk=name=...,boot=yes,auto-delete=no`, no image and no bootstrap script; the
    backup workflow deletes the VM only, and the disk's expiry workflow stays as armed.
    `test_wh3_gcp.py`: the create command has no `--image`, keeps the disk, uses the disk's

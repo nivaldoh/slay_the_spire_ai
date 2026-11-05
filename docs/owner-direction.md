@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-05 (game disk and Steam terms): "We should delete the game disk. It's not being used
+  right now." Disk `wh3-mp-20261103d` (250 GB, project `wh3-benchmark`, us-west1-c) was deleted at
+  16:29 UTC, unattached, with no snapshot or image, so any later VM session starts from a new game
+  install and Steam login. "The Steam terms are fine here." This answers the question raised that
+  day about Steam Subscriber Agreement section 4.C (updated 2026-09-10) for this project.
 - 2026-11-05 (harder Cannae construction): selected "Screen the harder Cannae candidate
   (Recommended)": replace the four front enemy Swordsmen with Greatswords and screen
   passive hold, nearest-enemy and the existing witness as a separate unverified candidate.
