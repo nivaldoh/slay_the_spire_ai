@@ -264,7 +264,11 @@ paths, targets, trigger rules and physical scenario stay the same. This rests on
 `battle/cannae.py` Cavalry exit v2; the first failure does not prove this is the remedy.
 If map clipping reverses the declared outward geometry, it records `no_exit` and falls
 back to an ordinary eligible-target attack rather than marking that route arrived.
-Next live construction card: one A attempt with v2, $0, unpaused 1x; start
+At `b79c8ce`, `a-envelop-v2-01` won at 234.3 s. Both Greatswords completed their paths;
+the accepted cavalry exits remained pending at the ending, with no waypoint arrival.
+The revised geometry is not a completed-redeployment witness. Retain that limitation
+before any harder construction or model comparison; these are separate unpaired battles.
+That live construction card was one A attempt with v2, $0, unpaused 1x; start
 timeout 600 s, episode wall limit 1320 s and job watchdog 2000 s, before the 13:25 UTC
 game cutoff. Retain every failure and inspect observation, order, application, route
 positions and engagements from trace/replay. No tactical-necessity or strength comparison

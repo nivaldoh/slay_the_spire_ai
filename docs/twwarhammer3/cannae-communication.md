@@ -299,6 +299,28 @@ dispatcher still reject more than two messages. Other providers retain the wire 
 Official provider contracts and a fake transport regression support this compatibility
 fix; real provider acceptance remains unverified and no paid C call has been made.
 
+The next free live card uses `cannae-local-slow-probe.json`: only left infantry uses
+`SlowProbeMember`, sleeping three wall seconds inside its worker per decision. The other
+four use the ordinary probe. Inspect overlapping peer inputs, mail arriving during the
+slow call, its unchanged pending input and first later usable input/order/effect. The
+engine stays unpaused at 1x. This rests on JUDGEMENT `local_team.py` Slow member diagnostic;
+it is a scheduling check, not an inference-latency estimate or tactical comparison.
+
+JUDGEMENT?: C model interface allowance — Codex, 2026-11-05: one subsequent model smoke
+uses less than five additional ledger dollars under existing spending authorization.
+Zero would leave real provider acceptance unchecked; this bound is not a study resource arm.
+
+The model smoke selects the existing `claude-haiku-5-5/low` setup, resting on JUDGEMENT
+`gameai/providers.py` Haiku first and Anthropic efforts. The initial WH3/Spire Anthropic
+totals were $6.1660213/$0, plus $0.02 provider smoke spend; its WH3 cumulative cap is
+$11.16 under the shared $200. Recheck both ledgers before starting. This uses existing
+paid-API authorization in [state](../state.md#runtime-and-ownership); the earlier optional
+budget question was unnecessary, and silence is not treated as new permission.
+The [official model overview](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
+supports the pinned small-context rates; no provider-price or model-map change is made.
+Both live cards are one attempt with 600/1320/2000 s bounds, before 13:25 UTC. Retain every
+failure and its cost. Neither card is agreed; no model-strength/readiness claim follows.
+
 At `8f6dc0b`, `runs/cannae-build/c-bounded-probe-01/` ended with one engine win at
 520.6 battle seconds. Independent recount checked all 1,692 recorded member inputs
 against their source observations, fixed ownership and the 160 m anchor boundary.

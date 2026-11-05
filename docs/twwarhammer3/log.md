@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Second A witness and C runtime probes
+
+- `a-envelop-v2-01` at `b79c8ce`: one engine win at 234.3 s (234 rounded), zero invalid
+  orders/refusals, $0. Independent raw input/order/component and full CSV recount passed.
+- Greatsword routes completed at 155.2/168.1 s, with six arrival distances 14.20–14.91 m.
+  Left infantry showed melee before route completion, then targeted melee at 169.3 s;
+  right targeted melee appeared at 231.1 s. These are observed components, not a utility claim.
+- Cavalry exit moves applied at 125.8 s satisfy outward geometry but reached no waypoint.
+  Closest sampled distances were 39.27/58.30 m; both routes remained pending at the ending.
+  Matching destinations do not establish completion or reachability. Keep this limitation.
+- C adds one slow-worker probe using the existing courier/move: left infantry sleeps in
+  its worker, peers continue. Rests on JUDGEMENT `local_team.py` Slow member diagnostic.
+  Offline real-factory checks showed peer progress, immutable pending input and later mail.
+- A privacy test falsely matched latency digits as a hidden coordinate. Fixed its unrelated
+  wall clock, retaining the leak assertion and engine-time expiry inputs; 36 focused tests pass.
+- Next cards: one free C slow-worker case, then one Haiku interface smoke under existing
+  ledger authorization. Rests on JUDGEMENT? `cannae-communication.md` C model interface
+  allowance, plus the provider's marked default/efforts. No paid call has yet been made.
+- Raw cards/checks/recounts/reviews: `runs/cannae-build/`. Readiness, tactical usefulness,
+  real-provider acceptance and model strength remain unverified; no agreed check or suite adoption.
+
 ## 2026-11-05: First A witness completed infantry flanks but failed cavalry exits
 
 - `a-envelop-01` at `c4db660`: one engine win at 381.3 s (381 rounded), zero invalid

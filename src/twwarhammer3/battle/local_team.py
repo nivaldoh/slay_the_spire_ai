@@ -8,6 +8,7 @@ import hashlib
 import json
 from collections import deque
 from copy import deepcopy
+from time import sleep
 
 from gameai.llm import InvalidReply, check_fields
 from gameai.provenance import REPO_ROOT, sha256
@@ -298,3 +299,14 @@ class ProbeTeam(LocalTeam):
     def __init__(self, *, scenario, **options):
         super().__init__({name: ProbeMember() for name in local.GROUP_SLOTS},
                          scenario=scenario, **options)
+
+
+class SlowProbeMember(ProbeMember):
+    """Delay this worker only; the live C diagnostic checks peers and arriving mail."""
+
+    def decide(self, observation):
+        # JUDGEMENT: Slow member diagnostic — Codex, 2026-11-05: three seconds in one
+        # worker creates an arrival-during-decision case. Other delays change that overlap;
+        # this is a scheduling probe, never a model-latency or tactical-strength estimate.
+        sleep(3)
+        return super().decide(observation)

@@ -89,7 +89,9 @@ def test_blocked_peer_does_not_stop_orders_or_mutate_its_pending_prompt():
 @pytest.mark.parametrize("change", ("foreign_order", "stale"))
 def test_local_ownership_and_source_age_refusals_do_not_reveal_other_units(change):
     sender = Sender(orders=[{"unit": "f9", "type": "halt"}] if change == "foreign_order" else None)
-    policy, workers, _ = team(centre=sender, max_age_ms=5000)
+    # This tests hidden coordinates, not wall timing. Real latency decimals can contain
+    # "400" by chance; engine-time source ages below still exercise expiry independently.
+    policy, workers, _ = team(centre=sender, max_age_ms=5000, clock=lambda: 0)
     try:
         policy.decide(state())
         workers.finish(0)
