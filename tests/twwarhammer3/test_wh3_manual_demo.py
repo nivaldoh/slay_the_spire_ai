@@ -93,6 +93,8 @@ def fake_recording(tmp_path, monkeypatch, states):
             (output / "capture-result.json").write_text('{"status":"stopped"}')
             self.returncode = 0
 
+    # These recorded synthetic states describe v1; recorder workflow tests keep that setup.
+    monkeypatch.setattr(manual_demo, "SCENARIO", "emp-support-timing-v1")
     monkeypatch.setattr(manual_demo, "BRIDGE_DIR", bridge)
     monkeypatch.setattr(manual_demo, "committed_revision", lambda *a: "r1")
     monkeypatch.setattr(manual_demo, "source_fingerprints", lambda *a: {"source": "hash"})
