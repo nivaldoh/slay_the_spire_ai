@@ -1,7 +1,7 @@
 # First candidate: infantry support and cavalry timing
 
 Implemented from the owner's supplied plan, 2026-11-04. **Development candidate,
-unverified; no live attempts yet.** On 2026-11-04 the owner selected "Use the proposed
+unverified; first pilot failed setup before orders.** On 2026-11-04 the owner selected "Use the proposed
 exploratory rule" for the procedure below, after setup and action-effect checks. It is now
 listed in [agreed-checks.md](../agreed-checks.md). The second scenario waits.
 
@@ -14,8 +14,8 @@ prevent it. Fresh launches are separate trajectories, not matched counterfactual
 ## Declaration and executor
 
 The owner's selected directions are manoeuvre timing, an Empire mirror, unrestricted
-legal tactics, and timing affecting outcome or army condition. The entry is
-`configs/twwarhammer3/scenarios.json` → `emp-support-timing-v1`. Public task: win and preserve
+legal tactics, and timing affecting outcome or army condition. The current entry is
+`configs/twwarhammer3/scenarios.json` → `emp-support-timing-v2`; v1 retains the failed pilot setup. Public task: win and preserve
 the army where possible; engine timer wins count. The entry selects no benchmark scorer,
 controller restriction, reserved split or ranking formula. Greatswords' superiority and
 winnability are unknown until demonstrated.
@@ -31,8 +31,8 @@ change the timing problem; the JSON declaration and its interpretation rest on t
 | Characters/upgrades | Lordless, rank zero, no added equipment, spells or reinforcements |
 | Mode/map | Land Battle; `battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes` |
 | Lobby | Normal, AI modifier 1.0, large scale 0.75, 2,000 funds, 1,200 s timer, realism off |
-| Friendly deployment | Swordsmen `(0,0)`, facing 180°, width 40 m; Knights `(-100,60)`, facing 180°, width 30 m |
-| Enemy deployment | Greatswords `(0,-160)`, facing 0°, width 40 m |
+| Friendly deployment (v2, owner-selected translation) | Swordsmen `(0,-160)`, facing 180°, width 40 m; Knights `(-100,-100)`, facing 180°, width 30 m |
+| Enemy deployment (v2) | Greatswords `(0,-320)`, facing 0°, width 40 m |
 
 `behaviour_defaults: true` reuses the friendly benchmark defaults without choosing a
 benchmark profile: supported fire-at-will on, skirmish and defend off; supported toggles
@@ -81,11 +81,11 @@ the owner about any build mismatch and do not re-pin automatically.
 
 ```bash
 uv run --locked python -m twwarhammer3 doctor
-uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/plan.json
+uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/translated-v2/plan.json
 # Owner-agreed exploratory comparison, after setup/action-effect checks:
-uv run --locked python scripts/wh3_queue.py runs/support-timing-live/plan.json
-uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/plan.json runs/support-timing-live/annotations.json
-uv run --locked python -m twwarhammer3 report runs/support-timing-live/block-* --output runs/support-timing-live/report
+uv run --locked python scripts/wh3_queue.py runs/support-timing-live/translated-v2/plan.json
+uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/translated-v2/plan.json runs/support-timing-live/translated-v2/annotations.json
+uv run --locked python -m twwarhammer3 report runs/support-timing-live/translated-v2/block-* --output runs/support-timing-live/report
 ```
 
 For the current verification session, `runs/support-verify/audit_play.py` wraps ordinary
@@ -100,9 +100,9 @@ Coarser sampling costs less but widens event brackets. Check overhead and video 
 in the pilot, then freeze the same instrumentation for every comparison arm.
 
 ```bash
-uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v1 --policy twwarhammer3.battle.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-01
+uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v2 --policy twwarhammer3.battle.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-02
 # After independently checking the pilot, use the ordinary queue with the observer:
-uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/plan.json
+uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/translated-v2/plan.json
 ```
 
 Before the comparison, inspect the pilot's `audit/video/video.mkv`, Windows clock journal,
@@ -157,6 +157,31 @@ after infantry rout, missing frames, and events in the same interval. Synthetic 
 establish reader/executor behavior, not an engine effect. Optional LLM/VLM tactic labels
 remain outside scoring; use the [tactic-judge proposal](tactic-judges.md) only after comparison
 with independently labelled recordings. No paid judge or policy call is part of this work.
+
+## First live setup attempt
+
+At `b3eb799`, `runs/support-timing-live/pilot-contact-01/` stopped as
+`unsupported_or_invalid` with zero policy decisions and no engine ending. It is a setup
+failure, not a loss or a timing comparison. The native reader independently measured the
+Swordsmen 29.2068 m from requested `(0,0)` at 5,200 ms; the video shows the foot formation
+along a cliff edge. Nearby coarse terrain samples are obstructed. The checker was not
+loosened. The first planned 18 attempts remain unstarted; `plan-stop` prevents their launch.
+
+The lobby and initial API readings matched the two friendly types and one Greatswords,
+rank zero, declared settings and full health/entities. All three support defend mode,
+which read false; fire-at-will/skirmish were unsupported. The enemy resumed native movement
+and formation changes. This one attempt establishes no action-effect, ending-HP or timing
+mechanism result. Review: `runs/support-verify/review/pilot-contact-01/`.
+
+JUDGEMENT: Proposed placement repair — Codex, 2026-11-04: translate all starts by `(0,-160)`:
+Swordsmen `(0,-160)`, Knights `(-100,-100)`, Greatswords `(0,-320)`. Relative geometry stays
+fixed; terrain or a different translation can change the battle. The owner selected it
+on 2026-11-04: "Use the proposed translation (Recommended)".
+
+`runs/support-verify/geometry-proposal.png` plots that proposal against the saved grid.
+The new positions and opening waypoints have nearby clear coarse samples, not proof of usable
+formations/routes or absence of forests. Freeze a new source/plan and repeat
+the pilot before the comparison. Preserve the original failed attempt and unstarted plan.
 
 ## Owner demonstration
 

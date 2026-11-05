@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-04 (first pilot placement repair): "Use the proposed translation (Recommended)"
+  after a failed setup check and a video showing a cliff edge. Shift all three starts by
+  z = −160 m: Swordsmen `(0,-160)`, Knights `(-100,-100)`, Greatswords `(0,-320)`.
+  Preserve spacing, facing, armies and timing treatments; version and recheck setup/routes
+  before the 18 attempts. Original failed pilot/plan remain in the evidence.
 - 2026-11-04 (support-timing verification): "Let's carefully verify the new scenario.
   Ensure it is working properly and measuring things correcly. We have to ensure that it
   is useful and reliable." Then "Use the proposed exploratory rule": the 18-attempt

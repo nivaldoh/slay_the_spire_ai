@@ -727,3 +727,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-04,coord-detail--tips--1,episode-0000,coord-detail,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,419,0.44,0.79,157,11,2.63,0.1701,classic,,,,,0.0,0.754,0.0,engine_result,anthropic
 2026-11-04,coord-breakout--tips--1,episode-0000,coord-breakout,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,133,0.65,0.89,45,11,2.83,0.0488,classic,,,,,0.0,0.886,0.0,engine_result,anthropic
 2026-11-04,coord-two-fronts--tips--1,episode-0000,coord-two-fronts,llm,claude-haiku-5-5,low,,857c938,realtime,1.0,0.0,lost,372,0.2,0.31,129,23,2.83,0.1436,classic,,,,,0.0,0.278,0.0,engine_result,anthropic
+2026-11-05,pilot-contact-01,episode-0000,emp-support-timing-v1,twwarhammer3.battle.support_timing:Contact,,,,b3eb799,realtime,1.0,0.0,unsupported_or_invalid,5,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,,

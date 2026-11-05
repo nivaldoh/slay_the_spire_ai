@@ -16,7 +16,8 @@ from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.protocol import ProtocolError
 
-SCENARIO = "emp-support-timing-v1"
+# Owner selected the translated revision after the v1 deployment failure (2026-11-04).
+SCENARIO = "emp-support-timing-v2"
 TYPES = {"infantry": "wh_main_emp_inf_swordsmen", "cavalry": "wh_main_emp_cav_empire_knights",
          "enemy": "wh_main_emp_inf_greatswords"}
 ARMS = ("direct", "opening", "scheduled", "contact", "delayed", "none")

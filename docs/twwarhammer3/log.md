@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-04: First support-timing pilot stops on deployment
+
+- One fresh Contact pilot at `b3eb799`, pinned build 26403568, stopped before any policy
+  decision: Swordsmen were 29.2068 m from `(0,0)` at 5,200 ms in the independent native read.
+  Video shows a cliff edge; nearby coarse samples are obstructed. No engine ending, no
+  gameplay loss, and zero of the 18 comparison attempts started. Spend $0.
+- Lobby settings, roster/rank and initial health/entities matched. Independent review
+  recounted 85 native samples, all speed 1; this short recording is not long-run clock proof.
+  Capture completed and the failed attempt is preserved with native/state/video evidence.
+- Owner selected the proposed whole-setup translation. Revision 2 inherits v1 with only
+  deployment, name and version changed; diagnostics/recorder select v2. Live recheck comes next.
+  No tolerance or army-strength change. The stopped plan cannot silently resume. [Status/proposal](support-timing.md#first-live-setup-attempt).
+- Preflight repairs passed main check.py: 3017 passed, 44 skipped (40 torch, 4 Windows opt-ins);
+  independent focused review 211 passed, 17/17 saved wrong versions caught. Fixtures were
+  corrected in separate commits; production repair `b3eb799` added 36 regression cases.
+- Raw evidence: `runs/support-timing-live/pilot-contact-01/`; recount and checks:
+  `runs/support-verify/`. Movement, contact, terminal HP, winnability and usefulness remain unverified.
+
 ## 2026-11-04: Audit support timing before live verification
 
 - Owner selected the [exploratory usefulness rule](support-timing.md#repeatable-live-check).

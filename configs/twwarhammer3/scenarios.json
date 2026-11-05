@@ -3604,5 +3604,37 @@
       "realism": false,
       "player_defends": true
     }
+  },
+  "emp-support-timing-v2": {
+    "base": "emp-support-timing-v1",
+    "name": "emp-support-timing-v2",
+    "scenario_version": 2,
+    "deployment": {
+      "friendly": [
+        {
+          "type": "wh_main_emp_inf_swordsmen",
+          "x": 0,
+          "z": -160,
+          "bearing": 180,
+          "width": 40
+        },
+        {
+          "type": "wh_main_emp_cav_empire_knights",
+          "x": -100,
+          "z": -100,
+          "bearing": 180,
+          "width": 30
+        }
+      ],
+      "enemy": [
+        {
+          "type": "wh_main_emp_inf_greatswords",
+          "x": 0,
+          "z": -320,
+          "bearing": 0,
+          "width": 40
+        }
+      ]
+    }
   }
 }
