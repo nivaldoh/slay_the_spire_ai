@@ -50,8 +50,9 @@ at HEAD (406 of 408 at `b299f2d`; 2 tests have patched a function the code stopp
 `ea6f1c6`); the branch's replay caught 408 of 408, in a worktree, so the agreed check still needs its
 run in the main checkout. A guard in `test_wh3_army_check.py` could never fail. Ctrl-C during final
 copying leaves a won battle with no `result.json` or register row, the ending staying in the trace
-(offline, one probe). A draft fix was withdrawn after two reviews: on benchmark jobs it lets a partial
-replay into the suite's measures, so what a stopped job counts is the owner's choice. A one-off scan counted calls at the 340 callable
+(offline, one probe). A draft fix was withdrawn after two reviews: in a simulated case on a benchmark
+job it lets a partial replay into the suite's measures, so what a stopped job counts is the owner's
+choice. A one-off scan counted calls at the 340 callable
 `monkeypatch.setattr` lines the offline suite ran, of 619 in the tests (the rest need torch or replace
 a class or a non-callable): 29
 were never called, and the 29th is the line just fixed. A reviewer read the other 28 as guards or
