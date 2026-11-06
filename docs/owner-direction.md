@@ -1231,6 +1231,10 @@ WH3:
   fixed scenarios only for quick diagnostics. Other battle types next.
 
 Slay the Spire:
+- 2026-11-06 (RL on the side), verbatim: "We would try to do Spire on the side for RL, without
+  changing our overall priorities." Answers decision 5 of the RL feasibility study
+  (`runs/rl-feasibility-20261106/report.md`): Spire RL is a side track and the order in
+  [state.md](state.md) stands. It names no method, model or budget.
 - 2026-10-12: complete runs by a frontier API model (`gpt-6-luna`, low effort), scaffolding
   found by autoresearch from observed mistakes; a hard $25 cap on `runs/llm-spend.jsonl`.
 - 2026-10-12: interest in an open StS1 benchmark, since SpireBench's code is not public.
