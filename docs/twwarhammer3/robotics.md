@@ -114,6 +114,9 @@ specific tactical choices.
 explicitly studies this attribution problem: across 12 models, human-designed abstractions
 affect success. The [comparisons below](#comparisons-that-answer-different-questions)
 separate supplied behavior from model choices.
+The [CaP-X research note](../references.md#cap-x-code-as-policy-and-wh3-2026-11-06)
+collects the paper/code links, feedback and skill-reuse connections, and the limits of
+applying its robotics results to WH3.
 
 Record who chose the tactic, target and reaction timing. A chariot card can measure
 execution, but if the executor already knows cycle charging, a win says little about

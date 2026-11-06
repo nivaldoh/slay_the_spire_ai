@@ -6,6 +6,54 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## CaP-X: code-as-policy and WH3 (2026-11-06)
+
+Added at the owner's request for later research. Letian (Max) Fu et al.,
+*CaP-X: A Framework for Benchmarking and Improving Coding Agents for Robot Manipulation*,
+ICML 2026, PMLR 306:32155–32212.
+[Publication and BibTeX](https://proceedings.mlr.press/v306/fu26u.html) ·
+[Paper v2, 2 July 2026](https://arxiv.org/html/2603.22435v2) ·
+[PDF v2](https://arxiv.org/pdf/2603.22435v2) ·
+[Project](https://capgym.github.io/) · [Code](https://github.com/capgym/cap-x).
+
+**What it studies.** A model writes executable Python that combines robot perception and
+control APIs. CaP-Gym supplies the environments; CaP-Bench varies API abstraction,
+single-turn versus multi-turn interaction, and perceptual feedback. Its core study covers
+12 models and seven tasks, with 100 trials per task/tier. Success depends strongly on
+human-provided abstractions. CaP-Agent0 adds textual descriptions of visual changes,
+reusable synthesized helpers and an ensemble of candidate programs. CaP-RL updates the
+coding model with GRPO and environment rewards; its training uses privileged state APIs.
+See [sections 2–5 and Table 1](https://arxiv.org/html/2603.22435v2#S2).
+
+**Possible WH3 connections — our interpretation, unverified:**
+
+| Connection | Why it matters here and what remains open |
+|---|---|
+| Attribute capability to the right component | Our direct-order models, `commander`/`Skills` and [GaP graphs](twwarhammer3/gap-plan.md) receive different supplied behavior. A comparison could vary the amount of helper logic while keeping observations and basic orders fixed. A successful hand-written tactic inside a skill cannot by itself establish model planning ability. |
+| Generate a policy that keeps reacting | The [generated-rule proposal](twwarhammer3/robotics.md#1-compare-parameter-selection-with-generated-feedback-rules) could produce a bounded controller for retargeting or disengagement, evaluated against fixed scripts and model-selected parameters. Generated Python is broader than our current graph interface; adopting it would require a separate execution and information-boundary design. |
+| Recover from execution feedback | Our structured observations could describe permitted changes such as a friendly unit routing or a visible target disappearing. Such feedback might support revising a program or graph. Order acceptance alone cannot establish tactical success; current visibility and fresh state still matter. |
+| Reuse skills and revise between battles | Successful development attempts could supply reusable helpers or graph fragments. The existing [GaP authoring/revision distinction](twwarhammer3/gap-plan.md#three-activities-and-later-research-questions) is relevant. Later comparisons would need to disclose helper provenance and separate development battles from held-out evaluation. |
+| Study learning and team control separately | CaP-RL is a reference for the [learning-feasibility question](twwarhammer3/research-focus.md#learning-under-limited-throughput). Changing model weights, revising a saved program and commanding independent unit groups are different activities. An ensemble that writes one program does not establish cooperation among independently acting WH3 teammates. |
+
+**Limits that matter for WH3.** The paper's multi-turn trials continue without resetting
+the environment; its human reference programs were refined offline. Its reported timing
+measures program generation and whole attempts, rather than a motor command's latency
+([section 3, Appendix K](https://arxiv.org/html/2603.22435v2#A11)).
+For WH3, recovery must occur in an unpaused 1x battle while the opponent acts. Any future
+comparison would need to account for observation age, inference and helper-model cost,
+and preparation/retry budgets. The paper does not establish that extra reasoning pays off
+under those conditions. Our engine already handles pathfinding and fighting, so its
+robot API tiers are not equivalent to WH3 order tiers. Visual differencing suggests a
+feedback representation; it does not justify exposing replay images, hidden enemies or
+`evaluation`/`final`/`setup` to a policy. Likewise, its privileged RL training and shared
+robot APIs do not establish WH3-to-robot transfer or affordable WH3 training.
+
+Read sections 2–3/Table 1 for evaluation design, section 4/Appendix H for the agent,
+section 5 for post-training, and Appendix K for human-baseline and cost caveats.
+Source inspection: paper v2 sections 2–5 and Appendix K, publication record and repository
+README, 2026-11-06. Audit: `runs/cap-x-reference/source-audit.md`.
+No external results reproduced, WH3 experiment run or verification method adopted.
+
 ## WH3 research focus (2026-11-06)
 
 The [focus spec](twwarhammer3/research-focus.md#reading-map-and-decisions) reuses these
