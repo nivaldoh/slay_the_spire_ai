@@ -40,7 +40,9 @@ def read_offline(path: Path) -> list[dict]:
     runs: dict[str, dict] = {}
     for line in path.read_text().splitlines():
         row = json.loads(line)
-        run = runs.setdefault(row["group"], {"steps": [], "status": row["status"],
+        # A run that ended in an infrastructure failure did not die: bootstrap, as a truncation.
+        status = row["status"] if row["status"] in SCORED else "truncated"
+        run = runs.setdefault(row["group"], {"steps": [], "status": status,
                                              "floor": row["final_floor"], "offline": True})
         row["allowed"] = list(range(row["count"]))
         run["steps"].append(row)

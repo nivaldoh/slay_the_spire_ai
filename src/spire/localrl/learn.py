@@ -39,13 +39,17 @@ def features(o: dict) -> list[float]:
 
 
 def rewards(steps: list[dict], status: str, final_floor: int, config: dict) -> list[float]:
-    """One reward per step: floors climbed, plus a potential on the HP fraction.
+    """One reward per step: floors climbed, plus potential-based shaping on the HP fraction.
 
-    JUDGEMENT: Reward — Claude, 2026-11-06, owner away: +1 a floor, ``hp_weight`` times the
-    change in HP fraction, ``win_bonus`` for a win, and death loses the remaining HP
-    potential. Floors reached is the evaluation measure and HP only guides credit. Without the
-    HP term a fight's decisions see nothing until the floor changes; every RL result rests on it.
+    JUDGEMENT: Reward — Claude, 2026-11-06, owner away: +1 a floor, ``win_bonus`` for a win, and
+    F = w(gamma*P(next) - P(now)) with P the HP fraction and w ``hp_weight`` (Ng, Harada and
+    Russell 1999), so the shaping leaves the best policy unchanged. Every end of a run has
+    potential 0; a truncated run has no end, and its value comes from the bootstrap. Floors
+    reached is the evaluation measure. Without shaping a fight's decisions see nothing until
+    the floor changes. The value of w is not set by data; every RL result rests on this.
     """
+    gamma, weight = config["gamma"], config["hp_weight"]
+
     def hp(observation: dict) -> float:
         return (observation["hp"] or 0) / max(observation["max_hp"] or 1, 1)
 
@@ -53,14 +57,13 @@ def rewards(steps: list[dict], status: str, final_floor: int, config: dict) -> l
     for step, following in zip(steps, steps[1:]):
         a, b = step["observation"], following["observation"]
         gain = (b["floor"] or 0) - (a["floor"] or 0)
-        values.append(gain + config["hp_weight"] * (hp(b) - hp(a)))
+        values.append(gain + weight * (gamma * hp(b) - hp(a)))
     last = steps[-1]["observation"]
     gain = max(final_floor - (last["floor"] or 0), 0)
-    fraction = hp(last)
     if status == "lost":
-        values.append(gain - config["hp_weight"] * fraction)
+        values.append(gain - weight * hp(last))
     elif status == "won":
-        values.append(gain + config["win_bonus"])
+        values.append(gain + config["win_bonus"] - weight * hp(last))
     else:
         values.append(float(gain))
     return values
@@ -136,7 +139,7 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
                 loss = loss - torch.min(ratio * advantage, limited * advantage)
                 spread_entropy = -(current.exp() * current).sum()
                 loss = loss - config["entropy"] * spread_entropy
-                kl += float(s["log_prob"] - new.detach())
+                kl += float((ratio.detach() - 1) - (new.detach() - s["log_prob"]))
                 clipped += float(abs(ratio.detach() - 1) > config["clip"])
                 entropy += float(spread_entropy.detach())
             loss = loss / len(group)
@@ -151,10 +154,8 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
             totals["clipped"] += clipped / len(group)
             totals["entropy"] += entropy / len(group)
             totals["grad_norm"] += float(norm)
-            if totals["kl"] / count > config["target_kl"]:
-                stopped = True
-                break
-        if stopped:
+        if totals["kl"] / count > config["target_kl"]:  # at the end of an epoch, as CleanRL does
+            stopped = True
             break
     model.eval()
     return {**{key: value / max(count, 1) for key, value in totals.items()},

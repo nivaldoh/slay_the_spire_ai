@@ -92,10 +92,11 @@ class Scorer:
         pad = self.tokenizer.pad_token_id
         rows = [[pad] * (width - len(ids)) + ids for ids in encoded]
         mask = [[0] * (width - len(ids)) + [1] * len(ids) for ids in encoded]
+        attention = torch.tensor(mask, device=self.device)
         output = self.model(
-            input_ids=torch.tensor(rows, device=self.device),
-            attention_mask=torch.tensor(mask, device=self.device),
-            logits_to_keep=1,
+            input_ids=torch.tensor(rows, device=self.device), attention_mask=attention,
+            # A left-padded row must keep the positions it had alone at collection.
+            position_ids=(attention.cumsum(1) - 1).clamp(min=0), logits_to_keep=1,
         )
         last = output.logits[:, -1].float()
         return [last[i, self.symbol_ids[:count]] for i, count in enumerate(counts)]
@@ -109,9 +110,10 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
 class LocalPolicy:
     """One instance per run. ``temperature`` 0 is greedy; steps collect for the learner.
 
-    A state seen before never repeats its earlier choice while another is left: a weak
-    policy otherwise loops forever between screens that do not change the state (reopening a
-    skipped card reward, selecting and deselecting a card).
+    JUDGEMENT: Loop mask — Claude, 2026-11-06, owner away: a state seen before never repeats
+    its earlier choice while another is left, because a weak policy otherwise loops between
+    screens that do not change the state (reopening a skipped reward, selecting and deselecting
+    a card). Floors therefore measure the model plus this mask.
     """
 
     def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int):

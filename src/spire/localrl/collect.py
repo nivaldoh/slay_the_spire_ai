@@ -32,13 +32,20 @@ from spire.localrl.policy import LocalPolicy, Scorer
 from spire.protocol import BridgeCommandError, ProtocolError
 
 SCORED = {"won", "lost", "truncated"}
-# Generous for a weak policy: it dies early, and a loop ends at the action limit.
+# JUDGEMENT: Run limits — Claude, 2026-11-06, owner away: 1,500 actions or 45 minutes, then the
+# run counts as truncated at its floor. A weak policy dies long before; a stronger one needs more.
 RUN = {"run_timeout": 2700, "bridge_timeout": 90, "max_actions": 1500}
-MAX_FAILURES = 12
+# JUDGEMENT: Launch retries — Claude, 2026-11-06, owner away: about 30 minutes of retries, not
+# docs/autonomy.md's two failed launches, because one stall took 8 minutes. Fewer ends the night.
+MAX_FAILURES = 40
 RETRY_SECONDS = 30
+# The game rewrites preference files by deleting them first, and a JVM killed at the death
+# screen lost the owner's STSUnlockProgress (2026-11-06). Close only from the menu, after this.
+SETTLE_SECONDS = 5
 JVM_SECONDS = 14 * 3600
 MENU_SECONDS = 60
 FAILURES = (BridgeError, ProtocolError, RuntimeError, OSError, subprocess.SubprocessError)
+SEED_ATTEMPTS = 3
 
 
 def revision() -> dict:
@@ -129,6 +136,9 @@ class Game:
     def _try_open(self) -> None:
         self.count += 1
         directory = self.directory / f"jvm-{self.count:03d}"
+        while directory.exists():
+            self.count += 1
+            directory = self.directory / f"jvm-{self.count:03d}"
         directory.mkdir()
         self.stack = ExitStack()
         self.stack.enter_context(RuntimeLock())
@@ -151,9 +161,18 @@ class Game:
                 time.sleep(RETRY_SECONDS)
 
     def close(self) -> None:
+        if self.link is not None and self.link.waiting is not None:
+            time.sleep(SETTLE_SECONDS)
         stack, self.stack, self.link = self.stack, None, None
         if stack is not None:
-            stack.close()
+            try:
+                stack.close()
+            except FAILURES as error:
+                print(f"closing the game: {type(error).__name__}: {error}"[:200], flush=True)
+
+    def restart(self) -> None:
+        self.close()
+        self.open()
 
     def __enter__(self):
         self.open()
@@ -166,35 +185,40 @@ class Game:
 def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None, *,
                temperature: float, label: str, seed_offset: int = 0) -> list[dict]:
     """Play each seed once, in order. A lost link is not an outcome: the seed is played again
-    in a new JVM."""
+    in a new JVM, with a different sampling seed in case the state itself caused the failure."""
     output.mkdir(parents=True, exist_ok=True)
     write_json(output / "job.json", {"label": label, "seeds": seeds, "temperature": temperature,
                                      "revision": revision(), "started": time.time()})
     results = []
     for index, seed in enumerate(seeds):
-        for attempt in range(MAX_FAILURES):
-            policy = LocalPolicy(scorer, temperature=temperature, seed=seed_offset + index)
+        for attempt in range(SEED_ATTEMPTS):
+            policy = LocalPolicy(scorer, temperature=temperature,
+                                 seed=seed_offset + index + 1000 * attempt)
             run = output / f"run-{index:04d}-{attempt}"
             try:
                 result = one_run(run, seed, policy, game.link)
-                keep = _keep(result, run, label, temperature, policy)
-                if result["status"] == "truncated":
-                    game.close()  # still in a run, so only a new JVM leaves it
-                    game.open()
-                else:
-                    game.link.to_menu()
-                break
-            except FAILURES as error:
+            except Exception as error:  # the run did not finish, so it is not an outcome
                 note = f"{type(error).__name__}: {error}"[:200]
                 print(json.dumps({"seed": seed, "status": "infrastructure", "error": note}),
                       flush=True)
-                game.close()
-                game.open()
+                game.restart()
+                continue
+            keep = _keep(result, run, label, temperature, policy)
+            break
         else:
-            raise RuntimeError(f"Seed {seed} failed {MAX_FAILURES} times")
+            raise RuntimeError(f"Seed {seed} failed {SEED_ATTEMPTS} times")
         with (output / "results.jsonl").open("a") as file:
             file.write(json.dumps(keep) + "\n")
         print(json.dumps({k: keep.get(k) for k in ("seed", "status", "floor", "decisions",
                                                    "elapsed_seconds")}), flush=True)
         results.append(keep)
+        # The run is on record from here: leaving the screen can cost a JVM, never the seed.
+        try:
+            if result["status"] == "truncated":
+                game.restart()  # still in a run, so only a new JVM leaves it
+            else:
+                game.link.to_menu()
+        except FAILURES as error:
+            print(f"leaving the run: {type(error).__name__}: {error}"[:200], flush=True)
+            game.restart()
     return results
