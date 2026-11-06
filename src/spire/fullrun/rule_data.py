@@ -24,7 +24,7 @@ ATTACKS = {
     "Sever Soul": (16, 1), "Uppercut": (13, 1), "Whirlwind": (5, 1), "Bludgeon": (32, 1),
     "Feed": (10, 1), "Fiend Fire": (7, 1), "Immolate": (21, 1), "Reaper": (4, 1),
     "Dramatic Entrance": (8, 1), "Flash of Steel": (3, 1), "Mind Blast": (0, 1),
-    "Swift Strike": (7, 1), "Trip": (0, 1), "Bite": (7, 1), "HandOfGreed": (20, 1),
+    "Swift Strike": (7, 1), "Bite": (7, 1), "HandOfGreed": (20, 1),
 }
 BLOCKS = {
     "Defend_R": 5, "Armaments": 5, "Iron Wave": 5, "Shrug It Off": 8, "True Grit": 7,
@@ -94,7 +94,7 @@ CARD_VALUE = {
     "Bandage Up": 3, "Secret Weapon": 3, "Secret Technique": 3, "HandOfGreed": 6,
     "Thinking Ahead": 3,
     "Violence": 2, "Forethought": 2, "Enlightenment": 2, "Impatience": 2, "Jack Of All Trades": 1,
-    "Panic Button": 3, "The Bomb": 4, "Transmutation": 2, "Metamorphosis": 2, "Chrysalis": 3,
+    "PanicButton": 3, "The Bomb": 4, "Transmutation": 2, "Metamorphosis": 2, "Chrysalis": 3,
 }
 # Most copies worth holding, by the kind of card; unlisted cards allow two.
 MAX_COPIES = {
@@ -119,10 +119,12 @@ UPGRADE_VALUE = {
 # Best first; unlisted boss relics rank below every listed one.
 BOSS_RELICS = [
     "Philosopher's Stone", "Sozu", "Runic Pyramid", "Snecko Eye", "Empty Cage", "Black Star",
-    "Astrolabe", "Calling Bell", "Pandora's Box", "Black Blood", "Slaver's Collar", "Runic Dome",
-    "Sacred Bark", "Velvet Choker", "Mark of Pain", "Coffee Dripper", "Fusion Hammer", "Ectoplasm",
+    "Astrolabe", "Calling Bell", "Pandora's Box", "Black Blood", "Slaver's Collar", 
+    "SacredBark", "Velvet Choker", "Mark of Pain", "Coffee Dripper", "Fusion Hammer", "Ectoplasm",
     "Busted Crown", "Tiny House",
 ]
+# Block with a price in cards, so never played with nothing to block.
+COSTLY_BLOCK = frozenset({"Power Through", "Impervious", "True Grit"})
 BAD_POTION_NOW = frozenset({"Potion Slot", "FairyPotion", "SmokeBomb", "ElixirPotion",
 "EntropicBrew"})
 # Potions that spend a whole slot well only in a fight that can kill the run.

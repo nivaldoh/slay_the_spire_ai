@@ -39,7 +39,7 @@ TIMEOUT_S = 600
 CHECK_COMMAND = ["uv", "run", "--locked", "python", "scripts/check.py"]
 # Commands that start or drive a game (`spire replay` is on the spire-restore-replay branch).
 GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl", "worker"),
-                 "spire": ("play", "rollout", "train", "evaluate", "replay")}
+                 "spire": ("play", "rules", "rollout", "train", "evaluate", "replay")}
 LIVE_CHECKERS = {"check_wh3_army_setup.py", "check_wh3_checkpoint.py",
                  "check_wh3_checkpoint_siege.py", "check_wh3_restored_episode.py",
                  "check_wh3_team.py", "check_wh3_graph.py"}

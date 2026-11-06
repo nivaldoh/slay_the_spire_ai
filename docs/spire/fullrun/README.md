@@ -128,7 +128,7 @@ the full prompt, every API attempt with usage, cost, latency, reason and notes, 
 commands sent. `result.json` holds the outcome, the final act, floor, HP, deck and relics,
 and LLM totals. A trace record of kind `decision` holds `decision.observation`,
 `decision.candidates` (each with `id`, `command` and `label`), the `choice_id` taken, and
-`behavior`, whose `type` is `llm` (with `reason` and `notes`) or `forced`;
+`behavior`, whose `type` is `llm` (with `reason` and `notes`), `rules` or `forced`;
 `digest._decisions` reads them. Since harness v10.2 (2026-10-23, `model_exchange_version`
 2) a decision's attempts omit the request and output items, which its `model_exchange`
 event keeps once, with Qwen3.6's token logprobs; and `run-NNNN/saves/` holds a copy of each

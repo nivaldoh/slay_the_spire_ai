@@ -7,6 +7,11 @@ block weighed against incoming damage. The values and scoring are this project's
 The policy reads only the public ``Decision`` and always returns one of its candidates, so
 it stays inside the information boundary and cannot send an illegal command. It plans no
 draws. Its strength is unmeasured until it plays real runs.
+
+JUDGEMENT: Rule policy scoring — Claude, 2026-11-06, unattended: the combat scores, skip
+thresholds, rest thresholds, route weights and event weights here are my own estimates,
+written with no owner direction. Other values make a different teacher and baseline; any
+use of this policy as either rests on them.
 """
 
 from __future__ import annotations
@@ -44,10 +49,11 @@ def attacking(monster: Mapping) -> bool:
 
 
 def incoming(monster: Mapping, act: int) -> int:
-    """Public damage this monster shows for its next move; unknown intents get a guess."""
+    """Public damage this monster shows for its next move. Recorded UNKNOWN turns never
+    attacked (137 of 137); Runic Dome reports NONE for every intent, so that gets a guess."""
     if attacking(monster) and monster.get("move_adjusted_damage", -1) >= 0:
         return monster["move_adjusted_damage"] * max(monster.get("move_hits", 1), 1)
-    return 5 * act if monster.get("intent") == "UNKNOWN" else 0
+    return 5 * act if monster.get("intent") == "NONE" else 0
 
 
 def live_monsters(combat: Mapping) -> dict[int, Mapping]:
@@ -83,7 +89,10 @@ def base_damage(card: Mapping, player: Mapping, deck: Sequence,
         return 0.0, 0
     strength = _power(player, "Strength")
     if card_id == "Perfected Strike":
-        damage += (3 if upgrades else 2) * sum("Strike" in str(c.get("name", "")) for c in deck)
+        piles = (*combat.get("hand", ()), *combat.get("draw_pile", ()),
+                 *combat.get("discard_pile", ()))
+        damage += (3 if upgrades else 2) * sum("Strike" in str(c.get("name", ""))
+                                               for c in piles or deck)
     elif card_id == "Heavy Blade":
         strength *= 5 if upgrades else 3
     elif card_id == "Searing Blow":
@@ -96,36 +105,67 @@ def base_damage(card: Mapping, player: Mapping, deck: Sequence,
     return (total * 0.75 if _power(player, "Weakened") else total), hits
 
 
-def damage_to(monster: Mapping, per_hit: float, hits: int) -> tuple[float, bool]:
-    """Damage that gets past block, capped at remaining HP, and whether it kills."""
+def hit_total(monster: Mapping, per_hit: float, hits: int) -> int:
+    """All hits against this target before its block; each hit floors, as recorded."""
     if _power(monster, "Vulnerable"):
         per_hit *= 1.5
-    total = max(int(per_hit), 0) * hits - monster.get("block", 0)
-    health = monster.get("current_hp", 0)
-    return max(min(total, health), 0.0), total >= health
+    if _power(monster, "Flight"):
+        per_hit *= 0.5
+    return max(int(per_hit), 0) * hits
 
 
-def can_finish(game: Mapping, combat: Mapping, monsters: dict) -> bool:
-    """Whether the attacks in hand, best per energy first, can kill every enemy this turn."""
+def damage_to(monster: Mapping, per_hit: float, hits: int, *,
+              block_breaks: bool = False) -> tuple[float, bool]:
+    """Damage worth counting, capped at what the target has left, and whether it kills.
+
+    Damage into block only counts if that block will really fall: Barricade keeps block
+    between turns, and ``block_breaks`` says the rest of the hand gets through this turn.
+    """
+    total = hit_total(monster, per_hit, hits)
+    block, health = monster.get("block", 0), monster.get("current_hp", 0)
+    counted = total if block_breaks or _power(monster, "Barricade") else total - block
+    return max(min(counted, block + health), 0), total - block >= health
+
+
+def playable_attacks(game: Mapping, combat: Mapping) -> list[tuple]:
+    """(per hit, hits, energy, id) for the hand's playable attacks, best per energy first."""
     player = combat["player"]
-    remaining = sum(m.get("current_hp", 0) + m.get("block", 0) for m in monsters.values())
-    if not monsters:
-        return False
-    vulnerable = all(_power(m, "Vulnerable") for m in monsters.values())
+    energy = player.get("energy", 0)
     options = []
     for card in combat.get("hand", ()):
         if not card.get("is_playable") or card.get("type") != "ATTACK":
             continue
         per_hit, hits = base_damage(card, player, game.get("deck", ()), combat)
-        damage = per_hit * hits * (1.5 if vulnerable else 1)
-        cost = max(card.get("cost", 0), 0)
-        options.append((damage / max(cost, 0.5), damage, cost))
-    energy = player.get("energy", 0)
-    for _, damage, cost in sorted(options, reverse=True):
+        if hits:
+            cost = energy if card.get("cost", 0) < 0 else max(card.get("cost", 0), 0)
+            options.append((per_hit, hits, cost, card.get("id")))
+    return sorted(options, key=lambda o: o[0] * o[1] / max(o[2], 0.5), reverse=True)
+
+
+def can_finish(game: Mapping, combat: Mapping, monsters: dict) -> bool:
+    """Whether the attacks in hand can kill every enemy this turn, target by target."""
+    left = {index: m.get("current_hp", 0) + m.get("block", 0) for index, m in monsters.items()}
+    energy = combat["player"].get("energy", 0)
+    for per_hit, hits, cost, card_id in playable_attacks(game, combat):
+        if cost > energy or not left:
+            continue
+        energy -= cost
+        for index in list(left) if card_id in data.AREA else [min(left, key=left.get)]:
+            left[index] -= hit_total(monsters[index], per_hit, hits)
+            if left[index] <= 0:
+                del left[index]
+    return bool(monsters) and not left
+
+
+def attack_budget(game: Mapping, combat: Mapping) -> float:
+    """Printed damage the hand can spend this turn, for judging whether block will break."""
+    energy = combat["player"].get("energy", 0)
+    total = 0.0
+    for per_hit, hits, cost, _ in playable_attacks(game, combat):
         if cost <= energy:
             energy -= cost
-            remaining -= damage
-    return remaining <= 0
+            total += per_hit * hits
+    return total
 
 
 def card_value(card: Mapping, deck: Sequence, floor: int) -> float:
@@ -174,7 +214,8 @@ def event_score(label: str, hp: int, max_hp: int) -> float:
                         ("lose all", -2),
                         ("fight a boss", -9),
                         ("lose your starting relic", -6), ("no longer heal", -5), ("fight", -3),
-                        ("[leave", 0.5), ("[continue", 1), ("[talk", 1), ("[proceed", 1)):
+                        ("[leave", 0.5), ("[continue", 1), ("[talk", 1), ("[proceed", 1),
+                        ("how do i leave", 4)):
         if word in text:
             score += worth
     if re.search(r"lose \d+ gold", text):
@@ -202,7 +243,7 @@ class RulePolicy:
         self._shopped_floor = -1
 
     def choice_metadata(self, decision_id: str) -> dict:
-        return {"type": "rules", "version": VERSION}
+        return {"type": "rules", "version": VERSION, "reason": VERSION}
 
     def choose(self, decision: Decision) -> Choice:
         game = decision.observation
@@ -325,7 +366,6 @@ class RulePolicy:
         deck = game.get("deck", ())
         floor = game.get("floor", 0)
         gold = game.get("gold", 0)
-        free_slot = any(p.get("id") == "Potion Slot" for p in game.get("potions", ()))
         best, best_value = None, 0.0
         for choice in decision.candidates:
             index = _index(choice)
@@ -337,16 +377,12 @@ class RulePolicy:
                 worst = worst_first(deck)[0] if deck else None
                 bad = worst is not None and deck[worst].get("id") in data.BAD_CARDS
                 value = 9.0 if bad else 6.5 if worst is not None else 0.0
-            for group in ("cards", "relics", "potions"):
+            # Never potions: with Sozu a purchase is a silent no-op that would hang the bridge.
+            for group in ("cards", "relics"):
                 for item in state.get(group, ()):
                     if str(item.get("name", "")).lower() != name or item.get("price", 0) > gold:
                         continue
-                    if group == "cards":
-                        value = card_value(item, deck, floor) - 1
-                    elif group == "relics":
-                        value = 7.0
-                    elif free_slot:
-                        value = 2.5
+                    value = card_value(item, deck, floor) - 1 if group == "cards" else 7.0
             if value > best_value and value >= SKIP_BELOW:
                 best, best_value = choice, value
         return best
@@ -366,6 +402,10 @@ class RulePolicy:
     def _event(self, decision: Decision, game: Mapping, state: Mapping) -> Choice | None:
         hp, max_hp = game.get("current_hp", 1), game.get("max_hp", 1)
         options = [c for c in decision.candidates if not c.command.startswith("potion")]
+        # Match and Keep shows unseen cards as card1, card2...; a known card repeats a miss.
+        fresh = [c for c in options if re.fullmatch(r"card\d+", c.label)]
+        if fresh:
+            return fresh[0]
         return max(options, key=lambda c: event_score(c.label, hp, max_hp), default=None)
 
     def _grid(self, decision: Decision, game: Mapping, state: Mapping) -> Choice | None:
@@ -376,7 +416,9 @@ class RulePolicy:
         offered = [i for i in range(len(cards)) if self._selectable(decision, i)]
         if not offered:
             return None
-        if state.get("for_purge") or state.get("for_transform"):
+        # Neow's two-card removal and transform carry no flags.
+        pair = state.get("num_cards", 1) >= 2 and game.get("room_phase") != "COMBAT"
+        if state.get("for_purge") or state.get("for_transform") or pair:
             order = [i for i in worst_first(cards) if i in offered]
             return self._pick(decision, order[0]) if order else None
         return self._pick(decision, max(offered, key=lambda i: upgrade_score(cards[i])))
@@ -390,7 +432,7 @@ class RulePolicy:
         offered = [i for i in range(len(hand)) if self._selectable(decision, i)]
         if not offered:
             return self._button(decision, "confirm")
-        if self._last_played in ("Armaments", "Dual Wield"):
+        if self._last_played in ("Armaments", "Dual Wield") and not state.get("can_pick_zero"):
             return self._pick(decision, max(offered, key=lambda i: upgrade_score(hand[i])))
         order = [i for i in worst_first(hand) if i in offered]
         if state.get("can_pick_zero") and hand[order[0]].get("id") not in data.BAD_CARDS:
@@ -413,13 +455,14 @@ class RulePolicy:
         act = game.get("act", 1)
         threat = sum(incoming(m, act) for m in monsters.values())
         hp, max_hp = player.get("current_hp", 0), max(player.get("max_hp", 1), 1)
-        need = max(threat - player.get("block", 0), 0)
-        if can_finish(game, combat, monsters):
-            need = 0
+        passive = _power(player, "Metallicize") + _power(player, "Plated Armor")
+        finishing = can_finish(game, combat, monsters)
+        need = 0 if finishing else max(threat - player.get("block", 0) - passive, 0)
+        budget = attack_budget(game, combat)
         best, best_score = None, 0.0
         for choice in decision.candidates:
             if choice.command.startswith("play"):
-                score = self._play_score(choice, game, combat, monsters, need)
+                score = self._play_score(choice, game, combat, monsters, need, finishing, budget)
             elif choice.command.startswith("potion use"):
                 score = self._potion_score(choice, game, need, hp, max_hp)
             else:
@@ -434,8 +477,8 @@ class RulePolicy:
             self._last_played = hand[slot].get("id", "") if slot < len(hand) else ""
         return best
 
-    def _play_score(self, choice: Choice, game: Mapping, combat: Mapping,
-                    monsters: dict, need: int) -> float:
+    def _play_score(self, choice: Choice, game: Mapping, combat: Mapping, monsters: dict,
+                    need: int, finishing: bool, budget: float) -> float:
         parts = choice.command.split()
         hand = combat.get("hand", ())
         slot = int(parts[1]) - 1
@@ -457,6 +500,8 @@ class RulePolicy:
             return 0.2 if card_id == "Slimed" and energy > cost else 0.0
         if card_id in data.SITUATIONAL:
             return 0.1
+        if finishing and card.get("type") != "ATTACK":
+            return 0.1
 
         punishes_skills = any(_power(m, "Anger") for m in monsters.values())
         if card.get("type") == "POWER":
@@ -465,26 +510,40 @@ class RulePolicy:
             if card_id in data.POWERS_FIRST or data.CARD_VALUE.get(card_id, 0) >= 5:
                 return 20.0 if left >= 0.4 * max_hp or dangerous_room else 6.0
             return 4.0
+        if need == 0 and card_id in data.COSTLY_BLOCK:
+            return 0.0
 
         score = 0.0
         per_hit, hits = base_damage(card, player, game.get("deck", ()), combat)
+        debuffable = target is not None and not _power(target, "Artifact")
         if hits:
+            recoil = sum(_power(m, "Sharp Hide") for m in monsters.values())
+            if target is not None:
+                recoil += _power(target, "Thorns") * hits
+            if not finishing and recoil >= hp + player.get("block", 0):
+                return 0.0
             if card_id in data.AREA:
                 dealt = [damage_to(m, per_hit, hits) for m in monsters.values()]
-                total = sum(d[0] for d in dealt)
-                kills = sum(d[1] for d in dealt)
-                score += total / weight + 6 * kills
+                score += sum(d[0] for d in dealt) / weight + 6 * sum(d[1] for d in dealt)
+                if card_id in data.VULNERABLE and any(
+                        not _power(m, "Vulnerable") and not _power(m, "Artifact")
+                        for m in monsters.values()):
+                    score += 6 if energy > cost else 2
             elif target is not None:
-                dealt_to, kills_it = damage_to(target, per_hit, hits)
+                breaks = budget > target.get("block", 0)
+                dealt_to, kills_it = damage_to(target, per_hit, hits, block_breaks=breaks)
                 summoned = _power(target, "Minion") and not kills_it
                 score += (0.7 if summoned else 1.0) * dealt_to / weight
                 if kills_it:
                     score += 6 + 1.5 * incoming(target, game.get("act", 1)) / weight
                     if card_id == "Feed":
                         score += 8
-                if not _power(target, "Vulnerable") and card_id in data.VULNERABLE:
+                if debuffable and not _power(target, "Vulnerable") and card_id in data.VULNERABLE:
                     score += 6 if energy > cost else 2
-            if card_id in data.WEAK and target is not None and attacking(target):
+            else:  # Random targets, such as Sword Boomerang.
+                dealt = [damage_to(m, per_hit, hits)[0] for m in monsters.values()]
+                score += sum(dealt) / max(len(dealt), 1) / weight
+            if card_id in data.WEAK and debuffable and attacking(target):
                 score += 3
         guard = block_of(card, player)
         if guard:
@@ -492,15 +551,20 @@ class RulePolicy:
             score += urgency * useful / weight + 0.1 * (guard - useful)
         if card_id in data.DRAW:
             score += 2
+        attack_follows = any(
+            c.get("type") == "ATTACK" and c.get("is_playable") and c is not card
+            and max(c.get("cost", 0), 0) <= energy - max(cost, 0) for c in hand)
+        boost = 12 if attack_follows else 0
         score += {
             "Battle Trance": 12, "Offering": 14 if hp > 0.35 * max_hp else 0,
             "Bloodletting": 5 if hp > 0.4 * max_hp else 0, "Seeing Red": 5,
-            "Shockwave": 16, "Disarm": 15 if target is not None and attacking(target) else 8,
+            "Shockwave": 16, "Disarm": (15 if attacking(target) else 8) if debuffable else 0,
             "Intimidate": 6, "Spot Weakness": 12 if target is not None and attacking(target) else 0,
-            "Limit Break": 3 * _power(player, "Strength"), "Rage": 3, "Flex": 3, "Warcry": 1,
+            "Limit Break": 3 * _power(player, "Strength"), "Rage": boost, "Flex": boost,
+            "Double Tap": boost, "Warcry": 1,
             "Burning Pact": 7 if any(c.get("id") in data.BAD_CARDS for c in hand) else 1,
-            "Double Tap": 4, "Infernal Blade": 3, "Apotheosis": 25, "Panacea": 2,
-            "Trip": 8, "Blind": 6, "Dark Shackles": 5,
+            "Infernal Blade": 3, "Apotheosis": 25, "Panacea": 2,
+            "Trip": 8 if debuffable else 0, "Blind": 6, "Dark Shackles": 5,
         }.get(card_id, 0)
         if punishes_skills and card.get("type") == "SKILL" and left > 0.3 * max_hp:
             score -= 8
@@ -508,7 +572,8 @@ class RulePolicy:
             score = 0.1
         if card_id == "Ghostly":
             score += 18 if left < 0.5 * max_hp else 2
-        return score
+        # Unused energy is lost, so a card with no score here is still better than none.
+        return 0.05 if score == 0 else score
 
     def _potion_score(self, choice: Choice, game: Mapping, need: int, hp: int,
                       max_hp: int) -> float:
@@ -517,14 +582,17 @@ class RulePolicy:
         slot = int(parts[2])
         potion = potions[slot] if slot < len(potions) else {}
         potion_id = potion.get("id")
+        combat = game.get("combat_state") or {}
         if potion_id in data.BAD_POTION_NOW:
             return 0.0
+        if potion_id == "LiquidMemories" and not combat.get("discard_pile"):
+            return 0.0
         danger = hp - need < 0.3 * max_hp
-        hard = game.get("room_type") in ("MonsterRoomElite", "MonsterRoomBoss")
-        first_turn = (game.get("combat_state") or {}).get("turn", 1) == 1
+        boss = game.get("room_type") == "MonsterRoomBoss"
+        hard = boss or game.get("room_type") == "MonsterRoomElite"
         if danger and potion_id in data.DEFENCE_POTIONS:
             return 30.0
-        if danger or (hard and first_turn and game.get("room_type") == "MonsterRoomBoss"):
+        if danger or (boss and combat.get("turn", 1) == 1):
             return 25.0 if potion_id in data.ATTACK_POTIONS else 0.0
         if hard and need >= 0.5 * hp and potion_id in data.ATTACK_POTIONS:
             return 22.0

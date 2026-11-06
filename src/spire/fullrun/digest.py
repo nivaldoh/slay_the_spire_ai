@@ -119,7 +119,7 @@ def flags(run: Path) -> list[str]:
             last_end = (f"F{floor} T{combat['turn']}, incoming {incoming} against {block} block "
                         f"and {player['current_hp']} HP")
             playable = any(card.get("is_playable") for card in combat.get("hand", []))
-            if behavior.get("type") == "llm" and player.get("energy") and playable:
+            if behavior.get("type") in ("llm", "rules") and player.get("energy") and playable:
                 idle[floor] += 1
                 if incoming > block:
                     exposed[floor] += 1
@@ -179,7 +179,7 @@ def digest(run: Path, picks: bool = False) -> None:
         if combat:
             names = ", ".join(sorted({m["name"] for m in combat["monsters"]}))
             entry["room"] = f"{observation.get('room_type')} {names}, {combat['turn']} turns"
-        elif behavior.get("type") == "llm":
+        elif behavior.get("type") in ("llm", "rules"):
             screen = observation.get("screen_type")
             entry["picks"].append(f"{screen}: {chosen['label']} ({behavior.get('reason')})")
         notes = behavior.get("notes", notes)

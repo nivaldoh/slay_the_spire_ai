@@ -107,11 +107,11 @@ uv run python -m spire stats       # milestones per model, effort and harness; -
 uv run python -m spire export runs/fullrun/<job> ... --output runs/fullrun-exports/<name>
 ```
 
-`spire play`, `rollout`, `evaluate`, `train` and `scripts/inventory_scenarios.py` run a real
-game. `play`, `rollout`, `evaluate` and `train` need a new output directory and refuse
+`spire play`, `rules`, `rollout`, `evaluate`, `train` and `scripts/inventory_scenarios.py` run a
+real game. `play`, `rules`, `rollout`, `evaluate` and `train` need a new output directory and refuse
 uncommitted changes in their source scope:
 
-- `spire play`: `src/gameai/`, `src/spire/`, `configs/llm/`, `pyproject.toml`, `uv.lock`
+- `spire play` and `rules`: `src/gameai/`, `src/spire/`, `configs/llm/`, `pyproject.toml`, `uv.lock`
   and `.python-version` (`fullrun/play.py` `SOURCES`).
 - First-combat tools: the default `gameai.provenance.SOURCE_PATHS` includes all of `src/`
   (WH3 included), `scripts/`, `configs/` and the same three project files.

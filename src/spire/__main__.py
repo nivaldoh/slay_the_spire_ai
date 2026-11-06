@@ -84,6 +84,9 @@ def main() -> int:
     rules.add_argument("--results", type=Path, default=RESULTS_PATH,
                        help="Results register that gets one row per run")
     rules.add_argument("--max-actions", type=int, default=4000)
+    # JUDGEMENT: Rule run timeout — Claude, 2026-11-06, unattended: 1 h, where `play` allows
+    # 5 h, because a truncated run is a scored attempt. Recorded engine time fits about 3,970
+    # actions in 1 h; a longer limit only changes a run that would otherwise be cut off.
     rules.add_argument("--run-timeout", type=float, default=3600)
     rules.add_argument("--bridge-timeout", type=float, default=300)
     rules.add_argument("--output", type=Path, required=True)
