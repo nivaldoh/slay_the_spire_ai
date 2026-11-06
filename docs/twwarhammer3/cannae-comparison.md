@@ -369,8 +369,8 @@ or a demonstration of necessary adaptation. No further B probe is scheduled this
 ### What the B evidence supports now, 2026-11-05
 
 `scripts/wh3_reserve_cells.py JOB...` rebuilds the rows and cell tally from raw manifests and results.
-There are 29 B battles (v1 2, v2 8, v3 19), one attempt per cell except two repeated v3 cases, all
-engine-ended. All of this is unverified.
+There are 33 engine-ended B battles (v1 2, v2 8, v3 23) and one v3 launch with no outcome. All of this
+is unverified.
 
 Each construction job was one game launch. Inside a job, rematches matched in all 41 shared samples
 up to the 45 s trigger in 28 of 28 v2 pairs. On v3, RushNearest's orders landed on different ticks at
@@ -386,34 +386,40 @@ independent; count launches beside attempts. Window 1 used one launch per battle
 | WingSupport (one launch) | Won, 534.5 s | Lost, 353.2 s |
 | CentreSupport (one launch) | Won, 472.9 s | Won, 466.0 s |
 | CentreSupport, window 1 (a launch each) | Won, 519.9 s | Won, 527.7 s |
+| CentreSupport, window 2 | Won, 470.7 s | Not played |
 | Evade, window 1 | Lost, 477.9 s | Not played |
 
-| Case in window 1, CentreSupport, one launch each | Result |
-|---|---|
-| Centre/north/1 | Won, 450.4 s |
-| Centre/south/1 | Lost, 474.8 s |
-| Centre/south/2 | Won, 540.7 s |
-| Outside/north/1 | Lost, 874.7 s |
-| Outside/north/2 | Lost, 357.2 s |
-| Outside/south/1 | Won, 537.2 s |
+| CentreSupport, one launch per result | Window 1 | Window 2 |
+|---|---|---|
+| Centre/north/1 | Won, 450.4 s | Not played |
+| Centre/south/1 | Lost, 474.8 s | Not played |
+| Centre/south/2 | Won, 540.7 s | Not played |
+| Outside/north/1 | Lost, 874.7 s | Won, 426.9 s |
+| Outside/north/2 | Lost, 357.2 s | Won, 549.9 s |
+| Outside/south/1 | Won, 537.2 s | Won, 624.5 s |
 
 On v1 and v2 one fixed public-state controller won every case it tried: Hold 8 of 8 on v2, RushNearest
-2 of 2 on v1. On v3 no tested controller has: CentreSupport won 5 of 8, and only 3 of the 6 cases that
-did not select it. Nothing shows a fresh contingent response is needed or unneeded, because no other
-fixed rule has played the three lost cases on v3. CentreSupport reads public state, so it is the
+2 of 2 on v1. On v3 no tested controller has: in the agreed check CentreSupport won 5 of 8, and only 3 of the 6 cases
+that did not select it. Across every v3 launch it has 11 wins and 3 losses in 14 engine endings. The
+same rule on the same case has now gone both ways, so one launch per case does not fix the outcome.
+Nothing shows a fresh contingent response is needed or unneeded, because no other fixed rule has
+played the three lost cases on v3. CentreSupport reads public state, so it is the
 conditional-rule type of control, and a rule that reads visible reserves would be the same type.
 
-Whether the case matters remains open; the [window results](cannae-eval.md#window-1-results-2026-11-05)
-explain why the outside/north and outside/south split is not a finding. There is no baseline
-without the reserve, so the reserve's own effect is unmeasured. The two selected cases won in both of
-their launches, which cannot be read onto the other six. In the first ten v3 battles a regiment routed
+Whether the case matters remains open: the outside split of [window 1](cannae-eval.md#window-1-results-2026-11-05)
+did not repeat in [window 2](cannae-eval.md#window-2-results-2026-11-05). There is no baseline
+without the reserve, so the reserve's own effect is unmeasured. CentreSupport won the two selected
+cases in every launch that ended, centre/north/2 twice and outside/south/2 three times, which cannot
+be read onto the other six. In the first ten v3 battles a regiment routed
 before the reserve first fought in 6 of 7 losses and in 2 of 3 wins, and CentreSupport gave no order at
 a reserve regiment before 425.5 s and 462.7 s.
 
-Of the 46 regiments committed on v2 and v3, 45 arrived. In the centre/south/2 win, e3 came within
-26 m of its route end at about 134 s, one metre outside the 25 m arrival rule, stood 41-45 m away
-from about 180 s and was released at the 360 s bound, so that battle was not a full two-regiment
-test, and what stopped it is unknown. Centre
+Of the 52 regiments committed on v2 and v3 in battles that ended, 49 arrived. In window 1's
+centre/south/2 win, e3 came within 26 m of its route end at about 134 s, one metre outside the 25 m
+arrival rule, stood 41-45 m away from about 180 s and was released at the 360 s bound, so that
+battle was not a full two-regiment test, and what stopped it is unknown. In window 2 the
+outside/north/1 and outside/south/1 wins are incomplete routes too: in each, a friendly regiment
+was ordered onto e3 and fought it before it reached its route end. Centre
 north and south release about 45 m apart at the same time; whether they are physically distinct cases
 is unknown. The announced control is declared on v2 only and has no battles, and no controller that
 reads the briefing has played B, so its value is unknown.

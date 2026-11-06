@@ -346,9 +346,9 @@ separate skeptic and the critic's findings were not. Every reading in the first 
 
 | Claim | A | B3 | C | Air |
 |---|---|---|---|---|
-| Constructed | Setup read back on v1 and v2; on v1 infantry routes 4 of 4, Knights 0 of 4; achieved formation unread | Setup read back; 45 of 46 committed reserve regiments arrived on v2 and v3 | Physically A; local views replayed on 4 jobs | Typed rosters read back; 5 units outside row 1 on width; routes and enemy loadouts unread |
+| Constructed | Setup read back on v1 and v2; on v1 infantry routes 4 of 4, Knights 0 of 4; achieved formation unread | Setup read back; 49 of 52 committed reserve regiments arrived on v2 and v3 in battles that ended | Physically A; local views replayed on 4 jobs | Typed rosters read back; 5 units outside row 1 on width; routes and enemy loadouts unread |
 | Human win | None | None; the recorder refuses reserve battles | None | None |
-| Interface win | v1: 3 wins from 3 scripted attempts. v2: none from 2 attempts, neither trying to win | CentreSupport won 5 of 8 cases in one window: 3 of the 6 unselected cases and both selected cases again | v1: 2 scripted wins, 1 model loss. v2: none from 1 attempt | 0 of 3 |
+| Interface win | v1: 3 wins from 3 scripted attempts. v2: 1 win from 6 launches, one battle per controller, WingSupport at 424.4 s; Hold and Evade did not try to win | CentreSupport won 5 of 8 cases in one window: 3 of the 6 unselected cases and both selected cases again | v1: 2 scripted wins, 1 model loss. v2: none from 1 attempt | 0 of 3 |
 | Reproducible, names a decision, generalizes | None | None | None | None |
 
 JUDGEMENT: Deciding checks draft — Claude, 2026-11-05: proposes the five rows below, with one
@@ -423,16 +423,68 @@ cannae-communication.md Local rush control. Evidence: `runs/cannae-window-1/`, `
   eight battles can neither support nor exclude as a case effect. Three losses fill some region/side
   pair in 24 of 56 placements, launches already differ by a median 16.0 m per unit before the 45 s
   trigger, and the Knights did not meet the reserve before the first friendly rout in either
-  outside/north battle (routs at 190.0 and 224.2 s, reserve within 30 m at 299.2 and 305.2 s).
+  outside/north battle (routs at 190.0 and 224.2 s, reserve within 30 m at 299.2 and 305.2 s). Window
+  2 did not repeat the split.
 - **Row 4.** No shortcut won: Hold lost at 534.4 s on A v2, Evade at 451.0 s on A v2, 477.9 s on B3 and
   273.7 s on air, and local rush at 371.8 s on C silent v2. These battles show this Evade's flip
   clearly but cannot say how much of each loss it caused: it recomputes one army-wide point and
   flips it during a chase, and no foot regiment reached a point while not routing. A timer win is still open. The rush's three Knights had no order until
   175.9 s, so that loss says little about the force. The owner chose not to test a committed timer
   run, so whether a timer win is possible stays unknown.
-- **Winnability.** A v2 and C v2 have no win, so under the owner's rule neither is admissible yet. A
-  v2's two attempts were non-attacking controls, so nothing has yet tried to win it, and these
-  losses are no evidence that it is too hard.
+- **Winnability.** A v2 and C v2 had no win after this window, and A v2's two attempts were
+  non-attacking controls, so those losses were no evidence that it is too hard. Window 2 follows.
+
+### Window 2 results, 2026-11-05
+
+Window 2 ran at `702ba10` in two stages, as the owner approved: nine launches, one battle each, $0,
+unpaused at 1x, with 8 engine endings (5 won, 3 lost, none at the timer) and one launch with no
+outcome. Rebuilding the 9 register rows through the project's own reader gave 0 differences in 288
+cells, and a separate rebuild of 14 fields from raw files gave none. These battles are not the
+agreed checks, so they verify nothing, and each cell is one battle. These readings rest on JUDGEMENT
+cannae.py Cannae witness development rules, Cavalry exit v2, Enemy wing labels, B support witness and
+B cavalry follow-up, and row 1's tolerances on JUDGEMENT cannae-eval.md Deciding checks draft.
+Evidence: `runs/cannae-window-2/`, `runs/benchmark-improve-20261105/window2-review.json`.
+
+| Controller on `emp-envelopment-a-v2`, one launch each | Result |
+|---|---|
+| WingSupport | Won, 424.4 s |
+| CentreSupport | Lost, 399.9 s |
+| RushNearest | Lost, 487.7 s |
+| Envelop | Lost, 266.2 s |
+| Hold, window 1 | Lost, 534.4 s |
+| Evade, window 1 | Lost, 451.0 s |
+
+- **The win.** WingSupport's win is a complete engine win: 10 of 10 enemy regiments routed or
+  destroyed, 8 of 9 friendly regiments alive, 260 of 675 men left. It lifts "nobody has won" at the
+  interface level only. Whether a script win clears the owner's rule is the owner's call, and a human
+  win, reproducibility, a named decision and an agreed readiness check all remain.
+- **Why it won is unknown.** Launch variation alone could explain this win against CentreSupport's
+  loss. Replaying CentreSupport on WingSupport's recorded polls changes 2 of 364 order batches, at
+  73.6 and 83.2 s, but the two real battles had already separated. Enemy foot stood 3 north and 5
+  south of z=-250 in WingSupport's battle against 6 and 2 in CentreSupport's by 65-73 s, and after
+  73 s the battles gave 53 orders against 20. No controller has two launches on A v2.
+- **Other contrasts.** RushNearest won on v1 and lost on v2 at one battle each, across revisions, so
+  this shows nothing about the force. Envelop's 266.2 s says only that this rule lost once here.
+- **The intended manoeuvre.** No A v2 battle shows Knights hitting the rear of an unbroken regiment
+  that then collapses. A v2 has a heavier force and a recurring cue when the enemy horse breaks, but
+  nothing yet shows the decision at that cue matters, and whether it is harder in outcomes is
+  unmeasured.
+- **Outside repeats.** All four outside cases won from fresh launches, so the split did not repeat
+  and the second round did not run: outside/north/1 at 426.9 s, outside/north/2 at 549.9 s,
+  outside/south/1 at 624.5 s and outside/south/2 at 470.7 s. This shows only that one launch per
+  case does not fix the outcome, and neither that the case matters nor that it does not. The agreed 5
+  of 8 stands. The outside/north/1 and outside/south/1 wins are incomplete routes.
+- **The stopped launch.** `b3-repeat-04`, the first outside/south/2 launch, has no outcome and is no
+  attempt: the mod's model-time script stopped between 181.9 and 182.2 s with no slowdown before it,
+  and the job timed out. `b3-repeat-09` is its one new launch, applying the agreed rule by extension
+  because these repeats are not that check. Whether the game hung, was paused or lost its model
+  timers is unknown. Windows logged TCP port exhaustion about 120.7 s earlier, and 396 more batches, 8
+  of them with orders, applied after that at normal clock, so the evidence does not support it as
+  the cause, though a delayed effect is not excluded. No path from b53 was found, and a stall with
+  the same signature occurred on 10-14, before b53.
+- **Stills.** Window 2 has none: all 34 capture attempts failed with the game not in the foreground,
+  against 3 of 51 in window 1. One further still in each window was skipped by the 30 s throttle. What
+  held the foreground is unknown, and no effect on any outcome is shown.
 
 ## Controls and optional research directions
 

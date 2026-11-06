@@ -29,6 +29,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-05: Window 2: WingSupport wins harder A once, the outside split does not repeat
+
+- Owner: "Yes, start now" to a screen stated before any battle; "No" to a timer test; "Accept rows 3
+  and 4, win stands". Nine launches at `702ba10`, $0, unpaused 1x, two stages, 22:44 to 00:04 UTC. Eight
+  engine endings: 5 won, 3 lost, none at the timer; one launch with no outcome. Register rows here;
+  the project's reader gave 0 differences in 288 cells, a separate 14-field rebuild gave none, and
+  the older rows are byte-identical. All 171 unit rows sit inside row 1's tolerances.
+- Harder A, one battle per controller: WingSupport won at 424.4 s; CentreSupport lost at 399.9 s,
+  RushNearest at 487.7 s, Envelop at 266.2 s. That is 1 win in 6 launches with window 1's Hold and
+  Evade, which did not try to win. It lifts "nobody has won" at the interface level only; whether a script win clears the
+  owner's rule is theirs to say. Launch variation alone could explain win against loss.
+- No A v2 battle shows Knights hitting the rear of an unbroken regiment that then collapses.
+- Outside repeats: all four won, so the split did not repeat and the second round did not run. This
+  shows only that one launch per case does not fix the outcome. The agreed 5 of 8 stands. CentreSupport
+  at v3 now has 11 wins and 3 losses in 14 engine endings; three wins are incomplete routes.
+- `b3-repeat-04`, no outcome: the mod's model-time script stopped between 181.9 and 182.2 s. Whether
+  the game hung, was paused or lost its timers is unknown. The TCP port event about 120.7 s earlier
+  is not supported as the cause, and no path from b53 was found. `b3-repeat-09` is its one new launch.
+- All 34 stills failed with the game not in the foreground, cause unknown, and no effect is shown.
+  `imagery` "copied" here means metadata only. Reserve arrivals stand at 49 of 52 in battles that ended.
+- Unverified. Review: `runs/benchmark-improve-20261105/window2-review.json`.
+
 ## 2026-11-05: Window 1: CentreSupport 5 of 8, no shortcut won
 
 - Owner: "Yes, start now"; A and C take the harder force first; checks reviewed after. Thirteen
