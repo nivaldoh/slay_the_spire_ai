@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-06 (WH3 research focus): write a simple, concise spec to keep the project focused.
+  Include AI evals/benchmarking (possibly primary, undecided), multi-agent systems and LLMs;
+  consider RL, LLM post-training and robot learning, including throughput/resource limits.
+  Use the collected research and other papers if needed; include closely related subtopics
+  and mark judgement calls for later review. [Spec](twwarhammer3/research-focus.md).
 - 2026-11-05 (game disk and Steam terms): "We should delete the game disk. It's not being used
   right now." Disk `wh3-mp-20261103d` (250 GB, project `wh3-benchmark`, us-west1-c) was deleted at
   16:29 UTC, unattached, with no snapshot or image, so any later VM session starts from a new game

@@ -29,6 +29,17 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-06: Research focus spec for owner review
+
+- Saved [research-focus.md](research-focus.md): evals, multi-agent systems and LLMs;
+  conditional RL/post-training and robotics paths; domain boundaries and related questions.
+- Four marked proposals: Contribution priority, Expansion rule, Learning scope, Robotics role.
+  Linked from current guidance and the existing review queue; benchmark definitions unchanged.
+- Re-read six primary sources from the existing collection, with an independent source check.
+  Card, review and offline-check evidence: `runs/wh3-research-focus/`.
+- No game or training runs. Research questions, novelty, proposed checks, learning feasibility
+  and robot transfer remain unverified. Support timing and local checkpoint RL stay stopped.
+
 ## 2026-11-05: Window 2: WingSupport wins harder A once, the outside split does not repeat
 
 - Owner: "Yes, start now" to a screen stated before any battle; "No" to a timer test; "Accept rows 3

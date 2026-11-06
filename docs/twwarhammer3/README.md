@@ -31,6 +31,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 
 | Page | Read it for |
 |---|---|
+| [research-focus.md](research-focus.md) | proposed research focus: evaluation, multi-agent systems, LLMs, learning feasibility, robotics connection and decisions for owner review |
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |

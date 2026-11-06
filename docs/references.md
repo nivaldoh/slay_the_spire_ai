@@ -6,6 +6,26 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## WH3 research focus (2026-11-06)
+
+The [focus spec](twwarhammer3/research-focus.md#reading-map-and-decisions) reuses these
+sources from the existing collection. Primary abstracts were re-read and independently
+checked for the narrow claims used; selected SMACv2, RoCo and IQL sections were also checked.
+Quotes and limits: `runs/wh3-research-focus/review/source-review.md`. No results reproduced.
+
+- [CheckList](https://aclanthology.org/2020.acl-main.442/): capabilities and test types
+  organise behavioural testing; the WH3 categories remain proposals.
+- [SMACv2](https://arxiv.org/abs/2212.07489): timestep-only policies can win original SMAC
+  scenarios, motivating a test of whether fresh observations matter.
+- [Reasoning or Reciting?](https://arxiv.org/abs/2307.02477): changed task assumptions probe
+  transfer; they do not identify a model's training data.
+- [RoCo](https://arxiv.org/abs/2307.04738): LLM dialogue and robot task dependencies are
+  relevant analogies, without a WH3 transfer claim.
+- [IQL](https://arxiv.org/abs/2110.06169): offline learning without querying values of unseen
+  actions; the availability of this method does not establish that WH3 traces suffice.
+- [Statistical Precipice](https://arxiv.org/abs/2108.13264): few-run point estimates can hide
+  uncertainty; no WH3 sample count or statistical method is selected by the focus spec.
+
 ## Cannae evaluation proposal (2026-11-05)
 
 For the [candidate plan](twwarhammer3/cannae-eval.md), not a live-game verification:

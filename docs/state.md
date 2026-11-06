@@ -1,8 +1,10 @@
 # Project state
 
-Updated 2026-11-05. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-06. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06): owner interests, proposed boundaries, related questions and four marked decisions. Contribution priority and scope remain open; no experiment scheduled.
+
 [Cannae A/B/C](twwarhammer3/cannae-eval.md#window-1-results-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; all games are closed and none is scheduled. Windows 1 and 2 (11-05, 22 launches, $0): in the agreed fixed-rule check CentreSupport won 5 of 8 B3 cases; no shortcut won; WingSupport won harder A once, so that step has one interface win; C v2 has none. Whether B needs fresh responses is unestablished, and the outside split did not repeat. An offline audit first changed the recording and register (harness b53; the capture change is unshown live) and opened the owner's recorder to A, C and air. Rows 3 and 4 of the [deciding checks](twwarhammer3/cannae-eval.md#proposed-deciding-checks-2026-11-05) are agreed. [Results](twwarhammer3/cannae-eval.md#window-2-results-2026-11-05); [log](twwarhammer3/log.md#2026-11-05-window-2-wingsupport-wins-harder-a-once-the-outside-split-does-not-repeat); handoff `runs/benchmark-improve-20261105/handoff.md`; next: decision 13.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; timing is not a current research priority. Seven comparison battles finished, one was interrupted and ten never started. The game is closed. Opening flank won 2/2; the first Contact/Delayed pair already excludes the agreed readiness criterion. Preserve the implementation and evidence; next choose the coordination question worth studying before another scenario or live run. No further timing work or second scenario is scheduled.
@@ -27,10 +29,8 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)). Added [cross-domain design reference](thesis/papers.md#cross-domain-test-design-from-video-game-to-real-robot); WH3 transfer remains open. Added [RoCoBench](twwarhammer3/benchmark-references/rocobench.md), with robot coordination parallels to both WH3 team setups.
 
 ## Total War: WARHAMMER III
-Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed, version5 (decision 1): [definition](twwarhammer3/benchmark.md), [phases](twwarhammer3/benchmark-implementation.md#phases),
-[README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
-The [visual report](twwarhammer3/reports.md#initial-benchmark-visuals) includes current outcome/condition
-scores, every planned attempt and the recorded replays; controller ranking remains unverified.
+Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed, version5 (decision 1): [definition](twwarhammer3/benchmark.md), [phases](twwarhammer3/benchmark-implementation.md#phases), [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
+The [visual report](twwarhammer3/reports.md#initial-benchmark-visuals) includes current outcome/condition scores, every planned attempt and the recorded replays; controller ranking remains unverified.
 [Coordination suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) (`suite-v1`): 12 scenarios, 6 played, first comparison 26 of 28 battles, one per pair; exploratory, no ranking.
 
 - Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b53; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).

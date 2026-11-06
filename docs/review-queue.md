@@ -6,6 +6,10 @@ Items keep their existing decision numbers. A listed choice or proposed check is
 
 ## Decisions
 
+WH3 [research focus](twwarhammer3/research-focus.md#reading-map-and-decisions), 2026-11-06:
+Contribution priority, Expansion rule, Learning scope and Robotics role are marked proposals
+for items 1, 4, 8 and 10 below. They select no study, score, verification method or run.
+
 Scenario design under decision 1: [guidelines and review choices](twwarhammer3/scenario-guidelines.md#choices-for-owner-review)
 now follow the owner's replies: two initial scenarios developed sequentially, tentative manual
 wins with owner-only pause, and work toward an overall ranking. Concrete setups, readiness,
