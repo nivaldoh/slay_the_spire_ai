@@ -1,27 +1,12 @@
 # Total War: WARHAMMER III battles
 
-The initial benchmark is one **Empire-versus-Empire Land Battle** against the game AI:
-our three Swordsmen, Crossbowmen and Knights against six Swordsmen and a Great Cannon
-(version5). Engine wins rank above losses; tactical-unit health and state distinguish condition.
-The [starter defaults](benchmark-implementation.md#first-version-follow-up-2026-11-02) are
-documented starting choices. The [initial implementation](benchmark-initial.md) has no retries;
-its agreed recording/arithmetic check passed at `b1136e8`. The three scripted and five Haiku
-battles all lost; winnability and controller strength remain unverified. The existing
-[visual HTML report](reports.md#initial-benchmark-visuals) includes scores, all planned attempts
-and recorded battle replays; it runs offline.
-The intended scope also includes Siege, Survival, Ambush and Conquest; other types await
-confirmation (owner, 2026-10-28). The [current plan direction](benchmark-implementation.md#owner-directions-2026-11-01)
-tentatively scores mainly health, reduced by low morale and more strongly by routing;
-formulas and checks remain open. The engine decides the winner, including timer endings
-(owner, 2026-10-23). Scripts, models and hybrids use structured state while the benchmark
-battle runs unpaused at 1x; actual delay, cost and failures accompany outcomes.
-Start with the [definition and first profile](benchmark.md#the-first-battle)
-and [implementation plan](benchmark-implementation.md#phases). Detailed settings and new
-settings remain marked; the initial evaluator and plan report implement the single profile.
-The [tactic cards](tactic-cards.md) retain their historical rules and evidence.
-Controller research, team recovery and training are related work with separate evidence
-requirements. What is running and the versions on `main`: [../state.md](../state.md);
-every version, job and finding: [log.md](log.md).
+Custom battles played by scripted and model controllers against the game AI. The engine
+decides the winner, including timer endings (owner, 2026-10-23), and battles run unpaused at
+1x. Controller research, team recovery and training are related work with separate evidence
+requirements. Start with the [benchmark definition](benchmark.md), the
+[implementation plan](benchmark-implementation.md#phases) and the
+[initial implementation](benchmark-initial.md). What is running and the versions on `main`:
+[../state.md](../state.md); every version, job and finding: [log.md](log.md).
 
 The owner's initial modding guide (8 October 2026) set the first shape. This page and
 [integration.md](integration.md) supersede it, and git keeps it:
@@ -29,49 +14,103 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 
 ## Pages
 
-| Page | Read it for |
-|---|---|
-| [research-focus.md](research-focus.md) | proposed research focus: evaluation, multi-agent systems, LLMs, learning feasibility, robotics connection and decisions for owner review |
-| [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
-| [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
-| [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | the Land Battle benchmark definition: scope, the proposed first battle, outcome and score, measurements, comparison, observations, orders, timing, scenarios and terms |
-| [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
-| [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
-| [scenario-guidelines.md](scenario-guidelines.md) | proposed scenario coverage, winnability and capability checks, engine and team requirements, release criteria and owner decisions |
-| [cannae-eval.md](cannae-eval.md) | Cannae-inspired candidates: familiar tactics, adaptation and one-army communication; construction and validation plans, candidates played, all unverified |
-| [cannae-comparison.md](cannae-comparison.md) | separate familiar-tactic and adaptation battle designs, fresh-information checks and controls for recognition, conditional rules and task difficulty |
-| [cannae-communication.md](cannae-communication.md) | third battle design: prebattle plans, local command, signals/couriers and checks for coordinated execution under limited communication |
-| [tactic-judges.md](tactic-judges.md) | research and proposed checks for LLM/VLM tactic annotations; no judge or score adopted |
-| [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
-| [tactics-reference.md](tactics-reference.md) | researched historical, Total War and Warhammer tactics; faction/composition and terrain/mode variants; linked evaluation proposals and source notes |
-| [boris-scenarios.md](boris-scenarios.md) | content boundaries for the multiplayer VM account and its battle proposals; general local evals can use any faction and lords |
-| [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
-| [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
-| [../thesis/](../thesis/proposal.md) | the proposed master's thesis (moved 2026-10-27): proposal, candidate directions, related work and the earlier memory proposal |
-| [robot-team-research.md](robot-team-research.md) | research guide: capability allocation, recovery, delayed plans, evaluation and learning; what each source suggests for WH3 and where it does not transfer |
-| [robot-team-plan.md](robot-team-plan.md) | staged Empire experiment plan: establish useful recovery, compare allocation, then test delayed plans or learning; evidence, measures and stop conditions |
-| [multi-agent-plan.md](multi-agent-plan.md) | proposed evaluation of independent teammates: split army, single-client steps, native team battles and multiplayer campaigns; contracts, comparisons, checks and stages |
-| [native-multiplayer.md](native-multiplayer.md) | initial native team-battle assessment: unattended versus headless clients, synchronization probes, cloud costs and risks |
-| [multiplayer-tools.md](multiplayer-tools.md) | built native multiplayer tools: worker operations, passive/native capture, raw witnesses and offline comparison; shared `wh3-multiplayer` skill |
-| [multiplayer-control-foundation.md](multiplayer-control-foundation.md) | current foundation evidence and limits, discovery history and proposed next stages |
-| [Cloud usage](../cloud.md) / [GCP setup](gcp-client-setup.md) | project, spending boundary and cleanup proposals / Windows game-host installation |
-| [team-structures.md](team-structures.md) | who commands which units: one model per class, per unit or per planner-made group, the call schedule, costs, code, stages and the views of team behaviour |
-| [multi-agent-implementation.md](multi-agent-implementation.md) | the scripted split-army team (`team.py`) as built, its agreed checks, and the next code for a model team |
-| [gap-plan.md](gap-plan.md) | initial graph controllers: frozen skills, interchangeable members, authoring/revision commands, checks, evidence and deferred research |
-| [../how-code-works.html](../how-code-works.html) | "How the WH3 code works": a map of the WH3 code whose moving dots show how often each link runs, short stories from real battles (one play job, one decision, a team, basic vs GaP, a graph battle with its whole-battle replay), multiplayer and the factory; sources behind a switch. GitHub shows its source; open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\how-code-works.html` |
-| [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
-| [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
-| [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
-| [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
-| [traces.md](traces.md) | offline model-decision exports, reasoning capture and data provenance |
-| [checkpoints.md](checkpoints.md) | battle checkpoints: save a battle, restore it exactly, the agreed check and limits |
-| [checkpoint-rl.md](checkpoint-rl.md) | short-episode RL research handoff: a proposed local candidate chooser, integration risks, numerical tests and live checks |
-| [checkpoint-rl-plan.md](checkpoint-rl-plan.md) | the implementation plan for RL from restored checkpoints with a reverse curriculum: design decisions, code changes, staged checks, detectors and owner decisions |
-| [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
-| [WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md) | the owner's report redesign brief |
-| [log.md](log.md) | dated history: versions, harness revisions, jobs, costs |
-| [results.csv](results.csv) | the results register, one row per episode, appended by `play` |
+Find your topic and start at its first page. The status word says what kind of page it is.
+**live** pages are still being updated, and a sentence on them can lag the code, so check it
+against the code or log.md before building on it. **ref** pages describe something built or
+researched; some say what remains unverified or tied to an older build, and silence on a page
+does not make it verified. **open** pages are proposals or plans with decisions pending;
+**parked** pages were stopped by a decision and kept; **done** pages are finished plans kept for
+their reasoning; **record** pages are history, and their entries stay as written.
+
+### Current research
+
+| Page | Status | Read it for |
+|---|---|---|
+| [research-focus.md](research-focus.md) | open | proposed focus and four marked decisions |
+| [scenario-guidelines.md](scenario-guidelines.md) | open | scenario coverage, winnability, release criteria, owner replies |
+| [cannae-eval.md](cannae-eval.md) | live | Cannae A/B/C: candidates, results, deciding checks; all unverified |
+| [cannae-comparison.md](cannae-comparison.md) | live | battles A and B: familiar tactic against adaptation |
+| [cannae-communication.md](cannae-communication.md) | live | battle C: one army under limited communication |
+| [tactic-judges.md](tactic-judges.md) | open | LLM and VLM tactic annotation; nothing adopted |
+| [../thesis/](../thesis/proposal.md) | open | proposed master's thesis |
+
+### Benchmark
+
+| Page | Status | Read it for |
+|---|---|---|
+| [benchmark.md](benchmark.md) | live | definition: scope, outcome, measurements, orders, timing, the suite |
+| [benchmark-implementation.md](benchmark-implementation.md) | live | phases, owner interview, checks, gaps, later work, earlier plans |
+| [benchmark-initial.md](benchmark-initial.md) | ref | the built Empire mirror and its agreed check |
+| [benchmark-run.md](benchmark-run.md) | live | running paired trials, the coordination suite and outside controllers |
+| [evaluation-guidelines.md](evaluation-guidelines.md) | open | proposed evaluation rules: task design, failures, statistics, review |
+| [benchmark-references.md](benchmark-references.md) | ref | outside benchmarks, with one profile each in `benchmark-references/` |
+
+### Tactics
+
+| Page | Status | Read it for |
+|---|---|---|
+| [tactics-reference.md](tactics-reference.md) | ref | tactics catalogue; [sources](tactics-sources.md) |
+| [tactics-evaluation.md](tactics-evaluation.md) | open | proposed study designs for the catalogue |
+
+### The harness
+
+| Page | Status | Read it for |
+|---|---|---|
+| [integration.md](integration.md) | live | engine facts: packs, lobby, unit API, clocks, pins |
+| [controllers.md](controllers.md) | live | policies, versions, comparing them, designs not built |
+| [battle-types.md](battle-types.md) | ref | battle-type scenarios, the `mode` state, `build` and `reinforce` |
+| [reports.md](reports.md) | live | the HTML report, replay and curated notes |
+| [traces.md](traces.md) | ref | model-decision exports and provenance |
+| [checkpoints.md](checkpoints.md) | ref | save and restore a battle: agreed check, limits |
+| [../how-code-works.html](../how-code-works.html) | live | visual code map and stories; GitHub shows its source, so open it in a local browser by pasting `\\wsl.localhost\Ubuntu\home\niv\repos\slay_the_spire_ai\docs\how-code-works.html` |
+
+### Teams on one client
+
+| Page | Status | Read it for |
+|---|---|---|
+| [multi-agent-implementation.md](multi-agent-implementation.md) | live | the team as built, agreed checks, what comes next |
+| [gap-plan.md](gap-plan.md) | live | graph controllers: built version, checks, deferred research |
+| [multi-agent-plan.md](multi-agent-plan.md) | open | evaluating independent teammates, stages, campaign |
+| [team-structures.md](team-structures.md) | parked | one model per class, unit or group; costs refer to the parked line |
+
+### Multiplayer and cloud
+
+The first two pages give the current status and the tools; the plans follow them.
+
+| Page | Status | Read it for |
+|---|---|---|
+| [multiplayer-control-foundation.md](multiplayer-control-foundation.md) | live | current status and evidence, proposed stages |
+| [multiplayer-tools.md](multiplayer-tools.md) | ref | worker operations, capture, compare-peers; `wh3-multiplayer` skill |
+| [mp-next-steps.md](mp-next-steps.md) | open | three-step plan; offline parts built, paid session stopped |
+| [vm-team-plan.md](vm-team-plan.md) | open | PC and VM team battle; decisions 1-4 |
+| [native-multiplayer.md](native-multiplayer.md) | open | investigation, step plan, headless, costs, risks |
+| [boris-scenarios.md](boris-scenarios.md) | open | battles for the VM account; [sources](boris-scenarios-sources.md) |
+| [gcp-client-setup.md](gcp-client-setup.md) | ref | Windows game-host setup; pilot result |
+| [Cloud usage](../cloud.md) | live | project, spending boundary, cleanup |
+
+### Background and paused research
+
+| Page | Status | Read it for |
+|---|---|---|
+| [robotics.md](robotics.md) | ref | robotics ideas and comparison designs |
+| [robot-team-research.md](robot-team-research.md) | ref | capability allocation, recovery, delayed plans; what transfers |
+| [robot-team-plan.md](robot-team-plan.md) | parked | staged Empire experiment plan |
+| [latency.md](latency.md) | open | knowing a tactic against executing it in time; Kimi P5 left |
+| [checkpoint-rl.md](checkpoint-rl.md) | parked | RL handoff and results, paused (decision 11) |
+| [checkpoint-rl-plan.md](checkpoint-rl-plan.md) | done | its implementation plan, built 10-26; code cites it |
+| [support-timing.md](support-timing.md) | parked | infantry support timing, stopped 11-05 |
+
+### Records
+
+| Page | Status | Read it for |
+|---|---|---|
+| [log.md](log.md) | record | dated history: versions, harness revisions, jobs, costs |
+| [results.csv](results.csv) | record | results register, one row per episode, appended by `play` |
+| [tactic-cards.md](tactic-cards.md) | record | chariot rule, card design, screens |
+| [empire.md](empire.md) | record | Empire set of 2026-10-20: decisions, risks, results |
+| [small-scenarios-2.md](small-scenarios-2.md) | record | scenarios S8-S13: rosters, database facts, hypotheses |
+| [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | record | the owner's benchmark brief |
+| [WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md) | record | the owner's report redesign brief |
 
 ## Terms
 
@@ -164,6 +203,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 `src/twwarhammer3/`, Total War: WARHAMMER III custom battles:
 - `src/twwarhammer3/__main__.py`: CLI: doctor, pack, launch, menu (runtime and UI probes);
   play, digest, watch, card, stats, report, export, spend (jobs and offline evidence);
+  benchmark (mirror and suite plans, reports, authoring);
   graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker,
   compare-peers (native multiplayer)
 - `src/twwarhammer3/protocol.py`: order types and validation, the error taxonomy;
@@ -221,6 +261,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/skills.py`: per-unit skill executor, probe_abilities
 - `src/twwarhammer3/battle/scripted.py`: hold, attack_nearest, rush_nearest
 - `src/twwarhammer3/battle/evade.py`: `Evade`, a free control: every unit runs from visible enemies
+- `src/twwarhammer3/battle/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
+  Cannae development witnesses on public state
+- `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, kept apart from the
+  public battle state
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router
 - `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probe
@@ -260,12 +304,18 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/system_prompt.md`: the llm prompt
 - `configs/twwarhammer3/rules_prompt.md`: the llm_rules prompt
 - `configs/twwarhammer3/commander_prompt.md`: the commander prompt
+- `configs/twwarhammer3/tips_prompt.md`: the suite's `tips` arm: the rules prompt plus "How to
+  fight"
+- `configs/twwarhammer3/local_command_prompt.md`: battle C's local commander prompt
+- `configs/twwarhammer3/cannae_shared_plan.md`: battle C's shared prebattle plan
 - `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
 - `configs/twwarhammer3/graphs/`: graph controller files
+- `configs/twwarhammer3/controllers/`: battle C's `configured` controller files
 - `configs/twwarhammer3/scenarios.json`: declared scenarios
 - `configs/twwarhammer3/custom_battle.json`: random draws
 - `configs/twwarhammer3/report_notes.json`: the report's scenario, unit and highlight text
 - `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read
+- `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py` reads
 
 `src/gameai/`, game-neutral code both games import:
 - `src/gameai/llm.py`: model API calls for any game: transport, spend and the reply-retry loop
@@ -287,6 +337,9 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `scripts/hooks/stop_check.py`: Stop hook: runs check.py when the tree changed since its
   last pass
 - `scripts/wh3_queue.py`: runs a frozen plan of `twwarhammer3 play` jobs one at a time
+- `scripts/wh3_gcp.py`: previews or creates one expiring GCP game host, trying priced regions
+  on capacity errors
+- `scripts/gcp/`: the GCP host's first-boot script and its deadline cleanup workflow
 - `scripts/wh3_db.py`: reads rows of a WH3 database table from the game's db.pack
 - `scripts/wh3_reserve_cells.py`: one row per reserve episode and a tally per cell, from saved jobs
 - `scripts/refusal_sweep.py`: removes one refusal at a time and lists those no test catches
@@ -318,6 +371,12 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
     --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd USD \
     --rotation-seed N --output runs/twwarhammer3/battle/bench-bN-<purpose>-YYYYMMDD
 uv run python scripts/wh3_queue.py PLAN.json      # a frozen plan of play jobs, one at a time
+# Benchmark plans: `plan` writes a queue plan and plays nothing; `report` reads its results
+uv run --locked python -m twwarhammer3 benchmark plan PLAN.json [--stage pilot|model]  # benchmark-initial.md
+uv run --locked python -m twwarhammer3 benchmark plan PLAN.json --stage suite \
+    --scenarios A,B --arms rush,single  # benchmark-run.md
+uv run --locked python -m twwarhammer3 benchmark report PLAN.json
+uv run --locked python -m twwarhammer3 graph-author --task TEXT --budget-usd USD --output DIR  # paid; gap-plan.md
 # Follow and review
 uv run python -m twwarhammer3 watch [JOB]                 # live beside the game; --prompts
 uv run python -m twwarhammer3 watch JOB --next            # wait for an episode, stall or end

@@ -116,6 +116,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/setup.py",
         "src/twwarhammer3/battle/calibration.py",
         "src/twwarhammer3/battle/cards.py",
+        "src/twwarhammer3/battle/reserve.py",
         "configs/twwarhammer3/scenarios.json",
         "configs/twwarhammer3/custom_battle.json"
       ],
@@ -244,9 +245,14 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/reference.py",
         "src/twwarhammer3/battle/team.py",
         "src/twwarhammer3/battle/configured.py",
+        "src/twwarhammer3/battle/cannae.py",
         "configs/twwarhammer3/system_prompt.md",
         "configs/twwarhammer3/rules_prompt.md",
-        "configs/twwarhammer3/commander_prompt.md"
+        "configs/twwarhammer3/commander_prompt.md",
+        "configs/twwarhammer3/tips_prompt.md",
+        "configs/twwarhammer3/local_command_prompt.md",
+        "configs/twwarhammer3/cannae_shared_plan.md",
+        "configs/twwarhammer3/controllers/"
       ],
       "status":
         "agreed live check: scripted team; direct model-team mechanics passed one declared case at c1ad84d. Strength remains unverified",
@@ -353,7 +359,10 @@ DIAGRAM.tabs.push({
       "files": [
         "src/twwarhammer3/engine/link.py",
         "src/twwarhammer3/engine/worker.py",
-        "src/twwarhammer3/battle/peers.py"
+        "src/twwarhammer3/battle/peers.py",
+        "scripts/wh3_gcp.py",
+        "scripts/gcp/",
+        "configs/twwarhammer3/gcp-regions.json"
       ],
       "status": "built, unverified",
       "commit": "bdfee38",

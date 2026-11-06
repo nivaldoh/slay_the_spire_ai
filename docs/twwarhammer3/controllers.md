@@ -41,6 +41,8 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `llm` | model, blocking | the model, raw orders every decision | v22 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
 | `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v8 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
+| `team_llm_rules` | model team | two model members share one army, the Empire Knights and the rest; each plays the rules prompt on its own public view and sends orders while the other thinks. In the suite, up to three members split by unit class (`ClassTeam`) | v22+t2 | `team.py` over `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
+| `configured` | composition | whatever the `--controller-config` file declares: a graph (`graph`, `graph_llm`), a team (`team`, `local_team`) or a single built-in or `package.module:Class` controller | | `configured.py`, `configs/twwarhammer3/graphs/`, `configs/twwarhammer3/controllers/`, [gap-plan.md](gap-plan.md) |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
 Markers for files that cannot carry one (a prompt is the model's input; editing a policy file

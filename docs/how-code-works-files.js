@@ -5,7 +5,7 @@ Object.assign(DIAGRAM_FILES, {
  "files": [
   {
    "path": "src/twwarhammer3/__main__.py",
-   "text": "CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest, watch, card, stats, report, export, spend (jobs and offline evidence); graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker, compare-peers (native multiplayer)",
+   "text": "CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest, watch, card, stats, report, export, spend (jobs and offline evidence); benchmark (mirror and suite plans, reports, authoring); graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker, compare-peers (native multiplayer)",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -154,6 +154,30 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/support_timing.py",
+   "text": "infantry/cavalry timing diagnostics and fresh-launch plan",
+   "box": null,
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/support_evidence.py",
+   "text": "offline event brackets and proposed numerical contrast",
+   "box": null,
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/manual_demo.py",
+   "text": "separate owner demonstration recorder and pause labels",
+   "box": null,
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/engine/manual_capture.py",
+   "text": "passive Windows video and state journal for demonstrations",
+   "box": "map.runtime",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/reference.py",
    "text": "`Concentrate`, the suite's scripted coordinated reference",
    "box": "map.play",
@@ -196,9 +220,39 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/evade.py",
+   "text": "`Evade`, a free control: every unit runs from visible enemies",
+   "box": null,
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/cannae.py",
+   "text": "`Envelop`, `WingSupport`, `CentreSupport`: scripted Cannae development witnesses on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/reserve.py",
+   "text": "battle B's private reserve draw, kept apart from the public battle state",
+   "box": "map.setup",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/team.py",
    "text": "independent members sharing one army and one mailbox",
    "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/local_command.py",
+   "text": "C's local sensing and signal/courier router",
+   "box": null,
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/local_team.py",
+   "text": "C's regiment groups, model interface and free probe",
+   "box": null,
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -370,6 +424,24 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "configs/twwarhammer3/tips_prompt.md",
+   "text": "the suite's `tips` arm: the rules prompt plus \"How to fight\"",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/local_command_prompt.md",
+   "text": "battle C's local commander prompt",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/cannae_shared_plan.md",
+   "text": "battle C's shared prebattle plan",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "configs/twwarhammer3/graph_goal_prompt.md",
    "text": "the graph target-preference prompt",
    "box": "map.graphs",
@@ -379,6 +451,12 @@ Object.assign(DIAGRAM_FILES, {
    "path": "configs/twwarhammer3/graphs/",
    "text": "graph controller files",
    "box": "map.graphs",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/controllers/",
+   "text": "battle C's `configured` controller files",
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -403,6 +481,12 @@ Object.assign(DIAGRAM_FILES, {
    "path": "configs/twwarhammer3/benchmark_jobs.json",
    "text": "the jobs the report and export read",
    "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/gcp-regions.json",
+   "text": "the quoted region prices `scripts/wh3_gcp.py` reads",
+   "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -484,9 +568,27 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "scripts/wh3_gcp.py",
+   "text": "previews or creates one expiring GCP game host, trying priced regions on capacity errors",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "scripts/gcp/",
+   "text": "the GCP host's first-boot script and its deadline cleanup workflow",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "scripts/wh3_db.py",
    "text": "reads rows of a WH3 database table from the game's db.pack",
    "box": "map.runtime",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "scripts/wh3_reserve_cells.py",
+   "text": "one row per reserve episode and a tally per cell, from saved jobs",
+   "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
