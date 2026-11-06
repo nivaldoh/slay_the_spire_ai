@@ -8,15 +8,15 @@ import pytest
 
 pytest.importorskip("torch")
 
-import catalog_support as catalog_fixtures  # noqa: E402
-import language_policy_support as language_fixtures  # noqa: E402
+import catalog_support as catalog_fixtures
+import language_policy_support as language_fixtures
 
-from spire.combat import catalog  # noqa: E402
-from spire.combat.catalog_report import compare_catalogs, render_catalog_report  # noqa: E402
-from spire.combat.evidence import audit_run  # noqa: E402
-from spire.engine.bridge import BridgeDisconnected  # noqa: E402
-from spire.language import evaluation as language_evaluation  # noqa: E402
-from spire.language import policy as language_policy  # noqa: E402
+from spire.combat import catalog
+from spire.combat.catalog_report import compare_catalogs, render_catalog_report
+from spire.combat.evidence import audit_run
+from spire.engine.bridge import BridgeDisconnected
+from spire.language import evaluation as language_evaluation
+from spire.language import policy as language_policy
 
 # These fixtures substitute only process/bridge boundaries and source/dependency pins.
 declaration = catalog_fixtures.declaration

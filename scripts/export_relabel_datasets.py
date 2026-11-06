@@ -39,7 +39,7 @@ def classify(root: Path):
     for run in candidates(root):
         try:
             audited = audit_run(run)
-        except Exception as error:  # noqa: BLE001 - recorded, never silently included
+        except Exception as error:  # recorded, never silently included
             skipped.append((str(run), f"audit error {type(error).__name__}"))
             continue
         manifest, episodes = audited["manifest"], audited["episodes"]

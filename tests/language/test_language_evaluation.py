@@ -7,20 +7,20 @@ import pytest
 
 pytest.importorskip("torch")
 
-from combat_support import combat_message, harness, terminal_message  # noqa: E402
-from language_policy_support import (  # noqa: E402
+from combat_support import combat_message, harness, terminal_message
+from language_policy_support import (
     TinyModel,
     TinyTokenizer,
     adapter_declaration,
     declaration,
 )
 
-from gameai import provenance  # noqa: E402
-from spire.combat import rollout  # noqa: E402
-from spire.combat.evidence import audit_run, normalized_observation_fingerprint  # noqa: E402
-from spire.engine.bridge import BridgeDisconnected  # noqa: E402
-from spire.language import evaluation as language_evaluation  # noqa: E402
-from spire.protocol import decision_from_message  # noqa: E402
+from gameai import provenance
+from spire.combat import rollout
+from spire.combat.evidence import audit_run, normalized_observation_fingerprint
+from spire.engine.bridge import BridgeDisconnected
+from spire.language import evaluation as language_evaluation
+from spire.protocol import decision_from_message
 
 # Re-export shared fixtures without creating a separate test helper framework.
 __all__ = ["adapter_declaration", "declaration", "harness"]

@@ -10,8 +10,8 @@ import demonstration_support as demo_fixtures
 import pytest
 import torch
 
-from gameai.provenance import REPO_ROOT  # noqa: E402
-from spire.language import policy, training  # noqa: E402
+from gameai.provenance import REPO_ROOT
+from spire.language import policy, training
 
 functional = torch.nn.functional
 

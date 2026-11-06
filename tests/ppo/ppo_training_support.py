@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from spire.combat.evidence import normalized_observation_fingerprint  # noqa: E402
-from spire.ppo import training  # noqa: E402
-from spire.protocol import decision_from_message  # noqa: E402
+from spire.combat.evidence import normalized_observation_fingerprint
+from spire.ppo import training
+from spire.protocol import decision_from_message
 
 
 def write(path, value):

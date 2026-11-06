@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from spire.language import policy as language  # noqa: E402
+from spire.language import policy as language
 
 
 class TinyModel(torch.nn.Module):

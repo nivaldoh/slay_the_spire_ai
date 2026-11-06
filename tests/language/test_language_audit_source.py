@@ -8,7 +8,7 @@ import pytest
 
 pytest.importorskip("torch")
 
-from gameai import provenance  # noqa: E402
+from gameai import provenance
 
 SPEC = importlib.util.spec_from_file_location(
     "audit_language_source_script", provenance.REPO_ROOT / "scripts/audit_language_training.py"

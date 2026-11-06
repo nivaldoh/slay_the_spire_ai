@@ -24,6 +24,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+if len(sys.argv) < 5:
+    sys.exit(__doc__)
 S, FILE, PATTERN, REPLACEMENT, *TESTS = sys.argv[1:]
 S = Path(S).resolve()
 if S == Path(__file__).resolve().parents[1]:
