@@ -15,6 +15,7 @@ import numpy as np
 import torch
 
 from spire.localrl.policy import Scorer, log_probs
+from spire.localrl.rewards import fight_rewards, fight_spans  # noqa: F401
 
 SCREENS = ("NONE", "MAP", "COMBAT_REWARD", "CARD_REWARD", "EVENT", "SHOP_SCREEN", "SHOP_ROOM",
            "REST", "GRID", "HAND_SELECT", "CHEST", "BOSS_REWARD")

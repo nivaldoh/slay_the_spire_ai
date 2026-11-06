@@ -20,6 +20,7 @@ DEFAULTS = {
     "epochs": 3, "minibatch": 4, "clip": 0.2, "entropy": 0.005, "target_kl": 0.03,
     "max_grad_norm": 1.0, "gamma": 0.995, "lam": 0.95, "hp_weight": 3.0, "win_bonus": 10.0,
     "beta": 3.0, "weight_cap": 8.0, "awr_rows": 2000, "offline_share": 0.5,
+    "fight_hp": 30.0, "fight_death": 2.0, "fight_potion": 0.1, "fight_lam": 0.9,
 }
 
 
@@ -67,6 +68,40 @@ def score_runs(runs: list[dict], config: dict) -> dict:
             step["advantage"] = value
             spread.append(value)
     return {"baseline_r2": r2, "advantage_sd": float(np.std(spread)), "rows": len(rows)}
+
+
+def score_fights(runs: list[dict], config: dict) -> dict:
+    """Give fight steps an advantage from ``learn.fight_rewards`` and normalise each kind apart.
+
+    Runs on after ``score_runs``. Fight steps and the rest then enter one update on one scale.
+    """
+    baseline, rows, targets, spans = learn.Baseline(), [], [], []
+    for run in runs:
+        for start, end in learn.fight_spans(run["steps"]):
+            values = learn.fight_rewards(run["steps"], start, end, run["status"], config)
+            features = [learn.features(s["observation"]) for s in run["steps"][start:end]]
+            rows += features
+            targets += learn.discounted(values, 1.0)
+            spans.append((run, start, end, values, features))
+    r2 = baseline.fit(rows, targets)
+    fight, other = [], []
+    for run, start, end, values, features in spans:
+        steps = run["steps"][start:end]
+        ended = end < len(run["steps"]) or run["status"] != "truncated"
+        found = learn.advantages(values, baseline(features),
+                                 {"gamma": 1.0, "lam": config["fight_lam"]}, terminal=ended)
+        for step, value in zip(steps, found):
+            step["advantage"] = value
+            step["in_fight"] = True
+        fight += steps
+    other = [s for run in runs for s in run["steps"] if not s.get("in_fight")]
+    for group in (fight, other):
+        if group:
+            spread = np.array([s["advantage"] for s in group])
+            center, scale = spread.mean(), spread.std() + 1e-6
+            for step in group:
+                step["advantage"] = float((step["advantage"] - center) / scale)
+    return {"fight_baseline_r2": r2, "fight_steps": len(fight), "other_steps": len(other)}
 
 
 def awr_rows(runs: list[dict], config: dict, generator) -> list[dict]:
