@@ -85,6 +85,15 @@ def test_a_potion_cannot_be_taken_with_every_slot_full():
     assert playable(full, ["take potion Blood Potion"]) == [0]
 
 
+def test_a_potion_cannot_be_bought_with_every_slot_full():
+    labels = ["buy Armaments (1 skill) for 23 gold", "buy Fire Potion for 50 gold", "leave"]
+    potions = [{"name": "Fire Potion"}]
+    full = {"potions": [{"id": "A"}, {"id": "B"}], "screen_state": {"potions": potions}}
+    room = {"potions": [{"id": "A"}, {"id": "Potion Slot"}], "screen_state": {"potions": potions}}
+    assert playable(full, labels) == [0, 2]
+    assert playable(room, labels) == [0, 1, 2]
+
+
 def test_agent_cannot_reach_protected_values_or_leave_a_range():
     current = {"updates": 2, "runs_per_update": 6, "method": "ppo"}
     reply = json.dumps({"hypothesis": "h", "reasoning": "r", "config_json": '{"lr": 1e-5}'})

@@ -133,6 +133,18 @@ compare ways to collect recovery examples, learn from outcomes and improve guida
 between battles. They also list additional timing and action-origin fields to audit
 before using WH3 traces for those studies.
 
+### Local RL on complete runs
+
+*2026-11-06, overnight, branch `spire-local-rl`; report in `runs/local-rl-20261106/handoff.md`. Unverified: no
+agreed check covers it.* `src/spire/localrl/` trains Qwen3-0.6B with a LoRA on complete Spire runs: the policy reads
+one next-token distribution over a symbol per legal choice, and a fresh JVM is no longer needed per run. Rewards come from
+the game. Anthropic's model only sets numbers in `research.SPACE`, so none of its text reaches a prompt, reward or
+training row, as [Provider terms](#provider-terms) require.
+
+Advantage-weighted regression on the Qwen3.6 night's rows moved greedy floors on 12 seeds no gate saw from 5.58 (the
+adapter of 2026-10-11) to 10.25 (paired +4.67, 8 up, 4 down), with uniform random at 4.67. That is learning from recorded
+open-weight play. Online RL on 20 sampled runs had shown no gain when this was written.
+
 ### Idea: PostTrainBench-style tasks
 
 *Owner, 2026-10-28: a general idea to keep, for inspiration or reference

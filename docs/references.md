@@ -6,6 +6,20 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Local RL on Spire (2026-11-06)
+
+Used by `src/spire/localrl/`. Read for the parts named; none was run as published.
+
+- [ENPIRE contract](https://raw.githubusercontent.com/NVlabs/ENPIRE/main/enpire/policy/autoresearch_instruction.md), read
+  in full: one falsifiable hypothesis, the smallest change, approved trials, fixed gates, protected scorer.
+- [karpathy/autoresearch `program.md`](https://raw.githubusercontent.com/karpathy/autoresearch/master/program.md), read in
+  part: the first run is the baseline, one result log, simpler is better.
+- [Ng, Harada and Russell 1999](https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/NgHaradaRussell-shaping-ICML1999.pdf),
+  secondary: potential-based shaping keeps the best policy, with the discount in the term.
+- [Schulman et al. 2016](https://arxiv.org/abs/1506.02438), secondary: GAE. [Peng et al. 2019](https://arxiv.org/abs/1910.00177),
+  secondary: advantage-weighted regression. Both from memory of the method; papers not reread for this.
+- [CleanRL `ppo.py`](https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py), secondary: clipped ratio, KL per epoch.
+
 ## CaP-X: code-as-policy and WH3 (2026-11-06)
 
 Added at the owner's request for later research. Letian (Max) Fu et al.,

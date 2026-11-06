@@ -108,11 +108,13 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
 
 
 def playable(observation: dict, labels: list[str]) -> list[int]:
-    """Choices the game can carry out. Taking a potion with every slot full changes nothing,
-    so CommunicationMod never answers and the run hangs (seen 2026-11-06, floor 3)."""
+    """Choices the game can carry out. Taking or buying a potion with every slot full changes
+    nothing, so CommunicationMod never answers and the run hangs (seen 2026-11-06, floors 3, 5)."""
     full = all(potion.get("id") != "Potion Slot" for potion in observation.get("potions", []))
-    usable = [i for i, label in enumerate(labels)
-              if not (full and label.startswith("take potion"))]
+    shop = (observation.get("screen_state") or {}).get("potions", [])
+    names = tuple(f"buy {potion.get('name')} for " for potion in shop)
+    dead = ("take potion", *names)
+    usable = [i for i, label in enumerate(labels) if not (full and label.startswith(dead))]
     return usable or list(range(len(labels)))
 
 

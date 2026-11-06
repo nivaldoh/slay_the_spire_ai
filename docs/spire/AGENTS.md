@@ -71,6 +71,13 @@ NotImplementedError):
 - `src/spire/language/sampling.py`: sampling
 - `src/spire/language/rl.py`: REINFORCE
 
+`src/spire/localrl/`, local Qwen3-0.6B RL on complete runs ([post-training](../posttraining.md#local-rl-on-complete-runs)):
+- `src/spire/localrl/policy.py`: symbol scoring in one forward pass, the public prompt, the loop mask
+- `src/spire/localrl/collect.py`: one JVM across runs
+- `src/spire/localrl/learn.py`: reward, baseline, PPO, advantage-weighted regression
+- `src/spire/localrl/train.py`: one cycle of runs, updates and evaluation
+- `src/spire/localrl/research.py`: the self-improvement loop and its gate
+
 Outside `src/`:
 - `configs/llm/`: full-run system prompt and enemy rules notes (the tuning surface)
 - `configs/suites/`: first-combat suite and catalog declarations
