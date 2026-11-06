@@ -1,6 +1,10 @@
 # Plan: a visual "how the code works" page that stays true
 
-Second version, 2026-11-01, Claude Code, at `d12be58`. Nothing is built. The first version, which treated
+Second version, 2026-11-01, Claude Code, at `d12be58`. Built since: the pilot (merge `c471b45`), step 4
+(merge `45c2a39`) and a redesign (`d9122ee`), now [how-code-works.html](how-code-works.html). The
+[review queue](review-queue.md#completed-work-and-handoffs) records agent review of the pilot and
+step 4, a quiz not passed (n=1) and the owner's look still waiting, so nothing here is verified.
+The first version, which treated
 keeping file:line claims accurate as the goal, and the checkers' evidence are in
 `runs/diagram-upkeep-plan-20261031/` (local, not in Git).
 

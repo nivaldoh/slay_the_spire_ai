@@ -395,6 +395,7 @@ or external project execution. Proposed checks remain unagreed.
   [nested virtualization](https://docs.cloud.google.com/compute/docs/instances/nested-virtualization/overview),
   [IAP access](https://docs.cloud.google.com/iap/docs/using-tcp-forwarding),
   [runtime limits](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime),
+  [`gcloud compute instances create`](https://docs.cloud.google.com/sdk/gcloud/reference/compute/instances/create),
   [budget limitations](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps):
   candidate Windows Server/vWS setup and lifecycle constraints, not WH3 support or a quote.
 - airgpu [pricing](https://airgpu.com/),
@@ -946,7 +947,7 @@ For `.github/workflows/check.yml` (2026-10-29):
 - [SWE-bench run report](https://github.com/SWE-bench/SWE-bench/blob/02e7a74ffd0b/swebench/harness/reporting.py)
   (`make_run_report`, `schema_version` 2). Each instance gets one label from its evidence:
   resolved, unresolved, error, empty patch or incomplete; failure-cause tags are added without
-  changing the denominator. The model for `cards.engine_outcome` (2026-10-31). *Read.*
+  changing the denominator. The model for `cards.benchmark_outcome` (2026-10-31). *Read.*
 - [NeurIPS paper checklist](https://neurips.cc/public/guides/PaperChecklist): claims match their
   scope; error bars say what varies and how they were computed; failed experiments count in
   compute. *Checked.*
@@ -1005,7 +1006,7 @@ For `.github/workflows/check.yml` (2026-10-29):
 
 ### Launcher failure contract tests (2026-10-31)
 
-Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.
+Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-worktree/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.
 
 - [FFmpeg gfxcapture documentation](https://ffmpeg.org/ffmpeg-filters.html#gfxcapture)
   (read 2026-11-04): native-window selection, D3D11 download and duplicate frames for the

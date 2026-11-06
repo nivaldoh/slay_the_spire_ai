@@ -15,8 +15,11 @@ The in-VM steps follow [gcloudrig](https://github.com/gcloudrig/gcloudrig) (`gcl
 (`PostInstall/PostInstall.ps1`). We do not copy their Defender or firewall shutdowns.
 
 Read [cloud usage](../cloud.md) first: current project, budget, login/billing status and
-cleanup requirements live there. The approved pilot is $5 total and at most 3 hours,
-installation included. Actual commands and evidence: `runs/twwarhammer3/gcp/setup-20261102/`.
+cleanup requirements live there. The pilot approved on 2026-11-02 was $5 total and at most
+3 hours, installation included. On 2026-11-03 the owner allowed $10 for now
+([direction](../owner-direction.md), [cloud usage](../cloud.md)), read as a new cloud
+allowance from $0; the direction does not say whether the 3-hour limit stands. Actual
+commands and evidence: `runs/twwarhammer3/gcp/setup-20261102/`.
 
 ## Pilot result, 2026-11-03
 
@@ -127,8 +130,9 @@ Google Billing catalogue, us-east1, read 2026-11-03 UTC (Nov 2 locally):
 | External IPv4 allowance | $0.005 |
 | **Estimate** | **$1.131** |
 
-Three hours: about **$3.39**, before traffic, tax and teardown. The $5 total also includes
-cleanup tests. The catalogue lists a $0.20 workstation SKU; its exact L4 billing mapping
+Three hours: about **$3.39**, before traffic, tax and teardown. The pilot's $5 total also
+included cleanup tests; the $10 of 2026-11-03 is noted at the top of this page. The
+catalogue lists a $0.20 workstation SKU; its exact L4 billing mapping
 is unconfirmed, so this estimate includes it. Do not add another L4 charge to the G2 bundle.
 Billing reports lag; this is not a provider-enforced dollar cap. Evidence: `sku-selected.json`
 and `game-host-card.md` in the run directory. The disk bills while a VM is stopped.

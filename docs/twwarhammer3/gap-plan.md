@@ -381,7 +381,7 @@ The engine still reported lost at 666.8 s. Four live model calls yielded three a
 goals and one rejected overlong reason; seven skill failures recovered. Cumulative spend
 is 27 calls/$0.0285739 of $5. This is one physical-effect pass, not evidence of superiority
 to non-GaP control or learning. Independent raw/register audit: `review/live-followup/`
-in that evidence folder. [View the completed battle](http://localhost:8765/gap-fixed-live-20261101.html).
+in that evidence folder. View the completed battle at `runs/twwarhammer3/reports/gap-fixed-live-20261101.html`.
 The game is closed. No additional author candidate or changed benchmark/strength method is planned.
 The first launcher invocation was rejected before any game/API call: its default setup
 window did not fit the declared process cap. Explicit setup 240 s restored the prior

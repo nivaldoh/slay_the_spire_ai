@@ -5,6 +5,12 @@ details stay in the [GCP setup guide](twwarhammer3/gcp-client-setup.md).
 
 ## Current boundary
 
+Owner, 2026-11-03 ([direction](owner-direction.md)): $10 for now, read as a new allowance
+from $0, keeping costs low. This replaces the $5 below; the direction does not say whether
+the 3-hour session limit stands. Spend so far is on [state.md](state.md#active-work), which
+records no VM and no disk: game disk `wh3-mp-20261103d` was deleted on 2026-11-05 with no
+snapshot.
+
 Owner, 2026-11-02 ([direction](owner-direction.md)):
 
 - GCP project: **`wh3-benchmark`**.
@@ -37,6 +43,13 @@ Native DELETE had been set for 04:00:23 UTC, backup cleanup for 04:05:23 UTC; ne
 was extended. Quote: $1.30/hour; host subtotal plus the earlier $0.03 allowance is about $3.58.
 Actual billing, traffic and tax remain unreconciled. No paid storage is retained.
 Evidence: `runs/twwarhammer3/gcp/session-20261102b/`; [result and follow-ups](twwarhammer3/gcp-client-setup.md#pilot-result-2026-11-03).
+
+Session of 2026-11-03: VM `wh3-mp-20261103d` in `us-west1-c`, created after 12 stockouts, ran
+21:08-22:58 UTC for the [first two native multiplayer battles](twwarhammer3/log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm).
+Compute was about $2.06 at the $1.131/h quote; billing is unreconciled. Unlike the pilot
+above, it kept its game disk until the 2026-11-05 deletion, at about $0.83 a day.
+Evidence: `runs/twwarhammer3/gcp/session-20261103d/` (attempts), `session-20261103d-kit/`
+(VM deletion), `session-20261103d-retain/` (disk).
 
 ## Before spending
 

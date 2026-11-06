@@ -43,13 +43,12 @@ dependency for this small model. PEFT supports
 ## Bounded smoke
 
 Download only the pinned public model's safetensors, tokenizer and configuration
-into an external cache. Then run the script against that local snapshot (the smoke is
-done; `scripts/language_smoke.py` was removed on 2026-10-12 and remains in Git history):
+into an external cache. The smoke ran the script against that local snapshot. It is done,
+and `scripts/language_smoke.py` was removed on 2026-10-12. To read the script from Git
+history:
 
 ```sh
-uv run --locked --extra llm python scripts/language_smoke.py \
-  --model-path /path/to/snapshots/c1899de289a04d12100db370d81485cdf75e47ca \
-  --output runs/language-smoke-unique-name
+git show 4ab4dc0^:scripts/language_smoke.py
 ```
 
 The script verifies the base weight hash and disables network access in its sole

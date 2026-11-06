@@ -39,18 +39,20 @@ saw. Actual battles always run unpaused at 1×. [Still image](docs/images/wh3-re
 
 ## WARHAMMER III: watch the decisions unfold
 
-The first benchmark is being defined around **small mixed-army Land Battles**. The engine
-decides the winner, including timer endings; health, leadership, timing and cost explain
-performance. The [definition](docs/twwarhammer3/benchmark.md) and [plan](docs/twwarhammer3/benchmark-implementation.md) remain under review,
-and the current readers do not yet implement the new score. The figures below show earlier
-development studies across cavalry, spellcasting, swarm, siege and reinforcement battles.
+The benchmark built so far is **one small Empire-versus-Empire Land Battle** against the game AI.
+A coordination suite, a proposal in use, compares control methods and has been played without a
+ranking. The next two scenarios, one simpler and one more complex, are still open. The engine decides the winner, including timer
+endings; health, leadership, timing and cost explain performance. The
+[definition](docs/twwarhammer3/benchmark.md) and [plan](docs/twwarhammer3/benchmark-implementation.md) remain under review,
+and no controller ranking is claimed. The figures below show earlier development studies
+across cavalry, spellcasting, swarm, siege and reinforcement battles.
 
 [![Six provisional WH3 scenarios, with terrain and starting army positions](docs/images/wh3-scenarios.png)](docs/twwarhammer3/benchmark.md#scenario-design)
 
 Models can issue orders directly (`llm` / `llm_rules`), or act as an asynchronous
 `commander` that assigns tasks to a scripted skill executor. Scripted baselines provide
 reference points. Controllers can rotate over rematches of the same battle, and the
-harness supports OpenAI and OpenRouter models as well as
+harness supports OpenAI, OpenRouter and Anthropic models as well as
 [external Python controllers](docs/twwarhammer3/benchmark-run.md).
 
 The **offline HTML report** is the best way to explore a saved experiment:
@@ -124,8 +126,10 @@ show the choice, its stated reason, and the consequences on later floors.
 
 The development loop starts with an observed mistake, changes one part of the prompt,
 memory or interface, then compares another set of runs. **The furthest recorded run
-reached Act 4, floor 54; no run has won yet.** The current v10 scaffolding awaits a
-completed evaluation after its first job was interrupted.
+reached Act 4, floor 54; no run has won yet.** The current v10 scaffolding still awaits a
+completed evaluation: its one `gpt-6-luna` job was interrupted, and its 46 Qwen3.6 rows in
+the results register (2026-10-17 and 2026-10-23) are three smoke runs and 43 data-collection
+runs, which form no baseline.
 
 Earlier work built a reproducible first-combat benchmark with scripted policies, PPO and
 a local Qwen LoRA. The LoRA matched the heuristic's average remaining HP on a small
@@ -166,11 +170,11 @@ not included. Offline tests and report generation do not launch a game.
 
 See the [test guide](tests/README.md) for suite boundaries and commands, and the
 [draft testing guidelines](docs/testing.md) for practices and reference projects.
+The commands in this README need the `uv` package manager.
 
 ```bash
 uv sync --locked
-uv run pytest
-uv run ruff check .
+uv run --locked python scripts/check.py  # Ruff and the offline test suite
 uv run python -m spire doctor         # read-only runtime check
 uv run python -m twwarhammer3 doctor  # read-only runtime check
 ```
@@ -200,8 +204,10 @@ and other scenarios.
 
 ### Play a full run
 
-Both games accept `OPENAI_API_KEY` or a key file named by `SPIRE_OPENAI_KEY_FILE`.
-WH3 also supports [OpenRouter credentials and models](docs/twwarhammer3/controllers.md#openrouter).
+Both games accept `OPENAI_API_KEY` or a key file named by `SPIRE_OPENAI_KEY_FILE`, and both
+take `--provider openrouter` and `--provider anthropic`. The WH3 controller page covers
+[OpenRouter](docs/twwarhammer3/controllers.md#openrouter) and
+[Anthropic](docs/twwarhammer3/controllers.md#anthropic) credentials and models.
 
 ```bash
 export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
@@ -211,6 +217,6 @@ uv run python -m spire digest runs/fullrun/example
 uv run python -m spire digest runs/fullrun/example/run-0000 --picks
 ```
 
-The example budget is a ledger ceiling, not an extra $25 allowance. Spire and WH3 keep
-separate ledgers; WH3's OpenRouter ledger is separate again. Current runs, budgets and
-next experiments are tracked in [docs/state.md](docs/state.md).
+The example budget is a ledger ceiling, not an extra $25 allowance. Each game keeps one
+ledger per provider. Current runs, budgets and next experiments are tracked in
+[docs/state.md](docs/state.md).

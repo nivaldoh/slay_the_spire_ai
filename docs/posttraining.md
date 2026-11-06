@@ -92,7 +92,7 @@ game. Not captured:
   prompts allow resampling offline later; the outcome of another action needs the game.
 - A reproducible sampler: Parasail accepted a seed on 2026-10-23, but one seed gave two
   different Qwen3.6 replies (2 calls), so none is sent.
-- Play by a model outside OpenAI and OpenRouter, which online RL needs ([Missing](#missing)).
+- Play by a model outside OpenAI, OpenRouter and Anthropic, which online RL needs ([Missing](#missing)).
 
 No RL or preference run has used these data yet, so their fitness is unverified
 ([AGENTS.md](../AGENTS.md#verification-hard-rule)).

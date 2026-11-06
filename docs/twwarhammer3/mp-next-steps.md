@@ -1,8 +1,10 @@
 # Native multiplayer: plan for the next three steps
 
 Draft, 2026-11-03, Claude, after the first two PC + VM battles
-([log](log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)). Nothing here is
-agreed or has run. It plans three steps: (1) set up and start a match with no owner clicks,
+([log](log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm)). Parts are built and
+a PC test bed ran ([status](#implementation-status-2026-11-03)), and the owner answered the
+[decisions](#owner-decisions); nothing here is verified, and the paid VM session has not run.
+It plans three steps: (1) set up and start a match with no owner clicks,
 (2) stop dropped observations and keep both clients' observation times equal, (3) a battle
 hosted by the VM. Labels: checked (read or run on 2026-11-03), read (from a doc), inferred.
 
@@ -37,7 +39,8 @@ version; nothing here is verified under the hard rule.
 
 ## Owner decisions
 
-Answered 2026-11-03 ([direction](../owner-direction.md)); implementation not started:
+Answered 2026-11-03 ([direction](../owner-direction.md)); what was built since is in the
+[status](#implementation-status-2026-11-03) above:
 1 yes ("Sure"); 2 yes; 3 left to Claude, who takes the proposed reverse SSH forward and
 falls back to two coordinators with a two-directory `compare-peers`; 4 yes ("Seems fine");
 5 keep the disk for now. The owner reversed 5 on 2026-11-05: the disk is deleted, and its
@@ -65,7 +68,8 @@ would add an account; step 3's single-coordinator evidence rests on this.
    VM's Windows password as an LSA secret that an administrator can read. Whether the
    console session draws the game with nobody connected is unknown; step 3 checks it.
 5. **Disk lifetime.** The session must start before 2026-11-06 21:09 UTC, or say how many
-   more days to keep the disk (about $0.83 a day).
+   more days to keep the disk (about $0.83 a day). Closed: the disk was deleted on 2026-11-05
+   (above).
 
 ## Step 1: lobby and start with no owner clicks
 
@@ -217,7 +221,9 @@ one client only, or a desync → save logs and stop the battle part.
 Money: at most 2 h × $1.131 = $2.26, plus the $1 reserve; the quote dates from
 2026-11-03 00:38 UTC and needs a refresh first. Of the $10: about $2.06 compute on 11-03
 (quote, unreconciled), about $2.7 storage for both disks until they expire, this session
-at most $3.26, so about $8.0.
+at most $3.26, so about $8.0. The second disk was deleted on 2026-11-05, ahead of its 11-06
+expiry, so this storage figure likely runs high; storage billing is unreconciled. The 2 h
+session assumed that disk, so a session that reinstalls the game needs a new estimate.
 Your time: 0-10 minutes if auto-logon and joining work; otherwise about 15 minutes of
 Remote Desktop and lobby clicks, as on 11-03.
 

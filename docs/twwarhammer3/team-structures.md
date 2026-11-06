@@ -58,7 +58,7 @@ sources read only as abstracts, none of them in this table, are listed in the wo
 | | Structure | Who decides | Question | Estimated $ per battle | Verdict |
 |---|---|---|---|---|---|
 | S0 | One `llm_rules` controller | One model orders all 7 units, about every 3 s | The reference for every split | $0.58 measured (1 battle on this card; $0.23-0.58 over 4 GLM line battles) | Keep |
-| S1 | Two members: the Knights and the rest | `team_llm_rules`, built on the `wh3-model-team` branch | Does any division help? The owner's "arbitrary" comparison point | $0.58 round-robin; $1.11 when both call continuously | Keep, as a rung |
+| S1 | Two members: the Knights and the rest | `team_llm_rules`, on `main` | Does any division help? The owner's "arbitrary" comparison point | $0.58 round-robin; $1.11 when both call continuously | Keep, as a rung |
 | S2 | One member per class: infantry (4), missile (2), cavalry (1) | Three members | Do narrower agents keep their jobs better? The owner's "one model per type" | $0.58 round-robin; $1.61 continuous | Keep |
 | S3 | One member per unit (7) | Seven members | The owner's "one model per unit"; how attention, order age and cost change at 7 agents | $0.55 round-robin; $3.62 continuous | Keep round-robin; one continuous demonstration battle optional |
 | S4 | Groups and missions from a planner LLM | One planner call on the first observation returns 2-4 groups, each with a one-line mission; one member per group | The owner's custom groups: does an LLM's grouping and plan beat fixed ones? | about $0.60 (the call is about $0.004) | Keep |
@@ -122,10 +122,8 @@ target in range. If S3 does not show that, the measure or the reasoning is wrong
 
 ## 5 Code needed on top of team.py
 
-In build order, on a new branch from `main` once `wh3-model-team` is merged or discarded
-(branches are at 3 of 3, and adding these items to it would join outcomes the owner should
-accept separately). New scripts go in a new file, not `calibration.py`, whose hash
-identifies `LineTeam` on the card board. Each check is proposed, not agreed.
+In build order, on a new branch from `main`. New scripts go in a new file, not
+`calibration.py`, whose hash identifies `LineTeam` on the card board. Each check is proposed, not agreed.
 
 1. **The team foil and the card's shortcut** as scripts in that new file: role scripts that
    never read each other, and `LineTeam` with the Knights held back. Check: each plays on

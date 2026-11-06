@@ -6,9 +6,18 @@ plan of jobs, stop cleanly and make the report. What the numbers mean is in
 [docs/state.md](../state.md) first: never run two game controllers at once, of either
 game. Battles always run unpaused at 1x.
 
-The 2026-10-23 [Land Battle definition](benchmark.md) accepts engine timer wins. It is a
-plan: the current card/report readers and contact-scored scenario prompts do not yet
-implement it. Commands below describe existing capabilities, not a ready new benchmark job.
+The 2026-10-23 [Land Battle definition](benchmark.md) accepts engine timer wins. Two
+benchmarks are built and have run through `benchmark plan`, `scripts/wh3_queue.py` and
+`benchmark report`: the [initial mirror](benchmark-initial.md) (version5, `mirror-v1`,
+recording and arithmetic checked at `b1136e8`) and the exploratory
+[coordination suite](#the-coordination-suite) (`suite-v1`). Strength and winnability remain
+unverified. The rest of the definition is still a plan: no reader applies the whole
+[outcome table](benchmark.md#outcome-and-score). `benchmark report` scores from the engine
+ending (`benchmark.evaluate`), so a timer win counts as a win there, while
+`cards.benchmark_outcome`, which maps every row, has no caller; the tactic cards still score
+a timer win as a loss, the four scenarios declared `"scoring": "contact"` keep prompts that
+count only routing or destroying every enemy before the timer, and no next scenario is
+selected. The other commands below describe existing capabilities.
 
 ## Before a run
 

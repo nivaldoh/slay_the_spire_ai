@@ -1,9 +1,10 @@
 # Native team on the VM: plan
 
 Draft, 2026-11-03, Claude, from read-only research (`runs/vm-team-plan-20261103/`, seven readers,
-three drafts, four reviewers). Nothing here is agreed or has run; this page starts no game, VM or
-spending. It orders the remaining [native multiplayer](native-multiplayer.md) steps for your PC and
-one GCP VM. Labels: checked (read or run on 2026-11-03), read (from a doc), secondary (third
+three drafts, four reviewers). S1 ran in a shorter form on 2026-11-03 (below) and the owner set
+decisions 5-7 and 9, while decisions 1-4 stay open; nothing here is verified, and this page starts
+no game, VM or spending. It orders the remaining [native multiplayer](native-multiplayer.md)
+steps for your PC and one GCP VM. Labels: checked (read or run on 2026-11-03), read (from a doc), secondary (third
 party), inferred.
 
 2026-11-03 evening: S1 ran in a shorter form (identical mods first, no vanilla lobby;
@@ -41,6 +42,8 @@ no step 7. A model demo, step 7 or a split army changes S2 and the session count
    running the NVIDIA installer, and no Steam login or game (`session-20261103c/handoff.md`; read).
    "Let it expire" (default) → S1 starts from a new VM. "Keep it" → $0.83 a day plus a runner
    change, to save about 5 minutes of setup.
+   Passed 2026-11-04: S1 used a new VM (`wh3-mp-20261103d`) and [state.md](../state.md#active-work)
+   shows no disk; no saved record reads back this disk's expiry.
 1. **What "finished" means.** "Step 9's scripted case, two battles" → sessions S1 and S2. "Plus step
    7" → a third session. "Plus a model demo" → a third session after its own card: a move-only model
    controller, your stall rule and an information contract.
@@ -214,7 +217,9 @@ and (c), offline only. Stop: a planted fault passes.
 JUDGEMENT?: Driver at the coordinator — Claude, 2026-11-03: both scripts in WSL. B's on the VM cuts
 link delay from B's moves but adds a policy host; S2's timing evidence rests on it.
 
-**S2. Paid: host check, link, team battles** (≤3 h). Needs S1's exits, O4, an agreed card and the
+**S2. Paid: host check, link, team battles** (≤3 h). Written for a kept disk that was deleted on
+2026-11-05 with no snapshot, so this session needs a fresh install and a new estimate
+([next steps](mp-next-steps.md)). Needs S1's exits, O4, an agreed card and the
 kept disk. Money: ≤3 h × $1.131 = $3.39. You: about 80 min, maybe Steam Guard again (inferred); PC
 game about 1.5 h.
 1. Create the VM on the kept disk, copy O4's archive, read the build back.

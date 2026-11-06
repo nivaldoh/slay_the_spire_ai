@@ -117,11 +117,13 @@ git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgemen
 
 More: the WH3 [README](docs/twwarhammer3/README.md#commands) (digest, stats, watch, report, export, spend,
 card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/README.md) (extras).
-- `twwarhammer3 play`, `twwarhammer3 launch` and `scripts/wh3_queue.py` run a real game
-  (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
+- `twwarhammer3 play`, `launch`, `worker` without `--attach`, the `rl` phases `checkpoint`,
+  `audit` and `confirm`, `python -m twwarhammer3.battle.manual_demo record`,
+  `scripts/wh3_queue.py` and the six `check_wh3_*.py` checkers (except `--recount`) run a real
+  game (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
   directory and refuses uncommitted changes in its source scope: `src/gameai/`,
-  `src/twwarhammer3/`, `configs/twwarhammer3/`, `pyproject.toml`, `uv.lock` and
-  `.python-version` (`battle/play.py` `SOURCES`). `launch` checks no scope.
+  `src/twwarhammer3/`, `configs/twwarhammer3/`, `pyproject.toml`, `uv.lock` and `.python-version`
+  (`battle/play.py` `SOURCES`). `launch` checks no scope.
   A play job stops before its next episode if a file in its scope changes: while one runs,
   merge nothing into its checkout that touches its scope (shared code counts for both games).
 - Never run two game controllers at once,

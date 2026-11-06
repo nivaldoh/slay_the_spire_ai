@@ -2,9 +2,10 @@
 
 Status: development since 2026-10-12; the current version, spend and next step are in
 [state.md](../../state.md). v10 has no Luna pass on the development seeds (its job died to
-a WSL restart on 2026-10-13); since then, three Qwen3.6 smoke runs (2026-10-17) and the
-2026-10-18 runner change (jobs labelled v10.1). Every version, its evidence and per-seed
-results are in [log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
+a WSL restart on 2026-10-13); since then, three Qwen3.6 smoke runs (2026-10-17), the
+2026-10-18 runner change (labelled v10.1; the register has no v10.1 row) and 43 Qwen3.6 data
+runs on 2026-10-23 (v10.2). Every version, its evidence and per-seed results are in
+[log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
 
 ## Question
 

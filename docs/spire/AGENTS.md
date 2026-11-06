@@ -159,7 +159,8 @@ language models. Without them, those tests skip through `importorskip`;
 
 - The original-engine regressions in `tests/combat/` read `runs/first-combat/` (override with
   `SPIRE_EVIDENCE_ROOT`) and skip when it is absent.
-- `scripts/audit_ppo_training.py` and `scripts/audit_language_training.py` are read-only.
+- `scripts/audit_ppo_training.py` and `scripts/audit_language_training.py` are read-only and
+  import torch (`--extra train` for PPO, `--extra llm` for language).
   Run them only on stopped runs, and write their reports outside the run directory.
 
 ## Evidence

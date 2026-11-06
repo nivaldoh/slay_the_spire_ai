@@ -14,6 +14,8 @@ purchases wait for the owner's accounts and billing; game launches wait for a ga
 possible prepared before spending. More concurrent game licenses are still needed. There
 have been **zero live multiplayer battles** in this investigation; native control,
 unattended operation, cloud compatibility and headless execution remain **unverified**.
+Two live PC+VM battles ran later, on 2026-11-03, and remain unverified
+([status](#implementation-status)).
 The proposed checks below require the owner's agreement before they can verify a feature.
 Nothing here changes [agreed-checks.md](../agreed-checks.md) or the benchmark definition.
 
@@ -29,6 +31,11 @@ Read [the approval items](#decisions-for-the-owner) first, then the
 are detailed below so the next change can take one small step without inventing its spec.
 
 ## Implementation status
+
+Later evidence, none of it verified: observer smoke 2026-11-01 (below); two live PC+VM
+battles at `01647bd` on 2026-11-03 ([log](log.md#2026-11-03-first-native-multiplayer-battles-pc-and-gcp-vm));
+current steps in [mp-next-steps.md](mp-next-steps.md) and the
+[foundation page](multiplayer-control-foundation.md#implementation-status).
 
 2026-10-30, built on branch `wh3-native-mp`, merged to `main` at `5d10e2a`. Everything below was built and
 tested offline. Nothing has run against a real game or a second machine, and the agent wrote
@@ -95,7 +102,9 @@ Observer smoke, 2026-11-01 (one single-player battle, n=1, unverified): in `obse
 the owner's UI orders were obeyed and every card reading came out as expected; the card's
 check of the check was not run ([log](log.md#2026-11-01-native-multiplayer-observer-smoke-one-battle)).
 
-Blocked, and what unblocks each item:
+Blocked, and what would unblock each item, as of the GCP pilot's close on 2026-11-03, before
+that evening's PC+VM battles. Current blockers are in [mp-next-steps.md](mp-next-steps.md),
+and [state.md](../state.md#active-work) records no VM or disk now.
 
 | Next item | Blocked on |
 |---|---|
@@ -740,47 +749,26 @@ airgpu changes cost and timing. No machine size, region or provider is adopted.
    costs. GPU VMs cannot use suspend as a substitute for stop. Recheck the inventory and
    bill/usage view later because billing reports can lag resource state.
 
-After account/access approval, these are read-only discovery commands. **Not run here.**
-Placeholders must be filled from the approved project/region; no account is assumed to exist.
-
-```bash
-gcloud compute accelerator-types describe nvidia-l4-vws --project="$WH3_PROJECT" --zone="$WH3_ZONE"
-gcloud compute machine-types describe g2-standard-4 --project="$WH3_PROJECT" --zone="$WH3_ZONE"
-gcloud compute images describe-from-family windows-2022 --project=windows-cloud
-gcloud compute regions describe "$WH3_REGION" --project="$WH3_PROJECT"
-gcloud compute project-info describe --project="$WH3_PROJECT"
-```
-
-Candidate create command, **billable; do not run during planning**. Syntax follows the
-[workstation example](https://docs.cloud.google.com/compute/docs/virtual-workstation/windows-gpu),
-[`gcloud` reference](https://docs.cloud.google.com/sdk/gcloud/reference/compute/instances/create)
-and [runtime-limit guide](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime).
-It is a template, not a tested deployment script. The approved preflight must check the
+[`scripts/wh3_gcp.py`](../../scripts/wh3_gcp.py) holds the create command and its zone lookup
+(`accelerator-types list`, `machine-types list`). By default it is read-only and previews the
+supported zones and prices; `--create` provisions a billable VM
+([runner](gcp-client-setup.md#region-fallback)). It does not check quota or resolve the image
+(it takes a pinned `--image`): use the read-only commands
+`gcloud compute regions describe REGION`, `gcloud compute project-info describe` and
+`gcloud compute images describe-from-family windows-2022 --project=windows-cloud`, which were
+not run when this plan was written. The approved preflight must check the
 current combination of image, GPU, zone, service-account permissions and runtime-limit flags.
 Machine/provider parameters rest on JUDGEMENT `docs/twwarhammer3/native-multiplayer.md`
 Cloud candidate; the worker OS route rests on its Worker platform proposal.
 
-```bash
-gcloud compute instances create "$WH3_VM" \
-  --project="$WH3_PROJECT" --zone="$WH3_ZONE" \
-  --machine-type=g2-standard-4 \
-  --accelerator=type=nvidia-l4-vws,count=1 \
-  --provisioning-model=STANDARD --maintenance-policy=TERMINATE \
-  --no-restart-on-failure \
-  --image-project=windows-cloud --image="$WH3_WINDOWS_IMAGE" \
-  --boot-disk-size="$WH3_DISK_GB" --boot-disk-type=pd-balanced \
-  --network="$WH3_NETWORK" --subnet="$WH3_SUBNET" \
-  --service-account="$WH3_WORKER_SERVICE_ACCOUNT" --scopes=cloud-platform \
-  --tags=wh3-worker --labels=purpose=wh3-multiplayer \
-  --max-run-duration="$WH3_APPROVED_DURATION" --instance-termination-action=STOP
-```
-
-The scope permits API access only within the attached account's IAM permissions; it is not
-an instruction to grant broad roles. Runtime limiting can start stopping up to 30 seconds
-late; provider stop/start resets a relative duration, while a guest reboot/reset does not.
-Use an approved absolute termination time
-instead when the window requires a fixed cutoff, plus an earlier coordinator stop deadline
-and room for evidence export. A guest watchdog alone cannot stop a dead VM's bill.
+The script's `cloud-platform` scope permits API access only within the attached account's
+IAM permissions; it is not an instruction to grant broad roles. The script sets an absolute
+`--termination-time` with `--instance-termination-action=DELETE`; that action can start up to
+30 seconds late. A relative `--max-run-duration` would be reset by a provider stop/start,
+though not by a guest reboot or reset, so keep the absolute time, plus an earlier coordinator
+stop deadline and room for evidence export. Google documents that a stop clears the
+termination time as well, so that time does not clean up a stopped VM ([cloud
+cleanup](../cloud.md#cleanup)). A guest watchdog alone cannot stop a dead VM's bill.
 [Alerts-only budgets](https://docs.cloud.google.com/billing/docs/how-to/budgets) notify rather
 than stop compute. Even the documented [spend-cap limitations](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps)
 exclude stopping ongoing fixed compute/storage usage. Never sell a budget alert as automatic
