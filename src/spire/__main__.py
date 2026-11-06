@@ -78,6 +78,15 @@ def main() -> int:
     play.add_argument("--run-timeout", type=float, default=5 * 3600)
     play.add_argument("--bridge-timeout", type=float, default=300)
     play.add_argument("--output", type=Path, required=True)
+    rules = commands.add_parser("rules", help="Full runs: play complete runs with the rule policy")
+    rules.add_argument("--seed", type=_seed, action="append", dest="seeds", required=True,
+                       help="Alphanumeric game seed; repeat for several runs")
+    rules.add_argument("--results", type=Path, default=RESULTS_PATH,
+                       help="Results register that gets one row per run")
+    rules.add_argument("--max-actions", type=int, default=4000)
+    rules.add_argument("--run-timeout", type=float, default=3600)
+    rules.add_argument("--bridge-timeout", type=float, default=300)
+    rules.add_argument("--output", type=Path, required=True)
     digest = commands.add_parser("digest", help="Full runs: summarize a saved job or run")
     digest.add_argument("path", type=Path, help="A job directory, or one of its run-NNNN")
     digest.add_argument("--floor", type=int, help="Show one floor of a run turn by turn")
@@ -238,6 +247,17 @@ def main() -> int:
                        record_transport=True)
         manifest = run_play(output, config, policy_factory=lambda: LLMPolicy(
             args.model, args.effort, ledger, send=send, provider=args.provider))
+        print(f"Evidence: {output.resolve()}")
+        return 0 if manifest["status"] == "completed" else 1
+    if args.command == "rules":
+        from spire.fullrun.play import play as run_play
+        from spire.fullrun.rules import VERSION, RulePolicy
+
+        config = vars(args).copy()
+        output = config.pop("output")
+        config.pop("command")
+        config.update(model="rules", effort=VERSION, results=str(config["results"]))
+        manifest = run_play(output, config, policy_factory=RulePolicy)
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "digest":
