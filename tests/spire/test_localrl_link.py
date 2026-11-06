@@ -5,6 +5,7 @@ import threading
 import pytest
 
 from spire.localrl.link import Link
+from spire.protocol import BridgeCommandError
 
 
 class FakeBridge:
@@ -64,6 +65,17 @@ def test_a_decision_on_a_state_that_moved_is_not_sent():
     link.send("play 1")
     assert bridge.sent == [] and lost == ["play 1"]
     assert link.receive()["name"] == "moved on"
+    bridge.release.set()
+
+
+def test_a_refused_start_keeps_the_games_own_error():
+    bridge = FakeBridge([])
+    link = Link(bridge, gap=0.01)
+    link.send("START IRONCLAD 0 BAD-SEED")
+    bridge.messages.append({"error": "Invalid argument BAD-SEED"})
+    with pytest.raises(BridgeCommandError, match="Invalid argument"):
+        link.receive()
+    assert bridge.sent == ["START IRONCLAD 0 BAD-SEED"]
     bridge.release.set()
 
 

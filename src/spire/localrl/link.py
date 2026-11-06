@@ -31,6 +31,7 @@ class Link:
     def __init__(self, bridge, gap: float = 0):
         self.bridge, self.waiting, self.gap = bridge, None, gap
         self.free_at = 0.0
+        self.last_command = ""
         self.dropped = None  # called with a command that never reached the game
         if gap:
             self.inbox = queue.Queue()
@@ -78,6 +79,8 @@ class Link:
             return message
         message = self._newest(message)
         while "error" in message:  # the game did nothing: read the state again
+            if self.last_command.startswith("START"):  # no run began, so nothing can follow
+                raise BridgeCommandError(message["error"])
             if self.dropped:
                 self.dropped(None)
             self.bridge.send("state")
@@ -94,6 +97,7 @@ class Link:
                 return
             if not command.startswith(("play", "end", "potion")):
                 self.free_at = time.monotonic() + self.gap
+            self.last_command = command
         self.bridge.send(command)
 
     def to_menu(self) -> None:
