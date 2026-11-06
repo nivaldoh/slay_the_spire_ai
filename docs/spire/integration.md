@@ -162,12 +162,14 @@ counts as 0.0667 s of game time and the display's frame cap is off, so a run tak
 (`runs/spire-rl-20261106b`, 160 greedy runs at 480 frames a second). Fast Mode alone leaves 0.84 s of game
 wait per action, 52% of it end of turn.
 
-Steps longer than about 0.1 s stall the game: at 0.133 s a run took 84 s to start and then crawled, which fits the
-fades' smoothing overshooting (read from the log, not the code). So speed comes from more frames.
+Steps longer than about 0.1 s stall the game: at 0.133 s two attempts timed out and the third took 72 s from START to its
+first state and then crawled, which fits the fades' smoothing overshooting (read from the log, not the code). So speed comes from more frames.
 
-The game's rules do not depend on the step, but one race does. A card taken from a reward reaches the deck when its
-animation ends, and the game accepts commands before that. At 1x, a card taken just before a fight often missed that
-fight's deck. At speed the animation wins the race, so floors at speed and at 1x do not pair. Compare arms only at
+The game's rules do not depend on the step, but one race does. A Neow blessing that adds or transforms a card without a
+card screen (a random rare card, Transform) seems to act when its effect ends, and the game accepts commands before that.
+At 1x the card never reached the deck on 2 of 12 seeds (LRLEVAL17, 23); at speed both kept it. Card choices on reward screens
+showed no difference in 79. This is read from decks in traces, not the game's source. So floors at speed and at 1x do not pair.
+Compare arms only at
 one setting. CommunicationMod can also send two ready states for one command, as a Smoke Bomb's escape does, so at
 speed `spire.localrl.link.Link` reads the bridge on a thread and a decision answers the newest state.
 

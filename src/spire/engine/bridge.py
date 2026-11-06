@@ -124,6 +124,11 @@ class BridgeServer:
 
     def close(self) -> None:
         """Release every socket; safe to call repeatedly."""
+        if self._connection is not None:
+            try:
+                self._connection.shutdown(socket.SHUT_RDWR)  # wakes a reader in readline
+            except OSError:
+                pass
         for resource in (self._reader, self._connection, self._listener):
             if resource is not None:
                 resource.close()

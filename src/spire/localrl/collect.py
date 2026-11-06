@@ -9,6 +9,7 @@ main menu after each death, as spirecomm's own loop does. The run loop is ``full
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -48,6 +49,9 @@ SETTLE_SECONDS = 5
 JVM_SECONDS = 14 * 3600
 FAILURES = (BridgeError, ProtocolError, RuntimeError, OSError, subprocess.SubprocessError)
 SEED_ATTEMPTS = 3
+# ModTheSpire's log window keeps all log text on the 1 GB heap: OutOfMemoryError from run 77 of
+# one JVM in round 2 (runs/spire-rl-20261106b/handoff.md), and the command reader died of it.
+MAX_RUNS_PER_JVM = 60
 
 
 def revision() -> dict:
@@ -55,6 +59,18 @@ def revision() -> dict:
         return subprocess.check_output(["git", *arguments], cwd=REPO_ROOT, text=True).strip()
     return {"commit": git("rev-parse", "HEAD"),
             "dirty": bool(git("status", "--porcelain", "--", "src/spire/localrl"))}
+
+
+def forget_step(policy, command: str, forced: bool, error: str | None) -> None:
+    """A decision that reached no game state is no step for the learner."""
+    if forced or command.startswith(("START", "wait", "key", "state")):
+        return
+    steps = getattr(policy, "steps", [])
+    if steps:
+        step = steps.pop()
+        if error is None:  # never tried on the game, so the state may offer it again
+            key = hashlib.sha256(step["prompt"].encode()).hexdigest()
+            policy.tried[key].discard(step["index"])
 
 
 def one_run(directory: Path, seed: str, policy: LocalPolicy, link: Link) -> dict:
@@ -68,26 +84,27 @@ def one_run(directory: Path, seed: str, policy: LocalPolicy, link: Link) -> dict
     write_json(directory / "profile.json", profile)
     with (directory / "trace.jsonl").open("x", buffering=1) as trace:
 
+        latest = {"forced": False}
+
         def event(kind: str, **fields) -> None:
+            if kind == "decision":
+                latest["forced"] = fields["behavior"].get("type") == "forced"
             record = {"kind": kind, "elapsed": time.monotonic() - started, **fields}
             trace.write(json.dumps(record, sort_keys=True) + "\n")
 
         saves = SaveSnapshots(_save_path(profile), directory / "saves", event)
 
-        def dropped(command: str | None) -> None:
-            """That decision reached no game state, so it is not a step for the learner."""
-            event("dropped", command=command)
-            if not (command or "").startswith(("START", "wait", "key", "state")):
-                steps = getattr(policy, "steps", [])
-                if steps:
-                    steps.pop()
+        def dropped(command: str, error: str | None) -> None:
+            event("dropped", command=command, error=error)
+            forget_step(policy, command, latest["forced"], error)
 
         link.dropped = dropped
+        link.superseded = lambda message: event("superseded", raw=message)
         try:
             _drive(link, policy, {**RUN, "seed": seed}, session_id,
                    started + RUN["run_timeout"], result, event, saves)
         finally:
-            link.dropped = None
+            link.dropped = link.superseded = None
             result.update(elapsed_seconds=time.monotonic() - started)
             write_json(directory / "result.json", result)
     return result
@@ -119,10 +136,11 @@ class Game:
         floors at a speed count only where `runs/spire-rl-20261106b/speed-check` shows that.
         """
         self.directory, self.count, self.stack, self.link = directory, 0, None, None
-        self.speed = speed
+        self.speed, self.runs = speed, 0
         directory.mkdir(parents=True, exist_ok=True)
 
     def _try_open(self) -> None:
+        self.runs = 0
         self.count += 1
         directory = self.directory / f"jvm-{self.count:03d}"
         while directory.exists():
@@ -217,6 +235,9 @@ def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None
                 game.restart()  # still in a run, so only a new JVM leaves it
             else:
                 game.link.to_menu()
+                game.runs += 1
+                if game.runs >= MAX_RUNS_PER_JVM:
+                    game.restart()
         except FAILURES as error:
             print(f"leaving the run: {type(error).__name__}: {error}"[:200], flush=True)
             game.restart()

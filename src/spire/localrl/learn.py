@@ -123,7 +123,7 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
     model, generator = scorer.model, random.Random(seed)
     for step in steps:
         step.setdefault("ids", scorer.encode(step["prompt"]))
-    trainable = [p for p in model.parameters() if p.requires_grad]
+    trainable = [p for group in optimizer.param_groups for p in group["params"]]
     # CleanRL normalises per minibatch, with hundreds of rows; four rows would lose the signal.
     spread = np.array([s["advantage"] for s in steps])
     center, scale = spread.mean(), spread.std() + 1e-6
@@ -165,7 +165,8 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
             totals["entropy"] += entropy / len(group)
             totals["grad_norm"] += float(norm)
         kls.append(epoch_kl / epoch_count)
-        if kls[-1] > config["target_kl"]:  # this epoch's own mean, as CleanRL checks it
+        # This epoch's mean; CleanRL tests the last minibatch's value.
+        if kls[-1] > config["target_kl"]:
             stopped = True
             break
     model.eval()

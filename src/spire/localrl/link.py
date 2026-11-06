@@ -10,10 +10,10 @@ from spire.engine.bridge import BridgeTimeout
 from spire.protocol import BridgeCommandError, ProtocolError
 
 MENU_SECONDS = 60
-# A card taken from a reward reaches the deck when its animation ends, and the game accepts the
-# next command before that. At 1x a card taken just before a fight often missed that fight's
-# deck (LRLEVAL13 and 17 of the 2026-11-06 replay). At speed this gap of real time is seconds
-# of game time, so a command after a screen choice comes once the animation is over.
+# A Neow blessing that adds or transforms a card without a card screen seems to act when its
+# effect ends, and the game accepts the next command before that. At 1x the card never reached
+# the deck on 2 of 12 seeds (LRLEVAL17 and 23 of the 2026-11-06 replay). At speed this gap of real
+# time is seconds of game time, so a command after a screen choice comes once the effect is over.
 SPEED_GAP_SECONDS = 0.12
 # A second state for one command comes within a few frames of the first.
 STATE_QUIET_SECONDS = 0.015
@@ -32,7 +32,8 @@ class Link:
         self.bridge, self.waiting, self.gap = bridge, None, gap
         self.free_at = 0.0
         self.last_command = ""
-        self.dropped = None  # called with a command that never reached the game
+        self.dropped = None  # called with (command, error) for a decision with no effect
+        self.superseded = None  # called with a state a newer one replaced before it was read
         if gap:
             self.inbox = queue.Queue()
             threading.Thread(target=self._read, daemon=True).start()
@@ -68,8 +69,11 @@ class Link:
                 return message
             if isinstance(newer, Exception):
                 raise newer
-            if "error" in message and self.dropped:
-                self.dropped(None)
+            if "error" in message:
+                if self.dropped:
+                    self.dropped(self.last_command, message["error"])
+            elif self.superseded:
+                self.superseded(message)
             message = newer
 
     def receive(self) -> dict:
@@ -78,11 +82,14 @@ class Link:
         if not self.gap:
             return message
         message = self._newest(message)
+        while (self.last_command.startswith("START") and "error" not in message
+               and not message.get("in_game")):  # a menu state from before the run began
+            message = self._newest(self._next())
         while "error" in message:  # the game did nothing: read the state again
             if self.last_command.startswith("START"):  # no run began, so nothing can follow
                 raise BridgeCommandError(message["error"])
             if self.dropped:
-                self.dropped(None)
+                self.dropped(self.last_command, message["error"])
             self.bridge.send("state")
             message = self._newest(self._next())
         return message
@@ -90,10 +97,13 @@ class Link:
     def send(self, command: str) -> None:
         if self.gap:
             time.sleep(max(self.free_at - time.monotonic(), 0))
-            if not self.inbox.empty():  # the state moved while the model thought
+            if command.startswith("START"):  # a late menu state decided nothing
+                while not self.inbox.empty():
+                    self._next()
+            elif not self.inbox.empty():  # the state moved while the model thought
                 self.waiting = self._next()
                 if self.dropped:
-                    self.dropped(command)
+                    self.dropped(command, None)
                 return
             if not command.startswith(("play", "end", "potion")):
                 self.free_at = time.monotonic() + self.gap
@@ -103,6 +113,7 @@ class Link:
     def to_menu(self) -> None:
         """From the death or victory screen back to the main menu."""
         deadline = time.monotonic() + MENU_SECONDS
+        self.last_command = ""
         self.bridge.send("proceed")
         while time.monotonic() < deadline:
             message = self._next()

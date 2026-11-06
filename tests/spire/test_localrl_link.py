@@ -49,9 +49,9 @@ def test_a_rejected_command_reads_the_state_again_and_loses_its_step():
     bridge = FakeBridge([{"error": "Invalid command: end"}])
     lost = []
     link = Link(bridge, gap=0.01)
-    link.dropped = lost.append
+    link.dropped = lambda command, error: lost.append(command)
     assert link.receive()["name"] == "after"
-    assert bridge.sent == ["state"] and lost == [None]
+    assert bridge.sent == ["state"] and lost == [""]
     bridge.release.set()
 
 
@@ -59,7 +59,7 @@ def test_a_decision_on_a_state_that_moved_is_not_sent():
     bridge = FakeBridge([ready("first")])
     lost = []
     link = Link(bridge, gap=0.01)
-    link.dropped = lost.append
+    link.dropped = lambda command, error: lost.append(command)
     assert link.receive()["name"] == "first"
     link.inbox.put(ready("moved on"))
     link.send("play 1")
@@ -76,6 +76,17 @@ def test_a_refused_start_keeps_the_games_own_error():
     with pytest.raises(BridgeCommandError, match="Invalid argument"):
         link.receive()
     assert bridge.sent == ["START IRONCLAD 0 BAD-SEED"]
+    bridge.release.set()
+
+
+def test_a_late_menu_state_neither_blocks_start_nor_ends_the_run():
+    bridge = FakeBridge([])
+    link = Link(bridge, gap=0.01)
+    link.inbox.put(ready("menu again"))
+    link.send("START IRONCLAD 0 GOODSEED")
+    assert bridge.sent == ["START IRONCLAD 0 GOODSEED"]
+    bridge.messages += [ready("still the menu"), {**ready("floor 0"), "in_game": True}]
+    assert link.receive()["name"] == "floor 0"
     bridge.release.set()
 
 

@@ -11,7 +11,7 @@ pytest.importorskip("transformers")
 
 from spire.decisions import Choice  # noqa: E402
 from spire.localrl import collect, learn, research  # noqa: E402
-from spire.localrl.collect import Link  # noqa: E402
+from spire.localrl.link import Link  # noqa: E402
 from spire.localrl.policy import LocalPolicy, playable  # noqa: E402
 from spire.localrl.train import read_offline  # noqa: E402
 from spire.protocol import Decision, ProtocolError  # noqa: E402
@@ -75,6 +75,28 @@ def test_a_repeated_state_never_repeats_its_choice_until_all_are_tried(monkeypat
     chosen = [policy.choose(decision(f"d{i}", ["a", "b", "c"])).label for i in range(3)]
     assert sorted(chosen) == ["a", "b", "c"]
     assert policy.choose(decision("d3", ["a", "b", "c"])).label in {"a", "b", "c"}
+
+
+def test_a_decision_that_reached_no_state_leaves_the_learner():
+    class Policy:
+        steps = [{"prompt": "state", "index": 2}]
+        tried = {collect.hashlib.sha256(b"state").hexdigest(): {2}}
+
+    key = next(iter(Policy.tried))
+    collect.forget_step(Policy, "play 1", forced=True, error=None)  # a forced move is no step
+    collect.forget_step(Policy, "wait 60", forced=False, error=None)
+    assert len(Policy.steps) == 1
+    collect.forget_step(Policy, "play 1", forced=False, error=None)
+    assert Policy.steps == [] and Policy.tried[key] == set()
+
+
+def test_a_rejected_decision_stays_tried_so_it_is_not_offered_again():
+    class Policy:
+        steps = [{"prompt": "state", "index": 2}]
+        tried = {collect.hashlib.sha256(b"state").hexdigest(): {2}}
+
+    collect.forget_step(Policy, "choose 2", forced=False, error="Index out of bounds")
+    assert Policy.steps == [] and list(Policy.tried.values()) == [{2}]
 
 
 def test_a_potion_cannot_be_taken_with_every_slot_full():
@@ -161,6 +183,9 @@ def test_link_refuses_a_screen_it_cannot_leave():
 
 
 class FakeGame:
+    speed = None
+    runs = 0
+
     def __init__(self, fail_menu=False):
         self.restarts, self.fail_menu = 0, fail_menu
         self.link = self
