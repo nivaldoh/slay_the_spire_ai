@@ -45,8 +45,12 @@ def rewards(steps: list[dict], status: str, final_floor: int, config: dict) -> l
     F = w(gamma*P(next) - P(now)) with P the HP fraction and w ``hp_weight`` (Ng, Harada and
     Russell 1999), so the shaping leaves the best policy unchanged. Every end of a run has
     potential 0; a truncated run has no end, and its value comes from the bootstrap. Floors
-    reached is the evaluation measure. Without shaping a fight's decisions see nothing until
-    the floor changes. The value of w is not set by data; every RL result rests on this.
+    reached is the evaluation measure.
+
+    With HP among the baseline's features the shaping cancels out of the advantages: on the
+    5,114 offline rows, those at w=3 and w=10 correlate 0.9999 and 0.9990 with w=0 (peer review,
+    2026-11-06). So w is not a tuning value; HP reaches the credit through the baseline, as the
+    floors it predicts.
     """
     gamma, weight = config["gamma"], config["hp_weight"]
 
@@ -123,13 +127,14 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
     spread = np.array([s["advantage"] for s in steps])
     center, scale = spread.mean(), spread.std() + 1e-6
     model.train()
-    totals = {"kl": 0.0, "clipped": 0.0, "entropy": 0.0, "grad_norm": 0.0}
-    count, stopped = 0, False
+    totals = {"clipped": 0.0, "entropy": 0.0, "grad_norm": 0.0}
+    count, stopped, kls, first_deviation = 0, False, [], None
     for epoch in range(config["epochs"]):
+        epoch_kl, epoch_count = 0.0, 0
         for group in batches(steps, config["minibatch"], generator):
             logits = scorer.logits([s["ids"] for s in group], [s["count"] for s in group])
             loss = 0.0
-            kl = clipped = entropy = 0.0
+            kl = clipped = entropy = deviation = 0.0
             for s, row in zip(group, logits):
                 current = log_probs(row, s["allowed"], config["temperature"])
                 new = current[s["allowed"].index(s["index"])]
@@ -139,9 +144,12 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
                 loss = loss - torch.min(ratio * advantage, limited * advantage)
                 spread_entropy = -(current.exp() * current).sum()
                 loss = loss - config["entropy"] * spread_entropy
+                deviation += abs(float(new.detach()) - s["log_prob"])
                 kl += float((ratio.detach() - 1) - (new.detach() - s["log_prob"]))
                 clipped += float(abs(ratio.detach() - 1) > config["clip"])
                 entropy += float(spread_entropy.detach())
+            if first_deviation is None:  # weights untouched: recomputed against recorded
+                first_deviation = deviation / len(group)
             loss = loss / len(group)
             if not torch.isfinite(loss):
                 raise ValueError("Nonfinite policy loss")
@@ -150,16 +158,19 @@ def ppo_update(scorer: Scorer, optimizer, steps: list[dict], config: dict, seed:
             norm = torch.nn.utils.clip_grad_norm_(trainable, config["max_grad_norm"])
             optimizer.step()
             count += 1
-            totals["kl"] += kl / len(group)
+            epoch_count += 1
+            epoch_kl += kl / len(group)
             totals["clipped"] += clipped / len(group)
             totals["entropy"] += entropy / len(group)
             totals["grad_norm"] += float(norm)
-        if totals["kl"] / count > config["target_kl"]:  # at the end of an epoch, as CleanRL does
+        kls.append(epoch_kl / epoch_count)
+        if kls[-1] > config["target_kl"]:  # this epoch's own mean, as CleanRL checks it
             stopped = True
             break
     model.eval()
-    return {**{key: value / max(count, 1) for key, value in totals.items()},
-            "minibatches": count, "stopped_early": stopped, "steps": len(steps)}
+    return {**{key: value / max(count, 1) for key, value in totals.items()}, "epoch_kl": kls,
+            "first_deviation": first_deviation, "minibatches": count, "stopped_early": stopped,
+            "steps": len(steps)}
 
 
 def warm_start(scorer: Scorer, optimizer, rows: list[dict], config: dict, seed: int) -> list[dict]:

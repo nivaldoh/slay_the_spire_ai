@@ -80,7 +80,8 @@ def test_agent_cannot_reach_protected_values_or_leave_a_range():
     current = {"updates": 2, "runs_per_update": 6, "method": "ppo"}
     reply = json.dumps({"hypothesis": "h", "reasoning": "r", "config_json": '{"lr": 1e-5}'})
     assert research.parse_reply(reply, current)["changes"] == {"lr": 1e-5}
-    bad = ('{"eval_seeds": []}', '{"win_bonus": 99}', '{"lr": 1}', '{"updates": 1.5}',
+    bad = ('{"eval_seeds": []}', '{"win_bonus": 99}', '{"hp_weight": 1}', '{"lr": 1}',
+           '{"updates": 1.5}',
            '{"updates": 4, "runs_per_update": 10}', '[]', 'null', '3', '{"updates": Infinity}')
     for changes in bad:
         text = json.dumps({"hypothesis": "h", "reasoning": "r", "config_json": changes})

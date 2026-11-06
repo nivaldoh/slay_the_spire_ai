@@ -40,7 +40,7 @@ SPACE = {
     "method": ("ppo", "awr"), "temperature": (0.5, 2.0), "updates": (0, 4),
     "runs_per_update": (0, 10), "lr": (1e-6, 3e-4), "epochs": (1, 6), "minibatch": (4, 8),
     "clip": (0.05, 0.4), "entropy": (0.0, 0.05), "target_kl": (0.01, 0.2),
-    "gamma": (0.97, 0.999), "lam": (0.8, 1.0), "hp_weight": (0.0, 10.0), "beta": (0.3, 10.0),
+    "gamma": (0.97, 0.999), "lam": (0.8, 1.0), "beta": (0.3, 10.0),
     "weight_cap": (2.0, 20.0), "awr_rows": (500, 6000), "offline_share": (0.0, 1.0),
 }
 INTEGERS = {"updates", "runs_per_update", "epochs", "minibatch", "awr_rows"}
@@ -205,6 +205,12 @@ def snapshot_profile(root: Path, name: str) -> None:
     print(json.dumps({"profile_snapshot": name, "empty_files": empty}), flush=True)
 
 
+def card_pool() -> dict:
+    """The profile's unlocked cards: floors are comparable only inside one pool, since a new
+    unlock changes what a seed offers."""
+    return json.loads((GAME_DIR / "preferences" / "STSUnlocks").read_text())
+
+
 def restore(model, adapter: str) -> None:
     """Back to the incumbent's exact weights after a rejected cycle."""
     from peft import set_peft_model_state_dict
@@ -241,7 +247,8 @@ def main() -> int:
     if not state["incumbent_evaluation"]:
         result = train.evaluate(game, scorer, root / "start-evaluation", state["eval_seeds"])
         state["incumbent_evaluation"] = result["evaluation"]
-        write_json(state_path, state)
+    state["card_pool"] = card_pool()
+    write_json(state_path, state)
     failures = 0
     while time.time() < arguments.deadline - arguments.cycle_hours * 3600:
         try:
@@ -273,7 +280,9 @@ def main() -> int:
             continue
         failures = 0
         gate = compare(summary["evaluation"], state["incumbent_evaluation"])
-        decision = "keep" if gate["keep"] else "reject"
+        pool_changed = card_pool() != state["card_pool"]
+        keep = gate["keep"] and not pool_changed
+        decision = "keep" if keep else "reject (card pool changed)" if pool_changed else "reject"
         floors = [f for update in summary["updates"] for f in update["floors"]]
         record = {
             "cycle": index, "hypothesis": proposal["hypothesis"],
@@ -291,11 +300,16 @@ def main() -> int:
             (root / f"cycle-{index:03d}" / "evaluation").glob("run-*/steps.jsonl"))]
         state["digest"] = digest([*summary["run_directories"], *evaluation_runs], floors)
         state["config"].update(proposal["changes"])
-        if gate["keep"]:
+        if keep:
             state["incumbent"] = summary["adapter"]
             state["incumbent_evaluation"] = summary["evaluation"]
         else:
             restore(model, state["incumbent"])
+        if pool_changed:  # the incumbent's floors are from the old pool: measure it again
+            directory = root / f"cycle-{index:03d}" / "incumbent-evaluation"
+            again = train.evaluate(game, scorer, directory, state["eval_seeds"])
+            state["incumbent_evaluation"] = again["evaluation"]
+            state["card_pool"] = card_pool()
         write_json(state_path, state)
         snapshot_profile(root, f"after-cycle-{index:03d}")
         with (root / "results.tsv").open("a") as file:

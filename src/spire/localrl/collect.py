@@ -40,7 +40,7 @@ RUN = {"run_timeout": 2700, "bridge_timeout": 90, "max_actions": 1500}
 MAX_FAILURES = 40
 RETRY_SECONDS = 30
 # The game rewrites preference files by deleting them first, and a JVM killed at the death
-# screen lost the owner's STSUnlockProgress (2026-11-06). Close only from the menu, after this.
+# screen lost the owner's STSUnlockProgress (2026-11-06). Wait this long before any close.
 SETTLE_SECONDS = 5
 JVM_SECONDS = 14 * 3600
 MENU_SECONDS = 60
@@ -161,7 +161,7 @@ class Game:
                 time.sleep(RETRY_SECONDS)
 
     def close(self) -> None:
-        if self.link is not None and self.link.waiting is not None:
+        if self.link is not None:  # at the menu or, if that failed, at the death screen
             time.sleep(SETTLE_SECONDS)
         stack, self.stack, self.link = self.stack, None, None
         if stack is not None:
