@@ -156,19 +156,19 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/support_timing.py",
    "text": "infantry/cavalry timing diagnostics and fresh-launch plan",
-   "box": null,
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/support_evidence.py",
    "text": "offline event brackets and proposed numerical contrast",
-   "box": null,
+   "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/manual_demo.py",
    "text": "separate owner demonstration recorder and pause labels",
-   "box": null,
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -222,7 +222,7 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/evade.py",
    "text": "`Evade`, a free control: every unit runs from visible enemies",
-   "box": null,
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -246,13 +246,13 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/local_command.py",
    "text": "C's local sensing and signal/courier router",
-   "box": null,
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/local_team.py",
    "text": "C's regiment groups, model interface and free probe",
-   "box": null,
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
