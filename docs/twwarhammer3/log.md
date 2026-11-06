@@ -36,7 +36,7 @@ read-only audits covered references, disk, branches, organization, ease of use, 
 Code sessions, Codex sessions and the factory; writers worked on separate files, and a reviewer read
 each diff. Handoff, with the owner's one-line choices: `runs/repo-improve-20261106/handoff.md`.
 
-Landed: `state.md` from 16,983 to 12,907 bytes, with the waiting branches now listed; stale status
+Landed: `state.md` from about 17 KB to about 13 KB, with the waiting branches now listed; stale status
 sentences corrected on the public README, cloud, multiplayer, Spire and plan pages; the WH3 page index
 grouped with a status word per page; the factory page and Factory tab corrected; `check.py` logs from
 a linked worktree now reach the main checkout; the Codex reviewer's description now asks spawners
@@ -47,8 +47,10 @@ revisions that evidence cites.
 
 Found, with fixes waiting on branch `repo-improve-proposals`: the agreed plant check does not pass at
 HEAD (406 of 408 at `b299f2d`; 2 tests have patched a function the code stopped calling since
-`ea6f1c6`). Ctrl-C during final copying loses a finished battle's record (offline, one probe). A guard
-in `test_wh3_army_check.py` could never fail. A one-off scan counted calls at the 340 callable
+`ea6f1c6`); the branch's replay caught 408 of 408, in a worktree, so the agreed check still needs its
+run in the main checkout. Ctrl-C during final copying leaves a won battle with no `result.json` or
+register row, the ending staying in the trace (offline, one probe). A guard in
+`test_wh3_army_check.py` could never fail. A one-off scan counted calls at the 340 callable
 `monkeypatch.setattr` lines the offline suite ran, of 619 in the tests (the rest need torch or replace
 a class or a non-callable): 29
 were never called, and the 29th is the line just fixed. A reviewer read the other 28 as guards or
@@ -56,8 +58,9 @@ stand-ins and planted wrong versions for most; 22 of 23 were caught, the miss be
 
 Not done: the auto mode classifier refused the removal of nine stale worktrees and the delete of 841
 scratch paths, so no disk was freed. Both scripts wait for the owner. The agents' token and time
-figures in the handoff are measurements of cost, and no saving is established. `helper`'s saving,
-the log path under a real Codex sandbox and every process change stay unverified.
+figures in the handoff are measurements of cost, and no saving is established. One paired trial on a
+trivial task started `helper` at 14,780 tokens and a default agent at 42,523 (n=1 each). The log path
+under a real Codex sandbox and every process change stay unverified.
 
 ## 2026-11-06: reviewer and copy rules from the claim study
 

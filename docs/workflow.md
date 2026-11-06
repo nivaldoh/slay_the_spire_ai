@@ -449,7 +449,7 @@ The owner alternates between the two (2026-10-29), so each gets the same pieces;
 | Hooks | `.claude/settings.json` | `.codex/hooks.json`; the owner trusts them once with `/hooks`, and again after each change |
 | Reviewer | `.claude/agents/reviewer.md` | `.codex/agents/reviewer.toml`, the same text |
 | Skills | `.claude/skills/<name>`, a link to `.agents/skills/<name>` | `.agents/skills/` |
-| Light agent | `.claude/agents/helper.md`, with only Read, Bash, Edit and Write: give a Workflow stage `agentType: 'helper'` unless it reviews (use `reviewer`) or needs the web, a skill, MCP or a nested agent; median start-up was 45k tokens for a default workflow agent (n=648) and 16k for the tool-limited `reviewer` (n=127), and 76% of default agents used only these tools; the saving for `helper` itself is unmeasured | `.codex/agents/helper.toml`, the same text |
+| Light agent | `.claude/agents/helper.md`, with only Read, Bash, Edit and Write: give a Workflow stage `agentType: 'helper'` unless it reviews (use `reviewer`) or needs the web, a skill, MCP or a nested agent; median start-up was 45k tokens for a default workflow agent (n=648) and 16k for the tool-limited `reviewer` (n=127), and 76% of default agents used only these tools; one paired trial on a trivial task started `helper` at 14.8k and a default agent at 42.5k (2026-11-06, n=1 each) | `.codex/agents/helper.toml`, the same text |
 | WH3 version review | `.claude/workflows/wh3-version-review.js` (the Workflow tool) | None: one `reviewer` per episode, by hand |
 | Personal settings | `.claude/settings.local.json` (plugins, permissions; ignored) | `~/.codex/config.toml` |
 

@@ -51,7 +51,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; there is no
 ## Known issues
 
 - The agreed plant check does not pass at HEAD: replayed at `b299f2d`, 406 of 408 caught, 2 MISSED, the same 2 at `8029e1b` and in `runs/benchmark-improve-20261105/plants-replay.log`, because since `ea6f1c6` (2026-11-03) two mailbox tests patch `Path.open` while `engine/mailbox.py` calls `windows.open_shared`. The fix waits on branch `repo-improve-proposals`; it edits a file an agreed check names.
-- Ctrl-C during a job's final copying loses a finished battle: reproduced offline at `bd46129` with a real SIGINT (no `result.json`, 0 register rows, won battle, one probe, no live game; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. A fix waits on branch `repo-improve-proposals`; it moves the report fingerprint.
+- Ctrl-C during a job's final copying leaves a won battle with no `result.json` and no register row, the ending staying in the trace: reproduced offline at `bd46129` with a real SIGINT (one probe, no live game, 0 of 650 saved episodes show it; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. A fix waits on branch `repo-improve-proposals`; it moves the report fingerprint and carries a marked choice of which status such an episode keeps.
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
@@ -78,7 +78,7 @@ Numbers are unchanged; open the relevant item before acting.
 9. **Spire:** restore/profile decision first, after WH3; other comparisons wait.
 10. **Thesis/RL:** research question and environment details remain open.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
-12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the missed plants, the test-cleanup branches, `gate-xdist`, `team-check-battle-time`, the tally suggestions and the formal-map candidates (handoff `runs/repo-improve-20261106/handoff.md`).
+12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the missed plants, the test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 
 ## Runtime and ownership
