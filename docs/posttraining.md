@@ -149,8 +149,8 @@ not pair.
 
 On 40 fresh seeds that afternoon, at training speed, that PPO adapter did not separate from the warm start: 12.62 against 12.60
 (interval -1.90 to +1.90). Warm's 10.25 was at 1x on 12 other seeds and does not pair with 12.60; at speed those 12 seeds gave 10.0.
-Prompt and scorer changes on recorded rows did not separate either (best +0.72, interval -1.10 to +2.70). These rest on JUDGEMENT
-`collect.py` Training speed mod, `facts.py` Prompt facts and `rewards.py` Fight reward, on `spire-local-rl`. The hand-written rule
+Prompt and scorer changes on recorded rows did not separate either (best +0.72, interval -1.10 to +2.70). These rest on the marked
+choices for training speed, prompt facts and the fight reward on branch `spire-local-rl`. The hand-written rule
 policy reached 26.0 floors on 37 other seeds. Training on its choices is an open question under [Provider terms](#provider-terms),
 because Claude wrote it, so it trained nothing. Prompt 2's card and potion text was written by Claude from memory of the public card
 text, so the prompt 2 arms' prompts hold Claude-written strings and the terms question covers them too. Online RL with fight rewards
