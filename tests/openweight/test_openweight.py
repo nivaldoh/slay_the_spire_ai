@@ -1,13 +1,16 @@
 """The open-weight skeleton's working pieces; everything else raises NotImplementedError."""
 
+import json
+
 import pytest
 
 from spire.decisions import Choice
+from spire.engine.bridge import BridgeError
 from spire.openweight.env import EpisodeFailed, RealGame, Step
 from spire.openweight.evaluate import wilson_interval
 from spire.openweight.grpo import group_advantages
 from spire.openweight.rewards import fight_reward, run_reward
-from spire.openweight.rollout import run_episode
+from spire.openweight.rollout import run_episode, run_group
 from spire.openweight.tasks import Split, Stage, Task, check_splits
 from spire.protocol import Decision, PolicyFailure
 
@@ -110,6 +113,12 @@ def _fake_run(monkeypatch, plays, result):
     return seen
 
 
+@pytest.fixture(autouse=True)
+def committed_tree(monkeypatch):
+    monkeypatch.setattr("spire.openweight.env.committed_revision", lambda *_: "abc123")
+    monkeypatch.setattr("spire.openweight.env.source_fingerprints", lambda *_: {"a.py": "1"})
+
+
 def _task(**fields):
     return Task(**{"id": "t", "stage": Stage.FULL_RUN, "split": Split.TRAIN, "game_seed": "ABC",
                    **fields})
@@ -144,7 +153,7 @@ def test_an_exception_in_the_run_reaches_the_caller(monkeypatch, tmp_path):
 
 def test_close_ends_an_unfinished_run(monkeypatch, tmp_path):
     def play_run(directory, config, policy):
-        with pytest.raises(PolicyFailure):
+        with pytest.raises(BridgeError):
             policy.choose(_decision(0))
         ended.append(True)
         return {"status": "policy_failure"}
@@ -161,7 +170,7 @@ def test_reset_ends_the_unfinished_run_first(monkeypatch, tmp_path):
         running.append(directory)
         try:
             policy.choose(_decision(0))
-        except PolicyFailure:
+        except BridgeError:
             ended.append(directory)
             running.remove(directory)
         return {"status": "policy_failure"}
@@ -204,3 +213,79 @@ def test_run_episode_plays_through_real_game(monkeypatch, tmp_path):
     env = RealGame(tmp_path)
     episode = run_episode(env, _task(), First(), max_actions=10)
     assert episode.outcome == "won" and len(episode.steps) == 3
+
+
+@pytest.mark.parametrize("close_first", [False, True])
+def test_step_after_the_end_raises_instead_of_hanging(monkeypatch, tmp_path, close_first):
+    _fake_run(monkeypatch, 1, {"status": "lost"})
+    env = RealGame(tmp_path)
+    decision = env.reset(_task())
+    env.step(decision.candidates[0])
+    if close_first:
+        env.close()
+    with pytest.raises(RuntimeError, match="no live episode"):
+        env.step(decision.candidates[0])
+
+
+def test_step_after_a_failed_reset_raises(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 0, OSError("no game"))
+    env = RealGame(tmp_path)
+    with pytest.raises(EpisodeFailed):
+        env.reset(_task())
+    with pytest.raises(RuntimeError, match="no live episode"):
+        env.step(_decision(0).candidates[0])
+
+
+def test_a_new_environment_on_the_same_directory_keeps_earlier_runs(monkeypatch, tmp_path):
+    seen = _fake_run(monkeypatch, 1, {"status": "lost"})
+    first = RealGame(tmp_path)
+    first.reset(_task())
+    first.close()
+    seen["directory"].mkdir()
+    made = seen["directory"]
+    second = RealGame(tmp_path)
+    second.reset(_task())
+    second.close()
+    assert seen["directory"] != made
+
+
+def test_one_failed_attempt_leaves_the_group_and_the_rest_still_play(monkeypatch, tmp_path):
+    attempts = []
+
+    def play_run(directory, config, policy):
+        attempts.append(directory)
+        if len(attempts) == 2:
+            return {"status": "infrastructure_failure", "error": "relay"}
+        policy.choose(_decision(0))
+        return {"status": "lost"}
+
+    class First:
+        def choose(self, decision):
+            return decision.candidates[0]
+
+        def choice_metadata(self, decision_id):
+            return {}
+
+    monkeypatch.setattr("spire.fullrun.play.play_run", play_run)
+    episodes = run_group(lambda: RealGame(tmp_path), _task(), First, 3, max_actions=10)
+    assert len(attempts) == 3 and [e.outcome for e in episodes] == ["lost", "lost"]
+
+
+def test_a_real_game_job_records_its_source(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 1, {"status": "lost"})
+    env = RealGame(tmp_path / "job", max_actions=7)
+    env.reset(_task())
+    env.close()
+    manifest = json.loads((tmp_path / "job" / "manifest.json").read_text())
+    assert manifest["source_revision"] == "abc123" and manifest["source_files"] == {"a.py": "1"}
+    assert manifest["config"]["max_actions"] == 7 and manifest["engine"] == "original"
+
+
+def test_source_that_changed_during_a_job_is_refused(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 1, {"status": "lost"})
+    first = RealGame(tmp_path)
+    first.reset(_task())
+    first.close()
+    monkeypatch.setattr("spire.openweight.env.source_fingerprints", lambda *_: {"a.py": "2"})
+    with pytest.raises(EpisodeFailed, match="Source changed"):
+        RealGame(tmp_path).reset(_task())

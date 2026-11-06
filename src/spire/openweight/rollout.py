@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from spire.openweight.env import Environment
+from spire.openweight.env import Environment, EpisodeFailed
 from spire.openweight.tasks import Task
 from spire.protocol import PolicyFailure
 
@@ -54,6 +54,8 @@ def run_group(make_env: Callable[[], Environment], task: Task, make_policy: Call
         env = make_env()
         try:
             episodes.append(run_episode(env, task, make_policy(), max_actions=max_actions))
+        except EpisodeFailed:  # An infrastructure failure leaves the group; it scores nothing.
+            continue
         finally:
             env.close()
     return episodes

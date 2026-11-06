@@ -14,15 +14,20 @@ they would wrap. Every backend hands out the public full-run ``Decision`` built 
 
 from __future__ import annotations
 
+import json
 import queue
+import sys
 import threading
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
 
+from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire.decisions import Choice
+from spire.engine.bridge import BridgeError
 from spire.openweight.tasks import Stage, Task
-from spire.protocol import Decision, PolicyFailure
+from spire.protocol import Decision
 
 OUTCOMES = ("won", "lost", "truncated")
 SUMMARY = ("act", "floor", "current_hp", "max_hp", "gold")
@@ -57,8 +62,8 @@ class _Handover:
     def choose(self, decision: Decision) -> Choice:
         self.decisions.put(decision)
         choice = self.choices.get()
-        if choice is None:
-            raise PolicyFailure("Environment closed", failure={"type": "closed"})
+        if choice is None:  # Ending a run early is not the policy's failure.
+            raise BridgeError("Environment closed")
         return choice
 
     def choice_metadata(self, decision_id: str) -> dict:
@@ -85,6 +90,33 @@ class RealGame:
         self._result: dict | None = None
         self._failure: BaseException | None = None
         self._episodes = 0
+        self._live = False
+
+    def _record_job(self) -> None:
+        """Keep what `play` keeps, and refuse uncommitted or changed source as it does."""
+        from spire.fullrun.play import SOURCES
+
+        self.directory.mkdir(parents=True, exist_ok=True)
+        path = self.directory / "manifest.json"
+        source = source_fingerprints(SOURCES)
+        if path.exists():
+            if json.loads(path.read_text())["source_files"] != source:
+                raise EpisodeFailed("Source changed since this environment's job began")
+            return
+        write_json(path, {
+            "schema_version": 1, "created_at": datetime.now(UTC).isoformat(),
+            "source_revision": committed_revision("attributable runs", SOURCES),
+            "source_files": source, "command": [sys.executable, *sys.argv],
+            "config": self.limits, "engine": "original", "scope": "environment",
+        })
+
+    def _next_run(self, task: Task) -> Path:
+        """A fresh directory, past any earlier environment's runs in this job."""
+        while True:
+            run = self.directory / f"{task.id}-{self._episodes:04d}"
+            self._episodes += 1
+            if not run.exists():
+                return run
 
     def _play(self, run: Path, config: dict) -> None:
         from spire.fullrun.play import play_run
@@ -101,6 +133,7 @@ class RealGame:
         if decision is not None:
             game = decision.observation
             return Step(decision, summary={key: game.get(key) for key in SUMMARY})
+        self._live = False
         self._worker.join()
         if self._failure is not None:
             raise EpisodeFailed(str(self._failure)) from self._failure
@@ -115,11 +148,12 @@ class RealGame:
         if task.stage is not Stage.FULL_RUN:
             raise ValueError(f"RealGame plays complete runs, not stage {task.stage}")
         self.close()
-        run = self.directory / f"{task.id}-{self._episodes:04d}"
-        self._episodes += 1
+        self._record_job()
+        run = self._next_run(task)
         self._handover, self._result, self._failure = _Handover(), None, None
         config = {**self.limits, "seed": task.game_seed}
         self._worker = threading.Thread(target=self._play, args=(run, config), daemon=True)
+        self._live = True
         self._worker.start()
         step = self._next()
         if step.decision is None:
@@ -127,6 +161,8 @@ class RealGame:
         return step.decision
 
     def step(self, choice: Choice) -> Step:
+        if not self._live:
+            raise RuntimeError("step called with no live episode")
         self._handover.choices.put(choice)
         return self._next()
 
@@ -135,7 +171,7 @@ class RealGame:
         if self._worker is not None and self._worker.is_alive():
             self._handover.choices.put(None)
             self._worker.join()
-        self._worker = None
+        self._worker, self._live = None, False
 
 
 class Simulator:
