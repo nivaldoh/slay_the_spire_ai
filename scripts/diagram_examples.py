@@ -50,8 +50,11 @@ from pathlib import Path
 from twwarhammer3.battle import graph_view, replay
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIVATE = re.compile(r"/home/|\\\\home\\\\|C:\\\\Users|C:/Users|/mnt/c/Users|7656119\d{10}"
-                     r"|[\w.+-]+@[\w-]+\.[\w.]+|sk-[A-Za-z0-9_-]{16,}|wrkspc_", re.I)
+# The lookahead exempts one shape from the address pattern, a model label such as llm@gpt-5.4/low:
+# a name ending in dotted version numbers with nothing after them.
+PRIVATE = re.compile(r"/home/|\\+home\\+|\\+Users\\+|[a-z]:\\+Users|[a-z]:/Users|/mnt/[a-z]/Users"
+                     r"|7656119\d{10}|[\w.+-]+@(?![\w-]*-\d+(?:\.\d+)+(?![\w.-]))[\w-]+\.[\w.]+"
+                     r"|sk-[A-Za-z0-9_-]{16,}|wrkspc_", re.I)
 # JUDGEMENT?: Example choices (Claude Code, 2026-11-01): the battle and its three decisions
 # (plan, Knights pulled out, last order). Other decisions would tell a different story; the
 # "One play job" story's messages and maps rest on these.
