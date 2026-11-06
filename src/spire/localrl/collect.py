@@ -10,13 +10,15 @@ main menu after each death, as spirecomm's own loop does. The run loop is ``full
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import time
 import uuid
 from contextlib import ExitStack
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT, write_json
+from gameai.provenance import REPO_ROOT, sha256, write_json
 from spire.engine.bridge import BridgeError, BridgeServer
 from spire.engine.doctor import collect_profile
 from spire.engine.runtime import (
@@ -45,6 +47,11 @@ SETTLE_SECONDS = 5
 JVM_SECONDS = 14 * 3600
 MENU_SECONDS = 60
 FAILURES = (BridgeError, ProtocolError, RuntimeError, OSError, subprocess.SubprocessError)
+# A card taken from a reward reaches the deck when its animation ends, and the game accepts the
+# next command before that. At 1x a card taken just before a fight often missed that fight's
+# deck (LRLEVAL13 and 17 of the 2026-11-06 replay). At speed this gap of real time is seconds
+# of game time, so a command after a screen choice comes once the animation is over.
+SPEED_GAP_SECONDS = 0.12
 SEED_ATTEMPTS = 3
 
 
@@ -58,14 +65,19 @@ def revision() -> dict:
 class Link:
     """The bridge, with the main-menu state put back for the next run to read first."""
 
-    def __init__(self, bridge):
-        self.bridge, self.waiting = bridge, None
+    def __init__(self, bridge, gap: float = 0):
+        self.bridge, self.waiting, self.gap = bridge, None, gap
+        self.free_at = 0.0
 
     def receive(self) -> dict:
         message, self.waiting = self.waiting, None
         return message or self.bridge.receive()
 
     def send(self, command: str) -> None:
+        if self.gap:
+            time.sleep(max(self.free_at - time.monotonic(), 0))
+            if not command.startswith(("play", "end", "potion")):
+                self.free_at = time.monotonic() + self.gap
         self.bridge.send(command)
 
     def to_menu(self) -> None:
@@ -129,8 +141,16 @@ class Game:
     Open it before loading the model: a launch needs that free block of kernel memory.
     """
 
-    def __init__(self, directory: Path):
+    def __init__(self, directory: Path, speed: tuple[float, int] | None = None):
+        """``speed`` is (game seconds per frame, frames a second) and needs SPIRE_SPEED_JAR,
+        built by ``speedmod/build.sh``.
+
+        JUDGEMENT: Training speed mod — Claude, 2026-11-06: fixed frame step and no display cap,
+        so animations end sooner. Only useful if a run's decisions and outcomes stay the same;
+        floors at a speed count only where `runs/spire-rl-20261106b/speed-check` shows that.
+        """
         self.directory, self.count, self.stack, self.link = directory, 0, None, None
+        self.speed = speed
         directory.mkdir(parents=True, exist_ok=True)
 
     def _try_open(self) -> None:
@@ -144,10 +164,16 @@ class Game:
         self.stack.enter_context(RuntimeLock())
         bridge = self.stack.enter_context(BridgeServer(
             host=wsl_bridge_host(), port=BRIDGE_PORT, timeout=RUN["bridge_timeout"]))
-        write_json(directory / "deployment.json",
-                   prepare_runtime(*bridge.address, timeout=RUN["bridge_timeout"]))
-        self.stack.enter_context(OwnedGame(directory / "game.log", timeout=JVM_SECONDS))
-        self.link = Link(bridge)
+        deployment = prepare_runtime(*bridge.address, timeout=RUN["bridge_timeout"])
+        deployment["speed"] = self.speed
+        if self.speed:
+            jar = Path(os.environ["SPIRE_SPEED_JAR"])
+            shutil.copy2(jar, GAME_DIR / "mods" / "spirespeed.jar")
+            deployment["speed_jar"] = sha256(jar)
+        write_json(directory / "deployment.json", deployment)
+        self.stack.enter_context(OwnedGame(directory / "game.log", timeout=JVM_SECONDS,
+                                           speed=self.speed))
+        self.link = Link(bridge, SPEED_GAP_SECONDS if self.speed else 0)
 
     def open(self) -> None:
         for attempt in range(1, MAX_FAILURES + 1):
@@ -183,17 +209,20 @@ class Game:
 
 
 def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None, *,
-               temperature: float, label: str, seed_offset: int = 0) -> list[dict]:
+               temperature: float, label: str, seed_offset: int = 0,
+               prompt: int = 1) -> list[dict]:
     """Play each seed once, in order. A lost link is not an outcome: the seed is played again
     in a new JVM, with a different sampling seed in case the state itself caused the failure."""
     output.mkdir(parents=True, exist_ok=True)
     write_json(output / "job.json", {"label": label, "seeds": seeds, "temperature": temperature,
                                      "adapter": scorer.fingerprint() if scorer else None,
-                                     "revision": revision(), "started": time.time()})
+                                     "speed": game.speed, "prompt": prompt,
+                                     "revision": revision(),
+                                     "started": time.time()})
     results = []
     for index, seed in enumerate(seeds):
         for attempt in range(SEED_ATTEMPTS):
-            policy = LocalPolicy(scorer, temperature=temperature,
+            policy = LocalPolicy(scorer, temperature=temperature, prompt=prompt,
                                  seed=seed_offset + index + 1000 * attempt)
             run = output / f"run-{index:04d}-{attempt}"
             try:

@@ -154,6 +154,22 @@ Mode setting and MTS launcher/intro bypasses. Measure seeded restart and combat
 throughput before choosing acceleration. Any future snapshot/fast-execution
 slice needs its own runtime compatibility and differential validation gate.
 
+## Training speed mod
+
+`src/spire/localrl/speedmod/` is our own small ModTheSpire mod, built with `build.sh` from a local
+JDK against the installed game and left out of Git as a jar. Only `spire.localrl.collect.Game` selects it. Every frame
+counts as 0.0667 s of game time and the display's frame cap is off, so a run takes about 25 s against about 3 minutes
+(`runs/spire-rl-20261106b`, 12 seeds at 480 frames a second, one greedy adapter). Fast Mode alone leaves 0.84 s of game
+wait per action, 52% of it end of turn.
+
+Steps longer than about 0.1 s stall the game: at 0.133 s a run took 84 s to start and then crawled, which fits the
+fades' smoothing overshooting (read from the log, not the code). So speed comes from more frames.
+
+The game's rules do not depend on the step, but one race does. A card taken from a reward reaches the deck when its
+animation ends, and the game accepts commands before that. At 1x, a card taken just before a fight often missed that
+fight's deck. At speed the animation wins the race, so floors at speed and at 1x do not pair. Compare arms only at
+one setting.
+
 ## Windows excluded-port regression
 
 One frozen evaluation could not connect before gameplay: Linux selected port 53899

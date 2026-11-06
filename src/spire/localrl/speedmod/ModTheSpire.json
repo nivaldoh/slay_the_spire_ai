@@ -1,0 +1,10 @@
+{
+  "modid": "spirespeed",
+  "name": "Spire training speed",
+  "author_list": ["slay_the_spire_ai"],
+  "description": "Fixed game time per frame and no display rate cap, for training runs. Off unless selected.",
+  "version": "1.0.0",
+  "sts_version": "11-30-2020",
+  "mts_version": "3.18.1",
+  "dependencies": []
+}

@@ -18,6 +18,7 @@ from pathlib import Path
 import torch
 
 from spire.fullrun.llm import MONSTER_NOTES_PATH, render_state
+from spire.localrl.facts import annotate
 from spire.protocol import Decision
 
 MODEL_DIRECTORY = Path.home() / (
@@ -35,6 +36,14 @@ MONSTER_NOTES = json.loads(MONSTER_NOTES_PATH.read_text())
 
 
 def render(observation: dict, labels: list[str]) -> str:
+    choices = "\n".join(f"{SYMBOLS[i]}: {label}" for i, label in enumerate(labels))
+    state = render_state(observation, MONSTER_NOTES)
+    return f"{HEADER}\n\n{state}\n\nChoices:\n{choices}"
+
+
+def render_v2(observation: dict, candidates: list[dict]) -> str:
+    """As ``render``, each choice also saying what it does (``spire.localrl.facts``)."""
+    labels = annotate(observation, candidates)
     choices = "\n".join(f"{SYMBOLS[i]}: {label}" for i, label in enumerate(labels))
     state = render_state(observation, MONSTER_NOTES)
     return f"{HEADER}\n\n{state}\n\nChoices:\n{choices}"
@@ -112,6 +121,93 @@ class Scorer:
         return [last[i, self.symbol_ids[:count]] for i, count in enumerate(counts)]
 
 
+class Encoded(list):
+    """Token ids of a prompt, with the token that ends each choice line."""
+
+    positions: list[int]
+
+
+class PointerScorer(Scorer):
+    """One score per choice, from the hidden state where its line ends, through a linear head.
+
+    The symbol scorer must fit its comparison of every choice into one vector and then name a
+    symbol. Here each choice has its own vector, so a choice's score does not depend on which
+    symbol it drew. Same single forward pass. The head is saved beside the adapter. Scoring
+    each legal choice from its own encoding is the pointer idea of Vinyals, Fortunato and Jaitly
+    2015; no repository's code is copied.
+    """
+
+    HEAD = "head.pt"
+
+    def __init__(self, model, tokenizer, head: Path | None = None):
+        super().__init__(model, tokenizer)
+        self.head = torch.nn.Linear(model.config.hidden_size, 1).to(self.device, torch.float32)
+        torch.nn.init.zeros_(self.head.weight)
+        torch.nn.init.zeros_(self.head.bias)
+        if head is not None:
+            self.load_head(head)
+
+    def load_head(self, path: Path) -> None:
+        self.head.load_state_dict(torch.load(path, map_location=self.device))
+
+    def save(self, directory: Path) -> None:
+        self.model.save_pretrained(directory)
+        torch.save(self.head.state_dict(), Path(directory) / self.HEAD)
+
+    def fingerprint(self) -> str:
+        digest = hashlib.sha256(super().fingerprint().encode())
+        for weights in self.head.state_dict().values():
+            digest.update(weights.float().cpu().numpy().tobytes())
+        return digest.hexdigest()
+
+    def encode(self, prompt: str) -> Encoded:
+        text = self.tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt}], tokenize=False,
+            add_generation_prompt=True, enable_thinking=False,
+        )
+        tokens = self.tokenizer(text, add_special_tokens=False, return_offsets_mapping=True)
+        ids, offsets = tokens["input_ids"], tokens["offset_mapping"]
+        first = text.rindex("Choices:\n") + len("Choices:\n")
+        ends, at = [], first
+        for line in prompt[prompt.rindex("Choices:\n") + len("Choices:\n"):].split("\n"):
+            at += len(line)
+            ends.append(at - 1)  # the line's last character
+            at += 1
+        positions, token = [], 0
+        for end in ends:
+            while offsets[token][1] <= end:
+                token += 1
+            positions.append(token)
+        cut = max(len(ids) - MAX_PROMPT_TOKENS, 0)
+        encoded = Encoded(ids[cut:])
+        encoded.positions = [position - cut for position in positions]
+        return encoded
+
+    def logits(self, encoded: list[Encoded], counts: list[int]) -> list[torch.Tensor]:
+        width = max(map(len, encoded))
+        pad = self.tokenizer.pad_token_id
+        rows = [[pad] * (width - len(ids)) + ids for ids in encoded]
+        mask = [[0] * (width - len(ids)) + [1] * len(ids) for ids in encoded]
+        attention = torch.tensor(mask, device=self.device)
+        output = self.model(
+            input_ids=torch.tensor(rows, device=self.device), attention_mask=attention,
+            position_ids=(attention.cumsum(1) - 1).clamp(min=0), logits_to_keep=1,
+            output_hidden_states=True,
+        )
+        hidden = output.hidden_states[-1].float()
+        scores = []
+        for row, (ids, count) in enumerate(zip(encoded, counts)):
+            places = [width - len(ids) + position for position in ids.positions[:count]]
+            scores.append(self.head(hidden[row, places]).squeeze(-1))
+        return scores
+
+
+def scorer_for(model, tokenizer, adapter: Path) -> Scorer:
+    """The scorer an adapter was trained with: a saved head means the pointer scorer."""
+    head = Path(adapter) / PointerScorer.HEAD
+    return PointerScorer(model, tokenizer, head) if head.exists() else Scorer(model, tokenizer)
+
+
 def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> torch.Tensor:
     """Log-probabilities over the allowed choices, in ``allowed`` order."""
     return torch.log_softmax(logits[allowed] / temperature, dim=0)
@@ -137,8 +233,8 @@ class LocalPolicy:
     a card). Floors therefore measure the model plus this mask.
     """
 
-    def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int):
-        self.scorer, self.temperature = scorer, temperature
+    def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int, prompt: int = 1):
+        self.scorer, self.temperature, self.prompt = scorer, temperature, prompt
         self.random = random.Random(seed)
         self.steps: list[dict] = []
         self.tried: dict[str, set[int]] = {}
@@ -163,7 +259,8 @@ class LocalPolicy:
         observation = data["observation"]
         count = min(len(decision.candidates), len(SYMBOLS))
         labels = [candidate["label"] for candidate in data["candidates"][:count]]
-        prompt = render(observation, labels)
+        prompt = (render_v2(observation, data["candidates"][:count]) if self.prompt == 2
+                  else render(observation, labels))
         key = hashlib.sha256(prompt.encode()).hexdigest()
         tried = self.tried.setdefault(key, set())
         usable = playable(observation, labels)

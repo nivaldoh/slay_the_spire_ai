@@ -1025,3 +1025,9 @@ Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](h
 - [FFmpeg gfxcapture documentation](https://ffmpeg.org/ffmpeg-filters.html#gfxcapture)
   (read 2026-11-04): native-window selection, D3D11 download and duplicate frames for the
   support-timing manual recorder. Local live capture is unverified.
+
+### Spire local model scoring (2026-11-06)
+
+- Vinyals, Fortunato and Jaitly, [Pointer Networks](https://arxiv.org/abs/1506.03134) (2015): an output that points
+  at one input element, the idea behind `PointerScorer` in `src/spire/localrl/policy.py`. Cited from memory, not reread.
+  Whether it plays better here is unverified.

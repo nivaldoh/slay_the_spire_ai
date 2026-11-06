@@ -144,11 +144,16 @@ def prepare_runtime(host: str, port: int, *, timeout: float = 120) -> dict:
 class OwnedGame(windows.OwnedGame):
     """The modded JVM under the Windows supervisor, plus this launch's relay stderr."""
 
-    def __init__(self, log_path: Path, *, timeout: float = 600):
+    def __init__(self, log_path: Path, *, timeout: float = 600,
+                 speed: tuple[float, int] | None = None):
+        """``speed`` is seconds of game time per frame and frames a second, for the training
+        speed mod (``spire.localrl.speedmod``); None plays the game as it ships."""
+        faster = [f"-Dspire.frame={speed[0]}", f"-Dspire.fps={speed[1]}"] if speed else []
+        mods = "basemod,CommunicationMod" + (",spirespeed" if speed else "")
         command = [
-            WINDOWS_GAME_DIR + r"\jre\bin\java.exe", "-Xmx1G", "-Dfile.encoding=UTF-8",
+            WINDOWS_GAME_DIR + r"\jre\bin\java.exe", "-Xmx1G", "-Dfile.encoding=UTF-8", *faster,
             "-jar", "C:/spire-agent/mods/ModTheSpire.jar",
-            "--skip-launcher", "--skip-intro", "--mods", "basemod,CommunicationMod",
+            "--skip-launcher", "--skip-intro", "--mods", mods,
         ]
         super().__init__(
             log_path, runtime_dir=RUNTIME_DIR, game_dir=WINDOWS_GAME_DIR, command=command,
