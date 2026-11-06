@@ -11,7 +11,7 @@ pytest.importorskip("transformers")
 from spire.decisions import Choice  # noqa: E402
 from spire.localrl import collect, learn, research  # noqa: E402
 from spire.localrl.collect import Link  # noqa: E402
-from spire.localrl.policy import LocalPolicy  # noqa: E402
+from spire.localrl.policy import LocalPolicy, playable  # noqa: E402
 from spire.localrl.train import read_offline  # noqa: E402
 from spire.protocol import Decision, ProtocolError  # noqa: E402
 
@@ -74,6 +74,15 @@ def test_a_repeated_state_never_repeats_its_choice_until_all_are_tried(monkeypat
     chosen = [policy.choose(decision(f"d{i}", ["a", "b", "c"])).label for i in range(3)]
     assert sorted(chosen) == ["a", "b", "c"]
     assert policy.choose(decision("d3", ["a", "b", "c"])).label in {"a", "b", "c"}
+
+
+def test_a_potion_cannot_be_taken_with_every_slot_full():
+    labels = ["take potion Blood Potion", "take 12 gold", "proceed, leaving any remaining rewards"]
+    full = {"potions": [{"id": "BloodPotion"}, {"id": "Regen Potion"}]}
+    room = {"potions": [{"id": "BloodPotion"}, {"id": "Potion Slot"}]}
+    assert playable(full, labels) == [1, 2]
+    assert playable(room, labels) == [0, 1, 2]
+    assert playable(full, ["take potion Blood Potion"]) == [0]
 
 
 def test_agent_cannot_reach_protected_values_or_leave_a_range():

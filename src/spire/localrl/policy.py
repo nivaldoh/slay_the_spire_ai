@@ -107,6 +107,15 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
     return torch.log_softmax(logits[allowed] / temperature, dim=0)
 
 
+def playable(observation: dict, labels: list[str]) -> list[int]:
+    """Choices the game can carry out. Taking a potion with every slot full changes nothing,
+    so CommunicationMod never answers and the run hangs (seen 2026-11-06, floor 3)."""
+    full = all(potion.get("id") != "Potion Slot" for potion in observation.get("potions", []))
+    usable = [i for i, label in enumerate(labels)
+              if not (full and label.startswith("take potion"))]
+    return usable or list(range(len(labels)))
+
+
 class LocalPolicy:
     """One instance per run. ``temperature`` 0 is greedy; steps collect for the learner.
 
@@ -145,7 +154,8 @@ class LocalPolicy:
         prompt = render(observation, labels)
         key = hashlib.sha256(prompt.encode()).hexdigest()
         tried = self.tried.setdefault(key, set())
-        allowed = [i for i in range(count) if i not in tried] or list(range(count))
+        usable = playable(observation, labels)
+        allowed = [i for i in usable if i not in tried] or usable
         index, log_prob = self._choose(prompt, allowed, count)
         tried.add(index)
         self.steps.append({
