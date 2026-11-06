@@ -141,18 +141,25 @@ class PointerScorer(Scorer):
 
     def __init__(self, model, tokenizer, head: Path | None = None):
         super().__init__(model, tokenizer)
-        self.head = torch.nn.Linear(model.config.hidden_size, 1).to(self.device, torch.float32)
-        torch.nn.init.zeros_(self.head.weight)
-        torch.nn.init.zeros_(self.head.bias)
+        size = model.config.hidden_size
+        self.head = torch.nn.Linear(size, 1).to(self.device, torch.float32)
+        self.critic = torch.nn.Linear(size, 1).to(self.device, torch.float32)
+        for layer in (self.head, self.critic):
+            torch.nn.init.zeros_(layer.weight)
+            torch.nn.init.zeros_(layer.bias)
+        self.values: torch.Tensor | None = None
         if head is not None:
             self.load_head(head)
 
     def load_head(self, path: Path) -> None:
-        self.head.load_state_dict(torch.load(path, map_location=self.device))
+        saved = torch.load(path, map_location=self.device)
+        self.head.load_state_dict(saved["head"])
+        self.critic.load_state_dict(saved["critic"])
 
     def save(self, directory: Path) -> None:
         self.model.save_pretrained(directory)
-        torch.save(self.head.state_dict(), Path(directory) / self.HEAD)
+        torch.save({"head": self.head.state_dict(), "critic": self.critic.state_dict()},
+                   Path(directory) / self.HEAD)
 
     def fingerprint(self) -> str:
         digest = hashlib.sha256(super().fingerprint().encode())
@@ -195,6 +202,7 @@ class PointerScorer(Scorer):
             output_hidden_states=True,
         )
         hidden = output.hidden_states[-1].float()
+        self.values = self.critic(hidden[:, -1]).squeeze(-1)  # normalised return of each prompt
         scores = []
         for row, (ids, count) in enumerate(zip(encoded, counts)):
             places = [width - len(ids) + position for position in ids.positions[:count]]

@@ -71,7 +71,14 @@ class Link:
 
     def receive(self) -> dict:
         message, self.waiting = self.waiting, None
-        return message or self.bridge.receive()
+        message = message or self.bridge.receive()
+        # At speed a screen can change between a ready state and the answer to it: a Smoke Bomb's
+        # escape shows a state that still offers "end" (LRDEV003, 2026-11-06). The game did nothing,
+        # so ask for the state again. The same error at 1x stays fatal, as in fullrun.play.
+        while self.gap and str(message.get("error", "")).startswith("Invalid command"):
+            self.bridge.send("state")
+            message = self.bridge.receive()
+        return message
 
     def send(self, command: str) -> None:
         if self.gap:
