@@ -138,14 +138,23 @@ before using WH3 traces for those studies.
 *2026-11-06, overnight, branch `spire-local-rl`; report in `runs/local-rl-20261106/handoff.md`. Unverified: no
 agreed check covers it.* `src/spire/localrl/` trains Qwen3-0.6B with a LoRA on complete Spire runs: the policy reads
 one next-token distribution over a symbol per legal choice, and a fresh JVM is no longer needed per run. Rewards come from
-the game. Anthropic's model only sets numbers in `research.SPACE`, so none of its text reaches a prompt, reward or
-training row, as [Provider terms](#provider-terms) require.
+the game. In the overnight loop Anthropic's model only sets numbers in `research.SPACE`, so none of its text reaches that loop's
+prompts, rewards or training rows, as [Provider terms](#provider-terms) require.
 
 Advantage-weighted regression on the Qwen3.6 night's rows moved greedy floors on 12 seeds no gate saw from 5.58 (the
 adapter of 2026-10-11) to 10.25 (paired +4.67, 8 up, 4 down, exact sign-flip p 0.03); uniform random reached 4.67 at
 temperature 1. That is learning from recorded open-weight play, not from the game. Online RL has no established gain: one update on 8 runs gave +0.08 on 12 seeds, and PPO on 12 runs, stopped
 at 7 of 12 test seeds, gave +2.0 (3 up, 0 down, p 0.25). The card pool moved twice that night, so floors from different times do
 not pair.
+
+On 40 fresh seeds that afternoon, at training speed, that PPO adapter did not separate from the warm start: 12.62 against 12.60
+(interval -1.90 to +1.90). Warm's 10.25 was at 1x on 12 other seeds and does not pair with 12.60; at speed those 12 seeds gave 10.0.
+Prompt and scorer changes on recorded rows did not separate either (best +0.72, interval -1.10 to +2.70). These rest on JUDGEMENT
+`collect.py` Training speed mod, `facts.py` Prompt facts and `rewards.py` Fight reward, on `spire-local-rl`. The hand-written rule
+policy reached 26.0 floors on 37 other seeds. Training on its choices is an open question under [Provider terms](#provider-terms),
+because Claude wrote it, so it trained nothing. Prompt 2's card and potion text was written by Claude from memory of the public card
+text, so the prompt 2 arms' prompts hold Claude-written strings and the terms question covers them too. Online RL with fight rewards
+is built and has played no run. Report: `runs/spire-rl-20261106b/handoff.md`. Unverified: no agreed check covers it.
 
 ### Idea: PostTrainBench-style tasks
 

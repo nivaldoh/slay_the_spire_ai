@@ -761,3 +761,25 @@ the death screen, and took Ironclad to level 5 (six new `STSUnlocks` keys). Noth
 file and the handoff gives the commands. Launch failures were `page allocation failure: order:7` in `hvs_probe`, under memory
 pressure. sts_lightspeed's build was refused by the classifier and not attempted another way.
 
+## 2026-11-06 afternoon: training speed, rule policy, and no separated gain on unseen seeds
+
+Owner: keep trying for a better model without overfitting. Branch `spire-local-rl`, evidence `runs/spire-rl-20261106b/`, $0.
+Unverified: no agreed check. These runs are not in `results.csv`. Stopped by the owner before online RL played a run.
+
+Round 2, greedy at training speed on `LRDEV041`-`080`, n=40, one revision and pool: warm 12.60, overnight PPO 12.62 (+0.03,
+interval -1.90 to +1.90), prompt 2 with the pointer scorer 12.82 (+0.23, -1.43 to +1.95), that adapter with fight advantages at a
+further epoch 1 13.32 (+0.72, -1.10 to +2.70). No arm separates. Last night's PPO +2.0 on 7 seeds was at 1x on other seeds; here it
+is +0.03. Warm's 10.25 was at 1x on 12 other seeds and does not pair with 12.60; at speed those 12 seeds gave 10.0. Validation chose
+epoch 0 of that last arm, which played no comparison. `LRTEST` and `HELDOUT` seeds are unplayed.
+
+Rule policy (`spire-teacher`, no model), first live play, also at training speed: 26.00 floors on `LRDEV001`-`037`, reached the first
+boss on 36 of those 37 runs (0.97); a 38th run, cut off alive at floor 14 by the time limit, is left out of both numbers. The same run
+rules with a three-line fight: 12.95, n=40; paired +12.73, interval +10.0 to +15.6, 34 up, 1 down, n=37. That pair crosses a link
+fix. Not paired with the models. Its labels trained nothing: that is the owner's terms decision.
+
+Built: a speed mod (about 30 s a run against about 3 minutes; 12 of 12 between fast repeats; 8 of 12 replays identical to 1x, with a
+Neow card that never reached the 1x deck on 2 seeds, 13 against 6 and 6 against 10 floors), a link that answers the newest state,
+prompt 2, a pointer scorer, and a fight reward (ridge R2 0.64 on held-out seeds against 0.29 for the floor return). Floors at speed rest
+on JUDGEMENT `src/spire/localrl/collect.py` Training speed mod, whose condition the replay did not meet as written; the prompt 2 arms
+on `facts.py` Prompt facts; the fight arm and the R2 on `rewards.py` Fight reward (all on `spire-local-rl`). Online RL failed at its
+first seed on a hyphen in my seed name.

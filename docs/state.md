@@ -3,7 +3,7 @@
 Updated 2026-11-06. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Spire local-model RL overnight (2026-11-06) stopped at the owner's request; the game is closed. [Log](spire/fullrun/log.md#2026-11-06-local-qwen3-06b-on-complete-runs-overnight-branch-spire-local-rl), branch `spire-local-rl` unmerged, handoff `runs/local-rl-20261106/handoff.md`. **Owner: that run wiped `STSUnlockProgress`; the handoff's first section has the restore commands, nothing was restored.**
+Spire local-model training stopped at the owner's request on the afternoon of 2026-11-06; the game is closed. [Log](spire/fullrun/log.md#2026-11-06-afternoon-training-speed-rule-policy-and-no-separated-gain-on-unseen-seeds), branch `spire-local-rl` unmerged, handoff `runs/spire-rl-20261106b/handoff.md`, decisions first. **Owner: the overnight run wiped `STSUnlockProgress`; `runs/local-rl-20261106/handoff.md` has the restore commands, nothing was restored.**
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
@@ -40,7 +40,8 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 ## Slay the Spire
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54 (v8; `main` has v10).
-Local Qwen3-0.6B (2026-11-06, unverified): warm start 10.25 floors against 5.58 for the October adapter and 4.67 random, n=12 seeds no gate saw; online RL has no established gain ([page](posttraining.md#local-rl-on-complete-runs)).
+Local Qwen3-0.6B (2026-11-06, unverified): no trained model separated from the warm start on 40 unseen seeds at training speed: warm 12.60, overnight PPO 12.62, best new arm 13.32 (+0.72, interval -1.10 to +2.70; rests on JUDGEMENT `collect.py` Training speed mod, `facts.py` Prompt facts, `rewards.py` Fight reward). Online RL with fight rewards is built and has played no run ([page](posttraining.md#local-rl-on-complete-runs)).
+The hand-written rule policy (`spire-teacher`, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod on `spire-local-rl` plays a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
 Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md). Its first live step, a $0 replay check (driver on branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
 Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decision 9) and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
