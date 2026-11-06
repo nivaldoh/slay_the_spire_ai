@@ -4,7 +4,8 @@
 
 Run it before every commit and quote its first five lines in the report: the revision, whether
 the tree is clean, the counts, the skip reasons and the log path (the whole output is kept under
-runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot establish a completed run.
+runs/checks/, in the main checkout also for a run in a linked worktree, whose own runs/ goes with
+it). It exits 1 when Ruff or any test fails or pytest cannot establish a completed run.
 Completion needs a fresh readable JUnit report with named cases, a passing test and no failures.
 A zero exit without that evidence is incomplete. The suite runs without WH3_WRITE_PROMPTS, so it
 never rewrites prompt snapshots, and its scratch
@@ -31,7 +32,8 @@ approves, found in the changes since --base (default: the merge base with origin
 unpushed commits, uncommitted and untracked files all count): lines removed or changed in a file
 an agreed check names (docs/agreed-checks.md) or in that page; an edited or removed JUDGEMENT
 line; an assert removed or changed under tests/; a skip or xfail added there; a changed prompt
-snapshot; a package added or a version changed in uv.lock. A line moved verbatim elsewhere
+snapshot; a plant removed or changed; a package added or a version changed in uv.lock. A line
+moved verbatim elsewhere
 (indentation and comment marks aside) is neither removed nor added. Each item is printed by
 the first run that finds it for that base; later runs print how many were printed before
 (runs/checks/yes-shown.json), and every run's log lists them all. "pages" names docs/state.md
@@ -334,6 +336,25 @@ def plant_tests(scratch: Path, targets: list[str], junit: Path) -> tuple[list | 
     return (junit_cases(junit) if junit.exists() else []), output
 
 
+def run_log(name: str) -> Path:
+    """Where a run's log goes: the main checkout's runs/checks, as scripts/githooks/pre-commit
+    keeps its refusals, because a linked worktree's own runs/ is deleted with it. If a sandbox
+    refuses that folder, this checkout's."""
+    main = Path(git(ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).parent
+    log = main / "runs" / "checks" / name
+    try:
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.touch()
+    except OSError:
+        log = ROOT / "runs" / "checks" / name
+    return log
+
+
+def log_name(path: Path) -> str:
+    """A log's path as a run reports it: relative here, absolute from a linked worktree."""
+    return str(path.relative_to(ROOT.resolve()) if path.is_relative_to(ROOT.resolve()) else path)
+
+
 def tail(output: str, lines: int = 1) -> str:
     return " / ".join(output.strip().splitlines()[-lines:]) or "no output"
 
@@ -422,12 +443,11 @@ def plants_main() -> int:
         git(ROOT, "worktree", "remove", "--force", str(scratch))
     counts = Counter(verdict for verdict, _, _ in report)
     dirty = len(git(ROOT, "status", "--porcelain", "--untracked-files=no").splitlines())
-    log = ROOT / "runs" / "checks" / (f"plants-{datetime.now():%Y%m%d-%H%M%S}-{head}"
-                                      f"-{os.getpid()}.log")
+    log = run_log(f"plants-{datetime.now():%Y%m%d-%H%M%S}-{head}-{os.getpid()}.log")
     shown = [f"plants   {len(report)} at {head}" + (f" ({dirty} uncommitted changes not in it)"
                                                     if dirty else "") + ": "
              + ", ".join(f"{n} {verdict}" for verdict, n in counts.most_common()),
-             f"log      {log.relative_to(ROOT)}",
+             f"log      {log_name(log)}",
              *(f"  {verdict}: {line}" for verdict, line, _ in report if verdict != "caught")]
     print("\n".join(shown))
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -912,14 +932,14 @@ def normal_main(args: argparse.Namespace) -> int:
     first = [line for line in output.splitlines() if line.startswith(("FAILED ", "ERROR "))][:3]
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    log = ROOT / "runs" / "checks" / f"{stamp}-{head}-{os.getpid()}.log"
+    log = run_log(f"{stamp}-{head}-{os.getpid()}.log")
     shown = [
         f"revision  {head} on {branch}",
         "tree      " + (f"dirty: {len(status) - untracked} changed, {untracked} untracked"
                         if status else "clean"),
         f"result    {'PASSED' if passed else 'FAILED'}: {lint}; {summary}",
         f"skipped   {skip_reasons(output)}",
-        f"log       {log.relative_to(ROOT)}",
+        f"log       {log_name(log)}",
     ]
     shown += [f"          {line}" for line in first]
     if incomplete:
@@ -966,12 +986,12 @@ def normal_main(args: argparse.Namespace) -> int:
         shown.append(f"markers   {len(problems)} problems listed in the log, for the owner")
     print("\n".join(shown))
 
-    log.parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / PASSES).parent.mkdir(parents=True, exist_ok=True)
     with (ROOT / PASSES).open("a", encoding="utf-8") as passes:
         passes.write(json.dumps({
             "time": datetime.now().isoformat(timespec="seconds"),
             "revision": revision, "at_revision": own,
-            "changed": changed, "untracked": untracked, "log": str(log.relative_to(ROOT)),
+            "changed": changed, "untracked": untracked, "log": log_name(log),
             "checks": agreed}) + "\n")
     log.write_text("\n".join([*shown, "", "== needs your yes, every item", *yes, "",
                               "== marker problems", *problems, "",
@@ -982,7 +1002,7 @@ def normal_main(args: argparse.Namespace) -> int:
     record = ROOT / CHECKED
     if passed and unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through
         record.write_text(json.dumps({"tree": content, "revision": revision,
-                                      "log": str(log.relative_to(ROOT))}) + "\n")
+                                      "log": log_name(log)}) + "\n")
     else:
         record.unlink(missing_ok=True)
     if passed:

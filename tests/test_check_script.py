@@ -286,6 +286,63 @@ def test_a_run_in_a_linked_worktree_says_so_and_keeps_its_exit_code(
             "evidence can skip here") in capsys.readouterr().out
 
 
+def linked_checkout(repo, tmp_path_factory):
+    linked = tmp_path_factory.mktemp("sibling") / "linked"
+    git(repo, "worktree", "add", "-q", str(linked))
+    (linked / "pytest.ini").write_text("[pytest]\n")
+    (linked / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (linked / ".gitignore").write_text("runs/\n")
+    return linked
+
+
+def test_a_linked_worktree_keeps_its_log_in_the_main_checkout(
+        repo, tmp_path_factory, monkeypatch, capsys):
+    linked = linked_checkout(repo, tmp_path_factory)
+    assert run_main(linked, monkeypatch) == 0
+    logs = list((repo / "runs/checks").glob("*.log"))
+    assert len(logs) == 1 and not list((linked / "runs/checks").glob("*.log"))
+    assert f"\nlog       {logs[0]}\n" in capsys.readouterr().out
+    assert "== pytest -q -ra" in logs[0].read_text()
+    assert json.loads((linked / check.CHECKED).read_text())["log"] == str(logs[0])
+
+
+@pytest.mark.parametrize("refusal", ["a file in its place", "a folder that refuses writes"])
+def test_a_refused_main_checkout_folder_leaves_the_log_in_the_worktree(
+        repo, tmp_path_factory, monkeypatch, capsys, refusal):
+    def refuse(self):
+        raise PermissionError(self)
+
+    linked = linked_checkout(repo, tmp_path_factory)
+    checks = repo / "runs/checks"
+    checks.parent.mkdir()
+    if refusal == "a file in its place":
+        checks.write_text("stands in for a sandbox's refusal")
+    else:
+        checks.mkdir()
+        monkeypatch.setattr(Path, "touch", refuse)
+    assert run_main(linked, monkeypatch) == 0
+    logs = list((linked / "runs/checks").glob("*.log"))
+    assert len(logs) == 1 and f"\nlog       {logs[0].relative_to(linked)}\n" in (
+        capsys.readouterr().out)
+    assert "== pytest -q -ra" in logs[0].read_text()
+
+
+def test_a_plant_replay_in_a_linked_worktree_keeps_its_log_in_the_main_checkout(
+        repo, tmp_path_factory, monkeypatch, capsys):
+    (repo / "src/gameai").mkdir()
+    (repo / "src/gameai/__init__.py").write_text("")
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / ".gitignore").write_text("runs/\n")
+    git(repo, "add", ".")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "gameai")
+    linked = tmp_path_factory.mktemp("sibling") / "linked"
+    git(repo, "worktree", "add", "-q", str(linked))
+    assert run_main(linked, monkeypatch, "--plants") == 1  # neither test calls f
+    logs = list((repo / "runs/checks").glob("plants-*.log"))
+    assert len(logs) == 1 and not list((linked / "runs/checks").glob("plants-*.log"))
+    assert f"\nlog      {logs[0]}\n" in capsys.readouterr().out
+
+
 def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_path, monkeypatch):
     (tmp_path / "src/pkg").mkdir(parents=True)
     (tmp_path / "src/pkg/mod.py").write_text("def f():\n    return 1\n")
