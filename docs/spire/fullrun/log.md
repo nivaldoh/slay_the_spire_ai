@@ -740,3 +740,24 @@ stays open as state.md decision 8. The text stays as history:
   within the night. Comparability of the night's rows rests on it.
 - Each run's limit is 3 h or the 13:45 UTC cutoff. Longer limits lose fewer late floors as
   truncations. Which deep runs end as truncated rests on it.
+
+## 2026-11-06: local Qwen3-0.6B on complete runs, overnight (branch `spire-local-rl`)
+
+Owner: post-train the local model with RL, Anthropic API, game free. Evidence and report: `runs/local-rl-20261106/`
+(`handoff.md`). Unverified: no agreed check. These runs are not in `results.csv`; they are not this track's scored play.
+
+Greedy floors on LRLEVAL13-24, seeds no gate saw, n=12, one revision, JVM and card pool: warm start 10.25, adapter of 2026-10-11
+5.58, random at temperature 1 4.67. Warm minus October +4.67, 8 up, 4 down, exact sign-flip p 0.026; with seeds 1-12, n=24,
++5.58, p 0.00012. October against random +1.67, p 0.11. The warm start is advantage-weighted regression on the Qwen3.6 night's
+rows, offline. No Qwen3.6 comparison holds: no seed, pool, prompt or harness is shared.
+
+Online RL has no established gain: one update on 8 runs gave +0.08 on seeds 1-12 (5 up, 6 down); PPO on 12 runs, stopped by the
+owner at 7 of 12 test seeds, gave +2.0 against warm (3 up, 0 down, p 0.25). The self-improvement loop, after ENPIRE's contract and
+karpathy/autoresearch, ran five agent proposals for $0.21: three rejected, one crashed on a potion hang, one stopped by me. No
+candidate passed the gate. Its agent sets numbers only; its text trains nothing (posttraining.md, Provider terms).
+
+Damage: the runs wiped the owner's `STSUnlockProgress` (Silent and Defect entries lost, Ironclad reset), likely a JVM killed at
+the death screen, and took Ironclad to level 5 (six new `STSUnlocks` keys). Nothing was restored; `profile-backup/` holds every
+file and the handoff gives the commands. Launch failures were `page allocation failure: order:7` in `hvs_probe`, under memory
+pressure. sts_lightspeed's build was refused by the classifier and not attempted another way.
+

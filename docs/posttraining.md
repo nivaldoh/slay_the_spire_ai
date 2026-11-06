@@ -142,8 +142,10 @@ the game. Anthropic's model only sets numbers in `research.SPACE`, so none of it
 training row, as [Provider terms](#provider-terms) require.
 
 Advantage-weighted regression on the Qwen3.6 night's rows moved greedy floors on 12 seeds no gate saw from 5.58 (the
-adapter of 2026-10-11) to 10.25 (paired +4.67, 8 up, 4 down), with uniform random at 4.67. That is learning from recorded
-open-weight play. Online RL on 20 sampled runs had shown no gain when this was written.
+adapter of 2026-10-11) to 10.25 (paired +4.67, 8 up, 4 down, exact sign-flip p 0.03); uniform random reached 4.67 at
+temperature 1. That is learning from recorded open-weight play, not from the game. Online RL has no established gain: one update on 8 runs gave +0.08 on 12 seeds, and PPO on 12 runs, stopped
+at 7 of 12 test seeds, gave +2.0 (3 up, 0 down, p 0.25). The card pool moved twice that night, so floors from different times do
+not pair.
 
 ### Idea: PostTrainBench-style tasks
 

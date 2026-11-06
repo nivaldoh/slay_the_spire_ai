@@ -1,5 +1,6 @@
 """Rewards, the loop-breaking mask and the agent's boundary for the local RL loop."""
 
+import inspect
 import json
 import math
 
@@ -110,6 +111,13 @@ def test_agent_cannot_reach_protected_values_or_leave_a_range():
 def test_integer_values_arrive_as_integers():
     assert research.validate({"epochs": 2.0, "awr_rows": 2e3}) == {"epochs": 2, "awr_rows": 2000}
     assert type(research.validate({"epochs": 2.0})["epochs"]) is int
+
+
+def test_a_restart_does_not_relabel_old_floors_with_the_current_card_pool():
+    source = inspect.getsource(research.main)
+    assert source.count('state["card_pool"] = card_pool()') == 2
+    assert source.index('state["card_pool"] = card_pool()') > source.index(
+        'if not state["incumbent_evaluation"]:')
 
 
 def test_gate_keeps_a_paired_gain_and_rejects_a_mixed_one():

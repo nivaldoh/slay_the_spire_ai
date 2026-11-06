@@ -78,6 +78,16 @@ class Scorer:
             self.symbol_ids.append(ids[0])
         self.device = next(model.parameters()).device
 
+    def fingerprint(self) -> str:
+        """The adapter's identity, recorded with every job so an arm is provable from disk."""
+        from peft import get_peft_model_state_dict
+
+        weights = get_peft_model_state_dict(self.model)
+        digest = hashlib.sha256()
+        for name in sorted(weights):
+            digest.update(name.encode() + weights[name].float().cpu().numpy().tobytes())
+        return digest.hexdigest()
+
     def encode(self, prompt: str) -> list[int]:
         text = self.tokenizer.apply_chat_template(
             [{"role": "user", "content": prompt}], tokenize=False,

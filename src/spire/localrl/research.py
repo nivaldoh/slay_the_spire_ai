@@ -247,8 +247,8 @@ def main() -> int:
     if not state["incumbent_evaluation"]:
         result = train.evaluate(game, scorer, root / "start-evaluation", state["eval_seeds"])
         state["incumbent_evaluation"] = result["evaluation"]
-    state["card_pool"] = card_pool()
-    write_json(state_path, state)
+        state["card_pool"] = card_pool()  # only with the floors it belongs to, never on restart
+        write_json(state_path, state)
     failures = 0
     while time.time() < arguments.deadline - arguments.cycle_hours * 3600:
         try:

@@ -188,6 +188,7 @@ def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None
     in a new JVM, with a different sampling seed in case the state itself caused the failure."""
     output.mkdir(parents=True, exist_ok=True)
     write_json(output / "job.json", {"label": label, "seeds": seeds, "temperature": temperature,
+                                     "adapter": scorer.fingerprint() if scorer else None,
                                      "revision": revision(), "started": time.time()})
     results = []
     for index, seed in enumerate(seeds):
