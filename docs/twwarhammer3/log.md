@@ -29,6 +29,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-06: reviewer and copy rules from the claim study
+
+The owner asked how to add a CLAIM statement for unverified claims. A read-only study found 43
+distinct past incidents of wrong or unsupported statements, all caught by someone; in 17 the writer
+believed it was checked, on one agent's reading. A red team rejected 5 of the 7 gains a combined
+design claimed in hindsight, and the two left came from wording and copy habits.
+
+Landed at the owner's word: a sentence stronger than its evidence is a reviewer finding that lists
+every live copy, and a correction reaches every live copy or the report lists the rest
+([rule](../workflow.md#loops-what-runs-when)). `state-restore.md` now says 3 of 70 recorded lost runs
+added their score, none a replay, cause unknown; `judgement.md`'s status line is dated; two old lines
+in the Spire full-run log carry dated corrections. These should catch a sentence a review noted as
+too strong that still lands on a copy ("a paused battle runs no script": on `state.md` five days)
+and a correction that misses copies (the Hellstrider report text, four days).
+
+Not landed: the proposed AGENTS.md edit, which the owner left out, and the mark. Two pilots (16 runs,
+fictional page, a CLAIM rule in every prompt) stayed at a floor, 1 of 96. A third test (20 runs, real
+page, no-rule control) could not answer: 18 runs compared the test page with the real page, which
+exposed the planted sentences. The owner's condition for landing was not met. Unverified: nothing
+measures whether agents follow these rules. Copies left: `runs/rl-feasibility-20261106/evidence-round1.json`
+cites the old Spire sentence, and `twwarhammer3_battle.lua:911` keeps the pause error. Evidence:
+`runs/claim-markers-20261105/`.
+
 ## 2026-11-06: Research focus spec for owner review
 
 - Saved [research-focus.md](research-focus.md): evals, multi-agent systems and LLMs;

@@ -83,9 +83,11 @@ The "unseeded card transform" path one agent reported is not reachable in the pi
 **Profile state leaks into runs.** Seeded runs use the profile's unlocks. Ironclad
 progress is 1,457 of the 1,500 needed for unlock level 4; the 2026-10-23 night added 38.
 Level 4 adds three cards (Havoc, Sentinel, Exhume) to the pools, so replays of older
-traces would likely diverge at their first card reward or shop. A replay that reaches the
-death screen adds its score: DATA001 scored 100 and the long Luna run below 506, either
-enough to cross. The Note For Yourself event reads and writes a profile preference.
+traces would likely diverge at their first card reward or shop. A lost run sometimes adds
+its score: 3 of 70 recorded lost runs did (+506, +96, +38), none of them a replay, and what
+decides it is unknown (recount 2026-11-06, `runs/claim-markers-20261105/`). If a replay's
+score is added, DATA001's 100 or the long Luna run's 506 would be enough to cross. The Note
+For Yourself event reads and writes a profile preference.
 Neow does not depend on the profile for seeded runs.
 
 **The mid-combat restores found all come from mods that change the game.**
@@ -212,7 +214,7 @@ launch. Scripts, outputs and a skeptic's rerun of every claim are in
 ## Owner decisions
 
 - **Profile, before any further Spire game time.** Unlock level 4 is 43 points away, and
-  a death screen adds the run's score. Freeze the profile at level 3, for example by copying
+  a lost run sometimes adds its score (3 of 70 recorded, cause unknown). Freeze the profile at level 3, for example by copying
   `preferences/` aside and back around each job, or let it advance and tag each trace with
   its unlock state (`profile.json` records the unlock file hash). Owner's note
   (2026-10-23): "we might want to unlock things normally first in the game before enabling

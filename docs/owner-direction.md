@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-06 (CLAIM statements): asked on 11-05 how to add a CLAIM statement for unverified
+  claims, "to see if it helps agents avoid working from assumptions and overall incorrect
+  information". After the study (`runs/claim-markers-20261105/proposal.md`): "Reviewer and copy
+  rule only" (the proposed AGENTS.md edit stays out), "Test first (Recommended)" for the mark
+  itself, and "Correct both (Recommended)" for two false doc sentences.
 - 2026-11-06 (WH3 research focus): write a simple, concise spec to keep the project focused.
   Include AI evals/benchmarking (possibly primary, undecided), multi-agent systems and LLMs;
   consider RL, LLM post-training and robot learning, including throughput/resource limits.

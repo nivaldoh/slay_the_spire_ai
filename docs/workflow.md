@@ -270,7 +270,8 @@ on trivial edits. Its rules (rest on JUDGEMENT `docs/testing.md` Agent review wo
 - It gets the card, the diff, the raw output and the code that reads the changed data, never
   the author's explanation.
 - Each finding gives a file, a line and a concrete failure case, or it is only a note
-  ("Noise costs more when the author is an agent", claude.dev).
+  ("Noise costs more when the author is an agent", claude.dev). A sentence stronger than its
+  evidence is a finding, and it lists every live copy (owner, 2026-11-06).
 - After three rounds, the author rethinks or parks the change.
 - No answer, or garbage, means the review is incomplete, not approved.
 - An agent's reason for a lost fight is a guess until a trace or replay shows it.
@@ -303,6 +304,12 @@ Never loosen the check.
 
 Spire uses the same rows with its own commands ([Spire guide](spire/AGENTS.md)).
 
+- **Corrections.** A sentence proved false or weakened, by a run or a review, is fixed in every
+  live copy in that change, or the report lists the copies it cannot or may not edit: memory,
+  `runs/`, marker lines, agreed-check files, the mod (owner, 2026-11-06: "Reviewer and copy rule
+  only"). A sentence a review had noted as too strong
+  still landed on `state.md` and stayed five days (`04ff47b` to `db0f1ad`), and a false report
+  line stayed four days (`223a964` to `da2ed43`).
 - **Live game check.** Preflight is `doctor`, committed code, no other controller, and a
   cutoff that fits the whole procedure including cleanup. Durations use battle time. WH3
   stays unpaused at 1x.

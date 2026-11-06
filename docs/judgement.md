@@ -78,5 +78,6 @@ marking them for the owner's review; the rule for agents is in
   boundary still the assistant's (no owner-direction entry; interview question 18 asks).
   `[spire-combat]` (105-119) waits until the frozen first-combat track reopens. Tables and
   reviews: `runs/judgement-batch-20261029/`.
-- The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
-  the two examples set the right threshold.
+- On 2026-10-23 the owner had decided none of the marked calls and had not said whether the
+  two examples set the right threshold. By 2026-11-05 at least 10 calls were decided (eight in
+  `1fd6811`, two in `7e89ab9`); most markers stay open.

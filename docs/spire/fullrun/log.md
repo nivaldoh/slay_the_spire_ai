@@ -1,6 +1,7 @@
 # Full-run log
 
-Append-only record of the [full-run track](README.md): every scaffolding version, the
+Append-only record, apart from dated corrections beside an old entry, of the
+[full-run track](README.md): every scaffolding version, the
 mistake that motivated it, the runs before and after, and the decision. Job directories
 are under `runs/fullrun/`; `python -m spire digest <job>` prints a job's per-seed table.
 
@@ -608,7 +609,8 @@ on `main` at `87b370b`:
 
 Comparability: every run so far is Ironclad unlock level 3, and the profile is 81 points
 from level 4, whose new cards and relics change the pools. The next scored run will
-likely cross it; exports record the level per run.
+likely cross it; exports record the level per run. Corrected 2026-11-06: the 2026-10-23 night
+added 38 in total and left it 43 points short.
 
 ## 2026-10-17: Qwen3.6 smoke runs and the first end-to-end post-training test
 
@@ -633,7 +635,10 @@ actions. These are smoke runs on new seeds, not a baseline: one run per configur
 Unlock state: all three runs started at Ironclad level 3 with progress 1,419, unchanged by
 the first run's death (score 96). A run that ends on the death screen evidently does not
 save its score into unlock progress, which matches the rare progress changes of the Luna
-runs. Content therefore stayed comparable with the Luna data.
+runs. Content therefore stayed comparable with the Luna data. Corrected 2026-11-06: a lost run
+sometimes adds its score. 3 of 70 recorded lost runs did (+506, +96, +38, the first two before
+this entry), and what decides it is unknown, so the reason given here does not hold, though the profiles
+through 10-23 stayed at level 3 ([state-restore](../state-restore.md)).
 
 End-to-end test ([posttraining.md](../../posttraining.md#first-end-to-end-test-2026-10-17)):
 `spire export` of the three jobs gave 273 rows with no issues, all from fp8 or bf16

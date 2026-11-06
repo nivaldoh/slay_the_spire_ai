@@ -54,6 +54,10 @@ result). Without all three it is a note, not a finding. Do not pad: "no findings
 answer, and a finding you cannot back is noise that costs the owner time. An agent's reason
 for a lost battle is a guess until a trace or replay shows it.
 
+A sentence stronger than its evidence is a finding; its failure case is the reading a later agent
+takes from it. The finding lists every live copy, searching for the fact and not only the phrase, in
+tracked files, the run folder and memory. A page may point to evidence but is not evidence.
+
 Reply with:
 - Verdict: `no findings`, `findings` or `incomplete` (you could not run or read what you
   needed; say what). Never approve what you did not check.
