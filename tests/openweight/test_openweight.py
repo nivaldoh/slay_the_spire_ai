@@ -3,7 +3,7 @@
 import pytest
 
 from spire.decisions import Choice
-from spire.openweight.env import Step
+from spire.openweight.env import EpisodeFailed, RealGame, Step
 from spire.openweight.evaluate import wilson_interval
 from spire.openweight.grpo import group_advantages
 from spire.openweight.rewards import fight_reward, run_reward
@@ -86,3 +86,121 @@ def test_episode_truncates_and_scores_policy_failures():
     assert run_episode(FakeEnv(5), TASK, FirstChoice(), max_actions=2).outcome == "truncated"
     failed = run_episode(FakeEnv(5), TASK, FirstChoice(fail=True), max_actions=2)
     assert failed.outcome == "policy_failure" and failed.steps == []
+
+
+def _decision(sequence, floor=1):
+    observation = {"act": 1, "floor": floor, "current_hp": 70, "max_hp": 80, "gold": 99}
+    choices = tuple(Choice(f"d{sequence}:{i}", f"d{sequence}", f"choose {i}", f"option {i}")
+                    for i in range(2))
+    return Decision(f"d{sequence}", observation, choices)
+
+
+def _fake_run(monkeypatch, plays, result):
+    """A stand-in for play_run that asks ``plays`` questions and then reports ``result``."""
+    def play_run(directory, config, policy):
+        seen.update(config=config, directory=directory)
+        for index in range(plays):
+            choice = policy.choose(_decision(index, floor=index + 1))
+            seen.setdefault("commands", []).append(choice.command)
+        if isinstance(result, Exception):
+            raise result
+        return result
+    seen = {}
+    monkeypatch.setattr("spire.fullrun.play.play_run", play_run)
+    return seen
+
+
+def _task(**fields):
+    return Task(**{"id": "t", "stage": Stage.FULL_RUN, "split": Split.TRAIN, "game_seed": "ABC",
+                   **fields})
+
+
+def test_real_game_turns_a_run_into_reset_and_step(monkeypatch, tmp_path):
+    result = {"status": "lost", "act": 1, "floor": 2, "current_hp": 0, "max_hp": 80, "gold": 5}
+    seen = _fake_run(monkeypatch, 2, result)
+    env = RealGame(tmp_path)
+    first = env.reset(_task())
+    middle = env.step(first.candidates[1])
+    assert middle.decision.id == "d1" and middle.outcome is None and middle.summary["floor"] == 2
+    last = env.step(middle.decision.candidates[0])
+    assert last.decision is None and last.outcome == "lost" and last.summary["current_hp"] == 0
+    assert seen["commands"] == ["choose 1", "choose 0"] and seen["config"]["seed"] == "ABC"
+    env.close()
+
+
+def test_a_failed_run_is_never_an_outcome(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 1, {"status": "infrastructure_failure", "error": "bridge"})
+    env = RealGame(tmp_path)
+    decision = env.reset(_task())
+    with pytest.raises(EpisodeFailed, match="bridge"):
+        env.step(decision.candidates[0])
+
+
+def test_an_exception_in_the_run_reaches_the_caller(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 0, OSError("lost the pipe"))
+    with pytest.raises(EpisodeFailed, match="lost the pipe"):
+        RealGame(tmp_path).reset(_task())
+
+
+def test_close_ends_an_unfinished_run(monkeypatch, tmp_path):
+    def play_run(directory, config, policy):
+        with pytest.raises(PolicyFailure):
+            policy.choose(_decision(0))
+        ended.append(True)
+        return {"status": "policy_failure"}
+    ended = []
+    monkeypatch.setattr("spire.fullrun.play.play_run", play_run)
+    env = RealGame(tmp_path)
+    env.reset(_task())
+    env.close()
+    assert ended == [True]
+
+
+def test_reset_ends_the_unfinished_run_first(monkeypatch, tmp_path):
+    def play_run(directory, config, policy):
+        running.append(directory)
+        try:
+            policy.choose(_decision(0))
+        except PolicyFailure:
+            ended.append(directory)
+            running.remove(directory)
+        return {"status": "policy_failure"}
+    running, ended = [], []
+    monkeypatch.setattr("spire.fullrun.play.play_run", play_run)
+    env = RealGame(tmp_path)
+    env.reset(_task())
+    first = running[0]
+    env.reset(_task())
+    assert ended == [first] and len(running) == 1
+    env.close()
+
+
+def test_a_new_reset_gets_a_new_directory(monkeypatch, tmp_path):
+    seen = _fake_run(monkeypatch, 1, {"status": "lost"})
+    env = RealGame(tmp_path)
+    env.reset(_task())
+    first = seen["directory"]
+    env.reset(_task())
+    env.close()
+    assert seen["directory"] != first
+
+
+@pytest.mark.parametrize("fields", [{"start": "a-prefix"}, {"stage": Stage.FIGHT}])
+def test_starts_the_game_cannot_do_are_refused(tmp_path, fields):
+    with pytest.raises(ValueError):
+        RealGame(tmp_path).reset(_task(**fields))
+
+
+def test_run_episode_plays_through_real_game(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, 3, {"status": "won", "floor": 3})
+
+    class First:
+        def choose(self, decision):
+            return decision.candidates[0]
+
+        def choice_metadata(self, decision_id):
+            return {}
+
+    env = RealGame(tmp_path)
+    episode = run_episode(env, _task(), First(), max_actions=10)
+    assert episode.outcome == "won" and len(episode.steps) == 3
