@@ -31,6 +31,26 @@ def _preferences(path: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
+# Files whose loss changes what a run plays or records. The game rewrites a preferences file
+# by deleting it first, so a kill at that moment leaves it empty, and the only way back is
+# its ``.backUp``: on 2026-11-06 a file with no backup was wiped and rebuilt from zero.
+GUARDED_PREFERENCES = ("STSUnlockProgress", "STSUnlocks", "STSDataVagabond", "STSPlayer")
+
+
+def profile_warnings(game_dir: Path, slot: int = 0) -> list[str]:
+    """Guarded preference files that are empty or have no usable backup."""
+    prefix = "" if slot == 0 else f"{slot}_"
+    warnings = []
+    for name in GUARDED_PREFERENCES:
+        path = game_dir / "preferences" / (prefix + name)
+        backup = path.with_name(path.name + ".backUp")
+        if not path.is_file() or path.stat().st_size == 0:
+            warnings.append(f"Profile file {path.name} is missing or empty")
+        if not backup.is_file() or backup.stat().st_size == 0:
+            warnings.append(f"Profile file {path.name} has no usable backup, so a kill can lose it")
+    return warnings
+
+
 def collect_profile(game_dir: Path) -> dict:
     """Read only the allowlisted profile facts needed to attribute an episode."""
     preferences = game_dir / "preferences"
@@ -85,6 +105,7 @@ def collect_diagnostics() -> dict:
     profile = collect_profile(runtime.GAME_DIR)
     if profile["status"] != "ok":
         blockers.append("The active profile's Ironclad unlock state is unreadable")
+    warnings = profile_warnings(runtime.GAME_DIR, profile.get("slot") or 0)
     try:
         bridge_host = runtime.wsl_bridge_host()
     except RuntimeError as exc:
@@ -104,6 +125,7 @@ def collect_diagnostics() -> dict:
         "collected_at": datetime.now(UTC).isoformat(),
         "status": "blocked" if blockers else "ready",
         "blockers": blockers,
+        "warnings": warnings,
         "game": game,
         "mods": mods,
         "profile": profile,
@@ -124,4 +146,5 @@ def render_diagnostics(report: dict) -> str:
         pinned = mod["sha256"] == runtime.PINS[name][1]
         lines.append(f"{name}: {'pinned hash' if pinned else 'missing or changed'}")
     lines += [f"Blocked: {blocker}" for blocker in report["blockers"]]
+    lines += [f"Warning: {warning}" for warning in report.get("warnings", ())]
     return "\n".join(lines)

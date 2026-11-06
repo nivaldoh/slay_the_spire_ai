@@ -359,3 +359,44 @@ def test_simple_combat_ends_the_turn_with_nothing_to_play():
 def test_simple_combat_keeps_the_run_level_rules():
     assert SimpleCombatPolicy._map is RulePolicy._map
     assert SimpleCombatPolicy._event is RulePolicy._event
+
+
+def test_simple_combat_attacks_when_it_has_nothing_to_block_with():
+    hand = [strike(), card("Bash", cost=2)]
+    assert "Bash" in SimpleCombatPolicy().choose(decide(fight({}, hand, damage=11))).label
+
+
+def test_simple_combat_attacks_with_what_is_left_after_blocking():
+    raw = fight({}, [strike()], damage=30)
+    assert "Strike" in SimpleCombatPolicy().choose(decide(raw)).label
+
+
+@pytest.mark.parametrize(("card_id", "hp"),
+                         [("Offering", 5), ("Bloodletting", 3), ("Hemokinesis", 2)])
+def test_a_card_that_costs_hp_is_not_played_to_death(card_id, hp):
+    kind = "ATTACK" if card_id == "Hemokinesis" else "SKILL"
+    risky = card(card_id, cost=1 if kind == "ATTACK" else 0, kind=kind, target=kind == "ATTACK")
+    raw = fight({"intent": "BUFF"}, [risky], hp=hp)
+    assert RulePolicy().choose(decide(raw)).command == "end"
+
+
+def test_an_attack_prefers_the_open_target_to_a_blocked_one():
+    raw = combat(hand=[strike("a"), strike("b"), strike("c")], damage=0)
+    state = raw["game_state"]["combat_state"]
+    state["monsters"][0].update(current_hp=30, is_gone=False, intent="BUFF", block=5,
+                                name="Guarded")
+    state["monsters"][1].update(current_hp=30, block=0, intent="BUFF", name="Open")
+    assert "Open" in RulePolicy().choose(decide(raw)).label
+
+
+@pytest.mark.parametrize("attack", ["Cleave", "Sword Boomerang"])
+def test_thorns_counts_for_attacks_with_no_chosen_target(attack):
+    spiky = {"powers": [{"id": "Thorns", "amount": 3}], "current_hp": 40}
+    raw = fight(spiky, [card(attack, target=False)], hp=3, damage=0)
+    assert RulePolicy().choose(decide(raw)).command == "end"
+
+
+def test_slimed_is_cleared_with_the_last_energy():
+    slimed = card("Slimed", kind="STATUS", target=False)
+    raw = fight({}, [slimed], energy=1, damage=0)
+    assert RulePolicy().choose(decide(raw)).command == "play 1"

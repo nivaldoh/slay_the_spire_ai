@@ -124,7 +124,12 @@ def damage_to(monster: Mapping, per_hit: float, hits: int, *,
     """
     total = hit_total(monster, per_hit, hits)
     block, health = monster.get("block", 0), monster.get("current_hp", 0)
-    counted = total if block_breaks or _power(monster, "Barricade") else total - block
+    if _power(monster, "Barricade"):
+        counted = total
+    elif block_breaks:  # Worth less than the same damage to an open target.
+        counted = total - 0.5 * min(total, block)
+    else:
+        counted = total - block
     return max(min(counted, block + health), 0), total - block >= health
 
 
@@ -502,7 +507,7 @@ class RulePolicy:
         dangerous_room = game.get("room_type") in ("MonsterRoomElite", "MonsterRoomBoss")
 
         if card.get("type") == "CURSE" or card_id in data.BAD_CARDS:
-            return 0.2 if card_id == "Slimed" and energy > cost else 0.0
+            return 0.2 if card_id == "Slimed" and energy >= cost else 0.0
         if card_id in data.SITUATIONAL:
             return 0.1
         if finishing and card.get("type") != "ATTACK":
@@ -517,14 +522,18 @@ class RulePolicy:
             return 4.0
         if need == 0 and card_id in data.COSTLY_BLOCK:
             return 0.0
+        if (card_id == "Offering" and hp <= 0.35 * max_hp
+                or card_id == "Bloodletting" and hp <= 0.4 * max_hp
+                or card_id == "Hemokinesis" and hp <= 2):
+            return 0.0
 
         score = 0.0
         per_hit, hits = base_damage(card, player, game.get("deck", ()), combat)
         debuffable = target is not None and not _power(target, "Artifact")
         if hits:
             recoil = sum(_power(m, "Sharp Hide") for m in monsters.values())
-            if target is not None:
-                recoil += _power(target, "Thorns") * hits
+            struck = [target] if target is not None else monsters.values()
+            recoil += sum(_power(m, "Thorns") for m in struck) * hits
             if not finishing and recoil >= hp + player.get("block", 0):
                 return 0.0
             if card_id in data.AREA:
@@ -561,8 +570,7 @@ class RulePolicy:
             and max(c.get("cost", 0), 0) <= energy - max(cost, 0) for c in hand)
         boost = 12 if attack_follows else 0
         score += {
-            "Battle Trance": 12, "Offering": 14 if hp > 0.35 * max_hp else 0,
-            "Bloodletting": 5 if hp > 0.4 * max_hp else 0, "Seeing Red": 5,
+            "Battle Trance": 12, "Offering": 14, "Bloodletting": 5, "Seeing Red": 5,
             "Shockwave": 16, "Disarm": (15 if attacking(target) else 8) if debuffable else 0,
             "Intimidate": 6, "Spot Weakness": 12 if target is not None and attacking(target) else 0,
             "Limit Break": 3 * _power(player, "Strength"), "Rage": boost, "Flex": boost,
@@ -621,13 +629,14 @@ class SimpleCombatPolicy(RulePolicy):
         act = game.get("act", 1)
         threat = sum(incoming(m, act) for m in live_monsters(combat).values())
         attacked = threat > player.get("block", 0)
-        best, best_value = None, 0.0
+        best, best_value = None, (0.0, 0.0)
         for choice in decision.candidates:
             if not choice.command.startswith("play"):
                 continue
             card = hand[int(choice.command.split()[1]) - 1]
             per_hit, hits = base_damage(card, player, game.get("deck", ()), combat)
-            value = float(block_of(card, player)) if attacked else per_hit * hits
+            value = (float(block_of(card, player)) if attacked else 0.0, per_hit * hits)
             if value > best_value:
                 best, best_value = choice, value
+                self._last_played = card.get("id", "")
         return best or self._button(decision, "end")
