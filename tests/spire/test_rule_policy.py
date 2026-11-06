@@ -10,6 +10,7 @@ from spire.fullrun.rule_data import BAD_CARDS, BOSS_RELICS, CARD_VALUE, UPGRADED
 from spire.fullrun.rules import (
     LOOP_LIMIT,
     RulePolicy,
+    SimpleCombatPolicy,
     base_damage,
     block_of,
     can_finish,
@@ -329,3 +330,32 @@ def test_liquid_memories_waits_for_a_card_in_the_discard_pile():
 @pytest.mark.parametrize("wire_id", ["SacredBark", "PanicButton"])
 def test_tables_use_wire_ids(wire_id):
     assert wire_id in BOSS_RELICS or wire_id in CARD_VALUE
+
+
+def test_rewards_further_on_do_not_pull_a_hurt_run_into_an_elite():
+    nodes = [{"symbol": "E", "x": 0, "y": 5, "children": [{"x": 0, "y": 6}]},
+             {"symbol": "M", "x": 1, "y": 5, "children": []},
+             {"symbol": "R", "x": 0, "y": 6, "children": [{"x": 0, "y": 7}]},
+             {"symbol": "T", "x": 0, "y": 7, "children": [{"x": 0, "y": 8}]},
+             {"symbol": "R", "x": 0, "y": 8, "children": []}]
+    state = {"next_nodes": nodes[:2], "current_node": {"x": 0, "y": 4}}
+    decision = decide(screen("MAP", ["choose"], ["x=0", "x=1"], state, map=nodes, current_hp=40,
+                             max_hp=80, floor=9))
+    assert "monster" in RulePolicy().choose(decision).label
+
+
+def test_simple_combat_blocks_only_when_attacked():
+    hand = [strike(), defend(), card("Bash", cost=2)]
+    assert "Defend" in SimpleCombatPolicy().choose(decide(fight({}, hand, damage=11))).label
+    quiet = fight({"intent": "BUFF"}, hand)
+    assert "Bash" in SimpleCombatPolicy().choose(decide(quiet)).label
+
+
+def test_simple_combat_ends_the_turn_with_nothing_to_play():
+    raw = fight({}, [card("Bash", cost=2, playable=False)], damage=11)
+    assert SimpleCombatPolicy().choose(decide(raw)).command == "end"
+
+
+def test_simple_combat_keeps_the_run_level_rules():
+    assert SimpleCombatPolicy._map is RulePolicy._map
+    assert SimpleCombatPolicy._event is RulePolicy._event

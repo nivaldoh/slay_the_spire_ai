@@ -740,3 +740,30 @@ stays open as state.md decision 8. The text stays as history:
   within the night. Comparability of the night's rows rests on it.
 - Each run's limit is 3 h or the 13:45 UTC cutoff. Longer limits lose fewer late floors as
   truncations. Which deep runs end as truncated rests on it.
+
+## 2026-11-06: rule-based full-run policy, offline only
+
+Owner's goal for the window: "Keep making progress on Slay the Spire until I return like 10h from
+now." The overnight session held the game and GPU, so this session worked offline, with no paid calls.
+The aim was a teacher: a policy that can label any state for free for SFT and DAgger, and a simple
+baseline, since no scripted policy had played a full run.
+
+`src/spire/fullrun/rules.py` and `rule_data.py` follow the structure of spirecomm's SimpleAgent with
+this project's own values, which are marked judgement calls. `spire rules` plays them through the
+existing job code.
+
+Evidence, none of it live and none of it verified. Over 19,308 recorded decisions from 80 runs the
+policy made no illegal choice. Its card numbers were compared with recorded engine results, which
+found real errors in the first table; an independent reviewer then found damage and block arithmetic
+exact on 3,320 attacks and 1,913 block plays. Three reviews found three defects that would lose runs and
+that replay could not show: attacks into permanent block scored zero (Spheric Guardian), Knowing
+Skull's exit scored below its rewards, and Runic Dome hid every threat. All are fixed with tests.
+
+A test of whether the rules help, using Qwen3.6's random sampling on the 2026-10-23 night, first looked
+strong (+0.29). The skeptic review showed that trivial teachers earn most of that score, and with the
+end-turn stage removed the rule (+0.155) ties "biggest printed attack" (+0.151). It supports one thing:
+ending a turn with a playable move cost that model HP. It does not show the rules beat simple heuristics.
+
+Where runs end: Act 1 elites ended 20 of Qwen3.6's 43 lost runs (Lagavulin 13, Sentries 6, Gremlin Nob 1).
+Elites were entered at a mean 53% HP when lost (n=19) and 82% when won (n=14), and 11 of those 19 had
+no other path. Evidence and reviews: `runs/spire-offline-20261106/`.

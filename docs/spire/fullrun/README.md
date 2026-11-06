@@ -146,6 +146,11 @@ uv run python -m spire stats                  # milestones per model, effort and
 uv run python -m spire stats --rebuild        # rewrite results.csv from every saved job
 ```
 
+`spire rules --seed SEED --output runs/fullrun/<job>` plays complete runs with the rule policy
+(`src/spire/fullrun/rules.py`), a free teacher and simple baseline with no model calls. It has
+never played a live run, so its strength is unmeasured. A proposed live comparison is in
+`runs/spire-offline-20261106/live-check.md`.
+
 `spire play` appends one row per run to the committed [results.csv](results.csv): date, job,
 run, seed, character, ascension, model, effort, harness version (from the job name), source,
 outcome, act, floor, score and cost. Rows come only from saved evidence, so `--rebuild`

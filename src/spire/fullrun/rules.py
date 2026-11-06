@@ -32,6 +32,7 @@ UNKNOWN_CARD_VALUE = 2
 SKIP_BELOW = 3
 SKIP_BELOW_THICK_DECK = 5
 THICK_DECK = 22
+HURT = 0.7
 
 
 def _power(creature: Mapping, power_id: str) -> int:
@@ -293,6 +294,10 @@ class RulePolicy:
             match = re.search(r"x=(-?\d+), y=(\d+)", choice.label)
             if match:
                 value = self._path_value((int(match[1]), int(match[2])), nodes, game, memo)
+                # Recorded Qwen3.6 elites: entered at 53% HP when lost (19), 82% when won (14).
+                health = game.get("current_hp", 0) / max(game.get("max_hp", 1), 1)
+                if "go to elite" in choice.label and health < HURT:
+                    value -= 15
                 if value > best_value:
                     best, best_value = choice, value
         return best
@@ -308,7 +313,7 @@ class RulePolicy:
         gold = game.get("gold", 0)
         value = {"M": 1.0, "?": 2.0, "T": 3.0, "$": 3.0 if gold >= 150 else 0.0,
                  "R": 6.0 if health < 0.6 else 3.0,
-                 "E": 4.0 if health >= 0.7 and game.get("floor", 0) >= 5 else -6.0,
+                 "E": 4.0 if health >= HURT and game.get("floor", 0) >= 5 else -6.0,
                  }.get(symbol, 0.0)
         following = [self._path_value((c["x"], c["y"]), nodes, game, memo)
                      for c in node.get("children", ())]
@@ -597,3 +602,32 @@ class RulePolicy:
         if hard and need >= 0.5 * hp and potion_id in data.ATTACK_POTIONS:
             return 22.0
         return 0.0
+
+
+class SimpleCombatPolicy(RulePolicy):
+    """The same run-level rules with a three-line fight: block what is coming, else hit hardest.
+
+    A baseline for the scoring above. If it does as well in real runs, that scoring has not
+    earned its length.
+    """
+
+    def choice_metadata(self, decision_id: str) -> dict:
+        return {"type": "rules", "version": f"{VERSION}-simple", "reason": "simple combat"}
+
+    def _combat(self, decision: Decision, game: Mapping) -> Choice | None:
+        combat = game["combat_state"]
+        player = combat["player"]
+        hand = combat.get("hand", ())
+        act = game.get("act", 1)
+        threat = sum(incoming(m, act) for m in live_monsters(combat).values())
+        attacked = threat > player.get("block", 0)
+        best, best_value = None, 0.0
+        for choice in decision.candidates:
+            if not choice.command.startswith("play"):
+                continue
+            card = hand[int(choice.command.split()[1]) - 1]
+            per_hit, hits = base_damage(card, player, game.get("deck", ()), combat)
+            value = float(block_of(card, player)) if attacked else per_hit * hits
+            if value > best_value:
+                best, best_value = choice, value
+        return best or self._button(decision, "end")

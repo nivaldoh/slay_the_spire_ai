@@ -83,6 +83,8 @@ def main() -> int:
                        help="Alphanumeric game seed; repeat for several runs")
     rules.add_argument("--results", type=Path, default=RESULTS_PATH,
                        help="Results register that gets one row per run")
+    rules.add_argument("--simple-combat", action="store_true",
+                       help="Three-line fights, as a baseline for the combat scoring")
     rules.add_argument("--max-actions", type=int, default=4000)
     # JUDGEMENT: Rule run timeout — Claude, 2026-11-06, unattended: 1 h, where `play` allows
     # 5 h, because a truncated run is a scored attempt. Recorded engine time fits about 3,970
@@ -254,13 +256,16 @@ def main() -> int:
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "rules":
         from spire.fullrun.play import play as run_play
-        from spire.fullrun.rules import VERSION, RulePolicy
+        from spire.fullrun.rules import VERSION, RulePolicy, SimpleCombatPolicy
 
         config = vars(args).copy()
         output = config.pop("output")
         config.pop("command")
-        config.update(model="rules", effort=VERSION, results=str(config["results"]))
-        manifest = run_play(output, config, policy_factory=RulePolicy)
+        simple = config.pop("simple_combat")
+        config.update(model="rules", effort=f"{VERSION}-simple" if simple else VERSION,
+                      results=str(config["results"]))
+        manifest = run_play(output, config,
+                            policy_factory=SimpleCombatPolicy if simple else RulePolicy)
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "digest":
