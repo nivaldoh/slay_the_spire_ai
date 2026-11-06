@@ -114,12 +114,13 @@ const FAC_CHECK = "scripts/check.py";
 const FAC_QUEUE = "scripts/wh3_queue.py";
 const FAC_PLAY = "src/twwarhammer3/battle/play.py";
 const FAC_README = "docs/twwarhammer3/README.md";
+const FAC_FIXED = "bd46129"; // an item that sets this as its commit reads its sources there
 const FAC_PROCESS = {
   text: "built, unverified: a written process in use, proposed, not agreed; no script enforces it",
   refs: ["docs/workflow.md:8-11"],
 };
 const FAC_CHECK_TESTS = {
-  text: "built, component tests only: tests/test_check_script.py and the --plants replay; no agreed check",
+  text: "built, component tests only: tests/test_check_script.py and the --plants replay; since 2026-11-02 the gate with its plant replay has an agreed check (docs/agreed-checks.md, Test suite rejects its kept wrong versions)",
   refs: ["tests/test_check_script.py", "docs/workflow.md:357-359"],
 };
 const FAC_PRECOMMIT_TESTS =
@@ -137,8 +138,11 @@ const FAC_REVIEWER = {
   refs: ["docs/twwarhammer3/log.md:260-261", "docs/twwarhammer3/log.md:423-424"],
 };
 const FAC_QUEUE_TESTS = {
-  text: "built, component tests only: tests/twwarhammer3/test_wh3_queue.py; the factory's experiment-loop stage waits for its first experiment",
-  refs: ["tests/twwarhammer3/test_wh3_queue.py", "docs/workflow.md:363"],
+  text: "built, component tests only: tests/twwarhammer3/test_wh3_queue.py; the factory's experiment-loop stage was used on the planned $0 windows of 2026-11-05 (WH3 log); that each met the plan's row was not checked",
+  refs: [
+    "tests/twwarhammer3/test_wh3_queue.py",
+    "runs/benchmark-improve-20261105/plans/window-1.json",
+  ],
   rests: [{ file: "docs/workflow.md", line: 352, name: "Rollout order" }],
 };
 const FAC_PLAY_TESTS = {
@@ -165,13 +169,16 @@ const FAC_ADOPT = {
 const FAC_CI =
   "built, unverified: our workflow file .github/workflows/check.yml, run by GitHub on each push to main and each pull request";
 const FAC_ACTIVE = {
-  text: "built, unverified: a written rule (docs/workflow.md:288-289); no script reads or enforces it",
-  refs: ["docs/workflow.md:288-289", FAC_NUMBERS],
+  text: "built, unverified: a written rule (docs/workflow.md:344-345); no script reads or enforces it",
+  refs: ["docs/workflow.md:344-345", FAC_NUMBERS],
 };
 const FAC_SLICE = { file: "docs/workflow.md", line: 34, name: "Slice contract" };
 const FAC_RESTS_CONCURRENT = { file: FAC_CHECK, line: 605, name: "Concurrent passes", sure: false };
 const FAC_RESTS_TREE = { file: FAC_CHECK, line: 549, name: "Checked tree", sure: false };
 const FAC_RESTS_HOOKS = { file: "docs/workflow.md", line: 365, name: "Hook details", sure: false };
+const FAC_FIXED_CONCURRENT = { file: FAC_CHECK, line: 851, name: "Concurrent passes", sure: false };
+const FAC_FIXED_TREE = { file: FAC_CHECK, line: 577, name: "Checked tree", sure: false };
+const FAC_FIXED_HOOKS = { file: "docs/workflow.md", line: 423, name: "Hook details", sure: false };
 const MP_DOC = "docs/twwarhammer3/native-multiplayer.md";
 const MP_LINK = {
   text:
@@ -294,10 +301,15 @@ const DIAGRAM = {
         " GitHub reruns check.py after a push.",
       commit: "21f6204",
       checked: "2026-10-31",
+      banner:
+        "Frozen at 21f6204 (2026-10-31). Claims corrected, and four steps added, on 2026-11-06" +
+        " name a newer source in their text or read their sources at bd46129; dated numbers stay" +
+        " as records.",
       summary:
         "How a change gets made and checked, and how the WH3 experiment loop runs. One agent" +
         " session does the work; check.py, three hooks and a reviewer subagent check it; GitHub" +
-        " reruns check.py after a push. The process is in use and proposed, not agreed.",
+        " reruns check.py after a push. The process is in use and proposed, not agreed, apart" +
+        " from check.py with its plant replay, agreed on 2026-11-02.",
       size: [1400, 700],
       bands: [
         { where: "owner", x: 0, y: 0, w: 1400, h: 84 },
@@ -356,13 +368,15 @@ const DIAGRAM = {
           w: 190,
           h: 48,
           status: FAC_ACTIVE,
+          commit: FAC_FIXED,
           refs: [
-            "docs/state.md:7-15",
-            "docs/workflow.md:288-289",
-            "docs/autonomy.md:28-31",
+            "docs/state.md:5-32",
+            "docs/workflow.md:344-345",
+            "docs/workflow.md:62-64",
+            "docs/autonomy.md:28-33",
             FAC_NUMBERS,
           ],
-          note: "Each session claims its task here first, because Claude Code and Codex share this checkout. Only the docs ask for it: no hook, queue or gate reads the list.",
+          note: "Since 2026-11-02 a writing session's claim is its own worktree and branch; a session that runs a game job also claims Active work here first. Only the docs ask for it: no hook, queue or gate reads the list.",
         },
         {
           id: "fac.card",
@@ -516,9 +530,17 @@ const DIAGRAM = {
           w: 180,
           h: 50,
           status:
-            "outside our code: git; the owner authorizes commits and pushes to main (AGENTS.md:192)",
-          refs: ["AGENTS.md:192", "AGENTS.md:74-76", FAC_BASH + ":9-11"],
-          note: "Commits land here. The rule is to commit nothing here while a WH3 queue runs, because a moved HEAD stops the queue before its next job; the Bash hook refuses the git commands it can parse.",
+            "outside our code: git; the owner authorizes commits and pushes to main (AGENTS.md:190)",
+          commit: FAC_FIXED,
+          refs: [
+            "AGENTS.md:190",
+            "AGENTS.md:73-76",
+            "docs/workflow.md:62-64",
+            "docs/workflow.md:67-71",
+            FAC_BASH + ":5-6",
+            FAC_BASH + ":9-11",
+          ],
+          note: "A game job's session commits here; other changes arrive by fast-forward from their branch. The rule is to commit or land nothing here while a WH3 queue runs, because a moved HEAD stops the queue before its next job; in a session started here the Bash hook refuses the git commands it can parse.",
         },
         {
           id: "fac.worktree",
@@ -531,18 +553,19 @@ const DIAGRAM = {
           w: 140,
           h: 50,
           status: {
-            text: "built, unverified: drafting there is a written rule; its commits run that checkout's own pre-commit hook, where the file exists",
-            refs: ["AGENTS.md:130-132", FAC_HOOK + ":2-6", FAC_NUMBERS],
+            text: "built, unverified: working there is a written rule; its commits run that checkout's own pre-commit hook, where the file exists",
+            refs: ["AGENTS.md:73-75", FAC_HOOK + ":2-10", FAC_NUMBERS],
           },
+          commit: FAC_FIXED,
           refs: [
-            "AGENTS.md:74-75",
-            "AGENTS.md:130-132",
-            "docs/workflow.md:143-148",
-            "docs/workflow.md:407-409",
-            FAC_HOOK + ":13-19",
+            "AGENTS.md:73-75",
+            "docs/workflow.md:55-61",
+            "docs/workflow.md:65-66",
+            "docs/workflow.md:466-468",
+            FAC_HOOK + ":18-30",
             FAC_NUMBERS,
           ],
-          note: "For drafting while a game job runs. Its commits are checked against its own runs/checks record, and no Stop hook checks it. Two worktrees, spire-replay and wh3-human-opponent, have no hook file, so their commits run no check.",
+          note: "Every session that edits tracked files works in its own worktree and branch (owner, 2026-11-02). Its commits are checked against its own runs/checks record, and no Stop hook checks it. Two worktrees, spire-replay and wh3-human-opponent, have no hook file, so their commits run no check.",
         },
         {
           id: "fac.queue",
@@ -724,15 +747,15 @@ const DIAGRAM = {
           w: 260,
           h: 56,
           status: FAC_CI,
+          commit: FAC_FIXED,
           refs: [
-            ".github/workflows/check.yml:1-21",
-            "AGENTS.md:157",
-            "docs/state.md:21",
+            ".github/workflows/check.yml:1-53",
+            "AGENTS.md:153",
+            "docs/workflow.md:190-194",
             "runs/factory-assessment-20261031/ci-status.json",
-            "docs/workflow.md:362",
             FAC_NUMBERS,
           ],
-          note: "uv sync --locked, then check.py, in a 15-minute job with no game, key or runs/ evidence (runs/ stays out of Git). It reports after the fact and gates nothing. Runs passed at da47cde and e1d141c, with one failing run between them from a racy test, since fixed (workflow.md:362); one run at 356e723 took 118 s.",
+          note: "Three 15-minute jobs since c32d958: check, and model-tests with the train and llm extras. Each runs uv sync --locked, then check.py, with no game, key or runs/ evidence (runs/ stays out of Git). They report after the fact and gate nothing. Runs passed at da47cde and e1d141c, with one failing run between them from a racy test, since fixed (workflow.md:362 at 21f6204); one run at 356e723 took 118 s.",
         },
       ],
       wires: [
@@ -741,10 +764,16 @@ const DIAGRAM = {
           from: "fac.session",
           to: "fac.active",
           label: "claim",
-          payload: "A line in Active work that claims the task",
+          payload: "A line in Active work that claims the game",
           sync: "by hand: a docs edit",
           status: FAC_ACTIVE,
-          refs: ["docs/workflow.md:288-289", "docs/state.md:7-15"],
+          commit: FAC_FIXED,
+          refs: [
+            "docs/workflow.md:62-64",
+            "docs/workflow.md:344-345",
+            "docs/autonomy.md:31-33",
+            "docs/state.md:5-32",
+          ],
         },
         {
           id: "fac.session>card",
@@ -852,10 +881,12 @@ const DIAGRAM = {
           from: "fac.precommit",
           to: "fac.main",
           label: "commit",
-          payload: "The commit, only if the hashes match; otherwise exit 1 and git aborts it",
+          payload:
+            "In this checkout, a game job's session's commit, only if the hashes match; otherwise exit 1 and git aborts it. A commit in a worktree stays on its branch until it lands.",
           sync: "exit 0 lets git write the commit",
           status: FAC_PRECOMMIT_TESTS,
-          refs: [FAC_HOOK + ":28-32"],
+          commit: FAC_FIXED,
+          refs: [FAC_HOOK + ":46-51", "docs/workflow.md:62-66"],
         },
         {
           id: "fac.session>stop",
@@ -940,18 +971,19 @@ const DIAGRAM = {
           from: "fac.worktree",
           to: "fac.main",
           label: "merge, no hook",
-          payload: "The branch's commits, by a fast-forward or a merge commit",
-          sync: "git runs no hook for the merge. For a session started in main, the Stop hook reruns check.py at the turn's end, as the files no longer match last-pass.json; a push in the same turn goes before it",
+          payload: "The branch's commits, by git merge --ff-only after a rebase on main",
+          sync: "git runs no hook for the merge. By the landing rule the session then runs check.py in the main checkout before the push; no script enforces that. For a session started in main, the Stop hook reruns check.py at the turn's end, as the files no longer match last-pass.json; a push in the same turn goes before it",
           status:
-            "outside our code: git runs no pre-commit hook for a merge (scripts/githooks/pre-commit:3-5)",
+            "outside our code: git runs no pre-commit hook for a merge (scripts/githooks/pre-commit:4-5)",
+          commit: FAC_FIXED,
           refs: [
             FAC_HOOK + ":2-6",
-            "docs/workflow.md:88-89",
-            "docs/workflow.md:143-146",
-            FAC_STOP + ":187-216",
+            "docs/workflow.md:67-71",
+            "docs/workflow.md:151-152",
+            FAC_STOP + ":190-238",
             FAC_NUMBERS,
           ],
-          rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+          rests: [FAC_FIXED_HOOKS, FAC_FIXED_TREE, FAC_FIXED_CONCURRENT],
         },
         {
           id: "fac.worktree>gh",
@@ -1152,21 +1184,29 @@ const DIAGRAM = {
           title: "A normal change",
           clock: "illustrative time",
           timing: "illustrative: drawn from the code, no recorded episode",
-          source: "the code and docs at 21f6204; no recorded change is replayed",
+          source:
+            "the code and docs at 21f6204, and bd46129 for the steps corrected on 2026-11-06; no recorded change is replayed",
           drawn:
             "All times are made up to show the order of events. One recorded check.py run and one" +
             " recorded CI run are in those boxes' notes.",
           start: 0,
-          end: 12600,
+          end: 13300,
           speed: 0.5,
           steps: [
             {
               at: 0,
               until: 500,
-              dots: [["fac.session>active"]],
+              box: "fac.worktree",
               caption:
-                "The session reads Active work and claims the task there, because Claude Code and Codex share this checkout. Only the docs ask for this; no script reads the list.",
-              refs: ["docs/workflow.md:288-289", "docs/autonomy.md:28-31", "docs/state.md:7-15"],
+                "The session takes its own git worktree and branch, which is its claim on the task. A session that runs a game job also claims Active work first. Only the docs ask for this; no script reads the list.",
+              commit: FAC_FIXED,
+              refs: [
+                "docs/workflow.md:55-61",
+                "docs/workflow.md:62-64",
+                "docs/workflow.md:344-345",
+                "docs/autonomy.md:28-33",
+                "docs/state.md:5-32",
+              ],
             },
             {
               at: 500,
@@ -1191,8 +1231,9 @@ const DIAGRAM = {
               until: 2800,
               box: "fac.session",
               caption:
-                "It edits the files: in the main checkout, or in a git worktree while a game job runs.",
-              refs: ["AGENTS.md:130-132"],
+                "It edits the files in its worktree. Game jobs stay in the main checkout.",
+              commit: FAC_FIXED,
+              refs: ["docs/workflow.md:55-64", "AGENTS.md:73-75"],
             },
             {
               at: 2800,
@@ -1202,6 +1243,16 @@ const DIAGRAM = {
                 "It runs uv run --locked python scripts/check.py, which first deletes the old pass record.",
               refs: [FAC_CHECK + ":3-7", FAC_CHECK + ":608", "docs/workflow.md:84"],
               rests: [FAC_RESTS_CONCURRENT],
+            },
+            {
+              at: 2800,
+              until: 3100,
+              box: "fac.check",
+              caption:
+                "Two normal runs in one checkout take turns on runs/checks/gate.lock; a waiting run prints nothing.",
+              commit: FAC_FIXED,
+              refs: ["docs/workflow.md:153", FAC_CHECK + ":14-17"],
+              rests: [{ file: FAC_CHECK, line: 855, name: "Gate serialization", sure: false }],
             },
             {
               at: 3100,
@@ -1253,6 +1304,15 @@ const DIAGRAM = {
               rests: [{ file: "docs/workflow.md", line: 233, name: "Work loops" }],
             },
             {
+              at: 7000,
+              until: 7400,
+              box: "fac.session",
+              caption:
+                "A sentence that a run or a review proves false or weakens is fixed in every live copy in that change, or the report lists the copies it cannot or may not edit (owner, 2026-11-06).",
+              commit: FAC_FIXED,
+              refs: ["docs/workflow.md:307-312"],
+            },
+            {
               at: 7400,
               until: 7800,
               dots: [["fac.session>precommit", "fac.precommit>record"]],
@@ -1262,60 +1322,84 @@ const DIAGRAM = {
               rests: [FAC_RESTS_TREE],
             },
             {
+              at: 7400,
+              until: 7800,
+              box: "fac.precommit",
+              caption:
+                "A refused commit adds one line to the main checkout's runs/checks/commit-guard.log, so the guard's catches can be counted.",
+              commit: FAC_FIXED,
+              refs: [FAC_HOOK + ":7-10", "docs/workflow.md:394-395"],
+            },
+            {
               at: 7800,
               until: 8200,
-              dots: [["fac.precommit>main"]],
+              box: "fac.worktree",
               caption:
-                "The hashes match, so the commit lands. Any edit since the pass, by this or another session, would refuse it; --no-verify skips the hook.",
-              refs: [FAC_HOOK + ":2-6", FAC_HOOK + ":28-32", FAC_CHECK + ":543-552"],
-              rests: [FAC_RESTS_TREE],
+                "The hashes match, so the commit lands on the worktree's branch. Any edit since the pass, by this or another session, would refuse it; --no-verify skips the hook.",
+              commit: FAC_FIXED,
+              refs: [
+                FAC_HOOK + ":2-10",
+                FAC_HOOK + ":46-51",
+                FAC_CHECK + ":571-592",
+                "docs/workflow.md:65-66",
+              ],
+              rests: [FAC_FIXED_TREE],
             },
             {
               at: 8200,
               until: 8700,
               dots: [["fac.session>stop", "fac.stop>record"]],
               caption:
-                "At the turn's end the Stop hook fingerprints the checkout and finds a completed check.py pass on these files, so the stop goes through. Without one it runs check.py itself and, if that fails, keeps the turn going once.",
-              refs: [FAC_STOP + ":187-235", FAC_STOP + ":49-60"],
-              rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+                "At the turn's end the Stop hook fingerprints only the checkout the session started in, so a worktree the session did not start in gets no Stop-hook check. If that checkout has a remembered or completed pass, the stop goes through; without one it runs check.py there and, if that fails, keeps the turn going once.",
+              commit: FAC_FIXED,
+              refs: [
+                FAC_STOP + ":36",
+                FAC_STOP + ":52-63",
+                FAC_STOP + ":190-238",
+                "docs/workflow.md:65-66",
+                "docs/workflow.md:466-468",
+              ],
+              rests: [FAC_FIXED_HOOKS, FAC_FIXED_TREE, FAC_FIXED_CONCURRENT],
             },
             {
               at: 8800,
-              until: 9300,
+              until: 9500,
+              dots: [["fac.worktree>main"]],
+              caption:
+                "To land, the session rebases on main and runs git merge --ff-only in the main checkout. git runs no hook on that merge, so the rule is to run check.py there before the push; tests of saved evidence skip in worktrees. Only the docs ask for this run. For a session started in main, the Stop hook also reruns check.py at the turn's end, as the files no longer match last-pass.json; it skips while a game job runs, lets the stop through after one block, and a push in the same turn goes out before it.",
+              commit: FAC_FIXED,
+              refs: [
+                FAC_HOOK + ":2-6",
+                "docs/workflow.md:67-71",
+                "docs/workflow.md:195-197",
+                FAC_STOP + ":190-238",
+              ],
+              rests: [FAC_FIXED_HOOKS, FAC_FIXED_TREE, FAC_FIXED_CONCURRENT],
+            },
+            {
+              at: 9500,
+              until: 10000,
               dots: [["fac.main>gh"]],
               caption:
                 "The owner authorizes pushes to main. No hook checks or refuses a push (the Bash hook lets git push through), and main on GitHub has no branch protection, rulesets or required checks, so the push lands as it is.",
               refs: ["AGENTS.md:192", FAC_BASH + ":21-23", FAC_NUMBERS, FAC_GH, FAC_GH_RULES],
             },
             {
-              at: 9300,
-              until: 9700,
+              at: 10000,
+              until: 10400,
               dots: [["fac.gh>ci"]],
               caption:
                 "GitHub then starts the check workflow: after the push has landed, and on each pull request.",
               refs: [".github/workflows/check.yml:1-8"],
             },
             {
-              at: 9700,
-              until: 11200,
+              at: 10400,
+              until: 11900,
               box: "fac.ci",
               caption:
-                "It runs uv sync --locked and check.py in a 15-minute job, without the game, keys or runs/ evidence. Its result is read later (gh run list); nothing waits for it.",
-              refs: [".github/workflows/check.yml:11-21", "AGENTS.md:157", "docs/state.md:21"],
-            },
-            {
-              at: 11200,
-              until: 11900,
-              dots: [["fac.worktree>main"]],
-              caption:
-                "The other route: a change made in a worktree is committed there against that checkout's own pass record, then merged into main. git runs no hook on a merge that completes by itself (a conflicted merge finished with git commit runs pre-commit). For a session started in main, the Stop hook reruns check.py at the turn's end, as the files no longer match last-pass.json; it skips while a game job runs, lets the stop through after one block, and a push in the same turn goes out before it.",
-              refs: [
-                FAC_HOOK + ":2-6",
-                FAC_HOOK + ":13-19",
-                "docs/workflow.md:143-146",
-                FAC_STOP + ":187-216",
-              ],
-              rests: [FAC_RESTS_HOOKS, FAC_RESTS_TREE, FAC_RESTS_CONCURRENT],
+                "Three 15-minute jobs (check, and model-tests with the train and llm extras) run uv sync --locked and check.py, without the game, keys or runs/ evidence. Their result is read later (gh run list); nothing waits for it.",
+              commit: FAC_FIXED,
+              refs: [".github/workflows/check.yml:11-53", "AGENTS.md:153", "docs/workflow.md:190-194"],
             },
             {
               at: 11900,
@@ -1324,6 +1408,15 @@ const DIAGRAM = {
               caption:
                 "A branch can also go to GitHub as a pull request, which runs the same check workflow. GitHub requires no check before a merge.",
               refs: [".github/workflows/check.yml:4-8", FAC_GH],
+            },
+            {
+              at: 12600,
+              until: 13300,
+              box: "fac.check",
+              caption:
+                "Not on every change: before an agreed check or a guarded file changes, and after a model upgrade, check.py --plants replays at HEAD the wrong versions kept in tests/plants.toml. A MISSED line is a test that decayed.",
+              commit: FAC_FIXED,
+              refs: ["docs/workflow.md:380-388", "tests/plants.toml", FAC_CHECK + ":404"],
             },
           ],
         },
@@ -1338,7 +1431,7 @@ const DIAGRAM = {
           clock: "illustrative time",
           timing: "illustrative: drawn from the code, no recorded episode",
           source:
-            "the code and docs at 21f6204; the factory's experiment-loop stage waits for its first experiment (docs/workflow.md:363)",
+            "the code and docs at 21f6204, and bd46129 for the step corrected on 2026-11-06; the factory's experiment-loop stage was used on the planned $0 windows of 2026-11-05 (WH3 log), and that each met the plan's row was not checked",
           drawn:
             "All times are made up to show the order of events. The 10 saved version reviews of" +
             " 2026-10-13 (an older script) took 732 to 1424 s each (factory_numbers.py).",
@@ -1441,8 +1534,14 @@ const DIAGRAM = {
               until: 5500,
               box: "fac.worktree",
               caption:
-                "So the session drafts the next change in a git worktree; a commit there does not move this checkout's HEAD.",
-              refs: [FAC_README + ":263-264", FAC_BASH + ":4-6", FAC_BASH + ":125-130"],
+                "The next change stays in the session's own worktree, as for every writing session; a commit there does not move this checkout's HEAD.",
+              commit: FAC_FIXED,
+              refs: [
+                "AGENTS.md:73-76",
+                "docs/workflow.md:55-61",
+                FAC_BASH + ":5-6",
+                FAC_BASH + ":125-130",
+              ],
             },
             {
               at: 7600,
@@ -1532,12 +1631,12 @@ const DIAGRAM = {
       ],
       notes: [
         {
-          text: "The process is in use and proposed, not agreed. No step of it (card, check.py, the hooks, the reviewer, the queue, the version review) has an agreed check. Scripts decide pass or fail (check.py, the hooks); agents, the reviewer included, only point at problems.",
+          text: "The process is in use and proposed, not agreed. Apart from check.py with its --plants replay, agreed 2026-11-02 (docs/agreed-checks.md), no step of it (card, the hooks, the reviewer, the queue, the version review) has an agreed check. Scripts decide pass or fail (check.py, the hooks); agents, the reviewer included, only point at problems.",
           status: FAC_PROCESS,
           refs: ["docs/workflow.md:166-168", "docs/agreed-checks.md:1-7"],
         },
         {
-          text: "Gap: git runs no hook on a merge into main that completes by itself (scripts/githooks holds only pre-commit; a conflicted merge finished with git commit does run it). Since the hook reached main (2026-10-30, 15:51), main moved by 7 fast-forward merges that brought in 33 commits, 6 of them merge commits. For a session started in main, the Stop hook then reruns check.py at the turn's end; it skips while a game job runs, lets the stop through after one block, and comes after any push made in the same turn.",
+          text: "Gap: git runs no hook on a merge into main that completes by itself (scripts/githooks holds only pre-commit; a conflicted merge finished with git commit does run it). Since the hook reached main (2026-10-30, 15:51), main moved by 7 fast-forward merges that brought in 33 commits, 6 of them merge commits. For a session started in main, the Stop hook then reruns check.py at the turn's end; it skips while a game job runs, lets the stop through after one block, and comes after any push made in the same turn. Since 2026-11-02 the landing rule (docs/workflow.md, Several sessions at once) has the session run check.py in the main checkout before the push; only the docs ask for that run.",
           refs: [
             FAC_HOOK + ":2-6",
             "docs/workflow.md:88-89",

@@ -13,11 +13,13 @@ has not been manually reviewed. The factory must work more independently and rel
 its own process and automated checks may contain errors too.
 This page is the light factory plan (2026-10-28/29; the full plan with the owner's notes is
 `git show a3abee9:docs/light-factory-plan.md`) as implemented on 2026-10-29 at the owner's word
-"Implement docs/light-factory-plan.md". The process is in use; every check it
-added is still "proposed, not agreed" under the [hard rule](../AGENTS.md#verification-hard-rule).
+"Implement docs/light-factory-plan.md". The process is in use; apart from the gate with its
+plant replay, [agreed](agreed-checks.md) 2026-11-02, every check it added is still
+"proposed, not agreed" under the [hard rule](../AGENTS.md#verification-hard-rule).
 Sources are linked inline and listed in [references.md](references.md).
-A diagram of these parts is the Factory tab of [how-code-works.html](how-code-works.html#factory)
-(open it in a local browser; the [WH3 README](twwarhammer3/README.md#pages) gives the path).
+A diagram of these parts is the Factory tab of [how-code-works.html](how-code-works.html#factory),
+frozen at 2026-10-31 apart from corrections made on 2026-11-06 (open it in a local browser; the
+[WH3 README](twwarhammer3/README.md#pages) gives the path).
 
 ## Start here
 
@@ -147,8 +149,9 @@ spending or a change to what a benchmark measures.
 Before every commit, both agents run one command and quote its first five lines. A passing run
 records a hash of the files it checked (`runs/checks/last-pass.json`); the git hook
 `scripts/githooks/pre-commit` refuses every `git commit`, however typed, until the files match
-it again (owner approved 2026-10-30; enable with `git config core.hooksPath scripts/githooks`
-in checkouts that contain the hook). Merges, cherry-picks, reverts, rebases and `am` run
+it again (owner approved 2026-10-30; `git config core.hooksPath scripts/githooks` enables it, one
+setting shared by all worktrees, and a checkout without the file runs no hook: the spire-replay and
+wh3-human-opponent worktrees). Merges, cherry-picks, reverts, rebases and `am` run
 other hooks and are not covered; `--no-verify` skips it. Unchecked commits on 10-29 and 10-30
 prompted this guard. Two normal runs in one checkout take turns (`runs/checks/gate.lock`).
 The exact rules for a pass, the record and the lock are in the docstring of `scripts/check.py`;
@@ -157,15 +160,13 @@ passes and Gate serialization.
 
 ```text
 $ uv run --locked python scripts/check.py
-revision  297a061 on main
-tree      dirty: 3 changed, 4 untracked
-result    PASSED: Ruff clean; 1655 passed, 41 skipped in 17.92s
-skipped   40 could not import 'torch'; 1 set GAMEAI_TEST_WINDOWS=1 on WSL to test actual Windows ...
-log       runs/checks/20261029-024523-297a061-545683.log
-agreed    7 of 7 agreed-check pytest commands passed (not at HEAD: tree changed); runs/checks/agreed-passes.jsonl
-needs your yes (changes since HEAD):
-  - 1 skip or xfail added: tests/twwarhammer3/test_wh3_version_review.py: pytest.skip("needs Node.js")
-markers   3 problems listed in the log, for the owner
+revision  b299f2d on main
+tree      dirty: 0 changed, 2 untracked
+result    PASSED: Ruff clean; 3195 passed, 44 skipped in 120.10s (0:02:00)
+skipped   40 could not import 'torch'; 2 set GAMEAI_TEST_WINDOWS=1 on WSL to test actual Windows ...; 1 set GAMEAI_TEST_WINDOWS=1 on WSL to test file sharing ...; 1 set GAMEAI_TEST_WINDOWS=1 on WSL to test the runtime ...
+log       runs/checks/20261106-013920-b299f2d-2628059.log
+agreed    13 of 13 agreed-check pytest commands passed; runs/checks/agreed-passes.jsonl
+diagram   5 views flagged, see the log
 ```
 
 - It runs `ruff check .` and the whole offline suite (Lua, image, repo-rule and link tests
@@ -176,7 +177,8 @@ markers   3 problems listed in the log, for the owner
   `origin/main` (or since `--base REV`): lines removed or changed in a file an agreed check
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an
   assert removed or changed under `tests/`; a skip or xfail added; a changed prompt snapshot;
-  a package added or a version changed in `uv.lock`. A line moved verbatim is not flagged.
+  a plant removed or changed; a package added or a version changed in `uv.lock`. A line moved
+  verbatim is not flagged.
   Warnings never fail the run: they go in the report for the owner.
 - "agreed" counts the [agreed checks](agreed-checks.md) whose pytest command passed in this
   run, appended to `runs/checks/agreed-passes.jsonl` (owner, 2026-10-29); a line counts for
@@ -194,7 +196,9 @@ markers   3 problems listed in the log, for the owner
   (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.
 - In a linked worktree, tests that read the main checkout's `runs/` evidence skip and the
   "worktree" line says so: after merging, run `check.py` in the main checkout before counting
-  a pass.
+  a pass. A run in a linked worktree writes its log to the main checkout's `runs/checks/` (its
+  own, if a sandbox refuses that folder), so logs survive the worktree; `gate.lock`,
+  `last-pass.json` and `agreed-passes.jsonl` stay per checkout.
 
 ## Checks in layers
 
@@ -268,7 +272,8 @@ same text as its custom agent `reviewer` ([.codex/agents/reviewer.toml](../.code
 on every normal change, as the rerun reviewer on every number for the owner's pages, and not
 on trivial edits. Its rules (rest on JUDGEMENT `docs/testing.md` Agent review workflow):
 - It gets the card, the diff, the raw output and the code that reads the changed data, never
-  the author's explanation.
+  the author's explanation. In Codex, spawn it with `fork_turns` `none`: the default, `all`,
+  inherits the author's whole thread, and 26 of 46 reviewer sessions were forks (2026-11-06).
 - Each finding gives a file, a line and a concrete failure case, or it is only a note
   ("Noise costs more when the author is an agent", claude.dev). A sentence stronger than its
   evidence is a finding, and it lists every live copy (owner, 2026-11-06).
@@ -379,9 +384,9 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   waits for the same failure twice and the owner's yes.
 - **Replay what the tests once caught.** `tests/plants.toml` keeps planted wrong versions,
   each with the tests that must fail on it (owner, 2026-10-29: "Seems fine"). `uv run --locked
-  python scripts/check.py --plants` replays them at HEAD (348 plants took 13 minutes on
-  2026-11-02): a MISSED line is a test that decayed. Run it before an agreed check or a
-  guarded file changes and after a model upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
+  python scripts/check.py --plants` replays them at HEAD (408 plants took 17 minutes on
+  2026-11-06 with other jobs running, and 2 were MISSED): a MISSED line is a test that decayed.
+  Run it before an agreed check or a guarded file changes and after a model upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
   to the same wrong version of the new code; removing or changing plants needs the owner's yes.
   Add a plant when a review finds a wrong version the tests missed and a new test catches it.
   A plant whose tests read saved evidence names it (`evidence`); the replay copies it from the
@@ -391,8 +396,9 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   we haven't saved human time, we've only moved it", claude.dev). After about five changes,
   keep, simplify or drop each step; after a model upgrade, drop steps that catch nothing
   ([Anthropic](https://www.anthropic.com/research/harness-design-long-running-apps)).
-  For that count, the main checkout's `runs/checks/` keeps one log per gate run there, and
-  `stop-hook.log` and `commit-guard.log` (one line per stop decision or refused commit).
+  For that count, the main checkout's `runs/checks/` keeps one log per gate run there and, from
+  2026-11-06, per run in a linked worktree, and `stop-hook.log` and `commit-guard.log` (one line
+  per stop decision or refused commit).
 - **Changing the process** is a normal change with a card: edit this page, `check.py` or the
   reviewer file, and the report names what the change should catch.
 
@@ -418,7 +424,7 @@ until its counts show its findings are mostly noise.
 | Reviewer and its first eval (stage 2), export leak test, review workflow fix | Built |
 | Docs cleanup (stage 3) | Done and reviewed: AGENTS.md is a map of at most 200 lines |
 | Hooks, skills, CI (stage 4) | Built 2026-10-29, after a commit made before its `check.py` run (96e6265) and one workflow repeated about twenty times: the Stop and Bash hooks (`scripts/hooks/`, each described in its docstring, tested in `tests/test_hooks.py`), the `refusal-sweep` skill, and CI running `check.py` on each push to `main` and each pull request (owner's decision 4, 2026-10-29). Both tools get the same pieces ([below](#claude-code-and-codex)) |
-| Experiment loop (stage 5) | Waits for the next planned free experiment. `digest` warnings do not stop a queue: build mismatches and invalid batches (owner, 2026-10-29: "(a)"); the b51 1x warning came later and does not stop a queue either. An episode that is not won, lost or drawn still stops its job |
+| Experiment loop (stage 5) | Used on the planned $0 windows of 2026-11-05 ([log](twwarhammer3/log.md#2026-11-05-window-1-centresupport-5-of-8-no-shortcut-won)); that each met the plan's row was not checked. `digest` warnings do not stop a queue: build mismatches and invalid batches (owner, 2026-10-29: "(a)"); the b51 1x warning came later and does not stop a queue either. An episode that is not won, lost or drawn still stops its job |
 
 JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
 rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` refused everywhere,
@@ -443,19 +449,39 @@ The owner alternates between the two (2026-10-29), so each gets the same pieces;
 | Hooks | `.claude/settings.json` | `.codex/hooks.json`; the owner trusts them once with `/hooks`, and again after each change |
 | Reviewer | `.claude/agents/reviewer.md` | `.codex/agents/reviewer.toml`, the same text |
 | Skills | `.claude/skills/<name>`, a link to `.agents/skills/<name>` | `.agents/skills/` |
+| Light agent | `.claude/agents/helper.md`, with only Read, Bash, Edit and Write: give a Workflow stage `agentType: 'helper'` unless it reviews (use `reviewer`) or needs the web, a skill, MCP or a nested agent; median start-up was 45k tokens for a default workflow agent (n=648) and 16k for the tool-limited `reviewer` (n=127), and 76% of default agents used only these tools; the saving for `helper` itself is unmeasured | `.codex/agents/helper.toml`, the same text |
 | WH3 version review | `.claude/workflows/wh3-version-review.js` (the Workflow tool) | None: one `reviewer` per episode, by hand |
 | Personal settings | `.claude/settings.local.json` (plugins, permissions; ignored) | `~/.codex/config.toml` |
 
 Codex's native `PreToolUse` dispatch through code-mode `exec_command` blocked a harmless
 `ruff format --help` probe on 2026-11-02 (`runs/factory-startup-20261102/native-hook-probe.txt`).
-This checks one dispatch/refusal path; it does not establish native Stop behaviour.
+This checks one dispatch/refusal path. The native Stop hook has run too: from 2026-10-31 to
+2026-11-06 02:01, `stop-hook.log` holds 135 decisions from 46 Codex sessions (ids that match a
+rollout file name), 21 of them checks that passed and 10 of them blocks in 7 sessions, the last
+on 11-02. All 10 blocks appear in those transcripts as a hook prompt followed by an agent reply.
+Both paths stay unverified: no agreed check covers them.
 Matching configuration files alone establish neither path.
 A sandbox that refuses new sockets fails the socket tests: in 8 normal `check.py` runs as PID
 3 or 4 (logs 11-01 22:04 to 11-02 19:10), 26 to 98 tests each failed or errored on
-`PermissionError` from `socket.socket()`. Run the gate outside the sandbox (Codex:
-`sandbox_permissions: "require_escalated"`, which the owner or a saved rule approves). Those
+`PermissionError` from `socket.socket()`. Four later Codex runs in linked worktrees, as PID 2, 8
+or 30 (11-03 to 11-05), failed or errored on 103 to 105 tests each; three of their transcripts
+show that error, and a rerun on the same branch passed 2 to 10 minutes later each time. Those
 errors say nothing about the code; a run's other failures still do (two of the 8 also lost
 their scratch folder or failed a stale plant).
+Run the gate outside the sandbox (Codex: `sandbox_permissions: "require_escalated"`, which the
+owner or a saved rule approves) and with no output redirect: on 2026-11-06 `codex execpolicy check`
+matched the saved rule for the plain argv and printed no matched rule for `bash -lc` with a
+redirect, though it prints none for `bash -lc` without one either. In the approval log (11-04 to
+11-06) an escalated redirected gate prompted 3 of 3 times (2 sessions), and 230 of 257 Codex gate
+runs had used a redirect.
+
+Claude Code's Bash wraps `grep` in ugrep with `--ignore-files`, so `grep -r` from the repo root
+silently skips the ignored `runs/` (measured 2026-11-06): name a path under `runs/` or use
+`/usr/bin/grep -a`.
+Claude Code's Write tool refuses a subagent's Markdown file whose name starts with report, summary,
+findings or analysis ("Subagents should return findings as text, not write report files"; 6 of 9
+audit agents on 2026-11-06, the other 3 wrote theirs through Bash), so a workflow prompt asks for the
+result in its return value or schema.
 
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them
