@@ -30,8 +30,9 @@ from spire.engine.runtime import (
     wsl_bridge_host,
 )
 from spire.fullrun.play import SaveSnapshots, _drive, _save_path, _summary
+from spire.localrl.link import SPEED_GAP_SECONDS, Link
 from spire.localrl.policy import LocalPolicy, Scorer
-from spire.protocol import BridgeCommandError, ProtocolError
+from spire.protocol import ProtocolError
 
 SCORED = {"won", "lost", "truncated"}
 # JUDGEMENT: Run limits — Claude, 2026-11-06, owner away: 1,500 actions or 45 minutes, then the
@@ -45,13 +46,7 @@ RETRY_SECONDS = 30
 # screen lost the owner's STSUnlockProgress (2026-11-06). Wait this long before any close.
 SETTLE_SECONDS = 5
 JVM_SECONDS = 14 * 3600
-MENU_SECONDS = 60
 FAILURES = (BridgeError, ProtocolError, RuntimeError, OSError, subprocess.SubprocessError)
-# A card taken from a reward reaches the deck when its animation ends, and the game accepts the
-# next command before that. At 1x a card taken just before a fight often missed that fight's
-# deck (LRLEVAL13 and 17 of the 2026-11-06 replay). At speed this gap of real time is seconds
-# of game time, so a command after a screen choice comes once the animation is over.
-SPEED_GAP_SECONDS = 0.12
 SEED_ATTEMPTS = 3
 
 
@@ -60,50 +55,6 @@ def revision() -> dict:
         return subprocess.check_output(["git", *arguments], cwd=REPO_ROOT, text=True).strip()
     return {"commit": git("rev-parse", "HEAD"),
             "dirty": bool(git("status", "--porcelain", "--", "src/spire/localrl"))}
-
-
-class Link:
-    """The bridge, with the main-menu state put back for the next run to read first."""
-
-    def __init__(self, bridge, gap: float = 0):
-        self.bridge, self.waiting, self.gap = bridge, None, gap
-        self.free_at = 0.0
-
-    def receive(self) -> dict:
-        message, self.waiting = self.waiting, None
-        message = message or self.bridge.receive()
-        # At speed a screen can change between a ready state and the answer to it: a Smoke Bomb's
-        # escape shows a state that still offers "end" (LRDEV003, 2026-11-06). The game did nothing,
-        # so ask for the state again. The same error at 1x stays fatal, as in fullrun.play.
-        while self.gap and str(message.get("error", "")).startswith("Invalid command"):
-            self.bridge.send("state")
-            message = self.bridge.receive()
-        return message
-
-    def send(self, command: str) -> None:
-        if self.gap:
-            time.sleep(max(self.free_at - time.monotonic(), 0))
-            if not command.startswith(("play", "end", "potion")):
-                self.free_at = time.monotonic() + self.gap
-        self.bridge.send(command)
-
-    def to_menu(self) -> None:
-        """From the death or victory screen back to the main menu."""
-        deadline = time.monotonic() + MENU_SECONDS
-        self.bridge.send("proceed")
-        while time.monotonic() < deadline:
-            message = self.bridge.receive()
-            if "error" in message:
-                raise BridgeCommandError(message["error"])
-            if not message.get("ready_for_command"):
-                continue
-            if not message.get("in_game"):
-                self.waiting = message
-                return
-            if "proceed" not in message.get("available_commands", ()):
-                raise ProtocolError(f"Cannot leave {message.get('available_commands')}")
-            self.bridge.send("proceed")
-        raise ProtocolError("The main menu did not return")
 
 
 def one_run(directory: Path, seed: str, policy: LocalPolicy, link: Link) -> dict:
@@ -122,10 +73,21 @@ def one_run(directory: Path, seed: str, policy: LocalPolicy, link: Link) -> dict
             trace.write(json.dumps(record, sort_keys=True) + "\n")
 
         saves = SaveSnapshots(_save_path(profile), directory / "saves", event)
+
+        def dropped(command: str | None) -> None:
+            """That decision reached no game state, so it is not a step for the learner."""
+            event("dropped", command=command)
+            if not (command or "").startswith(("START", "wait", "key", "state")):
+                steps = getattr(policy, "steps", [])
+                if steps:
+                    steps.pop()
+
+        link.dropped = dropped
         try:
             _drive(link, policy, {**RUN, "seed": seed}, session_id,
                    started + RUN["run_timeout"], result, event, saves)
         finally:
+            link.dropped = None
             result.update(elapsed_seconds=time.monotonic() - started)
             write_json(directory / "result.json", result)
     return result
