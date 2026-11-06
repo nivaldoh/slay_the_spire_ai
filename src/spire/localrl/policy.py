@@ -309,8 +309,20 @@ def lite(observation: dict) -> dict:
     }
 
 
-def enable_training(model) -> list:
-    """Gradient checkpointing keeps a minibatch of long prompts inside the 12 GB card."""
-    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-    model.enable_input_require_grads()
+def enable_training(model, top_layers: int = 0) -> list:
+    """Gradient checkpointing keeps a minibatch of long prompts inside the 12 GB card.
+
+    With ``top_layers`` only that many upper layers learn. Lower layers then build no graph, so
+    an update takes less memory and time and needs no checkpointing. RL updates use this: the
+    learning step, not the game, is what limits runs an hour once the speed mod is on.
+    """
+    if not top_layers:
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        model.enable_input_require_grads()
+        return [p for p in model.parameters() if p.requires_grad]
+    depth = model.config.num_hidden_layers
+    for name, parameter in model.named_parameters():
+        if parameter.requires_grad:
+            layer = int(name.split(".layers.")[1].split(".")[0])
+            parameter.requires_grad = layer >= depth - top_layers
     return [p for p in model.parameters() if p.requires_grad]
