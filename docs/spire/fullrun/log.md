@@ -784,21 +784,28 @@ on JUDGEMENT `src/spire/localrl/collect.py` Training speed mod, whose condition 
 on `facts.py` Prompt facts; the fight arm and the R2 on `rewards.py` Fight reward (all on `spire-local-rl`). Online RL failed at its
 first seed on a hyphen in my seed name.
 
-## 2026-11-07: human run files teach run-level choices; first adapter to beat the warm start on test seeds
+## 2026-11-07: human run files teach run-level choices; first adapters to beat the warm start on test seeds
 
 Owner, the same goal as 2026-11-06. Branch `spire-local-rl` (unmerged), evidence `runs/spire-rl-20261107/` (`handoff.md`, `brief.md`), $0.
-Unverified: no agreed check. These runs are not in `results.csv`.
+Unverified: no agreed check. These runs are not in `results.csv`. Numbers rerun from the raw files by a reviewer.
 
 Diagnostic, LRDEV001-024, nothing trained from it: rules 27.3 floors; the model fighting with the rule policy elsewhere 17.3; rules
-fighting with the model elsewhere 17.0. The model reached the boss with 2.6 potions and died with 2.5.
+fighting with the model elsewhere 17.0. With the rule policy choosing elsewhere, the model reached the boss with 2.6 potions and died
+with 2.5; on its own (test control, 38 boss fights) it reached the boss with 0.58. It left a free potion on reward screens 2.5-3.6 times a run.
 A second LoRA decides reward, rest, upgrade, removal, boss relic and map screens from public human run files (archive.org
-`slay-the-data.-7z`, first 55 MB; 3,397 Ironclad wins; card picks and rests from outcome tables over 22,505 runs). Maps are rebuilt
-from each run's seed with the game's own generator: 70 of 70 live maps matched. Copying winners' picks lost floors (10.93 against
-15.36, 14 seeds); a check on real recorded states now runs before game time.
+`slay-the-data.-7z`, first 55 MB: runs from game builds of July-October 2018; 3,397 Ironclad wins kept of 5,712). Card picks come from an
+outcome table over 22,505 Ironclad runs at ascension 0-4; rests copy human labels, balanced by HP. Maps are rebuilt from each run's seed
+with the game's own generator: 70 of 70 maps of our own runs matched, and 3,385 of the 3,397 human paths fit their rebuilt map. Copying
+winners' picks lost floors (10.93 against 15.36, 14 seeds).
 
-Final test, LRTEST001-060, n=60, pick committed first (`bde1f66`): pick 15.88, warm start 13.30, yesterday's fight adapter alone 14.63.
-Pick minus warm +2.58, 95% interval +0.63 to +4.60, sign-flip p 0.014; pick minus that fight adapter +1.25, -0.63 to +3.27, not separated.
-Rests on JUDGEMENT `runs/spire-rl-20261107/human/convert.py` Human run rows and the card table, and on the 2026-11-06 marked choices
-(training speed, prompt facts, fight reward). The pick reached the boss at 0.62 HP against 0.85 and died at elites twice as often.
-Fixed with tests: hangs on a potion bought with Sozu and on Entropic Brew drunk outside a fight. Fight learning (AWR, potion exploration)
-is built and was running when this entry was written.
+Development rounds, each on seeds no candidate had played: round 4 above; round 5b, human rows without card picks against the fight
+adapter alone +4.77 (+1.92 to +7.81, n=26), with human card picks -3.12 against that; round 6, outcome-table card picks +0.90 (-1.48
+to +3.23, n=40), the pick by the brief's rule.
+Final test, LRTEST001-060, n=60, pick committed first (`bde1f66`): pick 15.88, warm start 13.30, the fight adapter alone 14.63.
+Pick minus warm +2.58, 95% interval +0.63 to +4.60, sign-flip p 0.014; pick minus the fight adapter alone +1.25, -0.63 to +3.27, not
+separated. The warm arm hung on LRTEST041 and its seeds 041-060 ran after the fix (`ddbf185`), so that arm spans two revisions, which the
+11-06 brief's one-revision rule forbids: pick minus warm is +3.20 on 001-040 and +1.35 on 041-060. Against the fight adapter alone, the
+pick reached the first boss at 0.62 of max HP against 0.85 and died at an elite in 18 of 60 runs against 9 (McNemar p 0.078).
+Rests on JUDGEMENT `runs/spire-rl-20261107/human/convert.py` Human run rows and `card_table.py`, and on the 2026-11-06 marked choices
+(training speed, prompt facts, fight reward). Fixed with tests: hangs on a potion bought with Sozu and on Entropic Brew drunk outside a fight.
+Queued when written: adapter G (a rest table and an elite rule), then fight learning (AWR, potion exploration), then round 7.

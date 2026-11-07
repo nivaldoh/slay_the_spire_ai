@@ -3,7 +3,7 @@
 Updated 2026-11-07. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Spire local-model training resumed 2026-11-07 on the owner's repeated goal; a chained game job runs on branch `spire-local-rl` (handoff `runs/spire-rl-20261107/handoff.md`, decisions first). First pick beat the warm start on 60 test seeds (+2.58, interval +0.63 to +4.60), not yesterday's fight adapter ([log](spire/fullrun/log.md#2026-11-07-human-run-files-teach-run-level-choices-first-adapter-to-beat-the-warm-start-on-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
+Spire local-model training resumed 2026-11-07 on the owner's repeated goal; a chained game job runs on branch `spire-local-rl` (handoff `runs/spire-rl-20261107/handoff.md`, decisions first). First pick beat the warm start on 60 test seeds (+2.58, interval +0.63 to +4.60; the warm arm spans two revisions), not yesterday's fight adapter ([log](spire/fullrun/log.md#2026-11-07-human-run-files-teach-run-level-choices-first-adapters-to-beat-the-warm-start-on-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
@@ -40,7 +40,7 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 ## Slay the Spire
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54 (v8; `main` has v10).
-Local Qwen3-0.6B (2026-11-07, unverified): a run-level adapter taught by public human run files, with the 2026-11-06 fight adapter, reached 15.88 floors on `LRTEST001`-`060` against 13.30 for the warm start (+2.58, interval +0.63 to +4.60) and 14.63 for the fight adapter alone (not separated). Rests on the branch's marked choices ([page](posttraining.md#local-rl-on-complete-runs)).
+Local Qwen3-0.6B (2026-11-07, unverified): a run-level adapter taught by public human run files, with the 2026-11-06 fight adapter, reached 15.88 floors on `LRTEST001`-`060` against 13.30 for the warm start (+2.58, interval +0.63 to +4.60; warm's seeds 041-060 ran after a hang fix) and 14.63 for the fight adapter alone (not separated). Rests on the branch's marked choices, including the human-run rows and the card table ([page](posttraining.md#local-rl-on-complete-runs)).
 The hand-written rule policy (`spire-teacher`, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod on `spire-local-rl` plays a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
 Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md). Its first live step, a $0 replay check (driver on branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
