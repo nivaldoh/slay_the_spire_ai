@@ -225,10 +225,13 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
 def run_level(observation: dict, labels: list[str]) -> bool:
     """Screens a run file records, so a human-run adapter can decide them: a card reward, a rest
     site's choice, the card an upgrade or a removal takes, what a fight's rewards leave behind, a
-    boss relic. The step that confirms a selection, or leaves a rest site, is not one of those."""
+    boss relic, the next room on the map. The step that confirms a selection, or leaves a rest
+    site, is not one of those."""
     screen, state = observation.get("screen_type"), observation.get("screen_state") or {}
     if screen == "GRID" and not (state.get("for_upgrade") or state.get("for_purge")):
         return False
+    if screen == "MAP":  # a path of one is no choice, and the boss is not in a run file's rows
+        return sum(label.startswith("go to ") for label in labels) >= 2
     starts = {"CARD_REWARD": ("take card ",), "REST": ("rest:", "smith:"),
               "COMBAT_REWARD": ("take ",), "BOSS_REWARD": ("take boss relic ",),
               "GRID": ("select ",)}.get(screen)

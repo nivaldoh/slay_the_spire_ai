@@ -88,6 +88,8 @@ def test_run_level_screens_only_go_to_the_run_adapter():
     transform = {"screen_type": "GRID", "screen_state": {"for_transform": True}}
     assert not policy_module.run_level(transform, ["select Bash (2 attack)"])
     assert not policy_module.run_level({"screen_type": "MAP"}, ["go to monster at x=1, y=2"])
+    assert policy_module.run_level({"screen_type": "MAP"}, ["go to elite at x=1, y=2",
+                                                            "go to rest site at x=2, y=2"])
     fought = {"screen_type": "COMBAT_REWARD"}
     assert policy_module.run_level(fought, ["take 11 gold", "proceed, leaving any remaining"])
     assert not policy_module.run_level(fought, ["proceed, leaving any remaining rewards"])
