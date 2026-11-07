@@ -154,6 +154,11 @@ learned from public human run files (`JUDGEMENT: Human run rows` in that run's `
 fight adapter alone and the warm start. The claim rule and the four development comparisons read before it are in that run's
 `final-pick.md`.
 
+*2026-11-07, 15:53, committed before any of `LRTEST061`-`120` was played.* Second final pick: fight adapter
+`runs/spire-rl-20261107/online/f1/generation-09/adapter` (advantage-weighted regression on sampled fights) with run adapter
+`runs/spire-rl-20261107/human/run-g/step-1000` (sha256 of each adapter's files begins `0d6bad538ac67a8f` and `493b7e3234618169`), greedy. References on
+the same seeds: the first pick, the fight adapter of 2026-11-06 alone, and the warm start. Rule and comparisons read: that run's `final-pick-2.md`.
+
 ### Idea: PostTrainBench-style tasks
 
 *Owner, 2026-10-28: a general idea to keep, for inspiration or reference
