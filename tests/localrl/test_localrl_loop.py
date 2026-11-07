@@ -6,11 +6,12 @@ import math
 
 import pytest
 
-pytest.importorskip("torch")
+torch = pytest.importorskip("torch")
 pytest.importorskip("transformers")
 
 from spire.decisions import Choice  # noqa: E402
 from spire.localrl import collect, learn, research  # noqa: E402
+from spire.localrl import policy as policy_module  # noqa: E402
 from spire.localrl.link import Link  # noqa: E402
 from spire.localrl.policy import LocalPolicy, playable  # noqa: E402
 from spire.localrl.train import read_offline  # noqa: E402
@@ -75,6 +76,47 @@ def test_a_repeated_state_never_repeats_its_choice_until_all_are_tried(monkeypat
     chosen = [policy.choose(decision(f"d{i}", ["a", "b", "c"])).label for i in range(3)]
     assert sorted(chosen) == ["a", "b", "c"]
     assert policy.choose(decision("d3", ["a", "b", "c"])).label in {"a", "b", "c"}
+
+
+def test_run_level_screens_only_go_to_the_run_adapter():
+    rest = {"screen_type": "REST"}
+    assert policy_module.run_level(rest, ["discard potion X", "rest: heal", "smith: upgrade"])
+    assert not policy_module.run_level(rest, ["discard potion X", "proceed"])  # leaving the site
+    grid = {"screen_type": "GRID", "screen_state": {"for_upgrade": True}}
+    assert policy_module.run_level(grid, ["select Bash (2 attack)", "cancel"])
+    assert not policy_module.run_level(grid, ["confirm confirm"])  # the choice is already made
+    transform = {"screen_type": "GRID", "screen_state": {"for_transform": True}}
+    assert not policy_module.run_level(transform, ["select Bash (2 attack)"])
+    assert not policy_module.run_level({"screen_type": "MAP"}, ["go to monster at x=1, y=2"])
+
+
+def test_a_routed_step_is_greedy_frozen_and_read_by_the_run_scorer(monkeypatch):
+    monkeypatch.setattr("spire.localrl.policy.render", lambda observation, labels: "one")
+    monkeypatch.setattr("spire.localrl.policy.lite", lambda observation: {})
+
+    class Fixed:
+        def __init__(self, best):
+            self.best = best
+
+        def encode(self, prompt):
+            return [1]
+
+        def logits(self, encoded, counts):
+            return [torch.tensor([9.0 if i == self.best else 0.0 for i in range(counts[0])])]
+
+    policy = LocalPolicy(Fixed(0), temperature=1.0, seed=1, run_scorer=Fixed(1))
+    game = {"floor": 1, "act": 1, "current_hp": 10, "max_hp": 10, "gold": 0, "deck": [],
+            "relics": [], "potions": [], "act_boss": "x", "screen_type": "REST",
+            "screen_state": {}}
+    rest = Decision("d", game, tuple(Choice(f"d:{i}", "d", label, label)
+                                     for i, label in enumerate(["rest: heal", "smith: upgrade"])))
+    assert policy.choose(rest).label == "smith: upgrade"
+    assert policy.steps[-1]["frozen"] is True and policy.steps[-1]["log_prob"] == 0.0
+    game = {**game, "screen_type": "MAP"}
+    other = Decision("e", game, tuple(Choice(f"e:{i}", "e", label, label)
+                                      for i, label in enumerate(["a", "b"])))
+    policy.choose(other)
+    assert policy.steps[-1]["frozen"] is False
 
 
 def test_a_decision_that_reached_no_state_leaves_the_learner():

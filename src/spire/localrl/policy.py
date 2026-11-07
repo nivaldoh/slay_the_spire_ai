@@ -221,6 +221,18 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
     return torch.log_softmax(logits[allowed] / temperature, dim=0)
 
 
+def run_level(observation: dict, labels: list[str]) -> bool:
+    """Screens a run file records, so a human-run adapter can decide them: a card reward, a rest
+    site's choice, the card an upgrade or a removal takes, a boss relic. The step that confirms a
+    selection, or leaves a rest site, is not one of those."""
+    screen, state = observation.get("screen_type"), observation.get("screen_state") or {}
+    if screen == "GRID" and not (state.get("for_upgrade") or state.get("for_purge")):
+        return False
+    starts = {"CARD_REWARD": ("take card ",), "REST": ("rest:", "smith:"),
+              "BOSS_REWARD": ("take boss relic ",), "GRID": ("select ",)}.get(screen)
+    return starts is not None and any(label.startswith(starts) for label in labels)
+
+
 def playable(observation: dict, labels: list[str]) -> list[int]:
     """Choices the game can carry out. Taking or buying a potion with every slot full changes
     nothing, so CommunicationMod never answers and the run hangs (seen 2026-11-06, floors 3, 5)."""
@@ -241,20 +253,26 @@ class LocalPolicy:
     a card). Floors therefore measure the model plus this mask.
     """
 
-    def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int, prompt: int = 1):
+    def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int, prompt: int = 1,
+                 run_scorer: Scorer | None = None):
+        """``run_scorer`` decides ``run_level`` screens greedily from prompt 1; its steps are
+        marked ``frozen``, because an update of ``scorer`` must not learn from them."""
         self.scorer, self.temperature, self.prompt = scorer, temperature, prompt
+        self.run_scorer = run_scorer
         self.random = random.Random(seed)
         self.steps: list[dict] = []
         self.tried: dict[str, set[int]] = {}
         self._metadata = None
         self.api = None
 
-    def _choose(self, prompt: str, allowed: list[int], count: int) -> tuple[int, float]:
-        if self.scorer is None:  # the uniform random control
+    def _choose(self, prompt: str, allowed: list[int], count: int,
+                routed: bool = False) -> tuple[int, float]:
+        scorer = self.run_scorer if routed else self.scorer
+        if scorer is None:  # the uniform random control
             return self.random.choice(allowed), -math.log(len(allowed))
         with torch.inference_mode():
-            logits = self.scorer.logits([self.scorer.encode(prompt)], [count])[0]
-        if self.temperature == 0:
+            logits = scorer.logits([scorer.encode(prompt)], [count])[0]
+        if self.temperature == 0 or routed:
             best = logits[allowed].argmax().item()
             return allowed[best], 0.0
         probabilities = torch.softmax(logits[allowed] / self.temperature, dim=0).tolist()
@@ -267,17 +285,19 @@ class LocalPolicy:
         observation = data["observation"]
         count = min(len(decision.candidates), len(SYMBOLS))
         labels = [candidate["label"] for candidate in data["candidates"][:count]]
-        prompt = (render_v2(observation, data["candidates"][:count]) if self.prompt == 2
-                  else render(observation, labels))
+        routed = self.run_scorer is not None and run_level(observation, labels)
+        prompt = (render_v2(observation, data["candidates"][:count])
+                  if self.prompt == 2 and not routed else render(observation, labels))
         key = hashlib.sha256(prompt.encode()).hexdigest()
         tried = self.tried.setdefault(key, set())
         usable = playable(observation, labels)
         allowed = [i for i in usable if i not in tried] or usable
-        index, log_prob = self._choose(prompt, allowed, count)
+        index, log_prob = self._choose(prompt, allowed, count, routed)
         tried.add(index)
         self.steps.append({
             "prompt": prompt, "count": count, "allowed": allowed, "index": index,
             "log_prob": log_prob, "observation": lite(observation), "label": labels[index],
+            "frozen": routed,
         })
         self._metadata = {"type": "local", "selected_index": index, "log_prob": log_prob,
                           "allowed": allowed, "seconds": time.monotonic() - started}

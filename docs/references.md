@@ -20,6 +20,12 @@ Used by `src/spire/localrl/`. Read for the parts named; none was run as publishe
   secondary: advantage-weighted regression. Both from memory of the method; papers not reread for this.
 - [CleanRL `ppo.py`](https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py), secondary: clipped ratio, KL per epoch.
 
+- [Slay The Data](https://archive.org/details/slay-the-data.-7z), 77 million human run files from the game's metrics, posted 2020
+  by a metrics maintainer ([thread mirror](https://lr.eu.psf.lt/r/slaythespire/comments/jt5y1w/77_million_runs_an_sts_metrics_dump));
+  fetched only its first 55 MB. No licence stated. Teacher for `runs/spire-rl-20261107/human/`.
+- [Doron Singer, Good models finish last](https://dev.to/doronsinger/part-3-good-models-finish-last-2n6a), read through a summary:
+  card-pick models on that dump; better offline accuracy did not mean better play, so floors decide, not held-out accuracy.
+
 ## CaP-X: code-as-policy and WH3 (2026-11-06)
 
 Added at the owner's request for later research. Letian (Max) Fu et al.,

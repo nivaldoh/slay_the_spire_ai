@@ -197,12 +197,14 @@ class Game:
 
 def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None, *,
                temperature: float, label: str, seed_offset: int = 0,
-               prompt: int = 1) -> list[dict]:
+               prompt: int = 1, run_scorer: Scorer | None = None) -> list[dict]:
     """Play each seed once, in order. A lost link is not an outcome: the seed is played again
     in a new JVM, with a different sampling seed in case the state itself caused the failure."""
     output.mkdir(parents=True, exist_ok=True)
     write_json(output / "job.json", {"label": label, "seeds": seeds, "temperature": temperature,
                                      "adapter": scorer.fingerprint() if scorer else None,
+                                     "run_adapter": (run_scorer.fingerprint()
+                                                     if run_scorer else None),
                                      "speed": game.speed, "prompt": prompt,
                                      "revision": revision(),
                                      "started": time.time()})
@@ -210,7 +212,8 @@ def play_seeds(game: Game, output: Path, seeds: list[str], scorer: Scorer | None
     for index, seed in enumerate(seeds):
         for attempt in range(SEED_ATTEMPTS):
             policy = LocalPolicy(scorer, temperature=temperature, prompt=prompt,
-                                 seed=seed_offset + index + 1000 * attempt)
+                                 seed=seed_offset + index + 1000 * attempt,
+                                 run_scorer=run_scorer)
             run = output / f"run-{index:04d}-{attempt}"
             try:
                 result = one_run(run, seed, policy, game.link)
