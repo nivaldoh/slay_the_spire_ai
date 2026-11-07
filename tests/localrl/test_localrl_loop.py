@@ -179,6 +179,14 @@ def test_potion_exploration_fires_only_in_hard_fights(monkeypatch):
     assert policy.steps[-1]["explored"] is False
 
 
+def test_sozu_makes_a_potion_unobtainable_even_with_a_free_slot():
+    game = {"relics": [{"id": "Sozu"}], "potions": [{"id": "Potion Slot"}],
+            "screen_state": {"potions": [{"name": "Attack Potion"}]}}
+    labels = ["buy Clash (0 attack) for 23 gold", "buy Attack Potion for 52 gold", "leave"]
+    assert playable(game, labels) == [0, 2]
+    assert playable({**game, "relics": []}, labels) == [0, 1, 2]
+
+
 def test_a_decision_that_reached_no_state_leaves_the_learner():
     class Policy:
         steps = [{"prompt": "state", "index": 2}]
