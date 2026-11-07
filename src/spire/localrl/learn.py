@@ -185,7 +185,15 @@ def warm_start(scorer: Scorer, optimizer, rows: list[dict], config: dict, seed: 
     model.train()
     for epoch in range(config["epochs"]):
         total, right, seen = 0.0, 0, 0
-        for group in batches(rows, config["minibatch"], generator):
+        # Rows of similar length share a minibatch: padding a long fight prompt's batch filled the
+        # 12 GB card beside an open game and slowed an update to 2 rows a second (2026-11-07).
+        order = sorted(rows, key=lambda row: generator.random())
+        chunks = [sorted(order[i:i + 256], key=lambda row: len(row["ids"]))
+                  for i in range(0, len(order), 256)]
+        groups = [chunk[i:i + config["minibatch"]] for chunk in chunks
+                  for i in range(0, len(chunk), config["minibatch"])]
+        generator.shuffle(groups)
+        for group in groups:
             logits = scorer.logits([r["ids"] for r in group], [r["count"] for r in group])
             loss = 0.0
             for r, row_logits in zip(group, logits):
