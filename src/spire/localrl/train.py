@@ -79,7 +79,10 @@ def score_fights(runs: list[dict], config: dict) -> dict:
     for run in runs:
         for start, end in learn.fight_spans(run["steps"]):
             values = learn.fight_rewards(run["steps"], start, end, run["status"], config)
-            features = [learn.features(s["observation"]) for s in run["steps"][start:end]]
+            # Potions held say nothing about the fight's value: read as worth, every use would
+            # look like a loss of value to this baseline.
+            features = [learn.features({**s["observation"], "potions": 0})
+                        for s in run["steps"][start:end]]
             rows += features
             targets += learn.discounted(values, 1.0)
             spans.append((run, start, end, values, features))

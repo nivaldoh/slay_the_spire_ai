@@ -29,3 +29,19 @@ def test_dying_costs_the_hp_left_and_the_death_penalty():
 
 def test_a_truncated_fight_has_no_ending_reward():
     assert rewards.fight_rewards([step(1, 15)], 0, 1, "truncated", CONFIG) == [0.0]
+
+
+def test_a_potion_costs_only_in_an_ordinary_room_and_dying_with_one_costs_more():
+    config = {**CONFIG, "fight_wasted": 0.5}
+
+    def fight(room, label):
+        return [{"observation": {"hp": 30, "room": room, "potions": 2, "turn": 1},
+                 "label": label},
+                {"observation": {"hp": 30, "room": room, "potions": 1, "turn": 1},
+                 "label": "end turn"}]
+
+    used = "use potion Fire Potion"
+    ordinary = rewards.fight_rewards(fight("MonsterRoom", used), 0, 2, "lost", config)
+    boss = rewards.fight_rewards(fight("MonsterRoomBoss", used), 0, 2, "lost", config)
+    assert ordinary[0] == -0.1 and boss[0] == 0.0
+    assert boss[1] == -1.0 - 2.0 - 0.5  # 30 HP lost, the death, one potion unused
