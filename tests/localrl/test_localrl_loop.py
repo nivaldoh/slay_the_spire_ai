@@ -88,6 +88,9 @@ def test_run_level_screens_only_go_to_the_run_adapter():
     transform = {"screen_type": "GRID", "screen_state": {"for_transform": True}}
     assert not policy_module.run_level(transform, ["select Bash (2 attack)"])
     assert not policy_module.run_level({"screen_type": "MAP"}, ["go to monster at x=1, y=2"])
+    fought = {"screen_type": "COMBAT_REWARD"}
+    assert policy_module.run_level(fought, ["take 11 gold", "proceed, leaving any remaining"])
+    assert not policy_module.run_level(fought, ["proceed, leaving any remaining rewards"])
 
 
 def test_a_routed_step_is_greedy_frozen_and_read_by_the_run_scorer(monkeypatch):
@@ -117,6 +120,60 @@ def test_a_routed_step_is_greedy_frozen_and_read_by_the_run_scorer(monkeypatch):
                                       for i, label in enumerate(["a", "b"])))
     policy.choose(other)
     assert policy.steps[-1]["frozen"] is False
+
+
+def test_sampling_in_fights_only_keeps_other_screens_greedy(monkeypatch):
+    monkeypatch.setattr("spire.localrl.policy.render", lambda observation, labels: "one")
+    monkeypatch.setattr("spire.localrl.policy.lite", lambda observation: {})
+
+    class Even:
+        def encode(self, prompt):
+            return [1]
+
+        def logits(self, encoded, counts):
+            return [torch.zeros(counts[0])]
+
+    policy = LocalPolicy(Even(), temperature=1.0, seed=3, sample_fights_only=True)
+    game = {"floor": 1, "act": 1, "current_hp": 10, "max_hp": 10, "gold": 0, "deck": [],
+            "relics": [], "potions": [], "act_boss": "x", "screen_type": "MAP"}
+    labels = ["a", "b", "c"]
+    choices = tuple(Choice(f"d:{i}", "d", label, label) for i, label in enumerate(labels))
+    policy.choose(Decision("d", game, choices))
+    assert policy.steps[-1]["log_prob"] == 0.0  # the greedy path records no sampling
+    policy.tried.clear()
+    fight = {**game, "combat_state": {"turn": 1, "player": {}, "hand": [], "monsters": []}}
+    monkeypatch.setattr("spire.localrl.policy.render", lambda observation, labels: "two")
+    policy.choose(Decision("e", fight, tuple(Choice(f"e:{i}", "e", x, x)
+                                             for i, x in enumerate(labels))))
+    assert policy.steps[-1]["log_prob"] == pytest.approx(math.log(1 / 3))
+
+
+def test_potion_exploration_fires_only_in_hard_fights(monkeypatch):
+    monkeypatch.setattr("spire.localrl.policy.render", lambda observation, labels: "one")
+    monkeypatch.setattr("spire.localrl.policy.lite", lambda observation: {})
+
+    class NeverPotion:
+        def encode(self, prompt):
+            return [1]
+
+        def logits(self, encoded, counts):
+            return [torch.tensor([9.0] + [0.0] * (counts[0] - 1))]
+
+    def fight(room, identity):
+        game = {"floor": 1, "act": 1, "current_hp": 10, "max_hp": 10, "gold": 0, "deck": [],
+                "relics": [], "potions": [], "act_boss": "x", "screen_type": "NONE",
+                "room_type": room, "combat_state": {"turn": 1, "player": {}, "hand": [],
+                                                    "monsters": []}}
+        labels = ["play Strike", "use potion Fire Potion"]
+        return Decision(identity, game, tuple(Choice(f"{identity}:{i}", identity, x, x)
+                                              for i, x in enumerate(labels)))
+
+    policy = LocalPolicy(NeverPotion(), temperature=0, seed=1, potion_explore=1.0)
+    assert policy.choose(fight("MonsterRoomBoss", "a")).label == "use potion Fire Potion"
+    assert policy.steps[-1]["explored"] is True
+    policy.tried.clear()
+    assert policy.choose(fight("MonsterRoom", "b")).label == "play Strike"
+    assert policy.steps[-1]["explored"] is False
 
 
 def test_a_decision_that_reached_no_state_leaves_the_learner():

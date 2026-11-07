@@ -19,6 +19,7 @@ import torch
 
 from spire.fullrun.llm import MONSTER_NOTES_PATH, render_state
 from spire.localrl.facts import annotate
+from spire.localrl.rewards import HARD_ROOMS
 from spire.protocol import Decision
 
 MODEL_DIRECTORY = Path.home() / (
@@ -223,13 +224,14 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
 
 def run_level(observation: dict, labels: list[str]) -> bool:
     """Screens a run file records, so a human-run adapter can decide them: a card reward, a rest
-    site's choice, the card an upgrade or a removal takes, a boss relic. The step that confirms a
-    selection, or leaves a rest site, is not one of those."""
+    site's choice, the card an upgrade or a removal takes, what a fight's rewards leave behind, a
+    boss relic. The step that confirms a selection, or leaves a rest site, is not one of those."""
     screen, state = observation.get("screen_type"), observation.get("screen_state") or {}
     if screen == "GRID" and not (state.get("for_upgrade") or state.get("for_purge")):
         return False
     starts = {"CARD_REWARD": ("take card ",), "REST": ("rest:", "smith:"),
-              "BOSS_REWARD": ("take boss relic ",), "GRID": ("select ",)}.get(screen)
+              "COMBAT_REWARD": ("take ",), "BOSS_REWARD": ("take boss relic ",),
+              "GRID": ("select ",)}.get(screen)
     return starts is not None and any(label.startswith(starts) for label in labels)
 
 
@@ -254,11 +256,17 @@ class LocalPolicy:
     """
 
     def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int, prompt: int = 1,
-                 run_scorer: Scorer | None = None):
+                 run_scorer: Scorer | None = None, sample_fights_only: bool = False,
+                 potion_explore: float = 0.0):
         """``run_scorer`` decides ``run_level`` screens greedily from prompt 1; its steps are
-        marked ``frozen``, because an update of ``scorer`` must not learn from them."""
+        marked ``frozen``, because an update of ``scorer`` must not learn from them. With
+        ``sample_fights_only`` every other screen is greedy too, so a sampled run still reaches
+        the fights a greedy run would. ``potion_explore`` is the chance, at each decision of an
+        elite or boss fight, of using a potion at random: a policy that never uses one cannot
+        sample that choice, so no advantage for it would ever exist."""
         self.scorer, self.temperature, self.prompt = scorer, temperature, prompt
-        self.run_scorer = run_scorer
+        self.run_scorer, self.sample_fights_only = run_scorer, sample_fights_only
+        self.potion_explore = potion_explore
         self.random = random.Random(seed)
         self.steps: list[dict] = []
         self.tried: dict[str, set[int]] = {}
@@ -266,13 +274,13 @@ class LocalPolicy:
         self.api = None
 
     def _choose(self, prompt: str, allowed: list[int], count: int,
-                routed: bool = False) -> tuple[int, float]:
+                routed: bool = False, greedy: bool = False) -> tuple[int, float]:
         scorer = self.run_scorer if routed else self.scorer
         if scorer is None:  # the uniform random control
             return self.random.choice(allowed), -math.log(len(allowed))
         with torch.inference_mode():
             logits = scorer.logits([scorer.encode(prompt)], [count])[0]
-        if self.temperature == 0 or routed:
+        if self.temperature == 0 or routed or greedy:
             best = logits[allowed].argmax().item()
             return allowed[best], 0.0
         probabilities = torch.softmax(logits[allowed] / self.temperature, dim=0).tolist()
@@ -292,12 +300,20 @@ class LocalPolicy:
         tried = self.tried.setdefault(key, set())
         usable = playable(observation, labels)
         allowed = [i for i in usable if i not in tried] or usable
-        index, log_prob = self._choose(prompt, allowed, count, routed)
+        greedy = self.sample_fights_only and not observation.get("combat_state")
+        potions = [i for i in allowed if labels[i].startswith("use potion")]
+        explored = (bool(potions) and bool(observation.get("combat_state"))
+                    and observation.get("room_type") in HARD_ROOMS
+                    and self.random.random() < self.potion_explore)
+        if explored:
+            index, log_prob = self.random.choice(potions), 0.0
+        else:
+            index, log_prob = self._choose(prompt, allowed, count, routed, greedy)
         tried.add(index)
         self.steps.append({
             "prompt": prompt, "count": count, "allowed": allowed, "index": index,
             "log_prob": log_prob, "observation": lite(observation), "label": labels[index],
-            "frozen": routed,
+            "frozen": routed, "explored": explored,
         })
         self._metadata = {"type": "local", "selected_index": index, "log_prob": log_prob,
                           "allowed": allowed, "seconds": time.monotonic() - started}
