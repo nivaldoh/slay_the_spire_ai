@@ -222,12 +222,14 @@ def log_probs(logits: torch.Tensor, allowed: list[int], temperature: float) -> t
     return torch.log_softmax(logits[allowed] / temperature, dim=0)
 
 
-def run_level(observation: dict, labels: list[str]) -> bool:
+def run_level(observation: dict, labels: list[str], screens: tuple[str, ...] | None = None) -> bool:
     """Screens a run file records, so a human-run adapter can decide them: a card reward, a rest
     site's choice, the card an upgrade or a removal takes, what a fight's rewards leave behind, a
     boss relic, the next room on the map. The step that confirms a selection, or leaves a rest
     site, is not one of those."""
     screen, state = observation.get("screen_type"), observation.get("screen_state") or {}
+    if screens is not None and screen not in screens:
+        return False
     if screen == "GRID" and not (state.get("for_upgrade") or state.get("for_purge")):
         return False
     if screen == "MAP":  # a path of one is no choice, and the boss is not in a run file's rows
@@ -260,7 +262,7 @@ class LocalPolicy:
 
     def __init__(self, scorer: Scorer | None, *, temperature: float, seed: int, prompt: int = 1,
                  run_scorer: Scorer | None = None, sample_fights_only: bool = False,
-                 potion_explore: float = 0.0):
+                 potion_explore: float = 0.0, run_screens: tuple[str, ...] | None = None):
         """``run_scorer`` decides ``run_level`` screens greedily from prompt 1; its steps are
         marked ``frozen``, because an update of ``scorer`` must not learn from them. With
         ``sample_fights_only`` every other screen is greedy too, so a sampled run still reaches
@@ -269,7 +271,7 @@ class LocalPolicy:
         sample that choice, so no advantage for it would ever exist."""
         self.scorer, self.temperature, self.prompt = scorer, temperature, prompt
         self.run_scorer, self.sample_fights_only = run_scorer, sample_fights_only
-        self.potion_explore = potion_explore
+        self.potion_explore, self.run_screens = potion_explore, run_screens
         self.random = random.Random(seed)
         self.steps: list[dict] = []
         self.tried: dict[str, set[int]] = {}
@@ -296,7 +298,7 @@ class LocalPolicy:
         observation = data["observation"]
         count = min(len(decision.candidates), len(SYMBOLS))
         labels = [candidate["label"] for candidate in data["candidates"][:count]]
-        routed = self.run_scorer is not None and run_level(observation, labels)
+        routed = self.run_scorer is not None and run_level(observation, labels, self.run_screens)
         prompt = (render_v2(observation, data["candidates"][:count])
                   if self.prompt == 2 and not routed else render(observation, labels))
         key = hashlib.sha256(prompt.encode()).hexdigest()
