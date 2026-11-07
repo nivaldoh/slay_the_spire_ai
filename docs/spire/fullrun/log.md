@@ -783,3 +783,22 @@ prompt 2, a pointer scorer, and a fight reward (ridge R2 0.64 on held-out seeds 
 on JUDGEMENT `src/spire/localrl/collect.py` Training speed mod, whose condition the replay did not meet as written; the prompt 2 arms
 on `facts.py` Prompt facts; the fight arm and the R2 on `rewards.py` Fight reward (all on `spire-local-rl`). Online RL failed at its
 first seed on a hyphen in my seed name.
+
+## 2026-11-07: human run files teach run-level choices; first adapter to beat the warm start on test seeds
+
+Owner, the same goal as 2026-11-06. Branch `spire-local-rl` (unmerged), evidence `runs/spire-rl-20261107/` (`handoff.md`, `brief.md`), $0.
+Unverified: no agreed check. These runs are not in `results.csv`.
+
+Diagnostic, LRDEV001-024, nothing trained from it: rules 27.3 floors; the model fighting with the rule policy elsewhere 17.3; rules
+fighting with the model elsewhere 17.0. The model reached the boss with 2.6 potions and died with 2.5.
+A second LoRA decides reward, rest, upgrade, removal, boss relic and map screens from public human run files (archive.org
+`slay-the-data.-7z`, first 55 MB; 3,397 Ironclad wins; card picks and rests from outcome tables over 22,505 runs). Maps are rebuilt
+from each run's seed with the game's own generator: 70 of 70 live maps matched. Copying winners' picks lost floors (10.93 against
+15.36, 14 seeds); a check on real recorded states now runs before game time.
+
+Final test, LRTEST001-060, n=60, pick committed first (`bde1f66`): pick 15.88, warm start 13.30, yesterday's fight adapter alone 14.63.
+Pick minus warm +2.58, 95% interval +0.63 to +4.60, sign-flip p 0.014; pick minus that fight adapter +1.25, -0.63 to +3.27, not separated.
+Rests on JUDGEMENT `runs/spire-rl-20261107/human/convert.py` Human run rows and the card table, and on the 2026-11-06 marked choices
+(training speed, prompt facts, fight reward). The pick reached the boss at 0.62 HP against 0.85 and died at elites twice as often.
+Fixed with tests: hangs on a potion bought with Sozu and on Entropic Brew drunk outside a fight. Fight learning (AWR, potion exploration)
+is built and was running when this entry was written.
