@@ -147,6 +147,13 @@ temperature 1. That is learning from recorded open-weight play, not from the gam
 at 7 of 12 test seeds, gave +2.0 (3 up, 0 down, p 0.25). The card pool moved twice that night, so floors from different times do
 not pair.
 
+*2026-11-07, written and committed before any test seed was played.* Final pick for `LRTEST001`-`060`: fight adapter
+`runs/spire-rl-20261106b/arms/v2-fight/epoch-1` with run adapter `runs/spire-rl-20261107/human/run-f/step-750` on every run-level
+screen (sha256 of each adapter's files begins `1e1a5f9e32edc0fc` and `2503cf093fe50002`), greedy, at training speed. The run adapter
+learned from public human run files (`JUDGEMENT: Human run rows` in that run's `human/convert.py`). References on the same seeds: the
+fight adapter alone and the warm start. The claim rule and the four development comparisons read before it are in that run's
+`final-pick.md`.
+
 ### Idea: PostTrainBench-style tasks
 
 *Owner, 2026-10-28: a general idea to keep, for inspiration or reference
