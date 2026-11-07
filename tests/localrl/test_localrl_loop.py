@@ -187,6 +187,14 @@ def test_sozu_makes_a_potion_unobtainable_even_with_a_free_slot():
     assert playable({**game, "relics": []}, labels) == [0, 1, 2]
 
 
+def test_entropic_brew_is_not_drunk_outside_a_fight():
+    game = {"relics": [], "potions": [{"id": "EntropicBrew"}, {"id": "Potion Slot"}]}
+    labels = ["use potion Entropic Brew", "take potion Swift Potion", "proceed"]
+    assert playable(game, labels) == [1, 2]
+    fight = {**game, "combat_state": {"turn": 1}}
+    assert playable(fight, labels) == [0, 1, 2]
+
+
 def test_a_decision_that_reached_no_state_leaves_the_learner():
     class Policy:
         steps = [{"prompt": "state", "index": 2}]

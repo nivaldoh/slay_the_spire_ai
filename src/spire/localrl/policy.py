@@ -243,14 +243,18 @@ def run_level(observation: dict, labels: list[str], screens: tuple[str, ...] | N
 def playable(observation: dict, labels: list[str]) -> list[int]:
     """Choices the game can carry out. Taking or buying a potion with every slot full changes
     nothing, so CommunicationMod never answers and the run hangs (seen 2026-11-06, floors 3, 5).
-    Sozu stops every potion gain, so its holder hangs the same way (LRDEV136, 2026-11-07)."""
+    Sozu stops every potion gain, so its holder hangs the same way (LRDEV136, 2026-11-07).
+    Entropic Brew drunk outside a fight refills slots after the state says they are free, so the
+    next potion taken hangs (LRTEST041, 2026-11-07); outside a fight it is never drunk."""
     held = {relic.get("id") for relic in observation.get("relics", [])}
     full = "Sozu" in held or all(potion.get("id") != "Potion Slot"
                                  for potion in observation.get("potions", []))
     shop = (observation.get("screen_state") or {}).get("potions", [])
     names = tuple(f"buy {potion.get('name')} for " for potion in shop)
     dead = ("take potion", *names)
-    usable = [i for i, label in enumerate(labels) if not (full and label.startswith(dead))]
+    calm = not observation.get("combat_state")
+    usable = [i for i, label in enumerate(labels) if not (full and label.startswith(dead))
+              and not (calm and label.startswith("use potion Entropic Brew"))]
     return usable or list(range(len(labels)))
 
 
