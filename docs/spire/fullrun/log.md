@@ -809,3 +809,18 @@ pick reached the first boss at 0.62 of max HP against 0.85 and died at an elite 
 Rests on JUDGEMENT `runs/spire-rl-20261107/human/convert.py` Human run rows and `card_table.py`, and on the 2026-11-06 marked choices
 (training speed, prompt facts, fight reward). Fixed with tests: hangs on a potion bought with Sozu and on Entropic Brew drunk outside a fight.
 Queued when written: adapter G (a rest table and an elite rule), then fight learning (AWR, potion exploration), then round 7.
+
+## 2026-11-07 evening: learned fights with a human-taught run adapter beat yesterday's best on fresh test seeds
+
+Same goal and branch; evidence `runs/spire-rl-20261107/` (`final-pick-2.md`, `test2/`), $0. Unverified: no agreed check.
+Fight learning: advantage-weighted regression on fight steps of sampled runs (24 a generation, 10 generations, fresh training seeds), potion
+exploration 0.1 in elite and boss fights, the run adapter frozen. Sampled means: generation 0 (the starting adapter) 15.58, generations
+1-9 between 17.17 and 21.88 with no further trend, mean 19.23 (24 runs each, different seeds, exploration on). The run adapter G adds a rest
+table and an elite rule from human outcomes (17 of 17 rests below 0.4 of max HP on recorded real states).
+Round 7, LRDEV201-240 (the block declared before play; the ledger stopped at 200 and was extended by hand), n=40: first pick 16.62, with G
+17.82, with G and learned fights 18.65; none separated, the last chosen by the rule.
+Test 2, LRTEST061-120, n=60, second pick committed first (`5a227e5`), every arm at that commit: second pick 17.82, first pick 14.75, the
+2026-11-06 fight adapter alone 15.02, warm start 11.45. Second pick minus each: +3.07 (+1.22 to +4.95, sign-flip p 0.002), +2.80 (+0.92 to
++4.67, p 0.006), +6.37 (+4.42 to +8.30). Every interval excludes 0. It won 21 of 44 first-boss fights against 9 of 37 for the fight adapter
+alone, and still drank 0.12 potions a run in boss fights. Rests on the JUDGEMENT markers named in the entry above, plus `rest_table.py`
+and the elite rule in `train_human.py` on that run (G was trained with other quotas than that file's marker states); all play at training speed.
