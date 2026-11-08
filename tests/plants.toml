@@ -4088,3 +4088,12 @@ old = 'result.update(status="truncated", reason="episode_timeout", error=str(exc
 new = 'result.update(status="truncated", error=str(exc))'
 tests = ["tests/twwarhammer3/test_wh3_play_wall_cap.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "battle-budget-reserve-unlocked"
+guards = "Members calling at once cannot reserve past one battle's allowance"
+file = "src/twwarhammer3/battle/benchmark.py"
+old = "        with _RESERVE_LOCK:"
+new = "        with threading.Lock():"
+tests = ["tests/twwarhammer3/test_wh3_battle_budget.py"]
+source = "2026-11-08 repo upkeep"

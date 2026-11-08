@@ -9,6 +9,7 @@ import json
 import math
 import signal
 import subprocess
+import threading
 from collections import Counter
 from pathlib import Path
 
@@ -62,6 +63,11 @@ def send_once(key, body, *, provider):
         signal.signal(signal.SIGALRM, previous)
 
 
+# One lock for every BattleBudget: team members share a budget and leaves have their own on
+# one ledger; each calls from its own thread, and only one may pass the allowance check at once.
+_RESERVE_LOCK = threading.Lock()
+
+
 class BattleBudget:
     """An episode's allowance layered over the existing cumulative ledger, without resetting it.
 
@@ -75,13 +81,14 @@ class BattleBudget:
         self.call_limit, self.battle_usd, self.version = call_limit, battle_usd, version
 
     def reserve(self, usd):
-        if self.calls >= self.call_limit:
-            raise BudgetExhausted(f"Benchmark reached {self.call_limit} decision calls")
-        if self.ledger.spent - self.started_spent + self.ledger.held + usd > self.battle_usd:
-            raise BudgetExhausted(
-                f"Benchmark next call exceeds ${self.battle_usd} battle allowance")
-        self.ledger.reserve(usd)
-        self.calls += 1
+        with _RESERVE_LOCK:
+            if self.calls >= self.call_limit:
+                raise BudgetExhausted(f"Benchmark reached {self.call_limit} decision calls")
+            if self.ledger.spent - self.started_spent + self.ledger.held + usd > self.battle_usd:
+                raise BudgetExhausted(
+                    f"Benchmark next call exceeds ${self.battle_usd} battle allowance")
+            self.ledger.reserve(usd)
+            self.calls += 1
 
     def release(self, usd):
         self.ledger.release(usd)
