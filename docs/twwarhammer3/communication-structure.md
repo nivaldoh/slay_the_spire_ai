@@ -299,35 +299,72 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
 
 ## Results so far (night of 2026-11-08)
 
-All unverified: no check of C's mechanics is agreed, and every cell is one launch. Readings come
-from `runs/comm-build-20261108/gates.py`, whose definitions are fixed in its docstring.
+All results below are unverified: no check of C's mechanics is agreed, and each arm has one to five
+launches. Gate numbers come from `runs/comm-build-20261108/gates.py`, the pilot measures from
+`pilot_measures.py` and the listening counts from `listening.py` in the same folder; each script's
+docstring fixes its definitions.
 
-**Stage 1, at `5b7de0c`, $0, unpaused 1x, three scripted probe launches on v2.** In every arm the
-release message reached left infantry, its move to x = 40 (about 42 m east) was accepted, and its
-regiment moved 35 to 40 m east before its next order (peer: input at 6.1 s, applied 7.6 s; overview and
-relay: input at 7.9 s, applied 9.7 s, after the commander's forward). No captain-to-captain text
-was delivered in relay or overview, every captain decision carried one message (apart from
-messages discarded at the episode's close), and no input or router row lacked its global frame.
-All three lost (peer 329.9 s, overview 474.5 s, relay 410.3 s), as a rush-style probe is expected
-to on v2. The star probes sent no off-link text, so the live refusal of a captain-to-captain send
-was not exercised; the next probe revision adds one (card D). That rerun, `s1b-relay-probe-01` at
-`e174a7d`, refused right infantry's text to left infantry with reason `link` and delivered none
-across links, and its release chain matched (input 8.2 s, applied 10.0 s, 38 m east before its next order).
+**Stage 1, at `5b7de0c`, $0, unpaused 1x, three scripted probe launches on v2, plus one rerun at
+`e174a7d`.** In every arm the release message reached left infantry, its move to x = 40 (about 42 m
+east) was accepted, and its regiment moved 35 to 40 m east before its next order (peer: in left
+infantry's input at 6.1 s, applied at 7.6 s; overview and relay: in its input at 7.9 s, applied at
+9.7 s, after the commander forwarded the report). No captain-to-captain text was delivered in relay
+or overview, every captain decision carried one message (apart from messages discarded at the
+episode's close), and every input and router row had its global frame. All three lost (peer 329.9 s,
+overview 474.5 s, relay 410.3 s), which is expected of a probe that rushes on v2. The relay and
+overview probes sent no text outside their links, so the router's refusal of a captain-to-captain
+send was not tested live; card D added such a send to the probe. The rerun, `s1b-relay-probe-01` at
+`e174a7d`, refused right infantry's text to left infantry with reason `link`, delivered no text
+outside its links, and repeated the release chain (input 8.2 s, applied 10.0 s, 38 m east before
+its next order).
 
-**Stage 2 witness development, at `5b7de0c`, $0, explore (never counted toward the gate).** Both
-witnesses ran with no think time, so they decided faster than the model arms. The peer witness lost
-at 269.7 s. The overview witness won at 391.1 s, the first win on C v2 forces through captains'
-local views; its commander's orders reached the cavalry and Greatswords at 6-7 s, where the peer
-witness's first moves came at 18-21 s, after the centre's first contact report. One launch each.
+**Stage 2 witness development, at `5b7de0c`, $0, explore.** Both witnesses ran with no think time,
+so they decided faster than the model arms. The peer witness lost at 269.7 s. The overview witness
+won at 391.1 s, the first win with C v2's forces through the captains' local views; its commander's
+orders reached the cavalry and Greatswords at 6 to 7 s, while the peer witness's first moves came at
+18 to 21 s, after the center's first contact report.
 
-**Stage 3 pilot, at `e174a7d`, Haiku 5.5 low, explore.** Seven launches in the card's order (P, O,
-R, then O, R, P, then S) cost $6.29 of the owner's $10 (WH3 Anthropic ledger $7.1042605 to
-$13.3923583), $0.76 to $1.15 each, 599 to 1,023 calls. Every launch reached an engine ending and
-lost, as expected at this floor; the card reads no outcome. No captain-to-captain text was delivered
-in R or O, no input or router row lacked its global frame, and every captain decision carried its
-one or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
+**Stage 2 gate round, at `12a00f8`, $0, 2.0 s scripted think time (3.0 s for the commander).** 17
+launches ran from `stage2.py` under the pre-registered order and stopping rules (`stage2-log.json`,
+`stage2-gates.json`). No witness passed: the gate needs 4 of 5.
 
-| Launch | Battle s | `taken` | USD | Forfeited replies | Delivered texts | Median age read (s) | Through the commander (s) |
+| Cell | Launches (ending, and `taken` for each loss) | Verdict |
+|---|---|---|
+| Overview witness | lost 586 s (90.4), won 582 s, won 414 s, lost 369 s (52.6) | fail, 2 of 4 |
+| Overview witness with its mail cut | lost 367 s (33.5), 539 s (36.0), 362 s (38.8), 398 s (35.8), 697 s (68.5) | lost all 5 (4 executed) |
+| Peer witness | lost 585 s (93.3), won 306 s, lost 455 s (71.5) | fail, 1 of 3 |
+| Silent local rush, 2.0 s think time | lost 361 s (45.3), 336 s (50.5), 402 s (40.2), 302 s (30.6), 413 s (50.9) | lost all 5 |
+
+- Neither witness won C v2 reliably through the captains' local views at model-like timing, so the
+  P, R and O losses in the stage-3 pilot below are not evidence of weak tactics. The second round
+  (muted peer witness, R witness) did not run.
+- The overview witness with its mail cut ran the same code and views and lost all 5, 4 of them
+  executed foil launches, while the witness won 2 of 4 (Fisher exact test, p about 0.17 against 0 of
+  5; 0.43 against the 4 executed). With wins counted as 100, the witness's mean `taken` was 85.7 and
+  the mail-cut witness's 42.5 (44.1 over the 4 executed). Of tonight's results, this gap is the
+  clearest sign that the commander's target orders, chosen from its whole-field view and delivered
+  through the router, change the outcome. Without them each captain holds and fights only enemies
+  within 90 m (in the second muted launch the containing cavalry gave no order in 199 decisions), so
+  the control is a holding team. It is an exploratory reading of 9 launches, and the stage-2 gate
+  does not score `taken`.
+- The second launch of the mail-cut witness does not count as a foil launch, because at least one
+  group never attacked; the table, the Fisher test and the means above still include it.
+- The cue detector fired in no witness launch before its ending. It fired only at the final frame of
+  the overview witness's 582 s win and the peer witness's 306 s win, where every enemy near the
+  decisive cavalry was routing, so no witness had it in 2 launches. It also fired at 34 to 36 s in
+  all five rush launches and at 64.0 and 637.0 s in two mail-cut launches. Its definition needs work
+  before it can gate anything.
+- Every launch reached an engine ending, no text was delivered outside its arm's links, and every
+  input and router row had its global frame.
+
+**Stage 3 pilot, at `e174a7d`, Haiku 5.5 low, explore.** Seven launches ran in the card's order (P,
+O, R, then O, R, P, then S) and cost $6.29 of the owner's $10 (WH3 Anthropic ledger $7.1042605 to
+$13.3923583), $0.76 to $1.15 and 599 to 1,023 calls each. Every launch reached an engine ending and
+lost; the card does not score outcomes in the pilot. No captain-to-captain text was delivered in R or
+O, every input and router row had its global frame, and every captain decision carried its one or
+two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
+
+| Launch | Battle s | `taken` | USD | Forfeited replies | Delivered texts | Median age when read (s) | Median age via the commander (s) |
 |---|---:|---:|---:|---|---:|---:|---:|
 | P 1 | 349.1 | 26.7 | 0.82 | centre 4 | 621 | 3.3 | |
 | P 2 | 316.3 | 30.0 | 0.81 | centre 1 | 645 | 3.3 | |
@@ -337,48 +374,54 @@ one or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
 | O 2 | 330.8 | 14.9 | 0.96 | centre 6 | 1,026 | 3.9 | 6.3 |
 | S 1 | 396.5 | 30.6 | 1.01 | centre 1, decisive 56 | 0 | | |
 
-- Gate: P, R and O passed. No launch had a forced-rule forfeit: all 72 forfeits were invalid
-  orders (15 orders to another group's regiment, 57 attacks on an enemy outside the captain's view).
-  Applied to all forfeits, the 10% per-agent limit held for P, R and O (worst: O 2's centre, 6 of
-  130 calls, 4.6%), and cost stayed within 1.5 times the estimate. S, outside the gate, exceeds that
-  limit: its decisive cavalry lost 56 of 220 replies. Each ordered its second regiment f8 to attack
-  the enemy Knights f8 was already fighting (e9 in 8 replies at 148 to 159 s, e10 in 48 at 252 to
-  316 s), 160 to 297 m (median 287 m) from the anchor f7, outside the anchor's 160 m view, so the
-  local target rule refused the whole reply. Three marked rules combine here (JUDGEMENT
-  `cannae-communication.md` Command groups and local knowledge, JUDGEMENT
-  `src/twwarhammer3/battle/local_command.py` Local command development profile for the 160 m view,
-  and JUDGEMENT `local_team.py` Local target authority, with no partial orders); changing any of
-  them is the owner's call.
-- Mail to the centre in P: the centre received 61% and 80% of delivered texts in the two P battles.
-  The shared plan tells the infantry to support the centre and says one ordinary regiment commands,
-  so this is not shown to be unprompted.
-- The commander's extra step: in R, the newest captain report behind a commander text was a median
+- Gate: P, R and O passed. No launch had a forced-rule forfeit: all 72 forfeits were invalid orders
+  (15 orders to another group's regiment, 57 attacks on an enemy outside the captain's view).
+  Counting every forfeit, each agent in P, R and O stayed under the 10% limit (worst: O 2's center, 6
+  of 130 calls, 4.6%), and cost stayed within 1.5 times the estimate. S, which is outside the gate,
+  went over that limit: its decisive cavalry forfeited 56 of 220 replies. Each of those replies
+  ordered the group's second regiment, f8, to attack the enemy Knights f8 was already fighting (e9 in
+  8 replies at 148 to 159 s, e10 in 48 at 252 to 316 s). Those Knights were 160 to 297 m (median
+  287 m) from the anchor f7, outside the anchor's 160 m view, so the local target rule refused the
+  whole reply. This refusal rests on JUDGEMENT `docs/twwarhammer3/cannae-communication.md` Command
+  groups and local knowledge, JUDGEMENT `src/twwarhammer3/battle/local_command.py` Local command
+  development profile (the 160 m view) and JUDGEMENT `src/twwarhammer3/battle/local_team.py` Local
+  target authority (no partial orders).
+- Mail to the center in P: the center received 61% and 80% of delivered texts in the two P battles.
+  The shared plan tells the infantry to support the center and says "one ordinary regiment
+  commands", so the plan may have caused this.
+- Age through the commander: in R, the newest captain report behind a commander text was a median
   6.6 and 6.3 s old when a captain read the text, against 3.3 s for P's captain-to-captain texts. O's
-  commander texts rest on reports of the same age (6.3 s), but O's commander also saw the whole
-  field in every input, and its texts were a median 3.9 s old from that view when read. Single hops
-  in R and O took a median 3.6 to 3.9 s (captain reports read by the commander) and 3.9 to 4.2 s
-  (commander texts read by captains). The commander's inbox held a median 4 to 6 texts per call (at
-  most 10), the oldest a median 4.5 to 5.1 s old.
-- Grounding: of texts naming an enemy id, 0 to 16 per R or O battle named one the sender had neither
-  seen nor received in a text, 41 and 0 in the P battles. All 60 such texts were roster references
-  or requests (58 from the containing cavalry, such as "Enemy knights e9/e10 not yet visible", and 2
-  from the R 1 commander, "Report immediately on contact with e9/e10"); none reported an unseen enemy
-  as seen.
+  commander texts drew on reports of the same age (6.3 s), but O's commander also saw the whole field
+  in every input, and its texts were a median 3.9 s old, counted from that view, when a captain read
+  them. Single steps in R and O took a median 3.6 to 3.9 s for captain reports read by the commander
+  and 3.9 to 4.2 s for commander texts read by captains. The commander's inbox held a median 4 to 6
+  texts per call (at most 10), and its oldest text was a median 4.5 to 5.1 s old.
+- Unseen enemy ids: texts naming an enemy id that the sender had neither seen nor received in a text
+  numbered 0 to 16 per R or O battle, and 41 and 0 in the two P battles. All 60 such texts were roster
+  references or requests (58 from the containing cavalry, such as "Enemy knights e9/e10 not yet
+  visible", and 2 from the R 1 commander, "Report immediately on contact with e9/e10"); none reported
+  an unseen enemy as seen.
 
-**Listening, $0.29, after the pilot.** 17 recorded captain inputs per arm that held delivered mail,
-from the P, R and O pilot battles, each re-sent to Haiku twice as recorded and twice with the mail
+**Listening, $0.29, after the pilot.** From the P, R and O pilot battles, 17 recorded captain inputs
+per arm that held delivered mail were each re-sent to Haiku twice as recorded and twice with the mail
 removed (`listening.py`, `listening.json`). The run stored an empty order list and an unparsed reply
 alike as null (91 of 204 replies). Five null replies cost $0.0090 to $0.0093, about 16,000 output
-tokens, the call's cap, so they were cut off and are excluded under the script's rule. The other 86
+tokens, which is the call's cap; they were cut off, and the script's rule excludes them. The other 86
 cost $0.0009 to $0.0014 and are read as empty order lists; this is unchecked, because their text was
-not stored. With those five comparisons removed, orders differed between the two as-recorded re-asks
-in 3 of 17 (P), 2 of 17 (R) and 10 of 16 (O) inputs, between the two mail-removed re-asks in 2 of
-14, 7 of 17 and 8 of 16, and between as-recorded and mail-removed in 6 of 15 and 4 of 16 (P), 5 and
-4 of 17 (R) and 10 and 8 of 16 (O). Only in P did as-recorded and mail-removed replies differ more
-often than both pairs of identical re-asks; R's and O's identical re-asks varied as much as either
-comparison, so this sample shows no effect of mail there, and a small one in P, where 4 of the 6
-first-pair differences set a reply read as empty against one with orders. One sample of inputs,
-descriptive only.
+not stored. Leaving out every comparison that includes one of those five replies, orders differed
+this often:
+
+| Replies compared | P | R | O |
+|---|---|---|---|
+| The two as-recorded re-asks | 3 of 17 | 2 of 17 | 10 of 16 |
+| The two mail-removed re-asks | 2 of 14 | 7 of 17 | 8 of 16 |
+| First as-recorded and first mail-removed | 6 of 15 | 5 of 17 | 10 of 16 |
+| Second as-recorded and second mail-removed | 4 of 16 | 4 of 17 | 8 of 16 |
+
+Only in P did as-recorded and mail-removed replies differ more often than both pairs of re-asks of
+the same input. In R and O, re-asks of the same input varied as much as either comparison, so this
+sample shows no effect of mail there. In P it shows a small one, and 4 of the 6 first-pair
+differences set a reply counted as empty against one with orders.
 
 ## Measures
 

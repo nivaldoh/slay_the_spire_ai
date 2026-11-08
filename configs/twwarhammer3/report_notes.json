@@ -608,17 +608,17 @@
       "challenge": "Five captains split the army: each commands one group of regiments and sees only its own regiments and what is within 160 m of its group's lead regiment. No captain can send or receive a message, and there is no commander."
     },
     "emp-envelopment-c-muted-v2": {
-      "title": "Cannae C v2 with muted peers",
-      "short": "Muted peers",
+      "title": "Cannae C v2 with muted peers (scripted control)",
+      "short": "Muted peers (scripted)",
       "noun": "muted-peer battle",
-      "heading": "Captains message each other, but no message arrives",
+      "heading": "Scripted control: the peer team's messages never arrive",
       "challenge": "Five captains split the army as in the peer arm, with the same links and the same rule that every captain reply carries one or two messages, but every message is accepted and never delivered. Scripted teams play it to test whether their messages matter."
     },
     "emp-envelopment-c-muted-overview-v2": {
-      "title": "Cannae C v2 with a muted overview commander",
-      "short": "Muted overview",
+      "title": "Cannae C v2 with a muted overview commander (scripted control)",
+      "short": "Muted overview (scripted)",
       "noun": "muted-overview battle",
-      "heading": "Captains and an overview commander message each other, but no message arrives",
+      "heading": "Scripted control: the overview team's messages never arrive",
       "challenge": "Five captains split the army as in the overview arm: a captain may message only a commander who commands no regiments and sees every friendly regiment and every enemy the army can see. Every message is accepted and never delivered. Scripted teams play it to test whether their messages matter."
     }
   },
