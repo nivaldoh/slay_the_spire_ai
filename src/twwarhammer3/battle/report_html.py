@@ -67,6 +67,8 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
             "skills": ("Unit skills", "each unit follows its class's default skill"),
+            "twwarhammer3.battle.reference:Concentrate": (
+                "Concentrate", "gather the army, then all attack one enemy at a time"),
             "twwarhammer3.battle.calibration:CentralDefence": (
                 "Central fallback", "scenario diagnostic: gather at one owned victory point"),
             "twwarhammer3.battle.calibration:CoordinatedRush": (

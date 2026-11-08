@@ -3955,3 +3955,28 @@ old = '''self.wings.setdefault(enemy["id"], "north" if enemy["z"] >= self.mid_z 
 new = '''self.wings[enemy["id"]] = "north" if enemy["z"] >= self.mid_z else "south"'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_scripts.py::test_witnesses_keep_a_horses_wing_from_where_it_was_first_known"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "suite-page-arm-without-method"
+guards = "Every suite arm has a page method, so its battles get a tile, a name and owner tags"
+file = "configs/twwarhammer3/report_notes.json"
+old = '''
+      "rush": {
+        "name": "Charge nearest",
+        "note": "every unit runs at the nearest enemy",
+        "models": [],
+        "scripts": true
+      },
+'''
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_suite_page.py"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "suite-page-opens-a-scenario-with-no-battle"
+guards = "The suite page starts on the first scenario with a finished battle"
+file = "src/twwarhammer3/battle/report_assets/suite.js"
+old = "    return choose(pictures.find((name) => suite.pictures[name].battles.length) || pictures[0]);"
+new = "    return choose(pictures[0]);"
+tests = ["tests/twwarhammer3/test_wh3_suite_page.py"]
+source = "2026-11-08 repo upkeep"

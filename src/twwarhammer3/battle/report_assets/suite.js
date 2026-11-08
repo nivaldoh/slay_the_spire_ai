@@ -76,6 +76,9 @@ function suitePage(data, api) {
     team: "T",
     gap: "R",
     skills: "S",
+    concentrate: "Co",
+    rush: "Ch",
+    hold: "H",
   };
   const membersOf = (arm) =>
     method(arm).models.includes("all") || !method(arm).models.length ? ["all"] : method(arm).models;
@@ -222,9 +225,13 @@ function suitePage(data, api) {
     for (const name of pictures) {
       const line = el("tr");
       line.dataset.scenario = name;
-      const title = el("th");
+      const title = el("th"),
+        item = suite.pictures[name];
       title.scope = "row";
-      title.append(button(suite.pictures[name].title, () => choose(name), "suite-link"));
+      // A scenario with no finished battle has nothing to open.
+      title.append(
+        item.battles.length ? button(item.title, () => choose(name), "suite-link") : item.title,
+      );
       line.append(title);
       for (const arm of order) {
         const battle = battleIn(name, arm),
@@ -488,6 +495,7 @@ function suitePage(data, api) {
   }
 
   function draw() {
+    if (!scene) return;
     for (const chip of document.querySelectorAll(".suite-owner"))
       chip.setAttribute(
         "aria-pressed",
@@ -710,6 +718,17 @@ function suitePage(data, api) {
     const loaded = await load(name);
     if (current !== name) return;
     scene = loaded;
+    if (!Object.keys(scene).length) {
+      // Its battles have not started or not finished: no maps from another scenario stay.
+      scene = null;
+      pair = [];
+      $("suite-tiles").replaceChildren(el("p", "No battle has finished in this scenario yet."));
+      $("suite-pair").replaceChildren();
+      $("suite-separated").replaceChildren();
+      $("suite-big").replaceChildren();
+      $("suite-page").setAttribute("aria-busy", "false");
+      return;
+    }
     const lengths = Object.values(scene).map(lastMoment);
     end = Math.ceil(Math.max(...lengths));
     // Open where the battles have already diverged: the moment the first one ended.
@@ -766,7 +785,8 @@ function suitePage(data, api) {
       if (scene) draw();
     });
     document.title = `${page.title} WH3 coordination suite`;
-    return choose(pictures[0]);
+    // The first scenario with a finished battle; with none yet, the first says so.
+    return choose(pictures.find((name) => suite.pictures[name].battles.length) || pictures[0]);
   }
 
   api.paint = paint;

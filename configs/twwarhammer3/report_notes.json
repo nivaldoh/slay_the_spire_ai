@@ -1217,6 +1217,23 @@
         "note": "no model at all",
         "models": [],
         "scripts": true
+      },
+      "concentrate": {
+        "name": "Concentrate",
+        "note": "a script gathers the army, then all attack one enemy",
+        "models": [],
+        "scripts": true
+      },
+      "rush": {
+        "name": "Charge nearest",
+        "note": "every unit runs at the nearest enemy",
+        "models": [],
+        "scripts": true
+      },
+      "hold": {
+        "name": "Hold position",
+        "note": "never gives an order",
+        "models": []
       }
     },
     "order": [
@@ -1225,7 +1242,10 @@
       "team",
       "commander",
       "gap",
-      "skills"
+      "skills",
+      "concentrate",
+      "rush",
+      "hold"
     ],
     "readings": {
       "plans": [
