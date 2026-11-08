@@ -3840,3 +3840,14 @@ old = '''if any(m.get("to") not in rules["recipients"] for m in messages):'''
 new = '''if False:'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
 source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-muted-delivers-anyway"
+guards = "The muted arm accepts texts as peer does and never delivers one (stage 2's muted witness)"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''                if self.muted:  # the sender saw an acceptance; nothing reaches an input
+                    valid = False
+'''
+new = ""
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_muted_arm_is_peer_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
+source = "2026-11-08 card C of the communication-structure build"

@@ -7,20 +7,31 @@ known position, a target kept while it qualifies) from its global view to five c
 get_agent_action_heuristic keeps a target until it is unavailable; here a captain attacks only a
 target in its own view and runs toward one it knows only from a message.
 
-The foils play the v1 silent arm and send nothing: they know their start points (the v1 command
-block's `rendezvous`), the clock and the terrain bounds. Members are zero-argument classes, so a
-`local_team` controller file names them as `twwarhammer3.battle.local_scripts:<Class>`.
+The relay witness pairs peer witness captains, who report only to the commander, with a
+commander who forwards those reports. The foils play the v1 silent arm and send nothing: they
+know their start points (the v1 command block's `rendezvous`), the clock and the terrain bounds;
+`ThinkingRush` is the silent local rush at the witnesses' timing. Every member here sleeps in its
+worker per decision (the local_team.py SlowProbeMember pattern). Members are zero-argument
+classes, so a `local_team` controller file names them as
+`twwarhammer3.battle.local_scripts:<Class>`.
 """
 
 from copy import deepcopy
+from time import sleep
 
 # Rests on JUDGEMENT src/twwarhammer3/battle/cannae.py Cannae witness development rules
 # (the centre's 90 m and the 10 s retry), B support witness and Enemy wing labels.
 from twwarhammer3.battle.cannae import CLOSE_M, RETRY_MS
 from twwarhammer3.battle.llm import ARRIVED_M
 from twwarhammer3.battle.local_command import able, distance
+from twwarhammer3.battle.scripted import RushNearest
 
 CAVALRY_GROUPS = ("decisive_cavalry", "containing_cavalry")
+# JUDGEMENT: Witness timing — Claude, 2026-11-08: captains sleep 2.0 s and commanders 3.0 s per
+# decision, near Haiku's median think of 2.03 s in c-model-smoke-02. Zero delay or other values
+# change whether a scripted win shows the interface has time; stage 2's launches rest on it.
+THINK_S = 2.0
+COMMANDER_THINK_S = 3.0
 # JUDGEMENT: Witness contact age — Claude, 2026-11-08: a peer witness forgets a contact 20 s after
 # its latest sighting. A shorter age stops cavalry chasing reports, a longer one sends them to old
 # positions; the peer witness's stage 2 wins rest on it.
@@ -48,6 +59,38 @@ def move(unit, point):
 
 def text(to, body):
     return {"channel": "text", "to": to, "text": body}
+
+
+def wanted(recipient):
+    """The enemy class a report to this recipient lists first."""
+    return "cavalry" if recipient in CAVALRY_GROUPS else "infantry"
+
+
+def seen_text(time_ms, contacts, first, limit):
+    """A "seen T;ID CLASS X Z;..." report, class `first` first, cut at `limit` UTF-8 bytes; and
+    the contacts it carries."""
+    body, carried = f"seen {time_ms}", []
+    for enemy in sorted(contacts, key=lambda e: (e.get("class") != first, e["id"])):
+        part = f";{enemy['id']} {enemy.get('class')} {round(enemy['x'])} {round(enemy['z'])}"
+        if len((body + part).encode("utf-8")) > limit:
+            break
+        body += part
+        carried.append(enemy)
+    return body, carried
+
+
+def read_seen(body):
+    """(T, [(ID, CLASS, X, Z), ...]) from a "seen T;..." report; None for any other text."""
+    head, *parts = body.split(";") if isinstance(body, str) else [""]
+    word, _, time_ms = head.partition(" ")
+    if word != "seen":
+        return None
+    try:
+        rows = [part.split(" ") for part in parts]
+        return int(time_ms), [(identity, kind, float(x), float(z))
+                              for identity, kind, x, z in rows]
+    except ValueError:
+        return None
 
 
 def midline(start_points):
@@ -148,31 +191,14 @@ class PeerWitness(_Member):
             self.wings.setdefault(identity, "north" if z >= self.mid_z else "south")
 
     def _read(self, body):
-        """Learn a peer's report "seen T;ID CLASS X Z;..."; ignore any other text."""
-        head, *parts = body.split(";") if isinstance(body, str) else [""]
-        word, _, time_ms = head.partition(" ")
-        if word != "seen":
-            return
-        try:
-            time_ms = int(time_ms)
-            rows = [part.split(" ") for part in parts]
-            rows = [(identity, kind, float(x), float(z)) for identity, kind, x, z in rows]
-        except ValueError:
-            return
-        for identity, kind, x, z in rows:
-            self._learn(identity, kind, x, z, time_ms, True)
-
-    def _report(self, peer, seen, limit):
-        wanted = "cavalry" if peer in CAVALRY_GROUPS else "infantry"
-        body = f"seen {self.now}"
-        for enemy in sorted(seen, key=lambda e: (e.get("class") != wanted, e["id"])):
-            part = f";{enemy['id']} {enemy.get('class')} {round(enemy['x'])} {round(enemy['z'])}"
-            if len((body + part).encode("utf-8")) > limit:
-                break
-            body += part
-        return body
+        """Learn a report "seen T;ID CLASS X Z;..." (a peer's, or the relay commander's forward
+        with the original time); ignore any other text."""
+        report = read_seen(body)
+        for identity, kind, x, z in report[1] if report else []:
+            self._learn(identity, kind, x, z, report[0], True)
 
     def decide(self, observation):
+        sleep(THINK_S)
         command = observation["command"]
         role, rules = command["member"], command["rules"]
         self.now = observation["time_ms"]
@@ -206,8 +232,8 @@ class PeerWitness(_Member):
         # Relaying or picking peers by need changes what reaches whom; the witness rests on it.
         peers = sorted(rules["recipients"], key=lambda peer: (self.told.get(peer, -1), peer))
         peers = peers[:2] if seen else peers[:1]
-        self.messages = [text(peer, self._report(peer, seen, rules["text_bytes"]) if seen
-                              else f"status {self.now} clear") for peer in peers]
+        self.messages = [text(peer, seen_text(self.now, seen, wanted(peer), rules["text_bytes"])[0]
+                              if seen else f"status {self.now} clear") for peer in peers]
         self.replies += 1
         self.told.update({peer: self.replies for peer in peers})
         return orders
@@ -237,6 +263,7 @@ class OverviewWitnessCommander(_Member):
         return f"target {identity} {round(target['x'])} {round(target['z'])} {self.now}"
 
     def decide(self, observation):
+        sleep(COMMANDER_THINK_S)
         command = observation["command"]
         self.now = observation["time_ms"]
         if self.mid_z is None:
@@ -270,6 +297,53 @@ class OverviewWitnessCommander(_Member):
                          "assigned": self.assigned, "wings": self.wings})
 
 
+class RelayWitnessCommander(_Member):
+    """Relay arm commander: a contact table from the captains' reports, each forwarded with its
+    sighting time to the captains who did not report it, their class first; it never orders."""
+
+    def __init__(self):
+        super().__init__()
+        self.contacts, self.told = {}, {}
+
+    def decide(self, observation):
+        sleep(COMMANDER_THINK_S)
+        command, rules = observation["command"], observation["command"]["rules"]
+        self.now = observation["time_ms"]
+        for record in command["received"]:
+            report = read_seen(record.get("text"))
+            for identity, kind, x, z in report[1] if report else []:
+                old = self.contacts.get(identity)
+                if old is None or old["time_ms"] < report[0]:
+                    self.contacts[identity] = {"id": identity, "class": kind, "x": x, "z": z,
+                                               "time_ms": report[0], "from": record["sender"]}
+        # Rests on JUDGEMENT Witness contact age above.
+        self.contacts = {identity: c for identity, c in self.contacts.items()
+                         if self.now - c["time_ms"] <= CONTACT_MS}
+        self.messages = []
+        for captain in rules["recipients"]:
+            told = self.told.setdefault(captain, {})
+            new = [c for c in self.contacts.values()
+                   if c["from"] != captain and told.get(c["id"], -1) < c["time_ms"]]
+            if not new or len(self.messages) == rules["max_messages"]:
+                continue
+            groups, first = {}, wanted(captain)
+            for contact in new:
+                groups.setdefault(contact["time_ms"], []).append(contact)
+            # JUDGEMENT?: Relay witness forwarding — Claude, 2026-11-08: one text per captain per
+            # reply, one sighting time: those holding its class first, then the oldest. Newest
+            # first or more texts per captain change staleness; the R witness rests on it.
+            time_ms = min(groups, key=lambda t: (all(c["class"] != first for c in groups[t]), t))
+            body, carried = seen_text(time_ms, groups[time_ms], first, rules["text_bytes"])
+            if carried:
+                told.update({c["id"]: time_ms for c in carried})
+                self.messages.append(text(captain, body))
+        return []
+
+    def metadata(self):
+        return deepcopy({"type": "relay_witness_commander", "version": 1,
+                         "contacts": self.contacts})
+
+
 class OverviewWitnessCaptain(_Member):
     """Overview arm captain: the commander's latest target, else a local 90 m fight, else hold."""
 
@@ -290,6 +364,7 @@ class OverviewWitnessCaptain(_Member):
             pass
 
     def decide(self, observation):
+        sleep(THINK_S)
         command = observation["command"]
         self.now = observation["time_ms"]
         for record in command["received"]:
@@ -322,6 +397,7 @@ class _Foil(_Member):
         raise NotImplementedError
 
     def decide(self, observation):
+        sleep(THINK_S)
         command = observation["command"]
         name, rendezvous = command["member"], command["rendezvous"]
         self.now = observation["time_ms"]
@@ -373,3 +449,14 @@ class CentralConcentration(_Foil):
 
     def _point(self, name, rendezvous):
         return rendezvous["centre"]
+
+
+class ThinkingRush(RushNearest):
+    """The silent local rush (rush_nearest) sleeping THINK_S per decision, as the witnesses do."""
+
+    def decide(self, observation):
+        sleep(THINK_S)
+        return super().decide(observation)
+
+    def metadata(self):
+        return {"type": "thinking_rush", "version": 1}

@@ -4,7 +4,8 @@ Reference: SMAC smac/env/starcraft2/starcraft2.py get_obs_agent separates local 
 from shared state. Scheduling remains TeamPolicy's real-time independent worker model.
 Communication declaration version 2 (docs/twwarhammer3/communication-structure.md) has one
 text channel on fixed links: captains message each other (peer) or only a sixth member, the
-commander, who owns no regiments (relay, overview).
+commander, who owns no regiments (relay, overview). Two controls: muted is peer with every
+accepted text dropped before delivery, and unlinked has no links and no messages.
 """
 
 import hashlib
@@ -27,7 +28,11 @@ INPUT_VERSION = "local-command-v1"
 ARMS = {"bounded": ("local", "bounded"), "silent": ("local", "none"),
         "fast": ("local", "fast"), "global": ("global", "none")}
 # Version 2: the arm's links, its plan, member prompts and rules sections.
-TOPOLOGIES = {"peer": "mesh", "relay": "star", "overview": "star"}
+TOPOLOGIES = {"peer": "mesh", "relay": "star", "overview": "star", "muted": "mesh",
+              "unlinked": "none"}
+# The arm a member is told it plays: muted's members get peer's command block and prompt, so
+# neither an input nor an acknowledgement shows that their texts are dropped.
+SHOWN_ARM = {"muted": "peer"}
 TOPOLOGY_INPUT = "local-command-v2"
 COMMANDER = "commander"
 PLAN_V2_PATH = PROMPT_PATH.with_name("cannae_shared_plan_v2.md")
@@ -65,14 +70,21 @@ def role(member):
 def links(arm):
     """A version 2 arm's directed (sender, recipient) links, in GROUP_SLOTS order."""
     captains = list(local.GROUP_SLOTS)
+    if TOPOLOGIES[arm] == "none":
+        return ()
     if TOPOLOGIES[arm] == "mesh":
         return tuple((a, b) for a in captains for b in captains if a != b)
     return tuple(link for name in captains for link in ((name, COMMANDER), (COMMANDER, name)))
 
 
+def message_limits(arm, kind):
+    """A version 2 role's (min, max) messages per completed decision; none when unlinked."""
+    return (0, 0) if TOPOLOGIES[arm] == "none" else MESSAGE_LIMITS[kind]
+
+
 def message_rules(arm, member):
     """A version 2 member's rules block: the text profile, its counts and recipients."""
-    low, high = MESSAGE_LIMITS[role(member)]
+    low, high = message_limits(arm, role(member))
     return {"channel_mode": "text", **local.TEXT_PROFILE, "min_messages": low,
             "max_messages": high, "recipients": [b for a, b in links(arm) if a == member]}
 
@@ -83,8 +95,8 @@ def member_prompt(arm, member):
     if arm not in TOPOLOGIES:
         return PROMPT_PATH.read_text()
     path = COMMANDER_PROMPT_PATH if member == COMMANDER else CAPTAIN_PROMPT_PATH
-    return (path.read_text() + "\n"
-            + json.loads(TOPOLOGY_RULES_PATH.read_text())[arm][role(member)] + "\n")
+    rules = json.loads(TOPOLOGY_RULES_PATH.read_text())[SHOWN_ARM.get(arm, arm)]
+    return path.read_text() + "\n" + rules[role(member)] + "\n"
 
 
 def validate_config(scenario, config):
@@ -143,12 +155,13 @@ class LocalTeam(TeamPolicy):
                          profile={**local.PROFILE, **local.FAST_PROFILE},
                          max_messages=MAX_MESSAGES, army_owner=None)
         if self.arm in TOPOLOGIES:
-            roles = {key: limits for key, limits in MESSAGE_LIMITS.items()
+            roles = {key: message_limits(self.arm, key) for key in MESSAGE_LIMITS
                      if key == "captain" or COMMANDER in policies}
             self.card.update(
                 input_version=TOPOLOGY_INPUT, topology=TOPOLOGIES[self.arm],
                 links=[list(link) for link in links(self.arm)], plan_sha256=sha256(PLAN_V2_PATH),
-                sensing={"peer": "anchor radius",
+                sensing={"peer": "anchor radius", "muted": "anchor radius",
+                         "unlinked": "anchor radius",
                          "relay": "captains: anchor radius; commander: its inbox only",
                          "overview": "captains: anchor radius; commander: alliance contacts"
                          }[self.arm],
@@ -184,7 +197,8 @@ class LocalTeam(TeamPolicy):
                     # A fixed endpoint, never an anchor for project; text needs no distance.
                     rendezvous[COMMANDER] = dict(rendezvous["centre"])
                 self.router = local.Router(rendezvous, mode="text", links=links(self.arm),
-                                           profile=local.TEXT_PROFILE)
+                                           profile=local.TEXT_PROFILE,
+                                           muted=self.arm == "muted")
             self._event("partition", battle=self.battle, ownership=deepcopy(self.groups),
                         input_version=self.input_version, communication_arm=self.arm)
         expected = {identity for identities in self.groups.values() for identity in identities}
@@ -238,7 +252,8 @@ class LocalTeam(TeamPolicy):
                                     "send_feedback": deepcopy(self.acceptances[name])}
             self.router.inboxes[name].clear()
             self.acceptances[name].clear()
-        view["command"] = {"member": name, "arm": self.arm, "topology": TOPOLOGIES[self.arm],
+        view["command"] = {"member": name, "arm": SHOWN_ARM.get(self.arm, self.arm),
+                           "topology": TOPOLOGIES[self.arm],
                            "groups": deepcopy(self.groups),
                            "start_points": deepcopy(self.start_points), "plan": self.plan,
                            "rules": message_rules(self.arm, name),
@@ -257,7 +272,7 @@ class LocalTeam(TeamPolicy):
         if self.arm in ARMS:
             low, high, error = 0, MAX_MESSAGES, "member messages must be a bounded list of objects"
         else:
-            low, high = MESSAGE_LIMITS[role(name)]
+            low, high = message_limits(self.arm, role(name))
             error = f"{name} must send {low} to {high} message objects per decision"
         if (not isinstance(messages, list) or not low <= len(messages) <= high
                 or any(not isinstance(message, dict) for message in messages)):
@@ -313,10 +328,13 @@ def reply_schema(provider="openai"):
 def text_schema(provider, rules):
     """Version 2's reply: text messages only, the member's recipients as an enum."""
     schema = deepcopy(llm.REPLY_SCHEMA)
+    # No recipients (unlinked) leaves "to" free text, since an empty enum is no valid schema;
+    # maxItems 0 (not on Anthropic) and the parser still refuse any message.
+    to = ({"type": "string", "enum": rules["recipients"]} if rules["recipients"]
+          else {"type": "string"})
     messages = {"type": "array", "items": {
         "type": "object", "properties": {"channel": {"type": "string", "enum": ["text"]},
-                                         "to": {"type": "string", "enum": rules["recipients"]},
-                                         "text": {"type": "string"}},
+                                         "to": to, "text": {"type": "string"}},
         "required": ["channel", "to", "text"], "additionalProperties": False}}
     if rules["min_messages"]:
         messages["minItems"] = rules["min_messages"]  # Anthropic accepts only 0 or 1

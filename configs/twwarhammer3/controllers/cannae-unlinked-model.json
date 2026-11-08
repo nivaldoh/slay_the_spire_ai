@@ -1,0 +1,20 @@
+{
+  "type": "local_team",
+  "members": {
+    "centre": {
+      "type": "llm_rules"
+    },
+    "left_infantry": {
+      "type": "llm_rules"
+    },
+    "right_infantry": {
+      "type": "llm_rules"
+    },
+    "decisive_cavalry": {
+      "type": "llm_rules"
+    },
+    "containing_cavalry": {
+      "type": "llm_rules"
+    }
+  }
+}

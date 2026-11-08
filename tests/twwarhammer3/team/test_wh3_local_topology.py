@@ -1,4 +1,5 @@
-"""Communication declaration version 2 on battle C: the peer, relay and overview arms.
+"""Communication declaration version 2 on battle C: the peer, relay and overview arms and the
+muted and unlinked controls.
 
 Reference: docs/twwarhammer3/communication-structure.md ("What forced means", "The arms", "Code
 changes" and "Proposed checks"; none of those checks is agreed). Real LocalTeam, Router and
@@ -112,12 +113,13 @@ def router(arm):
             {name: {"x": 0, "z": 0} for name in names})
 
 
-@pytest.mark.parametrize("arm", ARMS)
+@pytest.mark.parametrize("arm", (*ARMS, "muted", "unlinked"))
 def test_a_v2_declaration_builds_the_captains_and_a_commander_only_on_a_star(arm):
-    """Wrong versions: a commander accepted on peer, or a star arm built without one."""
+    """Wrong versions: a commander accepted on peer, muted or unlinked, or a star arm built
+    without one."""
     policy, _, _ = team(arm)
     try:
-        star = arm != "peer"
+        star = arm in ("relay", "overview")
         assert set(policy.members) == set(CAPTAINS) | ({"commander"} if star else set())
         assert policy.army_owner == ("commander" if star else None)
         assert policy.card["input_version"] == "local-command-v2"
@@ -322,10 +324,11 @@ def test_the_v2_command_block_carries_the_contract_shape_and_plan_v2(arm):
     ("peer", "centre", 0, True), ("peer", "centre", 2, False), ("peer", "centre", 3, True),
     ("relay", "right_infantry", 0, True), ("relay", "commander", 0, False),
     ("overview", "commander", 5, False), ("overview", "commander", 6, True),
+    ("unlinked", "centre", 0, False), ("unlinked", "centre", 1, True),
 ])
 def test_a_scripted_member_outside_its_message_count_ends_the_episode(arm, name, sent, fails):
-    """Wrong version: the dispatcher keeps v1's 0 to 2 bound, so a silent captain passes and a
-    commander's fifth message ends the battle."""
+    """Wrong versions: the dispatcher keeps v1's 0 to 2 bound, so a silent captain passes and a
+    commander's fifth message ends the battle; or unlinked keeps the captains' forced message."""
     to = "left_infantry" if arm == "peer" else "centre" if name == "commander" else "commander"
     policy, workers, _ = team(arm, **{name: Member([text(to)] * sent)})
     try:
@@ -382,7 +385,8 @@ def member_view(arm, name):
     ("peer", "centre", [{"channel": "signal", "code": "HELP"}], True),
     ("overview", "commander", [text("centre")] * 6, False),
     ("overview", "commander", [], True),  # any commander order
-], ids=["none", "three", "off-link", "no-commander", "case", "signal", "six", "order"])
+    ("unlinked", "centre", [text("left_infantry")], True),
+], ids=["none", "three", "off-link", "no-commander", "case", "signal", "six", "order", "unlinked"])
 def test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders(
         tmp_path, arm, name, messages, orders):
     """Wrong versions: the parser accepts empty lists or trusts the schema's enum, so the minimum
@@ -436,7 +440,7 @@ class RoleSend(FakeSend):
         return super().__call__(body)
 
 
-@pytest.mark.parametrize("arm", ARMS)
+@pytest.mark.parametrize("arm", (*ARMS, "unlinked"))
 def test_configured_model_arms_give_each_role_its_own_prompt(tmp_path, monkeypatch, arm):
     """Wrong versions: the commander gets the captains' prompt (one prompt per leaf type), a v2
     member gets v1's local_command_prompt.md, or the card records other prompts than were sent."""
@@ -481,10 +485,13 @@ def test_configured_model_arms_give_each_role_its_own_prompt(tmp_path, monkeypat
     ("relay", "cannae-relay-model", True), ("overview", "cannae-overview-probe", True),
     ("peer", "cannae-peer-probe", True), ("peer", "cannae-relay-model", False),
     ("relay", "cannae-peer-model", False), ("v2", "cannae-relay-probe", False),
+    ("relay", "cannae-relay-witness", True), ("muted", "cannae-muted-witness", True),
+    ("muted", "cannae-relay-witness", False), ("unlinked", "cannae-unlinked-model", True),
+    ("unlinked", "cannae-relay-model", False),
 ])
 def test_configured_load_takes_the_commander_only_on_a_star_arm(arm, path, accepted):
     """Wrong versions: the loader keeps demanding exactly the five groups, or accepts a commander
-    on peer or on a v1 arm (`emp-envelopment-c-v2` is v1's bounded arm)."""
+    on peer, muted, unlinked or a v1 arm (`emp-envelopment-c-v2` is v1's bounded arm)."""
     name = "emp-envelopment-c-v2" if arm == "v2" else f"emp-envelopment-c-{arm}-v2"
     config = {"policy": "configured", "controller_config": str(CONTROLLERS / f"{path}.json"),
               "scenario": name, "provider": "anthropic", "model": "claude-haiku-5-5",
@@ -530,6 +537,106 @@ def test_probe_left_infantry_moves_east_only_after_a_centre_message_reaches_it(a
     assert pairs and pairs <= set(local_team.links(arm))
     if arm != "peer":
         assert policy.members["commander"].policy.forwarded["sender"] == "centre"
+
+
+def sends_and_arrivals(events):
+    records = [e["record"] for e in events if e["event"] == "communication"]
+    return ([r["ack"] for r in records if r["event"] == "send"],
+            [r for r in records if r["event"] == "arrival"])
+
+
+def test_the_muted_arm_is_peer_to_its_members_and_delivers_nothing():
+    """Wrong versions: muted delivers anyway, refuses its texts (an ack the sender can read), or
+    shows its members another arm name, rules, links or prompt than peer's."""
+    runs = {}
+    for arm in ("peer", "muted"):
+        policy, workers, members = team(arm, centre=Member([text("decisive_cavalry", "seen")]))
+        try:
+            play(policy, workers, 12)
+            runs[arm] = (policy.card, members, sends_and_arrivals(policy.drain_events()))
+        finally:
+            policy.close()
+    (peer_card, peers, (peer_acks, peer_arrivals)) = runs["peer"]
+    (card, members, (acks, arrivals)) = runs["muted"]
+    assert acks == peer_acks and acks and all(a["accepted"] and a["reason"] is None for a in acks)
+    assert all(a["delivered"] for a in peer_arrivals)
+    assert len(arrivals) == len(peer_arrivals) > 0
+    assert not any(a["delivered"] for a in arrivals)
+    assert {a["reason"] for a in arrivals} == {"muted"}
+    heard = 0
+    for name in CAPTAINS:
+        for view in peers[name].inputs:
+            heard += len(view["command"].pop("received"))
+        assert all(view["command"].pop("received") == [] for view in members[name].inputs)
+        assert members[name].inputs == peers[name].inputs  # arm "peer" and peer's rules included
+        assert local_team.member_prompt("muted", name) == local_team.member_prompt("peer", name)
+    assert heard > 0
+    assert card["communication_arm"] == "muted"
+    assert {key: card[key] for key in ("topology", "links", "min_messages", "max_messages")} == {
+        key: peer_card[key] for key in ("topology", "links", "min_messages", "max_messages")}
+
+
+def claude_schema_problems(schema):
+    """What breaks the structured-output limits local_team.py cites (docs/references.md, checked
+    2026-11-05): maxItems is unsupported, minItems only 0 or 1; an enum needs a value and an
+    object is closed (additionalProperties false)."""
+    problems = []
+
+    def walk(node, path):
+        if isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, f"{path}/{index}")
+            return
+        if not isinstance(node, dict):
+            return
+        if "maxItems" in node or node.get("minItems", 0) not in (0, 1):
+            problems.append(f"{path}: array bound")
+        if "enum" in node and not node["enum"]:
+            problems.append(f"{path}: empty enum")
+        if node.get("type") == "object" and node.get("additionalProperties") is not False:
+            problems.append(f"{path}: open object")
+        for key, value in node.items():
+            walk(value, f"{path}/{key}")
+
+    walk(schema, "")
+    return problems
+
+
+@pytest.mark.parametrize("provider", ("anthropic", "openai"))
+def test_the_unlinked_arm_has_no_links_and_its_model_reply_carries_no_message(tmp_path,
+                                                                               provider):
+    """Wrong versions: unlinked keeps peer's links or forced message, its Claude schema carries an
+    empty recipient enum (what text_schema built from an empty list) or a keyword Claude rejects,
+    or the parser lets a message through."""
+    policy, _, _ = team("unlinked")
+    try:
+        assert set(policy.members) == set(CAPTAINS) and policy.card["links"] == []
+        assert policy.card["min_messages"] == policy.card["max_messages"] == {"captain": 0}
+    finally:
+        policy.close()
+    view = member_view("unlinked", "centre")
+    assert view["command"]["rules"] == {"channel_mode": "text", "text_bytes": 240, "slots": 64,
+                                        "min_messages": 0, "max_messages": 0, "recipients": []}
+    halt = [{"unit": "f1", "type": "halt"}]
+    member, send = model(tmp_path, "unlinked", "centre", {"orders": halt, "reason": "r",
+                                                          "notes": None, "messages": []}, provider)
+    assert member.decide(view) == halt and member.drain_messages() == []
+    body = send.bodies[0]
+    rules = json.loads(local_team.TOPOLOGY_RULES_PATH.read_text())["unlinked"]["captain"]
+    assert rules in body["instructions"] and "cannot be sent" in rules and "empty" in rules
+    schema = body["text"]["format"]["schema"]
+    messages = schema["properties"]["messages"]
+    assert "minItems" not in messages
+    if provider == "anthropic":
+        assert claude_schema_problems(schema) == [] and "maxItems" not in messages
+    else:
+        assert messages["maxItems"] == 0
+    member, send = model(tmp_path, "unlinked", "centre", {
+        "orders": halt, "reason": "r", "notes": None, "messages": [text("left_infantry")]},
+        provider)
+    with pytest.raises(PolicyFailure):
+        member.decide(view)
+    assert len(send.bodies) == 1 and member.drain_messages() == []
 
 
 # The v1 identity check: v1_digest, in a module of this name, ran on 220450c's src and configs

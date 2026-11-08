@@ -268,11 +268,14 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   public battle state
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
-  version 2 text mode, which checks every sender and recipient pair against the arm's links
+  version 2 text mode, which checks every sender and recipient pair against the arm's links, and
+  its muted form, which accepts texts and delivers none
 - `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probes;
-  version 2's peer, relay and overview arms, the commander member and its stage-1 probes
-- `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer and overview) and
-  foils (fixed schedule, central concentration) for the communication-structure stage 2
+  version 2's peer, relay and overview arms, the muted control (peer to its members, nothing
+  delivered) and the unlinked one (no links, no messages), the commander and its stage-1 probes
+- `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
+  and foils (fixed schedule, central concentration, `ThinkingRush`) for the
+  communication-structure stage 2; each sleeps a model-like think time per decision
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition; a version 2 star arm's
   `local_team` node takes the commander, whose model leaf gets its own prompt
 - `src/twwarhammer3/battle/graph.py`: resumable graph nodes
@@ -320,7 +323,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/local_commander_prompt.md`: the commander prompt of C's relay and
   overview arms
 - `configs/twwarhammer3/local_topology_rules.json`: the rules section each version 2 arm adds
-  for captains and the commander
+  for captains and the commander (muted uses peer's)
 - `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
 - `configs/twwarhammer3/graphs/`: graph controller files
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files

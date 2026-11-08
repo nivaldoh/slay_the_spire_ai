@@ -4310,6 +4310,24 @@
      "arm": "overview"
    }
  },
+ "emp-envelopment-c-muted-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-muted-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-envelopment-c-unlinked-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-unlinked-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "unlinked"
+   }
+ },
  "brt-air-relief-v1": {
    "name": "brt-air-relief-v1",
    "scenario_version": 1,

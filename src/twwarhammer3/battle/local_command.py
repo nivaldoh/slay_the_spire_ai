@@ -130,18 +130,21 @@ class Router:
     0ad3a61), where messages pass only along an adjacency mask, and MARBLE
     marble/agent/base_agent.py (ulab-uiuc/MARBLE at 8d60fa1), which lists each agent's allowed
     recipients as an enum in its message tool. MARBLE's handler checks only that the sender has
-    some link, so this checks every sender and recipient pair.
+    some link, so this checks every sender and recipient pair. A ``muted`` text router (the muted
+    arm) accepts and acknowledges as usual but records every arrival as undelivered.
     """
 
     # JUDGEMENT: Local channel ordering — Codex, 2026-11-05: messages ready on the same
     # observation are processed in acceptance order; delivery wins an exact expiry tie.
     # Sorting by due time or expiring at equality differs; member inputs depend on this.
 
-    def __init__(self, rendezvous, *, profile=None, enabled=True, mode="bounded", links=None):
+    def __init__(self, rendezvous, *, profile=None, enabled=True, mode="bounded", links=None,
+                 muted=False):
         if mode not in {"bounded", "fast", "none", "text"} or (mode == "text") != (
-                links is not None):
+                links is not None) or muted and mode != "text":
             raise ValueError("unknown local communication mode")
         self.links = None if links is None else frozenset(links)
+        self.muted = muted
         self.profile = {**PROFILE, **FAST_PROFILE, **(profile or {})}
         self.rendezvous = deepcopy(rendezvous)
         self.enabled = enabled and mode != "none"
@@ -270,6 +273,8 @@ class Router:
                 if pending["channel"] == "courier":
                     valid = (valid and distance(anchor or {}, self.rendezvous[name])
                              <= self.profile["rendezvous_m"])
+                if self.muted:  # the sender saw an acceptance; nothing reaches an input
+                    valid = False
                 record = {"sender": pending["sender"], "channel": pending["channel"],
                           "send": pending["send"], "sent_ms": pending["sent_ms"],
                           "source_ms": pending["source_ms"],
@@ -278,7 +283,8 @@ class Router:
                     self.inboxes[name].append(record)
                     self.known[name][(record["sender"], record["send"])] = deepcopy(record)
                 self.events.append({"event": "arrival", "recipient": name,
-                                    "delivered": valid, "record": deepcopy(record)})
+                                    "delivered": valid, "record": deepcopy(record),
+                                    **({"reason": "muted"} if self.muted else {})})
         self.pending = waiting
 
     def inbox(self, name):
