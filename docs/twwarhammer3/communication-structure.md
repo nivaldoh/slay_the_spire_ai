@@ -320,6 +320,47 @@ at 269.7 s. The overview witness won at 391.1 s, the first win on C v2 forces th
 local views; its commander's orders reached the cavalry and Greatswords at 6-7 s, where the peer
 witness's first moves came at 18-21 s, after the centre's first contact report. One launch each.
 
+**Stage 3 pilot, at `e174a7d`, Haiku 5.5 low, explore.** Seven launches in the card's order (P, O,
+R, then O, R, P, then S) cost $6.29 of the owner's $10 (WH3 Anthropic ledger $7.1042605 to
+$13.3923583), $0.76 to $1.15 each, 599 to 1,023 calls. Every launch reached an engine ending and
+lost, as expected at this floor; the card reads no outcome. No captain-to-captain text was delivered
+in R or O, no input or router row lacked its global frame, and every captain decision carried its
+one or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
+
+| Launch | Battle s | `taken` | USD | Forfeited replies | Delivered texts | Median age read (s) | Through the commander (s) |
+|---|---:|---:|---:|---|---:|---:|---:|
+| P 1 | 349.1 | 26.7 | 0.82 | centre 4 | 621 | 3.3 | |
+| P 2 | 316.3 | 30.0 | 0.81 | centre 1 | 645 | 3.3 | |
+| R 1 | 265.6 | 23.8 | 0.76 | none | 834 | 3.9 | 6.6 |
+| R 2 | 397.5 | 1.9 | 1.15 | centre 1 | 1,082 | 3.6 | 6.3 |
+| O 1 | 250.3 | 17.4 | 0.77 | centre 2, decisive 1 | 804 | 3.6 | 6.3 |
+| O 2 | 330.8 | 14.9 | 0.96 | centre 6 | 1,026 | 3.9 | 6.3 |
+| S 1 | 396.5 | 30.6 | 1.01 | centre 1, decisive 56 | 0 | | |
+
+- Gate: P, R and O passed (forfeits at most 6 per battle, about 5% of the worst agent's calls; cost
+  within 1.5 times the estimate). S failed the forfeit rule: its decisive cavalry lost 56 of 220
+  replies, each ordering its second regiment f8 at an enemy f8 was fighting about 108 m from the
+  anchor f7, outside the anchor's 160 m view, so the local target rule refused the whole reply. Two
+  marked rules combine here (JUDGEMENT `cannae-communication.md` Command groups and local knowledge
+  and JUDGEMENT `local_team.py` Local target authority, with no partial orders); changing either is
+  the owner's call. The other arms' forfeits were mostly the centre ordering cavalry it does not own.
+- Leader forming in P: the centre received 61% and 80% of delivered texts in the two P battles.
+- The commander's extra step: what captains read through the commander was a median 6.3 to 6.6 s
+  old, against 3.3 to 3.9 s for direct texts. The commander's inbox held a median 4 to 6 texts per
+  call (at most 10), the oldest a median 4.5 to 5.1 s old.
+- Grounding: of texts naming an enemy id, 0 to 16 per R or O battle named one the sender had neither
+  seen nor received, 41 and 0 in the P battles; many such names were roster references ("e9/e10 not
+  yet visible").
+
+**Listening, $0.29, after the pilot.** 17 recorded captain inputs per arm that held delivered mail,
+from the P, R and O pilot battles, each re-sent to Haiku twice as recorded and twice with the mail
+removed (`listening.py`, `listening.json`; its first summary wrongly dropped replies with no new
+orders, and the corrected one is `summary_corrected`). Orders differed between the two as-recorded
+re-asks in 3 of 17 (P), 2 of 17 (R) and 11 of 17 (O) inputs, and between as-recorded and mail-removed
+in 8 and 5 (P), 5 and 4 (R) and 10 and 9 (O). So mail changed some P and R captains' orders beyond
+the model's own re-ask noise, while O's captains varied so much between identical re-asks that this
+sample shows no effect of their mail. One sample of inputs, descriptive only.
+
 ## Measures
 
 The primary measure is one engine team result per fresh launch. A won battle counts as a win,
