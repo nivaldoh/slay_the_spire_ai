@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-08 (night window for the communication-structure study), verbatim: "Implement up to stage
+  3. I'll let you run overnight and will be back in ~10 hours. We'll set a budget of $10 here. Let's
+  ensure that the evals are working properly. Verify that the metodology is good (we have collected
+  some research material and guidelines to help with this). See if you can make things more
+  interesting (in terms of relevance, uniqueness, novelty, and whatever else) along the way if you
+  spot a good opportunity to change anything Since we have plenty of time available until I return,
+  you can also do additional useful things such as updating our visual benchmark HTML with the
+  results here. If you're done with all this and still have free time, you can start researching,
+  designing and implementing more battles (without raising the budget though)." Brief:
+  `runs/comm-build-20261108/brief.md`.
 - 2026-11-08 (WH3 peer messaging against a commander in one army), verbatim: "I think one
   interesting thing that we can study is battle performance for one-army multi-agent when the
   army's agents are allowed (and forced) to communicate directly with each other vs some kind of

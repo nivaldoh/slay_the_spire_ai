@@ -1,0 +1,13 @@
+{
+  "peer": {
+    "captain": "Message rules for this battle: you may message any of the other four captains directly. There is no commander. Every reply must carry one or two messages."
+  },
+  "relay": {
+    "captain": "Message rules for this battle: you may message only the commander, who commands no regiments and sees only what captains report to it. Captains cannot message each other. Every reply must carry one or two messages.",
+    "commander": "In this battle you see only what captains report to you. You may send up to five messages per reply, or none."
+  },
+  "overview": {
+    "captain": "Message rules for this battle: you may message only the commander, who commands no regiments and sees every friendly regiment and every enemy the army can see. Captains cannot message each other. Every reply must carry one or two messages.",
+    "commander": "In this battle you see every friendly regiment and every enemy the army can see, while each captain sees only what is near its own group. You may send up to five messages per reply, or none."
+  }
+}
