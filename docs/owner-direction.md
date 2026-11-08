@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-08 (WH3 second evaluation battle), `/goal` verbatim: "Research and identify one good battle
+  that we can use as our second eval battle for WH3. It should be a real-life siege battle where one
+  side had a clear disadvantage compared to the other side but still managed to win through
+  tactical superiority. Consider our eval/benchmark guidelines and research materials carefully.
+  Don't implement it yet, just write a careful, detailed, concrete plan for it."
+  [Haengju plan](twwarhammer3/haengju-eval.md); planning only, nothing built, run or measured.
 - 2026-11-08 (night window for the communication-structure study), verbatim: "Implement up to stage
   3. I'll let you run overnight and will be back in ~10 hours. We'll set a budget of $10 here. Let's
   ensure that the evals are working properly. Verify that the metodology is good (we have collected

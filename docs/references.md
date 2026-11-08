@@ -6,6 +6,26 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Haengju siege evaluation plan (2026-11-08)
+
+For the [second evaluation battle plan](twwarhammer3/haengju-eval.md). Each source guides the design
+and says nothing about the engine. Status as in the next section.
+- Encyclopedia of Korean Culture, [행주대첩](https://encykorea.aks.ac.kr/Article/E0062859): two
+  palisade lines and earth banks, under 10,000 Koreans with 1,000 monk soldiers, about 30,000
+  ("3만여 명") Japanese in seven divisions from about 6 a.m., the northwest breach and Gwon Yul's
+  counterattack, the arrow shortage and Yi Bin's two boats. Read, through a translating fetch.
+- Wikipedia, [Battle of Haengju](https://en.wikipedia.org/wiki/Battle_of_Haengju), citing Hawley,
+  *The Imjin War* (2005), pp. 318-323: about 2,300 against about 30,000, attacks in turn because
+  of limited space, Ukita's and Kobayakawa's breaches, 10,000 arrows by boat. Secondary.
+- M. G. Haynes, [Military Heritage article](https://warfarehistorynetwork.com/?p=100625): narrow
+  approach and hwacha on the heights. Read; a popular article that cites no sources.
+- Wikipedia, [Siege of Eger (1552)](https://en.wikipedia.org/wiki/Siege_of_Eger_(1552)),
+  [Siege of Jinju (1592)](https://en.wikipedia.org/wiki/Siege_of_Jinju_(1592)),
+  [Siege of Belgrade (1456)](https://en.wikipedia.org/wiki/Siege_of_Belgrade_(1456)) and
+  [Siege of Izmail](https://en.wikipedia.org/wiki/Siege_of_Izmail): figures for the rejected
+  candidates (Belgrade's sortie "by some accounts" spontaneous; Izmail 31,000 against 35,000 in
+  the article's text). Secondary.
+
 ## Communication structure in one army (2026-11-08)
 
 For the [peer and commander study](twwarhammer3/communication-structure.md). Status: "read" means
