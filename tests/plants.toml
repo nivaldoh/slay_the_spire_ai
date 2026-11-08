@@ -4025,3 +4025,21 @@ old = 'key = Path(row["output"]).resolve()'
 new = 'key = (plan, Path(row["output"]).resolve())'
 tests = ["tests/twwarhammer3/test_wh3_suite.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "lua-inf-guard-math-huge"
+guards = "an infinite core native read (bearing, men, hp) is an unreadable unit in the game's Lua, which has no math.huge"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = 'or (kind == "number" and (value ~= value or math.abs(value) == (1 / 0))) then'
+new = 'or (kind == "number" and (value ~= value or math.abs(value) == math.huge)) then'
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py::test_an_infinite_core_read_is_an_unreadable_unit_without_math_huge"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "lua-inf-guard-math-huge-coordinate"
+guards = "an infinite position read (get_x, get_z) is an unreadable unit in the game's Lua, which has no math.huge"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = 'if type(value) ~= "number" or value ~= value or math.abs(value) == (1 / 0) then'
+new = 'if type(value) ~= "number" or value ~= value or math.abs(value) == math.huge then'
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py::test_an_infinite_core_read_is_an_unreadable_unit_without_math_huge"]
+source = "2026-11-08 repo upkeep"

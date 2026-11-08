@@ -160,6 +160,29 @@ def test_morale_warning_and_flight_readiness_are_friendly_only():
     assert lua.globals().morale_queries == 1
 
 
+@pytest.mark.parametrize("target, field, value", [
+    ("position", "get_x", "1 / 0"), ("position", "get_z", "-1 / 0"),
+    ("unit", "bearing", "1 / 0"), ("unit", "number_of_men_alive", "1 / 0"),
+    ("unit", "unary_hitpoints", "-1 / 0")])
+def test_an_infinite_core_read_is_an_unreadable_unit_without_math_huge(target, field, value):
+    lua = runtime()
+    lua.execute("""
+        math.huge = nil  -- missing in the game
+        function context_rows() return {} end
+        local function returns(value) return function() return value end end
+        position = {get_x = returns(1), get_z = returns(2)}
+        unit = {position = returns(position), bearing = returns(90),
+                number_of_men_alive = returns(10), unary_hitpoints = returns(0.5),
+                is_routing = returns(false), is_shattered = returns(false),
+                is_in_melee = returns(false), is_moving = returns(false)}
+    """)
+    lua.execute(f"{target}.{field} = function() return {value} end")
+    _, _, record = load_battle(lua, "get", "round", "unit_record")
+    ok, error = lua.eval('function(f, u) return pcall(f, "e1", u, false, "infantry") end')(
+        record, lua.globals().unit)
+    assert ok is False and f"unreadable unit field {field}" in str(error)
+
+
 def test_deployment_reading_brings_both_sides_formation_into_the_setup_record():
     lua = runtime()
     lua.execute("""

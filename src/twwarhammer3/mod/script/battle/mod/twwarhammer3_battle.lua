@@ -194,7 +194,7 @@ local function unit_record(id, unit, mine, class)
     local function required(object, method, kind)
         local value = get(object, method, nil)
         if value == nil or (kind and type(value) ~= kind)
-                or (kind == "number" and (value ~= value or math.abs(value) == math.huge)) then
+                or (kind == "number" and (value ~= value or math.abs(value) == (1 / 0))) then
             error("unreadable unit field " .. method)
         end
         return value
@@ -202,7 +202,7 @@ local function unit_record(id, unit, mine, class)
     local position = required(unit, "position")
     local function coordinate(method)
         local value = position[method](position)
-        if type(value) ~= "number" or value ~= value or math.abs(value) == math.huge then
+        if type(value) ~= "number" or value ~= value or math.abs(value) == (1 / 0) then
             error("unreadable unit field " .. method)
         end
         return round(value, 1)
