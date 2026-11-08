@@ -21,7 +21,7 @@ GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md
 [Visual reports](twwarhammer3/reports.md): the [cooperation proposal](twwarhammer3/reports.md#cooperation-evidence-proposal) adopts no new score; reader feedback on the [suite report](twwarhammer3/reports.md#coordination-suite) remains open.
 
 Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
-Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): fixes that move no fingerprint landed ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`, decisions first: one cleanup line (4.2 GB, scripts never run) and branch `repo-upkeep-owner`.
+Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): fixes that move no fingerprint landed ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB); branch `repo-upkeep-owner` waits (decision 2).
 
 Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03). Later planning: [workflow](workflow.md#session-context-improvements).
 
