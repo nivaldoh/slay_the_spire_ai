@@ -155,6 +155,21 @@ def test_cli_provider_selects_its_own_ledger_and_default_model(tmp_path, monkeyp
     assert capsys.readouterr().out.endswith(f" spent ({ledger})\n")
 
 
+# A worktree has no runs/ and a typo names no file: both used to print $0.0000 spent.
+@pytest.mark.parametrize("typed", [True, False])
+def test_spend_refuses_a_ledger_that_does_not_exist(tmp_path, monkeypatch, capsys, typed):
+    missing = tmp_path / "antropic-spend.jsonl"
+    monkeypatch.setitem(cli.LEDGERS, "anthropic", missing)
+    monkeypatch.setattr(sys, "argv", ["wh3", "spend", "--provider", "anthropic",
+                                      *(["--ledger", str(missing)] if typed else [])])
+    with pytest.raises(SystemExit) as error:
+        main()
+    assert error.value.code == 2
+    captured = capsys.readouterr()
+    assert f"No spend ledger at {missing}" in captured.err and captured.out == ""
+    assert not missing.exists()
+
+
 def test_report_command_prints_the_text_and_saves_text_json_and_html(tmp_path, monkeypatch,
                                                                     capsys):
     a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won")])

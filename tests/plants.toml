@@ -4007,3 +4007,12 @@ old = "\n                # A force-killed supervisor may still hold the file: ke
 new = ""
 tests = ["tests/gameai/test_windows.py::test_owned_game_close_removes_the_windows_log_after_copying_it"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "wh3-spend-reads-missing-ledger-as-zero"
+guards = "twwarhammer3 spend refuses a ledger file that does not exist instead of printing $0"
+file = "src/twwarhammer3/__main__.py"
+old = "ledger = Ledger(path, budget_usd=0, must_exist=True)"
+new = "ledger = Ledger(path, budget_usd=0)"
+tests = ["tests/twwarhammer3/test_wh3_cli.py"]
+source = "2026-11-08 repo upkeep"

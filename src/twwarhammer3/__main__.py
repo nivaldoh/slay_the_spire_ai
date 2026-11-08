@@ -645,7 +645,11 @@ def main() -> int:
         from gameai.ledger import Ledger
 
         path = args.ledger or LEDGERS[args.provider]
-        print(f"${Ledger(path, budget_usd=0).spent:.4f} spent ({path})")
+        try:
+            ledger = Ledger(path, budget_usd=0, must_exist=True)
+        except FileNotFoundError as exc:
+            parser.error(str(exc))
+        print(f"${ledger.spent:.4f} spent ({path})")
         return 0
     return 1
 
