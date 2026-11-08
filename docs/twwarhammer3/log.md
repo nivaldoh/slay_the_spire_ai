@@ -46,10 +46,12 @@ hold or concentrate battles or on a scenario with no finished battle (the real r
 both); the Stop hook treats `manual_demo record` and `inventory_scenarios.py` as game jobs; a test for
 the witnesses' wing rule; stale status lines corrected (Anthropic ledgers $13.89, not $7.10).
 
-Waiting on branch `repo-upkeep-owner` (11 commits, 14 bugs, all moving the fingerprint): worker,
+Landed later the same day at the owner's word ("You can proceed with the git stuff"), 11 commits and
+14 bugs that move the report fingerprint, so jobs from here group apart from the night's: worker,
 capture folder, peer comparison, checkpoint timeout, wall-cap label, battle budget lock, provider
 error charges, `spend` with a missing ledger, suite double count with `--also`, the Lua infinity
-guard, and Windows-side game logs never deleted (3.64 GB on C:; owner script in the handoff).
+guard, and Windows-side game logs never deleted (the owner removed the 3.64 GB on C: with the
+handoff's script).
 
 ## 2026-11-08 (night): communication-structure stages 0-3, interim
 

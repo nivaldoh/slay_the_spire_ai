@@ -21,7 +21,7 @@ GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md
 [Visual reports](twwarhammer3/reports.md): the [cooperation proposal](twwarhammer3/reports.md#cooperation-evidence-proposal) adopts no new score; reader feedback on the [suite report](twwarhammer3/reports.md#coordination-suite) remains open.
 
 Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
-Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): fixes that move no fingerprint landed ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB); branch `repo-upkeep-owner` waits (decision 2).
+Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): its fixes landed, the last 14 moving the report fingerprint ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB).
 
 Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03). Later planning: [workflow](workflow.md#session-context-improvements).
 
@@ -106,5 +106,4 @@ Numbers are unchanged; open the relevant item before acting.
 - `tests-cleanup` (`ef90ec6`), `simplify-tests` (`2a36b13`): test-suite cleanups of 11-03, unmerged (decision 12).
 - `spire-teacher` (`72b9233`), `spire-env` (`0b879d4`, contains `spire-teacher`) and `spire-docfix` (`95797bb`, docs only), each in worktree `../slay_the_spire_ai-<name>`: the rule policy, a `RealGame` environment and Spire doc corrections of 2026-11-06; landing waits on decision 4 of `runs/spire-offline-20261106/handoff.md`.
 - `repo-improve-proposals` (worktree `../slay_the_spire_ai-repo-proposals`): 2026-11-06 changes that need the owner, one commit per choice; one-line choices in `runs/repo-improve-20261106/handoff.md`.
-- `repo-upkeep-owner` (worktree `../slay_the_spire_ai-repo-upkeep-owner`): 14 bug fixes of 2026-11-08, each tested and reviewed, that move the report fingerprint; decision 2 of `runs/repo-improve-20261108/handoff.md`.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
