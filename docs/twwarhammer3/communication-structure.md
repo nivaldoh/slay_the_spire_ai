@@ -1,7 +1,9 @@
 # Peer messages and a commander in one army
 
-Draft for owner review, 2026-11-08. Planning only: no code is written, and no game run, check or
-spending is approved. [Owner direction](../owner-direction.md):
+Draft for owner review, 2026-11-08. On the night of 2026-11-08 the owner asked for stages 0 to 3
+with a $10 cap; the build, the runs and their results are in
+[results so far](#results-so-far-night-of-2026-11-08) and `runs/comm-build-20261108/`. Stage 4 is
+not approved. [Owner direction](../owner-direction.md):
 
 > I think one interesting thing that we can study is battle performance for one-army multi-agent
 > when the army's agents are allowed (and forced) to communicate directly with each other vs some
@@ -39,8 +41,8 @@ being told that the commander sees more. Splitting these apart needs the
 [later arms](#later-expansions).
 
 Earlier studies found cases where a central position helped a group and cases where it hurt.
-None of them compares message structures for LLM agents in a battle that keeps running while
-they think:
+None of them compares message structures between LLM agents that each command part of one army
+in a battle that keeps running while they think:
 
 - Groups of five people solving a simple puzzle were faster when one central person collected
   the facts: on its best trials a wheel took about 32 s against 50 s for a circle (Leavitt 1951,
@@ -60,6 +62,12 @@ they think:
 - Topology studies on offline LLM tasks found no structure best everywhere (MacNet, Qian et al.
   2024). In one research scenario a flat star scored like a full mesh, while an extra level of
   hierarchy did worse (MultiAgentBench, Zhu et al. 2025).
+- The closest live-clock work is recent. ROAR (Wang et al. 2026) split control between models
+  under a live clock, with no messages, and found split and central teams within one standard
+  error. In TickingCollabBench (Yi et al. 2026) a central Minecraft model scored above per-bot
+  models that negotiate by message on all three tasks with GPT-5.1, at real-time success rates of
+  0.15 or less. GPTNT (Parekh et al. 2026) has messages under a live clock, but its roles split
+  information, not units ([thesis papers](../thesis/papers.md), checked entries).
 - In multi-agent RL, a master agent with the global state that messages local agents beat
   broadcast communication on StarCraft micro tasks (MS-MARL, Kong et al. 2017). In HAMMER, local
   agents that could not message each other but heard from a central agent with the full state
@@ -83,7 +91,7 @@ Until the owner answers question 1, the plan uses this meaning in every arm:
 - Every captain reply must carry one or two messages, each to an allowed recipient. The reply
   schema lists the allowed recipients and requires at least one message, and the parser checks
   both. A reply that breaks the rule is forfeited like any invalid reply: none of its orders are
-  used, and the captain is asked again. The router also rejects any message on a link outside the
+  used, and the captain is asked next from a fresh view, with no re-ask. The router also rejects any message on a link outside the
   topology, with the reason `link`, as a second guard.
 
 The commander may send zero to five messages per reply, because messages are its only output and
@@ -103,6 +111,12 @@ arm's results rest on it.
 | R, relay commander | Each captain to the commander only; the commander to any captain (10 links) | Its inbox, the lobby roster, the plan, the battle clock, the map terrain, the battle's objectives, and each group's unit ids and starting point |
 | O, overview commander | Same links as R | All of R's, plus every friendly regiment and every enemy the alliance can see (the view C's existing `global` arm gives) |
 
+Two reference arms sit outside the comparison. M, muted, has P's links and forcing, but every
+message is accepted and never delivered; only scripted teams use it, as stage 2's control for
+whether a witness's messages matter. S, unlinked, is five model captains with no links and no
+messages: the reference for whether messages help these captains at all, reported beside P, R
+and O and outside the tests.
+
 JUDGEMENT: Arm set — Claude, 2026-11-08: P, R and O, with O and R each against P under Holm.
 Two arms, other contrasts or a fixed order (O against P first at 5%) change what a result can
 say; the stage-4 design rests on it.
@@ -121,7 +135,8 @@ In all three arms:
   is in the captain's own view.
 - **Channel.** One addressed text channel with no added delay, at most 240 bytes per message and
   64 messages in flight per sender. A message reaches its recipient in the recipient's next model
-  call after the dispatcher receives it. Courier rendezvous points and signal ranges are not used,
+  call after the dispatcher's next observation. The inbox holds everything delivered since the
+  member's last call, oldest first, with no cap; with no delay the 64-message limit rarely binds. Courier rendezvous points and signal ranges are not used,
   because they would make the map's geometry part of each arm.
 - **Model and scheduling.** `claude-haiku-5-5` at low effort for every agent on one backend, and
   the asynchronous team dispatcher with one pending call per agent and no team-wide wait. A
@@ -242,9 +257,10 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
   3: whether the model arms run cleanly enough to freeze prompts and revision for stage 4.
 - **Stage labels.** Stage 1 and stage 3 are explore. Stage 2's gate round is a screen; witness
   development launches before it are explore, listed and kept, and never count toward the gate.
-- **Scripted timing.** Every scripted probe, witness and foil captain sleeps 2.0 s inside its worker
-  per decision, close to the Haiku captains' median think of 2.03 s in `c-model-smoke-02`; a
-  scripted commander sleeps 3.0 s. Scripted members obey the same forcing rule as model captains.
+- **Scripted timing.** Every scripted witness and foil captain sleeps 2.0 s inside its worker per
+  decision, close to the Haiku captains' median think of 2.03 s in `c-model-smoke-02`; a scripted
+  commander sleeps 3.0 s. The stage-1 probes at `5b7de0c` have no think time; they test mechanics
+  only. Scripted members obey the same forcing rule as model captains.
 - **Stage 2 gate round.** One committed queue plan, interleaving: the P witness (up to 5), the
   muted P witness (the same code and timing on `emp-envelopment-c-muted-v2`, where every message is
   accepted and never delivered; up to 5), and the silent local rush (up to 5). The O witness runs if
@@ -257,7 +273,7 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
 - **Cue.** The first 1 Hz replay frame in which a centre regiment is in melee while no enemy is
   within 160 m of the decisive cavalry's anchor; latest useful time is not estimated tonight.
 - **Stage 3.** P, R and O, two blocks of three in an order drawn from seed 20261108, plus one
-  silent model launch (arm S, `emp-envelopment-c-silent-model-v2`) only if the budget rule allows.
+  silent model launch (arm S, `emp-envelopment-c-unlinked-v2`) only if the budget rule allows.
   `--budget-usd 17.10` (WH3 Anthropic ledger $7.1042605 at start plus the owner's $10). A job starts
   only if the ledger total plus its arm's high estimate times 1.5 (P $1.95, R $2.10, O $2.25, S
   $1.95) is at most 17.10; otherwise the plan stops and later jobs are unstarted. Prompts are frozen
@@ -278,6 +294,21 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
   dispositions, the message funnel per link, link integrity, forced-rule compliance, the cue time
   and the traced chain for stage 1.
 
+## Results so far (night of 2026-11-08)
+
+All unverified: no check of C's mechanics is agreed, and every cell is one launch. Readings come
+from `runs/comm-build-20261108/gates.py`, whose definitions are fixed in its docstring.
+
+**Stage 1, at `5b7de0c`, $0, unpaused 1x, three scripted probe launches on v2.** In every arm the
+release message reached left infantry, its 40 m move was accepted, and its regiment moved east
+71 to 74 m within 30 s of the acknowledgement (peer: input at 6.1 s, applied 7.6 s; overview and
+relay: input at 7.9 s, applied 9.7 s, after the commander's forward). No captain-to-captain text
+was delivered in relay or overview, every captain decision carried one message (apart from
+messages discarded at the episode's close), and no input or router row lacked its global frame.
+All three lost (peer 329.9 s, overview 474.5 s, relay 410.3 s), as a rush-style probe is expected
+to on v2. The star probes sent no off-link text, so the live refusal of a captain-to-captain send
+was not exercised; the next probe revision adds one (card D).
+
 ## Measures
 
 The primary measure is one engine team result per fresh launch. A won battle counts as a win,
@@ -291,7 +322,10 @@ Secondary measures are descriptive. The experiment card defines each one before 
 
 | Measure | Definition |
 |---|---|
-| `taken`, `own`, `killed` | The suite's end-of-battle readings: percent of enemy men dead, routed or gone (100 on a win), the condition score of our army, and percent of enemy men dead |
+| Score, `taken`, `own`, `killed` | The score is 100 for an engine win and otherwise `taken`, the percent of enemy men dead, routed or gone at the ending (`suite.taken` is not 100 on every timer win, so the score sets it). Also the condition score of our army and the percent of enemy men dead. Each win's ending (rout or timer) is shown |
+| Transport and resources | Per agent: time from reply completion to the engine's acknowledgement, the share of mailbox cycles taken by commander replies, and calls, tokens and delivered bytes per battle minute |
+| Grounding | For each message naming a unit id: whether the sender could know it (its own view at the source time for captains, a report in its inbox for R, its view for O). Unmatched ids are counted as ungrounded |
+| Fact reach | For each cue and each enemy id named in a message: the first frame any group saw it, when it entered the dependent captain's input, and by which path (direct, through the commander, or by sight) |
 | Message funnel | Per link and agent: submitted, accepted, rejected by reason (link, size, slots, anchor), delivered, and read in the recipient's next call |
 | Information age at use | For each read message, the recipient's call time minus the sender's observation time. In R and O also the two-step age: from the observation time of the newest captain report in the commander call that produced the message, to the call of the captain who read it |
 | Commander load | At each commander call: inbox length, age of the oldest unread message and think time. Also the number of captain reports the commander never followed with any message |
@@ -301,7 +335,10 @@ Secondary measures are descriptive. The experiment card defines each one before 
 | Cost | Dollars, calls and tokens per launch, split between captains and commander, and dollars per win (undefined at zero wins) |
 | Link integrity | Delivered captain-to-captain messages in R and O. It must be zero |
 
-No combined coordination score is added.
+No combined coordination score is added. When the budget allows, a listening measure re-asks
+the same model on a fixed sample of recorded captain inputs with and without their delivered
+messages, so the change in orders shows whether messages changed decisions (after the causal
+influence idea in Lowe et al. 2019). It tests a decision, not an outcome.
 
 ## Statistics
 
@@ -429,7 +466,17 @@ Each needs its own card.
 
 - An open network with a commander: captains may message peers and the commander. Against R it
   isolates the link restriction, and against P the extra agent.
-- A silent model team, to check whether messages matter at all on the chosen battle.
+- A wheel, W: the centre captain is the hub for the other four, with five agents and no
+  commander. Against P it changes only the links, the classic wheel against all-channel contrast;
+  against R it shows what a hub without regiments adds.
+- A union view, U: the commander sees the union of the five captains' views, between R and O.
+  U against R measures automatic pooling against pooling by message, and O against U the
+  information beyond every captain's 160 m.
+- Paired branches from a battle checkpoint taken just before the cue, continued at 1x under each
+  arm, once a restore check for C's armies passes. Pairing at the start adds nothing: in the
+  register two controllers sharing one launch correlate at -0.18 on `taken` (109 pairs).
+- A C variant with B3's seeded reserve, so the side of the threat varies by launch and only the
+  nearest group sees it (a hidden event, which the owner decides).
 - A peer arm with a delay matched to the commander's extra step.
 - Equal-resource arms, with the commander's calls taken from the captains' budget.
 - Commander variants: a view around a fixed headquarters point, a delayed global view (an
@@ -439,12 +486,16 @@ Each needs its own card.
 - C's bounded channels (signals and couriers) with the link filter, so distance and rendezvous
   become part of the arm.
 - Two levels of command (commander, wing leaders, captains) and partial links between captains.
+- For stage 4, proposals from the methodology review for the owner: the score above as a primary
+  with a Welch t interval (Fisher on wins has power 0.16 for 0% against 20% at 15 per arm), a fixed
+  test order (O against P at 5% first, then R against P), and Boschloo's exact test in place of
+  Fisher. Review: `runs/comm-build-20261108/method-review.json`.
 - Other battles from the [coordination suite](benchmark.md#the-coordination-suite-suite-v1),
   larger armies, and allied armies in [native multiplayer](native-multiplayer.md).
 
 ## Questions for the owner
 
-1. **What does "forced" mean?** Now: nothing is built, and the page uses (a). (a, recommended) The
+1. **What does "forced" mean?** Now: (a) is built and runs tonight. (a, recommended) The
    links are the only way to send messages, and every captain reply carries one or two; the
    commander is not forced. This is the most literal reading of "allowed (and forced)" and keeps
    forcing equal across arms. (b) Fixed links only, and captains may stay silent. Message volume
@@ -454,7 +505,7 @@ Each needs its own card.
    toward a silent team. (c) A time floor: each captain must send at least one message every 10
    battle seconds, enforced by the dispatcher. This gives less chatter than (a) but needs more
    code.
-2. **Which arms go into the scored comparison?** Now: nothing is built, and stage 4 waits for its
+2. **Which arms go into the scored comparison?** Now: P, R and O are built; stage 4 waits for its
    own yes and cap. (a, recommended) P, R and O, 15 launches each (about $50 to $65, 6 to 8 game
    hours), with O and R each against P. R tests the links without a wider view and O with one. O
    against R is exploratory and also carries O's larger input and its captains' line about the
@@ -464,7 +515,7 @@ Each needs its own card.
    later if O differs. (c) P and R only, 20 each (about $42 to $54, 5 to 7 game hours). This is
    the cheapest test of the links with the same team observations, best if the commander's view
    can wait, and it leaves "different information" untested.
-3. **What may start now?** Now: nothing runs until you answer. (a, recommended) The offline build
+3. **What may start after tonight?** Tonight's stages 0 to 3 ran under your go-ahead. (a, recommended) The offline build
    and checks, then the $0 probes and the v2 construction test in a window you name (about 3.5 to
    5 game hours). The paid pilot and the scored comparison each wait for their own yes and cap.
    (b) v1 only, comparing how messages flow with no claim about results. This is the quickest look

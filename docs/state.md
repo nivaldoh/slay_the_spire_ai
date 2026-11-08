@@ -9,7 +9,7 @@ Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and 
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
-WH3 [peer messages against a commander](twwarhammer3/communication-structure.md) on Cannae C: spec saved for review (2026-11-08), nothing built or scheduled. Next: decision 14.
+WH3 [peer messages against a commander](twwarhammer3/communication-structure.md) on Cannae C: spec of 2026-11-08; stages 0-3 built and run on the night of 2026-11-08 (see the Active work line above). Next: decision 14.
 
 [Cannae A/B/C](twwarhammer3/cannae-eval.md#window-2-results-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; all games are closed and none is scheduled. Next: decision 13.
 
