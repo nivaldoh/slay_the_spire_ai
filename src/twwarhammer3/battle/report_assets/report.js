@@ -55,6 +55,8 @@
   const who = (entry) => entry.battle.commander;
   const isModel = (entry) => who(entry).kind === "model";
   const fullName = (entry) => [who(entry).name, who(entry).detail].filter(Boolean).join(", ");
+  // "Relay commander's", "Peer captains'".
+  const owner = (name) => (name.endsWith("s") ? `${name}'` : `${name}'s`);
   const percent = (share) => `${Math.round(share * 100)}%`;
   const median = (values) => quantile(values, 0.5);
   function quantile(values, q) {
@@ -1042,7 +1044,7 @@
     payload = decoded;
     if (payload?.frames?.length) Viewer.show(payload, context(entry));
     else Viewer.clear(problem || "No replay was recorded for this battle.");
-    $("map-army").textContent = `${who(entry).name}'s army`;
+    $("map-army").textContent = `${owner(who(entry).name)} army`;
     const highlights = payload?.highlights || [];
     featured = highlights.find((h) => h.feature) || highlights[0] || null;
     $("watch-featured").hidden = !featured;
@@ -1325,7 +1327,7 @@
     const open = button("", () => openRun(firstBattle, true), "panel-open");
     open.append(chart);
     if (frame) open.append(routeMap(item, frame));
-    open.setAttribute("aria-label", `Watch ${item.name}'s first battle here`);
+    open.setAttribute("aria-label", `Watch ${owner(item.name)} first battle here`);
     const card = el("figure", null, `commander ${item.kind}`);
     card.dataset.keys = item.battles.join(" ");
     const name = el("strong");
@@ -1512,9 +1514,55 @@
     $("chapter-text").textContent = marked >= 0 ? payload.highlights[marked].text || "" : "";
   }
 
+  // The fields of a JSON object's text as written ('"key": value'), split at its top-level
+  // commas outside strings.
+  function jsonFields(text) {
+    const out = [];
+    let depth = 0,
+      quoted = false,
+      start = 1;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === "\\") i++;
+        else if (c === '"') quoted = false;
+      } else if (c === '"') quoted = true;
+      else if (c === "{" || c === "[") depth++;
+      else if (c === "}" || c === "]") {
+        if (--depth === 0) out.push(text.slice(start, i).trim());
+      } else if (c === "," && depth === 1) {
+        out.push(text.slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    return out.filter(Boolean);
+  }
+
   // What the model receives and sends back: verbatim lines of one message, abridged.
   // Preferred: the first reply with orders whose message reports its previous delay.
   function excerpt(prompt) {
+    // A JSON message (a battle C captain's input) is one line with no sections: its fields
+    // instead, an object's fields one level down, each its verbatim text cut to its start.
+    if (prompt.startsWith("{")) {
+      try {
+        JSON.parse(prompt);
+        const cut = (text) => (text.length > 80 ? `${text.slice(0, 80)} ⋯` : text);
+        return jsonFields(prompt)
+          .flatMap((field) => {
+            const value = field.slice(field.indexOf(":") + 1).trim();
+            return value.startsWith("{") && value !== "{}"
+              ? [
+                  `${field.slice(0, field.indexOf(":"))}: {`,
+                  ...jsonFields(value).map((f) => `  ${cut(f)}`),
+                  "}",
+                ]
+              : [cut(field)];
+          })
+          .join("\n");
+      } catch {
+        // Not JSON after all: read as text below.
+      }
+    }
     const out = [];
     let keep = 0;
     for (const line of prompt.split("\n")) {
@@ -1561,7 +1609,7 @@
     $("interface-prompt").textContent = excerpt(d.prompt);
     $("interface-reply").textContent = reply;
     $("interface-caption").textContent =
-      `Verbatim lines, abridged (⋯), of the message behind ${who(entry).name}'s orders accepted at ${clock(d.applied_ms)} in the featured battle of ${scenario.title}, and its reply, one order per line.${system ? ` A fixed system prompt (the rules and the order format, ${system.split(/\s+/).length} words) comes first in every call; Run settings shows it.` : ""} Each decision's details in the viewer hold its full message and reply.`;
+      `Verbatim lines, abridged (⋯), of the message behind ${owner(who(entry).name)} orders accepted at ${clock(d.applied_ms)} in the featured battle of ${scenario.title}, and its reply, one order per line.${system ? ` A fixed system prompt (the rules and the order format, ${system.split(/\s+/).length} words) comes first in every call; Run settings shows it.` : ""} Each decision's details in the viewer hold its full message and reply.`;
   }
 
   function renderMethod() {

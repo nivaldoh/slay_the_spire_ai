@@ -42,6 +42,10 @@ PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/repla
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
                 "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json")
+# Battle C v2's arms (a scenario's `communication`, version 2), named by who may message whom
+# (docs/twwarhammer3/communication-structure.md, The arms).
+ARMS = {"peer": "Peer captains", "relay": "Relay commander", "overview": "Overview commander",
+        "unlinked": "No links", "muted": "Muted peers", "muted_overview": "Muted overview"}
 PROMPTS = {"llm": "prompt with tactical tips", "llm_rules": "rules-only prompt",
            "commander": "writes plans that scripted unit skills carry out"}
 VARIANTS = {"llm": "tactical tips", "commander": "plans"}
@@ -228,9 +232,14 @@ def commander(trial: dict, definition: dict) -> dict:
 
     # `short` tells rows of one name apart in tight spaces: effort, prompt variant (none for
     # rules only), gateway ("via OpenRouter") and added age.
+    scenario = definition.get("scenario") or {}
+    # A team on a battle C v2 arm is a compared method too; before 2026-11-08 its battles were
+    # probes, off the page and without a replay. C v1's arms stay probes.
+    communication = scenario.get("communication") or {}
+    if card.get("kind") == "composed" and communication.get("version") == 2:
+        return _arm(card, communication.get("arm"), detail)
     # A composed controller on a benchmark battle is a compared method, not a probe: without this
     # the suite's graph battles left the page without a replay (2026-11-04).
-    scenario = definition.get("scenario") or {}
     composed = card.get("kind") == "composed" and scenario.get("benchmark")
     if base in MODEL_POLICIES or composed or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
@@ -246,6 +255,29 @@ def commander(trial: dict, definition: dict) -> dict:
                 "detail": detail(f"scripted: {rule}"), "short": detail()}
     return {"kind": "diagnostic", "family": None, "name": "Diagnostic probe",
             "detail": detail(trial["policy"].split(":")[-1]), "short": detail()}
+
+
+def _arm(card: dict, arm: str | None, detail) -> dict:
+    """A team on a battle C v2 arm, a compared method (2026-11-08): named by its arm, a model
+    row when any member is a model (by model and effort), else a scripted row naming the
+    members' classes, so model and scripted teams of one arm never share a row."""
+    members = list(((card.get("disclosure") or {}).get("member_controllers") or {}).values())
+    agents = [m for m in members if m.get("kind") == "model"]
+    models = sorted({m.get("model") or "unknown model" for m in agents})
+    efforts = sorted({m["effort"] for m in agents if m.get("effort")})
+    scripts = sorted({(m.get("class") or m.get("name") or "unknown").split(":")[-1]
+                      for m in members if m.get("kind") != "model"})
+    name = ARMS.get(arm, arm or "Unnamed arm")
+    scripted = scripts and f"scripted members: {', '.join(scripts)}"
+    if not models:
+        return {"kind": "scripted", "family": "Scripted", "name": name,
+                "detail": detail(scripted or "no members recorded"),
+                "short": detail("scripted members")}
+    effort = efforts and f"{' and '.join(efforts)} reasoning"
+    gateway = any(m.get("provider") == "openrouter" for m in members) and "via OpenRouter"
+    return {"kind": "model", "family": " and ".join(models), "name": name,
+            "detail": detail(f"model members: {', '.join(models)}", effort, scripted, gateway),
+            "short": detail(effort, gateway), "prompt": None}
 
 
 def _share(numerator, denominator) -> float | None:
