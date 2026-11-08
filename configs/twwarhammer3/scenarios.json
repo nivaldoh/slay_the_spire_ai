@@ -4337,6 +4337,391 @@
      "arm": "unlinked"
    }
  },
+ "emp-wing-horse-south-v1": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-wing-horse-south-v1",
+   "scenario_version": 1,
+   "brief": "C v2's armies and native AI. Both enemy Knights start together on one wing, drawn per launch; the friendly Knights wings start 380 m apart. Win the battle; every legal engine win counts.",
+   "deployment": {
+     "friendly": [
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 60,
+         "z": -175,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 80,
+         "z": -225,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 80,
+         "z": -275,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 60,
+         "z": -325,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 0,
+         "z": -125,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 0,
+         "z": -375,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 65,
+         "z": -60,
+         "bearing": 90,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 5,
+         "z": -60,
+         "bearing": 90,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 65,
+         "z": -440,
+         "bearing": 90,
+         "width": 30
+       }
+     ],
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 250,
+         "z": -455,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 310,
+         "z": -455,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): A v2 forces; friendly Knights wings moved forward to (65,-60)/(5,-60) and (65,-440); both enemy Knights moved to one wing."
+ },
+ "emp-wing-horse-north-v1": {
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-north-v1",
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 250,
+         "z": -45,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 310,
+         "z": -45,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights on the north wing instead."
+ },
+ "emp-wing-horse-south-far-v1": {
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-far-v1",
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 420,
+         "z": -470,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 480,
+         "z": -470,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights 170 m further east, so they reach the south wing later."
+ },
+ "emp-wing-horse-south-silent-v1": {
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-south-peer-v1": {
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-south-muted-v1": {
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-wing-horse-north-silent-v1": {
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-north-peer-v1": {
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-north-muted-v1": {
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-wing-horse-south-far-silent-v1": {
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-south-far-peer-v1": {
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-south-far-muted-v1": {
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
  "brt-air-relief-v1": {
    "name": "brt-air-relief-v1",
    "scenario_version": 1,

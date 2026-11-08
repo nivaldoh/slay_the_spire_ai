@@ -512,6 +512,61 @@ agrees it.
   ran to the timer they would cost about $160 to $170, leaving about $23 to $33 of the $192.66
   left.
 
+## Massed horse variant (draft, 2026-11-08)
+
+Claude's draft for owner review, from the design in `runs/comm-build-20261108/battles-research.json`
+("Massed horse" and "Late horse"). No launch has run on it, and nothing here is verified.
+
+**The question.** In the one C v2 battle where it was measured, the containing cavalry fought
+inside the decisive cavalry's view in 66 of the decisive cavalry's 67 inputs, so no fact had to
+travel between the wings. Here both enemy Knights start on one friendly cavalry wing, 380 m from
+the other wing, which cannot see that fight. Does the other wing learn of the threat in time to
+help, and does a peer message carry the fact faster or more reliably than a relayed one?
+
+**The battles** (`configs/twwarhammer3/scenarios.json`). Each is A v2's armies, map and settings
+with the friendly Knights moved: the decisive pair to (65,-60) and (5,-60), the containing
+regiment to (65,-440). Only the start of the two enemy Knights differs between the three:
+
+- `emp-wing-horse-south-v1`: (250,-455) and (310,-455), on the containing wing.
+- `emp-wing-horse-north-v1`: (250,-45) and (310,-45), on the decisive wing.
+- `emp-wing-horse-south-far-v1`: (420,-470) and (480,-470), 170 m further east, so they may reach
+  the containing wing later (unmeasured).
+
+A run plan chooses the draw for each launch by its scenario name, which reaches no policy; the
+enemy roster and every other start point are the same in all three. Each has a `silent` arm
+(communication version 1, for the scripted foils) and `peer` and `muted` arms (version 2), named
+`emp-wing-horse-<draw>-<arm>-v1`. C's groups, plan v2, witnesses and controller files are reused
+unchanged. Relay, overview and unlinked arms are added only after a draw-matched witness passes.
+Offline checks: `tests/twwarhammer3/test_wh3_wing_horse.py`.
+
+**The fact that must travel.** On the south draws the containing captain sees the horse and the
+decisive wing does not. The decisive wing must set off at least one ride before the containing
+wing breaks: about 49 s for 380 m at the 7.8 m/s the designer read from traces. On the far draw
+the fact is also when the horse arrive. On the north draw the decisive wing sees the horse, and
+the containing wing must come north or strike the enemy infantry. The latest useful time is the
+threatened wing's last able frame in rush and muted launches, minus the ride.
+
+**Planned kill test** ($0, unpaused 1x, about 10 minutes a launch, in a window the owner names).
+`CentralConcentration` (`cannae-local-concentrate.json`) and `ThinkingRush`
+(`cannae-local-rush-think.json`) on the silent arm of each draw, six launches, before any witness
+launch. A foil win ends the design, because it shows the cavalry can win with no message. Read
+the 25 m placement match, each enemy Knights' first melee opponent, the threatened wing's last
+able frame and the ending.
+
+JUDGEMENT: Wing horse draw — Claude, 2026-11-08: which wing (and near or far) the enemy Knights
+start on is chosen per launch, a hidden fact C otherwise excludes. A fixed side lets a team prepare
+for it with no message; every `emp-wing-horse-*-v1` entry in `scenarios.json` rests on it.
+
+JUDGEMENT: Wing horse geometry — Claude, 2026-11-08: friendly Knights wings 380 m apart, at
+(65,-60)/(5,-60) and (65,-440). Closer wings see each other's fight; the cue and the deadline rest
+on it.
+
+JUDGEMENT: Wing horse force — Claude, 2026-11-08: A v2's harder enemy. A v1's Swordsmen front
+(hold won 8 of 8 on `emp-envelopment-b-v2`, 2026-11-05) may win unaided; every result rests on it.
+
+JUDGEMENT?: Wing horse plan — Claude, 2026-11-08: the arms reuse plan v2 unchanged, since its text
+stays true. A plan naming the wing threat changes what captains attempt; the model arms rest on it.
+
 ## Later expansions
 
 Each needs its own card.
