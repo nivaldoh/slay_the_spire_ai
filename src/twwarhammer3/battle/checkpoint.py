@@ -425,6 +425,11 @@ def seq_gaps(logged: list[dict], grid: int | None = None) -> list[list[int]]:
                      and b["time_ms"] == a["time_ms"] + grid)]
 
 
+def own_detach(row: dict) -> bool:
+    """The runner's own detach, after STOP or at its --seconds deadline: not a fault."""
+    return row.get("event") == "detached" and row.get("reason") == "application-requested"
+
+
 def classify(rows: list[dict], logged: list[dict], plan: dict, runner_end: dict | None) -> dict:
     """The attempt's status from the agent's event stream and the observation log.
 
@@ -435,7 +440,8 @@ def classify(rows: list[dict], logged: list[dict], plan: dict, runner_end: dict 
     result = next((row for row in logged if row["observation"].get("result")), None)
     done = next((i for i, row in enumerate(rows) if row.get("event") == "done"), None)
     end = result["native_rows"] if result else done + 1 if done is not None else len(rows)
-    fault = next(((i, row) for i, row in enumerate(rows[:end]) if row.get("event") in FAULTS), None)
+    fault = next(((i, row) for i, row in enumerate(rows[:end])
+                  if row.get("event") in FAULTS and not own_detach(row)), None)
     late = [row for row in rows[end:] if row.get("event") in ("error", "frida_error")
             or (row.get("event") == "detached" and row.get("reason") != "application-requested")]
     verdict = {"end_row": end, "late_fault": late or None, "status": None, "reason": None}
@@ -456,6 +462,14 @@ def classify(rows: list[dict], logged: list[dict], plan: dict, runner_end: dict 
             return {**verdict, "status": "injection_failed", "reason": row.get("message")}
         return {**verdict, "status": "restore_fault" if restore else "infrastructure",
                 "reason": row}
+    if any(own_detach(row) for row in rows[:end]):
+        # The runner detached itself before any ending: after STOP (a timeout) or at its
+        # --seconds deadline, which can fall just before a result observation is logged.
+        # JUDGEMENT?: unwatched_result — Claude, 2026-11-08: such a result is infrastructure,
+        # not scored as the engine reported it (the agent no longer checked its checksums);
+        # that attempt's status, reward and one re-execution rest on it.
+        return {**verdict, "status": "infrastructure",
+                "reason": "agent_deadline" if result else (runner_end or {}).get("by", "no ending")}
     if result:
         ending = play.engine_ending(result["observation"])
         return {**verdict, "status": ending["result"], "engine_ending": ending}
@@ -633,6 +647,8 @@ def follow(log_path: Path, agent: subprocess.Popen, mailbox: Mailbox, output: Pa
                     return ended
             else:
                 for row in rows[checked:]:
+                    if own_detach(row):  # STOP is touched after follow: the deadline
+                        return {"by": "agent_deadline"}
                     if row.get("event") in FAULTS:
                         return {"by": "fault", "row": row}
                     if row.get("event") == "done":

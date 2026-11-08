@@ -79,6 +79,35 @@ def test_a_won_result_observation_before_done_is_an_engine_result_and_the_tail_i
                                         "battle_ms": 180000, "timer": None}
 
 
+OWN_DETACH = {"event": "detached", "reason": "application-requested"}
+
+
+@pytest.mark.parametrize("plan", [{"checkpoint": RESTORE}, {"scenario": "land"}])
+@pytest.mark.parametrize("by", ["timeout", "agent_exit", "agent_deadline"])
+def test_a_run_without_an_ending_before_the_runners_own_detach_is_infrastructure(plan, by):
+    # The runner writes this detach after STOP or at its --seconds deadline; the plan
+    # ("Exposing checkpoint errors") makes a timeout infrastructure, re-executable once.
+    stream = rows()[:-3] + [OWN_DETACH]
+    verdict = checkpoint.classify(stream, [], plan, {"by": by})
+    assert (verdict["status"], verdict["reason"]) == ("infrastructure", by)
+    # A detach the runner did not ask for is still a fault after the handover.
+    killed = stream[:-1] + [{"event": "detached", "reason": "process-terminated"}]
+    if "checkpoint" in plan:
+        assert checkpoint.classify(killed, [], plan, {"by": by})["status"] == "restore_fault"
+
+
+def test_a_result_logged_after_the_runner_detached_at_its_deadline_is_not_scored():
+    # Rests on JUDGEMENT? src/twwarhammer3/battle/checkpoint.py unwatched_result: the agent
+    # stopped checking checksums when it detached, so the result is not scored.
+    stream = rows()[:-3] + [OWN_DETACH]
+    result = {"phase": "Complete", "result": "won", "time_ms": 180000, "remaining_ms": 900000}
+    verdict = checkpoint.classify(stream, [{"native_rows": len(stream), "observation": result}],
+                                  {"checkpoint": RESTORE}, {"by": "result"})
+    assert (verdict["status"], verdict["reason"]) == ("infrastructure", "agent_deadline")
+    assert classify(stream, [{"native_rows": len(stream) - 1, "observation": result}])[
+        "status"] == "won"
+
+
 def test_negative_controls_an_observation_only_watcher_and_a_message_prefix_rule_misclassify():
     # A checksum fault leaves the game playing a replay that looks live, the mod publishing.
     stream = rows(insert=[(1150, {"event": "error", "tick": 1150, "message": "differs"})])
@@ -420,6 +449,20 @@ def test_a_source_run_ends_at_its_result_and_records_saves_it_never_reached(tmp_
     logged = checkpoint.read_observations(tmp_path)
     assert [r["observation"]["seq"] for r in logged] == [190, 300]
     assert logged[1]["native_rows"] == 951
+
+
+@pytest.mark.parametrize("reason,by", [("application-requested", "agent_deadline"),
+                                       ("process-terminated", "fault")])
+def test_follow_ends_at_the_runners_own_detach_as_its_deadline_not_a_fault(tmp_path, reason, by):
+    # Before STOP, the runner detaches itself only at its --seconds deadline.
+    log = tmp_path / "native.jsonl"
+    log.write_text("")
+    ticks = [{"event": "tick", "tick": t, "checksum": t} for t in range(1, 50)]
+    script = [(ticks, observation(4900, 1)),
+              ([{"event": "detached", "reason": reason}], observation(5200, 2))]
+    end = checkpoint.follow(log, Agent(), Reader(log, script), tmp_path, {},
+                            {"episode_timeout_s": 30})
+    assert end["by"] == by
 
 
 def write_attempt(run: Path, stream, logged, ending=None):
