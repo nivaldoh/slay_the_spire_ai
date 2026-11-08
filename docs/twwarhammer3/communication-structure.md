@@ -245,6 +245,11 @@ launches took 7.7 to 10.2 minutes of wall time each, and a timer-length battle t
 | 3. Paid pilot | P, R and O with Haiku, 2 launches each, in two blocks of three | 6 | about $6.5 to $8.5 (about $20 at the timer) | about 1 | No harness failure. Forced-rule forfeits under 10% of each agent's calls. Zero captain-to-captain deliveries in R and O. Every recorded model input and router entry has its full-battlefield snapshot ([row 5](cannae-eval.md#proposed-deciding-checks-2026-11-05) of the proposed Cannae deciding checks, which scripted launches cannot show). Cost within 1.5 times the estimate. Prompts and revision are then frozen |
 | 4. Scored comparison | P, R and O, 15 fresh launches each, in 15 blocks of one launch per arm, with a recorded random order and balanced first slots | 45 | about $50 to $65 (about $150 at the timer) | about 6 to 8 (about 16.5 at the timer) | Gives the comparison's result for these prompts at this revision, unverified unless the proposed checks are agreed and pass there. Follow-up work only if a contrast resolves and the owner agrees again |
 
+What ran on the night of 2026-11-08 differs from row 2: the fixed-schedule and central-concentration
+foils did not run on C v2 (concentration ran only on Massed horse), the R witness was built but did
+not run (it waited on a peer pass), and the muted controls and the rush with think time replaced
+them; the card below records the round as run.
+
 The prompts are tuned on the same battle that stages 3 and 4 score, and no launches are kept
 aside as a separate test.
 
@@ -348,8 +353,9 @@ launches ran from `stage2.py` under the pre-registered order and stopping rules 
   battle is not shown to separate the arms, and the stage-3 pilot below cannot compare P, R and O.
   The pilot still says something about the models' play: each of its six P, R and O launches took
   less of the enemy (1.9 to 30.0) than each of the ten scripted launches without delivered messages
-  at 2.0 s think time (30.6 to 68.5), at similar order ages; one launch per pilot cell and no
-  planned comparison. The second round (muted peer witness, R witness) did not run.
+  at 2.0 s think time (30.6 to 68.5), at similar order ages; one launch per pilot cell, at
+  different revisions, and a comparison chosen after looking at the results. The second round
+  (muted peer witness, R witness) did not run.
 - The overview witness with its mail cut ran the same code and views and lost all 5, 4 of them
   executed foil launches, while the witness won 2 of 4 (Fisher exact test, p about 0.17 against 0 of
   5; 0.43 against the 4 executed). With wins counted as 100, the witness's mean `taken` was 85.7 and
@@ -375,8 +381,13 @@ launches ran from `stage2.py` under the pre-registered order and stopping rules 
   launches fired for the containing wing at 30 to 63 s, 6 of 6 north launches for the decisive wing
   at 30 to 49 s, none at a final frame; `cue-check.json`). On C v2 the overview witness never had a
   cavalry wing fighting out of the other's sight, while every mail-cut launch did (at 94 to 150 s):
-  the commander's orders kept its wings within sight of each other. The new detector is a proposal;
-  the card's definition stands for tonight's gate.
+  the commander's orders kept its wings within sight of each other. This check is weak: the
+  final-frame expectation holds by construction (the detector skips the last frame and frames after
+  the ending), and which wing fights first follows from the Massed horse layout, so it shows the
+  detector reports what the layout implies, not that it finds useful cues. The new detector is a
+  proposal; the card's definition stands for tonight's gate. The card's own cue was never checked
+  offline before the round, as the methodology review asked; run on `c-silent-rush-01` it fires at
+  33.1 s, the same defect the round then showed.
 
 JUDGEMENT?: Wing cue — Claude, 2026-11-08: the cue is a cavalry regiment in melee over 160 m from
 the other wing's anchor (`gates.py` `wing_cue`). Another radius or a centre-based cue changes which
@@ -471,9 +482,9 @@ it stays unverified under the owner's rule until one is agreed (a proposal is in
 | Offline tests of the v2 arms (`test_wh3_local_topology.py`, `test_wh3_local_scripts.py`, `test_wh3_report_comm_arms.py`, `test_wh3_wing_horse.py`) | Links, forcing, commander scheduling and views, muted delivery, mail on forfeit, report classification and the Massed horse entries behave as specified | Component level; fake observations |
 | Full plant replay, `scripts/check.py --plants` at `65481c9` | 418 of 420 planted wrong versions caught, including all 12 `local-v2-*` plants from tonight; the 2 misses are the known ones on the status page | Only the bugs someone thought to plant |
 | Live probes at 1x (`s1-*`, `s1b-relay-probe-01`, `s1c-overview-probe-01`) | Messages travel from sender to engine effect in every arm, links refuse off-link sends live, and every input and router row has its global frame | One launch per arm |
-| Stage-2 gate | It did its job: it found that C v2 is not reliably winnable through local views at model timing, so model losses there are not read as weak tactics | Gate thresholds are Claude's (marked) |
+| Stage-2 gate | It ran as pre-registered and kept its failure: no scripted witness reached 4 of 5 at model timing (2 of 4 and 1 of 3), so model losses there are not read as weak tactics. A losing witness shows only that these scripts fail there | Gate thresholds are Claude's (marked); the cue part was broken, and no replay or concentration foil ran on C v2 |
 | Independent recounts (`review-night-1.json`, `review-night-2.json`, a final recheck) | Every number on this page was recomputed from raw records by a reviewer; their corrections are applied | Reviewers can share blind spots |
-| Wing cue detector | Met all three expectations written before it ran, on 18 Massed horse launches | A proposal (JUDGEMENT? Wing cue) |
+| Wing cue detector | Met three expectations written before it ran, on 18 Massed horse launches | A weak check (one expectation holds by construction, the others follow from the layout); a proposal (JUDGEMENT? Wing cue) |
 | Report browser check (`check_wh3_report_browser.cjs`) | The page built from 18 night jobs matched the collector's JSON until line 310, where the check assumes a first decision with orders; the page correctly says "this reply" for an empty one (`replay.js` line 1266) | The check needs a team-battle case; not edited tonight |
 
 ## Measures
