@@ -111,9 +111,10 @@ arm's results rest on it.
 | R, relay commander | Each captain to the commander only; the commander to any captain (10 links) | Its inbox, the lobby roster, the plan, the battle clock, the map terrain, the battle's objectives, and each group's unit ids and starting point |
 | O, overview commander | Same links as R | All of R's, plus every friendly regiment and every enemy the alliance can see (the view C's existing `global` arm gives) |
 
-Two reference arms sit outside the comparison. M, muted, has P's links and forcing, but every
-message is accepted and never delivered; only scripted teams use it, as stage 2's control for
-whether a witness's messages matter. S, unlinked, is five model captains with no links and no
+Three reference arms sit outside the comparison. M, muted, has P's links and forcing, but every
+message is accepted and never delivered; M-O, muted overview, does the same with O's links and
+views. Only scripted teams use them, as stage 2's controls for whether a witness's messages
+matter. S, unlinked, is five model captains with no links and no
 messages: the reference for whether messages help these captains at all, reported beside P, R
 and O and outside the tests.
 
@@ -261,15 +262,17 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
   decision, close to the Haiku captains' median think of 2.03 s in `c-model-smoke-02`; a scripted
   commander sleeps 3.0 s. The stage-1 probes at `5b7de0c` have no think time; they test mechanics
   only. Scripted members obey the same forcing rule as model captains.
-- **Stage 2 gate round.** One committed queue plan, interleaving: the P witness (up to 5), the
-  muted P witness (the same code and timing on `emp-envelopment-c-muted-v2`, where every message is
-  accepted and never delivered; up to 5), and the silent local rush (up to 5). The O witness runs if
-  time allows (up to 5). Stopping: a witness stops at its fourth win or second loss; a foil at its
-  first win. Gate: the P witness wins at least 4 of 5, the muted witness and the rush lose all their
-  launches, and the cue occurs in at least 2 P-witness launches. A foil launch counts only if each
-  group gave an accepted attack before the ending. A failed gate is kept and not rerun without a
-  logged change. The R witness (P witness captains plus a forwarding inbox-only commander) runs only
-  after a P pass.
+- **Stage 2 gate round.** Revised at 04:05 local, after the two development launches and before any
+  gate launch, because the overview witness won its development launch and the peer witness lost.
+  `runs/comm-build-20261108/stage2.py` runs, in rounds shuffled from seed 20261108 + round: the
+  overview witness (up to 5), the same witness on `emp-envelopment-c-muted-overview-v2`, where every
+  message is accepted and never delivered (up to 5), the peer witness (up to 5), and the silent local
+  rush with the 2.0 s think time (up to 5). Only if the peer witness passes, a second round runs the
+  muted peer witness and the R witness (up to 5 each). Stopping: a witness stops at its fourth win or
+  second loss; a foil at its first win. A witness passes at 4 of 5 when its muted control and the
+  rush lose all their launches, and the cue occurs in at least 2 of its launches. A foil launch counts
+  only if each group gave an accepted attack before the ending. A failed gate is kept and not rerun
+  without a logged change.
 - **Cue.** The first 1 Hz replay frame in which a centre regiment is in melee while no enemy is
   within 160 m of the decisive cavalry's anchor; latest useful time is not estimated tonight.
 - **Stage 3.** P, R and O, two blocks of three in an order drawn from seed 20261108, plus one
@@ -307,7 +310,15 @@ was delivered in relay or overview, every captain decision carried one message (
 messages discarded at the episode's close), and no input or router row lacked its global frame.
 All three lost (peer 329.9 s, overview 474.5 s, relay 410.3 s), as a rush-style probe is expected
 to on v2. The star probes sent no off-link text, so the live refusal of a captain-to-captain send
-was not exercised; the next probe revision adds one (card D).
+was not exercised; the next probe revision adds one (card D). That rerun, `s1b-relay-probe-01` at
+`e174a7d`, refused right infantry's text to left infantry with reason `link` and delivered none
+across links, and its release chain matched (input 8.2 s, applied 10.0 s, 79 m east in 30 s).
+
+**Stage 2 witness development, at `5b7de0c`, $0, explore (never counted toward the gate).** Both
+witnesses ran with no think time, so they decided faster than the model arms. The peer witness lost
+at 269.7 s. The overview witness won at 391.1 s, the first win on C v2 forces through captains'
+local views; its commander's orders reached the cavalry and Greatswords at 6-7 s, where the peer
+witness's first moves came at 18-21 s, after the centre's first contact report. One launch each.
 
 ## Measures
 
