@@ -259,6 +259,25 @@ def test_each_wh3_game_command_is_a_game_job(tmp_path, sub):
     assert stop_check.game_job_running(tmp_path)
 
 
+# AGENTS.md and docs/spire/AGENTS.md list both as running a real game; the hook missed them.
+@pytest.mark.parametrize("arguments,running", [
+    (["-m", "twwarhammer3.battle.manual_demo", "record", "--output", "x"], True),
+    (["-m", "twwarhammer3.battle.manual_demo", "--help"], False),
+    (["-m", "twwarhammer3.battle.manual_demo", "label-pauses", "x", "labels.json"], False),
+    (["scripts/inventory_scenarios.py", "--output", "x"], True),
+    (["/repo/scripts/inventory_scenarios.py", "--output", "x"], True),
+    (["scripts/inventory_scenarios.py", "--help"], False),
+    (["scripts/inventory_scenarios.py", "-h"], False),
+    (["reader.py", "scripts/inventory_scenarios.py"], False),
+])
+def test_a_manual_demo_recording_and_the_spire_inventory_are_game_jobs(tmp_path, arguments,
+                                                                        running):
+    (tmp_path / "36").mkdir()
+    (tmp_path / "36/cmdline").write_bytes(
+        "\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
+    assert stop_check.game_job_running(tmp_path) is running
+
+
 def test_a_python_process_running_the_queue_is_a_game_job(tmp_path):
     (tmp_path / "40").mkdir()
     (tmp_path / "40/cmdline").write_bytes(b"/v/bin/python\0scripts/wh3_queue.py\0plan.json\0")

@@ -3910,3 +3910,12 @@ old = '''if any(m.get("channel") != "text" for m in messages):'''
 new = '''if False:'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
 source = "2026-11-08 card D of the communication-structure build (review of 220450c..5b7de0c)"
+
+[[plant]]
+id = "stop-hook-misses-manual-demo-record"
+guards = "The Stop hook runs no check beside a manual demonstration recording"
+file = "scripts/hooks/stop_check.py"
+old = "                 \"twwarhammer3.battle.manual_demo\": (\"record\",),\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_manual_demo_recording_and_the_spire_inventory_are_game_jobs"]
+source = "2026-11-08 repo upkeep"
