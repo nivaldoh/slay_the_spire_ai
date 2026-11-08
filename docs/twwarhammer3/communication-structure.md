@@ -577,7 +577,8 @@ agrees it.
 ## Massed horse variant (draft, 2026-11-08)
 
 Claude's draft for owner review, from the design in `runs/comm-build-20261108/battles-research.json`
-("Massed horse" and "Late horse"). No launch has run on it, and nothing here is verified.
+("Massed horse" and "Late horse"). Its kill test ran on 2026-11-08 at `4509dd4` (below); nothing
+here is verified.
 
 **The question.** In the one C v2 battle where it was measured, the containing cavalry fought
 inside the decisive cavalry's view in 66 of the decisive cavalry's 67 inputs, so no fact had to
@@ -608,12 +609,19 @@ the fact is also when the horse arrive. On the north draw the decisive wing sees
 the containing wing must come north or strike the enemy infantry. The latest useful time is the
 threatened wing's last able frame in rush and muted launches, minus the ride.
 
-**Planned kill test** ($0, unpaused 1x, about 10 minutes a launch, in a window the owner names).
+**Kill test** ($0, unpaused 1x, about 10 minutes a launch; run on 2026-11-08 at `4509dd4`, plan
+`runs/comm-build-20261108/horse-kill.json`).
 `CentralConcentration` (`cannae-local-concentrate.json`) and `ThinkingRush`
 (`cannae-local-rush-think.json`) on the silent arm of each draw, six launches, before any witness
 launch. A foil win ends the design, because it shows the cavalry can win with no message. Read
 the 25 m placement match, each enemy Knights' first melee opponent, the threatened wing's last
 able frame and the ending.
+
+Result: all six foils lost, every group in each launch attacking and reaching melee (`gates.py`,
+`horse-gates.json`): concentration lost the south draw at 333.4 s (`taken` 40.7), north at 331.9 s
+(50.0) and far at 321.1 s (37.4); the rush with 2.0 s think time lost south at 475.0 s (58.6), north
+at 359.3 s (44.9) and far at 393.5 s (56.3). One launch each, so no foil is shown unable to win; the
+next step is the peer witness and its muted control on each draw.
 
 JUDGEMENT: Wing horse draw — Claude, 2026-11-08: which wing (and near or far) the enemy Knights
 start on is chosen per launch, a hidden fact C otherwise excludes. A fixed side lets a team prepare
