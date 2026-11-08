@@ -450,3 +450,36 @@ def test_build_records_enemy_displacements_and_the_scenarios_protected_units(tmp
         "f1": False, "f2": True, "f3": False, "e1": False}
     assert [(e["unit"], e["key"]) for e in data["events"] if e["kind"] == "rout"] == [
         ("f1", True), ("f2", True), ("f3", False)]
+
+
+def test_a_team_members_orders_act_on_its_own_source_state_not_the_dispatchers_poll(tmp_path):
+    # coord-detail--team--1's first batch: the dispatcher polled at 7.6 s, member ranged decided
+    # on its state at 5.2 s (behavior source_ms, team.py), the game applied it at 7.9 s. The page
+    # said 0.3 s old; the member's feedback delay, report.trial_metrics' order age, is 2.7 s.
+    episode = tmp_path / "episode-0000"
+    episode.mkdir()
+    source, poll = frame(5200, [unit()]), frame(7600, [unit(z=30)])
+    source["seq"], poll["seq"] = 1, 9
+    move = {"unit": "f1", "type": "move", "x": 0, "z": 100}
+    ack = {"applied_ms": 7900, "results": [{"index": 1, "unit": "f1", "ok": True}]}
+    records = [{"kind": "observation", "observation": source},
+               {"kind": "observation", "observation": poll},
+               {"kind": "decision", "seq": 9, "time_ms": 7600, "request": "r1", "orders": [move],
+                "behavior": {"member": "m1", "source_seq": 1, "source_ms": 5200}},
+               {"kind": "ack", "request": "r1", "ack": ack},
+               # A single controller decides on the poll it is given, even a graph whose
+               # behavior keeps an older source_ms (graph.py).
+               {"kind": "decision", "seq": 9, "time_ms": 7600, "request": "r2", "orders": [move],
+                "behavior": {"type": "graph", "source_seq": 1, "source_ms": 5200}},
+               {"kind": "ack", "request": "r2", "ack": ack},
+               {"kind": "observation", "observation": frame(8000, [unit(z=40)])}]
+    (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records))
+    data = replay.build(episode, {"config": {}, "scenario": {}})
+    team, single = data["decisions"]
+    assert (team["age_s"], team["basis_frame"], team["steps"][0]["text"]) == (
+        2.7, 0, "walk 100 m north")
+    assert team["displacements"][0]["metres"] == 40
+    assert (single["age_s"], single["basis_frame"], single["steps"][0]["text"]) == (
+        0.3, 1, "walk 70 m north")
+    assert "source_ms" not in single and single["displacements"][0]["metres"] == 10
+    assert report_html.timing(data)["ages"] == [2.7, 0.3]

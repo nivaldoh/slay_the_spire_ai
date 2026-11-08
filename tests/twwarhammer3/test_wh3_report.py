@@ -293,3 +293,35 @@ def test_report_counts_each_order_the_engine_refused_by_its_error(tmp_path):
     (tmp_path / "trace.jsonl").write_text(json.dumps(ack) + "\n")
     metrics = report.trial_metrics(tmp_path, {})
     assert metrics["rejections"] == {"engine: cannot_purchase_there": 2}
+
+
+def test_a_launch_where_neither_controller_of_a_pair_played_is_not_unpaired_for_it(tmp_path):
+    # benchmark-implementation.md, What the current code reports: an unpaired launch played one
+    # controller of the pair without its partner. dwf-sla-herald counted a launch that played
+    # only terrain_probe and llm as unpaired for attack_nearest vs hold.
+    a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won")])
+    b = make_job(tmp_path, "b", [("hold", -.2, "lost"), ("skills", .1, "won")])
+    c = make_job(tmp_path, "c", [("llm", 0, "lost")])
+    group, = report.collect([a, b, c])["groups"]
+    pairs = {(row["a"], row["b"]): row for row in group["paired"]}
+    both = pairs["hold / +0s", "skills / +0s"]
+    assert both["n"] == 2 and both["unpaired_instances"] == []
+    assert pairs["hold / +0s", "llm / +0s"]["unpaired_instances"] == sorted(
+        str(job.resolve()) for job in (a, b, c))
+
+
+def test_a_team_members_snapshot_age_runs_from_its_own_source_state(tmp_path):
+    # s3-peer-01's first batch: the dispatcher's record dates from its poll at 8.8 s, which is
+    # also when it dispatched; member centre decided on its state at 5.2 s (team.py source_ms).
+    event = {"kind": "decision", "time_ms": 8800, "decision_time_ms": 8800,
+             "behavior": {"member": "centre", "source_seq": 1, "source_ms": 5200}}
+    (tmp_path / "trace.jsonl").write_text(json.dumps(event) + "\n")
+    assert report.trial_metrics(tmp_path, {})["snapshot_age_at_decision_s"]["mean"] == 3.6
+
+    # A graph controller keeps its closed end node's source_ms on later decisions
+    # (graph-live-20261101/move); it has no member, so its age still runs from the poll.
+    graph = tmp_path / "graph"
+    graph.mkdir()
+    (graph / "trace.jsonl").write_text(json.dumps(
+        {**event, "behavior": {"type": "graph", "source_seq": 1, "source_ms": 5200}}) + "\n")
+    assert report.trial_metrics(graph, {})["snapshot_age_at_decision_s"]["mean"] == 0

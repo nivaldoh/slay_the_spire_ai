@@ -542,6 +542,9 @@ def read_trace(episode: Path) -> tuple[dict, list[dict], list[dict], dict]:
                 orders=[{"order": o, "status": "issued; acknowledgement missing"}
                         for o in record.get("orders", [])],
                 invalid=pending_invalid)
+            if behavior.get("member"):  # a team member decided on its own, older source state
+                decision.update({key: behavior[key] for key in ("source_seq", "source_ms")
+                                 if key in behavior})
             notes_text, pending_invalid = new_notes, None
             by_request[record["request"]] = decision
             decisions.append(decision)
@@ -646,15 +649,17 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
              base_stats((result.get("setup") or {}).get("unit_base_stats")))
     labels = {entry["id"]: entry["display"] for entry in roster}
     for decision in decisions:
-        basis = next((i for i, f in enumerate(ordered) if f.get("seq") == decision.get("seq")
-                      and f["time_ms"] == decision["time_ms"]), None)
+        seen_ms = decision.get("source_ms", decision["time_ms"])
+        basis = next((i for i, f in enumerate(ordered)
+                      if f.get("seq") == decision.get("source_seq", decision.get("seq"))
+                      and f["time_ms"] == seen_ms), None)
         applied = decision.get("applied_ms")
         after = next((i for i, f in enumerate(ordered)
                       if applied is not None and f["time_ms"] >= applied), None)
         steps = order_steps(decision, ordered[basis] if basis is not None else None, labels)
         decision.update(basis_frame=basis, after_frame=after,
                         latency_parts=latency_parts(decision),
-                        age_s=(applied - decision["time_ms"]) / 1000 if applied is not None
+                        age_s=(applied - seen_ms) / 1000 if applied is not None
                         else None,
                         reply_s=(decision.get("latency") or {}).get("think_s"),
                         steps=steps, summary=summary_lines(steps, labels))

@@ -857,7 +857,7 @@ const Viewer = (() => {
       const at = d.time_ms - d.plan_age_s * 1000;
       return { d, at, frame: Math.max(0, lastAtOrBefore(times, at)) };
     }
-    return d.basis_frame == null ? null : { d, at: d.time_ms, frame: d.basis_frame };
+    return d.basis_frame == null ? null : { d, at: d.source_ms ?? d.time_ms, frame: d.basis_frame };
   }
   function drawLag(layer, fi, now) {
     const view = viewOf(now);
@@ -1025,7 +1025,7 @@ const Viewer = (() => {
     // How old the view behind the latest reply is, second by second: drops when replies land.
     const replies = r.decisions
       .filter(answers)
-      .map((d) => [d.time_ms - (d.plan_age_s || 0) * 1000, d.applied_ms]);
+      .map((d) => [(d.source_ms ?? d.time_ms) - (d.plan_age_s || 0) * 1000, d.applied_ms]);
     const series = ageSeries(replies, [start, end]);
     const top = AGE_SCALE_S;
     const ageY = (age) => AGE_TOP + AGE_H - (Math.min(age, top) / top) * AGE_H;
@@ -1322,7 +1322,7 @@ const Viewer = (() => {
       fold(
         "Technical timing and cost",
         keyValues([
-          ["View seen (battle clock)", clockTenths(d.time_ms)],
+          ["View seen (battle clock)", clockTenths(d.source_ms ?? d.time_ms)],
           ["Accepted (battle clock)", d.applied_ms == null ? null : clockTenths(d.applied_ms)],
           ["Reply (wall clock)", d.reply_s == null ? null : seconds(d.reply_s)],
           ["Provider processing", parts.provider_s == null ? null : seconds(parts.provider_s)],

@@ -72,10 +72,13 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                 if kind == "decision":
                     kinds["logged_decisions"] += 1
                     kinds["orders"] += len(event.get("orders") or [])
+                    meta = event.get("behavior") or {}
                     if (event.get("decision_time_ms") is not None
                             and event.get("time_ms") is not None):
-                        snapshot_ages.append((event["decision_time_ms"] - event["time_ms"]) / 1000)
-                    meta = event.get("behavior") or {}
+                        # A team member decided on its own source state (team.py source_ms).
+                        seen = (meta.get("source_ms", event["time_ms"]) if meta.get("member")
+                                else event["time_ms"])
+                        snapshot_ages.append((event["decision_time_ms"] - seen) / 1000)
                     if meta.get("plan_age_s") is not None:
                         plan_ages.append(meta["plan_age_s"])
                     attempts.extend({**attempt, "member": meta.get("member")} for attempt
@@ -278,8 +281,9 @@ def paired_margins(a: str, b: str, trials: list[dict], flagged: set) -> dict:
                 **mean_interval(list(unflagged.values())),
                 "differences_by_instance": unflagged,
                 "excluded_instances": sorted(differences.keys() & flagged)},
-            "unpaired_instances": sorted(set(t["instance"] for t in trials)
-                                         - differences.keys())}
+            # Launches that played one of the two without its partner.
+            "unpaired_instances": sorted({t["instance"] for t in trials
+                                          if t["controller"] in (a, b)} - differences.keys())}
 
 
 def collect(jobs: list[Path], *, benchmark_plans: list[Path] | None = None) -> dict:

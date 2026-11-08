@@ -3919,3 +3919,21 @@ old = "                 \"twwarhammer3.battle.manual_demo\": (\"record\",),\n"
 new = ""
 tests = ["tests/test_hooks.py::test_a_manual_demo_recording_and_the_spire_inventory_are_game_jobs"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "replay-team-age-from-the-dispatch-poll"
+guards = "A team member's order age and basis frame run from its own source state (behavior source_ms), not the dispatcher's poll"
+file = "src/twwarhammer3/battle/replay.py"
+old = '        seen_ms = decision.get("source_ms", decision["time_ms"])'
+new = '        seen_ms = decision["time_ms"]'
+tests = ["tests/twwarhammer3/test_wh3_replay.py"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "report-unpaired-counts-launches-without-either-controller"
+guards = "A pair's unpaired launches are those where one of its two controllers played without its partner"
+file = "src/twwarhammer3/battle/report.py"
+old = "            \"unpaired_instances\": sorted({t[\"instance\"] for t in trials\n                                          if t[\"controller\"] in (a, b)} - differences.keys())}"
+new = "            \"unpaired_instances\": sorted(set(t[\"instance\"] for t in trials)\n                                         - differences.keys())}"
+tests = ["tests/twwarhammer3/test_wh3_report.py"]
+source = "2026-11-08 repo upkeep"
