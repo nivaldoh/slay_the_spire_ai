@@ -217,6 +217,27 @@ def test_overview_commander_orders_nothing_and_texts_only_new_or_due_targets():
         "decisive_cavalry": "target horse-south 260 -415 5500"}
 
 
+# Rests on JUDGEMENT src/twwarhammer3/battle/cannae.py Enemy wing labels.
+def test_witnesses_keep_a_horses_wing_from_where_it_was_first_known():
+    """Wrong version caught: a horse's wing set again at each sighting, so a horse first known at
+    z=-200 (north of the -250 midline) turns south at z=-330 and the containing cavalry go for it
+    (as test_wh3_cannae_support.py checks for cannae.py WingSupport)."""
+    peer = PeerWitness()  # learns of the horse only by message, so no visible-enemy fallback
+    for time_ms, z in ((29000, -200), (30000, -330)):
+        cue = record("left_infantry", f"seen {time_ms};horse-x cavalry 200 {z}", time_ms)
+        assert peer.decide(member_view("containing_cavalry", time_ms=time_ms + 500,
+                                       received=[cue])) == []
+    assert peer.wings == {"horse-x": "north"}
+    commander = OverviewWitnessCommander()
+    for time_ms, z in ((2000, -200), (2000 + REFRESH_MS, -330)):
+        commander.decide(member_view("commander", arm="overview", time_ms=time_ms,
+                                     enemy=[foe("horse-x", "cavalry", 200, z)]))
+        assert {m["to"]: m["text"] for m in commander.drain_messages()} == {
+            group: f"target horse-x 200 {z} {time_ms}"
+            for group in ("left_infantry", "decisive_cavalry")}
+    assert commander.wings == {"horse-x": "north"}
+
+
 def v1_state(time_ms):
     return {"schema": 1, "battle": "b1", "seq": 1, "time_ms": time_ms, "phase": "Deployed",
             "speed": 1, "remaining_ms": 1200000 - time_ms,
