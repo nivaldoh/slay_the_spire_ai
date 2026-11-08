@@ -66,6 +66,16 @@ def test_a_scripted_team_on_a_v2_arm_is_a_scripted_row_naming_its_classes(scenar
     who = commander(config, scenario)
     assert (who["kind"], who["name"], who["family"]) == ("scripted", name, "Scripted")
     assert who["detail"] == f"scripted members: {classes}"
+    # Catches one short label for every scripted row (review 2026-11-08: the witness and another
+    # scripted team of one arm read the same in the battle picker).
+    assert who["short"] == classes
+
+
+@pytest.mark.parametrize("arm", ["peer", "relay", "overview"])
+def test_a_stage_one_channel_probe_on_a_v2_arm_stays_a_diagnostic_probe(arm):
+    # Catches scoring the delivery probes (TextProbeMember, ProbeCommander) as compared methods
+    # (review 2026-11-08): they check delivery only and must stay off the page.
+    assert commander(f"cannae-{arm}-probe", f"emp-envelopment-c-{arm}-v2")["kind"] == "diagnostic"
 
 
 @pytest.mark.parametrize("scenario", ["emp-envelopment-c-v1", "emp-envelopment-c-global-v2"])

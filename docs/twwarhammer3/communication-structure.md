@@ -303,8 +303,8 @@ All unverified: no check of C's mechanics is agreed, and every cell is one launc
 from `runs/comm-build-20261108/gates.py`, whose definitions are fixed in its docstring.
 
 **Stage 1, at `5b7de0c`, $0, unpaused 1x, three scripted probe launches on v2.** In every arm the
-release message reached left infantry, its 40 m move was accepted, and its regiment moved east
-71 to 74 m within 30 s of the acknowledgement (peer: input at 6.1 s, applied 7.6 s; overview and
+release message reached left infantry, its move to x = 40 (about 42 m east) was accepted, and its
+regiment moved 35 to 40 m east before its next order (peer: input at 6.1 s, applied 7.6 s; overview and
 relay: input at 7.9 s, applied 9.7 s, after the commander's forward). No captain-to-captain text
 was delivered in relay or overview, every captain decision carried one message (apart from
 messages discarded at the episode's close), and no input or router row lacked its global frame.
@@ -312,7 +312,7 @@ All three lost (peer 329.9 s, overview 474.5 s, relay 410.3 s), as a rush-style 
 to on v2. The star probes sent no off-link text, so the live refusal of a captain-to-captain send
 was not exercised; the next probe revision adds one (card D). That rerun, `s1b-relay-probe-01` at
 `e174a7d`, refused right infantry's text to left infantry with reason `link` and delivered none
-across links, and its release chain matched (input 8.2 s, applied 10.0 s, 79 m east in 30 s).
+across links, and its release chain matched (input 8.2 s, applied 10.0 s, 38 m east before its next order).
 
 **Stage 2 witness development, at `5b7de0c`, $0, explore (never counted toward the gate).** Both
 witnesses ran with no think time, so they decided faster than the model arms. The peer witness lost
@@ -337,29 +337,48 @@ one or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
 | O 2 | 330.8 | 14.9 | 0.96 | centre 6 | 1,026 | 3.9 | 6.3 |
 | S 1 | 396.5 | 30.6 | 1.01 | centre 1, decisive 56 | 0 | | |
 
-- Gate: P, R and O passed (forfeits at most 6 per battle, about 5% of the worst agent's calls; cost
-  within 1.5 times the estimate). S failed the forfeit rule: its decisive cavalry lost 56 of 220
-  replies, each ordering its second regiment f8 at an enemy f8 was fighting about 108 m from the
-  anchor f7, outside the anchor's 160 m view, so the local target rule refused the whole reply. Two
-  marked rules combine here (JUDGEMENT `cannae-communication.md` Command groups and local knowledge
-  and JUDGEMENT `local_team.py` Local target authority, with no partial orders); changing either is
-  the owner's call. The other arms' forfeits were mostly the centre ordering cavalry it does not own.
-- Leader forming in P: the centre received 61% and 80% of delivered texts in the two P battles.
-- The commander's extra step: what captains read through the commander was a median 6.3 to 6.6 s
-  old, against 3.3 to 3.9 s for direct texts. The commander's inbox held a median 4 to 6 texts per
-  call (at most 10), the oldest a median 4.5 to 5.1 s old.
+- Gate: P, R and O passed. No launch had a forced-rule forfeit: all 72 forfeits were invalid
+  orders (15 orders to another group's regiment, 57 attacks on an enemy outside the captain's view).
+  Applied to all forfeits, the 10% per-agent limit held for P, R and O (worst: O 2's centre, 6 of
+  130 calls, 4.6%), and cost stayed within 1.5 times the estimate. S, outside the gate, exceeds that
+  limit: its decisive cavalry lost 56 of 220 replies. Each ordered its second regiment f8 to attack
+  the enemy Knights f8 was already fighting (e9 in 8 replies at 148 to 159 s, e10 in 48 at 252 to
+  316 s), 160 to 297 m (median 287 m) from the anchor f7, outside the anchor's 160 m view, so the
+  local target rule refused the whole reply. Three marked rules combine here (JUDGEMENT
+  `cannae-communication.md` Command groups and local knowledge, JUDGEMENT
+  `src/twwarhammer3/battle/local_command.py` Local command development profile for the 160 m view,
+  and JUDGEMENT `local_team.py` Local target authority, with no partial orders); changing any of
+  them is the owner's call.
+- Mail to the centre in P: the centre received 61% and 80% of delivered texts in the two P battles.
+  The shared plan tells the infantry to support the centre and says one ordinary regiment commands,
+  so this is not shown to be unprompted.
+- The commander's extra step: in R, the newest captain report behind a commander text was a median
+  6.6 and 6.3 s old when a captain read the text, against 3.3 s for P's captain-to-captain texts. O's
+  commander texts rest on reports of the same age (6.3 s), but O's commander also saw the whole
+  field in every input, and its texts were a median 3.9 s old from that view when read. Single hops
+  in R and O took a median 3.6 to 3.9 s (captain reports read by the commander) and 3.9 to 4.2 s
+  (commander texts read by captains). The commander's inbox held a median 4 to 6 texts per call (at
+  most 10), the oldest a median 4.5 to 5.1 s old.
 - Grounding: of texts naming an enemy id, 0 to 16 per R or O battle named one the sender had neither
-  seen nor received, 41 and 0 in the P battles; many such names were roster references ("e9/e10 not
-  yet visible").
+  seen nor received in a text, 41 and 0 in the P battles. All 60 such texts were roster references
+  or requests (58 from the containing cavalry, such as "Enemy knights e9/e10 not yet visible", and 2
+  from the R 1 commander, "Report immediately on contact with e9/e10"); none reported an unseen enemy
+  as seen.
 
 **Listening, $0.29, after the pilot.** 17 recorded captain inputs per arm that held delivered mail,
 from the P, R and O pilot battles, each re-sent to Haiku twice as recorded and twice with the mail
-removed (`listening.py`, `listening.json`; its first summary wrongly dropped replies with no new
-orders, and the corrected one is `summary_corrected`). Orders differed between the two as-recorded
-re-asks in 3 of 17 (P), 2 of 17 (R) and 11 of 17 (O) inputs, and between as-recorded and mail-removed
-in 8 and 5 (P), 5 and 4 (R) and 10 and 9 (O). So mail changed some P and R captains' orders beyond
-the model's own re-ask noise, while O's captains varied so much between identical re-asks that this
-sample shows no effect of their mail. One sample of inputs, descriptive only.
+removed (`listening.py`, `listening.json`). The run stored an empty order list and an unparsed reply
+alike as null (91 of 204 replies). Five null replies cost $0.0090 to $0.0093, about 16,000 output
+tokens, the call's cap, so they were cut off and are excluded under the script's rule. The other 86
+cost $0.0009 to $0.0014 and are read as empty order lists; this is unchecked, because their text was
+not stored. With those five comparisons removed, orders differed between the two as-recorded re-asks
+in 3 of 17 (P), 2 of 17 (R) and 10 of 16 (O) inputs, between the two mail-removed re-asks in 2 of
+14, 7 of 17 and 8 of 16, and between as-recorded and mail-removed in 6 of 15 and 4 of 16 (P), 5 and
+4 of 17 (R) and 10 and 8 of 16 (O). Only in P did as-recorded and mail-removed replies differ more
+often than both pairs of identical re-asks; R's and O's identical re-asks varied as much as either
+comparison, so this sample shows no effect of mail there, and a small one in P, where 4 of the 6
+first-pair differences set a reply read as empty against one with orders. One sample of inputs,
+descriptive only.
 
 ## Measures
 
@@ -382,7 +401,7 @@ Secondary measures are descriptive. The experiment card defines each one before 
 | Information age at use | For each read message, the recipient's call time minus the sender's observation time. In R and O also the two-step age: from the observation time of the newest captain report in the commander call that produced the message, to the call of the captain who read it |
 | Commander load | At each commander call: inbox length, age of the oldest unread message and think time. Also the number of captain reports the commander never followed with any message |
 | Cue response | Each time the stage-2 cue comes up: time from the first observation by any group to the dependent group's first changed order, and whether that came before the latest useful time |
-| Leader forming in P | Share of P's messages sent to and by each captain over time, to see whether one captain becomes a commander |
+| Mail to each captain in P | Share of P's delivered texts received by each captain over time, to see whether one captain becomes a hub |
 | Order age and reliability | Per agent: order age from member feedback events, invalid orders, forfeits and provider failures |
 | Cost | Dollars, calls and tokens per launch, split between captains and commander, and dollars per win (undefined at zero wins) |
 | Link integrity | Delivered captain-to-captain messages in R and O. It must be zero |

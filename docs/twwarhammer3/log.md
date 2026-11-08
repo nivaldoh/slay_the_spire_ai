@@ -44,8 +44,9 @@ no check of C's mechanics is agreed, and every cell is one launch.
 - Stage 3 pilot at `e174a7d` (Haiku 5.5 low, $6.29 of the $10; WH3 Anthropic ledger $7.1042605 to
   $13.3923583): all seven launches lost (P 2, R 2, O 2, S 1), $0.76-1.15 each. P, R and O stayed
   within the forfeit limit; S's decisive cavalry forfeited 56 of 220 replies by ordering its second
-  regiment at an enemy outside the anchor's 160 m view. Peer captains sent 61% and 80% of their
-  mail to the centre; commander relays read a median 6.3-6.6 s old against 3.3-3.9 s direct.
+  regiment at an enemy outside the anchor's 160 m view. The centre received 61% and 80% of
+  delivered peer texts; in R, commander texts rested on captain reports a median 6.3-6.6 s old when
+  read, against 3.3 s for P's captain-to-captain texts (O's commander also saw the field).
 - Register rows: the 3 + 1 probes, 2 development and 7 pilot launches. Stage 2 runs next.
 
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review

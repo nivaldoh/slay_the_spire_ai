@@ -44,6 +44,7 @@ PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/repla
                 "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json")
 # Battle C v2's arms (a scenario's `communication`, version 2), named by who may message whom
 # (docs/twwarhammer3/communication-structure.md, The arms).
+PROBES = {"TextProbeMember", "ProbeCommander", "ProbeMember", "SlowProbeMember"}
 ARMS = {"peer": "Peer captains", "relay": "Relay commander", "overview": "Overview commander",
         "unlinked": "No links", "muted": "Muted peers", "muted_overview": "Muted overview"}
 PROMPTS = {"llm": "prompt with tactical tips", "llm_rules": "rules-only prompt",
@@ -269,10 +270,14 @@ def _arm(card: dict, arm: str | None, detail) -> dict:
                       for m in members if m.get("kind") != "model"})
     name = ARMS.get(arm, arm or "Unnamed arm")
     scripted = scripts and f"scripted members: {', '.join(scripts)}"
+    if PROBES.intersection(scripts):
+        # Channel probes check delivery only (local_team.py): off the page (review 2026-11-08).
+        return {"kind": "diagnostic", "family": None, "name": "Diagnostic probe",
+                "detail": detail(scripted), "short": detail()}
     if not models:
         return {"kind": "scripted", "family": "Scripted", "name": name,
                 "detail": detail(scripted or "no members recorded"),
-                "short": detail("scripted members")}
+                "short": detail(", ".join(scripts) or "scripted members")}
     effort = efforts and f"{' and '.join(efforts)} reasoning"
     gateway = any(m.get("provider") == "openrouter" for m in members) and "via OpenRouter"
     return {"kind": "model", "family": " and ".join(models), "name": name,

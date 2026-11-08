@@ -648,6 +648,14 @@ leaves screenshots there.
 - Analyst notes exist only for runs in the notes file; the owner has not reviewed them yet.
 - A capture fails when another window is in the foreground or Windows Python lacks Pillow.
 
+## Battle C version 2 arms on the page
+
+A composed controller on a scenario with a `communication` declaration of version 2 is a compared
+method, named by its arm: Peer captains, Relay commander, Overview commander, No links, Muted peers
+or Muted overview. Model teams and scripted teams of one arm get separate rows (the detail names the
+member model or the scripted classes). Version 1 C arms stay diagnostic probes, off the page.
+See [communication-structure.md](communication-structure.md).
+
 ## Saved reports
 
 Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `jobs`:
@@ -666,6 +674,7 @@ Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `j
 | `field-report-demo.html`, `visual-report-demo.html` | synthetic (the deleted fixture; `make-wh3-replay-demo.py` beside them) |
 | `bench-b*.{json,txt,md}` | the b1-b9 screens and audits named in [log.md](log.md) |
 | `visual-browser/` | browser check screenshots and exports |
+| `comm-structure-20261108.{html,json,txt}` | the communication-structure night: the stage-3 pilot, witness development and stage-2 jobs under `runs/comm-build-20261108/` (paths outside `runs/twwarhammer3/`); rebuild command in `runs/comm-build-20261108/handoff.md` |
 
 All but `cavalry-assault`, `c1-cavalry-ai11` and `swarm-screens` predate the 2026-10-15 redesign: their HTML is the old page (verdict, margin chart,
 evidence and definitions, unrun placeholders), and their JSON lacks `order_age_median_s`,
