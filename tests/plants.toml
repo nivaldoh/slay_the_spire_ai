@@ -4061,3 +4061,21 @@ old = "if self.native.exists():  # an old run's rows would pass as this attempt'
 new = "if self.evidence.exists():  # an old run's rows would pass as this attempt's"
 tests = ["tests/twwarhammer3/test_wh3_multiplayer_adapter.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "peers-native-later-ending-always-conflicts"
+guards = "compare-peers --native calls an ending that is later only over a tick its client did not write inconclusive, not a conflict"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            or any(ending_conflict(a, b) for a, b in itertools.combinations(names, 2))"
+new = "            or len(set(endings.values()) - {None}) > 1"
+tests = ["tests/twwarhammer3/test_wh3_native_peers.py"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "peers-native-null-hit-points-conflict"
+guards = "compare-peers --native lists a value only one client failed to read (null hit points) as unavailable and inconclusive, not a unit conflict"
+file = "src/twwarhammer3/battle/peers.py"
+old = "                unread = unread_fields(rows)"
+new = "                unread = []"
+tests = ["tests/twwarhammer3/test_wh3_native_peers.py"]
+source = "2026-11-08 repo upkeep"

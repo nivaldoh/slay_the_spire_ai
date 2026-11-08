@@ -65,9 +65,13 @@ Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each 
 compared at every tick of the interval and raw unit rows at every scheduled tick, with no
 tolerance and without nearest-tick matching. The interval defaults to everything any client
 recorded, so a late start or a stall counts as missing; a declared interval can narrow it.
-The verdict is ``conflict`` when a checksum, a raw value, a decided ending, a named packet count
-or a client's own repeated records differ; ``inconclusive`` when evidence is missing, only some
-clients saw an ending, simulated phases differ (their comparability is not calibrated), a
+The verdict is ``conflict`` when a checksum, a raw value, a decided winner, a named packet count
+or a client's own repeated records differ, or when a client wrote another client's earlier
+ending tick undecided; ``inconclusive`` when evidence is missing, only some clients saw an
+ending, ending ticks differ but the later client did not write the earlier one (the probe
+reads the decided flag only on ticks it writes), a value differs only because one client
+could not read it (null hit points, listed in
+``unavailable_fields``), simulated phases differ (their comparability is not calibrated), a
 capture failed, did not stop cleanly, or no tick or no unit row was compared; ``agreed``
 otherwise. Tick origins, unit order
 and field comparability have no two-client calibration yet, so ``agreed`` covers only the
@@ -328,7 +332,7 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
                "missing_ticks": {client: [] for client in names},
                "missing_witness": {client: [] for client in names},
                "checksum_conflicts": [], "phase_differences": [], "unit_conflicts": [],
-               "submission_problems": {}, "ticks_compared": 0,
+               "unavailable_fields": [], "submission_problems": {}, "ticks_compared": 0,
                "witness_ticks_compared": 0, "units_compared": 0,
                "own_conflicts": {client: capture["conflicts"]
                                  for client, capture in captures.items()}}
@@ -366,22 +370,53 @@ def compare_captures(captures: dict[str, dict], *, start: int | None = None,
             rows = {client: table.get(unit) for client, table in tables.items()}
             summary["units_compared"] += 1
             if len({None if row is None else tuple(row) for row in rows.values()}) > 1:
-                summary["unit_conflicts"].append({"tick": tick, "unit": list(unit), "rows": rows})
+                unread = unread_fields(rows)
+                summary["unavailable_fields"] += [{"tick": tick, "unit": list(unit), **field}
+                                                  for field in unread]
+                if not unread:
+                    summary["unit_conflicts"].append({"tick": tick, "unit": list(unit),
+                                                      "rows": rows})
     failed = any(edge["failures"] or not edge["stopped"] for edge in edges.values())
     missing = any(summary["missing_ticks"].values()) or any(summary["missing_witness"].values())
-    endings = {(edge["ending"]["tick"], edge["ending"]["winner"])
+    endings = {client: (edge["ending"]["tick"], edge["ending"]["winner"])
                if edge["ending"] and edge["ending"]["tick"] in interval else None
-               for edge in edges.values()}
+               for client, edge in edges.items()}
+
+    def ending_conflict(a, b):
+        # The agent reads the decided flag only on ticks it writes, so a later ending is a
+        # conflict only when the later client wrote the earlier ending tick undecided.
+        if not (endings[a] and endings[b]) or endings[a] == endings[b]:
+            return False
+        early, late = sorted((a, b), key=lambda client: endings[client][0])
+        return endings[a][1] != endings[b][1] or endings[early][0] in captures[late]["ticks"]
+
     if (summary["checksum_conflicts"] or summary["unit_conflicts"]
-            or any(summary["own_conflicts"].values()) or len(endings - {None}) > 1
+            or any(summary["own_conflicts"].values())
+            or any(ending_conflict(a, b) for a, b in itertools.combinations(names, 2))
             or any(summary["submission_problems"].values())):
         summary["verdict"] = "conflict"
-    elif (failed or missing or len(endings) > 1 or summary["phase_differences"]
+    elif (failed or missing or len(set(endings.values())) > 1 or summary["phase_differences"]
+          or summary["unavailable_fields"]
           or not (summary["ticks_compared"] and summary["units_compared"])):
         summary["verdict"] = "inconclusive"
     else:
         summary["verdict"] = "agreed"
     return summary
+
+
+def unread_fields(rows: dict) -> list[dict]:
+    """Where one unit's differing rows (client -> row) differ only by null, the value the probe
+    writes for a hit-point read that failed: ``{"field", "values"}``, the field numbered as in
+    multiplayer_probe.js ``unitRow``. Empty when a client lacks the unit, the rows differ in
+    length or two read values differ: those are conflicts."""
+    if None in rows.values() or len({len(row) for row in rows.values()}) > 1:
+        return []
+    columns = [dict(zip(rows, values)) for values in zip(*rows.values())]
+    if any(len(set(column.values()) - {None}) > 1 for column in columns):
+        return []
+    # A witness row here starts after alliance, army and index (load_capture).
+    return [{"field": 3 + n, "values": column} for n, column in enumerate(columns)
+            if len(set(column.values())) > 1]
 
 
 def submission_problems(capture: dict, expected: dict[int, int], interval=None) -> list[dict]:

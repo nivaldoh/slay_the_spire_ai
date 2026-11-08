@@ -145,6 +145,32 @@ def pair(tmp_path, rows, change=None, **options):
                              "B": load_capture(write(tmp_path / "b", second))}, **options)
 
 
+STEP = "    call('post_tick', env, ptr(0));\n    call('session_step', session, out);"
+
+
+def generated(tmp_path_factory, before_step):
+    """The agent's rows when ``before_step`` runs at each tick ``t`` before the tick ends."""
+    path = tmp_path_factory.mktemp("capture") / "agent.jsonl"
+    agent_check(GENERATE.replace(STEP, before_step + STEP)
+                .replace("process.argv[4]", json.dumps(str(path))))
+    return [json.loads(line) for line in path.read_text().splitlines()]
+
+
+@pytest.fixture(scope="module")
+def skipped(tmp_path_factory):
+    # The engine's worker job still runs when tick 23 returns, so the agent skips the tick the
+    # battle is decided on and reads the decision at tick 24.
+    return generated(tmp_path_factory,
+                     "    pointers.set(env.add(ENV.worker_job).value, t === 23 ? 1 : 0);\n")
+
+
+@pytest.fixture(scope="module")
+def unread(tmp_path_factory):
+    # The soldier array cannot be read at tick 10 only, so the agent writes null hit points.
+    return generated(tmp_path_factory, "    if (t === 10) pointers.delete(soldiers.value);\n"
+                                       "    else pointers.set(soldiers.value, one.value);\n")
+
+
 def test_the_agent_writes_every_tick_scheduled_witnesses_and_the_ones_around_a_command(rows):
     ticks = [r["tick"] for r in rows if r["event"] == "completed_tick"]
     assert ticks == list(range(1, 25))
@@ -189,6 +215,24 @@ def test_differing_endings_conflict_and_a_one_sided_ending_is_inconclusive(tmp_p
     assert pair(tmp_path, rows, none)["verdict"] == "inconclusive"
 
 
+def test_a_later_ending_over_a_skipped_ending_tick_is_inconclusive_not_a_conflict(
+        tmp_path, rows, skipped):
+    assert [(r["tick"], r["winner"]) for r in skipped if r["event"] == "battle_decided"] == [
+        (24, 1)]
+    a, b = load_capture(write(tmp_path / "a", rows)), load_capture(write(tmp_path / "b", skipped))
+    summary = compare_captures({"A": a, "B": b})
+    assert summary["verdict"] == "inconclusive"
+    assert summary["missing_ticks"] == {"A": [], "B": [23]}
+    # Another winner conflicts at any tick.
+    other = [dict(r, winner=0) if r["event"] == "battle_decided" else r for r in skipped]
+    assert compare_captures({"A": a, "B": load_capture(write(tmp_path / "c", other))})[
+        "verdict"] == "conflict"
+    # Pairwise: C completed tick 23 undecided, so its ending at 24 conflicts with A's at 23.
+    undecided = [dict(r, tick=24) if r["event"] == "battle_decided" else r for r in rows]
+    c = load_capture(write(tmp_path / "d", undecided))
+    assert compare_captures({"A": a, "B": b, "C": c})["verdict"] == "conflict"
+
+
 def test_identical_captures_agree_and_cover_every_tick(tmp_path, rows):
     summary = pair(tmp_path, rows)
     assert summary["verdict"] == "agreed"
@@ -220,6 +264,22 @@ def test_a_missing_unit_conflicts(tmp_path, rows):
     def change(second):
         next(r for r in second if r["event"] == "witness" and r["tick"] == 10)["units"] = []
     assert pair(tmp_path, rows, change)["verdict"] == "conflict"
+
+
+def test_a_hit_point_read_one_client_failed_is_unavailable_not_a_conflict(tmp_path, rows, unread):
+    row = next(r for r in unread if r["event"] == "witness" and r["tick"] == 10)["units"][0]
+    assert row[6] is None and not [r for r in unread if r["event"] == "probe_error"]
+    a = load_capture(write(tmp_path / "a", rows))
+    summary = compare_captures({"A": a, "B": load_capture(write(tmp_path / "b", unread))})
+    assert summary["verdict"] == "inconclusive"
+    assert summary["unit_conflicts"] == []
+    assert summary["unavailable_fields"] == [
+        {"tick": 10, "unit": [0, 0, 0], "field": 6, "values": {"A": 900, "B": None}}]
+    # A read value that differs as well still conflicts, as does a missing unit (above).
+    changed = json.loads(json.dumps(unread))
+    next(r for r in changed if r["event"] == "witness" and r["tick"] == 10)["units"][0][7] += 1
+    assert compare_captures({"A": a, "B": load_capture(write(tmp_path / "c", changed))})[
+        "verdict"] == "conflict"
 
 
 def test_a_gap_inside_the_interval_is_inconclusive_never_agreed(tmp_path, rows):
