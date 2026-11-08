@@ -230,7 +230,7 @@ class Worker:
                 return "this worker has no menu session"
             try:
                 frontend_steps(body, runtime.PINS["steam_build_id"])
-            except (ValueError, KeyError, TypeError) as error:
+            except (ValueError, KeyError, TypeError, AttributeError) as error:
                 return str(error)
             return None
         if body == READY_DEPLOYMENT:
@@ -324,7 +324,7 @@ class Worker:
             with self._changed:
                 current = (self.latest or {}).get("battle")
             ready = body["operation"] == "set_lobby_ready"
-            if ready and current not in (None, battle):
+            if ready and body["ready"] and current not in (None, battle):
                 self.link.event("command", {"seq": seq, "status": "submitted", "request": request,
                                             "log": lines, "battle_started": current})
                 return "submitted"

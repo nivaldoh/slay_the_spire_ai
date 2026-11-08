@@ -702,6 +702,16 @@ def test_only_the_fixed_frontend_operations_pass_and_nothing_reaches_the_game_ot
     assert mailbox.written == []
 
 
+@pytest.mark.parametrize("side,value", [("player", None), ("enemy", None), ("enemy", "x")])
+def test_a_scenario_side_that_is_not_an_object_is_rejected_and_nothing_reaches_the_game(side,
+                                                                                        value):
+    mailbox = FakeMenuMailbox("")
+    body = {"operation": "configure", "scenario": {**SCENARIO, side: value}, "open_slot": False}
+    assert worker.Worker(RecordingLink(), mailbox, "control", menu=True).on_command(
+        {"seq": 1, "body": body}) == "rejected"
+    assert mailbox.written == []
+
+
 def test_frontend_operations_need_a_menu_session_and_status_only_reports():
     link, mailbox = RecordingLink(), FakeMenuMailbox("")
     body = {"operation": "create_lobby", "scenario": SCENARIO, "open_slot": False}
@@ -724,6 +734,15 @@ def test_readiness_that_starts_the_battle_counts_without_the_frontends_last_line
                                                  "ready": True}}) == "submitted"
     thread.join()
     assert link.events[-1]["battle_started"] == "new"
+
+
+def test_a_new_battle_does_not_prove_an_unready():
+    client = worker.Worker(RecordingLink(), FakeMenuMailbox(""), "control", menu=True,
+                           frontend_s=0.1)
+    client.latest = {"battle": "old"}
+    threading.Timer(0.02, lambda: setattr(client, "latest", {"battle": "new"})).start()
+    with pytest.raises(TimeoutError, match="unknown effect"):
+        client.on_command({"seq": 1, "body": {"operation": "set_lobby_ready", "ready": False}})
 
 
 def test_a_new_battle_does_not_finish_any_other_frontend_operation():

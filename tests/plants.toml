@@ -3980,3 +3980,21 @@ old = "    return choose(pictures.find((name) => suite.pictures[name].battles.le
 new = "    return choose(pictures[0]);"
 tests = ["tests/twwarhammer3/test_wh3_suite_page.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "worker-refusal-misses-attributeerror"
+guards = "a frontend body whose scenario side is not an object is rejected, and the worker keeps running"
+file = "src/twwarhammer3/engine/worker.py"
+old = "            except (ValueError, KeyError, TypeError, AttributeError) as error:"
+new = "            except (ValueError, KeyError, TypeError) as error:"
+tests = ["tests/twwarhammer3/test_wh3_worker.py"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "worker-unready-battle-proof"
+guards = "a new battle proves only a set_lobby_ready with ready true, never an un-ready"
+file = "src/twwarhammer3/engine/worker.py"
+old = '            if ready and body["ready"] and current not in (None, battle):'
+new = '            if ready and current not in (None, battle):'
+tests = ["tests/twwarhammer3/test_wh3_worker.py"]
+source = "2026-11-08 repo upkeep"
