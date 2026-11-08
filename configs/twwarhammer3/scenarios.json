@@ -4283,6 +4283,33 @@
      "arm": "global"
    }
  },
+ "emp-envelopment-c-peer-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-peer-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-envelopment-c-relay-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-relay-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "relay"
+   }
+ },
+ "emp-envelopment-c-overview-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-overview-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "overview"
+   }
+ },
  "brt-air-relief-v1": {
    "name": "brt-air-relief-v1",
    "scenario_version": 1,

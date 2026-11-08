@@ -20,6 +20,10 @@ PROFILE = {"view_m": 160, "signal_m": 220, "signal_delay_ms": 2000,
 # text (1024 UTF-8 bytes, 64 in-flight slots) to the bounded channels. Lower capacity or
 # physical rendezvous changes the control; inference and observation scheduling still apply.
 FAST_PROFILE = {"fast_delay_ms": 0, "fast_text_bytes": 1024, "fast_slots": 64}
+# Version 2's only channel: addressed text on declared links, delivered at the next observation.
+# Rests on JUDGEMENT `docs/twwarhammer3/communication-structure.md` Text channel (240 bytes from
+# PROFILE, 64 slots from FAST_PROFILE, no added delay; signals and couriers off).
+TEXT_PROFILE = {"text_bytes": PROFILE["text_bytes"], "slots": FAST_PROFILE["fast_slots"]}
 CODES = ("READY", "HOLD", "COMMIT", "HELP", "ABORT")
 # The order is also each commander's declared anchor-replacement priority.
 GROUP_SLOTS = {"centre": (0, 1, 2, 3), "left_infantry": (4,), "right_infantry": (5,),
@@ -73,8 +77,11 @@ def fields(row, allowed):
     return {key: deepcopy(row[key]) for key in allowed if key in row}
 
 
-def project(observation, owned, anchor, roster, *, radius=PROFILE["view_m"], global_view=False):
-    """Complete member view: no global dynamic summaries or target/navigation backdoors."""
+def project(observation, owned, anchor, roster, *, radius=PROFILE["view_m"], global_view=False,
+            version=None):
+    """Complete member view: no global dynamic summaries or target/navigation backdoors.
+
+    ``version`` names the input of a later declaration (``local-command-v2``)."""
     def local(unit):
         return global_view or anchor is not None and distance(unit, anchor) <= radius
 
@@ -97,6 +104,8 @@ def project(observation, owned, anchor, roster, *, radius=PROFILE["view_m"], glo
         result["terrain"]["bounds"] = fields(terrain.get("bounds") or {},
                                               ("min_x", "max_x", "min_z", "max_z"))
     result["input_version"] = "local-command-v1"
+    if version is not None:
+        result["input_version"] = version
     result["friendly"] = [unit(u, UNIT_FIELDS) for u in observation["friendly"] if u["id"] in owned]
     result["allies"] = [unit(u, ALLY_FIELDS) for u in observation["friendly"]
                         if u["id"] not in owned and local(u)]
@@ -114,15 +123,25 @@ class Router:
     and their own acceptance feedback, never this router or its private event stream.
     Delivery is checked at the first dispatcher observation at/after the due time;
     its actual observation time is recorded, rather than backdating recipient knowledge.
+
+    Mode ``text`` (communication declaration version 2) accepts only addressed text on the
+    ``links`` it is given, (sender, recipient) pairs, and records why it refuses a send in the
+    acknowledgement and so in its event. Followed: MAGIC magic.py (CORE-Robotics-Lab/MAGIC at
+    0ad3a61), where messages pass only along an adjacency mask, and MARBLE
+    marble/agent/base_agent.py (ulab-uiuc/MARBLE at 8d60fa1), which lists each agent's allowed
+    recipients as an enum in its message tool. MARBLE's handler checks only that the sender has
+    some link, so this checks every sender and recipient pair.
     """
 
     # JUDGEMENT: Local channel ordering — Codex, 2026-11-05: messages ready on the same
     # observation are processed in acceptance order; delivery wins an exact expiry tie.
     # Sorting by due time or expiring at equality differs; member inputs depend on this.
 
-    def __init__(self, rendezvous, *, profile=None, enabled=True, mode="bounded"):
-        if mode not in {"bounded", "fast", "none"}:
+    def __init__(self, rendezvous, *, profile=None, enabled=True, mode="bounded", links=None):
+        if mode not in {"bounded", "fast", "none", "text"} or (mode == "text") != (
+                links is not None):
             raise ValueError("unknown local communication mode")
+        self.links = None if links is None else frozenset(links)
         self.profile = {**PROFILE, **FAST_PROFILE, **(profile or {})}
         self.rendezvous = deepcopy(rendezvous)
         self.enabled = enabled and mode != "none"
@@ -134,8 +153,12 @@ class Router:
         self.now = -1
 
     def send(self, sender, message, now, current, *, source_ms=None):
-        """Return local acceptance only; receipt requires another message."""
-        self.advance(now, current)
+        """Return local acceptance only; receipt requires another message. Text mode delivers
+        only at the dispatcher's next observation (``advance``), never at a later send."""
+        if self.mode != "text":
+            self.advance(now, current)
+        elif now < self.now:
+            raise TeamHarnessError("message clock moved backwards; use a fresh episode router")
         if sender not in self.counts:
             raise TeamHarnessError("unknown message sender")
         source_ms = now if source_ms is None else source_ms
@@ -144,7 +167,12 @@ class Router:
         channel = message.get("channel") if isinstance(message, dict) else None
         origin = current.get(sender)
         accepted = False
-        if self.enabled and origin is not None and channel == "signal":
+        if self.mode == "text":
+            reason = self.refusal(sender, message, origin)
+            if reason is None:
+                recipients, payload, due = [message["to"]], {"text": message["text"]}, now
+                accepted = True
+        elif self.enabled and origin is not None and channel == "signal":
             if (set(message) == {"channel", "code"} and message["code"] in CODES
                     and now >= self.cooldowns.get(sender, 0)):
                 recipients = [name for name, anchor in current.items() if name != sender
@@ -190,6 +218,8 @@ class Router:
         self.counts[sender] += 1
         identity = self.counts[sender]
         ack = {"send": identity, "channel": channel, "accepted": accepted, "time_ms": now}
+        if self.mode == "text":
+            ack["reason"] = reason
         self.events.append({"event": "send", "sender": sender, "message": deepcopy(message),
                             "ack": deepcopy(ack)})
         if accepted:
@@ -200,6 +230,29 @@ class Router:
                                  "expiry_ms": now + self.profile["lifetime_ms"],
                                  "recipients": recipients, "payload": deepcopy(payload)})
         return ack
+
+    def refusal(self, sender, message, origin):
+        """Why text mode refuses a send, or None: anchor, form, channel, link, size or slots."""
+        if origin is None:
+            return "anchor"
+        if not isinstance(message, dict) or "channel" not in message:
+            return "form"
+        if message["channel"] != "text":
+            return "channel"
+        if (set(message) != {"channel", "to", "text"} or not isinstance(message["to"], str)
+                or not isinstance(message["text"], str)):
+            return "form"
+        try:
+            size = len(message["text"].encode("utf-8"))
+        except UnicodeError:
+            return "form"
+        if (sender, message["to"]) not in self.links:
+            return "link"
+        if not 0 < size <= self.profile["text_bytes"]:
+            return "size"
+        if sum(p["sender"] == sender for p in self.pending) >= self.profile["slots"]:
+            return "slots"
+        return None
 
     def advance(self, now, current):
         if now < self.now:

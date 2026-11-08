@@ -43,11 +43,13 @@ def load(path, config):
         if kind == "local_team":
             from twwarhammer3.battle import local_team
 
-            local_team.declaration(scenarios().get(config.get("scenario"), {}))
+            arm = local_team.declaration(scenarios().get(config.get("scenario"), {}))
             if set(node) != {"type", "members"} or not isinstance(node["members"], dict):
                 raise ValueError("local_team needs only its five members")
-            if set(node["members"]) != set(local_team.local.GROUP_SLOTS):
-                raise ValueError("local_team needs the five declared command groups")
+            if set(node["members"]) != local_team.member_names(arm):
+                raise ValueError("local_team needs the five declared command groups"
+                                 + (" and the commander" if local_team.TOPOLOGIES.get(arm)
+                                    == "star" else ""))
             members = {}
             for name, member in node["members"].items():
                 child = prepare(member)
@@ -152,11 +154,19 @@ def factory(path, config, *, ledger=None):
     prompts = {
         name: controllers.MODEL_PROMPTS[controllers.policy_parts(name, config)[0]].read_text()
         for name in sorted(models)}
+    arm = None
     if frozen["type"] == "local_team":
         from twwarhammer3.battle import local_team
 
-        prompts = {name: prompt + "\n\n" + local_team.PROMPT_PATH.read_text()
-                   for name, prompt in prompts.items()}
+        arm = local_team.declaration(scenarios()[config["scenario"]])
+        if arm in local_team.TOPOLOGIES:  # one prompt per leaf and role: the commander's differs
+            prompts = {f"{leaf} {local_team.role(name)}": prompts[leaf] + "\n\n"
+                       + local_team.member_prompt(arm, name)
+                       for name, member in frozen["members"].items()
+                       if (leaf := member["controller"]["type"]) in prompts}
+        else:
+            prompts = {name: prompt + "\n\n" + local_team.PROMPT_PATH.read_text()
+                       for name, prompt in prompts.items()}
     goal_send = None
     if goal_models:
         goal_send = partial(post, api_key(provider), attempts=1, provider=provider,
@@ -179,7 +189,7 @@ def factory(path, config, *, ledger=None):
             for name, member in node["members"].items():
                 policy = build(member["controller"], stop, book)
                 if getattr(policy, "api", None) is not None:
-                    policy = local_team.LocalModel(policy)
+                    policy = local_team.LocalModel(policy, arm=arm, member=name)
                 members[name] = policy
             return local_team.LocalTeam(members, scenario=scenarios()[config["scenario"]],
                                          stop=stop)
@@ -228,7 +238,7 @@ def factory(path, config, *, ledger=None):
                 for name, member in policy.members.items()}
             if frozen["type"] == "local_team":
                 for member in policy.card["member_controllers"].values():
-                    member["version"] = "local-command-v1"
+                    member["version"] = policy.input_version
                 policy.card.update(invalid_retries=0, salvage=False)
         policy.card["paid_calls"] = bool(models or goal_models)
         policy.card["model_prompts"] = deepcopy(prompts)

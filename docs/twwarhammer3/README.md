@@ -267,9 +267,12 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, kept apart from the
   public battle state
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
-- `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router
-- `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probe
-- `src/twwarhammer3/battle/configured.py`: JSON controller composition
+- `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
+  version 2 text mode, which checks every sender and recipient pair against the arm's links
+- `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probes;
+  version 2's peer, relay and overview arms, the commander member and its stage-1 probes
+- `src/twwarhammer3/battle/configured.py`: JSON controller composition; a version 2 star arm's
+  `local_team` node takes the commander, whose model leaf gets its own prompt
 - `src/twwarhammer3/battle/graph.py`: resumable graph nodes
 - `src/twwarhammer3/battle/skill_contracts.py`: typed skills and public effect witnesses
 - `src/twwarhammer3/battle/graph_goals.py`: background model target preferences over fixed
@@ -309,6 +312,13 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   fight"
 - `configs/twwarhammer3/local_command_prompt.md`: battle C's local commander prompt
 - `configs/twwarhammer3/cannae_shared_plan.md`: battle C's shared prebattle plan
+- `configs/twwarhammer3/cannae_shared_plan_v2.md`: the shared plan of C's version 2 arms,
+  without the channel paragraphs
+- `configs/twwarhammer3/local_captain_prompt.md`: the captain prompt of C's version 2 arms
+- `configs/twwarhammer3/local_commander_prompt.md`: the commander prompt of C's relay and
+  overview arms
+- `configs/twwarhammer3/local_topology_rules.json`: the rules section each version 2 arm adds
+  for captains and the commander
 - `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
 - `configs/twwarhammer3/graphs/`: graph controller files
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files

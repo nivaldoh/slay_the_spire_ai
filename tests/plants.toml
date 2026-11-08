@@ -3780,3 +3780,63 @@ old = "                from RuntimeError(\"no open point left\")"
 new = "                from None"
 tests = ["tests/twwarhammer3/test_wh3_evade.py"]
 source = "2026-11-05 integration review of the Cannae controls"
+
+[[plant]]
+id = "local-v2-link-check-removed"
+guards = "A version 2 text send off its arm's links is refused (communication-structure.md, Proposed checks row 1)"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''        if (sender, message["to"]) not in self.links:
+            return "link"
+'''
+new = ""
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_every_member_reaches_exactly_its_declared_recipients"]
+source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-link-check-only-the-sender"
+guards = "The link filter checks every sender and recipient pair, not only that the sender has some link (MARBLE's gap)"
+file = "src/twwarhammer3/battle/local_command.py"
+old = '''        if (sender, message["to"]) not in self.links:
+            return "link"
+'''
+new = '''        if not any(a == sender for a, _ in self.links):
+            return "link"
+'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_every_member_reaches_exactly_its_declared_recipients", "tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_v2_send_off_its_text_links_is_refused_with_its_reason_and_never_delivered"]
+source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-commander-skipped"
+guards = "The commander, who owns no regiments, is still asked (TeamPolicy skips a non-owner with no living men)"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''army_owner=COMMANDER if COMMANDER in policies else None'''
+new = '''army_owner=None'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_commander_is_asked_without_regiments_and_reads_its_inbox_at_every_input"]
+source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-commander-inbox-gated-on-men"
+guards = "The commander reads its inbox at every input despite owning no men"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''name == COMMANDER or any(u.get("men", 0) > 0 for u in view["friendly"])'''
+new = '''any(u.get("men", 0) > 0 for u in view["friendly"])'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_commander_is_asked_without_regiments_and_reads_its_inbox_at_every_input"]
+source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-parser-minimum-removed"
+guards = "A captain's model reply with no message forfeits (the minimum is not enforced only on the wire)"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''if len(messages) < rules["min_messages"]:'''
+new = '''if len(messages) < 0:'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
+source = "2026-11-08 card A of the communication-structure build"
+
+[[plant]]
+id = "local-v2-parser-trusts-the-recipient-enum"
+guards = "A model reply naming a recipient outside its links forfeits (the parser does not trust the schema's enum)"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''if any(m.get("to") not in rules["recipients"] for m in messages):'''
+new = '''if False:'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
+source = "2026-11-08 card A of the communication-structure build"
