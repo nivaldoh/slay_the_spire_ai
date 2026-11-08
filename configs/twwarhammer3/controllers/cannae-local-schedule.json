@@ -1,0 +1,20 @@
+{
+  "type": "local_team",
+  "members": {
+    "centre": {
+      "type": "twwarhammer3.battle.local_scripts:FixedSchedule"
+    },
+    "left_infantry": {
+      "type": "twwarhammer3.battle.local_scripts:FixedSchedule"
+    },
+    "right_infantry": {
+      "type": "twwarhammer3.battle.local_scripts:FixedSchedule"
+    },
+    "decisive_cavalry": {
+      "type": "twwarhammer3.battle.local_scripts:FixedSchedule"
+    },
+    "containing_cavalry": {
+      "type": "twwarhammer3.battle.local_scripts:FixedSchedule"
+    }
+  }
+}

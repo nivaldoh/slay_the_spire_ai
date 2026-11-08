@@ -1,0 +1,20 @@
+{
+  "type": "local_team",
+  "members": {
+    "centre": {
+      "type": "twwarhammer3.battle.local_scripts:CentralConcentration"
+    },
+    "left_infantry": {
+      "type": "twwarhammer3.battle.local_scripts:CentralConcentration"
+    },
+    "right_infantry": {
+      "type": "twwarhammer3.battle.local_scripts:CentralConcentration"
+    },
+    "decisive_cavalry": {
+      "type": "twwarhammer3.battle.local_scripts:CentralConcentration"
+    },
+    "containing_cavalry": {
+      "type": "twwarhammer3.battle.local_scripts:CentralConcentration"
+    }
+  }
+}
