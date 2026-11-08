@@ -323,6 +323,10 @@ send was not tested live; card D added such a send to the probe. The rerun, `s1b
 outside its links, and repeated the release chain (input 8.2 s, applied 10.0 s, 38 m east before
 its next order).
 
+A second rerun, `s1c-overview-probe-01` at `65481c9`, refused right infantry's text to left
+infantry with reason `link` in the overview arm, delivered no text outside its links, kept every
+frame, and repeated the release chain (input 7.9 s, applied 9.7 s, 37 m east before its next order).
+
 **Stage 2 witness development, at `5b7de0c`, $0, explore.** Both witnesses ran with no think time,
 so they decided faster than the model arms. The peer witness lost at 269.7 s. The overview witness
 won at 391.1 s, the first win with C v2's forces through the captains' local views; its commander's
@@ -362,6 +366,21 @@ launches ran from `stage2.py` under the pre-registered order and stopping rules 
   decisive cavalry was routing, so no witness had it in 2 launches. It also fired at 34 to 36 s in
   all five rush launches and at 64.0 and 637.0 s in two mail-cut launches. Its definition needs work
   before it can gate anything.
+- A redefined detector after the round (`gates.py` `wing_cue`, written before it was run): the
+  first frame, before the ending and not the last one, where a cavalry regiment is in melee more
+  than 160 m from the other cavalry group's anchor, and a "failing" version with that group at 75%
+  or fewer of its starting men. Its expected behaviour was written down first: never at a final
+  frame, the containing wing first on Massed horse's south and far draws, the decisive wing first
+  on the north draw. It met all three on the 18 Massed horse launches (12 of 12 south and far
+  launches fired for the containing wing at 30 to 63 s, 6 of 6 north launches for the decisive wing
+  at 30 to 49 s, none at a final frame; `cue-check.json`). On C v2 the overview witness never had a
+  cavalry wing fighting out of the other's sight, while every mail-cut launch did (at 94 to 150 s):
+  the commander's orders kept its wings within sight of each other. The new detector is a proposal;
+  the card's definition stands for tonight's gate.
+
+JUDGEMENT?: Wing cue — Claude, 2026-11-08: the cue is a cavalry regiment in melee over 160 m from
+the other wing's anchor (`gates.py` `wing_cue`). Another radius or a centre-based cue changes which
+battles have a cue; any later cue gate rests on it.
 - Every launch reached an engine ending, no text was delivered outside its arm's links, and every
   input and router row had its global frame.
 
@@ -442,6 +461,21 @@ separate from re-ask noise (two-sided Fisher p about 0.24 and 0.66), and 4 of th
 differences set a reply counted as empty against one with orders. The counts come from
 `listening.json` `summary_corrected_2`, a correction written after the run.
 
+### Is the evaluation working? (2026-11-08)
+
+What each piece of evidence establishes, at the revisions named. None is an agreed check, so all of
+it stays unverified under the owner's rule until one is agreed (a proposal is in the handoff).
+
+| Evidence | What it shows | Limit |
+|---|---|---|
+| Offline tests of the v2 arms (`test_wh3_local_topology.py`, `test_wh3_local_scripts.py`, `test_wh3_report_comm_arms.py`, `test_wh3_wing_horse.py`) | Links, forcing, commander scheduling and views, muted delivery, mail on forfeit, report classification and the Massed horse entries behave as specified | Component level; fake observations |
+| Full plant replay, `scripts/check.py --plants` at `65481c9` | 418 of 420 planted wrong versions caught, including all 12 `local-v2-*` plants from tonight; the 2 misses are the known ones on the status page | Only the bugs someone thought to plant |
+| Live probes at 1x (`s1-*`, `s1b-relay-probe-01`, `s1c-overview-probe-01`) | Messages travel from sender to engine effect in every arm, links refuse off-link sends live, and every input and router row has its global frame | One launch per arm |
+| Stage-2 gate | It did its job: it found that C v2 is not reliably winnable through local views at model timing, so model losses there are not read as weak tactics | Gate thresholds are Claude's (marked) |
+| Independent recounts (`review-night-1.json`, `review-night-2.json`, a final recheck) | Every number on this page was recomputed from raw records by a reviewer; their corrections are applied | Reviewers can share blind spots |
+| Wing cue detector | Met all three expectations written before it ran, on 18 Massed horse launches | A proposal (JUDGEMENT? Wing cue) |
+| Report browser check (`check_wh3_report_browser.cjs`) | The page built from 18 night jobs matched the collector's JSON until line 310, where the check assumes a first decision with orders; the page correctly says "this reply" for an empty one (`replay.js` line 1266) | The check needs a team-battle case; not edited tonight |
+
 ## Measures
 
 The primary measure is one engine team result per fresh launch. A won battle counts as a win,
@@ -462,7 +496,7 @@ Secondary measures are descriptive. The experiment card defines each one before 
 | Message funnel | Per link and agent: submitted, accepted, rejected by reason (link, size, slots, anchor), delivered, and read in the recipient's next call |
 | Information age at use | For each read message, the recipient's call time minus the sender's observation time. In R and O also the two-step age: from the observation time of the newest captain report in the commander call that produced the message, to the call of the captain who read it |
 | Commander load | At each commander call: inbox length, age of the oldest unread message and think time. Also the number of captain reports the commander never followed with any message |
-| Cue response | Each time the stage-2 cue comes up: time from the first observation by any group to the dependent group's first changed order, and whether that came before the latest useful time |
+| Cue response | Each time the cue (proposed: the wing cue in Results) comes up: time from the first observation by any group to the dependent group's first changed order, and whether that came before the latest useful time |
 | Mail to each captain in P | Share of P's delivered texts received by each captain over time, to see whether one captain becomes a hub |
 | Order age and reliability | Per agent: order age from member feedback events, invalid orders, forfeits and provider failures |
 | Cost | Dollars, calls and tokens per launch, split between captains and commander, and dollars per win (undefined at zero wins) |
@@ -648,7 +682,8 @@ threatened wing's last able frame) are not yet read.
 
 **Witness development** ($0, explore, at `3b84fa9`; plans `horse-witness.json` and
 `horse-muted2.json`, readings `horse-witness-gates.json`). The peer witness ran twice on each draw
-and the same witness with its messages cut (the muted arm) twice on each draw; every launch executed.
+and the same witness with its messages cut (the muted arm) twice on each draw; every launch
+executed.
 
 | Draw | Peer witness | Muted witness |
 |---|---|---|

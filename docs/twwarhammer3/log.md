@@ -56,7 +56,11 @@ no check of C's mechanics is agreed, and each cell has one to five launches.
   at `4509dd4` lost all six (concentration and rush with think time on each draw), one launch each.
 - Massed horse witness development ($0, explore, at `3b84fa9`): the peer witness won 2 of 6, the
   same witness with its messages cut 1 of 6 (a far-draw win), so these launches do not separate them.
-- Register rows: the 3 + 1 probes, 2 development, 7 pilot, 17 stage-2, 6 kill-test and 12 Massed
+- Evaluation evidence after the window: the overview probe's live `link` refusal at `65481c9`; the
+  full plant replay caught 418 of 420 there (all 12 new, the 2 known misses); a redefined cue met its
+  three pre-stated expectations on 18 Massed horse launches; the report browser check matched the
+  collector until it reached a single-controller assumption at line 310 (see the spec).
+- Register rows: the 3 + 3 probes, 2 development, 7 pilot, 17 stage-2, 6 kill-test and 12 Massed
   horse witness launches.
 
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review
