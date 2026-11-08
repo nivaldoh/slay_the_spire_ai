@@ -159,12 +159,21 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
             break
         except urllib.error.HTTPError as error:
             # Read past the display boundary so truncation cannot leave a key prefix behind.
-            detail = error.read(500 + len(key)).decode(errors="replace").replace(key, "<key>")[:500]
+            try:
+                detail = error.read(500 + len(key)).decode(errors="replace")
+                detail = detail.replace(key, "<key>")[:500]
+            except (OSError, http.client.HTTPException, ValueError) as unreadable:
+                detail = f"<error body unreadable: {type(unreadable).__name__}>"
             uncertain += error.code >= 500 or error.code == 408
             if error.code not in transient or attempt == attempts:
                 raise APIError(f"HTTP {error.code}: {detail}", uncertain) from None
+        except UnicodeEncodeError as error:
+            # A header value that is not Latin-1 fails before connecting, the same way each time.
+            raise APIError(f"{type(error).__name__}: {error}", uncertain) from None
         except (OSError, http.client.HTTPException, ValueError) as error:
-            uncertain += 1
+            # urllib raises URLError only while connecting or sending (HTTPError is caught
+            # above), so the provider never got the request and billed nothing.
+            uncertain += not isinstance(error, urllib.error.URLError)
             if attempt == attempts:
                 detail = str(error).replace(key, "<key>")
                 raise APIError(f"{type(error).__name__}: {detail}", uncertain) from None

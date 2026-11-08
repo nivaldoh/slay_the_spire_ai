@@ -4097,3 +4097,30 @@ old = "        with _RESERVE_LOCK:"
 new = "        with threading.Lock():"
 tests = ["tests/twwarhammer3/test_wh3_battle_budget.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "llm-unreadable-error-body-escapes"
+guards = "A failed read of an HTTP error body keeps the HTTP <code> message and the billed attempts"
+file = "src/gameai/llm.py"
+old = "            except (OSError, http.client.HTTPException, ValueError) as unreadable:"
+new = "            except (http.client.HTTPException, ValueError) as unreadable:"
+tests = ["tests/gameai/test_model.py::test_an_unreadable_error_body_keeps_the_status_and_the_billed_attempts"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "llm-charges-requests-that-never-left"
+guards = "A URLError (connect or send failed) is resent but not charged as an uncertain attempt"
+file = "src/gameai/llm.py"
+old = "            uncertain += not isinstance(error, urllib.error.URLError)"
+new = "            uncertain += 1"
+tests = ["tests/gameai/test_model.py::test_a_request_that_never_reached_the_provider_is_resent_but_not_charged"]
+source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "llm-resends-and-charges-unencodable-headers"
+guards = "A header that cannot be encoded raises at once, without a resend or a charge"
+file = "src/gameai/llm.py"
+old = "        except UnicodeEncodeError as error:"
+new = "        except UnicodeDecodeError as error:"
+tests = ["tests/gameai/test_model.py::test_a_key_that_cannot_be_encoded_as_a_header_fails_at_once_without_a_charge"]
+source = "2026-11-08 repo upkeep"

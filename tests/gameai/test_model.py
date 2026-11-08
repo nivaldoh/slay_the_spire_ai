@@ -2,6 +2,7 @@
 
 import io
 import json
+import socket
 import threading
 import urllib.error
 
@@ -625,3 +626,80 @@ def test_a_model_needs_a_positive_integer_of_transport_attempts(tmp_path, attemp
     with pytest.raises(ValueError, match="transport_attempts must be a positive integer"):
         api.Model("gpt-6-luna", "low", ledger, instructions="", max_output_tokens=256,
                   send=lambda body: {}, transport_attempts=attempts)
+
+
+# An error body can stall or reset like any read. Its status line has already arrived, so the
+# message keeps "HTTP <code>" (play.policy_call reads the 401 and 402 prefixes) and the attempt
+# keeps the 5xx and 408 charging rule; earlier attempts' charges are kept.
+@pytest.mark.parametrize(("code", "uncertain"), [(502, 2), (401, 1)])
+def test_an_unreadable_error_body_keeps_the_status_and_the_billed_attempts(
+        monkeypatch, code, uncertain):
+    class Stalled(io.BytesIO):
+        def read(self, *args):
+            raise TimeoutError("timed out")
+
+    outcomes = [urllib.error.HTTPError("u", 500, "error", {}, io.BytesIO(b"{}")),
+                urllib.error.HTTPError("u", code, "error", {}, Stalled())]
+
+    def urlopen(request, timeout):
+        raise outcomes.pop(0)
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
+    with pytest.raises(api.APIError) as error:
+        api.post("key", {}, attempts=2)
+    assert str(error.value) == f"HTTP {code}: <error body unreadable: TimeoutError>"
+    assert error.value.uncertain_attempts == uncertain and not outcomes
+
+
+# urllib raises URLError only while connecting and sending (Python 3.13
+# AbstractHTTPHandler.do_open), so the provider never got the request and billed nothing.
+# The real urlopen runs here; only the socket connection is replaced.
+@pytest.mark.parametrize("failure", [
+    pytest.param(socket.gaierror(-3, "Temporary failure in name resolution"), id="dns"),
+    pytest.param(ConnectionRefusedError(111, "Connection refused"), id="refused"),
+])
+def test_a_request_that_never_reached_the_provider_is_resent_but_not_charged(
+        tmp_path, monkeypatch, failure):
+    ledger = Ledger(tmp_path / "spend.jsonl", 1.0)
+    reply = {"id": "ok", "status": "completed", "usage": USAGE, "output": []}
+    real_urlopen, sent = api.urllib.request.urlopen, []
+
+    def create_connection(*args, **kwargs):
+        raise failure
+
+    def urlopen(request, timeout):
+        sent.append(request)
+        if len(sent) == 1:
+            return real_urlopen(request, timeout=timeout)
+        return io.BytesIO(json.dumps(reply).encode())
+
+    monkeypatch.setattr(socket, "create_connection", create_connection)
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
+    model = api.Model("gpt-6-luna", "low", ledger, instructions="system",
+                      max_output_tokens=200, send=lambda body: api.post("key", body))
+    model.call("user", {})
+
+    reported = (600 * 0.10 + 400 * 0.01 + 200 * 0.50) / 1e6  # USAGE at gpt-6-luna's prices
+    assert len(sent) == 2 and ledger.spent == pytest.approx(reported)
+    assert model.totals["uncertain_transport_attempts"] == 0
+
+
+def test_a_key_that_cannot_be_encoded_as_a_header_fails_at_once_without_a_charge(monkeypatch):
+    # http.client encodes header values as Latin-1 before it connects, the same way each time.
+    real_urlopen, sent, slept = api.urllib.request.urlopen, [], []
+
+    def create_connection(*args, **kwargs):
+        raise AssertionError("connected")
+
+    def urlopen(request, timeout):
+        sent.append(request)
+        return real_urlopen(request, timeout=timeout)
+
+    monkeypatch.setattr(socket, "create_connection", create_connection)
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", slept.append)
+    with pytest.raises(api.APIError, match="^UnicodeEncodeError: ") as error:
+        api.post("sk-pasted\u2019", {})
+    assert error.value.uncertain_attempts == 0 and len(sent) == 1 and slept == []
