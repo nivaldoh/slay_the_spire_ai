@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-08 (night): communication-structure stages 0-3, interim
+
+Owner: "Implement up to stage 3", $10 cap; brief `runs/comm-build-20261108/brief.md`. Unverified:
+no check of C's mechanics is agreed, and every cell is one launch.
+
+- Stage 0: C communication version 2 (arms peer, relay, overview; reference arms muted, unlinked,
+  muted overview), a unitless commander, forced message counts, a text-only router with per-arm
+  links, scripted witnesses and foils; cards A-E and reviews in the run folder; landed at
+  `5b7de0c`, `1c58107`, `e174a7d`, `7e3e583`.
+- Stage 1 ($0, three probes at `5b7de0c` plus a relay rerun at `e174a7d`): every release chain ran
+  from message to engine effect; no captain-to-captain delivery; one live `link` refusal.
+- Witness development ($0, no think time): overview witness won at 391.1 s, peer witness lost.
+- Stage 3 pilot at `e174a7d` (Haiku 5.5 low, $6.29 of the $10; WH3 Anthropic ledger $7.1042605 to
+  $13.3923583): all seven launches lost (P 2, R 2, O 2, S 1), $0.76-1.15 each. P, R and O stayed
+  within the forfeit limit; S's decisive cavalry forfeited 56 of 220 replies by ordering its second
+  regiment at an enemy outside the anchor's 160 m view. Peer captains sent 61% and 80% of their
+  mail to the centre; commander relays read a median 6.3-6.6 s old against 3.3-3.9 s direct.
+- Register rows: the 3 + 1 probes, 2 development and 7 pilot launches. Stage 2 runs next.
+
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review
 
 - Saved [communication-structure.md](communication-structure.md) at the owner's request: five Haiku
