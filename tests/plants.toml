@@ -4052,3 +4052,12 @@ old = "if row.get(\"event\") in FAULTS and not own_detach(row)), None)"
 new = "if row.get(\"event\") in FAULTS), None)"
 tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "adapter-helper-checks-the-wrong-capture-folder"
+guards = "A Helper refuses a capture folder left by an earlier run, so its old adapter_ready and rows are never taken as this attempt's"
+file = "src/twwarhammer3/engine/multiplayer_adapter.py"
+old = "if self.native.exists():  # an old run's rows would pass as this attempt's"
+new = "if self.evidence.exists():  # an old run's rows would pass as this attempt's"
+tests = ["tests/twwarhammer3/test_wh3_multiplayer_adapter.py"]
+source = "2026-11-08 repo upkeep"

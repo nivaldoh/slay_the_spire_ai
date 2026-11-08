@@ -12,6 +12,8 @@ import shutil
 import subprocess
 import threading
 
+import pytest
+
 from twwarhammer3.engine import multiplayer_adapter as adapter
 from twwarhammer3.engine import multiplayer_probe as probe
 
@@ -365,3 +367,21 @@ def test_two_threads_polling_read_every_row_exactly_once(tmp_path, monkeypatch):
         thread.join(timeout=10)
     helper.poll()
     assert [row["n"] for row in helper.rows_from(0)] == list(range(2000))
+
+
+def test_the_helper_refuses_a_capture_folder_left_by_an_earlier_run(tmp_path, monkeypatch):
+    # The old adapter_ready row would pass as this attempt's (native-multiplayer.md, "Identity,
+    # timing and evidence contract": a new attempt cannot consume prior files), so refuse
+    # before starting anything.
+    monkeypatch.setattr(adapter, "CAPTURES", tmp_path / "windows")
+    monkeypatch.setattr(adapter, "source_path", lambda: "C:/source")
+    monkeypatch.setattr(adapter.windows, "windows_path", lambda path: str(path))
+    old = tmp_path / "windows/m.a.A"
+    old.mkdir(parents=True)
+    (old / "native.jsonl").write_bytes(b'{"event": "adapter_ready"}\n')
+    started = []
+    with pytest.raises(FileExistsError) as error:
+        adapter.Helper(1, "m.a.A", tmp_path / "evidence", seconds=9,
+                       run=lambda *args, **kwargs: started.append(args) or Process(*args))
+    assert str(old) in str(error.value)
+    assert started == [] and not (tmp_path / "helper-console.txt").exists()

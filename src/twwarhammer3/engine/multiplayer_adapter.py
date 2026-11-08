@@ -83,6 +83,8 @@ class Helper:
     def __init__(self, pid: int, name: str, evidence: Path, *, seconds: float,
                  run=subprocess.Popen):
         self.native, self.evidence = CAPTURES / name, evidence
+        if self.native.exists():  # an old run's rows would pass as this attempt's
+            raise FileExistsError(f"the capture folder already exists: {self.native}")
         self.position, self.pending, self.rows = 0, b"", []
         self.lock = threading.Lock()
         evidence.parent.mkdir(parents=True, exist_ok=True)
