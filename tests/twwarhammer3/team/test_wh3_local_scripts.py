@@ -358,14 +358,15 @@ def v2_state(seq, time_ms):
             "enemy": deepcopy(FIELD), "mode": {"type": "land_normal", "role": "defender"}}
 
 
-@pytest.mark.parametrize("arm", ("peer", "muted", "relay", "overview"))
+@pytest.mark.parametrize("arm", ("peer", "muted", "relay", "overview", "muted_overview"))
 def test_each_witness_file_plays_the_real_v2_team_within_its_rules(arm):
     """Wrong versions caught: a witness outside its message count (the episode would end), an
     order the team refuses, a relay or overview commander whose texts never arrive, or a muted
-    router that delivers anyway."""
-    name = f"emp-envelopment-c-{arm}-v2"
+    router that delivers anyway or shows its members another arm than the one it plays."""
+    stem = arm.replace("_", "-")
+    name = f"emp-envelopment-c-{stem}-v2"
     config = {"policy": "configured", "scenario": name,
-              "controller_config": str(CONTROLLERS / f"cannae-{arm}-witness.json")}
+              "controller_config": str(CONTROLLERS / f"cannae-{stem}-witness.json")}
     local_team.validate_config(setup.scenarios()[name], config)
     policy = controllers.factories(config)["configured"]()
     workers = policy.pool = Workers()
@@ -391,9 +392,11 @@ def test_each_witness_file_plays_the_real_v2_team_within_its_rules(arm):
     arrivals = [e["record"] for e in events if e["event"] == "communication"
                 and e["record"]["event"] == "arrival"]
     delivered = [(a["record"]["sender"], a["recipient"]) for a in arrivals if a["delivered"]]
-    if arm == "muted":
+    if arm in ("muted", "muted_overview"):
         assert arrivals and not delivered and {a["reason"] for a in arrivals} == {"muted"}
         assert all(view["command"]["received"] == [] for view, _ in calls)
+        assert {view["command"]["arm"] for view, _ in calls} == {
+            "peer" if arm == "muted" else "overview"}
         return
     assert delivered and set(delivered) <= set(local_team.links(arm))
     if arm != "peer":

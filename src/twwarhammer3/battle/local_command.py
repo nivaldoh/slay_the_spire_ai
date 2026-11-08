@@ -131,7 +131,7 @@ class Router:
     marble/agent/base_agent.py (ulab-uiuc/MARBLE at 8d60fa1), which lists each agent's allowed
     recipients as an enum in its message tool. MARBLE's handler checks only that the sender has
     some link, so this checks every sender and recipient pair. A ``muted`` text router (the muted
-    arm) accepts and acknowledges as usual but records every arrival as undelivered.
+    arms) accepts and acknowledges as usual but records every arrival as undelivered.
     """
 
     # JUDGEMENT: Local channel ordering — Codex, 2026-11-05: messages ready on the same

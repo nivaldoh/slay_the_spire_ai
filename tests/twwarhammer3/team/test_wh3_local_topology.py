@@ -1,5 +1,5 @@
 """Communication declaration version 2 on battle C: the peer, relay and overview arms and the
-muted and unlinked controls.
+muted, muted_overview and unlinked controls.
 
 Reference: docs/twwarhammer3/communication-structure.md ("What forced means", "The arms", "Code
 changes" and "Proposed checks"; none of those checks is agreed). Real LocalTeam, Router and
@@ -34,7 +34,7 @@ CONTROLLERS = setup.SCENARIOS_PATH.parent / "controllers"
 
 
 def scenario(arm):
-    return setup.scenarios()[f"emp-envelopment-c-{arm}-v2"]
+    return setup.scenarios()[f"emp-envelopment-c-{arm.replace('_', '-')}-v2"]
 
 
 def state(seq=1, time_ms=5200):
@@ -113,13 +113,13 @@ def router(arm):
             {name: {"x": 0, "z": 0} for name in names})
 
 
-@pytest.mark.parametrize("arm", (*ARMS, "muted", "unlinked"))
+@pytest.mark.parametrize("arm", (*ARMS, "muted", "muted_overview", "unlinked"))
 def test_a_v2_declaration_builds_the_captains_and_a_commander_only_on_a_star(arm):
-    """Wrong versions: a commander accepted on peer, muted or unlinked, or a star arm built
-    without one."""
+    """Wrong versions: a commander accepted on peer, muted or unlinked, or a star arm (relay,
+    overview, muted_overview) built without one."""
     policy, _, _ = team(arm)
     try:
-        star = arm in ("relay", "overview")
+        star = arm in ("relay", "overview", "muted_overview")
         assert set(policy.members) == set(CAPTAINS) | ({"commander"} if star else set())
         assert policy.army_owner == ("commander" if star else None)
         assert policy.card["input_version"] == "local-command-v2"
@@ -331,7 +331,7 @@ def test_a_v2_captain_reads_each_message_delivered_to_it_exactly_once(arm):
                      and a["record"]["arrived_ms"] <= inputs[-1]["time_ms"]]
         assert len(inputs) >= 3 and sorted(read) == sorted(delivered), name
         heard += len(read)
-    assert (heard > 0) == (arm not in ("muted", "unlinked"))
+    assert (heard > 0) == (arm not in ("muted", "muted_overview", "unlinked"))
 
 
 @pytest.mark.parametrize("arm", ARMS)
@@ -572,11 +572,14 @@ def test_configured_model_arms_give_each_role_its_own_prompt(tmp_path, monkeypat
     ("relay", "cannae-relay-witness", True), ("muted", "cannae-muted-witness", True),
     ("muted", "cannae-relay-witness", False), ("unlinked", "cannae-unlinked-model", True),
     ("unlinked", "cannae-relay-model", False),
+    ("muted_overview", "cannae-muted-overview-witness", True),
+    ("muted_overview", "cannae-muted-witness", False),
 ])
 def test_configured_load_takes_the_commander_only_on_a_star_arm(arm, path, accepted):
     """Wrong versions: the loader keeps demanding exactly the five groups, or accepts a commander
     on peer, muted, unlinked or a v1 arm (`emp-envelopment-c-v2` is v1's bounded arm)."""
-    name = "emp-envelopment-c-v2" if arm == "v2" else f"emp-envelopment-c-{arm}-v2"
+    name = ("emp-envelopment-c-v2" if arm == "v2"
+            else f"emp-envelopment-c-{arm.replace('_', '-')}-v2")
     config = {"policy": "configured", "controller_config": str(CONTROLLERS / f"{path}.json"),
               "scenario": name, "provider": "anthropic", "model": "claude-haiku-5-5",
               "effort": "low"}
@@ -636,35 +639,49 @@ def sends_and_arrivals(events):
             [r for r in records if r["event"] == "arrival"])
 
 
-def test_the_muted_arm_is_peer_to_its_members_and_delivers_nothing():
-    """Wrong versions: muted delivers anyway, refuses its texts (an ack the sender can read), or
-    shows its members another arm name, rules, links or prompt than peer's."""
+@pytest.mark.parametrize("arm, shown, first", [
+    ("muted", "peer", {"centre": [text("decisive_cavalry", "seen")]}),
+    ("muted_overview", "overview", {"centre": [text("commander", "seen")],
+                                    "commander": [text("left_infantry", "target")]}),
+])
+def test_a_muted_arm_is_the_arm_it_shows_to_its_members_and_delivers_nothing(arm, shown, first):
+    """Wrong versions: a muted arm delivers anyway, refuses its texts (an ack the sender can
+    read), stops asking the overview commander or gives it another view, or shows its members
+    another arm name, rules, links or prompt than the arm it plays."""
     runs = {}
-    for arm in ("peer", "muted"):
-        policy, workers, members = team(arm, centre=Member([text("decisive_cavalry", "seen")]))
+    for name in (shown, arm):
+        policy, workers, members = team(name, **{key: Member(batch)
+                                                 for key, batch in first.items()})
         try:
             play(policy, workers, 12)
-            runs[arm] = (policy.card, members, sends_and_arrivals(policy.drain_events()))
+            runs[name] = (policy.card, members, sends_and_arrivals(policy.drain_events()))
         finally:
             policy.close()
-    (peer_card, peers, (peer_acks, peer_arrivals)) = runs["peer"]
-    (card, members, (acks, arrivals)) = runs["muted"]
-    assert acks == peer_acks and acks and all(a["accepted"] and a["reason"] is None for a in acks)
-    assert all(a["delivered"] for a in peer_arrivals)
-    assert len(arrivals) == len(peer_arrivals) > 0
+    (shown_card, shown_members, (shown_acks, shown_arrivals)) = runs[shown]
+    (card, members, (acks, arrivals)) = runs[arm]
+    assert acks == shown_acks and acks and all(a["accepted"] and a["reason"] is None
+                                               for a in acks)
+    assert all(a["delivered"] for a in shown_arrivals)
+    assert len(arrivals) == len(shown_arrivals) > 0
     assert not any(a["delivered"] for a in arrivals)
     assert {a["reason"] for a in arrivals} == {"muted"}
+    assert set(members) == set(shown_members) == local_team.member_names(shown)
     heard = 0
-    for name in CAPTAINS:
-        for view in peers[name].inputs:
+    for name in members:
+        # Asked again after its first reply, the overview commander included (2 or 3 inputs in
+        # 12 frames, by the hash seed's member order).
+        assert len(members[name].inputs) >= 2, name
+        for view in shown_members[name].inputs:
             heard += len(view["command"].pop("received"))
         assert all(view["command"].pop("received") == [] for view in members[name].inputs)
-        assert members[name].inputs == peers[name].inputs  # arm "peer" and peer's rules included
-        assert local_team.member_prompt("muted", name) == local_team.member_prompt("peer", name)
+        # The shown arm's name, rules, views and the commander's alliance view included.
+        assert members[name].inputs == shown_members[name].inputs, name
+        assert {view["command"]["arm"] for view in members[name].inputs} == {shown}
+        assert local_team.member_prompt(arm, name) == local_team.member_prompt(shown, name)
     assert heard > 0
-    assert card["communication_arm"] == "muted"
-    assert {key: card[key] for key in ("topology", "links", "min_messages", "max_messages")} == {
-        key: peer_card[key] for key in ("topology", "links", "min_messages", "max_messages")}
+    assert card["communication_arm"] == arm
+    keys = ("topology", "links", "min_messages", "max_messages", "sensing", "army_owner")
+    assert {key: card[key] for key in keys} == {key: shown_card[key] for key in keys}
 
 
 def claude_schema_problems(schema):

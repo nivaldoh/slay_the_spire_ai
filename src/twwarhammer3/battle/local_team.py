@@ -4,8 +4,9 @@ Reference: SMAC smac/env/starcraft2/starcraft2.py get_obs_agent separates local 
 from shared state. Scheduling remains TeamPolicy's real-time independent worker model.
 Communication declaration version 2 (docs/twwarhammer3/communication-structure.md) has one
 text channel on fixed links: captains message each other (peer) or only a sixth member, the
-commander, who owns no regiments (relay, overview). Two controls: muted is peer with every
-accepted text dropped before delivery, and unlinked has no links and no messages.
+commander, who owns no regiments (relay, overview). Three controls: muted and muted_overview
+are peer and overview with every accepted text dropped before delivery, and unlinked has no
+links and no messages.
 """
 
 import hashlib
@@ -29,10 +30,11 @@ ARMS = {"bounded": ("local", "bounded"), "silent": ("local", "none"),
         "fast": ("local", "fast"), "global": ("global", "none")}
 # Version 2: the arm's links, its plan, member prompts and rules sections.
 TOPOLOGIES = {"peer": "mesh", "relay": "star", "overview": "star", "muted": "mesh",
-              "unlinked": "none"}
-# The arm a member is told it plays: muted's members get peer's command block and prompt, so
-# neither an input nor an acknowledgement shows that their texts are dropped.
-SHOWN_ARM = {"muted": "peer"}
+              "muted_overview": "star", "unlinked": "none"}
+# The muted arms and the arm each plays and shows its members: that arm's members, links,
+# limits, views, command block and prompt, so neither an input nor an acknowledgement shows that
+# their texts are dropped; only the router differs.
+SHOWN_ARM = {"muted": "peer", "muted_overview": "overview"}
 TOPOLOGY_INPUT = "local-command-v2"
 COMMANDER = "commander"
 PLAN_V2_PATH = PROMPT_PATH.with_name("cannae_shared_plan_v2.md")
@@ -125,6 +127,7 @@ class LocalTeam(TeamPolicy):
 
     def __init__(self, policies, *, scenario, **options):
         self.arm = declaration(scenario)
+        self.shown = SHOWN_ARM.get(self.arm, self.arm)
         if set(policies) != member_names(self.arm):
             raise TeamHarnessError("C requires its five fixed command groups"
                                    + (" and the commander" if COMMANDER in member_names(self.arm)
@@ -160,11 +163,10 @@ class LocalTeam(TeamPolicy):
             self.card.update(
                 input_version=TOPOLOGY_INPUT, topology=TOPOLOGIES[self.arm],
                 links=[list(link) for link in links(self.arm)], plan_sha256=sha256(PLAN_V2_PATH),
-                sensing={"peer": "anchor radius", "muted": "anchor radius",
-                         "unlinked": "anchor radius",
+                sensing={"peer": "anchor radius", "unlinked": "anchor radius",
                          "relay": "captains: anchor radius; commander: its inbox only",
                          "overview": "captains: anchor radius; commander: alliance contacts"
-                         }[self.arm],
+                         }[self.shown],
                 profile=dict(local.TEXT_PROFILE),
                 min_messages={key: low for key, (low, _) in roles.items()},
                 max_messages={key: high for key, (_, high) in roles.items()},
@@ -198,7 +200,7 @@ class LocalTeam(TeamPolicy):
                     rendezvous[COMMANDER] = dict(rendezvous["centre"])
                 self.router = local.Router(rendezvous, mode="text", links=links(self.arm),
                                            profile=local.TEXT_PROFILE,
-                                           muted=self.arm == "muted")
+                                           muted=self.arm in SHOWN_ARM)
             self._event("partition", battle=self.battle, ownership=deepcopy(self.groups),
                         input_version=self.input_version, communication_arm=self.arm)
         expected = {identity for identities in self.groups.values() for identity in identities}
@@ -242,7 +244,7 @@ class LocalTeam(TeamPolicy):
             # Rests on JUDGEMENT `docs/twwarhammer3/communication-structure.md` Commander
             # information: no anchor, so relay sees no contacts; overview has the global view.
             view = local.project(observation, frozenset(), None, self.roster,
-                                 global_view=self.arm == "overview", version=TOPOLOGY_INPUT)
+                                 global_view=self.shown == "overview", version=TOPOLOGY_INPUT)
         else:
             anchor = self.current[name]
             view = local.project(observation, self.members[name].units, anchor, self.roster,
@@ -252,7 +254,7 @@ class LocalTeam(TeamPolicy):
                                     "send_feedback": deepcopy(self.acceptances[name])}
             self.router.inboxes[name].clear()
             self.acceptances[name].clear()
-        view["command"] = {"member": name, "arm": SHOWN_ARM.get(self.arm, self.arm),
+        view["command"] = {"member": name, "arm": self.shown,
                            "topology": TOPOLOGIES[self.arm],
                            "groups": deepcopy(self.groups),
                            "start_points": deepcopy(self.start_points), "plan": self.plan,

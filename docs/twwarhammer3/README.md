@@ -271,8 +271,9 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and
   its muted form, which accepts texts and delivers none
 - `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probes;
-  version 2's peer, relay and overview arms, the muted control (peer to its members, nothing
-  delivered) and the unlinked one (no links, no messages), the commander and its stage-1 probes
+  version 2's peer, relay and overview arms, the muted controls (peer or overview to their
+  members, nothing delivered) and the unlinked one (no links, no messages), the commander and its
+  stage-1 probes
 - `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
   and foils (fixed schedule, central concentration, `ThinkingRush`) for the
   communication-structure stage 2; each sleeps a model-like think time per decision
@@ -323,7 +324,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/local_commander_prompt.md`: the commander prompt of C's relay and
   overview arms
 - `configs/twwarhammer3/local_topology_rules.json`: the rules section each version 2 arm adds
-  for captains and the commander (muted uses peer's)
+  for captains and the commander (muted uses peer's, muted_overview overview's)
 - `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
 - `configs/twwarhammer3/graphs/`: graph controller files
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files

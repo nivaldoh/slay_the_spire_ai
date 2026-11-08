@@ -4319,6 +4319,15 @@
      "arm": "muted"
    }
  },
+ "emp-envelopment-c-muted-overview-v2": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-muted-overview-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted_overview"
+   }
+ },
  "emp-envelopment-c-unlinked-v2": {
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-unlinked-v2",

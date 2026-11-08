@@ -3849,8 +3849,17 @@ old = '''                if self.muted:  # the sender saw an acceptance; nothing
                     valid = False
 '''
 new = ""
-tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_muted_arm_is_peer_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_muted_arm_is_the_arm_it_shows_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
 source = "2026-11-08 card C of the communication-structure build"
+
+[[plant]]
+id = "local-v2-muted-overview-delivers-anyway"
+guards = "The muted_overview arm accepts texts as overview does and never delivers one"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''muted=self.arm in SHOWN_ARM)'''
+new = '''muted=self.arm == "muted")'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_muted_arm_is_the_arm_it_shows_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
+source = "2026-11-08 muted_overview follow-up of the communication-structure build"
 
 [[plant]]
 id = "local-v2-forfeit-drops-mail"
