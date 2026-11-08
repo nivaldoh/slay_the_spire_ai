@@ -32,14 +32,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-11-08 (night): communication-structure stages 0-3, interim
 
 Owner: "Implement up to stage 3", $10 cap; brief `runs/comm-build-20261108/brief.md`. Unverified:
-no check of C's mechanics is agreed, and every cell is one launch.
+no check of C's mechanics is agreed, and each cell has one to five launches.
 
 - Stage 0: C communication version 2 (arms peer, relay, overview; reference arms muted, unlinked,
   muted overview), a unitless commander, forced message counts, a text-only router with per-arm
-  links, scripted witnesses and foils; cards A-E and reviews in the run folder; landed at
+  links, scripted witnesses and foils; cards A-D (card E, the muted overview arm, is commit `54b90ed`) and reviews in the run folder; landed at
   `5b7de0c`, `1c58107`, `e174a7d`, `7e3e583`.
 - Stage 1 ($0, three probes at `5b7de0c` plus a relay rerun at `e174a7d`): every release chain ran
-  from message to engine effect; no captain-to-captain delivery; one live `link` refusal.
+  from message to engine effect; no captain-to-captain delivery in relay or overview; one live
+  `link` refusal.
 - Witness development ($0, no think time): overview witness won at 391.1 s, peer witness lost.
 - Stage 3 pilot at `e174a7d` (Haiku 5.5 low, $6.29 of the $10; WH3 Anthropic ledger $7.1042605 to
   $13.3923583): all seven launches lost (P 2, R 2, O 2, S 1), $0.76-1.15 each. P, R and O stayed
@@ -53,7 +54,10 @@ no check of C's mechanics is agreed, and every cell is one launch.
   attacked); the rush with think time lost 5 of 5.
 - Massed horse (12 scenario entries, both enemy Knights on one wing, three draws): the $0 kill test
   at `4509dd4` lost all six (concentration and rush with think time on each draw), one launch each.
-- Register rows: the 3 + 1 probes, 2 development, 7 pilot, 17 stage-2 and 6 kill-test launches.
+- Massed horse witness development ($0, explore, at `3b84fa9`): the peer witness won 2 of 6, the
+  same witness with its messages cut 1 of 6 (a far-draw win), so these launches do not separate them.
+- Register rows: the 3 + 1 probes, 2 development, 7 pilot, 17 stage-2, 6 kill-test and 12 Massed
+  horse witness launches.
 
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review
 

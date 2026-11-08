@@ -91,8 +91,8 @@ Until the owner answers question 1, the plan uses this meaning in every arm:
 - Every captain reply must carry one or two messages, each to an allowed recipient. The reply
   schema lists the allowed recipients and requires at least one message, and the parser checks
   both. A reply that breaks the rule is forfeited like any invalid reply: none of its orders are
-  used, and the captain is asked next from a fresh view, with no re-ask. The router also rejects any message on a link outside the
-  topology, with the reason `link`, as a second guard.
+  used, and the captain is asked next from a fresh view, with no re-ask. The router also rejects
+  any message on a link outside the topology, with the reason `link`, as a second guard.
 
 The commander may send zero to five messages per reply, because messages are its only output and
 forcing it would add filler. The study counts submitted, accepted, delivered and read messages
@@ -134,11 +134,12 @@ In all three arms:
   new order must be legal both in the view the captain decided from and in its latest view. So a
   captain can move toward an enemy the commander reports, but can attack it only once that enemy
   is in the captain's own view.
-- **Channel.** One addressed text channel with no added delay, at most 240 bytes per message and
-  64 messages in flight per sender. A message reaches its recipient in the recipient's next model
-  call after the dispatcher's next observation. The inbox holds everything delivered since the
-  member's last call, oldest first, with no cap; with no delay the 64-message limit rarely binds. Courier rendezvous points and signal ranges are not used,
-  because they would make the map's geometry part of each arm.
+- **Channel.** One addressed text channel with no added delay, at most 240 bytes per message and 64
+  messages in flight per sender. A message reaches its recipient in the recipient's next model call
+  after the dispatcher's next observation. The inbox holds everything delivered since the member's
+  last call, oldest first, with no cap; with no delay the 64-message limit rarely binds. Courier
+  rendezvous points and signal ranges are not used, because they would make the map's geometry part
+  of each arm.
 - **Model and scheduling.** `claude-haiku-5-5` at low effort for every agent on one backend, and
   the asynchronous team dispatcher with one pending call per agent and no team-wide wait. A
   captain never waits for the commander before acting.
@@ -197,16 +198,20 @@ What exists ([C page](cannae-communication.md), [evaluation page](cannae-eval.md
 - The groups start far apart. The two cavalry wings are 340 m apart, and the containing
   cavalry's anchor is within 220 m of only right infantry. No anchor sees an enemy at deployment:
   the nearest is 185 m away.
-- Four C battles have run, one launch each. On C v1 two scripted probe teams won (520.6 s and
-  481.2 s) although 8 of their 9 regiments never acted on a message, and one five-member Haiku
-  team lost at 405.5 s ($0.9382392, 729 calls). On the harder v2 the silent local rush, a scripted
-  team that sends no messages and attacks the nearest enemy in its local view, lost at 371.8 s.
-  Its decisive Knights saw no enemy until 174.7 s and had no order until 175.9 s.
+- Before the night of 2026-11-08, four C battles had run, one launch each. On C v1 two scripted
+  probe teams won (520.6 s and 481.2 s) although 8 of their 9 regiments never acted on a message,
+  and one five-member Haiku team lost at 405.5 s ($0.9382392, 729 calls). On the harder v2 the
+  silent local rush, a scripted team that sends no messages and attacks the nearest enemy in its
+  local view, lost at 371.8 s. Its decisive Knights saw no enemy until 174.7 s and had no order
+  until 175.9 s.
 - The cross-group situation C was built for, the containing cavalry failing where the decisive
-  cavalry cannot see it, has not happened. In the one v2 battle the containing cavalry fought
-  inside the decisive cavalry's view in 66 of the decisive cavalry's 67 inputs.
-- No team using local views has won C v2. The only win with C v2's forces and placements is the
-  global-view script `WingSupport`, playing A v2, in one launch.
+  cavalry cannot see it, had not happened in those four battles; the night's launches were not
+  checked for it. In the one v2 battle (`c-silent-rush-01`) the containing cavalry stayed inside the
+  decisive cavalry's view from its first fight at 212.2 s to its rout at 314.2 s, in 66 of the
+  decisive cavalry's 67 inputs in that span.
+- Before 2026-11-08 no team using local views had won C v2; the only win with C v2's forces and
+  placements was the global-view script `WingSupport`, playing A v2, in one launch. That night the
+  scripted witnesses won 4 of their 9 launches (overview 3 of 5, peer 1 of 4; see Results so far).
 
 So on v1 messages are not needed to win, and an effect of the links there could not show that a
 message carried a needed fact. v2 is harder, so messages may matter there, but two things need
@@ -265,14 +270,14 @@ agreed this card (away card). Methodology review: `runs/comm-build-20261108/meth
 - **Stage 2 gate round.** Revised at 04:05 local, after the two development launches and before any
   gate launch, because the overview witness won its development launch and the peer witness lost.
   `runs/comm-build-20261108/stage2.py` runs, in rounds shuffled from seed 20261108 + round: the
-  overview witness (up to 5), the same witness on `emp-envelopment-c-muted-overview-v2`, where every
-  message is accepted and never delivered (up to 5), the peer witness (up to 5), and the silent local
-  rush with the 2.0 s think time (up to 5). Only if the peer witness passes, a second round runs the
-  muted peer witness and the R witness (up to 5 each). Stopping: a witness stops at its fourth win or
-  second loss; a foil at its first win. A witness passes at 4 of 5 when its muted control and the
-  rush lose all their launches, and the cue occurs in at least 2 of its launches. A foil launch counts
-  only if each group gave an accepted attack before the ending. A failed gate is kept and not rerun
-  without a logged change.
+  overview witness (up to 5), the same witness on `emp-envelopment-c-muted-overview-v2`, where
+  every message is accepted and never delivered (up to 5), the peer witness (up to 5), and the
+  silent local rush with the 2.0 s think time (up to 5). Only if the peer witness passes, a second
+  round runs the muted peer witness and the R witness (up to 5 each). Stopping: a witness stops at
+  its fourth win or second loss; a foil at its first win. A witness passes at 4 of 5 when its muted
+  control and the rush lose all their launches, and the cue occurs in at least 2 of its launches. A
+  foil launch counts only if each group gave an accepted attack before the ending. A failed gate is
+  kept and not rerun without a logged change.
 - **Cue.** The first 1 Hz replay frame in which a centre regiment is in melee while no enemy is
   within 160 m of the decisive cavalry's anchor; latest useful time is not estimated tonight.
 - **Stage 3.** P, R and O, two blocks of three in an order drawn from seed 20261108, plus one
@@ -335,9 +340,12 @@ launches ran from `stage2.py` under the pre-registered order and stopping rules 
 | Peer witness | lost 585 s (93.3), won 306 s, lost 455 s (71.5) | fail, 1 of 3 |
 | Silent local rush, 2.0 s think time | lost 361 s (45.3), 336 s (50.5), 402 s (40.2), 302 s (30.6), 413 s (50.9) | lost all 5 |
 
-- Neither witness won C v2 reliably through the captains' local views at model-like timing, so the
-  P, R and O losses in the stage-3 pilot below are not evidence of weak tactics. The second round
-  (muted peer witness, R witness) did not run.
+- Neither witness won C v2 reliably through the captains' local views at model-like timing, so this
+  battle is not shown to separate the arms, and the stage-3 pilot below cannot compare P, R and O.
+  The pilot still says something about the models' play: each of its six P, R and O launches took
+  less of the enemy (1.9 to 30.0) than each of the ten scripted launches without delivered messages
+  at 2.0 s think time (30.6 to 68.5), at similar order ages; one launch per pilot cell and no
+  planned comparison. The second round (muted peer witness, R witness) did not run.
 - The overview witness with its mail cut ran the same code and views and lost all 5, 4 of them
   executed foil launches, while the witness won 2 of 4 (Fisher exact test, p about 0.17 against 0 of
   5; 0.43 against the 4 executed). With wins counted as 100, the witness's mean `taken` was 85.7 and
@@ -360,9 +368,9 @@ launches ran from `stage2.py` under the pre-registered order and stopping rules 
 **Stage 3 pilot, at `e174a7d`, Haiku 5.5 low, explore.** Seven launches ran in the card's order (P,
 O, R, then O, R, P, then S) and cost $6.29 of the owner's $10 (WH3 Anthropic ledger $7.1042605 to
 $13.3923583), $0.76 to $1.15 and 599 to 1,023 calls each. Every launch reached an engine ending and
-lost; the card does not score outcomes in the pilot. No captain-to-captain text was delivered in R or
-O, every input and router row had its global frame, and every captain decision carried its one or
-two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
+lost; the card does not score outcomes in the pilot. No captain-to-captain text was delivered in R
+or O, every input and router row had its global frame, and every captain decision carried its one
+or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
 
 | Launch | Battle s | `taken` | USD | Forfeited replies | Delivered texts | Median age when read (s) | Median age via the commander (s) |
 |---|---:|---:|---:|---|---:|---:|---:|
@@ -376,40 +384,48 @@ two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
 
 - Gate: P, R and O passed. No launch had a forced-rule forfeit: all 72 forfeits were invalid orders
   (15 orders to another group's regiment, 57 attacks on an enemy outside the captain's view).
-  Counting every forfeit, each agent in P, R and O stayed under the 10% limit (worst: O 2's center, 6
-  of 130 calls, 4.6%), and cost stayed within 1.5 times the estimate. S, which is outside the gate,
-  went over that limit: its decisive cavalry forfeited 56 of 220 replies. Each of those replies
-  ordered the group's second regiment, f8, to attack the enemy Knights f8 was already fighting (e9 in
-  8 replies at 148 to 159 s, e10 in 48 at 252 to 316 s). Those Knights were 160 to 297 m (median
-  287 m) from the anchor f7, outside the anchor's 160 m view, so the local target rule refused the
-  whole reply. This refusal rests on JUDGEMENT `docs/twwarhammer3/cannae-communication.md` Command
-  groups and local knowledge, JUDGEMENT `src/twwarhammer3/battle/local_command.py` Local command
-  development profile (the 160 m view) and JUDGEMENT `src/twwarhammer3/battle/local_team.py` Local
-  target authority (no partial orders).
+  Counting every forfeit, each agent in P, R and O stayed under the 10% limit (worst: O 2's center,
+  6 of 130 calls, 4.6%), and cost stayed within 1.5 times the estimate. S, which is outside the
+  gate, went over that limit: its decisive cavalry forfeited 56 of 220 replies. Each of those
+  replies ordered the group's second regiment, f8, to attack the enemy Knights f8 was already
+  fighting (e9 in 8 replies at 148 to 159 s, e10 in 48 at 252 to 316 s). Those Knights were 160 to
+  297 m (median 287 m) from the anchor f7, outside the anchor's 160 m view, so the local target
+  rule refused the whole reply. This refusal rests on JUDGEMENT
+  `docs/twwarhammer3/cannae-communication.md` Command groups and local knowledge, JUDGEMENT
+  `src/twwarhammer3/battle/local_command.py` Local command development profile (the 160 m view) and
+  JUDGEMENT `src/twwarhammer3/battle/local_team.py` Local target authority (orders legal in the
+  local view). The whole-reply refusal itself comes from `parse_reply` inside `api.ask`, with no
+  retry and no partial salvage (`local_team.py`, `LocalModel`), which carried no marker until the
+  one below.
+
+JUDGEMENT?: No partial-order salvage — found by Claude, 2026-11-08 (Codex's rule of 2026-11-05,
+`local_team.py` `LocalModel`): one illegal order forfeits the whole reply. Dropping only that order
+changes forfeits and actions; S's 56 refused replies rest on it.
+
 - Mail to the center in P: the center received 61% and 80% of delivered texts in the two P battles.
   The shared plan tells the infantry to support the center and says "one ordinary regiment
   commands", so the plan may have caused this.
 - Age through the commander: in R, the newest captain report behind a commander text was a median
-  6.6 and 6.3 s old when a captain read the text, against 3.3 s for P's captain-to-captain texts. O's
-  commander texts drew on reports of the same age (6.3 s), but O's commander also saw the whole field
-  in every input, and its texts were a median 3.9 s old, counted from that view, when a captain read
-  them. Single steps in R and O took a median 3.6 to 3.9 s for captain reports read by the commander
-  and 3.9 to 4.2 s for commander texts read by captains. The commander's inbox held a median 4 to 6
-  texts per call (at most 10), and its oldest text was a median 4.5 to 5.1 s old.
-- Unseen enemy ids: texts naming an enemy id that the sender had neither seen nor received in a text
-  numbered 0 to 16 per R or O battle, and 41 and 0 in the two P battles. All 60 such texts were roster
-  references or requests (58 from the containing cavalry, such as "Enemy knights e9/e10 not yet
-  visible", and 2 from the R 1 commander, "Report immediately on contact with e9/e10"); none reported
-  an unseen enemy as seen.
+  6.6 and 6.3 s old when a captain read the text, against 3.3 s for P's captain-to-captain texts.
+  O's commander texts drew on reports of the same age (6.3 s), but O's commander also saw the whole
+  field in every input, and its texts were a median 3.9 s old, counted from that view, when a
+  captain read them. Single steps in R and O took a median 3.6 to 3.9 s for captain reports read by
+  the commander and 3.9 to 4.2 s for commander texts read by captains. The commander's inbox held a
+  median 4 to 6 texts per call (at most 10), and its oldest text was a median 4.5 to 5.1 s old.
+- Unseen enemy ids: texts naming an enemy id that the sender had neither seen nor received in a
+  text numbered 0 to 16 per R or O battle, and 41 and 0 in the two P battles. All 60 such texts
+  were roster references or requests (58 from the containing cavalry, such as "Enemy knights e9/e10
+  not yet visible", and 2 from the R 1 commander, "Report immediately on contact with e9/e10");
+  none reported an unseen enemy as seen.
 
-**Listening, $0.29, after the pilot.** From the P, R and O pilot battles, 17 recorded captain inputs
-per arm that held delivered mail were each re-sent to Haiku twice as recorded and twice with the mail
-removed (`listening.py`, `listening.json`). The run stored an empty order list and an unparsed reply
-alike as null (91 of 204 replies). Five null replies cost $0.0090 to $0.0093, about 16,000 output
-tokens, which is the call's cap; they were cut off, and the script's rule excludes them. The other 86
-cost $0.0009 to $0.0014 and are read as empty order lists; this is unchecked, because their text was
-not stored. Leaving out every comparison that includes one of those five replies, orders differed
-this often:
+**Listening, $0.29, after the pilot.** From the P, R and O pilot battles, 17 recorded captain
+inputs per arm that held delivered mail were each re-sent to Haiku twice as recorded and twice with
+the mail removed (`listening.py`, `listening.json`). The run stored an empty order list and an
+unparsed reply alike as null (91 of 204 replies). Five null replies cost $0.0090 to $0.0093, about
+16,000 output tokens, which is the call's cap; they were cut off, and the script's rule excludes
+them. The other 86 cost $0.0009 to $0.0014 and are read as empty order lists; this is unchecked,
+because their text was not stored. Leaving out every comparison that includes one of those five
+replies, orders differed this often:
 
 | Replies compared | P | R | O |
 |---|---|---|---|
@@ -420,8 +436,11 @@ this often:
 
 Only in P did as-recorded and mail-removed replies differ more often than both pairs of re-asks of
 the same input. In R and O, re-asks of the same input varied as much as either comparison, so this
-sample shows no effect of mail there. In P it shows a small one, and 4 of the 6 first-pair
-differences set a reply counted as empty against one with orders.
+sample shows no effect of mail there. In P the as-recorded and mail-removed replies differed more
+often than the re-asks (6 of 15 and 4 of 16 against 3 of 17 and 2 of 14), a gap this sample cannot
+separate from re-ask noise (two-sided Fisher p about 0.24 and 0.66), and 4 of the 6 first-pair
+differences set a reply counted as empty against one with orders. The counts come from
+`listening.json` `summary_corrected_2`, a correction written after the run.
 
 ## Measures
 
@@ -548,8 +567,9 @@ agrees it.
 - **The commander's view.** On v2 no captain sees an enemy at the start, while O's commander sees
   every enemy the alliance sees. An O win may come from that view alone. R tests the links
   without it.
-- **No wins.** Haiku lost its one C battle, and no team using local views has won v2. If every arm
-  stays near zero wins, the result is unresolved.
+- **No wins.** Haiku lost all eight of its C battles (one on v1, seven in the v2 pilot); scripted
+  witnesses won 4 of 9 local-view launches on v2. If every model arm stays near zero wins, the
+  result is unresolved.
 - **Chatter.** Forced messages may bury useful facts, and in R and O all captain mail lands in one
   inbox. The funnel and commander load measures show this, and question 1 offers a slower forcing
   rule.
@@ -580,11 +600,12 @@ Claude's draft for owner review, from the design in `runs/comm-build-20261108/ba
 ("Massed horse" and "Late horse"). Its kill test ran on 2026-11-08 at `4509dd4` (below); nothing
 here is verified.
 
-**The question.** In the one C v2 battle where it was measured, the containing cavalry fought
-inside the decisive cavalry's view in 66 of the decisive cavalry's 67 inputs, so no fact had to
-travel between the wings. Here both enemy Knights start on one friendly cavalry wing, 380 m from
-the other wing, which cannot see that fight. Does the other wing learn of the threat in time to
-help, and does a peer message carry the fact faster or more reliably than a relayed one?
+**The question.** In the one C v2 battle where it was measured (`c-silent-rush-01`), the containing
+cavalry stayed inside the decisive cavalry's view from its first fight at 212.2 s to its rout at
+314.2 s, in 66 of the decisive cavalry's 67 inputs in that span, so no fact had to travel between
+the wings. Here both enemy Knights start on one friendly cavalry wing, 380 m from the other wing,
+which cannot see that fight. Does the other wing learn of the threat in time to help, and does a
+peer message carry the fact faster or more reliably than a relayed one?
 
 **The battles** (`configs/twwarhammer3/scenarios.json`). Each is A v2's armies, map and settings
 with the friendly Knights moved: the decisive pair to (65,-60) and (5,-60), the containing
@@ -609,7 +630,7 @@ the fact is also when the horse arrive. On the north draw the decisive wing sees
 the containing wing must come north or strike the enemy infantry. The latest useful time is the
 threatened wing's last able frame in rush and muted launches, minus the ride.
 
-**Kill test** ($0, unpaused 1x, about 10 minutes a launch; run on 2026-11-08 at `4509dd4`, plan
+**Kill test** ($0, unpaused 1x, about 7.5 minutes a launch; run on 2026-11-08 at `4509dd4`, plan
 `runs/comm-build-20261108/horse-kill.json`).
 `CentralConcentration` (`cannae-local-concentrate.json`) and `ThinkingRush`
 (`cannae-local-rush-think.json`) on the silent arm of each draw, six launches, before any witness
@@ -621,7 +642,24 @@ Result: all six foils lost, every group in each launch attacking and reaching me
 `horse-gates.json`): concentration lost the south draw at 333.4 s (`taken` 40.7), north at 331.9 s
 (50.0) and far at 321.1 s (37.4); the rush with 2.0 s think time lost south at 475.0 s (58.6), north
 at 359.3 s (44.9) and far at 393.5 s (56.3). One launch each, so no foil is shown unable to win; the
-next step is the peer witness and its muted control on each draw.
+next step is the peer witness and its muted control on each draw. Only the endings are read so far;
+the placements match within 8 m, and the other planned readings (first melee opponents, the
+threatened wing's last able frame) are not yet read.
+
+**Witness development** ($0, explore, at `3b84fa9`; plans `horse-witness.json` and
+`horse-muted2.json`, readings `horse-witness-gates.json`). The peer witness ran twice on each draw
+and the same witness with its messages cut (the muted arm) twice on each draw; every launch executed.
+
+| Draw | Peer witness | Muted witness |
+|---|---|---|
+| South | won 380 s; lost 387 s (61.2) | lost 648 s (81.9); lost 485 s (74.4) |
+| North | won 593 s; lost 432 s (70.9) | lost 437 s (60.0); lost 578 s (78.0) |
+| South-far | lost 362 s (53.1); lost 646 s (90.1) | lost 258 s (33.7); won 499 s |
+
+The peer witness won 2 of 6 and the muted witness 1 of 6, with mean `taken` (wins as 100) of 79.2
+against 71.3. So these launches do not separate the two, and the muted win shows the far draw can be
+won without a delivered message. The second muted launch on each draw was added after the first
+round, with its purpose recorded before it ran, to give both arms two launches per draw.
 
 JUDGEMENT: Wing horse draw — Claude, 2026-11-08: which wing (and near or far) the enemy Knights
 start on is chosen per launch, a hidden fact C otherwise excludes. A fixed side lets a team prepare
@@ -692,12 +730,12 @@ Each needs its own card.
    later if O differs. (c) P and R only, 20 each (about $42 to $54, 5 to 7 game hours). This is
    the cheapest test of the links with the same team observations, best if the commander's view
    can wait, and it leaves "different information" untested.
-3. **What may start after tonight?** Tonight's stages 0 to 3 ran under your go-ahead. (a, recommended) The offline build
-   and checks, then the $0 probes and the v2 construction test in a window you name (about 3.5 to
-   5 game hours). The paid pilot and the scored comparison each wait for their own yes and cap.
-   (b) v1 only, comparing how messages flow with no claim about results. This is the quickest look
-   at forced messages in play, best if you doubt the study is worth a construction test, but it
-   cannot show an effect on wins. (c) Design a new C variant first, with groups beyond each other's
-   view or a threat only one group can see. This is best if you expect v2 to fail its test, since
-   it skips about 4 game hours there, but it delays every live step and needs your decision on a
-   hidden event.
+3. **What may start after tonight?** Tonight's stages 0 to 3 ran under your go-ahead. (a,
+   recommended) The offline build and checks, then the $0 probes and the v2 construction test in a
+   window you name (about 3.5 to 5 game hours). The paid pilot and the scored comparison each wait
+   for their own yes and cap. (b) v1 only, comparing how messages flow with no claim about results.
+   This is the quickest look at forced messages in play, best if you doubt the study is worth a
+   construction test, but it cannot show an effect on wins. (c) Design a new C variant first, with
+   groups beyond each other's view or a threat only one group can see. This is best if you expect
+   v2 to fail its test, since it skips about 4 game hours there, but it delays every live step and
+   needs your decision on a hidden event.
