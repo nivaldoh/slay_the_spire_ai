@@ -7,6 +7,8 @@ groups. **Development implementation: local views, channels and asynchronous/mod
 integration have component evidence and one scripted live case; readiness is unverified.** Any faction
 and lords may be considered. The owner requested construction/testing in the away window;
 no paid model comparison is scheduled.
+A follow-up spec compares peer messages with a commander hub on this battle
+([communication structure](communication-structure.md), 2026-11-08; planning only).
 
 [A studies a familiar tactic and B studies adaptation to fresh information](cannae-comparison.md).
 C asks how much coordinated execution can come from a shared plan, local initiative,

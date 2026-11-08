@@ -29,6 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-08: Peer messages and a commander in one army, spec for owner review
+
+- Saved [communication-structure.md](communication-structure.md) at the owner's request: five Haiku
+  captains on Cannae C messaging each other directly (P), or only a commander with no units who sees
+  its inbox (R) or every alliance-visible unit (O). Recommended reading of forced (question 1,
+  marked): the links are the only channel, and every captain reply carries one or two messages.
+- Stages: offline build, $0 probes and a $0 construction test on C v2 (witnesses, foils, the
+  cross-group cue), a paid pilot, then 15 launches per arm. Eight marked choices, three questions.
+- Research, three independent design drafts and four reviews (facts, sources, design, a new
+  reader): `runs/communication-structure-20261108/`; power table `power.py` there.
+  Sources added to [references.md](../references.md#communication-structure-in-one-army-2026-11-08).
+- No code, game run or spending. Every number about C comes from four one-launch battles and is
+  unverified; no check of C's mechanics is agreed.
+
 ## 2026-11-06: Repository upkeep and agent workflow audit
 
 Overnight, offline, $0 and no game of its own, beside a Spire RL session that held the game. Nine

@@ -7,6 +7,8 @@ Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and 
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
+WH3 [peer messages against a commander](twwarhammer3/communication-structure.md) on Cannae C: spec saved for review (2026-11-08), nothing built or scheduled. Next: decision 14.
+
 [Cannae A/B/C](twwarhammer3/cannae-eval.md#window-2-results-2026-11-05) and the separate [air-relief candidate](twwarhammer3/tactics-reference.md#air-relief-audit-2026-11-05) remain unverified development candidates; all games are closed and none is scheduled. Next: decision 13.
 
 [Infantry support timing](twwarhammer3/support-timing.md#stopped-comparison-and-next-steps) stopped at the owner's request on 2026-11-05; no further timing work or second scenario is scheduled. Next choose the coordination question worth studying before another scenario or live run.
@@ -82,6 +84,7 @@ Numbers are unchanged; open the relevant item before acting.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
 12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the missed plants, the test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
+14. **Communication structure:** what "forced" means, which arms, and what may start ([spec](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 
 ## Runtime and ownership
 

@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-08 (WH3 peer messaging against a commander in one army), verbatim: "I think one
+  interesting thing that we can study is battle performance for one-army multi-agent when the
+  army's agents are allowed (and forced) to communicate directly with each other vs some kind of
+  "captain" agents being forced to communicate exclusively with a commander that might
+  potentially have access different information compared to them. We can test this initially
+  with the Cannae battle, and later we can think about expanding the idea. Write a detailed spec
+  for this." [Spec](twwarhammer3/communication-structure.md); planning only, no run, check or
+  spending selected.
 - 2026-11-06 (CLAIM statements): asked on 11-05 how to add a CLAIM statement for unverified
   claims, "to see if it helps agents avoid working from assumptions and overall incorrect
   information". After the study (`runs/claim-markers-20261105/proposal.md`): "Reviewer and copy

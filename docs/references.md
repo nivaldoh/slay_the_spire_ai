@@ -6,6 +6,94 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Communication structure in one army (2026-11-08)
+
+For the [peer and commander study](twwarhammer3/communication-structure.md). Status: "read" means
+one agent fetched the page and saw the cited numbers; "secondary" means only a summary or a
+replication was available; "abstract" means only the abstract was read.
+
+Human groups and command and control:
+- Bavelas 1950, [Communication patterns in task-oriented groups](https://pubs.aip.org/jasa/article/22/6/725/646415/Communication-Patterns-in-Task-Oriented-Groups),
+  J. Acoust. Soc. Am. 22(6). Chain, circle, star and Y networks of five on a common-symbol task.
+  Secondary (a [course blog summary](https://blogs.cornell.edu/info2040/?p=20033)): star and Y groups
+  were the most efficient.
+- Leavitt 1951, *Some effects of certain communication patterns on group performance*,
+  J. Abnorm. Soc. Psychol. 46. Wheel against circle, 15 trials per group. Secondary: Sidi's 1970
+  replication thesis ([PDF](https://digitalarchive.library.bogazici.edu.tr/bitstreams/e4c11fcf-4610-49ef-ac33-1537cf0cf854/download),
+  Table 17) gives Leavitt's mean of the three fastest trials as 31.8 s for the wheel and 49.8 s for
+  the circle.
+- Shaw, communication network reviews, as summarized in
+  [course notes](https://pages.uoregon.edu/mauro/psy457/comnets.htm): centralized networks are faster
+  on simple tasks, decentralized ones on complex tasks, explained by saturation of the central
+  position. Secondary.
+- Guetzkow and Simon 1955, [The impact of certain communication nets](https://ideas.repec.org/a/inm/ormnsc/v1y1955i3-4p233-250.html),
+  Management Science 1(3-4): a network shapes how a group organizes itself as well as how it does
+  the task. Abstract.
+- Leweling and Nissen 2007, [Hypothesis testing of edge organizations](https://internationalc2institute.org/s/12th-T5-017.pdf),
+  12th ICCRTS. ELICIT with 68 people in four groups (one played only as an edge organization, one
+  only as a hierarchy, two played both): edge time score 0.47 against 0.33 for hierarchy (p<0.001,
+  210 identifications), accuracy 0.69 against 0.66. Peer factoid sharing stayed open in the
+  hierarchy arm. Read.
+- Manso and Ruddy 2013, [Comparison between human and agent runs in the ELICIT N2C2M2 validation
+  experiments](https://internationalc2institute.org/s/18th-T5-041.pdf), 18th ICCRTS. A coordinator who
+  alone sees every team's site scored 0.34 with humans against 0.80 for collaboration (4 runs
+  each), and 0.97 against 0.99 with software agents (27 runs each), out of 18 human and 135 agent
+  runs over five approaches. Read.
+- US Army, [ADP 6-0 mission command announcement](https://www.army.mil/article/225414/combined_arms_center_launches_new_mission_command_doctrine),
+  2019: mission command "empowers subordinate decision making". Secondary; the doctrine PDF was not
+  reachable.
+- Graicunas 1933, span of control, via [Nickols](https://nickols.us/graicunas.htm): counts 100
+  relationships for five subordinates and advises at most five. Secondary, theory only.
+
+Multi-agent RL with communication:
+- Sukhbaatar et al. 2016, [CommNet](https://arxiv.org/abs/1605.07736): a learned broadcast channel.
+  Abstract.
+- Foerster et al. 2016, [RIAL and DIAL](https://arxiv.org/abs/1605.06676): learned protocols under
+  partial observability. Abstract.
+- Singh et al. 2019, [IC3Net](https://arxiv.org/abs/1812.09755): a learned gate on when to talk. On
+  the hard traffic junction with zero vision it scored 72.4% against CommNet's 50.2%, with the gate
+  fixed open for that task, so that gain comes from per-agent rewards. Read.
+- Das et al. 2019, [TarMAC](https://arxiv.org/abs/1810.11187): addressed messages; hard traffic
+  junction 84.6% with one round and 97.1% with two, against 74.1% without communication. Read.
+- Niu et al. 2021, [MAGIC](https://archive.illc.uva.nl/AAMAS-2021/pdfs/p964.pdf), AAMAS: a learned
+  communication graph. Its [code](https://github.com/CORE-Robotics-Lab/MAGIC/blob/0ad3a6126f46e475f8d46ab61e67fddbfe99e7d8/magic.py)
+  masks an adjacency matrix by which agents are alive, the pattern the study's router follows. Read.
+- Kong et al. 2017, [MS-MARL](https://arxiv.org/abs/1712.07305): a master with the global state and
+  slaves with local state; StarCraft win rates above CommNet (for example 0.77 against 0.68). Read.
+- Gupta et al. 2021, [HAMMER](https://arxiv.org/abs/2102.00824): one central agent with the full
+  state messages local agents that cannot message each other, on cooperative navigation and
+  multi-agent walker. Read.
+
+LLM agent teams and topologies:
+- Chen et al. 2024, [Scalable multi-robot collaboration with large language models: centralized or
+  decentralized systems?](https://arxiv.org/abs/2309.15943),
+  ICRA: peer dialogue worst and a central planner with per-robot checks best, for example 25.0%
+  against 82.5% on BoxNet1, 40 runs per task. Read (also cited in team-structures.md).
+- Guo et al. 2024, [Embodied LLM agents learn to cooperate in organized teams](https://arxiv.org/abs/2403.12482):
+  a designated leader made three GPT-3.5 agents 9.76% more efficient (p<.05, 20 seeds). Read.
+- Zhang et al. 2023, [CoELA](https://arxiv.org/abs/2307.02485): decentralized LLM agents where each
+  message costs a time step. Read.
+- Qian et al. 2024, [MacNet](https://arxiv.org/abs/2406.07155): chain, star, tree, mesh and other
+  graphs on offline tasks; "no single topology consistently excels". Read.
+- Zhu et al. 2025, [MultiAgentBench](https://arxiv.org/abs/2503.01935): in its Research scenario,
+  star and graph-mesh protocols gave similar task scores and tree (a planner over sub-planners) the
+  lowest. Its [code](https://github.com/ulab-uiuc/MARBLE/blob/8d60fa17b5596b44458a52d4296061b9fc13d6f2/marble/agent/base_agent.py)
+  lists allowed recipients as an enum but its handler checks only that the sender has some link.
+  Read.
+- Zhuge et al. 2024, [GPTSwarm](https://arxiv.org/abs/2402.16823): optimizing links cuts adversarial
+  agents out of a swarm. Read.
+- Zhang et al. 2024, [AgentPrune](https://arxiv.org/abs/2410.02506): pruning redundant messages cuts
+  tokens. Abstract.
+- Zhang et al. 2024, [G-Designer](https://arxiv.org/abs/2410.11782): with five GPT-4 agents the star
+  averaged 82.07 and the complete graph 86.55 over six benchmarks. Read.
+- Cemri et al. 2025, [Why do multi-agent LLM systems fail?](https://arxiv.org/abs/2503.13657), MAST:
+  1,642 traces; withholding information 0.85% and ignoring another agent's input 1.9% of failures.
+  Read.
+- Li et al. 2024, [LLM-PySC2](https://arxiv.org/abs/2411.05348): StarCraft II, stepped by the
+  environment, which waits up to a set time for every agent's reply, with commander and executor
+  agents and per-agent message targets; reports noisy messages and blind
+  trust, with no controlled topology comparison. Read.
+
 ## CaP-X: code-as-policy and WH3 (2026-11-06)
 
 Added at the owner's request for later research. Letian (Max) Fu et al.,
