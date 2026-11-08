@@ -149,6 +149,18 @@ def test_owned_game_close_is_idempotent_and_copies_evidence(tmp_path):
     assert game.log_path.read_text() == "game evidence"
 
 
+def test_owned_game_close_removes_the_windows_log_after_copying_it(tmp_path):
+    # A kept original duplicated every job log on C: (about 4 GB by 2026-11-08).
+    game = owned_game(tmp_path, "evidence/game.log")
+    game.windows_log.write_text("game evidence")
+    process = Mock()
+    process.communicate.return_value = ("", "")
+    game.process = process
+    game.close()
+    assert game.log_path.read_text() == "game evidence"
+    assert not game.windows_log.exists()
+
+
 def test_owned_game_force_stops_only_its_supervisor(tmp_path):
     game = owned_game(tmp_path)
     process = Mock()

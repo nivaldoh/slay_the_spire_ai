@@ -9,6 +9,7 @@ paths and interpreter themselves. PySC2 picks its install paths by platform the 
 spells the game folder ``C:/...``, ``Cygwin`` ``/cygdrive/c/...``).
 """
 
+import contextlib
 import json
 import os
 import shutil
@@ -126,7 +127,8 @@ class OwnedGame:
         self, log_path: Path, *, runtime_dir: Path, game_dir: str, command: list[str],
         rules: dict, timeout: float = 600,
     ):
-        # Windows writes the log to the runtime folder; close() copies it to log_path.
+        # Windows writes the log to the runtime folder; close() copies it to log_path and
+        # deletes it.
         self.log_path = log_path
         self.runtime_dir = runtime_dir
         self.windows_log = runtime_dir / f"game-{os.getpid()}-{uuid.uuid4().hex}.log"
@@ -201,6 +203,9 @@ class OwnedGame:
             self.log_path.parent.mkdir(parents=True, exist_ok=True)
             if self.windows_log.exists():
                 shutil.copy2(self.windows_log, self.log_path)
+                # A force-killed supervisor may still hold the file: keep it then.
+                with contextlib.suppress(OSError):
+                    self.windows_log.unlink()
             if self.supervisor_stderr:
                 self.log_path.with_name("supervisor.stderr.log").write_text(self.supervisor_stderr)
 

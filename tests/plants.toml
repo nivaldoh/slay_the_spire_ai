@@ -3998,3 +3998,12 @@ old = '            if ready and body["ready"] and current not in (None, battle):
 new = '            if ready and current not in (None, battle):'
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "owned-game-close-keeps-the-windows-log"
+guards = "OwnedGame.close deletes the Windows-side game log once it is copied into the job folder"
+file = "src/gameai/windows.py"
+old = "\n                # A force-killed supervisor may still hold the file: keep it then.\n                with contextlib.suppress(OSError):\n                    self.windows_log.unlink()"
+new = ""
+tests = ["tests/gameai/test_windows.py::test_owned_game_close_removes_the_windows_log_after_copying_it"]
+source = "2026-11-08 repo upkeep"
