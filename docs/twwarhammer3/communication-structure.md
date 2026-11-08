@@ -231,6 +231,53 @@ JUDGEMENT: Stage thresholds and size — Claude, 2026-11-08: witness 4 of 5, for
 15 launches per arm. Other values change what passes and the power of stage 4; the go-ahead
 for stages 3 and 4 rests on them.
 
+## Stages 1 to 3 card (night of 2026-11-08)
+
+Written by Claude under the owner's go-ahead ("Implement up to stage 3", $10). The owner has not
+agreed this card (away card). Methodology review: `runs/comm-build-20261108/method-review.json`.
+
+- **Decisions it informs.** Stage 1: whether the links, the commander and forced messages work
+  live at 1x. Stage 2: whether C v2 can carry P, R and O, meaning a scripted team using messages
+  can win through the captains' local views and the same team loses with its messages cut. Stage
+  3: whether the model arms run cleanly enough to freeze prompts and revision for stage 4.
+- **Stage labels.** Stage 1 and stage 3 are explore. Stage 2's gate round is a screen; witness
+  development launches before it are explore, listed and kept, and never count toward the gate.
+- **Scripted timing.** Every scripted probe, witness and foil captain sleeps 2.0 s inside its worker
+  per decision, close to the Haiku captains' median think of 2.03 s in `c-model-smoke-02`; a
+  scripted commander sleeps 3.0 s. Scripted members obey the same forcing rule as model captains.
+- **Stage 2 gate round.** One committed queue plan, interleaving: the P witness (up to 5), the
+  muted P witness (the same code and timing on `emp-envelopment-c-muted-v2`, where every message is
+  accepted and never delivered; up to 5), and the silent local rush (up to 5). The O witness runs if
+  time allows (up to 5). Stopping: a witness stops at its fourth win or second loss; a foil at its
+  first win. Gate: the P witness wins at least 4 of 5, the muted witness and the rush lose all their
+  launches, and the cue occurs in at least 2 P-witness launches. A foil launch counts only if each
+  group gave an accepted attack before the ending. A failed gate is kept and not rerun without a
+  logged change. The R witness (P witness captains plus a forwarding inbox-only commander) runs only
+  after a P pass.
+- **Cue.** The first 1 Hz replay frame in which a centre regiment is in melee while no enemy is
+  within 160 m of the decisive cavalry's anchor; latest useful time is not estimated tonight.
+- **Stage 3.** P, R and O, two blocks of three in an order drawn from seed 20261108, plus one
+  silent model launch (arm S, `emp-envelopment-c-silent-model-v2`) only if the budget rule allows.
+  `--budget-usd 17.10` (WH3 Anthropic ledger $7.1042605 at start plus the owner's $10). A job starts
+  only if the ledger total plus its arm's high estimate times 1.5 (P $1.95, R $2.10, O $2.25, S
+  $1.95) is at most 17.10; otherwise the plan stops and later jobs are unstarted. Prompts are frozen
+  before stage 3; a change during it applies to all arms and restarts the count.
+- **Dispositions.** Engine win (timer included): win, with its ending shown. Engine loss or draw:
+  non-win. Terminal controller failure: forfeit, non-win. Construction failure: non-win, shown
+  apart. Error after the ending: the ending counts, the error is a reliability failure. A member's
+  calls failing while the battle runs: the ending counts, flagged. Spend-cap stop mid-battle:
+  "budget stop", excluded and not replaced. No engine outcome for a game or setup fault: one new
+  launch at the end of the plan, applying by extension the agreed Cannae harder-B replacement rule;
+  a second failure is a non-win. Every planned launch gets one disposition.
+- **Limits.** Start 600 s, episode 1,320 s, job 2,000 s (the earlier C cards), unpaused 1x,
+  `--stills`. Battle cutoff 11:15 local (-03:00): no plan starts a job it cannot finish by then.
+- **Depends on.** The agreed direct model team check (2026-11-02) and the agreed scripted team
+  check cover `team.py`, which this work does not edit. C's local views, router and the new links
+  have no agreed check; everything here is unverified.
+- **Analysis.** `runs/comm-build-20261108/gates.py JOB...` prints per job the ending, the
+  dispositions, the message funnel per link, link integrity, forced-rule compliance, the cue time
+  and the traced chain for stage 1.
+
 ## Measures
 
 The primary measure is one engine team result per fresh launch. A won battle counts as a win,

@@ -271,6 +271,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   version 2 text mode, which checks every sender and recipient pair against the arm's links
 - `src/twwarhammer3/battle/local_team.py`: C's regiment groups, model interface and free probes;
   version 2's peer, relay and overview arms, the commander member and its stage-1 probes
+- `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer and overview) and
+  foils (fixed schedule, central concentration) for the communication-structure stage 2
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition; a version 2 star arm's
   `local_team` node takes the commander, whose model leaf gets its own prompt
 - `src/twwarhammer3/battle/graph.py`: resumable graph nodes
