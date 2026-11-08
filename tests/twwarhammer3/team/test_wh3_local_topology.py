@@ -291,6 +291,49 @@ def test_the_overview_commander_sees_the_alliance_view_and_no_hidden_field():
     assert "enemy_hp" not in json.dumps(view) and "seed" not in json.dumps(view)
 
 
+@pytest.mark.parametrize("arm", local_team.TOPOLOGIES)
+def test_a_v2_captain_sees_an_enemy_150_m_from_its_anchor_and_not_one_170_m_away(arm):
+    """Wrong version: captains get the global view (the overview commander's), so the 160 m
+    boundary is gone."""
+    policy, _, _ = team(arm)
+    try:
+        policy._partition(state())
+        for name in CAPTAINS:
+            anchor = policy.current[name]
+            observation = state()
+            observation["enemy"] = [
+                {"id": "e1", "type": "sword", "x": anchor["x"] + 150, "z": anchor["z"], "men": 90},
+                {"id": "e2", "type": "horse", "x": anchor["x"], "z": anchor["z"] - 170, "men": 45}]
+            view = policy._view(observation, policy.members[name], for_input=True)
+            assert [u["id"] for u in view["enemy"]] == ["e1"], name
+    finally:
+        policy.close()
+
+
+@pytest.mark.parametrize("arm", local_team.TOPOLOGIES)
+def test_a_v2_captain_reads_each_message_delivered_to_it_exactly_once(arm):
+    """Wrong version: a captain's inbox is not cleared when it is read, so a captain rereads its
+    mail at every input (the commander's own read-once test does not cover captains)."""
+    star = local_team.TOPOLOGIES[arm] == "star"
+    chief = Member(*[[text(name, f"to {name} {i}") for name in CAPTAINS] for i in range(8)])
+    policy, workers, members = team(arm, **({"commander": chief} if star else {}))
+    try:
+        play(policy, workers, 30)
+        _, arrivals = sends_and_arrivals(policy.drain_events())
+    finally:
+        policy.close()
+    heard = 0
+    for name in CAPTAINS:
+        inputs = members[name].inputs
+        read = [(m["sender"], m["send"]) for view in inputs for m in view["command"]["received"]]
+        delivered = [(a["record"]["sender"], a["record"]["send"]) for a in arrivals
+                     if a["recipient"] == name and a["delivered"]
+                     and a["record"]["arrived_ms"] <= inputs[-1]["time_ms"]]
+        assert len(inputs) >= 3 and sorted(read) == sorted(delivered), name
+        heard += len(read)
+    assert (heard > 0) == (arm not in ("muted", "unlinked"))
+
+
 @pytest.mark.parametrize("arm", ARMS)
 def test_the_v2_command_block_carries_the_contract_shape_and_plan_v2(arm):
     """Wrong versions: v1's rendezvous, signal codes or plan in a v2 block, or wrong limits."""
@@ -360,6 +403,44 @@ def test_a_commander_order_forfeits_its_whole_reply():
         policy.close()
 
 
+class Forfeits(Member):
+    """Forfeits the first call whose input holds mail, as an invalid model reply does."""
+
+    def __init__(self):
+        super().__init__()
+        self.forfeited = None
+
+    def decide(self, observation):
+        if self.forfeited is None and observation["command"]["received"]:
+            self.inputs.append(deepcopy(observation))
+            self.forfeited = len(self.inputs) - 1
+            raise PolicyFailure("an invalid reply")
+        return super().decide(observation)
+
+
+def test_a_forfeited_captain_call_returns_its_mail_to_the_next_input_oldest_first():
+    """Wrong version: a forfeit drops the mail and send feedback its input read, so a report
+    is never seen by a call that completes."""
+    left = Forfeits()
+    policy, workers, _ = team("peer", left_infantry=left)  # the centre texts left infantry
+    try:
+        # Left infantry's second call reads "centre 1" and forfeits; "centre 2" arrives meanwhile.
+        for seq, name in enumerate(("centre", "left_infantry", "centre", "left_infantry",
+                                    "left_infantry"), 1):
+            policy.decide(state(seq, 5200 + 300 * seq))
+            if policy.selected is not None:
+                ack(policy, applied=5300 + 300 * seq)
+            finish(policy, workers, name)
+        failed = [e for e in policy.drain_events() if e["event"] == "failed"]
+    finally:
+        policy.close()
+    assert [e["member"] for e in failed] == ["left_infantry"] and left.forfeited == 1
+    lost, after = (view["command"] for view in left.inputs[1:])
+    assert [m["text"] for m in lost["received"]] == ["centre 1"]
+    assert [m["text"] for m in after["received"]] == ["centre 1", "centre 2"]
+    assert lost["send_feedback"] and after["send_feedback"] == lost["send_feedback"]
+
+
 def model(tmp_path, arm, name, reply, provider="anthropic"):
     send = FakeSend(json.dumps(reply))
     policy = llm.LLMPolicy(next(iter(get_provider(provider).prices)), "low",
@@ -383,14 +464,17 @@ def member_view(arm, name):
     ("peer", "centre", [text("commander")], True),
     ("relay", "commander", [text("Centre")], False),  # enum values can change case
     ("peer", "centre", [{"channel": "signal", "code": "HELP"}], True),
+    ("peer", "centre", [{"channel": "courier", "to": "left_infantry", "text": "hi"}], True),
     ("overview", "commander", [text("centre")] * 6, False),
     ("overview", "commander", [], True),  # any commander order
     ("unlinked", "centre", [text("left_infantry")], True),
-], ids=["none", "three", "off-link", "no-commander", "case", "signal", "six", "order", "unlinked"])
+], ids=["none", "three", "off-link", "no-commander", "case", "signal", "courier", "six", "order",
+        "unlinked"])
 def test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders(
         tmp_path, arm, name, messages, orders):
-    """Wrong versions: the parser accepts empty lists or trusts the schema's enum, so the minimum
-    or the recipients are enforced only on the wire."""
+    """Wrong versions: the parser accepts empty lists or trusts the schema's enum, so the minimum,
+    the recipients or the text channel (a courier to a linked captain) is enforced only on the
+    wire."""
     reply = {"orders": [{"unit": "f1", "type": "halt"}] if orders else [], "reason": "r",
              "notes": None, "messages": messages}
     member, send = model(tmp_path, arm, name, reply)
@@ -507,7 +591,8 @@ def test_configured_load_takes_the_commander_only_on_a_star_arm(arm, path, accep
 @pytest.mark.parametrize("arm", ARMS)
 def test_probe_left_infantry_moves_east_only_after_a_centre_message_reaches_it(arm):
     """Wrong versions: left infantry moves before its cue, a star cue that skips the commander,
-    a move not 40 m east of its start point, or a captain-to-captain delivery in a star."""
+    a move not 40 m east of its start point, a captain-to-captain delivery in a star, or a star
+    probe that never tries one (so the live link check could not fail)."""
     config = {"policy": "configured", "scenario": f"emp-envelopment-c-{arm}-v2",
               "controller_config": str(CONTROLLERS / f"cannae-{arm}-probe.json")}
     local_team.validate_config(scenario(arm), config)
@@ -537,6 +622,12 @@ def test_probe_left_infantry_moves_east_only_after_a_centre_message_reaches_it(a
     assert pairs and pairs <= set(local_team.links(arm))
     if arm != "peer":
         assert policy.members["commander"].policy.forwarded["sender"] == "centre"
+    sends = [e["record"] for e in events if e["event"] == "communication"
+             and e["record"]["event"] == "send"]
+    refused = [(r["sender"], r["message"]["to"], r["ack"]["send"], r["ack"]["reason"])
+               for r in sends if not r["ack"]["accepted"]]
+    # In a star, right infantry's first reply (sends 1 and 2) tries left infantry once.
+    assert refused == ([] if arm == "peer" else [("right_infantry", "left_infantry", 2, "link")])
 
 
 def sends_and_arrivals(events):

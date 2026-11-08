@@ -3851,3 +3851,53 @@ old = '''                if self.muted:  # the sender saw an acceptance; nothing
 new = ""
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_muted_arm_is_peer_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
 source = "2026-11-08 card C of the communication-structure build"
+
+[[plant]]
+id = "local-v2-forfeit-drops-mail"
+guards = "A forfeited v2 call's mail and send feedback come back in the member's next input, oldest first"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''                self.router.inboxes[name][:0] = self.last_mail[name]["received"]
+                self.acceptances[name][:0] = self.last_mail[name]["send_feedback"]
+'''
+new = '''                pass
+'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_forfeited_captain_call_returns_its_mail_to_the_next_input_oldest_first"]
+source = "2026-11-08 card D of the communication-structure build (review of 220450c..5b7de0c)"
+
+[[plant]]
+id = "local-v2-captains-get-the-global-view"
+guards = "A v2 captain sees only within 160 m of its anchor in every arm"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''            view = local.project(observation, self.members[name].units, anchor, self.roster,
+                                 version=TOPOLOGY_INPUT)'''
+new = '''            view = local.project(observation, self.members[name].units, anchor, self.roster,
+                                 global_view=self.arm == "overview", version=TOPOLOGY_INPUT)'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_v2_captain_sees_an_enemy_150_m_from_its_anchor_and_not_one_170_m_away"]
+source = "2026-11-08 card D of the communication-structure build (review of 220450c..5b7de0c)"
+
+[[plant]]
+id = "local-v2-captain-inbox-not-cleared"
+guards = "A v2 captain reads each message delivered to it exactly once"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''        if for_input and (name == COMMANDER or any(u.get("men", 0) > 0 for u in view["friendly"])):
+            self.last_mail[name] = {"received": self.router.inbox(name),
+                                    "send_feedback": deepcopy(self.acceptances[name])}
+            self.router.inboxes[name].clear()
+'''
+new = '''        if for_input and (name == COMMANDER or any(u.get("men", 0) > 0 for u in view["friendly"])):
+            self.last_mail[name] = {"received": self.router.inbox(name),
+                                    "send_feedback": deepcopy(self.acceptances[name])}
+            if name == COMMANDER:
+                self.router.inboxes[name].clear()
+'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_v2_captain_reads_each_message_delivered_to_it_exactly_once"]
+source = "2026-11-08 card D of the communication-structure build (review of 220450c..5b7de0c)"
+
+[[plant]]
+id = "local-v2-parser-ignores-the-channel"
+guards = "A model reply on another channel forfeits even when it names a linked recipient"
+file = "src/twwarhammer3/battle/local_team.py"
+old = '''if any(m.get("channel") != "text" for m in messages):'''
+new = '''if False:'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
+source = "2026-11-08 card D of the communication-structure build (review of 220450c..5b7de0c)"

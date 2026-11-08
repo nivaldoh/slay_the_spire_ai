@@ -290,6 +290,12 @@ class LocalTeam(TeamPolicy):
     def _collect(self, name, member):
         super()._collect(name, member)
         if member.ready is None:
+            if member.call is None and self.arm in TOPOLOGIES:
+                # JUDGEMENT?: Forfeited mail — Claude, 2026-11-08, card D: a v2 forfeit returns
+                # its input's mail and send feedback to the next input, oldest first; v1 drops them;
+                # dropping hides reports a relay commander can get nowhere else; C v2 rests on it.
+                self.router.inboxes[name][:0] = self.last_mail[name]["received"]
+                self.acceptances[name][:0] = self.last_mail[name]["send_feedback"]
             return
         for message in member.ready.get("messages", []):
             if self.closed:
@@ -462,15 +468,18 @@ class ProbeMember(RushNearest):
 
 class TextProbeMember(RushNearest):
     """Version 2 channel probe for every captain: each reply sends one short status to an
-    allowed recipient, the centre's to left infantry where it may. Left infantry holds until a
-    message written by the centre reaches it (directly in peer, as the commander's forward in
-    relay and overview), makes one 40 m east move from its start point, then rushes."""
+    allowed recipient, the centre's to left infantry where it may. In a star, right infantry's
+    first reply adds a text to left infantry, off its links, which the router must refuse.
+    Left infantry holds until a message written by the centre reaches it (directly in peer, as
+    the commander's forward in relay and overview), makes one 40 m east move from its start
+    point, then rushes."""
 
     def __init__(self):
         super().__init__()
         self.messages = []
         self.probe_cue = None
         self.probe_destination = None
+        self.replied = False
 
     def decide(self, observation):
         command = observation["command"]
@@ -481,6 +490,10 @@ class TextProbeMember(RushNearest):
                           "text": f"{name}: {len(observation['friendly'])} regiments,"
                                   f" {len(observation['enemy'])} enemies in view at"
                                   f" {observation['time_ms']} ms"}]
+        if name == "right_infantry" and command["topology"] == "star" and not self.replied:
+            self.messages.append({"channel": "text", "to": "left_infantry",
+                                  "text": "right_infantry: off-link test"})
+        self.replied = True
         if name != "left_infantry":
             return super().decide(observation)
         if self.probe_cue is None:
