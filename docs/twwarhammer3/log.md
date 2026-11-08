@@ -47,7 +47,10 @@ no check of C's mechanics is agreed, and every cell is one launch.
   regiment at an enemy outside the anchor's 160 m view. The centre received 61% and 80% of
   delivered peer texts; in R, commander texts rested on captain reports a median 6.3-6.6 s old when
   read, against 3.3 s for P's captain-to-captain texts (O's commander also saw the field).
-- Register rows: the 3 + 1 probes, 2 development and 7 pilot launches. Stage 2 runs next.
+- Stage 2 gate round at `12a00f8` ($0, 2.0 s scripted think time, 3.0 s for the commander): no
+  witness passed (4 of 5 needed). Overview witness 2 wins, 2 losses; peer witness 1 win, 2 losses;
+  the same overview witness with its mail cut lost 5 of 5; the rush with think time lost 5 of 5.
+- Register rows: the 3 + 1 probes, 2 development, 7 pilot and 17 stage-2 launches.
 
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review
 
