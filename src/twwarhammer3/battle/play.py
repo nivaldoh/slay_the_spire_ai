@@ -337,8 +337,10 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
             raise TeamHarnessError("teams require delay_ms=0 and interval_ms=0")
         _drive(config, policy, mailbox, not_battle, result, event, started, scenario or {})
     except MailboxTimeout as exc:
-        past = time.time() - started > config["episode_timeout"]
-        result.update(status="truncated" if past else "infrastructure_failure", error=str(exc))
+        if time.time() - started > config["episode_timeout"]:  # _drive's Wall cap, hit in a wait
+            result.update(status="truncated", reason="episode_timeout", error=str(exc))
+        else:
+            result.update(status="infrastructure_failure", error=str(exc))
     except BattleRestarted as exc:
         result.update(status="infrastructure_failure", error=str(exc))
     except PolicyFailure as exc:
