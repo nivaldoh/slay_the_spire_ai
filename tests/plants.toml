@@ -4016,3 +4016,12 @@ old = "ledger = Ledger(path, budget_usd=0, must_exist=True)"
 new = "ledger = Ledger(path, budget_usd=0)"
 tests = ["tests/twwarhammer3/test_wh3_cli.py"]
 source = "2026-11-08 repo upkeep"
+
+[[plant]]
+id = "suite-counts-a-replanned-battle-twice"
+guards = "A battle two suite plans name (a replacement plan read with --also) is one row and one planned battle"
+file = "src/twwarhammer3/battle/suite.py"
+old = 'key = Path(row["output"]).resolve()'
+new = 'key = (plan, Path(row["output"]).resolve())'
+tests = ["tests/twwarhammer3/test_wh3_suite.py"]
+source = "2026-11-08 repo upkeep"

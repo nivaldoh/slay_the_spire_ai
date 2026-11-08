@@ -496,12 +496,17 @@ def render(data):
 
 
 def gather(plans):
-    rows, planned = [], 0
+    """One row per planned battle. A replacement plan can name an output an earlier plan names
+    (round-4b.json runs round-4.json's rest): the battle keeps the first row whose evidence
+    matches its plan, or the first row if none does."""
+    kept = {}
     for plan in plans:
-        data = collect(Path(plan))
-        planned += data["planned"]
-        rows += [{**row, **measure(row)} for row in data["rows"]]
-    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": planned,
+        for row in collect(Path(plan))["rows"]:
+            key = Path(row["output"]).resolve()
+            if key not in kept or row["evidence_matches_plan"] > kept[key]["evidence_matches_plan"]:
+                kept[key] = row
+    rows = [{**row, **measure(row)} for row in kept.values()]
+    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": len(rows),
             "completed": sum(bool(row["outcome"]) for row in rows), "rows": rows,
             "summary": summarize(rows)}
 

@@ -353,6 +353,27 @@ def test_a_battle_never_started_keeps_its_row_with_no_measures(tmp_path):
     assert data["summary"]["arms"]["hold"]["win_bound"] is None
 
 
+def test_a_battle_two_plans_name_is_one_row_from_the_plan_its_evidence_matches(tmp_path):
+    # round-4b.json runs outputs round-4.json names; reading both counted those battles twice
+    job = tmp_path / "job"
+    job.mkdir()
+    (job / "manifest.json").write_text(json.dumps({
+        "source_revision": "new", "scenario": {},
+        "config": {"scenario": "s", "policy": "hold", "episodes": 1}}))
+    paths = []
+    for revision in ("old", "new"):
+        plan = {"benchmark": benchmark.SUITE, "source_revision": revision, "scenarios": {"s": {}},
+                "jobs": [{"output": str(job), "arm": "hold", "scenario": "s",
+                          "controller": "hold"}]}
+        paths.append(tmp_path / f"{revision}.json")
+        paths[-1].write_text(json.dumps(plan))
+    for plans in (paths, paths[::-1]):
+        data = suite.gather(plans)
+        assert data["planned"] == 1 and len(data["rows"]) == 1
+        assert data["rows"][0]["evidence_matches_plan"]
+        assert data["summary"]["arms"]["hold"]["planned"] == 1
+
+
 def test_a_suite_goal_model_has_no_retries_and_a_battle_allowance(tmp_path, monkeypatch):
     from twwarhammer3.battle import controllers
 
