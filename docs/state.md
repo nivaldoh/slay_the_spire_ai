@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-11-07. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-08. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 WH3 [communication structure](twwarhammer3/communication-structure.md), night of 2026-11-08 (Claude): stages 0-3 done under the owner's $10 ($6.58 spent); nothing runs and the game is closed (last launch ended 10:46 local). Stage 2's gate failed (best witness 2 of 4 at model-like timing), so the pilot cannot compare P, R and O; each of their six launches took less of the enemy (at most 30.0) than every scripted no-message launch at 2.0 s think time (at least 30.6), exploratory. The Massed horse draft passed its kill test, but its witness did not beat its muted control (2 of 6 against 1 of 6). [Results](twwarhammer3/communication-structure.md#results-so-far-night-of-2026-11-08), handoff `runs/comm-build-20261108/handoff.md`, page `runs/twwarhammer3/reports/comm-structure-20261108.html`. Next: decision 14.
@@ -20,7 +20,7 @@ GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md
 
 [Visual reports](twwarhammer3/reports.md): the [cooperation proposal](twwarhammer3/reports.md#cooperation-evidence-proposal) adopts no new score; reader feedback on the [suite report](twwarhammer3/reports.md#coordination-suite) remains open.
 
-Factory, repo upkeep of 2026-11-06: handoff `runs/repo-improve-20261106/handoff.md`. Two cleanup scripts there wait for the owner, because the auto mode classifier refused them: `worktree-remove.sh` (nine stale worktrees, one holding an abandoned merge with 7 uncommitted files; four finished or superseded branches; one stash; a stale lock file; `archive/*` tags, `worktree-evidence/` and `audit/worktrees-branches/dirty/` keep the unmerged commits, check logs and uncommitted files) and `delete-main-runs.sh` (841 scratch and copied paths in `runs/`).
+Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
 
 Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03). Later planning: [workflow](workflow.md#session-context-improvements).
 
@@ -36,7 +36,7 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $7.1043 (includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $13.89 on 2026-11-08 (WH3 $13.6806, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`, build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 
 ## Slay the Spire
@@ -50,7 +50,7 @@ Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decisio
 
 ## Post-training
 
-Secondary priority. Capture, export and dataset smoke checks passed; the only learning claim is the unverified [local Spire warm start](posttraining.md#local-rl-on-complete-runs). A training host, a way to play fine-tuned models, and useful targets are still missing ([plan](posttraining.md)). Local checkpoint RL stays paused (owner, 2026-10-28; decision 11); its failed synthetic gate establishes no general learning gain.
+Secondary priority. Capture, export and dataset smoke checks passed; the learning claims are the unverified [local Spire](posttraining.md#local-rl-on-complete-runs) warm start (2026-11-06) and learned fight adapter (2026-11-07, [log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). A training host, a way to play fine-tuned models, and useful targets are still missing ([plan](posttraining.md)). Local checkpoint RL stays paused (owner, 2026-10-28; decision 11); its failed synthetic gate establishes no general learning gain.
 
 ## Known issues
 
@@ -88,7 +88,7 @@ Numbers are unchanged; open the relevant item before acting.
 
 ## Runtime and ownership
 
-- Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).
+- Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad at unlock level 5 of 5 since the 2026-11-06 runs; runs record profile evidence).
 - WH3 ([engine facts](twwarhammer3/integration.md)): a launch's mod list and startup-video skip
   persist for ordinary Steam launches ([how to reverse](twwarhammer3/README.md#commands)). Steam auto-update stays on.
 - Also authorized: game windows, local GPU work, commits and pushes to public `main`, and paid API
@@ -103,5 +103,6 @@ Numbers are unchanged; open the relevant item before acting.
 - `team-check-battle-time` (`58a52ef`): agreed-check draft; `gate-xdist` (`668940e`): `check.py` on xdist workers. Each moves the report fingerprint.
 - `gcp-retry` (`f038dc5`): US VM retry record, unmerged; three owner directions live only there.
 - `tests-cleanup` (`ef90ec6`), `simplify-tests` (`2a36b13`): test-suite cleanups of 11-03, unmerged (decision 12).
+- `spire-teacher` (`72b9233`), `spire-env` (`0b879d4`, contains `spire-teacher`) and `spire-docfix` (`95797bb`, docs only), each in worktree `../slay_the_spire_ai-<name>`: the rule policy, a `RealGame` environment and Spire doc corrections of 2026-11-06; landing waits on decision 4 of `runs/spire-offline-20261106/handoff.md`.
 - `repo-improve-proposals` (worktree `../slay_the_spire_ai-repo-proposals`): 2026-11-06 changes that need the owner, one commit per choice; one-line choices in `runs/repo-improve-20261106/handoff.md`.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

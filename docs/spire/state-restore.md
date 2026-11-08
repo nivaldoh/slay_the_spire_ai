@@ -218,7 +218,8 @@ launch. Scripts, outputs and a skeptic's rerun of every claim are in
   `preferences/` aside and back around each job, or let it advance and tag each trace with
   its unlock state (`profile.json` records the unlock file hash). Owner's note
   (2026-10-23): "we might want to unlock things normally first in the game before enabling
-  this". That means playing to the last Ironclad unlock (level 3 of 5 now) before restore
+  this". That means playing to the last Ironclad unlock (level 3 of 5 then; the 2026-11-06 runs took the live profile
+  to level 5, [log](fullrun/log.md#2026-11-06-local-qwen3-06b-on-complete-runs-overnight-branch-spire-local-rl)) before restore
   work, so the pools stop changing. Traces recorded before that point would then not
   replay, so the restore checks would use runs recorded after it.
 - **Route.** Replay only (A); a new jar in the pinned runtime (B, C or D), which also needs a

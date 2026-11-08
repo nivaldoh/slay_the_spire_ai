@@ -31,7 +31,7 @@ their reasoning; **record** pages are history, and their entries stay as written
 | [cannae-eval.md](cannae-eval.md) | live | Cannae A/B/C: candidates, results, deciding checks; all unverified |
 | [cannae-comparison.md](cannae-comparison.md) | live | battles A and B: familiar tactic against adaptation |
 | [cannae-communication.md](cannae-communication.md) | live | battle C: one army under limited communication |
-| [communication-structure.md](communication-structure.md) | open | peer messages against a commander on battle C; spec, nothing built |
+| [communication-structure.md](communication-structure.md) | open | peer messages against a commander on battle C; stages 0-3 built and run 2026-11-08, the stage-2 gate failed (decision 14) |
 | [tactic-judges.md](tactic-judges.md) | open | LLM and VLM tactic annotation; nothing adopted |
 | [../thesis/](../thesis/proposal.md) | open | proposed master's thesis |
 

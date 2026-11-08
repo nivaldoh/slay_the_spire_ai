@@ -156,6 +156,11 @@ because Claude wrote it, so it trained nothing. Prompt 2's card and potion text 
 text, so the prompt 2 arms' prompts hold Claude-written strings and the terms question covers them too. Online RL with fight rewards
 is built and has played no run. Report: `runs/spire-rl-20261106b/handoff.md`. Unverified: no agreed check covers it.
 
+*2026-11-07.* Fight learning then ran on sampled game runs (advantage-weighted regression on fight steps). That fight adapter,
+with a run adapter taught by public human run files, beat the 11-06 fight adapter and the warm start on 60 fresh test seeds, at
+one revision and training speed ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)).
+Unverified: no agreed check covers it.
+
 ### Idea: PostTrainBench-style tasks
 
 *Owner, 2026-10-28: a general idea to keep, for inspiration or reference

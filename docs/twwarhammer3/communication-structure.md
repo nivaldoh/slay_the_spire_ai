@@ -228,7 +228,7 @@ fact; the start of stage 3 rests on it.
 ## Stages
 
 Every stage after stage 0 needs the owner's go-ahead, a time window and, for paid stages, a dollar
-cap. `--budget-usd` caps the WH3 Anthropic ledger's total including earlier jobs ($7.10 now), so
+cap. `--budget-usd` caps the WH3 Anthropic ledger's total including earlier jobs ($13.68 on 2026-11-08, after stage 3), so
 each stage's flag is the ledger total at its start plus that stage's allowance.
 
 Costs are estimates from the one paid C battle ($0.94 for a 405 s five-member battle). They assume
@@ -634,7 +634,7 @@ agrees it.
   decides whether this study may use it (it rests on JUDGEMENT `cannae-eval.md` Construction
   profile). How much the native AI varies between launches on v2 is unknown. Blocks spread each
   arm over time.
-- **Budget.** The Anthropic key's $200 is shared by both games, and its three ledgers sum to $7.34
+- **Budget.** The Anthropic key's $200 is shared by both games, and its three ledgers summed to $7.34 before stage 3
   (WH3 $7.10, Spire $0.21, provider smoke $0.02, each rounded). If every battle in stages 3 and 4
   ran to the timer they would cost about $160 to $170, leaving about $23 to $33 of the $192.66
   left.

@@ -42,6 +42,8 @@ no check of C's mechanics is agreed, and each cell has one to five launches.
   from message to engine effect; no captain-to-captain delivery in relay or overview; one live
   `link` refusal.
 - Witness development ($0, no think time): overview witness won at 391.1 s, peer witness lost.
+- Listening measure after the pilot, $0.29 on recorded captain inputs (night total $6.58 of the $10):
+  [spec](communication-structure.md#results-so-far-night-of-2026-11-08).
 - Stage 3 pilot at `e174a7d` (Haiku 5.5 low, $6.29 of the $10; WH3 Anthropic ledger $7.1042605 to
   $13.3923583): all seven launches lost (P 2, R 2, O 2, S 1), $0.76-1.15 each. P, R and O stayed
   within the forfeit limit; S's decisive cavalry forfeited 56 of 220 replies by ordering its second
@@ -60,7 +62,7 @@ no check of C's mechanics is agreed, and each cell has one to five launches.
   full plant replay caught 418 of 420 there (all 12 new, the 2 known misses); a redefined cue met its
   three pre-stated expectations on 18 Massed horse launches; the report browser check matched the
   collector until it reached a single-controller assumption at line 310 (see the spec).
-- Register rows: the 3 + 3 probes, 2 development, 7 pilot, 17 stage-2, 6 kill-test and 12 Massed
+- Register rows: the 3 + 2 probes, 2 development, 7 pilot, 17 stage-2, 6 kill-test and 12 Massed
   horse witness launches.
 
 ## 2026-11-08: Peer messages and a commander in one army, spec for owner review
