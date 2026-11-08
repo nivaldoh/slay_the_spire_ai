@@ -835,3 +835,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-08,horse-north-muted-witness-02,episode-0000,emp-wing-horse-north-muted-v1,configured,,,,3b84fa9,realtime,1.0,0.0,lost,578,0.25,0.31,1025,2,2.72,0,classic,,,,,0.0,0.22,0.0,engine_result,,c12556b1841d,
 2026-11-08,horse-south-far-muted-witness-02,episode-0000,emp-wing-horse-south-far-muted-v1,configured,,,,3b84fa9,realtime,1.0,0.0,won,499,0.32,0.14,905,0,2.72,0,classic,,,,,0.31,0.0,0.0,engine_result,,c12556b1841d,
 2026-11-08,horse-south-muted-witness-02,episode-0000,emp-wing-horse-south-muted-v1,configured,,,,3b84fa9,realtime,1.0,0.0,lost,485,0.23,0.27,833,0,2.72,0,classic,,,,,0.0,0.256,0.0,engine_result,,c12556b1841d,
+2026-11-08,s1c-overview-probe-01,episode-0000,emp-envelopment-c-overview-v2,configured,,,,65481c9,realtime,1.0,0.0,lost,448,0.24,0.7,1448,6,1.83,0,classic,,,,,0.0,0.679,0.0,engine_result,,b83a8ac48789,
