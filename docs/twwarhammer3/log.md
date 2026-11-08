@@ -29,6 +29,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-08: Repository upkeep and bug audit
+
+Claude Code, at the owner's request ("cleanup ... anything in general to improve"); offline, $0, no
+game. Handoff with the owner's choices: `runs/repo-improve-20261108/handoff.md`. Two rounds of finder
+agents over code, docs, garbage and tests reported 55 problems; a second agent reproduced 54 (the
+other is a known issue), about 49 distinct. Each code fix below has a test that fails without it, a
+plant and an independent review, except the replay page's three JavaScript view-time edits, which no
+test covers; the status lines were rechecked by a second agent; none was seen in a live game.
+
+Landed (presentation, scripts, tests and docs only, so the report fingerprint does not move): the
+field report dates a team member's orders from the member's own state (the night's page says 0.3 s;
+stage-3 team orders read 1.5-5.7 s, median 2.4 s over 2,385 batches) and the paired table's Unpaired count
+now counts only launches where one controller of the pair played without its partner; the suite page no longer stops on rush,
+hold or concentrate battles or on a scenario with no finished battle (the real round-3 report hit
+both); the Stop hook treats `manual_demo record` and `inventory_scenarios.py` as game jobs; a test for
+the witnesses' wing rule; stale status lines corrected (Anthropic ledgers $13.89, not $7.10).
+
+Waiting on branch `repo-upkeep-owner` (11 commits, 14 bugs, all moving the fingerprint): worker,
+capture folder, peer comparison, checkpoint timeout, wall-cap label, battle budget lock, provider
+error charges, `spend` with a missing ledger, suite double count with `--also`, the Lua infinity
+guard, and Windows-side game logs never deleted (3.64 GB on C:; owner script in the handoff).
+
 ## 2026-11-08 (night): communication-structure stages 0-3, interim
 
 Owner: "Implement up to stage 3", $10 cap; brief `runs/comm-build-20261108/brief.md`. Unverified:

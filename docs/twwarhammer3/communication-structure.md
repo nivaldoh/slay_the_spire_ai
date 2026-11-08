@@ -636,7 +636,7 @@ agrees it.
   arm over time.
 - **Budget.** The Anthropic key's $200 is shared by both games, and its three ledgers summed to $7.34 before stage 3
   (WH3 $7.10, Spire $0.21, provider smoke $0.02, each rounded). If every battle in stages 3 and 4
-  ran to the timer they would cost about $160 to $170, leaving about $23 to $33 of the $192.66
+  ran to the timer they would cost about $160 to $170, leaving about $23 to $33 of the $192.66 then
   left.
 
 ## Massed horse variant (draft, 2026-11-08)

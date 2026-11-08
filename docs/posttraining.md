@@ -158,8 +158,10 @@ is built and has played no run. Report: `runs/spire-rl-20261106b/handoff.md`. Un
 
 *2026-11-07.* Fight learning then ran on sampled game runs (advantage-weighted regression on fight steps). That fight adapter,
 with a run adapter taught by public human run files, beat the 11-06 fight adapter and the warm start on 60 fresh test seeds, at
-one revision and training speed ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)).
-Unverified: no agreed check covers it.
+one revision and training speed ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)); the learned fights' own share was not separated.
+It rests on the branch's marked choices for training speed, prompt facts, fight reward and potion value and on the human-data
+markers in `runs/spire-rl-20261107/human/`; the fight adapter uses prompt 2, which the terms question covers, and using the human run files waits on
+decision 1 of `runs/spire-rl-20261107/handoff.md`. Unverified: no agreed check covers it.
 
 ### Idea: PostTrainBench-style tasks
 

@@ -51,8 +51,9 @@ unit: an average over a kind would put an army split over two fronts where nobod
 question, plan and "seen" lines are hand-written in `report_notes.json`: no controller sees them.
 The map frame uses units still fighting, so a rout's run off the map does not shrink the fight.
 Large maps also show controller tags: `T1–T3` for the three models, `R1–R3` for the
-written rule sets, `M` for one model, `M+` with tips, `C` for model over scripts, and `S`
-for scripts alone. The named keys show each tag's meaning; select a key to highlight its
+written rule sets, `M` for one model, `M+` with tips, `C` for model over scripts, `S`
+for scripts alone, and `Co`, `Ch` and `H` for the Concentrate, Charge nearest and Hold position
+scripted arms. The named keys show each tag's meaning; select a key to highlight its
 units and paths, then select it again to clear. The same tag follows a controller into
 Watch, where a selected unit names its controller. Tags follow recorded ownership, not
 unit kind or geographic wing. Overview maps retain colour without extra tag text.
@@ -564,7 +565,10 @@ result.
   moment, how old the observation behind the latest applied reply is (empty replies
   included; a commander's plan view for the commander). It drops when a reply lands and
   grows by one second per second until the next (view and application times, battle
-  clock). The collector's `order_age_median_s` (the median of per-battle medians) stays in
+  clock). On a team page a member's reply dates from the member's own state, but the
+  dispatcher's empty polls still count as replies dated at the poll, so the band and the
+  Model's view outlines read younger than the members' views (counting only member replies would change this
+  definition; not done, 2026-11-08). The collector's `order_age_median_s` (the median of per-battle medians) stays in
   the JSON. `visual-sol-low-20261015`: 4.2 s over 45 batches; 3.9 s over all 91 applied
   replies, empty ones included.
 - **Per decision** (moment panel): that reply's observation age when applied (battle
@@ -674,7 +678,7 @@ Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `j
 | `field-report-demo.html`, `visual-report-demo.html` | synthetic (the deleted fixture; `make-wh3-replay-demo.py` beside them) |
 | `bench-b*.{json,txt,md}` | the b1-b9 screens and audits named in [log.md](log.md) |
 | `visual-browser/` | browser check screenshots and exports |
-| `comm-structure-20261108.{html,json,txt}` | the communication-structure night: the stage-3 pilot, witness development and stage-2 jobs under `runs/comm-build-20261108/` (paths outside `runs/twwarhammer3/`); its 26 jobs are listed in `runs/comm-build-20261108/report-build2.log`, and the rebuild command was not recorded |
+| `comm-structure-20261108.{html,json,txt}` | the communication-structure night: the stage-3 pilot, witness development and stage-2 jobs under `runs/comm-build-20261108/` (paths outside `runs/twwarhammer3/`); its 26 jobs are listed in `runs/comm-build-20261108/report-build2.log`; the rebuild command is not in that folder |
 
 All but `cavalry-assault`, `c1-cavalry-ai11` and `swarm-screens` predate the 2026-10-15 redesign: their HTML is the old page (verdict, margin chart,
 evidence and definitions, unrun placeholders), and their JSON lacks `order_age_median_s`,

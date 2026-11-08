@@ -21,6 +21,7 @@ GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md
 [Visual reports](twwarhammer3/reports.md): the [cooperation proposal](twwarhammer3/reports.md#cooperation-evidence-proposal) adopts no new score; reader feedback on the [suite report](twwarhammer3/reports.md#coordination-suite) remains open.
 
 Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
+Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): fixes that move no fingerprint landed ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`, decisions first: one cleanup line (4.2 GB, scripts never run) and branch `repo-upkeep-owner`.
 
 Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03). Later planning: [workflow](workflow.md#session-context-improvements).
 
@@ -50,7 +51,7 @@ Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decisio
 
 ## Post-training
 
-Secondary priority. Capture, export and dataset smoke checks passed; the learning claims are the unverified [local Spire](posttraining.md#local-rl-on-complete-runs) warm start (2026-11-06) and learned fight adapter (2026-11-07, [log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). A training host, a way to play fine-tuned models, and useful targets are still missing ([plan](posttraining.md)). Local checkpoint RL stays paused (owner, 2026-10-28; decision 11); its failed synthetic gate establishes no general learning gain.
+Secondary priority. Capture, export and dataset smoke checks passed; the learning claims are the unverified [local Spire](posttraining.md#local-rl-on-complete-runs) warm start (2026-11-06) and the 2026-11-07 second pick, learned fights with a human-taught run adapter ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)); the learned fights' own share was not separated. A training host, a way to play fine-tuned models, and useful targets are still missing ([plan](posttraining.md)). Local checkpoint RL stays paused (owner, 2026-10-28; decision 11); its failed synthetic gate establishes no general learning gain.
 
 ## Known issues
 
@@ -105,4 +106,5 @@ Numbers are unchanged; open the relevant item before acting.
 - `tests-cleanup` (`ef90ec6`), `simplify-tests` (`2a36b13`): test-suite cleanups of 11-03, unmerged (decision 12).
 - `spire-teacher` (`72b9233`), `spire-env` (`0b879d4`, contains `spire-teacher`) and `spire-docfix` (`95797bb`, docs only), each in worktree `../slay_the_spire_ai-<name>`: the rule policy, a `RealGame` environment and Spire doc corrections of 2026-11-06; landing waits on decision 4 of `runs/spire-offline-20261106/handoff.md`.
 - `repo-improve-proposals` (worktree `../slay_the_spire_ai-repo-proposals`): 2026-11-06 changes that need the owner, one commit per choice; one-line choices in `runs/repo-improve-20261106/handoff.md`.
+- `repo-upkeep-owner` (worktree `../slay_the_spire_ai-repo-upkeep-owner`): 14 bug fixes of 2026-11-08, each tested and reviewed, that move the report fingerprint; decision 2 of `runs/repo-improve-20261108/handoff.md`.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
