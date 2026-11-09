@@ -5,8 +5,10 @@ shape). Orders have a unit, type and command-specific fields for movement, attac
 toggles or abilities; move/attack sequences use ``queue``. The unit ``"army"`` gives the
 army's own orders: an ``ability`` (a faction's point unlocks), and, paid with supplies, a
 ``build`` (a tower or barricade on a slot) or a ``reinforce`` (a unit from the
-reinforcement pool, entering at a spawn zone). Only an engine-reported battle result is a
-gameplay outcome; everything below is an infrastructure, protocol or policy failure.
+reinforcement pool, entering at a spawn zone). While the observation lists
+``mode.fortifications`` (a siege the player attacks, scenario field ``siege_assault``), a unit
+may also ``besiege`` or ``attack_building`` one of them. Only an engine-reported battle result is
+a gameplay outcome; everything below is an infrastructure, protocol or policy failure.
 """
 
 import math
@@ -44,6 +46,9 @@ class BattleRestarted(RuntimeError):
 # multiplayer modes' native identities (engine/mailbox.py).
 HIDDEN_KEYS = ("evaluation", "final", "setup", "native")
 ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability", "flight")
+# Accepted only while the observation lists mode.fortifications; each replaces the unit's move,
+# attack or halt, like them, and none can be queued.
+SIEGE_ORDER_TYPES = ("besiege", "attack_building")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")
 
@@ -68,6 +73,8 @@ def validate_orders(orders: list, observation: dict) -> None:
     """Reject orders the observation does not allow; the engine re-checks the rest."""
     friendly = friendly_units(observation)
     enemies = visible_enemies(observation)
+    fortifications = {piece.get("id"): piece
+                      for piece in (observation.get("mode") or {}).get("fortifications") or []}
     # A team member may aim abilities at its teammate's units (``allies``), not order them.
     targets = friendly.keys() | enemies.keys() | {u["id"] for u in observation.get("allies", [])}
     if not isinstance(orders, list):
@@ -92,14 +99,14 @@ def validate_orders(orders: list, observation: dict) -> None:
             continue
         if unit not in friendly:
             raise IllegalActionError(f"unknown friendly unit {unit!r}")
-        if kind not in ORDER_TYPES:
+        if kind not in ORDER_TYPES and not (kind in SIEGE_ORDER_TYPES and fortifications):
             raise IllegalActionError(f"{unit}: unknown order type {kind!r}")
         queued = order.get("queue", False)
         if not isinstance(queued, bool) or not isinstance(order.get("run", False), bool):
             raise IllegalActionError(f"{unit}: queue and run must be booleans")
         if queued and (kind not in ("move", "attack") or movement.get(unit) != "move"):
             raise IllegalActionError(f"{unit}: queued move/attack must follow a move in this batch")
-        if kind in ("move", "attack", "halt"):
+        if kind in ("move", "attack", "halt") or kind in SIEGE_ORDER_TYPES:
             if unit in movement and not queued:
                 raise IllegalActionError(f"{unit} is ordered twice without queue")
             movement[unit] = kind
@@ -147,6 +154,8 @@ def validate_orders(orders: list, observation: dict) -> None:
             if available[ability].get("ready") is False:
                 raise IllegalActionError(f"{unit}: ability {ability!r} is not ready")
             _validate_ability_target(unit, order, targets)
+        if kind in SIEGE_ORDER_TYPES:
+            _validate_siege(unit, order, friendly[unit], fortifications)
 
     # Keep command-specific diagnostics above, then check unused fields too: every
     # field crosses the Lua JSON boundary, even when its command ignores it.
@@ -212,6 +221,27 @@ def _validate_purchase(order, observation, purchases) -> None:
         raise IllegalActionError(f"army: {name} costs {cost}, supplies {mode['supplies']}"
                                  f" ({purchases['spent']} already ordered)")
     purchases["spent"] += cost
+
+
+def _validate_siege(unit, order, current, fortifications) -> None:
+    """A besiege or attack_building on a fortification not yet at 0% (evidence_rules
+    .gate_breached's rule for every piece), by an own unit that is not routing: a wall piece
+    needs a unit that can climb walls, attack_building one that can siege and has ammunition."""
+    from twwarhammer3.battle.evidence_rules import gate_breached  # it imports this module
+
+    target = fortifications.get(order.get("target"))
+    if target is None:
+        raise IllegalActionError(f"{unit}: {order.get('target')!r} is not a fortification")
+    if gate_breached(target):
+        raise IllegalActionError(f"{unit}: {target['id']} is destroyed")
+    if {"routing", "shattered"} & set(current.get("state") or []):
+        raise IllegalActionError(f"{unit} is routing")
+    if (order["type"] == "besiege" and target.get("kind") == "wall"
+            and current.get("can_climb") is not True):
+        raise IllegalActionError(f"{unit} cannot climb walls")
+    if order["type"] == "attack_building" and (current.get("can_siege") is not True
+                                               or not current.get("ammo")):
+        raise IllegalActionError(f"{unit} cannot attack buildings (can_siege and ammunition)")
 
 
 def _validate_ability_target(unit, order, targets) -> None:

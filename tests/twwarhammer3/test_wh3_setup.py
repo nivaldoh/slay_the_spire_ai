@@ -831,7 +831,8 @@ def run_lobby(steps, lobby):
 
 def siege_with(attacker, equipment):
     scenario = deepcopy(setup.scenarios()["chd-reserve-grn-siege"])
-    return {**scenario, "attacker": attacker, "siege_equipment": equipment}
+    return {**scenario, "attacker": attacker, "siege_equipment": equipment,
+            "private_record": True}
 
 
 KSL = ["ksl_battering_ram", "ksl_siege_tower_15m"]

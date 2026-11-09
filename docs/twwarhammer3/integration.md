@@ -556,6 +556,22 @@ From the documentation or code reading; probe before relying on them:
   inherits; disturbed difficulty/scale/realism did not survive the tested supervised shutdown.
 - Experience and saved presets outside the live verification scenario (including
   reinforcement ranks); policy strength and difficulty calibration from XP are unverified.
+- The private record's reads that no battle has made (`record_private`, 2026-11-08):
+  `is_on_top_of_wall`, the crew's `VehicleList.At(i).UnitContext.UniqueUiId` (documented in
+  the UI context documentation), `starting_ammo` of enemy units,
+  `is_visible_to_alliance` for `bm:get_non_player_alliance()`, and its CPU per frame
+  (`sample_cpu_ms`). The 2026-10-25 siege checkpoint reading did read `is_climbing_ladder`,
+  `ammo_left` of both sides' units, `assault_equipment` keys and positions, and each vehicle's
+  occupant type key; the observation reads both ammunition getters for friendly units.
+- The siege-attack interface (session `siege_assault`, 2026-11-08), from CA's documentation and
+  `lib_battle_manager.lua` only: `bm:get_fort_gate_buildings`, `get_fort_wall_buildings` (gates
+  included) and `get_fort_tower_buildings`; a building's `central_position`, `has_gate`,
+  `health` (0-1; whether a gate's tracks its door's hit points is unread) and
+  `alliance_owner_id` (compared with one-based `bm:local_alliance()`); `can_climb_walls`,
+  `has_attribute("can_siege")` and `is_on_top_of_wall` on units;
+  `ToggleableSlotList(ArmyList.At(i))` slots joined in one expression; and
+  `besiege_building` and `attack_building(building, 1, run)`, whose effects (a climb, the ram
+  at the gate, a gun's damage) stage 2 of the siege-attack design reads first.
 
 ## Finding another capability
 

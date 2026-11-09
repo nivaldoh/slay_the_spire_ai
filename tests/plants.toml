@@ -1671,8 +1671,8 @@ source = "2026-10-31 independent optional-evidence review"
 id = "recording-copies-before-identity-check"
 guards = "Rejected replay identity cannot create or overwrite episode evidence"
 file = "src/twwarhammer3/battle/capture.py"
-old = "        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}\n        shutil.copyfile(source, episode / \"replay.jsonl\")"
-new = "        shutil.copyfile(source, episode / \"replay.jsonl\")\n        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}"
+old = "        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}\n        shutil.copyfile(source, episode / f\"{kind}.jsonl\")"
+new = "        shutil.copyfile(source, episode / f\"{kind}.jsonl\")\n        if header.get(\"job\") != job or header.get(\"battle\") != battle:\n            return {\"status\": \"identity_mismatch\", \"file\": source.name}"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
 source = "2026-10-31 replay-identity oracle audit"
 

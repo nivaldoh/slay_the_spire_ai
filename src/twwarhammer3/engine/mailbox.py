@@ -11,12 +11,14 @@ capture points, an empty ``magic``).
 Files, by writer:
 - controller: ``session.json``, read at each script load (``job``, ``enabled``, ``menu``,
   ``autostart``, ``observe_ms``, ``tick_ms``, ``record_replay``, ``stills``, optional ``custom``
-  (versioned authored objective and private deployment), optional ``multiplayer`` (below); the mod
-  ignores ``speed`` and ``pause``, which ``require_realtime`` checks); ``orders.json``, one
-  outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
-  "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
-  battle through the results popup's rematch; in multiplayer only ``"ready"`` in control mode,
-  which presses this client's own Start Battle once during deployment); ``menu.json``, UI
+  (versioned authored objective and private deployment), optional ``private_record``, optional
+  ``siege_assault`` (below), optional ``multiplayer`` (below); the mod ignores ``speed`` and
+  ``pause``, which ``require_realtime`` checks); ``orders.json``, one outstanding request that
+  the battle script deletes when read,
+  ``{"schema", "job", "battle", "request", "based_on", "orders", "say"?}`` or
+  ``{..., "control": "restart"}`` (replay the battle through the results popup's rematch; in
+  multiplayer only ``"ready"`` in control mode, which presses this client's own Start Battle
+  once during deployment); ``menu.json``, UI
   steps run by the frontend script, or by the battle script during a battle, and deleted
   when read. Menu requests carry ``job``, ``request`` and ``steps``; each consumer rejects
   foreign jobs and logs ``menu <request>: done|failed``. ``menu`` waits for its own
@@ -28,8 +30,9 @@ Files, by writer:
   does not move); the append-only ``mod.log`` (``[battle ms] text``) and
   ``menu.log`` (step results, then ``done`` or ``failed``); UI dumps named by ``dump``
   steps; per battle, ``replay-<battle>.jsonl`` (a presentation frame per second, with
-  ``record_replay``) and ``imagery-<battle>.json`` (still requests and unit names, with
-  ``stills``).
+  ``record_replay``), ``private-<battle>.jsonl`` (the evaluator-only all-unit record per second,
+  with ``private_record``; fields in ``battle/capture.py``) and ``imagery-<battle>.json`` (still
+  requests and unit names, with ``stills``).
 - ``battle/capture.py`` (PassiveCapture): ``still-<battle>-<trigger>.png`` and
   ``capture-<battle>-<trigger>.json``.
 An episode copies its battle's files when it ends. ``reset`` (``play`` without ``--attach``,
@@ -77,6 +80,16 @@ Authored enemy placements stay in ``setup.custom``. A scripted objective request
 ending, but ``result`` still requires engine confirmation. Its objective status is recorded
 separately: a native victory can fail an asset-preservation objective. The play loop, not
 the game, adds ``mode.scoring`` (``"contact"``) for a scenario that declares it.
+
+Session ``siege_assault`` (a siege the player attacks, setup.py) adds, once ``start`` has read
+the fort (``setup.siege_assault``: ``{"ok", "lists"?, "error"?}``, hidden): ``mode.fortifications``
+``[{"id" (g1.., w1.., t1..), "kind" ("gate", "wall", "tower"), "x", "z" (central_position),
+"hp"? (whole percent of health()), "owner"? (towers: "us", "enemy", "none")}...]``, ids given
+once by centre x then z; ``mode.vehicles`` ``[{"id" ("v" + VehicleList index), "category"?,
+"x", "z", "crew" (our unit id)}...]``, only vehicles our units crew; ``mode.enemy_structures``
+``[{"type", "x", "z", "destroyed"?}...]``, the other armies' finished builds; on units,
+``on_wall``? (ours and visible enemies, ``is_on_top_of_wall``) and, on ours, ``can_climb``? and
+``can_siege``?. A list that fails to read is absent. Nothing shows ``is_climbing_ladder``.
 
 A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
 ``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,
@@ -140,7 +153,10 @@ change and a move/attack sequence in one batch; ``queued`` acknowledges submissi
 engine queue, not execution. ``twwarhammer3.protocol`` validates the order types. An
 ``ability`` order whose unit is ``"army"`` casts an army ability; a ``flight`` order asks
 for ``flying: true`` (take off) or ``false`` (land), the engine re-checks availability,
-and later observations confirm the change.
+and later observations confirm the change. Under ``siege_assault``, ``besiege`` and
+``attack_building`` (``unit``, ``target``: a fortification id, ``run``) call the unit
+controller's ``besiege_building`` or ``attack_building`` on the building the id was given to,
+piece 1 (the whole building); they replace a move, attack or halt and cannot be queued.
 """
 
 # JUDGEMENT: Evaluation counts — assistant, b1 (2026-10-14), evaluator v2 (2026-10-15): the Lua
@@ -152,6 +168,12 @@ and later observations confirm the change.
 # JUDGEMENT?: Multiplayer action routes — Claude, 2026-10-30, twwarhammer3_battle.lua poll/load:
 # "control" also drops battle-time menu.json and leaves twwarhammer3_inject undefined (the card
 # said so for "observe"); allowing UI steps or injection adds action routes beyond one move.
+# JUDGEMENT: Siege attack fields — Claude, 2026-11-08 (Izmail design, owner question 3, option a):
+# twwarhammer3_battle.lua mode_section and siege_unit show piece health, tower owners, our crews,
+# finished enemy builds and visible enemies' on_wall. Less changes what models know; D1 rests on it.
+# JUDGEMENT?: Siege vehicle list — Claude, 2026-11-08: twwarhammer3_battle.lua siege_vehicles
+# lists a vehicle only while our unit crews it, as v<VehicleList index>. An uncrewed ram leaves
+# the view; the witness's crew binding and the ram's readings rest on it.
 import json
 import os
 import time
@@ -164,7 +186,7 @@ from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
 SCHEMA = 1
 FILES = ("session.json", "observation.json", "orders.json", "menu.json", "mod.log", "menu.log")
-BATTLE_FILES = ("replay-*", "imagery-*", "still-*", "capture-*")
+BATTLE_FILES = ("replay-*", "private-*", "imagery-*", "still-*", "capture-*")
 
 
 def require_realtime(session: dict) -> None:

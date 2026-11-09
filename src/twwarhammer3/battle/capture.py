@@ -1,7 +1,7 @@
-"""Optional presentation evidence captured beside a battle: replay frames and game stills.
+"""Optional evidence captured beside a battle: replay frames, game stills and the private record.
 
 Never on the order path: stills are taken by a thread independent of the policy loop, and
-both copies run after an episode's order loop has ended. Nothing here is policy input.
+every copy runs after an episode's order loop has ended. Nothing here is policy input.
 """
 
 import json
@@ -35,9 +35,41 @@ def imagery_settings(config: dict) -> dict:
 
 
 def copy_recording(bridge: Path, episode: Path, *, job: str, battle: str | None) -> dict:
+    return _copy_frames(bridge, episode, "replay", "recorder", job=job, battle=battle)
+
+
+# JUDGEMENT?: Private record in scored battles — Claude, 2026-11-08: an opted-in scenario writes it
+# in every battle, scored ones too, at a per-frame CPU cost nobody has measured (sample_cpu_ms keeps
+# it). Writing it only in hold launches would leave witness battles without hidden-unit readings.
+# JUDGEMENT?: Private record fields — Claude, 2026-11-08: portfolio S3's union without its class,
+# rear_threat and MoralePercent (Malta's stream). Malta's rear-charge and commander-credit
+# readings would need them, which is another pack version.
+def copy_private_record(bridge: Path, episode: Path, *, job: str, battle: str | None) -> dict:
+    """Copy a ``private_record`` scenario's evaluator-only record to ``private.jsonl``.
+
+    One line per engine second (``record_private`` in the battle Lua): {"private_record": 1,
+    "job", "battle", "time_ms", "terminal"?, "friendly": [unit...], "enemy": [unit...],
+    "equipment"?, "vehicles"?, "gates"?, "captures"?, "tickets"?, "errors"?, "sample_cpu_ms"}.
+    ``enemy`` holds every registered enemy unit, hidden ones included. A unit is {"id", "type"?,
+    "x"?, "y"?, "z"?, "men"?, "routing"?, "shattered"?, "melee"?, "hidden"?, "on_wall"?,
+    "climbing"?, "visible"? (to the opposing alliance), "ammo"?, "ammo0"?}. ``equipment`` is
+    assault_equipment's [{"key"?, "x"?, "y"?, "z"?}]; ``vehicles`` is the UI's VehicleList,
+    [{"category"?, "x"?, "z"?, "crew"? (our unit id) or "crew_ui_id"? (a unit we never
+    registered)}]; the two are separate engine lists. ``gates`` keep raw hit points ("raw_hp",
+    "raw_max_hp"), not the observation's percentage; ``captures`` are {"id", "key", "holder"?};
+    ``tickets`` hold every alliance's row {"side"?, "tickets", "per_s", "starting"}. A field
+    the engine did not give is absent, never false or zero; a section that failed is absent and
+    named in ``errors``, and an unreadable opposing alliance (``"opponent: ..."``) leaves every
+    friendly unit without "visible". Not yet read live: is_on_top_of_wall, the crew's
+    UniqueUiId, enemy starting_ammo, and friendly visibility to the enemy alliance."""
+    return _copy_frames(bridge, episode, "private", "private_record", job=job, battle=battle)
+
+
+def _copy_frames(bridge: Path, episode: Path, kind: str, version: str, *, job: str,
+                 battle: str | None) -> dict:
     if not battle or not NAME.fullmatch(battle):
         return {"status": "missing_battle_id"}
-    source = bridge / f"replay-{battle}.jsonl"
+    source = bridge / f"{kind}-{battle}.jsonl"
     if not source.exists():
         return {"status": "missing", "file": source.name}
     try:
@@ -47,9 +79,9 @@ def copy_recording(bridge: Path, episode: Path, *, job: str, battle: str | None)
             header = json.loads(handle.readline())
         if header.get("job") != job or header.get("battle") != battle:
             return {"status": "identity_mismatch", "file": source.name}
-        shutil.copyfile(source, episode / "replay.jsonl")
-        return {"status": "copied", "file": "replay.jsonl", "version": header.get("recorder"),
-                "bytes": (episode / "replay.jsonl").stat().st_size}
+        shutil.copyfile(source, episode / f"{kind}.jsonl")
+        return {"status": "copied", "file": f"{kind}.jsonl", "version": header.get(version),
+                "bytes": (episode / f"{kind}.jsonl").stat().st_size}
     except (OSError, ValueError) as exc:
         return {"status": "error", "error": str(exc)}
 

@@ -100,16 +100,17 @@ local ABILITY_STATE = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKe
 local ARMY_SETUP = 'PlayerArmyContext.ArmyAbilitiesList(false).JoinString(RecordKey + "|" + '
     .. 'TargetType + "|" + EffectRange + "|" + RechargeTime, ";")'
 
+-- The second result tells an unreadable list from an empty one; most callers need only rows.
 local function context_rows(context, id, expression)
     local ok, text = pcall(function() return common.get_context_value(context, id, expression) end)
     local rows = {}
-    if not ok or type(text) ~= "string" then return rows end
+    if not ok or type(text) ~= "string" then return rows, false end
     for item in string.gmatch(text, "[^;]+") do
         local fields = {}
         for field in string.gmatch(item .. "|", "([^|]*)|") do fields[#fields + 1] = field end
         rows[#rows + 1] = fields
     end
-    return rows
+    return rows, true
 end
 
 -- "[[col:green]]Ground, Ally[[/col]]" -> "Ground, Ally"
@@ -185,6 +186,24 @@ local function unit_class(unit)
         if class == "cavalry" or class == "chariot" then return "missile_" .. class end
     end
     return class
+end
+
+-- Siege assault only (state.fortifications, set up with session.siege_assault): on_wall
+-- (is_on_top_of_wall, CA's battle_unit.html) for our units and visible enemies, and for ours
+-- can_climb (can_climb_walls) and can_siege (has_attribute "can_siege"), each kept once read. A
+-- getter that fails or answers another type leaves its field absent, never false. Nothing reads
+-- is_climbing_ladder here: it read true at ground height and for defenders (2026-11-03).
+local function siege_unit(record, unit, entry)
+    local on_wall = get(unit, "is_on_top_of_wall", nil)
+    if type(on_wall) == "boolean" then record.on_wall = on_wall end
+    if not entry then return end
+    for _, read in ipairs({{"can_climb", "can_climb_walls"}, {"can_siege", "has_attribute", "can_siege"}}) do
+        if entry[read[1]] == nil then
+            local value = get(unit, read[2], nil, read[3])
+            if type(value) == "boolean" then entry[read[1]] = value end
+        end
+        record[read[1]] = entry[read[1]]
+    end
 end
 
 local function unit_record(id, unit, mine, class)
@@ -302,6 +321,7 @@ local function unit_record(id, unit, mine, class)
             record.dest = {round(destination:get_x(), 1), round(destination:get_z(), 1)}
         end
     end
+    if state.fortifications then siege_unit(record, unit, mine and state.friendly[id] or nil) end
     return record
 end
 
@@ -538,10 +558,125 @@ local function authored_entry(side, placement, used)
     error("missing authored unit " .. tostring(placement.type))
 end
 
+-- Reserve version 3, kind "waves" (battle/reserve.py checks the profile): each held group's
+-- enemy deployment slots bind by slot and type, as teleport_units binds them, and every unit is
+-- taken and halted (CA's battle_unitcontroller.html take_control, halt) before the teleport.
+-- Reads held enemy units only, never friendly state. Unlike versions 1-2 it also runs under the
+-- owner's observer session (multiplayer "observe"), in a single-player battle only.
+local function setup_waves()
+    local config = session.reserve
+    assert(not session.custom, "waves require a battle without a custom objective")
+    assert(state.multiplayer == nil or state.multiplayer == "observe",
+           "waves run in single-player play or under the observer session")
+    assert(get(bm.battle, "is_multiplayer", nil) == false, "waves require a single-player battle")
+    local wanted, bound, used = {}, {}, {}
+    for group, wave in ipairs(config.groups) do
+        for index, slot in ipairs(wave.slots) do
+            assert(not wanted[slot], "waves slot " .. tostring(slot) .. " held twice")
+            wanted[slot] = {group = group, type = wave.types[index]}
+        end
+    end
+    -- Every placement takes its unit in deployment order, so teleport_units binds the same ones.
+    for slot, placement in ipairs(session.deployment.enemy) do
+        local entry = authored_entry("enemy", placement, used)
+        if wanted[slot] then bound[slot] = entry end
+    end
+    local reserve = {waves = true, entries = {}, groups = {}, men0 = {}, released = {},
+                     evidence = {config = config, units = {}, releases = {}}}
+    for group, wave in ipairs(config.groups) do
+        reserve.groups[group] = {}
+        for _, slot in ipairs(wave.slots) do
+            local entry = assert(bound[slot], "waves slot " .. tostring(slot) .. " is not deployed")
+            local kind = get(entry.unit, "type", nil)
+            assert(kind == wanted[slot].type, "waves slot " .. slot .. " binds " .. tostring(kind))
+            local men = get(entry.unit, "number_of_men_alive", nil)
+            assert(type(men) == "number", "unreadable waves strength")
+            local identity = {group = group, slot = slot, type = kind}
+            -- Bind by object identity; enemy ids do not follow recruitment order.
+            for _, id in ipairs(state.enemy_ids) do
+                if state.enemy[id] == entry then identity.id = id end
+            end
+            assert(identity.id, "waves unit has no enemy identity")
+            reserve.entries[#reserve.entries + 1] = entry
+            reserve.men0[#reserve.entries] = men
+            reserve.groups[group][#reserve.groups[group] + 1] = #reserve.entries
+            reserve.evidence.units[#reserve.entries] = identity
+        end
+    end
+    -- Only once every slot is bound, so a refused profile leaves no unit held.
+    for _, entry in ipairs(reserve.entries) do
+        local controller = entry.army:create_unit_controller()
+        controller:add_units(entry.unit)
+        controller:take_control()
+        controller:halt()
+        entry.controller = controller
+    end
+    state.reserve = reserve
+end
+
+-- Each held group goes to native AI (release_control) at its release_ms of engine time, or at
+-- once when release_on_damage and one of its units has fewer men than at setup or reads
+-- is_under_missile_attack true (CA's battle_unit.html). Damage releases only that group. A unit
+-- with no men left is not released. A getter that fails or answers another type is an error,
+-- never false: the release is recorded with ok false, which reserve.check refuses.
+local function tick_waves(now)
+    local reserve = state.reserve
+    local evidence, config = reserve.evidence, reserve.evidence.config
+    for group, wave in ipairs(config.groups) do
+        if not reserve.released[group] then
+            local reason, damaged = nil, {}
+            local ok, err = pcall(function()
+                if now >= wave.release_ms then reason = "time"; return end
+                if not config.release_on_damage then return end
+                for _, index in ipairs(reserve.groups[group]) do
+                    local unit = reserve.entries[index].unit
+                    local men = get(unit, "number_of_men_alive", nil)
+                    local fire = get(unit, "is_under_missile_attack", nil)
+                    assert(type(men) == "number", "unreadable waves strength")
+                    assert(type(fire) == "boolean", "unreadable waves is_under_missile_attack")
+                    if men < reserve.men0[index] or fire then
+                        damaged[#damaged + 1] = {id = evidence.units[index].id, men = men,
+                                                 men0 = reserve.men0[index], under_fire = fire}
+                    end
+                end
+                if #damaged > 0 then reason = "damage" end
+            end)
+            if reason or not ok then
+                reserve.released[group] = true
+                local release = {group = group, reason = reason, released_ms = now, ok = ok,
+                                 error = not ok and clean_error(err) or nil, units = {},
+                                 damaged = #damaged > 0 and damaged or nil}
+                for _, index in ipairs(reserve.groups[group]) do
+                    local entry = reserve.entries[index]
+                    local record = {id = evidence.units[index].id}
+                    local position = get(entry.unit, "position", nil)
+                    if position then
+                        record.x = round(get(position, "get_x", nil), 1)
+                        record.z = round(get(position, "get_z", nil), 1)
+                    end
+                    local handed, failure = pcall(function()
+                        local men = get(entry.unit, "number_of_men_alive", nil)
+                        assert(type(men) == "number", "unreadable waves strength")
+                        record.men = men
+                        if men == 0 then record.destroyed = true
+                        else entry.controller:release_control() end
+                    end)
+                    if not handed then
+                        release.ok, release.error = false, clean_error(failure)
+                    end
+                    release.units[#release.units + 1] = record
+                end
+                evidence.releases[#evidence.releases + 1] = release
+            end
+        end
+    end
+end
+
 -- B's private evaluator adapter: bind explicit authored slots before teleporting. Every
 -- other enemy is borrowed/released by teleport_units as usual. Never reads friendly state.
 local function setup_reserve()
     if not session.reserve then return end
+    if session.reserve.version == 3 then return setup_waves() end
     assert(not state.multiplayer and not session.custom, "reserve requires a plain single-player battle")
     local config, selected, used = session.reserve, {}, {}
     for _, slot in ipairs(config.slots) do
@@ -589,6 +724,7 @@ end
 local function tick_reserve(now)
     local reserve = state.reserve
     if not reserve or state.finished then return end
+    if reserve.waves then return tick_waves(now) end
     local evidence, config = reserve.evidence, reserve.evidence.config
     if not evidence.triggered_ms and now >= config.trigger_ms then
         evidence.triggered_ms = now
@@ -714,6 +850,147 @@ local function deployment_reading()
         end
     end
     return reading
+end
+
+-- Private evidence: a vector's coordinates to 0.1 m, each absent when it cannot be read.
+local function position_fields(record, position)
+    for _, axis in ipairs({"x", "y", "z"}) do
+        local ok, value = pcall(function() return position["get_" .. axis](position) end)
+        if ok then record[axis] = round(value, 1) end
+    end
+    return record
+end
+
+-- Private: the siege vehicles on the battlefield, of both sides, with key and position (CA's
+-- battle_assault_equipment.html; read live by the 2026-10-25 siege checkpoint reading). The
+-- setup carries it for the equipment check, and every private record frame has it.
+local function equipment_reading()
+    local equipment, vehicles = bm.battle:assault_equipment(), {}
+    for index = 1, equipment:vehicle_count() do
+        local vehicle = equipment:vehicle_item(index)
+        local record = position_fields({}, get(vehicle, "position", nil))
+        local key = get(vehicle, "vehicle_key", nil)
+        if type(key) == "string" then record.key = key end
+        vehicles[#vehicles + 1] = record
+    end
+    return vehicles
+end
+
+-- The unit inside each vehicle of the UI context's VehicleList (CcoBattleVehicle
+-- UnitContext, CcoBattleUnit UniqueUiId in the UI context documentation), named by the id
+-- scan() gave that unique ui id, so two units of one type stay apart. Only the occupant's type
+-- was read live (2026-10-25). VehicleList and assault_equipment are separate engine lists.
+-- The private record keeps every vehicle; siege_vehicles shows the policy only ours.
+local function crew_reading()
+    local size = tonumber(get_context("VehicleList.Size"))
+    if not size then error("unreadable VehicleList.Size") end
+    local vehicles = {}
+    for index = 0, size - 1 do
+        local prefix = "VehicleList.At(" .. index .. ")."
+        local record = {x = round(tonumber(get_context(prefix .. "Position.x")), 1),
+                        z = round(tonumber(get_context(prefix .. "Position.z")), 1)}
+        local category = get_context(prefix .. "CategoryName")
+        if type(category) == "string" then record.category = category end
+        local ui_id = tonumber(get_context(prefix .. "UnitContext.UniqueUiId"))
+        local alias = ui_id and state.known[ui_id]
+        if type(alias) == "string" then record.crew = alias else record.crew_ui_id = ui_id end
+        vehicles[#vehicles + 1] = record
+    end
+    return vehicles
+end
+
+-- Siege assault only (session.siege_assault, the player attacking): the fort's gates g1..,
+-- wall pieces w1.. and towers t1.. from the battle manager's lists. lib_battle_manager.lua also
+-- puts every gate building in the wall list, so a wall piece is a wall-list building without a
+-- gate. Ids are given once, here, in order of centre x then z (central_position; position() is
+-- a pivot, CA's battle_building.html), and each id keeps its building object for besiege and
+-- attack_building: a piece that leaves a list keeps its id, and no other piece takes it.
+local function setup_fortifications()
+    assert(state.info.role == "attacker", "siege assault needs the player attacking")
+    local fortifications, lists = {list = {}, by_id = {}}, {}
+    for _, kind in ipairs({{"gate", "g", bm:get_fort_gate_buildings()},
+                           {"wall", "w", bm:get_fort_wall_buildings()},
+                           {"tower", "t", bm:get_fort_tower_buildings()}}) do
+        local pieces = {}
+        lists[kind[1]] = #kind[3]
+        for _, building in ipairs(kind[3]) do
+            local gate = building:has_gate()
+            assert(type(gate) == "boolean", "unreadable has_gate")
+            if kind[1] ~= "wall" or not gate then
+                local centre = building:central_position()
+                local x, z = round(centre:get_x(), 1), round(centre:get_z(), 1)
+                assert(x and z, "unreadable central_position")
+                pieces[#pieces + 1] = {kind = kind[1], building = building, x = x, z = z}
+            end
+        end
+        table.sort(pieces, function(a, b) return a.x < b.x or (a.x == b.x and a.z < b.z) end)
+        for index, piece in ipairs(pieces) do
+            piece.id = kind[2] .. index
+            fortifications.list[#fortifications.list + 1] = piece
+            fortifications.by_id[piece.id] = piece
+        end
+    end
+    state.fortifications = fortifications
+    return lists
+end
+
+-- The public fortification list: id, kind, centre, hp (health() as a whole percentage, absent
+-- when unreadable) and a tower's owner ("us", "enemy" or "none", from alliance_owner_id against
+-- bm:local_alliance()). No destroyed flag: buildings have none, and a gate's read false at hp 0.
+local function fortification_reading()
+    local pieces = {}
+    for _, piece in ipairs(state.fortifications.list) do
+        local health = get(piece.building, "health", nil)
+        local record = {id = piece.id, kind = piece.kind, x = piece.x, z = piece.z,
+                        hp = type(health) == "number" and round(100 * health) or nil}
+        if piece.kind == "tower" then
+            local owner = get(piece.building, "alliance_owner_id", nil)
+            if type(owner) == "number" then
+                record.owner = owner == bm:local_alliance() and "us" or owner < 0 and "none" or "enemy"
+            end
+        end
+        pieces[#pieces + 1] = record
+    end
+    return pieces
+end
+
+-- Our siege vehicles: the VehicleList entries (crew_reading) whose crew is one of our units, as
+-- v<index in that list>, which no battle has shown to stay fixed while vehicles are destroyed.
+local function siege_vehicles()
+    local vehicles = {}
+    for index, vehicle in ipairs(crew_reading()) do
+        if vehicle.crew and state.friendly[vehicle.crew] then
+            vehicles[#vehicles + 1] = {id = "v" .. index, category = vehicle.category,
+                                       x = vehicle.x, z = vehicle.z, crew = vehicle.crew}
+        end
+    end
+    return vehicles
+end
+
+-- Enemy-built towers and barricades: the slots of every other army (ToggleableSlotList, which
+-- the 2026-10-25 siege checkpoint reading read per army) whose building is finished, with type
+-- and position. Empty slots, slots still building and every slot's options stay out: they would
+-- show the defender's choices before a player could see them.
+local function enemy_structures()
+    if not state.info.army_id then error("unreadable player army id") end
+    local structures = {}
+    local armies = tonumber(get_context("ArmyList.Size"))
+    if not armies then error("unreadable ArmyList.Size") end
+    for index = 0, armies - 1 do
+        local army = "ArmyList.At(" .. index .. ")"
+        if tonumber(get_context(army .. ".UniqueID")) ~= state.info.army_id then
+            local query = "ToggleableSlotList(" .. army .. ').JoinString(TypeString + "|" + '
+                .. 'WorldPosition.x + "|" + WorldPosition.z + "|" + CurrentIndex + "|" + '
+                .. 'IsConstructionInProgress + "|" + IsDestroyed, ";")'
+            for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do
+                if (tonumber(row[4]) or -1) >= 0 and row[5] == "false" then
+                    structures[#structures + 1] = {type = row[1], x = round(tonumber(row[2]), 1),
+                        z = round(tonumber(row[3]), 1), destroyed = row[6] == "true" or nil}
+                end
+            end
+        end
+    end
+    return structures
 end
 
 -- A single authored objective, not a general mission language. Deployment stays private;
@@ -861,6 +1138,14 @@ local function mode_section()
         section.supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     end
     if state.custom then section.custom = state.custom end
+    -- A list that fails to read is left out and logged, never shown empty.
+    if state.fortifications then
+        section.fortifications = fortification_reading()
+        for _, field in ipairs({{"vehicles", siege_vehicles}, {"enemy_structures", enemy_structures}}) do
+            local ok, value = pcall(field[2])
+            if ok then section[field[1]] = value else log(field[1] .. " failed: " .. clean_error(value)) end
+        end
+    end
     return section
 end
 
@@ -1018,6 +1303,10 @@ local function observation(now)
         local read_ok, reading = pcall(deployment_reading)
         state.setup.deployment_reading = read_ok and reading or {error = clean_error(reading)}
     end
+    if session.private_record and state.setup and not state.applied then
+        local read_ok, reading = pcall(equipment_reading)
+        state.setup.assault_equipment = read_ok and reading or {error = clean_error(reading)}
+    end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
         phase = bm:get_current_phase_name(), time_ms = now, speed = battle_speed(),
@@ -1100,6 +1389,109 @@ local function record_replay(now, terminal)
     end)
     state.recorder_cpu_ms = (os.clock() - began) * 1000
     if not ok then log("recorder failed: " .. clean_error(err)) end
+end
+
+-- Private: one unit as the engine reads it, whatever its visibility (CA's battle_unit.html).
+-- `visible` is is_visible_to_alliance for `observer`, the opposing alliance (line of sight), and
+-- absent without one; `hidden` is is_hidden (cover); the observation shows an enemy only when
+-- both allow it. A
+-- getter that fails, is missing or returns another type leaves its field absent, never false.
+local function private_unit(id, unit, observer)
+    local record = {id = id}
+    local function read(field, method, kind, ...)
+        local value = get(unit, method, nil, ...)
+        if type(value) == kind then record[field] = value end
+    end
+    read("type", "type", "string")
+    position_fields(record, get(unit, "position", nil))
+    read("men", "number_of_men_alive", "number")
+    for _, flag in ipairs({{"routing", "is_routing"}, {"shattered", "is_shattered"},
+            {"melee", "is_in_melee"}, {"hidden", "is_hidden"},
+            {"on_wall", "is_on_top_of_wall"}, {"climbing", "is_climbing_ladder"}}) do
+        read(flag[1], flag[2], "boolean")
+    end
+    if observer ~= nil then read("visible", "is_visible_to_alliance", "boolean", observer) end
+    read("ammo", "ammo_left", "number")
+    read("ammo0", "starting_ammo", "number")
+    return record
+end
+
+-- Evaluator-only, with session.private_record: once per engine second, every registered unit of
+-- both sides (hidden enemies included), the siege vehicles and their crews, raw gate hit points,
+-- capture holders and every alliance's tickets, appended to private-<battle>.jsonl. It never
+-- enters the mailbox observation or the replay frames, and reads no policy memory (the seen
+-- and dead flags enemy_observation keeps). A section that fails is absent and named in errors.
+local function record_private(now, terminal)
+    if not session.private_record then return end
+    local second = math.floor(now / 1000)
+    if state.private_second == second and not terminal then return end
+    state.private_second = second
+    local began = os.clock()
+    local ok, err = pcall(function()
+        local frame = {private_record = 1, job = session.job, battle = state.battle, time_ms = now,
+                       terminal = terminal or nil, friendly = {}, enemy = {}, errors = {}}
+        -- Without the opposing alliance, friendly units get no visible field, never our own view.
+        local opponent = get(bm, "get_non_player_alliance", nil)
+        if opponent == nil then frame.errors[1] = "opponent: unreadable get_non_player_alliance" end
+        for _, group in ipairs({"friendly", "enemy"}) do
+            local observer = state.alliance
+            if group == "friendly" then observer = opponent end
+            for _, id in ipairs(state[group .. "_ids"]) do
+                frame[group][#frame[group] + 1] = private_unit(id, state[group][id].unit, observer)
+            end
+        end
+        local function section(field, read)
+            local good, value = pcall(read)
+            if good then
+                frame[field] = value
+            else
+                frame.errors[#frame.errors + 1] = field .. ": " .. clean_error(value)
+            end
+        end
+        local function rows(expression)
+            local list, readable = context_rows("CcoBattleRoot", "", expression)
+            if not readable then error("unreadable context list") end
+            return list
+        end
+        section("equipment", equipment_reading)
+        section("vehicles", crew_reading)
+        section("gates", function()
+            local gates = {}
+            for _, row in ipairs(rows(GATES)) do
+                gates[#gates + 1] = {name = row[1], x = round(tonumber(row[2]), 1),
+                    z = round(tonumber(row[3]), 1), raw_hp = tonumber(row[4]),
+                    raw_max_hp = tonumber(row[5]), destroyed = row[6] == "true"}
+            end
+            return gates
+        end)
+        section("captures", function()
+            local points = {}
+            for index, row in ipairs(rows(CAPTURE_POINTS)) do
+                points[#points + 1] = {id = "c" .. index, key = row[1],
+                                       holder = side(tonumber(row[5]) or -1)}
+            end
+            return points
+        end)
+        section("tickets", function()
+            local tickets = {}
+            for _, row in ipairs(rows(TICKETS)) do
+                tickets[#tickets + 1] = {side = side(tonumber(row[1]) or -1),
+                    tickets = tonumber(row[2]), per_s = tonumber(row[3]),
+                    starting = tonumber(row[5])}
+            end
+            return tickets
+        end)
+        if #frame.errors == 0 then frame.errors = nil end
+        frame.sample_cpu_ms = (os.clock() - began) * 1000
+        local file, reason = io.open(BRIDGE .. "private-" .. state.battle .. ".jsonl", "a")
+        if not file then error(reason or "cannot open private record file") end
+        local encoded, text = pcall(json.encode, frame)
+        if not encoded then file:close(); error(text) end
+        local wrote, failure = file:write(text .. "\n")
+        file:close()
+        if not wrote then error(failure or "cannot append private record frame") end
+    end)
+    if not ok then log("private record failed: " .. clean_error(err)) end
 end
 
 local function record_imagery(now, terminal)
@@ -1233,6 +1625,28 @@ local function apply_flight(entry, order)
     common.call_context_command("CcoBattleUnit", entry.ui_id, "ToggleFlying")
 end
 
+-- besiege and attack_building (siege assault only) on the building object setup_fortifications
+-- kept for the target id, never a list index or a position: CA's battle_unitcontroller.html,
+-- besiege_building and attack_building(building, piece index, move fast), where piece 1 is the
+-- whole building. The acknowledgement confirms that the order was issued, not that a unit climbed.
+local function apply_siege(entry, controller, order)
+    if not state.fortifications then error("unknown_type") end
+    local target = state.fortifications.by_id[order.target]
+    if not target then error("unknown_target") end
+    local health = get(target.building, "health", nil)
+    if type(health) == "number" and health <= 0 then error("target_destroyed") end
+    if order.type == "besiege" then
+        if target.kind == "wall" and get(entry.unit, "can_climb_walls", nil) ~= true then
+            error("cannot_climb")
+        end
+        controller:besiege_building(target.building, 1, order.run == true)
+    else
+        if get(entry.unit, "has_attribute", nil, "can_siege") ~= true then error("cannot_siege") end
+        if get(entry.unit, "ammo_left", 0) <= 0 then error("no_ammunition") end
+        controller:attack_building(target.building, 1, order.run == true)
+    end
+end
+
 -- A friendly unit's controller: taken at registration in single-player, and only at the
 -- unit's first accepted order in multiplayer control.
 local function control_unit(entry)
@@ -1325,6 +1739,8 @@ local function apply_order(order)
             entry.attack_mode = mode
         elseif order.type == "halt" then
             controller:halt()
+        elseif order.type == "besiege" or order.type == "attack_building" then
+            apply_siege(entry, controller, order)
         elseif order.type == "flight" then
             apply_flight(entry, order)
         elseif order.type == "behaviour" then
@@ -1369,7 +1785,8 @@ local function apply_order(order)
         end
     end)
     if ok then
-        if order.type == "move" or order.type == "attack" or order.type == "halt" then
+        if order.type == "move" or order.type == "attack" or order.type == "halt"
+                or order.type == "besiege" or order.type == "attack_building" then
             if order.queue then
                 entry.command_queue = entry.command_queue or {entry.command}
                 entry.command_queue[#entry.command_queue + 1] = order
@@ -1402,7 +1819,8 @@ local function apply_pending(now)
         end
         result.index = index
         results[#results + 1] = result
-        if order.type == "move" or order.type == "attack" or order.type == "halt" then
+        if order.type == "move" or order.type == "attack" or order.type == "halt"
+                or order.type == "besiege" or order.type == "attack_building" then
             previous[order.unit] = order.type
             failed[order.unit] = not result.ok
         end
@@ -1530,6 +1948,7 @@ local function finish()
     end
     -- Flush the terminal presentation frame before the result releases the harness.
     record_replay(battle_time(), true)
+    if session and session.private_record then record_private(battle_time(), true) end
     record_imagery(battle_time(), true)
     publish_observation(battle_time())
     bm:remove_process("twwarhammer3_tick")
@@ -1712,6 +2131,7 @@ local function tick()
         publish_observation(now)
     end
     record_replay(now, false)
+    record_private(now, false)
     record_imagery(now, false)
 end
 
@@ -1813,6 +2233,13 @@ local function start()
                    deployment_error = not deployed and clean_error(deployment_error) or nil}
     if session.reserve then
         state.setup.reserve = {ok = reserve_ok, error = not reserve_ok and clean_error(reserve_error) or nil}
+    end
+    if session.siege_assault then
+        -- A refusal (the player defending, an unreadable building) leaves every siege field out.
+        local siege_ok, lists = pcall(setup_fortifications)
+        state.setup.siege_assault = {ok = siege_ok, lists = siege_ok and lists or nil,
+                                     error = not siege_ok and clean_error(lists) or nil}
+        if not siege_ok then log("siege assault setup failed: " .. clean_error(lists)) end
     end
     if session.benchmark then
         local toggles_ok, toggles = pcall(benchmark_behaviours, true, false, "friendly")

@@ -265,8 +265,16 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/evade.py`: `Evade`, a free control: every unit runs from visible enemies
 - `src/twwarhammer3/battle/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
   Cannae development witnesses on public state
-- `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, kept apart from the
-  public battle state
+- `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
+  (version 3) that holds and releases enemy groups, kept apart from the public battle state
+- `src/twwarhammer3/battle/wall_defence.py`: `WallWitness` and its controls for the walled siege
+  defence (cth-emp-siege-a-v1), on public state
+- `src/twwarhammer3/battle/wall_readings.py`: that siege's evaluator readings of finished
+  battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases
+- `src/twwarhammer3/battle/escalade.py`: `Escalade` and its controls for the siege attack
+  (ksl-emp-siege-a-v1), on public state with the siege orders
+- `src/twwarhammer3/battle/escalade_readings.py`: that siege's evaluator readings of finished
+  battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and

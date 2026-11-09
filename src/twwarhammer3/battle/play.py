@@ -34,6 +34,7 @@ from gameai.provenance import committed_revision, sha256, source_fingerprints, w
 from twwarhammer3.battle.capture import (
     PassiveCapture,
     copy_presentation,
+    copy_private_record,
     copy_recording,
     imagery_settings,
     recording_settings,
@@ -51,6 +52,7 @@ from twwarhammer3.battle.llm import describe_orders
 from twwarhammer3.battle.setup import (
     NOT_STARTED,
     check_battle,
+    check_job,
     check_menu,
     compare_starts,
     expected_mode,
@@ -110,6 +112,10 @@ def battle_session(scenario: dict) -> dict:
         settings["benchmark"] = scenario.get("benchmark") or "behaviour-defaults"
     if scenario.get("deployment"):
         settings["deployment"] = scenario["deployment"]
+    if scenario.get("private_record"):
+        settings["private_record"] = True
+    if scenario.get("siege_assault"):
+        settings["siege_assault"] = True
     return settings
 
 
@@ -121,6 +127,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     scenario = load_scenario(config)
     fill_timeouts(scenario, config)
     validate_declaration(scenario, config)
+    check_job(scenario, output.name)
     from twwarhammer3.battle.local_team import validate_config as validate_local_config
 
     validate_local_config(scenario, config)
@@ -216,6 +223,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 raise ValueError("the running session is a native multiplayer worker's: "
                                  "play would write orders.json beside it")
             require_realtime(live)
+            check_job(scenario, live["job"])  # the running game's job is the one observed
             config.update({key: live[key] for key in SESSION_KEYS if key in live})
             config["record_replay"] = live.get("record_replay", False)
             config["stills"] = live.get("stills", False)
@@ -385,6 +393,12 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
                                                     job=mailbox.job, battle=result.get("battle"))
             except Exception as exc:
                 result["recording"] = {"status": "error", "error": str(exc)}
+        if (scenario or {}).get("private_record"):
+            try:
+                result["private_record"] = copy_private_record(
+                    mailbox.directory, directory, job=mailbox.job, battle=result.get("battle"))
+            except Exception as exc:
+                result["private_record"] = {"status": "error", "error": str(exc)}
         if config.get("stills"):
             try:
                 result["imagery"] = copy_presentation(mailbox.directory, directory,

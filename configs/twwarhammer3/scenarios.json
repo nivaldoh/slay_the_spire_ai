@@ -5586,5 +5586,449 @@
     }
    ]
   }
+ },
+ "cth-emp-siege-a-all-v1": {
+  "name": "cth-emp-siege-a-all-v1",
+  "scenario_version": 1,
+  "family": "siege defence",
+  "brief": "A Grand Cathay garrison holds a walled fort against an Empire army drawn up in four divisions that all attack from the start. The defender wins when the timer runs out; every engine win counts.",
+  "split": "development",
+  "status": "prototype_not_admitted",
+  "battle_type": "siege",
+  "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_cth_cathay",
+   "faction": "wh3_main_cth_cathay_mp",
+   "lord": true,
+   "units": [
+    "wh3_main_cth_cha_lord_magistrate_0",
+    "wh3_main_cth_inf_jade_warriors_0",
+    "wh3_main_cth_inf_jade_warriors_0",
+    "wh3_main_cth_inf_peasant_spearmen_1",
+    "wh3_main_cth_inf_peasant_spearmen_1",
+    "wh3_main_cth_inf_peasant_archers_0",
+    "wh3_main_cth_inf_peasant_archers_0",
+    "wh3_main_cth_inf_jade_warrior_crossbowmen_0",
+    "wh3_main_cth_art_fire_rain_rocket_battery_0",
+    "wh3_main_cth_art_grand_cannon_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": true,
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_swordsmen",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_greatswords",
+    "wh_main_emp_inf_greatswords",
+    "wh_main_emp_inf_greatswords",
+    "wh_main_emp_inf_greatswords",
+    "wh_main_emp_inf_crossbowmen"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0
+   }
+  },
+  "deployment": {
+   "enemy": [
+    {
+     "type": "wh_main_emp_inf_spearmen_0",
+     "x": -44,
+     "z": -470,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_spearmen_0",
+     "x": -4,
+     "z": -470,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_spearmen_0",
+     "x": 36,
+     "z": -470,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_swordsmen",
+     "x": 76,
+     "z": -470,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_handgunners",
+     "x": -120,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_handgunners",
+     "x": -80,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_swordsmen",
+     "x": -40,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_swordsmen",
+     "x": 0,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_halberdiers",
+     "x": -20,
+     "z": -595,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_halberdiers",
+     "x": 20,
+     "z": -595,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_greatswords",
+     "x": 60,
+     "z": -595,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_greatswords",
+     "x": 100,
+     "z": -595,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_cha_general_0",
+     "x": 40,
+     "z": -620,
+     "bearing": 0,
+     "width": 20
+    },
+    {
+     "type": "wh_main_emp_inf_greatswords",
+     "x": 68,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_greatswords",
+     "x": 104,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_swordsmen",
+     "x": 140,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_swordsmen",
+     "x": 176,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    },
+    {
+     "type": "wh_main_emp_inf_crossbowmen",
+     "x": 212,
+     "z": -530,
+     "bearing": 0,
+     "width": 32
+    }
+   ]
+  },
+  "siege_equipment": {},
+  "private_record": true,
+  "withheld": [
+   "haengju",
+   "gwon",
+   "gyeong",
+   "cheoyeong",
+   "konishi",
+   "ishida",
+   "kuroda",
+   "ukita",
+   "kikkawa",
+   "mori",
+   "kobayakawa",
+   "hideaki",
+   "takakage",
+   "hideyoshi",
+   "korea",
+   "japan",
+   "joseon",
+   "imjin",
+   "hwacha"
+  ],
+  "expect": {
+   "battle_type": "settlement_standard",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 20000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  }
+ },
+ "cth-emp-siege-a-v1": {
+  "base": "cth-emp-siege-a-all-v1",
+  "name": "cth-emp-siege-a-v1",
+  "brief": "A Grand Cathay garrison holds a walled fort against an Empire army drawn up in four divisions; a disclosed script holds three of them and releases them at fixed times, or at once when shot. The defender wins when the timer runs out; every engine win counts.",
+  "reserve": {
+   "version": 3,
+   "kind": "waves",
+   "groups": [
+    {
+     "slots": [
+      5,
+      6,
+      7,
+      8
+     ],
+     "types": [
+      "wh_main_emp_inf_handgunners",
+      "wh_main_emp_inf_handgunners",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen"
+     ],
+     "release_ms": 150000
+    },
+    {
+     "slots": [
+      9,
+      10,
+      11,
+      12,
+      13
+     ],
+     "types": [
+      "wh_main_emp_inf_halberdiers",
+      "wh_main_emp_inf_halberdiers",
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_cha_general_0"
+     ],
+     "release_ms": 300000
+    },
+    {
+     "slots": [
+      14,
+      15,
+      16,
+      17,
+      18
+     ],
+     "types": [
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_crossbowmen"
+     ],
+     "release_ms": 450000
+    }
+   ],
+   "release_on_damage": true
+  }
+ },
+ "ksl-emp-siege-a-v1": {
+  "name": "ksl-emp-siege-a-v1",
+  "scenario_version": 1,
+  "family": "siege attack",
+  "brief": "A Kislev army attacks an Empire garrison in a walled fort, with one battering ram and no siege tower. The defender wins when the timer runs out; every engine win counts.",
+  "split": "development",
+  "status": "prototype_not_admitted",
+  "battle_type": "siege",
+  "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
+  "attacker": "player",
+  "behaviour_defaults": true,
+  "siege_assault": true,
+  "siege_equipment": {
+   "ksl_battering_ram": 1,
+   "ksl_siege_tower_15m": 0
+  },
+  "private_record": true,
+  "withheld": [
+   "izmail",
+   "ismail",
+   "suvorov",
+   "kutuzov",
+   "potemkin",
+   "ribas",
+   "samoilov",
+   "lassi",
+   "lacy",
+   "meknob",
+   "westphalen",
+   "orlov",
+   "lvov",
+   "markov",
+   "qaplan",
+   "giray",
+   "aydos",
+   "ottoman",
+   "turk",
+   "russia",
+   "danube",
+   "kilia",
+   "bender",
+   "khotin",
+   "brosskie",
+   "tsargrad",
+   "tabia",
+   "1790",
+   "escalade"
+  ],
+  "player": {
+   "subculture": "wh3_main_sc_ksl_kislev",
+   "faction": "wh3_main_ksl_kislev",
+   "lord": true,
+   "units": [
+    "wh3_main_ksl_cha_boyar_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_cav_winged_lancers_0",
+    "wh3_main_ksl_veh_little_grom_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": true,
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_spearmen_0",
+    "wh_main_emp_inf_crossbowmen",
+    "wh_main_emp_art_great_cannon",
+    "wh_main_emp_art_mortar"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0
+   }
+  },
+  "expect": {
+   "battle_type": "settlement_standard",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 20000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": false
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint.",
+  "content": [
+   "wh_main",
+   "wh3_main"
+  ],
+  "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 siege-attack design in runs/siege-evals-20261108 (Settings and Rosters, with the portfolio's corrections); a provisional construction profile the owner has not reviewed. Rests on JUDGEMENT tests/twwarhammer3/test_wh3_siege_assault.py Siege attack construction profile, Siege attack equipment and Siege attack withheld names. Engine starts on both sides (no deployment), rank 0, very hard at modifier 1.0, 1,200 s, funds 20,000. Every key was read with scripts/wh3_db.py on 2026-11-08; Winged Lancers and the ksl ram have no recruitment readback yet."
  }
 }

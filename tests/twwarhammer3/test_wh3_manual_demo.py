@@ -264,3 +264,87 @@ def test_restarted_manual_battle_keeps_original_identity_and_does_not_claim_fore
     assert manifest["battle"] == "b1" and "engine_ending" not in manifest
     assert copied_battles == ["b1"]
     assert json.loads((output / "last-observation.json").read_text())["battle"] == "b2"
+
+
+def test_an_owner_recording_keeps_the_private_record_its_scenario_turns_on(tmp_path, monkeypatch):
+    # Haengju's held-and-released check reads the private record of the owner's recording.
+    name = "emp-support-timing-v1"
+    output, _ = fake_recording(tmp_path, monkeypatch, [readback(), ending()])
+    scenario = {**setup.scenarios()[name], "private_record": True}
+    monkeypatch.setattr(manual_demo, "scenarios", lambda: {name: scenario})
+    raw = json.dumps({"private_record": 1, "job": output.name, "battle": "b1"}) + "\n"
+    (tmp_path / "bridge/private-b1.jsonl").write_text(raw)
+    manual_demo.record(output, "ffmpeg.exe", 3600)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["private_record"]["status"] == "copied"
+    assert (output / "private.jsonl").read_text() == raw
+    assert manual_demo.Mailbox.sessions[-1]["private_record"] is True
+
+
+@pytest.mark.parametrize("held", [True, False])
+def test_a_waves_scenario_is_recorded_and_its_hold_checked_at_the_first_observation(
+        tmp_path, monkeypatch, held):
+    # The observer session now runs the waves hold (test_wh3_waves checks the Lua side); a
+    # first observation without its evidence is a hold the mod skipped, and ends the attempt.
+    from test_wh3_waves import WAVES, start
+    from test_wh3_waves import observation as waves_observation
+
+    first = readback()
+    lua, _ = start(mode="observe")
+    if held:
+        first.update(waves_observation(lua))
+        first["setup"]["reserve"] = {"ok": True}
+    output, _ = fake_recording(tmp_path, monkeypatch, [first, ending()])
+    monkeypatch.setattr(manual_demo, "check_battle", lambda *a: {"passed": True})
+    monkeypatch.setattr(manual_demo, "expected_mode", lambda *a: {})
+    profile = setup.scenarios()[WAVES]["reserve"]
+    if held:
+        manual_demo.record(output, "ffmpeg.exe", 3600, WAVES)
+    else:
+        with pytest.raises(ProtocolError, match="reserve"):
+            manual_demo.record(output, "ffmpeg.exe", 3600, WAVES)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["status"] == ("engine_ended" if held else "failure")
+    assert manual_demo.Mailbox.sessions[-1]["reserve"] == profile
+    assert manual_demo.Mailbox.sessions[-1]["multiplayer"] == "observe"
+    if held:
+        assert [unit["slot"] for unit in manifest["reserve"]["units"]] == list(range(5, 19))
+    # The all-at-once arm has no hold and no reserve in its session.
+    assert "reserve" not in manual_demo.settings(setup.scenarios()["cth-emp-siege-a-all-v1"])
+
+
+def test_the_recorder_refuses_a_job_named_after_the_history(tmp_path, monkeypatch):
+    fake_recording(tmp_path, monkeypatch, [])
+    output = tmp_path / "haengju-demo-1"
+    with pytest.raises(ValueError, match="withheld word"):
+        manual_demo.record(output, "ffmpeg.exe", 3600, "cth-emp-siege-a-v1")
+    assert not output.exists() and manual_demo.Mailbox.sessions == []
+
+
+@pytest.mark.parametrize("failed", [False, True])
+def test_a_waves_recording_checks_its_releases_again_at_the_end_and_keeps_the_attempt(
+        tmp_path, monkeypatch, failed):
+    # Releases come after the first observation; one the mod could not make (a getter failed)
+    # is kept in the manifest beside the owner's ending, which still stands.
+    from test_wh3_waves import TICK, WAVES, start, ticks
+    from test_wh3_waves import observation as waves_observation
+
+    lua, tick = start(mode="observe")
+    first = readback()
+    first.update(waves_observation(lua))
+    ticks(tick, TICK, 150000)
+    last = ending()
+    last.update(waves_observation(lua))
+    if failed:
+        last["evaluation"]["reserve"]["releases"][0].update(ok=False, error="men: unreadable")
+    output, _ = fake_recording(tmp_path, monkeypatch, [first, last])
+    monkeypatch.setattr(manual_demo, "check_battle", lambda *a: {"passed": True})
+    monkeypatch.setattr(manual_demo, "expected_mode", lambda *a: {})
+    manual_demo.record(output, "ffmpeg.exe", 3600, WAVES)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["status"] == "engine_ended" and manifest["reserve"]["releases"] == []
+    if failed:
+        assert manifest["reserve_final"] == {"error": "reserve release failed: men: unreadable"}
+    else:
+        assert [(r["group"], r["reason"], r["released_ms"])
+                for r in manifest["reserve_final"]["releases"]] == [(1, "time", 150000)]

@@ -251,6 +251,8 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/local_team.py",
         "src/twwarhammer3/battle/support_timing.py",
         "src/twwarhammer3/battle/manual_demo.py",
+        "src/twwarhammer3/battle/wall_defence.py",
+        "src/twwarhammer3/battle/escalade.py",
         "configs/twwarhammer3/system_prompt.md",
         "configs/twwarhammer3/rules_prompt.md",
         "configs/twwarhammer3/commander_prompt.md",
@@ -287,6 +289,8 @@ DIAGRAM.tabs.push({
       "stories": ["job"],
       "files": [
         "src/twwarhammer3/battle/support_evidence.py",
+        "src/twwarhammer3/battle/wall_readings.py",
+        "src/twwarhammer3/battle/escalade_readings.py",
         "src/twwarhammer3/battle/benchmark.py",
         "src/twwarhammer3/battle/suite.py",
         "src/twwarhammer3/battle/report.py",

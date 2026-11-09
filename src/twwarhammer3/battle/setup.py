@@ -27,7 +27,25 @@ entry, and what reads them:
   (``scenario_steps``) removes every piece that slot holds, adds the declared ones and reads
   back the total and each key's count (``siege_equipment_steps``); a hosted multiplayer lobby
   (``configure_steps``) refuses the field. Without the field the lobby keeps whatever
-  equipment it had.
+  equipment it had. The field needs ``private_record``: the battle's first observations
+  carry its siege vehicles in ``setup.assault_equipment``, and ``check_battle`` requires their
+  keys to be the declared pieces.
+- ``private_record``: true in a two-sided battle turns on the evaluator-only all-unit record
+  (``record_private`` in the battle Lua), one frame per engine second in its own file, which
+  the episode copies to ``private.jsonl`` (fields in ``capture.copy_private_record``). No
+  policy input, observation or replay frame carries it.
+- ``siege_assault``: true in a two-sided siege the player attacks turns on the siege-attack
+  interface: ``mode.fortifications`` (gates g1.., wall pieces w1.., towers t1.., with health and
+  a tower's owner), ``mode.vehicles`` (our siege vehicles and their crews),
+  ``mode.enemy_structures`` (enemy-built towers and barricades, finished ones only), ``on_wall``
+  on our units and visible enemies, ``can_climb`` and ``can_siege`` on ours, and the
+  ``besiege`` and ``attack_building`` orders (``protocol.validate_orders``). The battle's
+  ``setup.siege_assault`` must read ok (``check_battle``). Without it a siege reads as before.
+- ``reserve``: a scripted opponent profile (``battle/reserve.py``): B's versions 1-2, or the
+  version 3 ``waves`` profile that holds groups of enemy deployment slots and releases them.
+- ``withheld``: words (lower case) that no controller may read. The observation's ``job``
+  field reaches every controller, so ``play`` and the owner's recorder refuse a job whose
+  name holds one (``check_job``); a scenario's boundary test checks its rendered inputs.
 - ``random``: ``load_scenario`` draws a map and each side's race and autogenerates the
   armies. Such an entry may set ``battle_type``, ``attacker``, ``enemies`` (AI sides, 1 by
   default) and ``reinforcements`` (true: every side gets a reinforcing army).
@@ -622,8 +640,26 @@ def validate_declaration(scenario: dict, config: dict) -> None:
         validate_custom(scenario)
     if scenario.get("deployment"):
         validate_deployment(scenario, scenario["deployment"], by_type=True)
+    if "withheld" in scenario and not (
+            isinstance(scenario["withheld"], list) and scenario["withheld"] and all(
+                isinstance(word, str) and word and word == word.lower()
+                for word in scenario["withheld"])):
+        raise ValueError("withheld must list lower-case words")
+    # JUDGEMENT: Siege assault boundary — Claude, 2026-11-08 (Izmail I2-I5, portfolio S10): the
+    # siege-attack fields and orders exist only in a scenario that opts in and the player attacks,
+    # so every other prompt stays as it was. Fields in every siege would split Haengju's evidence.
+    if "siege_assault" in scenario and (
+            scenario["siege_assault"] is not True or scenario.get("battle_type") != "siege"
+            or scenario.get("attacker") != "player" or len(sides(scenario)) != 2):
+        raise ValueError("siege_assault must be true, in a two-sided siege the player attacks")
+    if "private_record" in scenario and (scenario["private_record"] is not True
+                                         or len(sides(scenario)) != 2):
+        raise ValueError("private_record must be true, in a two-sided battle")
     if "siege_equipment" in scenario:
         siege_equipment_steps(scenario)  # refuses an unknown key or a count over its cap
+        if not scenario.get("private_record"):
+            raise ValueError("siege_equipment needs private_record, whose first reading the "
+                             "battle-side equipment check compares")
     if not scenario.get("expect"):
         return
     if not scenario.get("map"):
@@ -658,6 +694,16 @@ def validate_declaration(scenario: dict, config: dict) -> None:
     if config["run_timeout"] < config["start_timeout"] + config["episodes"] * (
             config["episode_timeout"] + 60):
         raise ValueError("run timeout must cover setup and every episode timeout plus 60 s reset")
+
+
+def check_job(scenario: dict, job: str) -> None:
+    """Refuse a job name that holds one of the scenario's ``withheld`` words, which would reach
+    every controller through the observation's ``job`` field (not in HIDDEN_KEYS)."""
+    found = [word for word in scenario.get("withheld") or []
+             if re.search(r"(?<![a-z0-9])" + re.escape(word), job.lower())]
+    if found:
+        raise ValueError(f"job {job!r} names {found}: the job reaches the controllers, so a"
+                         " withheld word may not appear in it")
 
 
 def validate_custom(scenario: dict) -> None:
@@ -835,6 +881,29 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     if scenario.get("deployment"):
         checks["deployment_error_m"] = check_deployment(scenario, observation)
         checks["deployment_formation"] = read_formation(scenario, observation)
+    # JUDGEMENT: Battle-side equipment check — Claude, 2026-11-08 (portfolio S4): every vehicle the
+    # first observation reads counts as the attacker's and its keys must equal the declaration.
+    # Pieces the engine adds later go unseen; Haengju's and Izmail's equipment premises rest on it.
+    if "siege_equipment" in scenario:
+        reading = settings.get("assault_equipment")
+        if not isinstance(reading, list):
+            raise ProtocolError(f"setup assault equipment unreadable: {reading!r}")
+        # An all-unreadable vehicle arrives as [] (an empty Lua table): its key is unknown.
+        actual = Counter(vehicle.get("key") if isinstance(vehicle, dict) else None
+                         for vehicle in reading)
+        wanted = Counter({key: count for key, count in scenario["siege_equipment"].items()
+                          if count})
+        if actual != wanted:
+            raise ProtocolError(f"setup assault equipment: {dict(actual)!r}, "
+                                f"expected {dict(wanted)!r}")
+        checks["siege_equipment"] = dict(actual)
+    if scenario.get("siege_assault"):
+        assault = settings.get("siege_assault") or {}
+        kinds = Counter(piece.get("kind") for piece in
+                        (observation.get("mode") or {}).get("fortifications") or [])
+        if assault.get("ok") is not True or not kinds["gate"] or not kinds["wall"]:
+            raise ProtocolError(f"setup siege assault: {assault!r}, fortifications {dict(kinds)!r}")
+        checks["siege_assault"] = {"lists": assault.get("lists"), "fortifications": dict(kinds)}
     if scenario.get("benchmark") or scenario.get("behaviour_defaults"):
         toggles = settings.get("benchmark_behaviours") or {}
         if toggles.get("error") or settings.get("benchmark_release_pending"):
