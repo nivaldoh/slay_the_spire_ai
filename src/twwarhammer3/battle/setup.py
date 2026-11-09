@@ -21,6 +21,13 @@ entry, and what reads them:
   observation must show its engine type (``expected_mode``).
 - ``attacker``: ``"player"`` or ``"enemy"``; the lobby swaps the teams to match, and the
   first observation must show the player's role.
+- ``siege_equipment``: in a two-sided siege that names its ``attacker``, the attacking
+  slot's equipment as {vehicle key: count}, each key and cap from the game's custom-battle
+  table (``SIEGE_EQUIPMENT_CAPS``); {} means none. Just before Start the single-player lobby
+  (``scenario_steps``) removes every piece that slot holds, adds the declared ones and reads
+  back the total and each key's count (``siege_equipment_steps``); a hosted multiplayer lobby
+  (``configure_steps``) refuses the field. Without the field the lobby keeps whatever
+  equipment it had.
 - ``random``: ``load_scenario`` draws a map and each side's race and autogenerates the
   armies. Such an entry may set ``battle_type``, ``attacker``, ``enemies`` (AI sides, 1 by
   default) and ``reinforcements`` (true: every side gets a reinforcing army).
@@ -98,6 +105,17 @@ LOBBY_FIELDS = {
     "unit_scale": "UnitScaleSettingContext.Key",
     "realism": "IsRealismMode",
 }
+# The keys of the game's battlefield_siege_vehicles_custom_battles_tables, build 26403568, read
+# with scripts/wh3_db.py on 2026-11-08: each race below has <race>_battering_ram (cap 2) and
+# <race>_siege_tower_15m (cap 10). A slot may hold fewer pieces in all: NumSiegeVehiclesAvailable
+# read 3 on Helmgart and 2 on battle_preset_major_a_emp (runs/twwarhammer3/siege-905-20261103).
+SIEGE_RACES = ("brt", "bst", "chd", "chs", "cst", "cth", "def", "dwf", "emp", "grn", "hef",
+               "kho", "ksl", "lzd", "nag", "nor", "nur", "skv", "sla", "tmb", "tze", "vmp", "wef")
+SIEGE_EQUIPMENT_CAPS = {f"{race}_{piece}": cap for race in SIEGE_RACES
+                        for piece, cap in (("battering_ram", 2), ("siege_tower_15m", 10))}
+# Guarded removals before the empty readback: one race's ram and tower caps. A slot holding
+# more fails that readback instead of starting with leftovers.
+SIEGE_CLEAR_LIMIT = 12
 
 
 def scenarios() -> dict:
@@ -325,6 +343,8 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
     if scenario.get("expect"):
         steps += menu_checks(scenario)
         steps = [{**step, "required": True} for step in steps]
+    if "siege_equipment" in scenario:
+        steps += siege_equipment_steps(scenario)
     return steps + [
         {"find": ["start_button_frame", "button_start_battle"], "click": True, "timeout_ms": 15000},
         # The frontend unloads when the battle loads; still running, it says why not.
@@ -332,6 +352,67 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
         {"context": "CcoFrontendRoot", "id": "", "expression": LOBBY + "ReadyStatusText"},
         {"log": NOT_STARTED},
     ]
+
+
+def siege_equipment_steps(scenario: dict) -> list[dict]:
+    """Lobby steps that leave the attacking slot holding exactly ``siege_equipment``.
+
+    They remove every piece the slot holds, whatever its key (a lobby keeps the last battle's
+    equipment), read back none, add each declared piece after a CanAddSiegeEquipment read,
+    then read back the total and each declared key's count. Reads and adds follow
+    tests/twwarhammer3/checkpoint_siege/lobby.py; a removal takes the slot's first entry of any
+    key, as the panel's remove button takes its own entry (custom_battle.twui.xml). No recorded
+    lobby has run a removal yet: the 2026-11-03 lobbies held no equipment. Equipment the battle
+    adds by itself is not read here.
+    """
+    equipment = scenario["siege_equipment"]
+    if (scenario.get("battle_type") != "siege" or len(sides(scenario)) != 2
+            or scenario.get("attacker") not in ("player", "enemy")):
+        raise ValueError("siege_equipment needs a two-sided siege that names its attacker")
+    if not isinstance(equipment, dict) or any(
+            type(count) is not int or not 0 <= count <= SIEGE_EQUIPMENT_CAPS.get(key, -1)
+            for key, count in equipment.items()):
+        raise ValueError("siege_equipment must map custom-battle siege vehicle keys to counts "
+                         "from 0 to their caps")
+    slot = 0 if scenario["attacker"] == "player" else 1
+    context = f"{LOBBY}PlayerSlotList.At({slot})."
+    held, offered = context + "SiegeEquipmentList.", context + "AvailableSiegeEquipmentList."
+
+    def read(expression, expect=None):
+        step = {"context": "CcoFrontendRoot", "expression": expression, "required": True}
+        if expect is not None:
+            step.update(expect=expect, timeout_ms=15000)
+        return step
+
+    def command(expression, **extra):
+        return {"context": "CcoFrontendRoot", "command": expression, "required": True, **extra}
+
+    steps = [
+        {"log": f"siege equipment: slot {slot}, {json.dumps(equipment, sort_keys=True)}"},
+        read(LOBBY + f"PlayerSlotList.Size > {slot}", True),
+        read(SETTINGS + "IsSiegeBattleType", True),
+        read(context + "TeamContext.IsAttacker", True),
+        read(context + "CanModifyUnits", True),
+        read(offered + 'JoinString(Key + "|" + RecruitmentCap + "|" + Cost + "|" '
+             '+ Uses15mWall + "|" + Uses8mWall, ";")'),
+        read(context + "NumSiegeVehiclesAvailable"),
+        read(held + 'JoinString(Key, ";")'),
+    ]
+    steps += [command(context + f'RemoveSiegeEquipment({held}FirstContext(Key != ""))',
+                      when=held + "Size > 0") for _ in range(SIEGE_CLEAR_LIMIT)]
+    steps.append(read(held + "Size", 0))
+    for key, count in equipment.items():
+        chosen = offered + f"FirstContext(Key == {json.dumps(key)})"
+        if count:
+            steps.append(read(offered + f"Count(Key == {json.dumps(key)})", 1))
+        for number in range(1, count + 1):
+            steps += [read(context + f"CanAddSiegeEquipment({chosen})", True),
+                      command(context + f"AddSiegeEquipment({chosen})"),
+                      read(held + f"Count(Key == {json.dumps(key)})", number)]
+    steps.append(read(held + "Size", sum(equipment.values())))
+    steps += [read(held + f"Count(Key == {json.dumps(key)})", count)
+              for key, count in equipment.items()]
+    return steps + [read(held + 'JoinString(Key, ";")')]
 
 
 # A host's mp_log.txt (runtime.user_dir() / "logs"): each hosted lobby logs its Steam lobby
@@ -405,6 +486,8 @@ def configure_steps(scenario: dict, *, open_slot: bool = True,
                     build_id: str | None = None) -> list[dict]:
     """The host's two armies, ``player`` in slot 0 and the AI's ``enemy`` in the last slot;
     each step reads its change back."""
+    if "siege_equipment" in scenario:
+        raise ValueError("siege_equipment is set only in a single-player lobby (scenario_steps)")
     return [*army_steps(scenario, scenario["player"], 0, build_id=build_id),
             *army_steps(scenario, scenario["enemy"], 2 if open_slot else 1, build_id=build_id)]
 
@@ -539,6 +622,8 @@ def validate_declaration(scenario: dict, config: dict) -> None:
         validate_custom(scenario)
     if scenario.get("deployment"):
         validate_deployment(scenario, scenario["deployment"], by_type=True)
+    if "siege_equipment" in scenario:
+        siege_equipment_steps(scenario)  # refuses an unknown key or a count over its cap
     if not scenario.get("expect"):
         return
     if not scenario.get("map"):
@@ -618,7 +703,7 @@ def validate_deployment(scenario: dict, deployment: dict, by_type: bool = False)
             if placement["width"] <= 0:
                 raise ValueError("deployment width must be positive")
             used.add(unit)
-        if by_type and Counter(p.get("type") for p in placements) != Counter(army["units"]):
+        if by_type and Counter(p.get("type") for p in placements) != Counter(battle_units(army)):
             raise ValueError(f"{side}: a plain deployment must place the whole roster by type")
 
 

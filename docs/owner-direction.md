@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-08 (more evaluation battles, after the Haengju plan), verbatim: "Well if we have multiple
+  good ideas for battles, we should implement them! We just need to make sure that their eval
+  methodology is good (in a concrete, legitimate way)". Answers to two questions: game time "Build
+  now, game when I say (Recommended)"; battle set: "We can try to build those sieges but let's make
+  sure we're adapting them well to WH3's game modes" (Haengju, Malta 1565, Belgrade 1456, Alesia and
+  Izmail). Offline building only until the owner names a game window.
 - 2026-11-08 (WH3 second evaluation battle), `/goal` verbatim: "Research and identify one good battle
   that we can use as our second eval battle for WH3. It should be a real-life siege battle where one
   side had a clear disadvantage compared to the other side but still managed to win through

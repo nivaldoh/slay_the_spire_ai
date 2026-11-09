@@ -4976,5 +4976,615 @@
      "player_defends": true
    },
    "construction_profile": "Provisional air-relief development profile and force freeze, Codex 2026-11-05; rests on JUDGEMENT docs/twwarhammer3/tactics-reference.md Air relief development profile, Air relief force freeze and Air relief construction screen. Native AI allocation, routes, flight and difficulty unverified; outside suites. Follow SMACv2 wrapper.py explicit authored configuration; no engine-seed claim."
+ },
+ "emp-chd-camp-v1": {
+  "name": "emp-chd-camp-v1",
+  "scenario_version": 1,
+  "family": "camp attack",
+  "brief": "Empire levies and a mounted group attack a Chaos Dwarf camp held by three war machines and their guard. The defender wins when the timer runs out; every engine win counts.",
+  "split": "development",
+  "status": "prototype_not_admitted",
+  "battle_type": "classic",
+  "attacker": "player",
+  "behaviour_defaults": true,
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "lord": true,
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_cav_empire_knights",
+    "wh_main_emp_cav_empire_knights",
+    "wh_main_emp_cav_reiksguard",
+    "wh_main_emp_cha_warrior_priest_0",
+    "wh_dlc04_emp_inf_flagellants_0",
+    "wh_dlc04_emp_inf_flagellants_0",
+    "wh_dlc04_emp_inf_flagellants_0",
+    "wh_dlc04_emp_inf_free_company_militia_0",
+    "wh_dlc04_emp_inf_free_company_militia_0"
+   ],
+   "mounts": {
+    "0": "wh_main_emp_cha_general_1"
+   },
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0
+   }
+  },
+  "enemy": {
+   "subculture": "wh3_dlc23_sc_chd_chaos_dwarfs",
+   "faction": "wh3_dlc23_chd_astragoth",
+   "recruitment_faction": "wh3_dlc23_chd_legion_of_azgorh",
+   "lord": true,
+   "units": [
+    "wh3_dlc23_chd_cha_overseer",
+    "wh3_dlc23_chd_veh_magma_cannon",
+    "wh3_dlc23_chd_veh_magma_cannon",
+    "wh3_dlc23_chd_veh_deathshrieker_rocket_launcher",
+    "wh3_dlc23_chd_inf_infernal_guard",
+    "wh3_dlc23_chd_inf_infernal_guard",
+    "wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears",
+    "wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears",
+    "wh3_dlc23_chd_cav_bull_centaurs_axe",
+    "wh3_dlc23_chd_inf_hobgoblin_cutthroats",
+    "wh3_dlc23_chd_inf_hobgoblin_cutthroats"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+   }
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "type": "wh_main_emp_cha_general_1",
+     "x": 380,
+     "z": -40,
+     "bearing": 210,
+     "width": 20
+    },
+    {
+     "type": "wh_main_emp_cav_empire_knights",
+     "x": 426,
+     "z": -40,
+     "bearing": 210,
+     "width": 40
+    },
+    {
+     "type": "wh_main_emp_cav_empire_knights",
+     "x": 380,
+     "z": -86,
+     "bearing": 210,
+     "width": 40
+    },
+    {
+     "type": "wh_main_emp_cav_reiksguard",
+     "x": 426,
+     "z": -86,
+     "bearing": 210,
+     "width": 40
+    },
+    {
+     "type": "wh_main_emp_cha_warrior_priest_0",
+     "x": -150,
+     "z": -369,
+     "bearing": 150,
+     "width": 20
+    },
+    {
+     "type": "wh_dlc04_emp_inf_flagellants_0",
+     "x": -150,
+     "z": -231,
+     "bearing": 150,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc04_emp_inf_flagellants_0",
+     "x": -150,
+     "z": -277,
+     "bearing": 150,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc04_emp_inf_flagellants_0",
+     "x": -150,
+     "z": -323,
+     "bearing": 150,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc04_emp_inf_free_company_militia_0",
+     "x": -132,
+     "z": -150,
+     "bearing": 150,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc04_emp_inf_free_company_militia_0",
+     "x": -154,
+     "z": -190,
+     "bearing": 150,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "type": "wh3_dlc23_chd_cha_overseer",
+     "x": 127,
+     "z": -445,
+     "bearing": 0,
+     "width": 20
+    },
+    {
+     "type": "wh3_dlc23_chd_veh_magma_cannon",
+     "x": 81,
+     "z": -470,
+     "bearing": 0,
+     "width": 20
+    },
+    {
+     "type": "wh3_dlc23_chd_veh_magma_cannon",
+     "x": 173,
+     "z": -470,
+     "bearing": 0,
+     "width": 20
+    },
+    {
+     "type": "wh3_dlc23_chd_veh_deathshrieker_rocket_launcher",
+     "x": 127,
+     "z": -470,
+     "bearing": 0,
+     "width": 20
+    },
+    {
+     "type": "wh3_dlc23_chd_inf_infernal_guard",
+     "x": 104,
+     "z": -420,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_dlc23_chd_inf_infernal_guard",
+     "x": 150,
+     "z": -420,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears",
+     "x": -11,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears",
+     "x": 35,
+     "z": -470,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_dlc23_chd_cav_bull_centaurs_axe",
+     "x": 12,
+     "z": -430,
+     "bearing": 0,
+     "width": 30
+    },
+    {
+     "type": "wh3_dlc23_chd_inf_hobgoblin_cutthroats",
+     "x": -80,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_dlc23_chd_inf_hobgoblin_cutthroats",
+     "x": -34,
+     "z": -400,
+     "bearing": 0,
+     "width": 40
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 10000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": false
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared. War-machine upgrades are the lobby defaults, unread so far.",
+  "content": [
+   "wh_main",
+   "wh_dlc04",
+   "wh3_dlc23"
+  ],
+  "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 camp-attack design in runs/siege-evals-20261108; its rosters, map, placements and settings are a provisional construction profile the owner has not reviewed. Rests on JUDGEMENT tests/twwarhammer3/test_wh3_land_eval_declarations.py Camp construction profile and Authored widths. Database costs (main_units_tables multiplayer_cost, read 2026-11-08 with scripts/wh3_db.py): player 6,700 (General on a barded warhorse 850, 2 x Empire Knights 850, Reiksguard 1,100, Warrior Priest 350, 3 x Flagellants 600, 2 x Free Company 450); enemy 9,200, 1.37 times the player's (Overseer 700, 2 x Magma Cannon 1,000, Deathshrieker 1,300, 2 x Infernal Guard 950, 2 x Wolf Raiders 500, Bull Centaurs 1,500, 2 x Cutthroats 400). Men at large scale (num_men x 0.75, single entities as 1, unread in battle): player 587, enemy 466. No lobby has read this roster back. No earlier scenario declares the mount wh_main_emp_cha_general_1, the Reiksguard, Warrior Priest, Flagellants, Free Company, Deathshrieker, Wolf Raiders (spears) or Cutthroats, and no scenario has recruited Chaos Dwarf cards in the AI slot (an autogenerated Chaos Dwarf survival enemy fought in smoke-random-survival-skills-20261014-0548), so the enemy's cards under this recruitment_faction are unread there. The mounted General is placed under its battle type, wh_main_emp_cha_general_1. Ordered widths are not in the design: 40 m for regiments, 20 m for characters and war machines, 30 m for the Bull Centaurs. Ten of the 21 points stand where no recorded unit stood within 8.4 m (the design's unchecked points; it read six of them as clear grid cells). Unverified: no game was launched."
+ },
+ "ksl-nor-lines-a-v1": {
+  "name": "ksl-nor-lines-a-v1",
+  "scenario_version": 1,
+  "family": "two-front defence",
+  "brief": "A Kislev army holds two lines back to back against a lordless Norsca army. The defender wins when the timer runs out; every engine win counts.",
+  "split": "development",
+  "status": "prototype_not_admitted",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "behaviour_defaults": true,
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh3_main_sc_ksl_kislev",
+   "faction": "wh3_main_ksl_kislev",
+   "lord": true,
+   "units": [
+    "wh3_main_ksl_cha_boyar_0",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_inf_tzar_guard_0",
+    "wh3_main_ksl_cav_winged_lancers_0",
+    "wh3_main_ksl_cav_winged_lancers_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0
+   }
+  },
+  "enemy": {
+   "subculture": "wh_dlc08_sc_nor_norsca",
+   "faction": "wh_dlc08_nor_norsca",
+   "lord": false,
+   "units": [
+    "wh_main_nor_inf_chaos_marauders_0",
+    "wh_main_nor_inf_chaos_marauders_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_hunters_0",
+    "wh_main_nor_cav_marauder_horsemen_0",
+    "wh_dlc08_nor_inf_marauder_champions_0",
+    "wh_dlc08_nor_inf_marauder_champions_0",
+    "wh_dlc08_nor_inf_marauder_berserkers_0",
+    "wh_dlc08_nor_mon_fimir_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0
+   }
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 70,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 130,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 190,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cha_boyar_0",
+     "x": 130,
+     "z": -215,
+     "bearing": 180,
+     "width": 20
+    },
+    {
+     "type": "wh3_main_ksl_inf_tzar_guard_0",
+     "x": 130,
+     "z": -230,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cav_winged_lancers_0",
+     "x": 85,
+     "z": -245,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cav_winged_lancers_0",
+     "x": 175,
+     "z": -245,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 10,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_streltsi_0",
+     "x": 60,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 130,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_streltsi_0",
+     "x": 200,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 250,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 62,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 107,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 153,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 198,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 5,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 55,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_berserkers_0",
+     "x": 5,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_mon_fimir_0",
+     "x": 55,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 205,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 255,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_hunters_0",
+     "x": 205,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_cav_marauder_horsemen_0",
+     "x": 255,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    }
+   ]
+  },
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 14000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "content": [
+   "wh_main",
+   "wh_dlc08",
+   "wh3_main"
+  ],
+  "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 two-front defence design in runs/siege-evals-20261108, case a; its rosters, map, placements and settings are a provisional construction profile the owner has not reviewed. Rests on JUDGEMENT tests/twwarhammer3/test_wh3_land_eval_declarations.py Lines mode, Lines forces, Lines enemy lord, Lines settings, Lines layout, Lines briefing, Authored widths, Reserve facing and Norsca banner. The town-side group (2 x Chaos Marauders, 2 x Marauder Spearmen) starts north of the inner line, the heavy relief group (2 x Marauder Champions, Berserkers, Fimir) in the west slot and the light one (2 x Marauder Spearmen, Hunters, Horsemen) in the east slot; ksl-nor-lines-b-v1 mirrors every enemy placement about x = 130. Database costs and table men (main_units_tables, read 2026-11-08 with scripts/wh3_db.py): player 9,000 and 951 (Boyar 700, 3 x Kossars 500, 3 x Armoured Kossars 700, 2 x Streltsi 850, Tzar Guard 1,000, 2 x Winged Lancers 1,000); enemy 7,550 and 1,186 (town side 1,650 and 480, light 2,000 and 390, heavy 3,900 and 316). At large scale (x 0.75, unread in battle) about 713 against 890 men. No lobby has read this roster back. No played scenario has recruited the Tzar Guard or Winged Lancers, and none has recruited a Norsca card by key; the faction wh_dlc08_nor_norsca is the banner the game chose for an autogenerated Norsca army (skills-v1.1-random-a-20261013), not yet picked from the lobby list. Bearing 180 for the Boyar, Tzar Guard and Lancers and the Boyar's 20 m width are not in the design. Unverified: no game was launched."
+ },
+ "ksl-nor-lines-b-v1": {
+  "base": "ksl-nor-lines-a-v1",
+  "name": "ksl-nor-lines-b-v1",
+  "calibration_change": "Case b of the 2026-11-08 two-front defence design (Claude, 2026-11-08): every enemy placement of ksl-nor-lines-a-v1 mirrored about x = 130 (x to 260 - x, bearing to (360 - bearing) % 360), so the heavy relief group starts in the east slot and the light one in the west. Rests on JUDGEMENT tests/twwarhammer3/test_wh3_land_eval_declarations.py Lines layout. Everything else is case a's, including its unverified card readbacks. Unverified: no game was launched.",
+  "deployment": {
+   "enemy": [
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 198,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 153,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 107,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 62,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 255,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 205,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_berserkers_0",
+     "x": 255,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_mon_fimir_0",
+     "x": 205,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 55,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 5,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_hunters_0",
+     "x": 55,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_cav_marauder_horsemen_0",
+     "x": 5,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    }
+   ]
+  }
  }
 }

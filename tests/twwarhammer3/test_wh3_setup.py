@@ -1,4 +1,7 @@
+import hashlib
 import json
+import re
+from collections import Counter
 from copy import deepcopy
 
 import pytest
@@ -659,6 +662,17 @@ def test_a_plain_deployment_must_place_the_whole_roster_by_type():
         setup.validate_deployment(scenario, {"friendly": deployment["friendly"][:1]}, by_type=True)
 
 
+def test_a_mounted_lord_is_placed_under_his_mounted_type():
+    # The engine reports a mounted lord by his mounted key, as match_deployment reads it.
+    scenario = {"player": {"units": ["lord", "gun"], "mounts": {"0": "lord_horse"}}}
+    place = {"x": 0, "z": 0, "bearing": 0, "width": 20}
+    mounted = [{"type": "lord_horse", **place}, {"type": "gun", **place}]
+    setup.validate_deployment(scenario, {"friendly": mounted}, by_type=True)
+    with pytest.raises(ValueError, match="whole roster"):
+        setup.validate_deployment(scenario, {"friendly": [{"type": "lord", **place},
+                                                          {"type": "gun", **place}]}, by_type=True)
+
+
 # Removing any one of these startup checks passed every test before
 # (runs/refusal-sweep-20261029/setup.txt); each case breaks one readback.
 @pytest.mark.parametrize("change,message", [
@@ -748,3 +762,149 @@ def test_lobby_ready_can_only_move_readiness_toward_the_request():
     read = setup.lobby_ready_steps(True)[-1]
     assert (read["expression"], read["expect"], read["required"]) == (flag, True, True)
     assert read["timeout_ms"] >= 3000
+
+
+# A fake lobby for the siege equipment steps. Its reads and their values follow the recorded
+# runs/twwarhammer3/siege-905-20261103/*/source/menu.log (Size, Count, CanAddSiegeEquipment,
+# AddSiegeEquipment); RemoveSiegeEquipment takes an entry, as the panel's remove button does
+# (custom_battle.twui.xml). An expression it does not know fails the test.
+def equipment_lobby(slot, held, offered, add_works=True):
+    slots = [{"attacker": index == slot, "held": [], "offered": [], "capacity": 3}
+             for index in range(2)]
+    slots[slot].update(held=list(held), offered=list(offered))
+    return {"slots": slots, "add_works": add_works}
+
+
+def lobby_entry(lobby, reference):
+    """The key a FirstContext(Key == "k") or (Key != "k") reference picks, or None."""
+    match = re.fullmatch(re.escape(setup.LOBBY) + r"PlayerSlotList\.At\((\d)\)\.(Available)?"
+                         r'SiegeEquipmentList\.FirstContext\(Key (==|!=) "(\w*)"\)', reference)
+    slot = lobby["slots"][int(match[1])]
+    return next((key for key in slot["offered" if match[2] else "held"]
+                 if (key == match[4]) == (match[3] == "==")), None)
+
+
+def lobby_read(lobby, expression):
+    text = expression.removeprefix(setup.LOBBY)
+    if text == "SettingsContext.IsSiegeBattleType":
+        return True
+    if size := re.fullmatch(r"PlayerSlotList\.Size > (\d+)", text):
+        return len(lobby["slots"]) > int(size[1])
+    if above := re.fullmatch(r"(.+) > (\d+)", text):
+        return lobby_read(lobby, setup.LOBBY + above[1]) > int(above[2])
+    match = re.fullmatch(r"PlayerSlotList\.At\((\d)\)\.(.+)", text)
+    slot, rest = lobby["slots"][int(match[1])], match[2]
+    if count := re.fullmatch(r'(Available)?SiegeEquipmentList\.Count\(Key == "(\w+)"\)', rest):
+        return slot["offered" if count[1] else "held"].count(count[2])
+    if can := re.fullmatch(r"CanAddSiegeEquipment\((.+)\)", rest):
+        return lobby_entry(lobby, can[1]) is not None and len(slot["held"]) < slot["capacity"]
+    if rest.startswith("AvailableSiegeEquipmentList.JoinString("):
+        return ";".join(slot["offered"])
+    return {"TeamContext.IsAttacker": slot["attacker"], "CanModifyUnits": True,
+            "NumSiegeVehiclesAvailable": slot["capacity"],
+            "SiegeEquipmentList.Size": len(slot["held"]),
+            'SiegeEquipmentList.JoinString(Key, ";")': ";".join(slot["held"])}[rest]
+
+
+def run_lobby(steps, lobby):
+    """Run the steps as the frontend does; the first failed required read, or None."""
+    for step in steps:
+        skipped = "when" in step and lobby_read(lobby, step["when"]) is not True
+        if "context" not in step or skipped:
+            continue
+        if "command" in step:
+            match = re.fullmatch(re.escape(setup.LOBBY) + r"PlayerSlotList\.At\((\d)\)\."
+                                 r"(Add|Remove)SiegeEquipment\((.+)\)", step["command"])
+            slot, key = lobby["slots"][int(match[1])], lobby_entry(lobby, match[3])
+            if match[2] == "Remove" and key in slot["held"]:
+                slot["held"].remove(key)
+            elif (match[2] == "Add" and key and lobby["add_works"]
+                  and len(slot["held"]) < slot["capacity"]):
+                slot["held"].append(key)
+            continue
+        value = lobby_read(lobby, step["expression"])
+        if step.get("required") and "expect" in step and (
+                type(value) is not type(step["expect"]) or value != step["expect"]):
+            return f"{step['expression']} = {value!r}"
+    return None
+
+
+def siege_with(attacker, equipment):
+    scenario = deepcopy(setup.scenarios()["chd-reserve-grn-siege"])
+    return {**scenario, "attacker": attacker, "siege_equipment": equipment}
+
+
+KSL = ["ksl_battering_ram", "ksl_siege_tower_15m"]
+EMP = ["emp_battering_ram", "emp_siege_tower_15m"]
+CHD = ["chd_battering_ram", "chd_siege_tower_15m", "chd_siege_tower_15m"]
+
+
+# Izmail attacks from the player's slot with one Kislev ram while the slot still holds an
+# Empire ram and tower (Izmail check 1). Haengju's Empire AI attacker gets none while its slot
+# holds a Chaos Dwarf ram and two towers, as a Malta or Belgrade lobby might leave it: a clear
+# that names keys (the declared ones, or the Empire ones as checkpoint_siege/lobby.py does) or
+# stops after two removals leaves a piece there.
+@pytest.mark.parametrize("attacker,slot,leftovers,offered,equipment", [
+    ("player", 0, EMP, KSL, {"ksl_battering_ram": 1, "ksl_siege_tower_15m": 0}),
+    ("enemy", 1, CHD, EMP, {}),
+    ("enemy", 1, EMP, EMP, {"emp_battering_ram": 1, "emp_siege_tower_15m": 2}),
+])
+def test_siege_equipment_clears_every_leftover_then_adds_and_reads_back_the_declaration(
+        attacker, slot, leftovers, offered, equipment):
+    steps = setup.siege_equipment_steps(siege_with(attacker, equipment))
+    lobby = equipment_lobby(slot, leftovers, offered)
+    assert run_lobby(steps, lobby) is None
+    assert Counter(lobby["slots"][slot]["held"]) == Counter(equipment)
+    assert lobby["slots"][1 - slot]["held"] == []
+    adds = [i for i, step in enumerate(steps) if "AddSiegeEquipment(" in step.get("command", "")]
+    assert len(adds) == sum(equipment.values())
+    for i in adds:
+        can = steps[i]["command"].replace("AddSiegeEquipment(", "CanAddSiegeEquipment(")
+        assert (steps[i - 1]["expression"], steps[i - 1]["expect"]) == (can, True)
+    # The reads after the last add, which a menu.log reader takes, give the total and each key.
+    held = f"{setup.LOBBY}PlayerSlotList.At({slot}).SiegeEquipmentList."
+    final = {step["expression"]: step["expect"] for step in steps[max(adds, default=0):]
+             if step.get("required") and "expect" in step}
+    assert final[held + "Size"] == sum(equipment.values())
+    assert {key: final[held + f'Count(Key == "{key}")'] for key in equipment} == equipment
+    # A lobby that ignores the add must fail a required readback, not start without equipment.
+    ignored = equipment_lobby(slot, leftovers, offered, add_works=False)
+    assert (run_lobby(steps, ignored) is None) is (sum(equipment.values()) == 0)
+
+
+def test_siege_equipment_with_an_unknown_key_a_count_over_its_cap_or_a_host_is_refused():
+    full = siege_with("player", {"ksl_battering_ram": 2, "ksl_siege_tower_15m": 10})
+    config = {"episode_timeout": None, "run_timeout": None, "start_timeout": 600, "episodes": 1}
+    setup.fill_timeouts(full, config)
+    setup.validate_declaration(full, config)  # each cap itself is allowed
+    for change in ({"siege_equipment": {"ksl_battering_ram": 3}},
+                   {"siege_equipment": {"ksl_siege_tower_15m": 11}},
+                   {"siege_equipment": {"ksl_battering_ram": -1}},
+                   {"siege_equipment": {"ksl_battering_ram": True}},
+                   {"siege_equipment": {"ksl_ram": 1}},
+                   {"siege_equipment": ["ksl_battering_ram"]},
+                   {"battle_type": "classic"}, {"attacker": None}):
+        scenario = {**full, **change}
+        with pytest.raises(ValueError, match="siege_equipment"):
+            setup.validate_declaration(scenario, config)
+        with pytest.raises(ValueError, match="siege_equipment"):
+            setup.scenario_steps(scenario)
+    # A hosted lobby has no equipment steps; it must not start with whatever the slot holds.
+    with pytest.raises(ValueError, match="siege_equipment"):
+        setup.configure_steps(full)
+
+
+def test_a_siege_without_the_field_keeps_its_steps_and_the_field_only_adds_its_block():
+    scenario = setup.scenarios()["chd-reserve-grn-siege"]
+    steps = setup.scenario_steps(scenario)
+    # The steps this scenario generated at 2a560d3, before siege_equipment existed.
+    digest = hashlib.sha256(json.dumps(steps, sort_keys=True).encode()).hexdigest()
+    assert digest == "e2321a0518c1ae2b32b3fcb2a8e388dd71f2ebadf46500bc8e3d6417a2f07867", (
+        "chd-reserve-grn-siege's steps changed. If the change is intended (its scenario, map, "
+        "army or menu steps), check that no siege_equipment step appears without the field, "
+        "then re-pin the digest and the revision in the comment above.")
+    start = next(i for i, step in enumerate(steps)
+                 if step.get("find") == ["start_button_frame", "button_start_battle"])
+    block = setup.siege_equipment_steps({**scenario, "siege_equipment": {}})
+    with_field = setup.scenario_steps({**scenario, "siege_equipment": {}})
+    assert with_field == steps[:start] + block + steps[start:]
