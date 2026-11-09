@@ -34,12 +34,12 @@ Measured UTF-8 bytes, not tokens, from the files on 2026-11-09:
 
 | Startup source | Before | After |
 |---|---:|---:|
-| Shared `AGENTS.md` | 13,211 bytes / 200 lines | 8,529 bytes / 116 lines |
+| Shared `AGENTS.md` | 13,211 bytes / 200 lines | 8,556 bytes / 118 lines |
 | Claude `CLAUDE.md` import | 11 bytes / 1 line | unchanged |
 | Claude personal memory index | 9,666 bytes | 1,232 bytes |
 | Claude global search-pattern rule | 338 bytes / 6 lines | 96 bytes / 1 line |
 
-The shared instruction reduction is 4,682 bytes (35.4%). The moved development sections
+The shared instruction reduction is 4,655 bytes (35.2%). The moved development sections
 remain mandatory for their matching tasks. `state.md` was 16,743 bytes and `workflow.md`
 42,593 bytes; neither is imported automatically. The new reading routes select sections,
 so their complete sizes are not claimed as automatic startup savings. Bytes saved do not

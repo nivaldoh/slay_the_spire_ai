@@ -83,6 +83,8 @@ the marking pass: [docs/judgement.md](docs/judgement.md).
   [long-run brief/handoff](docs/workflow.md#long-runs-while-the-owner-is-away). The standing menu
   and small interviews were agreed 2026-10-28; other away rules still need the owner's yes.
 
+<a id="architecture"></a>
+
 ## Evidence
 
 - Never run two game controllers at once, even for different games; locks protect one game each.
