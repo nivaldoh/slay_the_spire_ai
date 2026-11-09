@@ -136,12 +136,13 @@ def lines(lua, name):
 def test_the_private_record_keeps_hidden_enemies_that_the_observation_and_replay_drop():
     lua, fn = battle()
     g = lua.globals()
-    fn["record_private"](1000, False)
+    # Off the whole second, so a time_ms rounded to the second would show.
+    fn["record_private"](1250, False)
     # Policy memory is untouched: seeing e2 privately must not reveal it or its death later.
     assert (g.state.enemy.e1.seen, g.state.enemy.e2.seen) == (None, None)
     frame, = lines(lua, "private")
     assert (frame["private_record"], frame["job"], frame["battle"], frame["time_ms"]) == (
-        1, "j", "b", 1000)
+        1, "j", "b", 1250)
     assert [unit["id"] for unit in frame["enemy"]] == ["e1", "e2"]
     assert frame["enemy"][1] == {
         "id": "e2", "type": "wh_main_emp_inf_swordsmen", "x": 777.7, "y": 12.5, "z": -333.3,
@@ -291,8 +292,13 @@ RAM = {"key": "ksl_battering_ram", "x": 502.2, "y": 91.9, "z": -550.2}
     ({"ksl_battering_ram": 1}, [[]], False),
     ({"ksl_battering_ram": 1}, {"error": "assault_equipment: attempt to call a nil value"}, False),
     ({"ksl_battering_ram": 1}, None, False),
+    # Haengju declares no equipment: an unreadable vehicle or a failed reading still refuses.
+    ({}, [[]], False),
+    ({}, {"error": "assault_equipment: x"}, False),
+    ({}, None, False),
 ], ids=["declared", "none", "other-faction-ram", "lost", "extra", "engine-added", "unreadable-key",
-        "failed-reading", "no-reading"])
+        "failed-reading", "no-reading", "none-unreadable-key", "none-failed-reading",
+        "none-no-reading"])
 def test_the_battle_must_hold_exactly_the_declared_siege_equipment(declared, reading, passes):
     scenario = {"expect": {"time_limit_s": 1200, "unit_scale": .75, "realism": False,
                            "player_defends": False, "ai_stats_modifier": "1.0"},

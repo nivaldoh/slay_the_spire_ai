@@ -1116,8 +1116,11 @@ local function mode_section()
         end
         section.spawn_zones = zones
     end
-    if (tonumber(get_context(SLOT_LIST .. ".Size")) or 0) ~= #state.slots then read_slots() end
-    if #state.slots > 0 then
+    -- A siege the player attacks (state.fortifications) shows no slots: the attacker's list holds
+    -- the defender's slots and build timers (2026-10-14 attack smoke), and the attacker builds none.
+    local own_slots = not state.fortifications
+    if own_slots and (tonumber(get_context(SLOT_LIST .. ".Size")) or 0) ~= #state.slots then read_slots() end
+    if own_slots and #state.slots > 0 then
         local slots = {}
         for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOTS)) do
             local setup = state.slots[index]

@@ -4,8 +4,9 @@ This file and ``configs/twwarhammer3/`` are the autoresearch loop's editable sur
 transport and spend live in ``gameai.llm``, model prices in ``gameai.providers``. Memory
 is bounded: model-written notes (rewritten through the reply's ``notes`` field), the last
 few decisions (orders, any dropped as invalid, and the reason), the engine's verdict on the
-last batch, the move or attack order each unit still holds, unit strengths at the previous
-decision, and where enemies were last seen. No transcript accumulates.
+last batch, the move or attack order each unit still holds (or its last siege order), unit
+strengths and, in a siege the player attacks, ticket counts at the previous decision, and where
+enemies were last seen. No transcript accumulates.
 """
 
 import hashlib
@@ -17,6 +18,7 @@ from copy import deepcopy
 from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle.evidence_rules import gate_breached
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import (
     ATTACK_MODES,
@@ -83,9 +85,9 @@ REPLY_SCHEMA = {
     "required": ["orders", "reason", "notes"],
     "additionalProperties": False,
 }
-# A siege the player attacks (mode.fortifications listed) adds the two siege orders for the llm
-# controller; every other battle, and a team member's view (without_siege_orders), gets
-# REPLY_SCHEMA.
+# A siege the player attacks adds the two siege orders for the llm controller, on a view that
+# offers them (offers_siege_orders); every other battle, and a view without the climb fields such
+# as a team member's (without_siege_orders), gets REPLY_SCHEMA.
 SIEGE_REPLY_SCHEMA = deepcopy(REPLY_SCHEMA)
 SIEGE_REPLY_SCHEMA["properties"]["orders"]["items"]["anyOf"] += [
     _order_schema(kind, target={"type": "string"}, run={"type": "boolean"})
@@ -104,6 +106,15 @@ def reply_schema(observation: dict) -> dict:
     if (observation.get("mode") or {}).get("fortifications") is not None:
         return SIEGE_REPLY_SCHEMA
     return REPLY_SCHEMA
+
+
+def offers_siege_orders(observation: dict) -> bool:
+    """Whether this view gets the siege-order sentence and SIEGE_REPLY_SCHEMA: it lists
+    mode.fortifications and its own units carry ``can_climb``, which validation reads for a wall
+    besiege. team.project keeps the fort but drops can_climb, so a team member's view reads the
+    fort as facts."""
+    return ((observation.get("mode") or {}).get("fortifications") is not None
+            and any("can_climb" in unit for unit in observation.get("friendly") or []))
 
 
 def without_siege_orders(observation: dict) -> dict:
@@ -153,6 +164,26 @@ def holds(unit: dict, order: dict) -> bool:
     if "melee" in states or unit.get("x") is None:
         return False
     return bool(unit.get("dest")) or distance(unit, order) > ARRIVED_M
+
+
+def holds_siege(unit: dict, order: dict, fortifications: list | None) -> bool:
+    """Whether the prompt still shows a unit's last accepted besiege or attack_building: while it
+    has men and is not routing or shattered, a besieger is not on the wall, a gun has ammunition,
+    and the target is still listed in ``fortifications`` (mode.fortifications) and not at 0%. No
+    state field confirms the order is carried out: dest is set only for moves. A later accepted
+    move, attack or halt replaces the order (LLMPolicy.acknowledge)."""
+    states = set(unit.get("state") or [])
+    if not unit.get("men") or {"routing", "shattered"} & states:
+        return False
+    if order["type"] == "besiege" and unit.get("on_wall"):
+        return False
+    if order["type"] == "attack_building" and not (unit.get("ammo") or 0) > 0:
+        return False
+    # Validation's rule for every piece: one with unreadable hp is kept.
+    # Rests on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Breach rule.
+    target = next((piece for piece in fortifications or [] if piece.get("id") == order["target"]),
+                  None)
+    return target is not None and not gate_breached(target)
 
 
 def _beyond_range(unit: dict, other: dict | None) -> str:
@@ -268,10 +299,17 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     leaving = {"routing", "shattered"} & set(unit.get("state") or [])
     if mine and not unit.get("target") and not leaving:
         if not (target or unit.get("dest")):
-            parts.append("no order")
+            parts.append(_siege_order(ordered) if (ordered or {}).get("type") in SIEGE_ORDER_TYPES
+                         else "no order")
         if nearest := _nearest(unit, enemies or {}):
             parts.append(f"nearest enemy {nearest['id']}{_distance_text(unit, nearest)}")
     return ", ".join(parts)
+
+
+def _siege_order(order: dict) -> str:
+    verb = "besiege" if order["type"] == "besiege" else "attack building"
+    return (f"last siege order: {verb} {order['target']} at {order['time_s']:.0f} s"
+            " (the state cannot confirm it is still carried out)")
 
 
 def render_ability(ability: dict, time_ms: int | None = None) -> str:
@@ -330,12 +368,15 @@ def _side(side: str | None) -> str:
     return {"us": "you", None: "nobody", "none": "nobody"}.get(side, side)
 
 
-def render_mode(mode: dict | None, siege_orders: bool = False) -> str | None:
+def render_mode(mode: dict | None, siege_orders: bool = False,
+                tickets: dict | None = None) -> str | None:
     """The battle type and what wins it: role, timeout winner (or, for a contact-scored
     scenario, the benchmark's own rule), objectives in the game's words, a scenario
     objective, tickets, capture points, gates, supplies, the reinforcement pool and spawn
     zones, a siege attack's fortifications, vehicles and enemy-built structures (``siege_orders``
-    adds the siege-order sentence) and building slots, as far as the type has them."""
+    adds the siege-order sentence) and building slots, as far as the type has them. In a siege
+    attack (mode.fortifications listed), ``tickets`` (side to count at the previous decision)
+    adds each count's change since then."""
     if not mode or not mode.get("type"):
         return None
     head = f"Battle: {mode['type']}"
@@ -377,9 +418,12 @@ def render_mode(mode: dict | None, siege_orders: bool = False) -> str | None:
     if mode.get("tickets"):
         # Without a goal (a siege defender's tickets) the income figure does not apply.
         goal = mode.get("tickets_goal")
+        since = (tickets or {}) if mode.get("fortifications") is not None else {}
         lines.append(f"Tickets{f' ({goal} wins)' if goal else ''}: " + ", ".join(
             f"{_side(row['side'])} {row['tickets']}"
             + (f" ({row.get('per_s', 0):+d}/s)" if goal else "")
+            + (f" ({row['tickets'] - since[row['side']]:+g} since your last turn)"
+               if since.get(row["side"], row["tickets"]) != row["tickets"] else "")
             for row in mode["tickets"]) + ".")
     if mode.get("capture_points"):
         lines.append("Capture points (units standing on a point capture it):")
@@ -453,11 +497,14 @@ def _nearest(unit: dict, enemies: dict) -> dict | None:
 
 
 def render_state(observation: dict, last_seen: dict, before: dict | None = None,
-                 ordered: dict | None = None, siege_orders: bool = False) -> str:
+                 ordered: dict | None = None, siege_orders: bool = False,
+                 tickets: dict | None = None) -> str:
     """``before`` maps unit ids to (men, hp %) at the previous decision, ``ordered`` our
-    units to the move or attack order they still hold (see ``holds``). The fort, vehicles and
-    enemy-built structures are facts for every controller; ``siege_orders`` adds the sentence
-    on the besiege and attack_building orders, for a controller whose reply schema has them."""
+    units to the move or attack order they still hold (see ``holds``) or their last siege order
+    (``holds_siege``), ``tickets`` sides to ticket counts at the previous decision (render_mode).
+    The fort, vehicles and enemy-built structures are facts for every controller;
+    ``siege_orders`` adds the sentence on the besiege and attack_building orders, for a
+    controller whose reply schema has them."""
     visible = visible_enemies(observation)
     before, ordered = before or {}, ordered or {}
     lines = []
@@ -470,7 +517,7 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
                      "for this unit. Narrow crossings can lie between samples. "
                      "Do not repeat an unreachable move: select a reported reachable "
                      "alternative or another goal.\n" + "\n".join(terrain["rows"]))
-    mode = render_mode(observation.get("mode"), siege_orders)
+    mode = render_mode(observation.get("mode"), siege_orders, tickets)
     if mode:
         lines.append(mode)
     if observation.get("reserve_briefing"):
@@ -575,15 +622,17 @@ def remember(last_seen: dict, observation: dict) -> None:
 
 def render_prompt(observation: dict, notes: str, history: list[str], last_seen: dict,
                   latency: dict | None, ack: dict | None, before: dict | None = None,
-                  ordered: dict | None = None, siege_orders: bool = True) -> str:
-    """The ``llm`` controller's prompt; ``siege_orders`` False (a team member's view) leaves out
-    the siege-order sentence, for a schema without those orders."""
+                  ordered: dict | None = None, siege_orders: bool = True,
+                  tickets: dict | None = None) -> str:
+    """The ``llm`` controller's prompt; ``siege_orders`` False (a view that does not offer them,
+    such as a team member's) leaves out the siege-order sentence, for a schema without those
+    orders."""
     return "\n\n".join([
         "Battle notes:\n" + (notes or "(none)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
         render_timing(observation, latency),
         render_ack(ack),
-        render_state(observation, last_seen, before, ordered, siege_orders),
+        render_state(observation, last_seen, before, ordered, siege_orders, tickets),
     ])
 
 
@@ -696,6 +745,7 @@ class LLMPolicy:
         self.before: dict[str, tuple] = {}
         self.sent: list[dict] = []
         self.ordered: dict[str, dict] = {}
+        self.tickets: dict = {}
         self._metadata = {}
         if benchmark:
             from twwarhammer3.battle import benchmark as profile
@@ -711,22 +761,27 @@ class LLMPolicy:
     def decide(self, observation: dict) -> list[dict]:
         remember(self.last_seen, observation)
         friendly = friendly_units(observation)
+        mode = observation.get("mode") or {}
         self.ordered = {unit_id: order for unit_id, order in self.ordered.items()
-                        if unit_id in friendly and holds(friendly[unit_id], order)}
+                        if unit_id in friendly and (
+                            holds_siege(friendly[unit_id], order, mode.get("fortifications"))
+                            if order["type"] in SIEGE_ORDER_TYPES
+                            else holds(friendly[unit_id], order))}
         applied = (self.ack or {}).get("applied_ms")
         fresh = applied is not None and observation.get("time_ms", 0) <= applied
         shown = {unit_id: dict(order, fresh=True) if fresh and order in self.sent else order
                  for unit_id, order in self.ordered.items()}
-        # A team member's view (team.project adds input_version) keeps no on_wall, can_climb or
-        # can_siege, and the team checks the member's batch on it, which would refuse every wall
-        # besiege and attack_building. So a member, team.TeamLLM or a configured team's llm leaf,
-        # reads the fort as facts and its reply is checked without the siege orders
-        # (escalade-eval.md, Team siege orders).
-        member = "input_version" in observation
-        checked = without_siege_orders(observation) if member else observation
+        # A view without can_climb, such as a team member's (team.project keeps no on_wall,
+        # can_climb or can_siege, and the team checks the member's batch on it), would see every
+        # wall besiege and attack_building refused. So team.TeamLLM, a configured team's llm leaf
+        # or any such view reads the fort as facts and its reply is checked without the siege
+        # orders (escalade-eval.md, Team siege orders).
+        siege = offers_siege_orders(observation)
+        checked = observation if siege else without_siege_orders(observation)
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
-                               self.latency, self.ack, self.before, shown, not member)
+                               self.latency, self.ack, self.before, shown, siege, self.tickets)
         self.before = strengths(observation)
+        self.tickets = {row.get("side"): row.get("tickets") for row in mode.get("tickets") or []}
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
@@ -764,10 +819,9 @@ class LLMPolicy:
             index = result.get("index")
             order = (self.sent[index - 1] if index is not None and 0 < index <= len(self.sent)
                      else next((o for o in self.sent if o["unit"] == result["unit"]), None))
-            if order and order["type"] in SIEGE_ORDER_TYPES:
-                self.ordered.pop(order["unit"], None)  # it replaced the unit's move or attack
-                continue
-            if not order or order["type"] not in ("move", "attack", "halt"):
+            # A siege order replaces the unit's move or attack; a later move, attack or halt
+            # replaces it.
+            if not order or order["type"] not in ("move", "attack", "halt", *SIEGE_ORDER_TYPES):
                 continue
             accepted.append(order)
         # A submitted queue is not evidence that its final attack has started.

@@ -2,20 +2,25 @@
 (runs/siege-evals-20261108/final-izmail.md, Measurements and Infrastructure I8).
 
 They read a finished battle's records: its public observations (trace.jsonl's observation rows,
-whose own units carry ``on_wall``) and the private record (``private.jsonl``, fields in
-capture.copy_private_record), which holds every enemy unit, hidden ones included. Nothing here
-runs during a battle or reaches a controller. Contact is the engine's melee flag on a unit with
-men left (evidence_rules.in_melee's rule, read from the private record's ``melee``), never the
-distance between centres: in the 2026-10-14 attack smoke 6 friendly-enemy pairs stood within
-40 m, 364 pair readings in all, the closest 10.1 m apart, and none carried the flag. A gate is
-breached at public hp 0 or less (evidence_rules.gate_breached). The front line and ``inside``
-are the witness's (escalade.front_line, rests on JUDGEMENT? escalade.py Front line).
+whose own units carry ``on_wall``), its trace (trace.jsonl's "decision" and "ack" rows) and the
+private record (``private.jsonl``, fields in capture.copy_private_record), which holds every
+enemy unit, hidden ones included. Nothing here runs during a battle or reaches a controller.
+first_on_wall, wall_sections and siege_order_acted_on need no witness metadata, so they read any
+controller, a model included (second look B1 and ER5, runs/siege-evals-20261108/second-look.json).
+Contact is the engine's melee flag on a unit with men left (evidence_rules.in_melee's rule, read
+from the private record's ``melee``), never the distance between centres: in the 2026-10-14
+attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all, the closest
+10.1 m apart, and none carried the flag. A gate is breached at public hp 0 or less
+(evidence_rules.gate_breached). The front line and ``inside`` are the witness's
+(escalade.front_line, rests on JUDGEMENT? escalade.py Front line).
 """
 
 # The battle's page is docs/twwarhammer3/escalade-eval.md. Its proposed check 7 counts D1 as
 # exercised from reallocation() over private frames that start at the end of staging, beside a
 # reading from the battle's start, and lancer_losses() is D2's descriptive reading (rests on
 # JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade deciding checks and Escalade claim).
+from math import floor
+
 from twwarhammer3.battle.escalade import inside
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.scripted import distance
@@ -27,6 +32,18 @@ SECTOR_HALF_M = 60
 FAR_M = 150  # a defender that started this far (along x) outside a sector came from elsewhere
 WINDOW_MS = 120000  # melee counted this long after the reading's start
 GATE_M = 20  # a unit that first comes inside this close to g1 came in by the gate
+# Re-checked once stage 1 reads g1's central_position: the recorded Helmgart ram stopped at
+# (-2,-30), 33 m from the gate's (-32,-16) (escalade-eval.md, check 3).
+# JUDGEMENT?: Wall sections — Claude, 2026-11-09 (second look B1): a section is a 120 m bin of x of
+# the listed piece nearest a unit on the wall. Sections between Fort Tower points, or another
+# width, change the count; any controller's D1 branch reading rests on it.
+SECTION_M = 120
+# JUDGEMENT?: Acted on — Claude, 2026-11-09 (second look ER5): a siege order is acted on once its
+# unit is 50 m nearer the target within 60 s or reads climbing within 120 s. A gun firing where it
+# stands reads not acted on; counting spent ammunition changes that. Check 3's split rests on it.
+ACTED_M = 50
+ACTED_MS = 60000
+CLIMB_MS = 120000
 
 
 def contact(unit) -> bool:
@@ -129,3 +146,93 @@ def wall_to_point(observations) -> dict:
             held = observation["time_ms"]
     return {"on_wall_ms": on_wall, "held_ms": held,
             "delta_ms": held - on_wall if None not in (held, on_wall) else None}
+
+
+def first_on_wall(frames, groups=None) -> dict:
+    """Battle ms of the first private-record frame in which an own unit of each group reads
+    on_wall true, or None: {name: ms}. ``groups`` maps a name to own ids (the witness's metadata
+    ``groups``); None reads every own unit as one group, "all", for a controller without groups.
+    Only a frame's ``friendly`` units count, never the garrison."""
+    first = {}
+    for frame in frames:
+        for unit in frame.get("friendly") or []:
+            if unit.get("on_wall") is True:
+                first.setdefault(unit["id"], frame["time_ms"])
+    if groups is None:
+        return {"all": min(first.values(), default=None)}
+    return {name: min((first[i] for i in ids if i in first), default=None)
+            for name, ids in groups.items()}
+
+
+def wall_sections(frames, pieces):
+    """How many wall sections hold an own unit reading on_wall true within WINDOW_MS of the first
+    such reading in the private record's ``frames``: {"first_ms", "sections"}, or None when no
+    unit read on_wall. A unit's section is the SECTION_M bin of x of the piece of ``pieces`` (the
+    public fortification list) nearest it. The on_wall rule is entry_routes' ladder rule, the
+    engine's flag; no climbing target is needed, so a model's battle reads as a script's."""
+    first, held = None, set()
+    for frame in frames:
+        units = [unit for unit in frame.get("friendly") or [] if unit.get("on_wall") is True
+                 and unit.get("x") is not None and unit.get("z") is not None]
+        if first is None and units:
+            first = frame["time_ms"]
+        if first is None:
+            continue
+        if frame["time_ms"] > first + WINDOW_MS:
+            break
+        for unit in units:
+            piece = min(pieces, key=lambda p: (distance(p, unit), p["id"]))
+            held.add(floor(piece["x"] / SECTION_M))
+    return None if first is None else {"first_ms": first, "sections": len(held)}
+
+
+def siege_order_acted_on(trace, frames) -> list:
+    """Whether each besiege or attack_building the engine accepted was acted on, in trace order.
+    An order is a "decision" row's order matched to an ok result of its "ack" row by one-based
+    index (as wall_readings.reserve_response reads them), applied at the ack's ``applied_ms``. Its
+    target's centre is the first listing of that id in a logged view's mode.fortifications (an
+    "observation" row). From the private record's ``frames``: ``start_m``, the unit's distance to
+    the target in the last frame at or before ``applied_ms`` (None when unreadable);
+    ``closed_ms``, the first frame within ACTED_MS after it in which the unit stands ACTED_M or
+    more nearer; ``climbing_ms``, the first within CLIMB_MS in which it reads climbing true.
+    ``acted_on`` is True when either came, False when neither came with ``start_m`` read, and
+    None otherwise. No pass rule, and no outcome: the wall, the ram at the gate and the door's hp
+    are read elsewhere."""
+    centres, orders, accepted = {}, {}, []
+    for row in trace:
+        if row.get("kind") == "observation":
+            for piece in ((row.get("observation") or {}).get("mode") or {}).get(
+                    "fortifications") or []:
+                if piece.get("x") is not None and piece.get("z") is not None:
+                    centres.setdefault(piece["id"], piece)
+        elif row.get("kind") == "decision":
+            orders[row["request"]] = row.get("orders") or []
+        elif row.get("kind") == "ack" and (row.get("ack") or {}).get("applied_ms") is not None:
+            ack = row["ack"]
+            sent = orders.get(row.get("request", ack.get("request"))) or []
+            for result in ack.get("results") or []:
+                index = result.get("index")
+                if (result.get("ok") is True and isinstance(index, int) and 0 < index <= len(sent)
+                        and sent[index - 1].get("type") in ("besiege", "attack_building")):
+                    accepted.append((ack["applied_ms"], sent[index - 1]))
+    readings = []
+    for applied, order in accepted:
+        target = centres.get(order.get("target"))
+        rows = [(frame["time_ms"], unit) for frame in frames for unit in frame.get("friendly") or []
+                if unit["id"] == order.get("unit")]
+        placed = [(time, unit) for time, unit in rows
+                  if target and unit.get("x") is not None and unit.get("z") is not None]
+        before = [distance(unit, target) for time, unit in placed if time <= applied]
+        start = before[-1] if before else None
+        closed = next((time for time, unit in placed if start is not None
+                       and applied < time <= applied + ACTED_MS
+                       and distance(unit, target) <= start - ACTED_M), None)
+        climbing = next((time for time, unit in rows if applied <= time <= applied + CLIMB_MS
+                         and unit.get("climbing") is True), None)
+        acted = (True if closed is not None or climbing is not None
+                 else False if start is not None else None)
+        readings.append({"unit": order.get("unit"), "type": order["type"],
+                         "target": order.get("target"), "applied_ms": applied,
+                         "start_m": None if start is None else round(start, 1),
+                         "closed_ms": closed, "climbing_ms": climbing, "acted_on": acted})
+    return readings

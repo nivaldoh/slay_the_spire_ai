@@ -13,7 +13,9 @@ design (runs/siege-evals-20261108/final-haengju.md, Witness):
 4. fallback: once the Gatehouse capture point is enemy-held or a gate is breached
    (evidence_rules.gate_breached: hp 0 or less, whatever ``destroyed`` says), every unit goes to
    its spot near the Key Building KEEP_POINT and attacks visible enemies within KEEP_M of it.
-   The fallback is kept to the end; the reserve rule stops then.
+   The fallback is kept to the end; the reserve rule stops then. Version 1 has no attacker that
+   can damage the gate: all seven Empire unit keys read can_siege false and siege_equipment is
+   {}, so gate_breached cannot occur there and the fallback cue reduces to c2 enemy-held.
 The wall line runs through WALL_ENDS and the public capture points WALL_POINTS; "inside" is
 INSIDE_M or more north (higher z) of it. The controls are the witness with rules removed or
 moved, one class each: ``HoldBuild`` (build only), ``KeepOnly`` (build, and the fallback from
@@ -72,6 +74,11 @@ POINT_KEYS = {"c1": "major_key_building_leadership", "c2": "capture_point_gate_o
 WALL_ENDS = ((-384, -81), (384, -81))  # the line's ends, at the side walls' z
 WALL_POINTS = ("c6", "c5", "c2", "c4", "c3")  # in x order, west to east
 INSIDE_M = 10  # an enemy this far or more north of the wall line is inside
+# The fire rule holds every shot, the long ones included (rockets to 400 m, the cannon to 450 m),
+# until an able enemy is within FIRE_M of the line or inside it; from then on the engine picks
+# targets at any range. So a WallWitness-over-WFire pass alone cannot separate saving ammunition
+# for later divisions from shooting at closer range. The Cathay projectiles' calibration distances
+# are unread.
 FIRE_M = 60  # missile units fire at will while an able enemy is this close to the line or inside
 BREACH_DECISIONS = 2  # decisions in a row inside before the reserve attacks an enemy
 GATEHOUSE = "c2"  # enemy-held, it starts the fallback, as does a breached gate

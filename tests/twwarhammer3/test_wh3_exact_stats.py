@@ -5,11 +5,27 @@ Newcombe 1998's worked example (56/70 against 48/80) are published. The other Fi
 agree with scipy.stats.fisher_exact 1.18.1, the other intervals with statsmodels 0.15.0
 confint_proportions_2indep(method="newcomb"), and the powers and gate chances with a separate
 brute force in exact fractions (runs/siege-evals-20261108/scratch/P1-exact-stats, not in Git).
+The Boschloo values come from scipy.stats.boschloo_exact 1.18.1 (BOSCHLOO_SCIPY below).
 These establish the arithmetic only, not that a plan's assumptions hold in live battles.
 """
+import re
+
 import pytest
 
+from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle import exact_stats
+
+# (wins_a, launches_a, wins_b, launches_b): two-sided p from scipy.stats.boschloo_exact 1.18.1 at
+# n=256 (runs/siege-evals-20261108/scratch3/stats-method-options/boschloo_reference.py, not in
+# Git); scipy's default n=32 and a 200001-rate grid of the same regions agree to 8 places.
+BOSCHLOO_SCIPY = {
+    (3, 4, 1, 4): .2890625, (1, 4, 3, 4): .2890625, (2, 8, 7, 12): .19147349,
+    (0, 10, 6, 14): .01565759, (0, 10, 5, 10): .01277924, (8, 10, 3, 10): .04138947,
+    (10, 16, 4, 16): .04139898, (4, 16, 10, 16): .04139898, (11, 16, 5, 16): .05010653,
+    (6, 16, 1, 16): .05022586, (12, 16, 8, 16): .16867052, (5, 16, 0, 16): .0202436,
+    (16, 16, 11, 16): .0202436, (8, 16, 8, 16): .93718076, (0, 16, 0, 16): 1.0,
+    (9, 11, 3, 9): .04643716,
+}
 
 
 def test_fisher_adds_every_table_no_more_likely_than_the_observed_one():
@@ -49,6 +65,68 @@ def test_plan_power_matches_an_exact_brute_force():
     # (evaluation-guidelines.md 7.2: "at most about 1.3%").
     assert round(exact_stats.plan_power(10, .5, .5), 4) == .0128
     assert exact_stats.plan_power(10, 0, 0) == 0
+
+
+def test_the_overview_prints_plan_power_for_its_grid_and_launch_counts():
+    """historical-evals.md rule 1 prints the round's power for witness rates 0.7-0.9 against
+    drops of 30, 40 and 50 points at 16, 24 and 32 launches per arm, and the fewest launches per
+    arm that reach 80%. Wrong versions: a grid computed at 15 per arm; a row left out; a count
+    one launch short of 80%."""
+    page = (REPO_ROOT / "docs/twwarhammer3/historical-evals.md").read_text()
+    rows = re.findall(r"^ *\| (\d+) \| (0\.\d) \| (0\.\d{3}) \| (0\.\d{3}) \| (0\.\d{3}) \|$",
+                      page, re.M)
+    grid = {(int(launches), float(rate)): [float(power) for power in powers]
+            for launches, rate, *powers in rows}
+    assert len(rows) == len(grid) == 9
+    assert sorted(grid) == [(launches, rate) for launches in (16, 24, 32) for rate in (.7, .8, .9)]
+    for (launches, rate), powers in grid.items():
+        assert powers == [round(exact_stats.plan_power(launches, rate, round(rate - drop, 2)), 3)
+                          for drop in (.3, .4, .5)], (launches, rate)
+    counts = re.findall(r"(\d+) for (0\.\d) against\s+(0\.\d)", page)
+    assert len(counts) == 4
+    for launches, rate_a, rate_b in counts:
+        powers = [exact_stats.plan_power(n, float(rate_a), float(rate_b))
+                  for n in range(1, int(launches) + 1)]
+        assert powers[-1] >= .8 > max(powers[:-1]), (launches, rate_a, rate_b)
+
+
+def test_boschloo_matches_scipy_boschloo_exact_on_vendored_tables():
+    """Wrong versions: one direction's p alone; fisher()'s conditional p returned as Boschloo's
+    (0.486 on the tea table, 0.073 on 10 of 16 against 4 of 16)."""
+    assert ({table: exact_stats.boschloo(*table) for table in BOSCHLOO_SCIPY}
+            == pytest.approx(BOSCHLOO_SCIPY, abs=1e-6))
+
+
+def test_boschloo_rejects_a_superset_of_fisher_within_five_percent_at_16_per_arm():
+    """Second look S4, whose region scipy reproduced: 134 of the 289 tables against Fisher's
+    122, every Fisher rejection included, and a worst false-pass rate over the 2001 common rates
+    of 0.0414, where Fisher's is 0.0202 at 0.5. Power at 0.7 against 0.2 is 0.823 (Fisher 0.740)."""
+    tables = [(a, b) for a in range(17) for b in range(17)]
+    fisher = {(a, b) for a, b in tables if exact_stats.fisher(a, 16, b, 16) < .05}
+    boschloo = {(a, b) for a, b in tables if exact_stats.boschloo(a, 16, b, 16) < .05}
+    assert (len(fisher), len(boschloo)) == (122, 134) and fisher < boschloo
+    sizes = [exact_stats.plan_power(16, rate, rate, test=exact_stats.boschloo)
+             for rate in (i / 2000 for i in range(2001))]
+    assert round(max(sizes), 4) == .0414
+    assert round(exact_stats.plan_power(16, .5, .5), 4) == .0202
+    assert round(exact_stats.plan_power(16, .7, .2, test=exact_stats.boschloo), 3) == .823
+
+
+def test_verdict_fixed_tries_every_completion_of_a_round():
+    """Rounds of 16 per arm. Wrong versions: a stop that tries only the all-won and all-lost
+    completions fires at 4 of 8 each, though 12 against 4 would still pass; one that tries
+    only each arm's all-won and all-lost fires when A has not played and B won 5 of 10, where
+    every such corner passes but 5 against 5 does not."""
+    fixed = exact_stats.verdict_fixed
+    assert not fixed(0, 0, 0, 0, 16)
+    assert not fixed(4, 8, 4, 8, 16)
+    assert not fixed(0, 0, 5, 10, 16)
+    assert fixed(12, 12, 0, 12, 16)  # every completion passes
+    assert fixed(5, 10, 5, 10, 16)  # none passes: 11 against 5 gives 0.076
+    assert fixed(3, 16, 9, 16, 16)
+    # Fisher passes no completion of 9 of 15 against 4 of 15; Boschloo passes 10 against 4.
+    assert fixed(9, 15, 4, 15, 16)
+    assert not fixed(9, 15, 4, 15, 16, test=exact_stats.boschloo)
 
 
 def test_gate_error_rates_match_the_guideline_table():

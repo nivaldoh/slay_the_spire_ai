@@ -59,7 +59,7 @@ MEN = {"wh_main_emp_cha_general_1": 1, "wh_main_emp_cav_empire_knights": 45,
        "wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears": 45,
        "wh3_dlc23_chd_cav_bull_centaurs_axe": 12, "wh3_dlc23_chd_inf_hobgoblin_cutthroats": 105}
 FLAGS = {"melee": "is_in_melee", "routing": "is_routing", "moving": "is_moving",
-         "running": "is_moving_fast", "idle": "is_idle"}
+         "running": "is_moving_fast", "idle": "is_idle", "under_fire": "is_under_missile_attack"}
 
 LUA = wh3_lua.runtime()
 LUA.execute("""
@@ -75,7 +75,7 @@ LUA.execute("""
                       number_of_men_alive = function() return men end,
                       initial_number_of_men = function() return men end}
         for _, flag in ipairs({"is_routing", "is_shattered", "is_in_melee", "is_moving",
-                               "is_idle", "is_moving_fast"}) do
+                               "is_idle", "is_moving_fast", "is_under_missile_attack"}) do
             local value = flags[flag] == true
             unit[flag] = function() return value end
         end
@@ -101,16 +101,30 @@ def record(identity, kind, x, z, *, men, flags=(), target=None, mine):
     return json.loads(CODEC.encode(UNIT_RECORD(identity, unit, mine, CLASS[kind])))
 
 
-def frame(time_s, changes, ids, order, last):
+@cache
+def starts(name):
+    """Label -> placement in declaration ``name``, which lists v1's units in v1's order, less the
+    Overseer in a lordless version."""
+    scenario = scenarios()[name]
+    labels = [label for label in FRIENDLY + ENEMY
+              if label != "overseer" or scenario["enemy"]["lord"]]
+    deployment = scenario["deployment"]
+    start = dict(zip(labels, deployment["friendly"] + deployment["enemy"], strict=True))
+    assert all(place["type"] == START[label]["type"] for label, place in start.items())
+    return start
+
+
+def frame(time_s, changes, ids, order, last, start=START):
     """The observation at ``time_s``: every unit at its declared start unless ``changes``
-    (label -> x, z, flags, target label, hidden, dead) says otherwise, with hidden sections
+    (label -> x, z, flags, target label, hidden, dead, men) says otherwise, with hidden sections
     shaped like a mailbox observation's that tell where every enemy is."""
     rows, roster, private = {"friendly": [], "enemy": []}, [], []
     for label in order:
-        place, change = START[label], changes.get(label, {})
+        place, change = start[label], changes.get(label, {})
         kind, mine = place["type"], label in FRIENDLY
         row = record(ids[label], kind, change.get("x", place["x"]), change.get("z", place["z"]),
-                     men=0 if change.get("dead") else MEN[kind], flags=change.get("flags", ()),
+                     men=0 if change.get("dead") else change.get("men", MEN[kind]),
+                     flags=change.get("flags", ()),
                      target=ids.get(change.get("target")), mine=mine)
         private.append({"id": row["id"], "type": kind, "x": row["x"], "z": row["z"],
                         "men": row["men"], "owner": "own" if mine else "enemy"})
@@ -211,9 +225,12 @@ def no_cue_battle(t):
 
 
 @cache
-def battle(events, end_s, ids=tuple(IDS.items()), order=FRIENDLY + ENEMY):
-    ids = dict(ids)
-    return tuple(frame(t, events(t), ids, order, t == end_s) for t in range(2, end_s + 1, 2))
+def battle(events, end_s, ids=tuple(IDS.items()), order=FRIENDLY + ENEMY, name=None):
+    """Observations every 2 s to ``end_s``, from v1's placements or declaration ``name``'s."""
+    ids, start = dict(ids), starts(name) if name else START
+    order = [label for label in order if label in start]
+    return tuple(frame(t, events(t), ids, order, t == end_s, start)
+                 for t in range(2, end_s + 1, 2))
 
 
 def cue():
@@ -312,6 +329,18 @@ def test_the_support_arm_differs_only_in_what_the_mounted_group_attacks_first():
         50: every(("attack", "centaurs")), 90: every(("attack", "cutthroats_a"))}
 
 
+@pytest.mark.parametrize("name", ["emp-chd-camp-lordless-v2", "emp-chd-camp-equidistant-v2"])
+def test_both_arms_give_v1s_orders_on_each_candidate_second_version(name):
+    # Camp-eval.md owner question 1: (a) drops the Overseer, (b) moves him 69 m west. No arm order
+    # in the cue battle names him, so from either version's placements each arm binds and gives
+    # v1's orders. Wrong versions: (a) still placing the Overseer; a candidate that drops another
+    # unit or lists v1's types in another order (starts refuses both).
+    observations = battle(cue_battle, 124, name=name)
+    assert ("overseer" in starts(name)) is (name == "emp-chd-camp-equidistant-v2")
+    for make in (camp.CampStrike, camp.CampSupport):
+        assert named(decisions(make(), observations)) == named(decisions(make(), cue()))
+
+
 def test_the_timing_controls_differ_only_in_when_the_mounted_group_starts():
     ids = set(IDS[label] for label in MOUNTED)
     # Each starts from the same spots as the witness, before the cue at 50 s or after it, so
@@ -369,10 +398,12 @@ def test_binding_is_by_type_and_start_never_by_id_or_list_order():
     for make in (camp.CampStrike, camp.CampSupport):
         shuffled = battle(cue_battle, 124, tuple(SHUFFLED.items()), tuple(LIST_ORDER))
         assert named(decisions(make(), shuffled), SHUFFLED) == named(decisions(make(), cue()))
-    short = deepcopy(cue()[0])
-    short["friendly"] = [unit for unit in short["friendly"] if unit["id"] != IDS["reiksguard"]]
-    with pytest.raises(PolicyFailure, match="ten placed units") as refused:
-        camp.CampStrike().decide(play.public(short, {}))
-    assert not play.is_forfeit(refused.value)  # the episode ends; the army does not just stand
+    # A type missing, and a type one short with the same set of types: counted, not a set.
+    for missing in ("reiksguard", "knights_b"):
+        short = deepcopy(cue()[0])
+        short["friendly"] = [unit for unit in short["friendly"] if unit["id"] != IDS[missing]]
+        with pytest.raises(PolicyFailure, match="ten placed units") as refused:
+            camp.CampStrike().decide(play.public(short, {}))
+        assert not play.is_forfeit(refused.value)  # the episode ends; the army does not stand
     for name in ("CampStrike", "CampSupport", "CampStrikeFixed", "CampStrikeNow"):
         assert controllers.controller_class(f"twwarhammer3.battle.camp:{name}").__name__ == name

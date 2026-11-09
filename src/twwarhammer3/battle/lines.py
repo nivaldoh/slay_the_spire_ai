@@ -25,13 +25,26 @@ ride round the line's end to REAR_M behind one of them, measured along the outer
 and charge, with calibration.HammerAnvil's cycle and values. Target keeping follows SMAC
 smac/env/starcraft2/starcraft2.py get_agent_action_heuristic (keep a target until it is
 unavailable), as cannae.py does.
+
+Options for owner question 4 in lines-eval.md, built beside the three arms on 2026-11-09 and in
+no plan until the owner picks them:
+- LinesNoCounterstroke (N) and LinesNoCounterstrokeByMen (NM): W and M with the Lancers kept on
+  their start leash, as in C, so the two differ only in the reserve's orders;
+- LinesCornerCamp: a control that stands the whole army in two ranks at CornerHold's corner post.
 Offline tests show what the scripts order, not what the engine does with the orders.
 """
 
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.calibration import SmallDiagnostic, _centre, _direction, _keep, _offset
+from twwarhammer3.battle.calibration import (
+    CornerHold,
+    SmallDiagnostic,
+    _centre,
+    _direction,
+    _keep,
+    _offset,
+)
 from twwarhammer3.battle.evidence_rules import ids_by_type, in_melee
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import PolicyFailure, visible_enemies
@@ -288,3 +301,78 @@ class LinesCentral(LinesWitness):
 
     arm = "C"
     rule = None
+
+
+# JUDGEMENT: Lines arms without the counterstroke — Claude, 2026-11-09 (owner question 4 (b), (c)):
+# N and NM keep the Lancers on C's start leash. Both riding to the first melee's side would also
+# leave only the reserve to differ; P1 under option (b) or (c) rests on it.
+class LinesNoCounterstroke(LinesWitness):
+    """N: the witness without rule 6; the Lancers keep their start posts on the leash, as in C."""
+
+    arm = "N"
+
+    def _lancers(self, riders, relief, enemies, melee):
+        return self._home(riders, enemies)
+
+
+class LinesNoCounterstrokeByMen(LinesNoCounterstroke):
+    """NM: N with men in place of lobby cost when it chooses the side."""
+
+    arm = "NM"
+    rule = "men"
+
+
+# JUDGEMENT: Lines corner camp — Claude, 2026-11-09 (owner question 4): CornerHold's post, then two
+# ranks of six by unit id, 40 m apart across, 130 and 100 m out. Another layout changes whether a
+# camp lasts to the timer; the stage 3a corner-camp control rests on it.
+CAMP_ACROSS_M = 40  # between neighbours in a rank, a regiment's declared width
+CAMP_FRONT_M = 130  # the front rank's distance from the post toward the map centre
+CAMP_DEPTH_M = 30  # and each later rank's distance behind the one before
+CAMP_RANK = 6  # units in a rank
+
+
+class LinesCornerCamp(CornerHold):
+    """Corner camp control: the whole army in two ranks across the nearest safe corner."""
+
+    card = {"purpose": "Can the army win the two-front defence at the timer by camping in a "
+                       "corner, without sending the reserve to either side?",
+            "knowledge": "CornerHold's post rule, from the public map bounds and blocked terrain "
+                         "cells, chosen once. The units, sorted by id once, stand in ranks of six "
+                         "facing the map centre, 40 m apart across; the front rank stands 130 m "
+                         "from the post toward the map centre and the next 30 m behind it, so on "
+                         "a square corner the back rank's ends touch the 30 m line along each "
+                         "edge. A unit in melee attacks the nearest enemy within 20 m and does "
+                         "not move. No elevation, path search or hidden state."}
+
+    def __init__(self):
+        super().__init__()
+        self.spots = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units:
+            return []
+        if self.corner is None:
+            self.corner = self.choose(observation.get("terrain") or {}, _centre(units), enemies)
+            if self.corner is None:
+                return []
+        if self.spots is None:
+            front = _direction(self.corner, self.middle)
+            ids = sorted(unit["id"] for unit in units)
+            self.spots = {identity: _offset(
+                self.corner, front, CAMP_FRONT_M - CAMP_DEPTH_M * (index // CAMP_RANK),
+                CAMP_ACROSS_M * (index % CAMP_RANK - (CAMP_RANK - 1) / 2))
+                for index, identity in enumerate(ids)}
+        orders = []
+        for unit in units:
+            if "melee" in unit.get("state", []):
+                near = min(enemies, key=lambda enemy: distance(unit, enemy), default=None)
+                if near and distance(unit, near) <= 20:
+                    orders += self.attack(unit, near)
+                continue
+            if unit["id"] in self.spots:
+                orders += self.move(unit, self.spots[unit["id"]], self.middle)
+        return orders
+
+    def metadata(self):
+        return {"type": "lines_corner_camp", "corner": self.corner}

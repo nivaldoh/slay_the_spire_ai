@@ -223,13 +223,20 @@ def test_an_ablation_counts_on_the_designs_decision_cues_not_on_its_rules_trigge
     short = placed(battle(), "e2", -44, -130, range(80, 100))
     assert cues(wall_defence.WFire, short)[0]["fire_ms"] == 80000
     assert cues(wall_defence.WFire, short)[1]["fire_ms"] == 100000  # e3 inside
-    # Eight more units seen 250 m out leave only 6 roster units never within 300 m: no cue.
-    crowd = battle()
-    for number in range(6, 14):
-        placed(crowd, f"e{number}", -200 + 40 * number, -280, range(30, 136))
-    assert cues(wall_defence.WFire, crowd) == (
-        {"fire_ms": None, "reserve_ms": 105000, "fallback_ms": 120000},
-        {"fire_ms": 80000, "breach_ms": 105000, "fallback_ms": 120000})
+    # Four more units seen 200-250 m out leave exactly CUE_FAR_UNITS (10) roster units never
+    # within 300 m, still the cue; a fifth leaves 9, and no cue.
+    for extra, fire_ms in ((4, 80000), (5, None)):
+        crowd = battle()
+        for number in range(6, 6 + extra):
+            placed(crowd, f"e{number}", -200 + 40 * number, -280, range(30, 136))
+        assert cues(wall_defence.WFire, crowd) == (
+            {"fire_ms": fire_ms, "reserve_ms": 105000, "fallback_ms": 120000},
+            {"fire_ms": 80000, "breach_ms": 105000, "fallback_ms": 120000})
+    # e6, first seen at 25 s inside the line at (0, 300), 323 m north of it, has crossed it: it
+    # is the cue then, though farther from the line than CUE_FAR_M (rests on JUDGEMENT?
+    # wall_defence.py Ablation cues).
+    deep = placed(battle(), "e6", 0, 300, (25,))
+    assert cues(wall_defence.WFire, deep)[0]["fire_ms"] == 25000
     # Decision 2: e3 and e4 inside together for two decisions are the design's reversal case,
     # not its cue; e6, inside routing at 110 s and rallied at 115 s, is not yet confirmed; e4
     # alone inside for two decisions from 130 s is the cue.
@@ -240,12 +247,82 @@ def test_an_ablation_counts_on_the_designs_decision_cues_not_on_its_rules_trigge
     assert cues(wall_defence.WReserve, double)[1]["breach_ms"] == 105000
 
 
+@pytest.mark.parametrize("z,fire_ms", [(-140, 80000), (-142, 100000)])
+def test_fire_at_will_turns_on_within_60_m_of_the_wall_line_and_not_beyond(z, fire_ms):
+    # e2 halts straight below c3 from 80 s, 59 m or 61 m from the wall line; e3 is inside at 100 s.
+    observations = placed(battle(), "e2", 188, z, range(80, 100))
+    policy = wall_defence.WallWitness()
+    orders = named(decisions(policy, observations), observations)
+    assert policy.metadata()["triggers"]["fire_ms"] == fire_ms
+    assert (orders.get(80) == sorted(fire(True))) is (fire_ms == 80000)
+
+
+def test_builds_stay_within_the_supplies_across_slots():
+    # Every option costs 500 or more, so 1,000 supplies buy exactly two towers; decisions() checks
+    # the batch with validate_orders, which refuses one that costs more than the supplies.
+    observation = frame(5)
+    observation["mode"]["supplies"] = 1000
+    batch, = decisions(wall_defence.WallWitness(), [observation])
+    assert [order["slot"] for order in batch if order["type"] == "build"] == ["s1", "s2"]
+
+
+def test_a_build_the_engine_refused_is_ordered_again_at_the_next_decision():
+    policy = wall_defence.WallWitness()
+    first = policy.decide(play.public(frame(5), {}))
+    policy.acknowledge({"request": "r1", "results": [
+        {"index": index, "unit": order["unit"], "ok": order.get("slot") != "s1"}
+        for index, order in enumerate(first, 1)]}, {})
+    again = policy.decide(play.public(frame(10), {}))
+    assert [order["slot"] for order in again if order["type"] == "build"] == ["s1"]
+    assert policy.metadata()["builds_accepted"] == [f"s{n}" for n in range(2, 9)]
+
+
+def test_the_fallback_is_kept_when_the_gatehouse_is_retaken():
+    # c2 is ours again from 125 s. The reserve rule, which stops at the fallback, must not send
+    # the reserve back to c7. Unchanged orders are not resent within RETRY_MS, so nothing here
+    # asks for the fallback orders again.
+    observations = battle()
+    for observation in observations:
+        if observation["time_ms"] >= 125000:
+            observation["mode"]["capture_points"][1]["holder"] = "us"
+    policy = wall_defence.WallWitness()
+    orders = named(decisions(policy, observations), observations)
+    assert policy.metadata()["fallback_reason"] == "gatehouse"
+    assert not [row for second, rows in orders.items() if second > 120 for row in rows
+                if row[0] in RESERVE and row[1:] == ("move", C7)]
+
+
+def test_a_kept_target_is_not_replaced_by_a_nearer_enemy_while_it_stays_able():
+    # The reserve attacks e3 at 105 s. At 110 s e3 is still inside and e6, nearer c7, has been
+    # inside for two decisions as well: the reserve keeps e3, so it gets no new order.
+    observations = placed(battle(), "e3", -4, 0, (110,))
+    placed(observations, "e6", -4, 60, (105, 110))
+    orders = named(decisions(wall_defence.WallWitness(), observations), observations)
+    assert [row for row in orders[105] if row[0] in RESERVE] == [
+        (label, "attack", "e3") for label in sorted(RESERVE)]
+    assert not [row for row in orders.get(110, []) if row[0] in RESERVE]
+    # After the fallback every unit attacks e4 at 130 s, 51 m from c1. At 135 s e7 stands 95 m
+    # from c1 and nearer most units than e4 is: they keep e4.
+    observations = placed(battle(), "e7", 0, 215, (135,))
+    orders = named(decisions(wall_defence.WallWitness(), observations), observations)
+    assert orders[130] == sorted(fire(True) + [(label, "attack", "e4") for label in LABELS])
+    assert 135 not in orders
+
+
 def test_the_reserve_holds_its_place_while_an_unconfirmed_enemy_is_inside():
     # e3 dies at 110 s as e6 comes inside: the reserve stays where it is (it goes back to c7
     # only once no visible enemy is inside), then attacks e6 at its second decision inside.
     observations = placed(battle(), "e6", -30, 0, (110, 115), kind="wh_main_emp_inf_swordsmen")
     orders = named(decisions(wall_defence.WallWitness(), observations), observations)
     assert 110 not in orders
+    assert [row for row in orders[115] if row[0] in RESERVE] == [
+        (label, "attack", "e6") for label in sorted(RESERVE)]
+    # The same with e6 routing at 110 s: a routing enemy inside is still an enemy inside, so the
+    # reserve stays, and once e6 rallies at 115 s it has been inside two decisions in a row.
+    observations = placed(battle(), "e6", -30, 0, (110,), SPEAR, "routing")
+    placed(observations, "e6", -30, 0, (115,))
+    orders = named(decisions(wall_defence.WallWitness(), observations), observations)
+    assert orders[110] == sorted(fire(False))
     assert [row for row in orders[115] if row[0] in RESERVE] == [
         (label, "attack", "e6") for label in sorted(RESERVE)]
 

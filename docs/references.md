@@ -173,6 +173,16 @@ nothing rests on the source. "The adaptation agent" ran the first of each design
 - SciPy `scipy.stats.fisher_exact` (`scipy/stats/_stats_py.py`, 1.18.1): the classic two-sided
   p-value and its relative tolerance of 1e-14, which `exact_stats.fisher` follows; the tests'
   other Fisher values agree with it. Read (its source).
+- SciPy `scipy.stats.boschloo_exact` (`scipy/stats/_hypotests.py`, 1.18.1): Boschloo's exact
+  unconditional test. `exact_stats.boschloo`, an option for the owner beside Fisher (second look
+  of 2026-11-09, owner question 4(b)), follows its two-sided p: tables ordered by Fisher's
+  one-sided p, and twice the smaller one-sided p. It searches the common rate on a 2001-point
+  grid where SciPy uses an optimizer, and ranks tables by exact integer ratios, so it needs no
+  tie tolerance. The tests' 16 Boschloo values come from SciPy in miniconda, which the locked
+  environment does not include. Read (its source).
+- R. D. Boschloo, "Raised conditional level of significance for the 2 x 2-table when testing the
+  equality of two probabilities", *Statistica Neerlandica* 24(1) (1970): the test itself, cited
+  by `scipy.stats.boschloo_exact`. Not read; nothing rests on the paper beyond SciPy's code.
 - statsmodels `confint_proportions_2indep(method="newcomb")` (`statsmodels/stats/proportion.py`,
   0.15.0): a second implementation of the Newcombe interval; the tests' other intervals agree
   with it. Read.

@@ -6,6 +6,7 @@ Reference: final-alesia.md "Witness and its arms" and deciding check 8 in runs/s
 what the scripts order on made-up positions, not what the engine or the native AI does with them.
 """
 
+import itertools
 import math
 from copy import deepcopy
 
@@ -13,7 +14,7 @@ import pytest
 import wh3_ablation
 from wh3_ablation import assert_ablation
 
-from twwarhammer3.battle import lines, play, setup
+from twwarhammer3.battle import calibration, lines, play, setup
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 A = setup.scenarios()["ksl-nor-lines-a-v1"]
@@ -34,6 +35,7 @@ HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_ber
 # Unit ids follow declaration order: f4 the Boyar, f5 the Tzar Guard, f6 and f7 the Lancers,
 # f8 and f9 the west sector, e5 and e6 the case-a Champions.
 MOVERS = {"f4", "f5", "f6", "f7"}
+RESERVE, LANCERS = {"f4", "f5"}, {"f6", "f7"}
 POSTS = {"west": {"x": 35, "z": -265}, "east": {"x": 225, "z": -265}}
 BOYAR_POSTS = {"west": {"x": 35, "z": -250}, "east": {"x": 225, "z": -250}}
 WAYPOINTS = {"west": {"x": -100, "z": -305}, "east": {"x": 360, "z": -305}}
@@ -305,6 +307,35 @@ def test_the_side_is_chosen_only_once_six_enemies_stand_ahead_of_the_outer_line(
     assert reserve[0] == [] and at(POSTS["west"], reserve[1][0])
 
 
+def test_a_tie_chooses_no_side_and_the_cue_counts_every_enemy_ahead():
+    """Six relief units ahead, in pairs of one type on each side (1,400 by cost and 248 men a
+    side), choose no side for W or M. Six enemies ahead, two of them first seen 35 m ahead and
+    so not relief units, are enough for W to choose the west's two Champions (2,000) over the
+    east's two Spearmen (850). Wrong versions: a tie that picks a side; a cue that counts only
+    relief units."""
+    first, later = battle(A)[:2]
+    tie = deepcopy(later)
+    kinds = {unit["id"]: unit["type"] for unit in tie["enemy"]}
+    for west, east in (("e5", "e9"), ("e6", "e10"), ("e7", "e11")):
+        kind = kinds[east]
+        next(u for u in tie["enemy"] if u["id"] == west).update(type=kind, men=MEN[kind],
+                                                                men0=MEN[kind])
+    tie["enemy"] = [unit for unit in tie["enemy"] if unit["id"] not in ("e8", "e12")]
+    for arm in (lines.LinesWitness, lines.LinesByMen):
+        policy = arm()
+        for observation in (first, tie):
+            policy.decide(deepcopy(observation))
+        assert policy.metadata()["side"] is None, arm
+    near, ahead = deepcopy(first), deepcopy(later)
+    near["enemy"] += [dict(unit, z=-330) for unit in later["enemy"] if unit["id"] in ("e7", "e8")]
+    ahead["enemy"] = [dict(unit, z=-400) if unit["id"] in ("e7", "e8") else unit
+                      for unit in ahead["enemy"] if unit["id"] not in ("e11", "e12")]
+    policy = lines.LinesWitness()
+    for observation in (near, ahead):
+        policy.decide(deepcopy(observation))
+    assert policy.metadata()["side"] == "west"
+
+
 def test_lancers_wait_for_two_engaged_relief_units_then_ride_round_the_end_and_charge():
     """With the west chosen, the Lancers hold while one west relief unit and two town-side units
     west of the split are in melee (rests on JUDGEMENT? lines.py Relief membership). Once two
@@ -313,7 +344,8 @@ def test_lancers_wait_for_two_engaged_relief_units_then_ride_round_the_end_and_c
     120 m from the nearest enemy after 8 s of melee. They ride again after 10 s once no enemy is
     within 80 m, else after 20 s. Wrong versions: Lancers that ride at the side choice or count
     town-side melee; a target by list order; a rear point beside the target or in front of it;
-    a charge or a withdrawal that never ends; a withdrawal that ignores the enemies near it."""
+    a charge or a withdrawal that never ends; a withdrawal that ignores the enemies near it; an
+    8 s clock that starts at the charge, so a charge with no rider in melee for 8 s ends."""
     start = battle(A)[:2]
     spots = {"e5": (5, -298), "e6": (55, -298)}  # 30 m and 20 m from the sector centre (35, -295)
 
@@ -340,8 +372,9 @@ def test_lancers_wait_for_two_engaged_relief_units_then_ride_round_the_end_and_c
     steps = [step(policy, frame(5, ("e1", "e2", "e5"))), step(policy, frame(7, both)),
              step(policy, frame(9, both, (-95, -300)))]
     rear = steps[2][1][0]
-    steps += [step(policy, frame(11, both, (rear["x"], rear["z"]))),
-              step(policy, frame(13, both, (55, -303), True)),
+    steps.append(step(policy, frame(11, both, (rear["x"], rear["z"]))))
+    idle = deepcopy(policy)  # charging from 11 s with no rider in melee
+    steps += [step(policy, frame(13, both, (55, -303), True)),
               step(policy, frame(21, both, (55, -303), True))]
     assert [phase for phase, _ in steps] == ["wait", "side", "rear", "charge", "charge",
                                               "withdraw"]
@@ -351,6 +384,7 @@ def test_lancers_wait_for_two_engaged_relief_units_then_ride_round_the_end_and_c
     assert [(o["type"], o["target"]) for o in steps[3][1]] == [("attack", "e6")] * 2
     retreat = steps[5][1][0]
     assert retreat["type"] == "move" and at({"x": 55, "z": -418}, retreat)
+    assert step(idle, frame(19, both, (55, -340)))[0] == "charge"
     clear, near = deepcopy(policy), policy  # riders 159 m from any enemy, or at the retreat point
     assert step(clear, frame(29, both, (-120, -200)))[0] == "withdraw"
     phase, given = step(clear, frame(31, both, (-120, -200)))
@@ -380,3 +414,47 @@ def test_the_side_switches_only_once_the_other_side_leads_by_30_percent():
         reserve.append([order for order in orders if order["unit"] == "f5"])
     assert sides == ["west", "east"]
     assert reserve[0] == [] and at(POSTS["east"], reserve[1][0])
+
+
+def test_the_arms_without_the_counterstroke_differ_only_in_the_reserve():
+    """Owner question 4 (b) and (c): N and NM keep the Lancers on their start leash, so they
+    differ only in the Boyar's and the Tzar Guard's orders, and N differs from W, and NM from M,
+    only in the Lancers' orders (so each keeps its arm's side). The built W and M fail the
+    reserve-only check, since their Lancers follow the chosen side. With the Lancers 30 m off
+    their posts, N gives them C's orders back to the posts. Wrong versions: N or NM Lancers that
+    follow the side; NM's rule flag unwired; an N whose reserve leaves W's; N's Lancers given no
+    orders."""
+    observations = battle(A)
+    assert assert_ablation(lines.LinesNoCounterstroke, lines.LinesNoCounterstrokeByMen,
+                           observations, units=RESERVE)
+    with pytest.raises(AssertionError, match="outside units"):
+        assert_ablation(lines.LinesWitness, lines.LinesByMen, observations, units=RESERVE)
+    for arm, without in ((lines.LinesWitness, lines.LinesNoCounterstroke),
+                         (lines.LinesByMen, lines.LinesNoCounterstrokeByMen)):
+        assert assert_ablation(arm, without, observations, units=LANCERS)
+    pushed = deepcopy(observations)
+    for observation in pushed[1:]:
+        for unit in observation["friendly"]:
+            if unit["id"] in LANCERS:
+                unit["z"] += 30
+    assert first_move(run(lines.LinesCentral, pushed)[1], "f6")
+    assert assert_ablation(lines.LinesCentral, lines.LinesNoCounterstroke, pushed, units=RESERVE)
+
+
+def test_the_corner_camp_takes_cornerholds_post_and_spreads_the_army():
+    """Owner question 4's corner-camp control takes the post CornerHold takes on the same
+    observations, both with the relief out of sight at the first decision and with all 12
+    enemies in sight, as check 5 expects (the post nearer the army than the enemy is then the
+    other corner). It sends all 12 units to spots no two of which lie within 20 m; play's order
+    checks accept every batch. Wrong versions: CornerHold's own spots (every unit on one of two
+    points 32 m apart); ranks behind the post, which the 30 m map margin squeezes together; a
+    post chosen without the visible enemy."""
+    for observations, post in ((battle(A), {"x": 482, "z": -482}),
+                               (battle(A)[1:], {"x": 482, "z": 482})):
+        policy, decisions = run(lines.LinesCornerCamp, observations)
+        corner = run(calibration.CornerHold, observations)[0].metadata()["corner"]
+        assert policy.metadata()["corner"] == corner == post
+        moves = [order for order in decisions[0] if order["type"] == "move"]
+        assert sorted(order["unit"] for order in moves) == sorted(f"f{i}" for i in range(1, 13))
+        assert min(math.dist((a["x"], a["z"]), (b["x"], b["z"]))
+                   for a, b in itertools.combinations(moves, 2)) >= 20

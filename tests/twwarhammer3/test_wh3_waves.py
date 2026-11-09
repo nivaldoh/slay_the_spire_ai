@@ -189,6 +189,9 @@ def broken(change):
     (broken(lambda s, g: g.append({"slots": [], "types": [], "release_ms": 500000})),
      "one declared type per slot"),
     (broken(lambda s, g: s["reserve"].update(version=2)), "unsupported waves profile"),
+    (broken(lambda s, g: s["reserve"].update(seed="7")), "unsupported waves profile"),
+    (broken(lambda s, g: s.update(custom={"kind": "battery_evacuation", "version": 1})),
+     "unsupported waves profile"),
 ])
 def test_a_profile_that_would_hold_the_wrong_units_or_times_is_refused(entry, message):
     with pytest.raises(ValueError, match=message):
@@ -285,11 +288,15 @@ def evidence(lua):
     return json.loads(codec(lua).encode(lua.globals().state["reserve"]["evidence"]))
 
 
-def observation(lua):
-    """What reserve.check reads of an observation carrying this Lua's evidence."""
-    return {"setup": {"reserve": {"ok": True}}, "evaluation": {"reserve": evidence(lua)},
-            "enemy_roster": [{"id": f"e{index}", "type": kind}
-                             for index, kind in enumerate(SCENARIO["enemy"]["units"], 1)]}
+def observation(lua, ms=None):
+    """What reserve.check reads of an observation carrying this Lua's evidence, with time_ms ms
+    when given."""
+    result = {"setup": {"reserve": {"ok": True}}, "evaluation": {"reserve": evidence(lua)},
+              "enemy_roster": [{"id": f"e{index}", "type": kind}
+                               for index, kind in enumerate(SCENARIO["enemy"]["units"], 1)]}
+    if ms is not None:
+        result["time_ms"] = ms
+    return result
 
 
 def ticks(tick, start_ms, stop_ms):
@@ -314,7 +321,7 @@ def test_setup_takes_and_halts_exactly_the_held_groups_by_slot_and_type():
         for slot, kind in zip(slots, DIVISIONS[group + 1], strict=True)]
     assert [u["id"] for u in units] == [identity for group in BOUND.values()
                                         for identity in group]
-    assert reserve.check(scenario(), observation(lua))["units"] == units
+    assert reserve.check(scenario(), observation(lua, 1000))["units"] == units
 
 
 def test_each_group_is_released_at_its_time_and_not_a_tick_earlier():
@@ -334,7 +341,7 @@ def test_each_group_is_released_at_its_time_and_not_a_tick_earlier():
         (1, "time", 150000), (2, "time", 300000), (3, "time", 450000)]
     # Positions as the engine gives them (the fake puts unit e<i> at x = 10 i, z = -500).
     assert records[0]["units"][0] == {"id": "e10", "x": 100, "z": -500, "men": 90}
-    reserve.check(scenario(), observation(lua))
+    reserve.check(scenario(), observation(lua, 450000))
 
 
 @pytest.mark.parametrize("hit", ["men", "fire"])
@@ -356,7 +363,10 @@ def test_damage_to_one_held_group_releases_only_that_group(hit):
     assert released(lua) == set(BOUND[2])
     tick(150000)
     assert released(lua) == set(BOUND[1]) | set(BOUND[2])
-    reserve.check(scenario(), observation(lua))
+    reserve.check(scenario(), observation(lua, 150000))
+    # Past group 2's own 300 s, its damage release still counts as its release.
+    tick(300000)
+    reserve.check(scenario(), observation(lua, 300000))
 
 
 def test_a_destroyed_held_unit_is_not_released_and_its_group_is():
@@ -391,12 +401,13 @@ def test_an_unreadable_damage_getter_is_an_error_never_no_damage(reading):
     assert record["group"] == 2 and record["ok"] is False and "reason" not in record
     assert "unreadable waves" in record["error"]
     with pytest.raises(ProtocolError, match="reserve release failed"):
-        reserve.check(scenario(), observation(lua))
+        reserve.check(scenario(), observation(lua, 1000))
 
 
 @pytest.mark.parametrize("mode,native_mp,version,error", [
     ("observe", False, 3, None), (None, False, 3, None),
     ("control", False, 3, "observer session"), ("observe", True, 3, "single-player battle"),
+    ("observe", None, 3, "single-player battle"),  # is_multiplayer unreadable
     ("observe", False, 2, "plain single-player")])
 def test_waves_also_run_under_the_owners_observer_session_and_versions_1_2_do_not(
         mode, native_mp, version, error):
@@ -424,10 +435,21 @@ def test_a_slot_the_mod_cannot_bind_leaves_no_unit_held():
     assert len(lua.globals().controllers) == 0 and lua.globals().state["reserve"] is None
 
 
+def test_the_mod_refuses_waves_beside_a_custom_objective():
+    # Python refuses such a scenario first ("unsupported waves profile" above).
+    lua, setup_reserve, _, _ = engine(SCENARIO["reserve"])
+    lua.globals().session["custom"] = lua.table_from({"kind": "battery_evacuation"})
+    with pytest.raises(Exception, match="without a custom objective"):
+        setup_reserve()
+    assert len(lua.globals().controllers) == 0
+
+
 def test_the_evidence_check_refuses_a_hold_bound_or_released_wrongly():
+    """Wrong versions of the overdue rule: `>` for `>=` (the 450 s case) and the rule applied to
+    the result observation, which finish() writes after tick_reserve has stopped."""
     lua, tick = start()
     tick(150000)
-    good = observation(lua)
+    good = observation(lua, 150000)
     assert reserve.check(scenario(), good)
 
     def damaged(change):
@@ -445,7 +467,12 @@ def test_the_evidence_check_refuses_a_hold_bound_or_released_wrongly():
             lambda o, e: e["units"].reverse(),
             lambda o, e: e["releases"].append(deepcopy(e["releases"][0])),
             lambda o, e: e["releases"][0].update(released_ms=149750),
-            lambda o, e: e["releases"][0].update(reason="arrived")):
+            lambda o, e: e["releases"][0].update(reason="arrived"),
+            # A mod that would release group 1 for time only at 400 s: the first observation
+            # after 150 s lacks the release.
+            lambda o, e: (o.update(time_ms=150300), e["releases"].clear()),
+            lambda o, e: e["releases"][0].update(reason="damage"),  # no damaged unit named
+            lambda o, e: e["releases"][0].update(reason="damage", damaged=[])):
         with pytest.raises(ProtocolError, match="reserve"):
             reserve.check(scenario(), damaged(change))
     no_damage = scenario()
@@ -455,6 +482,12 @@ def test_the_evidence_check_refuses_a_hold_bound_or_released_wrongly():
     shot["evaluation"]["reserve"]["releases"][0]["reason"] = "damage"
     with pytest.raises(ProtocolError, match="released as 'damage'"):
         reserve.check(no_damage, shot)
+    # Groups 1 and 2 released, group 3 due at 450 s and still held.
+    tick(300000)
+    for ms in (450000, 460000):
+        with pytest.raises(ProtocolError, match="group 3 still held"):
+            reserve.check(scenario(), observation(lua, ms))
+    assert reserve.check(scenario(), {**observation(lua, 460000), "result": "won"})
 
 
 # What no controller input may hold: the scenario's withheld names, the profile's keys and

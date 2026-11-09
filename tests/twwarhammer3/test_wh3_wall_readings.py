@@ -14,7 +14,7 @@ import json
 
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
-from wh3_helmgart import MODE
+from wh3_helmgart import MODE, first_observation
 
 from twwarhammer3.battle import play, setup, wall_defence, wall_readings
 from twwarhammer3.battle.scripted import Hold
@@ -51,6 +51,31 @@ def test_holder_times_and_ticket_onset_match_the_recorded_hold_baseline(attacker
     assert wall_readings.ticket_onset(observations) == 700300
 
 
+def test_the_gate_c2_and_fallback_times_come_from_the_observations_and_the_witness_trace(tmp_path):
+    """Helmgart fixture observations shaped like the hold baseline: the gate first below 100 at
+    70.9 s, then hp 0 with destroyed false from 258.4 s, and c2 enemy-held from 336.7 s, played by
+    WallWitness through play.play_episode. Wrong version: the gate read by ``destroyed``."""
+    rows = []
+    for seq, time_ms, hp, holder in ((1, 5200, 100, "us"), (2, 70900, 97, "us"),
+                                     (3, 258400, 0, "us"), (4, 336700, 0, "enemy"),
+                                     (5, 340000, 0, "enemy")):
+        row = {**first_observation(job="job"), "seq": seq, "time_ms": time_ms, "ack": seq > 1}
+        row["mode"]["gates"][0].update(hp=hp, destroyed=False)
+        row["mode"]["capture_points"][1]["holder"] = holder
+        if seq > 1:
+            row.pop("setup")
+        if seq == 5:
+            row.update(result="lost", final={"friendly": {"men": 50, "men0": 734},
+                                             "enemy": {"men": 900, "men0": 1463}})
+        rows.append(row)
+    play.play_episode(tmp_path / "episode", {**CONFIG, "interval_ms": 0},
+                      wall_defence.WallWitness, FakeMailbox(rows), not_battle=None, scenario={})
+    lines = (tmp_path / "episode/trace.jsonl").read_text().splitlines()
+    trace = [json.loads(line) for line in lines]
+    assert wall_readings.gate_timeline(rows, trace) == {
+        "gate_ms": 258400, "c2_ms": 336700, "fallback_ms": 258400, "fallback_reason": "gate"}
+
+
 LINE = wall_defence.wall_line({point["id"]: point for point in MODE["capture_points"]})
 
 
@@ -77,18 +102,26 @@ def test_a_division_is_first_seen_in_the_public_enemy_list_never_the_private_rec
 def test_ammunition_is_read_at_each_divisions_first_approach_within_150_m_of_the_wall():
     archers = {"id": "f5", "x": -55, "z": -23, "ammo": 22, "ammo0": 22, "range": 140}
     observations = []
-    for time_ms, ammo, z in ((100000, 22, -235), (105000, 15, -230), (110000, 9, -200)):
+    for time_ms, ammo, z in ((100000, 22, -235), (105000, 15, -230), (110000, 9, -200),
+                             (112500, 6, -176)):
         observations.append({"time_ms": time_ms,
                              "friendly": [{**archers, "ammo": ammo},
                                           {"id": "f1", "x": 0, "z": 0, "ammo": 0, "ammo0": 0}],
                              "enemy": [unit("e10", -4, z)]})
-    # At x = -4 the line is at z -22.8, so e10 stands about 212, 207, 177, then 147 m from it.
-    observations.append({**copy.deepcopy(observations[-1]), "time_ms": 115000,
-                         "enemy": [unit("e10", -4, -170)]})
-    observations[-1]["friendly"][0]["ammo"] = 4
-    result = wall_readings.approach_ammunition(observations, {"D2": ["e10"], "D3": ["e12"]},
-                                               LINE)
-    assert result == {"D2": {"time_ms": 115000, "ammo": 4, "ammo0": 22}, "D3": None}
+    # e10 stands about 210, 205, 175, 151.7, 145.8, then 135.9 m from the wall line: the first
+    # approach is at 115,000 ms, and the later one does not replace it.
+    for time_ms, ammo, z in ((115000, 4, -170), (120000, 0, -160)):
+        observations.append({**copy.deepcopy(observations[-1]), "time_ms": time_ms,
+                             "enemy": [unit("e10", -4, z)]})
+        observations[-1]["friendly"][0]["ammo"] = ammo
+    # D4's e15 is first seen at 120,000 ms already inside the line at (-4, 150), about 173 m
+    # north of it: that is its approach, however far it stands from the line (rests on
+    # JUDGEMENT? wall_readings.py Approach distance).
+    observations[-1]["enemy"].append(unit("e15", -4, 150))
+    result = wall_readings.approach_ammunition(
+        observations, {"D2": ["e10"], "D3": ["e12"], "D4": ["e15"]}, LINE)
+    assert result == {"D2": {"time_ms": 115000, "ammo": 4, "ammo0": 22}, "D3": None,
+                      "D4": {"time_ms": 120000, "ammo": 0, "ammo0": 22}}
 
 
 SQUARE = [(-100, -40), (100, -40), (100, 100), (-100, 100)]
@@ -110,16 +143,55 @@ def test_a_breach_is_an_on_wall_reading_or_two_frames_inside_the_private_polygon
                                                      "by": "on_wall"}
 
 
+def private_unit(identity, x, z, men=90, **flags):
+    """A unit of a private-record frame, every field record_private writes (capture.py)."""
+    return {"id": identity, "type": "wh_main_emp_inf_swordsmen", "x": x, "y": 0.0, "z": z,
+            "men": men, "routing": False, "shattered": False, "melee": False, "hidden": False,
+            "on_wall": False, "climbing": False, "visible": False, "ammo": 0, "ammo0": 0, **flags}
+
+
+def private_frame(time_ms, enemy, friendly=()):
+    return {"private_record": 1, "job": "job", "battle": "b1", "time_ms": time_ms,
+            "friendly": list(friendly), "enemy": enemy, "sample_cpu_ms": 0.4}
+
+
+def test_a_divisions_men_lost_are_counted_until_one_of_its_units_reads_melee_or_on_wall():
+    """Private-record frames by hand. Wrong versions: losses counted after the first melee; the
+    melee flag of a unit with no men left read as contact (the flag outlives the men); a cut-off
+    per unit, which counts e3's losses after e1's contact."""
+    def frame(second, d1, d2, d3):
+        return private_frame(1000 * second, [
+            *(private_unit(f"e{slot}", 40 * slot, -300, men, **flags)
+              for slot, (men, flags) in enumerate(d1, 1)),
+            private_unit("e5", 0, -530, d2[0], **d2[1]), private_unit("e9", 0, -595, d3)])
+
+    calm = {}
+    frames = [frame(1, ((90, calm), (90, calm), (90, calm)), (90, calm), 90),
+              frame(2, ((85, calm), (90, calm), (90, calm)), (90, calm), 90),
+              frame(3, ((80, calm), (0, {"melee": True}), (90, calm)), (88, calm), 90),  # e2 shot
+              frame(4, ((70, {"melee": True}), (0, {"melee": True}), (90, calm)), (88, calm), 85),
+              # e3, still on the approach, loses 30 men after e1's contact.
+              frame(5, ((50, {"melee": True}), (0, calm), (60, calm)), (85, {"on_wall": True}), 80)]
+    divisions = {"D1": ["e1", "e2", "e3"], "D2": ["e5"], "D3": ["e9"]}
+    assert wall_readings.division_missile_losses(frames, divisions) == {
+        "D1": {"men_lost": 100, "contact_ms": 4000}, "D2": {"men_lost": 2, "contact_ms": 5000},
+        "D3": {"men_lost": 10, "contact_ms": None}}
+
+
 def test_damage_releases_are_read_from_the_trace_play_writes(tmp_path):
     """The rows are the trace.jsonl that play.play_episode writes for hand-made observations
-    carrying waves evidence in the mod's shape. Wrong version: the releases read from the last
-    row's or the last logged view's ``evaluation``, which play's views never carry."""
+    carrying waves evidence in the mod's shape. Wrong versions: the releases read from the last
+    row's or the last logged view's ``evaluation``, which play's views never carry; the distance
+    to the nearest garrison unit in place of D1's."""
     profile = setup.scenarios()["cth-emp-siege-a-v1"]["reserve"]
     held = [{"group": number, "slot": slot, "type": kind, "id": f"e{slot}"}
             for number, group in enumerate(profile["groups"], 1)
             for slot, kind in zip(group["slots"], group["types"], strict=True)]
+    # e11 lost a man; e12 was only flagged under missile attack; e13 was flagged and lost men.
     shot = {"group": 2, "reason": "damage", "released_ms": 40250, "ok": True,
-            "damaged": [{"id": "e11", "men": 89, "men0": 90, "under_fire": False}],
+            "damaged": [{"id": "e11", "men": 89, "men0": 90, "under_fire": False},
+                        {"id": "e12", "men": 90, "men0": 90, "under_fire": True},
+                        {"id": "e13", "men": 80, "men0": 90, "under_fire": True}],
             "units": [{"id": f"e{slot}", "x": x, "z": -595, "men": 90}
                       for slot, x in zip(range(9, 14), (-20, 10, 100, 130, 160), strict=True)]}
     on_time = {"group": 1, "reason": "time", "released_ms": 150000, "ok": True,
@@ -151,7 +223,23 @@ def test_damage_releases_are_read_from_the_trace_play_writes(tmp_path):
     assert not any("evaluation" in view for view in views)
     # The view at 40,000 ms, before the release at 40,250, has the cannon 435 m from e11.
     assert wall_readings.damage_releases(trace) == [
-        {"group": 2, "time_ms": 40250, "damaged": ["e11"], "friendly_in_range": ["f9"]}]
+        {"group": 2, "time_ms": 40250, "damaged": ["e11", "e12", "e13"],
+         "friendly_in_range": ["f9"]}]
+    # In the frame at 40,000 ms, the last before the release, the nearest D1 unit with men left
+    # is e3, 272.6 m from e11; dead e2 stands 35 m from it and the cannon 435 m. By 41,000 ms e3
+    # has come within 25 m.
+    held_units = [private_unit(f"e{slot}", x, -595) for slot, x in
+                  zip(range(9, 14), (-20, 10, 100, 130, 160), strict=True)]
+    garrison = [private_unit("f9", 100, -160), private_unit("f5", -55, -23)]
+    frames = [private_frame(40000, [private_unit("e1", -44, -300), private_unit("e2", 100, -560, 0),
+                                    private_unit("e3", 36, -330), private_unit("e4", 76, -200),
+                                    *held_units], garrison),
+              private_frame(41000, [private_unit("e3", 100, -570), *held_units], garrison)]
+    assert wall_readings.release_distances(trace, frames, ["e1", "e2", "e3", "e4"]) == [
+        {"group": 2, "time_ms": 40250, "damaged": [
+            {"id": "e11", "lost_men": True, "d1_m": 272.6},
+            {"id": "e12", "lost_men": False, "d1_m": 281.2},
+            {"id": "e13", "lost_men": True, "d1_m": 292.6}]}]
 
 
 def test_the_reserve_response_runs_from_the_breach_to_its_first_accepted_attack_and_melee():

@@ -91,6 +91,8 @@ def test_a_gate_is_breached_at_public_hp_zero_although_it_never_reads_destroyed(
     assert [(g["x"], g["z"]) for g in gaean if rules.gate_breached(g)] == [(503, -94)]
     gaean[2]["hp"] = 3
     assert not any(rules.gate_breached(g) for g in gaean)
+    # A gate whose maximum is unreadable has no hp, and it is not breached.
+    assert not rules.gate_breached({"name": "Gatehouse", "x": -32, "z": -16, "destroyed": False})
 
 
 def tickets(role, side, count, per_s, score):

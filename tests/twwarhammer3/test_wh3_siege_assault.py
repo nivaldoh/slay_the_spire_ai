@@ -21,7 +21,7 @@ import pytest
 from lupa.lua51 import LuaError
 from wh3_fixtures import FakeSend, observation, opening
 from wh3_lua import load_battle, runtime
-from wh3_siege_attack import first_observation, later
+from wh3_siege_attack import SLOTS, first_observation, later
 
 from gameai.ledger import Ledger
 from twwarhammer3.battle import commander, configured, controllers, escalade, llm, play, setup, team
@@ -163,15 +163,20 @@ def rows(table):
 
 def test_fortification_ids_are_given_once_by_centre_and_kept_with_their_building():
     """Wrong versions: ids reassigned in list order after a piece leaves the list; the gate
-    counted as a wall piece too; towers dropped; position() (a pivot) used for the centre."""
+    counted as a wall piece too; towers dropped; position() (a pivot) used for the centre; an
+    unreadable health given as hp 0, which every reader takes for a destroyed piece."""
     lua, fn = mod()
     g = lua.globals()
+    lua.execute("walls.west = building('west', -300, -95, false, ERROR)"
+                "; lists.wall = {walls.east, gate, walls.climb, walls.middle, walls.west}")
+    fort = deepcopy(FORT)
+    del fort[1]["hp"]  # w1, the west piece, whose health() fails
     assert dict(fn["setup_fortifications"]().items()) == {"gate": 1, "wall": 5, "tower": 3}
-    assert rows(fn["fortification_reading"]()) == FORT
+    assert rows(fn["fortification_reading"]()) == fort
     # A piece leaves its list and the rest reorder: every id still names its own building.
     lua.execute("lists.wall = {walls.west, walls.climb, gate, walls.east}"
                 "; lists.tower = {towers[3], towers[1]}")
-    assert rows(fn["fortification_reading"]()) == FORT
+    assert rows(fn["fortification_reading"]()) == fort
     assert g.state.fortifications.by_id.w3.building.name(None) == "east"
     assert g.state.fortifications.by_id.t3.building.name(None) == "t188"
 
@@ -203,7 +208,8 @@ ON_TOP = "point(248.8, 345.0, -116.0)"
 
 def test_on_wall_and_the_climb_and_siege_abilities_are_the_engines_readings():
     """Wrong versions: on_wall filled from distance to a wall piece; climbing shown; a hidden
-    enemy's on_wall shown; can_climb re-read or a failed read shown as false."""
+    enemy's on_wall shown; can_climb re-read or a failed read shown as false; an enemy given
+    can_climb or can_siege."""
     lua, fn = mod()
     fn["setup_fortifications"]()
     lua.execute(f"""
@@ -215,6 +221,7 @@ def test_on_wall_and_the_climb_and_siege_abilities_are_the_engines_readings():
         state.friendly = {{f1 = {{unit = under, ui_id = '1', setup = {{}}}},
                           f2 = {{unit = top, ui_id = '2', setup = {{}}}}}}
         seen = soldier{{position = point(5, 345, -20), is_on_top_of_wall = true,
+                        can_climb_walls = true, has_attribute = function(key) return true end,
                         is_visible_to_alliance = function() return true end}}
         hidden = soldier{{position = point(9, 345, -20), is_on_top_of_wall = true,
                           is_visible_to_alliance = function() return false end}}
@@ -231,7 +238,9 @@ def test_on_wall_and_the_climb_and_siege_abilities_are_the_engines_readings():
     lua.execute("under = soldier{is_on_top_of_wall = false, can_climb_walls = false}")
     assert dict(fn["unit_record"]("f1", g.under, True, "infantry").items())["can_climb"] is True
     roster, record = fn["enemy_observation"]("e1", g.state.enemy.e1)
-    assert dict(record.items())["on_wall"] is True and "on_wall" not in dict(roster.items())
+    record = dict(record.items())
+    assert record["on_wall"] is True and not {"can_climb", "can_siege"} & set(record)
+    assert "on_wall" not in dict(roster.items())
     roster, record = fn["enemy_observation"]("e2", g.state.enemy.e2)
     assert record is None and "on_wall" not in dict(roster.items())
 
@@ -267,6 +276,35 @@ def test_the_mode_lists_our_crewed_vehicles_and_only_finished_enemy_structures()
     assert list(lua.globals().logged.values()) == [
         "vehicles failed: unreadable VehicleList.Size",
         "enemy_structures failed: unreadable ArmyList.Size"]
+
+
+def test_a_siege_attack_lists_no_slot_and_a_defence_keeps_its_slots():
+    """Wrong versions: the slots left out only in render_mode, so the scripts, the commander and
+    team members of the attack still read the defender's slots and build timers; the slots left
+    out by role, not by the opt-in, which also drops them from a siege attacked without it. The
+    stub's slot list returns the eight rows the 2026-10-14 attack smoke read at 59.9 s
+    (wh3_siege_attack)."""
+    recorded = SLOTS[59900]
+    lists = {"slots.Size": len(recorded),
+             "slot setup": ";".join(f"{slot['type']}|{slot['x']}|{slot['z']}|"
+                                    for slot in recorded),
+             "slot rows": ";".join(f"{-1 if 'options' in slot else 0}"
+                                   f"|{str('building_s' in slot).lower()}"
+                                   f"|{slot.get('building_s', 0)}|false|false"
+                                   for slot in recorded)}
+    sections = {}
+    for role, opt_in in (("attacker", True), ("attacker", False), ("defender", False)):
+        lua, fn = mod()
+        lua.execute(f"state.info.role = '{role}'")
+        for key, value in lists.items():
+            lua.globals().contexts[key] = value
+        if opt_in:
+            fn["setup_fortifications"]()
+        sections[role, opt_in] = dict(fn["mode_section"]().items())
+    assert "slots" not in sections["attacker", True]
+    for kept in (("attacker", False), ("defender", False)):
+        assert [slot["id"] for slot in rows(sections[kept]["slots"])] == [
+            f"s{index}" for index in range(1, 9)]
 
 
 def dispatch():
@@ -346,11 +384,14 @@ SIEGE = first_observation()
     ([{"unit": "f9", "type": "besiege", "target": "w3", "run": "yes"}], "booleans"),
 ])
 def test_validation_refuses_siege_orders_the_observation_does_not_allow(orders, error):
-    """Wrong versions: a non-climber accepted on a wall, an order on a destroyed target."""
+    """Wrong versions: a non-climber accepted on a wall, an order on a destroyed target; a
+    non-climber refused on a tower (only a wall piece needs climbing, as SIEGE_ORDERS tells the
+    model and the mod's apply_siege checks)."""
     validate_orders([{"unit": "f2", "type": "besiege", "target": "w3", "run": True},
                      {"unit": "f12", "type": "besiege", "target": "g1", "run": True},
                      {"unit": "f13", "type": "attack_building", "target": "g1", "run": False}],
                     SIEGE)
+    validate_orders([{"unit": "f12", "type": "besiege", "target": "t1", "run": True}], SIEGE)
     with pytest.raises(IllegalActionError, match=error):
         validate_orders(orders, SIEGE)
 
@@ -402,41 +443,63 @@ def test_other_battles_send_the_same_request_and_prompt_as_before(tmp_path):
 
 def land_attack():
     """A land battle the player attacks (239 of 461 recorded first observations read land_normal
-    and role attacker): wh3_fixtures.observation() with that mode."""
+    and role attacker): wh3_fixtures.observation() with that mode, one decision."""
     state = observation()
     state["mode"] = {"type": "land_normal", "role": "attacker", "timeout_winner": "enemy",
                      "objectives": "Objectives: (placeholder for the engine's objective text)"}
-    return state
+    return [state]
 
 
 def siege_attack_without_opt_in():
     """A siege the player attacks without siege_assault, as the 2026-10-14 attack smoke read
-    it: the fixture without the fields only the opt-in adds."""
+    it: the fixture without the fields only the opt-in adds, then 10 s on with the enemy's
+    tickets down 45, which the opt-in's ticket change would show."""
     state = first_observation()
     for key in ("fortifications", "vehicles", "enemy_structures"):
         del state["mode"][key]
     for unit in state["friendly"] + state["enemy"]:
         for key in ("on_wall", "can_climb", "can_siege"):
             unit.pop(key, None)
-    return state
+    return [state, later(state, 15300, mode={"tickets": [
+        dict(state["mode"]["tickets"][0], tickets=955)]})]
 
 
-# The whole request llm sent for each at e918091, before the siege orders existed.
+def siege_attack_during_a_defender_build():
+    """siege_attack_without_opt_in with the slot rows that smoke read at 59.9 s: the attacker's
+    list gives no option name for s6, the tower the defender is building, and v22 shows it as
+    "building None, 69 s left"."""
+    states = siege_attack_without_opt_in()
+    for state in states:
+        state["mode"]["slots"] = deepcopy(SLOTS[59900])
+    return states
+
+
+# The whole request llm sent at each decision with e918091's code, before the siege orders
+# existed; the siege cases re-frozen that way (e918091's play.public and llm) on the 2026-11-09
+# fixture.
 BODY_SHA256 = {
-    "land_attack": "a30bf9dbe83ed0d88af0fc929112775927485e8647fe58c1d8f1f2ee2ff29854",
-    "siege_attack_without_opt_in":
-        "3e8ba3257c7f93b93f7bd2c980109a3a883ea58edca1ab1ea2845bf411005e11"}
+    "land_attack": ["a30bf9dbe83ed0d88af0fc929112775927485e8647fe58c1d8f1f2ee2ff29854"],
+    "siege_attack_without_opt_in": [
+        "66ff4981dc7df431c887e5974ce3c90797ba0cb4c4323c69fc8ab0cae10060dc",
+        "4a567d98c9399f1547d26833c6ea65c478072f53014e25a92d690fe400f65487"],
+    "siege_attack_during_a_defender_build": [
+        "06c88417de35a5bd303c9916062290e681d5a6923b63a7488dec910658151d19",
+        "07bd87085a3bdf8758ad255cec2d1dbedcd8a5d731fcf396585e791774849168"]}
 
 
-@pytest.mark.parametrize("make", [land_attack, siege_attack_without_opt_in])
+@pytest.mark.parametrize("make", [land_attack, siege_attack_without_opt_in,
+                                  siege_attack_during_a_defender_build])
 def test_a_battle_the_player_attacks_without_the_opt_in_sends_the_same_request(make, tmp_path):
-    """Wrong version: the siege schema or orders for every battle the player attacks."""
-    agent, send = model(tmp_path, WAIT)
-    agent.decide(play.public(make(), {}))
-    body = send.bodies[0]
-    assert body["text"]["format"]["schema"] == llm.REPLY_SCHEMA
-    text = json.dumps(body, sort_keys=True).encode()
-    assert hashlib.sha256(text).hexdigest() == BODY_SHA256[make.__name__]
+    """Wrong versions: the siege schema or orders for every battle the player attacks; the
+    ticket change shown without the opt-in; a build without an option name shown differently
+    from v22."""
+    states = make()
+    agent, send = model(tmp_path, *[WAIT] * len(states))
+    for state in states:
+        agent.decide(play.public(state, {}))
+    assert all(body["text"]["format"]["schema"] == llm.REPLY_SCHEMA for body in send.bodies)
+    assert [hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+            for body in send.bodies] == BODY_SHA256[make.__name__]
 
 
 # The fort as facts, in every controller's state under the opt-in.
@@ -460,7 +523,8 @@ def test_a_siege_attack_shows_the_fort_and_offers_the_siege_orders(tmp_path):
     for line in FORT_LINES + (llm.SIEGE_ORDERS,):
         assert line in prompt
     assert "can climb walls" in prompt and "cannot climb walls" in prompt
-    assert "e2 handgunners (infantry) at (-49, -21)" in prompt and "on the wall" in prompt
+    assert "e2 halberdiers (infantry) at (-49, -21)" in prompt and "on the wall" in prompt
+    assert "Building slots" not in prompt and "None" not in prompt
     # Nothing hidden, historical or about ladders' engine effect reaches the model.
     lowered = prompt.lower()
     for word in setup.scenarios()["ksl-emp-siege-a-v1"]["withheld"] + [
@@ -519,17 +583,133 @@ def test_the_commander_and_team_members_see_the_fort_but_no_siege_order(tmp_path
     assert "can climb walls" in send.bodies[0]["input"][0]["content"]
 
 
+def test_only_a_view_with_the_climb_fields_is_offered_the_siege_orders(tmp_path):
+    """Wrong version: a team member told apart by input_version, so a projected view without it
+    (no can_climb, which validation reads for a wall besiege) is offered the siege orders."""
+    view = play.public(SIEGE, setup.scenarios()["ksl-emp-siege-a-v1"])
+    projected = team.project(view, {"f2", "f13"})
+    del projected["input_version"]
+    assert not [unit for unit in projected["friendly"] if "can_climb" in unit]
+    for state, schema in ((projected, llm.REPLY_SCHEMA), (view, llm.SIEGE_REPLY_SCHEMA)):
+        agent, send = model(tmp_path, WAIT)
+        agent.decide(state)
+        body = send.bodies[0]
+        assert body["text"]["format"]["schema"] == schema
+        prompt = body["input"][0]["content"]
+        assert FORT_LINES[0] in prompt
+        assert (llm.SIEGE_ORDERS in prompt) is (schema is llm.SIEGE_REPLY_SCHEMA)
+
+
 def test_an_accepted_siege_order_replaces_the_move_the_prompt_says_a_unit_holds(tmp_path):
     move = json.dumps({"orders": [{"unit": "f2", "type": "move", "x": -230, "z": -238,
                                    "facing": None, "width": None, "run": False,
                                    "queue": False}], "reason": "stage", "notes": None})
     agent, _ = model(tmp_path, move, CLIMB)
     view = play.public(SIEGE, {})
-    for expected in ("f2", None):
+    for expected in ("move", "besiege"):
         agent.decide(view)
         agent.acknowledge({"request": "r", "applied_ms": 5300, "results": [
             {"index": 1, "unit": "f2", "ok": True}]}, {"think_s": 1, "delay_ms": 0})
-        assert next(iter(agent.ordered), None) == expected
+        assert {unit: order["type"] for unit, order in agent.ordered.items()} == {"f2": expected}
+
+
+def unit_row(body, unit):
+    return next(line for line in body["input"][0]["content"].splitlines()
+                if line.startswith(f"- {unit} "))
+
+
+def turn(agent, state, accepted=()):
+    """One decision on ``state``, then an ack accepting ``accepted``'s orders in reply order."""
+    agent.decide(play.public(state, setup.scenarios()["ksl-emp-siege-a-v1"]))
+    agent.acknowledge({"request": "r", "applied_ms": state["time_ms"], "results": [
+        {"index": index, "unit": unit, "ok": True, "queued": False}
+        for index, unit in enumerate(accepted, 1)]}, {"think_s": 1, "delay_ms": 0})
+
+
+def test_the_prompt_keeps_an_accepted_siege_order_until_a_new_order_or_the_state_ends_it(
+        tmp_path):
+    """Wrong versions: the order dropped once accepted, so the row reads "no order" (which the
+    system prompt says means the unit stands until ordered); the order kept after a later
+    accepted move, once its besieger is on the wall, or once its target is at 0%."""
+    sieges = json.dumps({"orders": [
+        {"unit": "f2", "type": "besiege", "target": "w3", "run": True},
+        {"unit": "f3", "type": "besiege", "target": "w3", "run": True},
+        {"unit": "f5", "type": "besiege", "target": "w3", "run": True},
+        {"unit": "f13", "type": "attack_building", "target": "g1", "run": False}],
+        "reason": "climb", "notes": None})
+    move = json.dumps({"orders": [{"unit": "f2", "type": "move", "x": -100, "z": -120,
+                                   "facing": None, "width": None, "run": False,
+                                   "queue": False}], "reason": "back", "notes": None})
+    agent, send = model(tmp_path, sieges, move, WAIT, WAIT, WAIT)
+    turn(agent, SIEGE, ("f2", "f3", "f5", "f13"))
+    climbing = later(SIEGE, 15000, f2={"x": -190.0, "z": -160.0, "state": ["moving", "running"]},
+                     f13={"ammo": 19})
+    turn(agent, climbing, ("f2",))
+    unsure = " (the state cannot confirm it is still carried out)"
+    assert "last siege order: besiege w3 at 5 s" + unsure in unit_row(send.bodies[1], "f2")
+    assert "no order" not in unit_row(send.bodies[1], "f2")
+    assert "last siege order: attack building g1 at 5 s" + unsure in unit_row(send.bodies[1], "f13")
+    # The accepted move replaces f2's besiege: heading to its point, then no order once there.
+    heading = later(climbing, 25000, f2={"x": -150.0, "z": -140.0, "dest": [-100.0, -120.0]})
+    turn(agent, heading)
+    assert "heading to (-100, -120)" in unit_row(send.bodies[2], "f2")
+    assert "last siege order" not in unit_row(send.bodies[2], "f2")
+    # f5 is on the wall, so its besiege is done; f3, still below, keeps its line.
+    arrived = later(heading, 35000, f2={"x": -100.0, "z": -120.0, "dest": None, "state": []},
+                    f5={"on_wall": True})
+    turn(agent, arrived)
+    assert "no order" in unit_row(send.bodies[3], "f2")
+    assert "last siege order" not in unit_row(send.bodies[3], "f5")
+    assert "last siege order: besiege w3" in unit_row(send.bodies[3], "f3")
+    # w3 at 0%: the besiege on it is no longer shown; f13's on g1 still is.
+    fallen = later(arrived, 45000)
+    fallen["mode"]["fortifications"][3]["hp"] = 0
+    turn(agent, fallen)
+    assert "last siege order" not in unit_row(send.bodies[4], "f3")
+    assert "no order" in unit_row(send.bodies[4], "f3")
+    assert "last siege order: attack building g1" in unit_row(send.bodies[4], "f13")
+
+
+def test_a_siege_order_leaves_the_prompt_once_the_gun_is_empty_the_unit_routs_or_the_target_goes(
+        tmp_path):
+    """Wrong versions: an attack_building kept after the gun's ammunition reaches 0; a besiege
+    kept after its unit routs, so it shows again once the unit rallies; a besiege kept once
+    mode.fortifications no longer lists its target. Once the order ends, the row reads "no
+    order"."""
+    sieges = json.dumps({"orders": [
+        {"unit": "f6", "type": "besiege", "target": "w1", "run": True},
+        {"unit": "f7", "type": "besiege", "target": "w4", "run": True},
+        {"unit": "f13", "type": "attack_building", "target": "g1", "run": False}],
+        "reason": "climb", "notes": None})
+    agent, send = model(tmp_path, sieges, WAIT, WAIT, WAIT)
+    turn(agent, SIEGE, ("f6", "f7", "f13"))
+    held = later(SIEGE, 15000)
+    turn(agent, held)
+    assert [unit_row(send.bodies[1], unit).count("last siege order") for unit in
+            ("f6", "f7", "f13")] == [1, 1, 1]
+    ended = later(held, 25000, f7={"state": ["routing"]}, f13={"ammo": 0})
+    ended["mode"]["fortifications"] = [piece for piece in ended["mode"]["fortifications"]
+                                       if piece["id"] != "w1"]
+    turn(agent, ended)
+    assert "no order" in unit_row(send.bodies[2], "f6")
+    assert "no order" in unit_row(send.bodies[2], "f13")
+    turn(agent, later(ended, 35000, f7={"state": ["idle"]}))
+    assert "no order" in unit_row(send.bodies[3], "f7")
+
+
+def test_a_siege_attack_shows_the_ticket_change_since_the_last_decision(tmp_path):
+    """Wrong versions: the change counted from the starting count; "+0" shown for an unchanged
+    count (in 20 of the 24 recorded siege traces the count never left 1,000). Outside the opt-in
+    no change is shown (siege_attack_without_opt_in's second request hash)."""
+    agent, send = model(tmp_path, WAIT, WAIT, WAIT, WAIT)
+    scenario = setup.scenarios()["ksl-emp-siege-a-v1"]
+    for time_ms, count in ((5300, 1000), (15300, 955), (25300, 910), (35300, 910)):
+        tickets = [dict(SIEGE["mode"]["tickets"][0], tickets=count)]
+        agent.decide(play.public(later(SIEGE, time_ms, mode={"tickets": tickets}), scenario))
+    assert [next(line for line in body["input"][0]["content"].splitlines()
+                 if line.startswith("Tickets")) for body in send.bodies] == [
+        "Tickets: enemy 1000.", "Tickets: enemy 955 (-45 since your last turn).",
+        "Tickets: enemy 910 (-45 since your last turn).", "Tickets: enemy 910."]
 
 
 def test_the_battle_check_requires_the_siege_setup_to_have_read_the_fort():

@@ -1,5 +1,7 @@
-"""The camp attack and two-front defence declarations (emp-chd-camp-v1, ksl-nor-lines-a-v1 and
-ksl-nor-lines-b-v1) and the ablation-diff helper wh3_ablation.py.
+"""The camp attack and two-front defence declarations (emp-chd-camp-v1, its two candidate second
+versions, ksl-nor-lines-a-v1 and ksl-nor-lines-b-v1), the ablation-diff helper wh3_ablation.py,
+and the content lists of all nine historical-evaluation declarations
+(docs/twwarhammer3/historical-evals.md).
 
 Reference: the 2026-11-08 designs in runs/siege-evals-20261108 (final-belgrade.md and
 final-alesia.md, "Settings", "Rosters", "Map and placements", "Infrastructure"; portfolio.md S8)
@@ -19,18 +21,25 @@ import pytest
 from wh3_ablation import assert_ablation
 from wh3_fixtures import bridge_observation
 
-from twwarhammer3.battle import play, setup
+from twwarhammer3.battle import camp, play, setup
 from twwarhammer3.protocol import HIDDEN_KEYS
 
 # The three entries in configs/twwarhammer3/scenarios.json cannot carry a comment, so their
 # markers are on the battles' pages (docs/judgement.md). The design pages they copy from are
 # untracked (runs/siege-evals-20261108/final-belgrade.md and final-alesia.md).
 # Camp construction profile and Authored widths (which also covers the Boyar's width in
-# ksl-nor-lines-a-v1) are marked on docs/twwarhammer3/camp-eval.md.
+# ksl-nor-lines-a-v1) are marked on docs/twwarhammer3/camp-eval.md, as are Camp lordless roster and
+# Camp equidistant lord, the two candidate answers to that page's owner question 1.
 # Lines mode, Lines forces, Lines enemy lord, Lines settings, Lines layout, Reserve facing, Norsca
 # banner and Lines briefing are marked on docs/twwarhammer3/lines-eval.md.
 
-NAMES = ("emp-chd-camp-v1", "ksl-nor-lines-a-v1", "ksl-nor-lines-b-v1")
+# Candidate answers (a) and (b) to camp-eval.md owner question 1; v1 stays the default.
+LORDLESS, EQUIDISTANT = "emp-chd-camp-lordless-v2", "emp-chd-camp-equidistant-v2"
+NAMES = ("emp-chd-camp-v1", LORDLESS, EQUIDISTANT, "ksl-nor-lines-a-v1", "ksl-nor-lines-b-v1")
+OVERSEER = "wh3_dlc23_chd_cha_overseer"
+# Every declaration of the four historical battles, the siege ones included.
+HISTORICAL = (*NAMES, "cth-emp-siege-a-all-v1", "cth-emp-siege-a-v1",
+              "cth-emp-siege-a-all-gates-v1", "ksl-emp-siege-a-v1")
 # A play job before fill_timeouts: one episode, the default 900 s start cap (__main__.py).
 PLAY_CONFIG = {"episodes": 1, "start_timeout": 900, "episode_timeout": None, "run_timeout": None}
 # Historical names and the lines' own terms, which no declaration text or job may hold; each
@@ -146,6 +155,66 @@ def test_a_job_that_names_the_history_is_refused_and_a_neutral_one_accepted(name
             setup.check_job(scenario, job)
     for job in ("camp-r1-003", JOB, "bench-ksl-nor-lines-hold-20261109"):
         setup.check_job(scenario, job)
+
+
+@pytest.mark.parametrize("name", HISTORICAL)
+def test_content_is_the_set_of_roster_key_prefixes(name):
+    """content is provenance no code reads; historical-evals.md's "What a run needs" table copies
+    it. This is a consistency check between two fields of one declaration, not an ownership
+    check: nothing here shows which pack a prefix needs, that an account owns it or that a card
+    recruits. Wrong versions: no content (the Haengju declarations before 2026-11-09); an extra
+    prefix; a missing one."""
+    scenario = setup.scenarios()[name]
+    keys = [key for side in ("player", "enemy") for key in
+            (*scenario[side]["units"], *(scenario[side].get("mounts") or {}).values())]
+    assert scenario.get("content") is not None, "no content list"
+    assert len(set(scenario["content"])) == len(scenario["content"])
+    assert set(scenario["content"]) == {"_".join(key.split("_")[:2]) for key in keys}
+
+
+@pytest.mark.parametrize("name", [LORDLESS, EQUIDISTANT])
+def test_each_camp_v2_candidate_changes_only_the_overseer(name):
+    """Option (a) drops the Overseer and makes the enemy lordless; option (b) moves him along his
+    row only. Wrong versions: (a) still listing the Overseer as a card or a placement, or keeping
+    enemy lord true; (b) turning or resizing him; either one moving or dropping another unit,
+    changing another card's rank or an enemy or battle setting."""
+    v1, v2 = setup.scenarios()["emp-chd-camp-v1"], setup.scenarios()[name]
+    lordless = name == LORDLESS
+    assert {key for key in {*v1, *v2} if v1.get(key) != v2.get(key)} == {
+        "name", "scenario_version", "calibration_change", "deployment",
+        *(("enemy",) if lordless else ())}
+    assert v2["scenario_version"] == 2
+    assert v2["deployment"]["friendly"] == v1["deployment"]["friendly"]
+    others = [place for place in v1["deployment"]["enemy"] if place["type"] != OVERSEER]
+    assert [place for place in v2["deployment"]["enemy"] if place["type"] != OVERSEER] == others
+    kept = [index for index, unit in enumerate(v1["enemy"]["units"])
+            if unit != OVERSEER or not lordless]
+    # v1's enemy less his card: every setting as v1's, the other cards and their ranks in v1's
+    # order, the rank slots renumbered from 0.
+    assert v2["enemy"] == {
+        **v1["enemy"], "lord": not lordless, "units": [v1["enemy"]["units"][i] for i in kept],
+        "experience": {str(new): v1["enemy"]["experience"][str(old)]
+                       for new, old in enumerate(kept)}}
+    lord = next(place for place in v1["deployment"]["enemy"] if place["type"] == OVERSEER)
+    moved = [place for place in v2["deployment"]["enemy"] if place["type"] == OVERSEER]
+    assert len(moved) == (0 if lordless else 1)
+    assert moved == [{**lord, "x": place["x"]} for place in moved]  # his row, bearing and width
+
+
+def test_the_equidistant_overseer_stands_as_far_from_the_nearest_gun_as_from_the_nearest_cover():
+    """Option (b): his centre distances to the nearest war machine and to the nearest cover
+    unit's start (camp.py's GUNS and COVER) differ by at most 10 m. Wrong version: v1's point,
+    25 m from a gun against 95 m from the cover."""
+    def nearest(name):
+        enemy = setup.scenarios()[name]["deployment"]["enemy"]
+        lord = next(place for place in enemy if place["type"] == OVERSEER)
+        return [round(min(math.dist((lord["x"], lord["z"]), (place["x"], place["z"]))
+                          for place in enemy if place["type"] in keys), 1)
+                for keys in (camp.GUNS, camp.COVER)]
+
+    assert nearest("emp-chd-camp-v1") == [25.0, 95.3]
+    gun, cover = nearest(EQUIDISTANT)
+    assert abs(gun - cover) <= 10, (gun, cover)
 
 
 def test_case_b_mirrors_every_enemy_placement_of_case_a_and_changes_nothing_else():

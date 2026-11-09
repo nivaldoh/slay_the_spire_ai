@@ -81,6 +81,14 @@ ending, but ``result`` still requires engine confirmation. Its objective status 
 separately: a native victory can fail an asset-preservation objective. The play loop, not
 the game, adds ``mode.scoring`` (``"contact"``) for a scenario that declares it.
 
+A ``mode.tickets`` row is {"side", "tickets", "per_s", "score"}; ``per_s`` is the engine's
+TicketsIncomePerSecond, and a battle with a ``tickets_goal`` counts up to it. In a siege the
+defender's count falls instead, and ``per_s`` is neither its drain rate nor a sign of a drain. In
+the four recorded Helmgart drains (bench-b12-siege-baselines-20261016 episodes 0 and 1,
+bench-b13-v1a-siege-flankers-hold-20261016 and bench-b13-v1c-siege-flankers-kimi-20261016
+episode 0) it read 0 at every falling reading and 5 at most readings before. In the three with
+more than one falling reading, successive readings fell about 5 per second.
+
 Session ``siege_assault`` (a siege the player attacks, setup.py) adds, once ``start`` has read
 the fort (``setup.siege_assault``: ``{"ok", "lists"?, "error"?}``, hidden): ``mode.fortifications``
 ``[{"id" (g1.., w1.., t1..), "kind" ("gate", "wall", "tower"), "x", "z" (central_position),
@@ -90,6 +98,8 @@ once by centre x then z; ``mode.vehicles`` ``[{"id" ("v" + VehicleList index), "
 ``[{"type", "x", "z", "destroyed"?}...]``, the other armies' finished builds; on units,
 ``on_wall``? (ours and visible enemies, ``is_on_top_of_wall``) and, on ours, ``can_climb``? and
 ``can_siege``?. A list that fails to read is absent. Nothing shows ``is_climbing_ladder``.
+``mode.slots`` is left out: in a siege the player attacks it lists the defender's slots and build
+timers.
 
 A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
 ``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,

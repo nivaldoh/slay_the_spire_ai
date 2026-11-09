@@ -173,7 +173,9 @@ def check_waves(scenario, observation):
     group, slot, type and enemy id, and each group's release. Refuses a failed setup, a
     profile other than the scenario's, a mod error, units in another order, slot or type than
     the profile declares, an id held twice or whose roster type differs, a failed release, a
-    group released twice, and a release before its time that damage did not cause."""
+    group released twice, a release before its time that damage did not cause, a damage release
+    that names no damaged unit, and, in an observation without a result, a group still held at
+    or after its release_ms."""
     expected = scenario["reserve"]
     setup = (observation.get("setup") or {}).get("reserve")
     evidence = (observation.get("evaluation") or {}).get("reserve") or {}
@@ -203,4 +205,19 @@ def check_waves(scenario, observation):
                 or release.get("reason") == "damage" and expected["release_on_damage"]):
             raise ProtocolError(f"reserve group {number} released as {release.get('reason')!r}"
                                 f" at {release.get('released_ms')} ms")
+        # The mod writes reason "damage" only with a non-empty damaged list (tick_waves).
+        if release.get("reason") == "damage" and not release.get("damaged"):
+            raise ProtocolError(f"reserve group {number} released for damage with no damaged"
+                                " unit")
+    # Exact: the battle Lua's tick runs tick_reserve(now) before publish_observation(now), whose
+    # time_ms is that now; finish() stops tick_reserve, so only the result may lack a due release.
+    # JUDGEMENT?: Overdue release — Claude, 2026-11-09: a group still held at or after its
+    # release_ms stops the job as an infrastructure failure. Accepting it would score that battle's
+    # ending as gameplay with divisions held; which waves battles count as played rests on it.
+    if not observation.get("result"):
+        for number, group in enumerate(expected["groups"], 1):
+            if number not in released and observation["time_ms"] >= group["release_ms"]:
+                raise ProtocolError(f"reserve group {number} still held at"
+                                    f" {observation['time_ms']} ms, due at"
+                                    f" {group['release_ms']} ms")
     return evidence

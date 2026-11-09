@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-09: Second look at the historical siege evaluations
+
+Owner, 2026-11-09: "review the tests, design, etc from a different perspective ... and try to
+improve these battles". Offline, $0, no game; all unverified. Evidence: `runs/siege-evals-20261108/`
+(second-look.json, improve.json, final-fixes.json). Six lenses (exploit hunting, the model's seat,
+engine realism, statistics, mutation testing, an outside benchmark reviewer) gave 51 findings; a
+skeptic per lens confirmed 20 and partly confirmed 31, refuting none outright.
+- Fixed: Izmail's attacker view no longer lists the defender's slots; an accepted besiege or
+  attack_building stays on the unit's row until an exit; the ticket change since the last turn is
+  shown; siege orders go to a view only when its units carry can_climb (these are v23 content, which
+  no battle has run). Every battle without siege_assault keeps v22's request bytes (hash tests).
+- Built: readers for each battle (camp_readings, lines_readings, wall_readings and
+  escalade_readings additions), reserve.check_waves refusing an overdue or unexplained release, the
+  owner recorder's start check (--start-reference), more Escalade guard tests, and contract tests.
+- Options beside the defaults, for the owner: Belgrade emp-chd-camp-lordless-v2 and
+  -equidistant-v2; Escalade v2 classes; Alesia P1 arms without the Lancer confound; Boschloo and
+  a fixed-verdict stop in exact_stats. Pages and historical-evals.md updated (power grid, set rules).
+- Mutation testing: of the mutants that survived the first pass, those that could change a result
+  or leak data now fail a test; threshold tweaks and equivalent mutants stay, listed in improve.json.
+- Harness stays b54 (never run); the Lua mod and llm.py changed again before any launch.
+
 ## 2026-11-09: Prompt v23: siege orders for the llm controller
 
 The owner, 2026-11-09: "I approve models using siege orders" ([directions](../owner-direction.md)).

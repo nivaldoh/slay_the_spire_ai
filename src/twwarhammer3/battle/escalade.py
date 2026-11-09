@@ -35,6 +35,21 @@ SHOOT_M south of its target until it has none, then plays as the witness) and ``
 (C5: no ladders; the infantry, its Streltsi holding their fire, waits STAGING_M south of g1
 until the gate is breached, then enters). ``BesiegeNearest`` (C3) is its own plan, and
 ``EscaladeReplay`` (C9) replays a witness win (replay_schedule) with its siege orders.
+``OrderProbe`` is stage 2's order-effect probe: a diagnostic, not an arm.
+
+Witness version 2, options for owner question 6 on escalade-eval.md (the second look's owner
+question 2), built beside version 1 on 2026-11-09 and in no plan until the owner picks them;
+version 1 stays the default. ``EscaladeV2``, ``ConcentrateV2``, ``CavalryEarlyV2``,
+``PiecemealV2``, ``ShootOnlyV2`` and ``GateOnlyV2`` are their version 1 classes with three
+changes (``Version2``), and ``BesiegeNearestV2`` takes (b) only; each writes version 2 in its
+metadata. (a) Phase 3 goes to c7, then c1 (VICTORY_TIERS_V2). (b) g1 counts as fallen once the
+public gate nearest it, its door, reads hp 0 or less (``door_view``), so the crew walks in, and a
+unit whose last order besieges or attacks g1 and that gets no new one, the Grom among them, gets
+one halt (``door_halts``): in the one recording, a standing attack_building kept firing until the
+building itself read 0, and whether a halt ends one is unread. Validation still accepts an order
+on g1 above 0%. (c) West's and East's staging rows (in ``GateOnly`` the reserve's as well) move
+south, whole metres at a time, until every spot stands STAGING_M or more from every listed piece
+and SPACING_M or more from every spot placed before.
 
 Every arm reads only what play.public passes: its own units (``on_wall``, ``can_climb``,
 ``can_siege``), the visible enemies and ``mode`` (capture points, gates, fortifications and
@@ -91,6 +106,9 @@ HORSE_M = 300  # the Horse waits this far south of g1
 RESERVE_MS = 60000  # the reserve's decision, this long after phase 2
 RESERVE_LOSS = 0.30  # a group that lost more than this share of its men since phase 2 gets it
 INSIDE_UNITS = 6  # phase 4 starts once this many of our units are inside the front line
+# JUDGEMENT?: Victory order — Claude, 2026-11-09: in 23 Helmgart traces (player defending), all
+# 4 ticket drains began once c1 fell; c7 is on the gate-to-c1 route, c8/c9 add about 520 m a unit
+# (1,160 m via both). Alternative ((c7,), (c1,)); phase 3 and phase 4 with no enemy seen rest on it.
 VICTORY_TIERS = (("c7",), ("c8", "c9"), ("c1",))  # phase 3's order of victory points
 RUN = True  # besiege, attack and phase 3 at a run; staging at a walk
 # JUDGEMENT?: Front line — Claude, 2026-11-08: the southernmost fortification centre in each 40 m
@@ -161,6 +179,7 @@ class Escalade:
     target_points = TARGET_POINTS
     ladders = True  # GateOnly: no wall piece is besieged
     together = True  # Piecemeal: each group starts phase 2 on its own
+    victory_tiers = VICTORY_TIERS  # Version2: VICTORY_TIERS_V2
 
     def __init__(self):
         self.groups = self.jobs = self.points = self.pieces = self.line = None
@@ -322,12 +341,12 @@ class Escalade:
 
     def _victory_point(self, unit, mode):
         held = {p.get("id"): p for p in mode.get("capture_points") or []}
-        for tier in VICTORY_TIERS:
+        for tier in self.victory_tiers:
             open_points = [name for name in tier if not holds(held.get(name, {}), "us")]
             if open_points:
                 return min((self.points[name] for name in open_points),
                            key=lambda p: (distance(unit, p), p["x"]))
-        return self.points[VICTORY_TIERS[-1][-1]]
+        return self.points[self.victory_tiers[-1][-1]]
 
     # Each unit's order.
     # JUDGEMENT?: After a target falls — Claude, 2026-11-08: a climber or crew whose target reads 0%
@@ -602,3 +621,203 @@ class EscaladeReplay(ReplaySchedule):
         if unit not in friendly or piece is None or gate_breached(piece):
             return None
         return {**order, "unit": unit}
+
+
+# A port of tests/twwarhammer3/checkpoint_siege/assault.lua (the 2026-11-03 siege checkpoint,
+# runs/twwarhammer3/siege-905-20261103), sent as the mod's besiege and attack_building orders in
+# place of its unit controllers, with its timing and its move-fast flags.
+class OrderProbe:
+    """order_probe: stage 2's order-effect probe (escalade-eval.md, step 0b), a diagnostic and
+    not an arm; no ablation diff or screen uses it. At order_ms the westmost Armoured Kossars and
+    the westmost Kossars (Spears) besiege the wall piece nearest their start and the ram's crew
+    besieges g1, all three at a run, and the Grom attacks g1 (attack_building, not at a run). No
+    other order is given. A siege order is resent only when its unit reads idle RETRY_MS after
+    the last send (Escalade._send). An order validation would refuse (a target not listed now or
+    at 0%, a wall for a unit without can_climb, the Grom without can_siege or ammunition) is not
+    sent. The metadata lists the battle times at which each unit's order was sent."""
+
+    arm = "order_probe"
+    order_ms = 10000  # assault.lua's bm:callback delay
+
+    def __init__(self):
+        self.plan = None
+        self.sent, self.last_sent, self.kept = {}, {}, {}
+        self.sent_ms = {}  # unit -> the battle ms of each send
+        self.now = 0
+
+    _send = Escalade._send
+    acknowledge = Escalade.acknowledge
+
+    def _bind(self, observation):
+        friendly = sorted(observation.get("friendly") or [], key=lambda u: (u["x"], u["z"]))
+        mode = observation.get("mode") or {}
+        pieces = {p["id"]: p for p in mode.get("fortifications") or []}
+        walls = [p for p in pieces.values() if p.get("kind") == "wall"]
+        if GATE not in pieces or not walls:
+            raise PolicyFailure("order_probe needs mode.fortifications with g1 and walls") \
+                from ValueError(sorted(pieces))
+        ids = {u["id"] for u in friendly}
+        crew = next((v.get("crew") for v in mode.get("vehicles") or [] if v.get("crew") in ids),
+                    None)
+        self.plan = {}  # unit -> (order type, target, run)
+        # JUDGEMENT?: Probe units — Claude, 2026-11-09: assault.lua's one wall besieger (item 5)
+        # becomes the westmost Armoured Kossars and Kossars (Spears) at the start; another pick
+        # (list order) may climb another piece. Stage 2's check 3 readings rest on it.
+        for kind in (ARMOURED, SPEARS):
+            climber = next((u for u in friendly if u["type"] == kind and u["id"] != crew), None)
+            if climber is not None:
+                wall = min(walls, key=lambda p, u=climber: (distance(p, u), p["id"]))
+                self.plan[climber["id"]] = ("besiege", wall["id"], True)
+        if crew is not None:
+            self.plan[crew] = ("besiege", GATE, True)
+        for unit in friendly:
+            if unit["type"] == GROM:
+                self.plan[unit["id"]] = ("attack_building", GATE, False)
+
+    def decide(self, observation):
+        self.now = observation["time_ms"]
+        if self.plan is None:
+            self._bind(observation)
+        if self.now < self.order_ms:
+            return []
+        fort = {p.get("id"): p
+                for p in (observation.get("mode") or {}).get("fortifications") or []}
+        units = friendly_units(observation)
+        orders = []
+        for identity, (kind, target, run) in self.plan.items():
+            unit, piece = units.get(identity), fort.get(target)
+            if unit is None or not able(unit) or piece is None or gate_breached(piece):
+                continue
+            if (kind == "besiege" and piece.get("kind") == "wall"
+                    and unit.get("can_climb") is not True):
+                continue
+            if kind == "attack_building" and (unit.get("can_siege") is not True
+                                              or not unit.get("ammo")):
+                continue
+            sent = self._send(unit, {"unit": identity, "type": kind, "target": target, "run": run})
+            if sent:
+                self.sent_ms.setdefault(identity, []).append(self.now)
+            orders += sent
+        return orders
+
+    def metadata(self):
+        return deepcopy({"type": self.arm, "version": 1, "plan": self.plan,
+                         "sent_ms": self.sent_ms})
+
+
+# Witness version 2 (module docstring): options for owner question 6 on escalade-eval.md, in no
+# plan until the owner picks them; version 1 above stays the default.
+# JUDGEMENT: Witness v2 victory order — Claude, 2026-11-09 (owner question 6(a)): c7, then c1, on
+# the 4 drains recorded with the player defending. Keeping c8 and c9 (v1) adds about 520 m a unit;
+# version 2's phase 3, and phase 4 with no enemy in view, rest on it.
+VICTORY_TIERS_V2 = (("c7",), ("c1",))
+
+
+# JUDGEMENT: Witness v2 door rule — Claude, 2026-11-09 (owner question 6(b)): g1 counts as fallen
+# once its door reads hp 0, and a unit still on a g1 siege order is halted. Keying on the building
+# (v1) keeps both at an open gate until it falls; version 2's breach play and checks 5-6 rest on it.
+def door_view(observation):
+    """``observation`` with g1 at hp 0 in mode.fortifications once the public gate nearest g1 (its
+    door) reads hp 0 or less, else ``observation`` itself. Rules keyed on g1 at 0% then treat it
+    as fallen; validation reads the true list, so this only takes orders on g1 away."""
+    mode = observation.get("mode") or {}
+    pieces = mode.get("fortifications") or []
+    gate = next((p for p in pieces if p.get("id") == GATE), None)
+    door = gate and _nearest(gate, [g for g in mode.get("gates") or [] if g.get("x") is not None])
+    if not door or not gate_breached(door) or gate_breached(gate):
+        return observation
+    fallen = [{**p, "hp": 0} if p is gate else p for p in pieces]
+    return {**observation, "mode": {**mode, "fortifications": fallen}}
+
+
+def door_halts(policy, view):
+    """One halt for each able unit whose last sent order still besieges or attacks g1 once g1
+    reads 0% in ``view`` (door_view's). The engine keeps a standing attack_building in force: in
+    siege-905-20261103's helmgart-defender recording the AI's Great Cannon, ordered once at 10 s,
+    went from 55 to 52 ammunition between the readings at 120 s (the door's first at 0) and 150 s
+    (the building's first at 0), then stayed at 52 to 240 s. Whether a halt ends such an order is
+    unread."""
+    gate = next((p for p in (view.get("mode") or {}).get("fortifications") or []
+                 if p.get("id") == GATE), None)
+    if gate is None or not gate_breached(gate):
+        return []
+    units, halts = friendly_units(view), []
+    for identity, order in list(policy.sent.items()):
+        unit = units.get(identity)
+        if (unit is not None and able(unit) and order.get("type") in SIEGE_ORDER_TYPES
+                and order.get("target") == GATE):
+            halts += policy._send(unit, {"unit": identity, "type": "halt"})
+    return halts
+
+
+class Version2:
+    """Version 2's three changes (module docstring), mixed in before a version 1 Escalade class."""
+
+    victory_tiers = VICTORY_TIERS_V2
+
+    def decide(self, observation):
+        view = door_view(observation)
+        return super().decide(view) + door_halts(self, view)
+
+    # JUDGEMENT: Witness v2 staging — Claude, 2026-11-09 (owner question 6(c)): flank rows go south
+    # to 150 m from every piece, 40 m from earlier spots (fixture approach: Concentrate 188-194 m,
+    # Escalade 156-161 m). V1's rows (117 m off, 16 m apart) change D1, whose contrast rests on it.
+    def _bind(self, observation):
+        super()._bind(observation)
+        placed = [self.spots[i] for name in ("horse", "centre") for i in self.groups[name]]
+        for name in ("west", "east") if self.ladders else ("west", "east", "reserve"):
+            anchor = self.pieces[self.targets[name] if self.ladders else GATE]
+            row = [self.spots[i] for i in self.groups[name]]
+            z = row[0]["z"]
+            while not self._clear(row, z, placed):
+                z = round(z - 1, 1)
+            for spot in row:
+                spot.update(z=z, facing=bearing({"x": spot["x"], "z": z}, anchor))
+            placed += row
+
+    def _clear(self, row, z, placed):
+        """Whether ``row``'s spots, moved to ``z``, stand STAGING_M or more from every listed piece
+        and SPACING_M or more from every spot in ``placed``."""
+        spots = [{"x": spot["x"], "z": z} for spot in row]
+        return (all(distance(s, p) >= STAGING_M for s in spots for p in self.pieces.values())
+                and all(distance(s, p) >= SPACING_M for s in spots for p in placed))
+
+    def metadata(self):
+        return {**super().metadata(), "version": 2}
+
+
+class EscaladeV2(Version2, Escalade):
+    """escalade, version 2."""
+
+
+class ConcentrateV2(Version2, Concentrate):
+    """concentrate, version 2: D1's arm B against EscaladeV2."""
+
+
+class CavalryEarlyV2(Version2, CavalryEarly):
+    """cavalry_early, version 2."""
+
+
+class PiecemealV2(Version2, Piecemeal):
+    """piecemeal, version 2."""
+
+
+class ShootOnlyV2(Version2, ShootOnly):
+    """shoot_only, version 2; its firing spots are version 1's."""
+
+
+class GateOnlyV2(Version2, GateOnly):
+    """gate_only, version 2: its West, East and reserve rows also move south (rule (c))."""
+
+
+class BesiegeNearestV2(BesiegeNearest):
+    """besiege_nearest, version 2: once g1's door reads hp 0 (door_view) its crew and Grom attack
+    the visible enemy nearest them, as for a target at 0%, and with none in view get a halt
+    (door_halts)."""
+
+    def decide(self, observation):
+        view = door_view(observation)
+        return super().decide(view) + door_halts(self, view)
+
+    def metadata(self):
+        return {**super().metadata(), "version": 2}

@@ -569,9 +569,20 @@ From the documentation or code reading; probe before relying on them:
   `health` (0-1; whether a gate's tracks its door's hit points is unread) and
   `alliance_owner_id` (compared with one-based `bm:local_alliance()`); `can_climb_walls`,
   `has_attribute("can_siege")` and `is_on_top_of_wall` on units;
-  `ToggleableSlotList(ArmyList.At(i))` slots joined in one expression; and
-  `besiege_building` and `attack_building(building, 1, run)`, whose effects (a climb, the ram
-  at the gate, a gun's damage) stage 2 of the siege-attack design reads first.
+  `ToggleableSlotList(ArmyList.At(i))` slots joined in one expression; and the mod's wrappers
+  (`apply_siege`) of `besiege_building` and `attack_building(building, 1, run)`. The CA calls
+  themselves have live readings from the 2026-11-03 checkpoint battles (`siege-905-20261103`),
+  sent through `tests/twwarhammer3/checkpoint_siege/assault.lua`: on AI-side units on Helmgart
+  (`helmgart-defender`: a climb, the ram at the door, the cannon's damage) and on the player's
+  units on Altdorf (`capital-attacker`: a ram pushed about 300 m by 240 s, a wall besieger that
+  routed). Still unread: the mod's wrappers, `is_on_top_of_wall`, and a climb by the player's
+  units against an active garrison, which stage 2 of the siege-attack design reads first.
+- The boundary of a siege the player attacks, as fixed on 2026-11-09, offline only. Until then
+  `mode.slots` listed the defender's eight tower slots with their build timers (the attacker's
+  `ToggleableSlotList(PlayerArmyContext)` in the 2026-10-14 attack smoke), and an accepted
+  `besiege` or `attack_building` rendered in the `llm` prompt as "no order". The mod now leaves
+  `mode.slots` out once it has read the fort, and the prompt shows the unit's last siege order;
+  no battle has read either.
 
 ## Finding another capability
 

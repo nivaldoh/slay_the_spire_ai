@@ -7,8 +7,10 @@ good battle ideas now and to play them only when the owner says so ("Build now, 
 Alesia (52 BCE), adapted as a WH3 Land battle in which the player defends two lines back to back:
 `ksl-nor-lines-a-v1` and `ksl-nor-lines-b-v1` in
 [scenarios.json](../../configs/twwarhammer3/scenarios.json), the witness and its arms in
-[battle/lines.py](../../src/twwarhammer3/battle/lines.py), and their offline tests in
-[test_wh3_lines.py](../../tests/twwarhammer3/test_wh3_lines.py) and
+[battle/lines.py](../../src/twwarhammer3/battle/lines.py), the evaluator readers in
+[battle/lines_readings.py](../../src/twwarhammer3/battle/lines_readings.py), and their offline
+tests in [test_wh3_lines.py](../../tests/twwarhammer3/test_wh3_lines.py),
+[test_wh3_lines_readings.py](../../tests/twwarhammer3/test_wh3_lines_readings.py) and
 [test_wh3_land_eval_declarations.py](../../tests/twwarhammer3/test_wh3_land_eval_declarations.py).
 No stage is scheduled; every live stage below waits for a window the owner names. The design, its
 reviews and the build records are in `runs/siege-evals-20261108/` (`final-alesia.md`,
@@ -97,7 +99,16 @@ battle it drops the inner front; the set's siege coverage and what comes next re
 What the chosen mode rests on. The objective text of the `coord-two-fronts` first observation
 reads role defender and `timeout_winner` "us" (the design's reading). In the
 [register](results.csv), 16 battles ended by `time_limit`, all classic Land battles, and the player
-won 3 of them (`CornerHold` twice, `attack_nearest` once). Authored placement read back within 25 m
+won 3 of them (`CornerHold` twice, `attack_nearest` once). The two `CornerHold` wins
+(`bench-b25-s7-cornerhold-20261017`) were corner holds that won on the timer without contact
+([tactic-cards.md](tactic-cards.md), S7), with `own_left` and `enemy_left` both 1.0. Builds: the
+`CornerHold` rows, the `attack_nearest` win (`bench-b43-line-floor-attack-20261020`) and
+`pilot-r4-01` ran on 9.0.4 (Steam build 25961564), as did 14 of the 16 timer rows; one ran on
+9.0.3 (25823491) and one on the pinned 9.0.5 (26403568). Of the other runs this page cites,
+Cannae window 1 and the suite's `coord-two-fronts` and `coord-breakout` launches ran on 9.0.5, the
+Kislev run speeds and card list (`bench-b12-kislev-reserves-*`) on 9.0.4 and the Norsca army
+(`skills-v1.1-random-a-20261013`) on 9.0.3; whether 9.0.5 matches the older builds is unverified
+([pins](integration.md#pins)). Authored placement read back within 25 m
 for every unit in all 13 Cannae window 1 battles, with a largest error of 8.8 m (recounted for this
 page from their `result.json` files). The design's "12 of 13" counts the battles inside every
 tolerance, width included: the air battle had 5 units outside on width. Rear charges, flank
@@ -308,6 +319,15 @@ therefore knows more than any model, and W against M measures whether a cost-inf
 matters for this script. It does not measure whether a controller can read the main effort from
 public fields. This rests on JUDGEMENT src/twwarhammer3/battle/lines.py Lines side weights.
 
+The prompt each model arm reads (`controllers.MODEL_PROMPTS`): `llm` reads
+[system_prompt.md](../../configs/twwarhammer3/system_prompt.md), whose "How to fight" section
+gives tactics, and `llm_rules` reads [rules_prompt.md](../../configs/twwarhammer3/rules_prompt.md),
+which gives none. Line 29 of system_prompt.md says that "a unit that is not fighting is wasted and
+a withdrawal only delays defeat", which is wrong for this battle's defender, who wins when the
+timer runs out (the Battle line says so). Line 35 tells cavalry to "attack the rear of an enemy
+fighting your infantry", which is the Lancers' counterstroke in W and M. Stage 6 names the arm a
+pilot uses.
+
 ## Decisions
 
 In the [specification form](scenario-guidelines.md#the-scenario-specification). A controller may
@@ -319,7 +339,8 @@ outer line (expected at the first observation; check 5), sending the reserve (Tz
 and the Lancers to H's side and sending them to L's side are both feasible: the reserve needs about
 101 m to either sector post and the Lancers 194-281 m to the outside waypoint. With the friendly
 line even and all three groups reaching the lines within the window (check 2), H should break the
-sector it faces unless the reserve joins it, while L's sector should hold either way, so the
+sector it faces unless the reserve joins it, while L's sector should hold either way (proposed
+check 2b reads this under `hold`), so the
 witness W should win more often than M, which sends them to L. If L alone can break its sector, if
 native AI moves H across x = 130 to L's side (check 3 reads this), or if the contacts are staggered
 beyond the window, the difference should shrink or reverse.
@@ -331,7 +352,17 @@ times across the new designs and the suite: Haengju D2, Malta D2, this battle's 
 battle's design was the only one that already planned its contrast at 16 launches per arm; every
 built battle page now recommends 16 per arm for its round, so the assignment no longer follows
 from power and rests on JUDGEMENT docs/twwarhammer3/historical-evals.md Claim assignment. Haengju
-D2 and Malta D2 stay exploratory. Everything else in this battle stays exploratory and has no test:
+D2 and Malta D2 stay exploratory.
+
+P1's arms move both the reserve and the Lancers: W and M also send the Lancers' rear charge to
+opposite sides (rule 6 below), so a W-over-M pass can come from where the rear charge lands
+rather than from the reserve. The posted reserve may not fight at all until a regiment gives way:
+an enemy at the front of the west sector's end regiment, at (10,-298), stands 41.4 m from the Tzar
+Guard's post at (35,-265), outside the 40 m leash (`LEASH_M`). Rear charges are exploratory here
+only as a claim of their own (E2). Changing the arms is
+[owner question 4](#decisions-for-owner-review).
+
+Everything else in this battle stays exploratory and has no test:
 
 - **E1, inner economy.** When G reaches the inner line while the relief is engaged, holding with
   the three inner regiments and pulling outer regiments inward are both feasible. Holding should
@@ -342,7 +373,8 @@ D2 and Malta D2 stay exploratory. Everything else in this battle stays explorato
   sooner; if H turns to face them, or no rear contact lands, nothing can be tested. The
   [Cannae plan](cannae-eval.md) reports that no A v2 battle shows Knights hitting the rear of an
   unbroken regiment that then collapses; no rear-contact reader exists to say more. Rear charges
-  are counted once, in Cannae A, and no N arm (W without the Lancers) is built.
+  are counted once, in Cannae A. The N arm (W with the Lancers kept on their start leash, as in
+  C) is built as an option for owner question 4 and runs in no stage; no stage compares N with W.
 - **E3, commander.** When an outer regiment wavers, bringing the Boyar within aura range and keeping
   him back are both feasible. The aura should delay the rout; his death costs army-wide morale.
   Commander exposure stays exploratory in every new battle.
@@ -368,10 +400,12 @@ like `coord-breakout`, and the owner decides whether to keep it.
 
 ## Witness, arms and controls as built
 
-[battle/lines.py](../../src/twwarhammer3/battle/lines.py) holds three classes. No built-in name is
-registered; a job names them as `twwarhammer3.battle.lines:LinesWitness`, `:LinesByMen` and
-`:LinesCentral`. Each reads public state only (its own units, the visible enemies, the terrain
-grid and the battle time) and gives these orders:
+[battle/lines.py](../../src/twwarhammer3/battle/lines.py) holds three arm classes. No built-in name
+is registered; a job names them as `twwarhammer3.battle.lines:LinesWitness`, `:LinesByMen` and
+`:LinesCentral`. Three more classes, built on 2026-11-09 as options for owner question 4, run in
+no stage until the owner picks them: `:LinesNoCounterstroke` and `:LinesNoCounterstrokeByMen` in
+the arm table and `:LinesCornerCamp` in the control table. Each arm reads public state only (its
+own units, the visible enemies, the terrain grid and the battle time) and gives these orders:
 
 1. **Roles** bind once, at the first observation, from type and start position. The Kossars,
    Armoured Kossars and Streltsi split at the midpoint of their start z into the inner line (three,
@@ -410,7 +444,11 @@ The values rest on JUDGEMENT src/twwarhammer3/battle/lines.py Lines witness rule
 | M, the primary foil | `LinesByMen` | Side scored by the visible enemies' current men; on this roster it picks L in both cases | Yes |
 | C, central | `LinesCentral` | No side: the reserve and the Lancers keep their start posts on the leash, and the Lancers never ride | Yes |
 | F, first contact | none | Side = the first outer sector with a friendly unit in melee | No |
-| N, no counterstroke | none | W without rule 6 | No |
+| N, no counterstroke | `LinesNoCounterstroke` | W without rule 6: the Lancers keep their start posts on the leash, as in C | Yes, 2026-11-09, an option for owner question 4; in no stage |
+| NM, N by men | `LinesNoCounterstrokeByMen` | N with M's side rule | Yes, as N |
+
+N and NM keep the Lancers home by C's rule (rests on JUDGEMENT src/twwarhammer3/battle/lines.py
+Lines arms without the counterstroke), so they differ only in where the reserve posts.
 
 Offline evidence at `e918091`: the 9 tests in `test_wh3_lines.py` run the arms on made-up fights
 built from both declarations. W chooses H's side and M L's side in both cases, and C chooses none;
@@ -419,8 +457,18 @@ Tzar Guard's and Lancers' orders, and W and M give identical orders where both r
 side (`wh3_ablation.assert_ablation`); renaming the job, adding hidden keys or renaming and
 reordering unit ids changes no order. The build's fixer swept 42 planted wrong versions and the
 tests caught 39; the three missed are M weighing men at the start, an enemy exactly on x = 130,
-and no Lancer reset on a side switch (`build-offline.json`, P7). These tests show what the scripts
-order; what the engine does with those orders is untested.
+and no Lancer reset on a side switch (`build-offline.json`, P7). On 2026-11-09 a tenth test and
+one more Lancer step added three cases the second look's mutation sweep found untested: a tie
+chooses no side, the cue counts every enemy ahead and not only relief units, and the 8 s clock
+starts at melee, not at the charge; each of those three planted versions now fails a test. Two
+more tests, also of 2026-11-09, cover the options: N and NM differ only in the Boyar's and Tzar
+Guard's orders, and N differs from W, and NM from M, only in the Lancers' orders, while the built
+W and M fail the reserve-only check because their Lancers follow the side; the corner camp takes
+the post `CornerHold` takes on the same observations and sends the 12 units to destinations at
+least 20 m apart. Six planted versions fail them: N's Lancers following the side, NM's men rule
+unwired, N's reserve on the other side's post, `CornerHold`'s two spots, ranks behind the post,
+and a post of its own. These tests show what the scripts order; what the engine does with those
+orders is untested.
 
 | Control | Source | What a win means |
 |---|---|---|
@@ -430,12 +478,39 @@ order; what the engine does with those orders is untested.
 | `twwarhammer3.battle.evade:Evade` | `evade.py` | The timer alone can decide the battle |
 | `twwarhammer3.battle.reference:Concentrate` (lost `coord-breakout` 2 of 2) | `reference.py` | Beating the groups one at a time beats holding lines; the battle narrows to a `coord-breakout`-like label |
 | C | `lines.py` | Committing the reserve and the Lancers at all is not needed |
-| M | `lines.py` | Which side they go to does not matter for this script |
+| M | `lines.py` | Sending them to L can win. That the side does not matter is not shown at this power (0.281 for 20 to 50%, 0.269 for 30 to 60%, at 16 per arm) |
+| `twwarhammer3.battle.lines:LinesCornerCamp` (built 2026-11-09; in no stage unless the owner adds it, question 4) | `lines.py` | Camping in a corner wins at the timer without the side decision |
 
-Every win is kept; a shortcut win narrows the label and never adds a requirement. For model studies
-later: a fixed-schedule foil (`replay_schedule.ReplaySchedule`, built at `e918091`) that replays a
-winning W launch's orders by battle time; an announced arm whose briefing names H's side; and a
-named-briefing arm only if recognition becomes a claim.
+Every win is kept; a shortcut win narrows the label and never adds a requirement. No control in
+the current stage 3a camps in a corner, although two of the three player timer wins above were
+corner holds without contact. `Evade` is a different play: it sends the whole army to one moving
+point, and it lost all 3 of its launches (`a-evade-01`, `b3-evade-01`, `air-evade-01`).
+
+The 12-unit corner camp, `LinesCornerCamp`, is built, and whether stage 3a runs it is part of
+[owner question 4](#decisions-for-owner-review). It takes `CornerHold`'s post rule once, unchanged
+(`calibration.CornerHold.choose`: a post 30 m inside each corner, stepped up to eight cells toward
+the map centre past blocked cells; the nearest post nearer the army than the visible enemies'
+centre, else the nearest). The units, sorted by id once, stand in two ranks of six facing the map
+centre, 40 m apart across, 130 m and 100 m from the post toward the centre, so on an open square
+corner the back rank's ends touch the 30 m line along each edge; a unit in melee fights the
+nearest enemy within 20 m and does not move (rests on JUDGEMENT src/twwarhammer3/battle/lines.py
+Lines corner camp). Its tests use made-up observations with no blocked cells. On the recorded
+Taurox grid (the `TERRAIN` fixture in `test_wh3_eval_boundary.py`) the post rule does not reach a
+corner when all 12 enemies are visible, as check 5 expects: the posts nearer the army than the
+enemy are the northeast and the northwest, the northeast is the nearer, and its eight steps end
+on rock at (301,301). The ranks then stand beside the central rock, at least 210 m from the north
+and east edges, three front-rank destinations step one cell east off rock, and the closest two
+are 18.9 m apart. With only G visible it takes the open southeast corner (482,-482) and its
+destinations stay 30 m apart. So the corner needs the owner's choice before the camp runs:
+`CornerHold`'s rule as it stands, or a corner whose 30 m post is open, which on this grid is the
+southeast (about 430 m from the army and 230-280 m from the east relief group, L in case a and H
+in case b) or the northwest (about 950 m away, past G). A Lancers-only evasion
+variant, in which the Lancers flee and every other unit holds its post, is built only if the
+corner camp wins.
+
+For model studies later: a fixed-schedule foil (`replay_schedule.ReplaySchedule`, built at
+`e918091`) that replays a winning W launch's orders by battle time; an announced arm whose
+briefing names H's side; and a named-briefing arm only if recognition becomes a claim.
 
 ## Measurements
 
@@ -446,17 +521,22 @@ named-briefing arm only if recognition becomes a claim.
 | Each group's contact time (the first time 2 of its 4 units are in melee) and the spread between groups | 1 Hz replay, never a policy input; contact is the engine melee flag on a unit with men left, and groups come from the private first reading matched to the placements, never from current position | No |
 | Where each unit's first melee lay, relative to the lines and the split | Same | No |
 | The reserve's arrival within 25 m of its post | Same | No |
-| The first friendly rout per sector, and when | Same | No |
 | Lancer arrival at the waypoint and melee behind a target | Same; a rear-contact detector stays later work, validated against owner-labelled clips chosen before its thresholds | No |
 | The Boyar's position, waver and death times | Same | No |
+| The first friendly rout per sector, and when | `lines_readings.sector_routs`: when the first unit of each sector, and the first of the other eight units, reads `routing` in the private record; sectors bound once to the declared placements (rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Sector rout reading) | Yes, tested on made-up records |
+| The side any controller sent the reserve or the Lancers to first: H, L or neither | `lines_readings.branch`: the side of x = 130 of the first accepted move or attack by the Tzar Guard, the Boyar or a Lancers unit decided at or after the cue, which it computes from public observations (6 visible enemies more than 60 m ahead of the outer line). Only a destination, or an attack target where it stood in the decision's observation, ahead of the midpoint between the two lines (z -230) counts, so an order toward the inner line or the town side is skipped; rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Lines branch reading | Yes, tested on made-up records |
 
 The contact and grouping readings rest on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py
 Contact rule and on JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership. The
 replay keeps enemies only while they are visible. The evaluator-only all-unit record (portfolio
 S3), built at `f3fec92` (fields in `capture.copy_private_record`), holds every enemy unit, hidden
 ones included, and both cases opt into it with `"private_record": true`, so if check 5 or stage 1
-shows enemies leaving sight the readings can read it instead; no reader of it is built for this
-battle, and no game has written it. All readings are descriptive, and missing values stay unknown.
+shows enemies leaving sight the readings can read it instead. Its one reader for this battle is
+`sector_routs`, and no game has written it. All readings are descriptive, and missing values stay
+unknown. Every timer win (`ended_by` `time_limit`) is reported with `own_left` and `own_active`,
+so that a win in which the army avoided the fight cannot pass for a held line; contact counts
+join them once the group-contact reader exists. A model's result on this battle is its win rate
+reported with its branch shares from `branch` (H, L, neither), never the win rate alone.
 
 ## Proposed deciding checks
 
@@ -469,34 +549,59 @@ the set's shared rules: one primary contrast per battle at two-sided Fisher p < 
 ([exact_stats.py](../../src/twwarhammer3/battle/exact_stats.py)), a frozen 4-of-5 witness gate at
 5 s added order age and a 5 s decision interval before any round, exact power printed, and contact
 from the engine melee flag ([evidence_rules.py](../../src/twwarhammer3/battle/evidence_rules.py)).
-No gate exists in this battle, so the hp <= 0 breach rule does not apply. Checks 2-4 are premise
-checks that need all six stage 1 `hold` launches, 3 of 3 in each case. A premise that holds in 80%
-of launches passes one case 0.512 of the time and the whole check, both cases, 0.262 of the time
-(0.8 to the sixth power).
+No gate exists in this battle, so the hp <= 0 breach rule does not apply. Checks 2-4, and the
+proposed 2b, are premise checks that need all six stage 1 `hold` launches, 3 of 3 in each case. A
+premise that holds in 80% of launches passes one case 0.512 of the time and the whole check, both
+cases, 0.262 of the time (0.8 to the sixth power), so the check fails such a premise 0.738 of the
+time. Checks 2 and 4 are the two that trigger a restage (stage 1c). If each holds in 90% of
+launches, independently, both pass on the six launches 0.282 of the time (0.9 to the twelfth
+power), and at 80% 0.069 of the time, so a restage is likely.
 
 | # | Claim | Evidence | Rule | Must fail on |
 |---|---|---|---|---|
 | 0 | Cards recruit | Lobby-only readback with no battle (portfolio S9): the scenario's lobby steps without the Start click, then `setup.army_checks` | All 13 keys and the banner read back in a classic lobby, with counts | A scenario copy with one key swapped |
 | 1 | Constructed | Lobby readback and the private first reading, every launch | Map, mode, role, settings, funds and charge, rosters by multiplicity, rank 0; every unit within 25 m; bearing within 5 degrees after the constant offset stage 1 measures (Cannae found 2.8 degrees); widths recorded, the Boyar's excluded | A Champions placed in the east slot in case a; a group staged 100 m off; case b's file launched under case a's label |
 | 2 | Two fronts at once | 1 Hz replay of the stage 1 `hold` launches, 3 of 3 per case | The spread between G's, L's and H's contact times is at most the window: provisional 56 s (190 m at 3.4 m/s), recomputed from the Tzar Guard's run in stage 2 and then re-read on the same replays | A synthetic replay with G's contact 200 s late; a reader that times a group from one lone Horsemen charge; groups rebuilt from current x |
+| 2b | H breaks its sector unaided (proposed) | `lines_readings.sector_routs` on the private record of the six stage 1 `hold` launches | The first friendly rout falls in the sector facing H (no other friendly unit routs earlier), and L's sector routs later or not at all, 3 of 3 per case. It passes a premise that holds in 80% of launches 0.262 of the time and fails it 0.738 of the time | Offline, built (`test_wh3_lines_readings.py`): a unit's sector read from where it stands when it routs, on a record whose west-sector Streltsi cross x = 130 before they rout |
 | 3 | Main effort on its side | Same | H's first melee lies on its slot's side of x = 130, 3 of 3 per case | The same replay read under the swapped case label |
 | 4 | Lines met at their front | Same | Per launch, at most 2 of 8 relief units' first melee lies north of z -280 or outside x -50 to 310, and at most 1 of 4 G units' first melee lies south of z -180 or outside x 10 to 250 | A synthetic replay in which relief units first meet in melee inside the band |
 | 5 | Visible at the start | First observation against the private reading, stage 1 | 12 of 12 enemies visible by the first decision | A reading that drops a hidden unit and still counts 12 |
 | 6 | Information boundary | Built: the declaration test above, the arms' hidden-key and job tests, and `test_wh3_eval_boundary.py`, which renders the `llm` prompt and `play.public` view from fixture first observations of both cases and checks that the two views differ only in enemy positions, bearings and states. To build: the same from recorded first observations of both cases (portfolio S2) | No case, slot, group label, "main effort" or withheld name in any input, the job name included; the two cases' views differ only in enemy positions, bearings and states | The case letter planted in the job name |
 | 7 | Orders reach effects | Stage 2 probe, trace and video | The Tzar Guard runs between the posts (its time sets check 2's window); the Lancers reach the waypoint and the rear point, and an attack gives melee within 15 s; guard, fire at will and skirmish read back on the Kislev units. An effect seen once shows it can happen and says nothing about how often | An accepted move whose unit never arrives, reported as a non-arrival |
 | 8 | Arms wired | Offline, built (`test_wh3_lines.py`); to repeat on recorded first-observation sequences after stage 1 | W picks H's side and M L's side in both cases; arms differ only in the reserve and Lancer orders; the job changes no order | M's flag unwired; W weighing by men; W reading the case from anything but positions |
-| 9 | Shortcuts | Stage 3a, one launch per control, cases alternated, rerun at each ladder step | Reported only; a win is kept and narrows the label | Nothing; reported only |
+| 9 | Shortcuts | Stage 3a, one launch per control, cases alternated, rerun at each ladder step | Reported only; a win is kept and narrows the label. One launch catches a shortcut that wins 30% of the time 0.30 of the time | Nothing; reported only |
 | 10 | Witness at a named timing | Frozen gate: W at 5 s / 5 s, fresh launches in a pre-drawn alternating case order | At least 4 of 5 won, stopping at the 4th win or the 2nd loss. Exact error rates (`exact_stats.gate_pass`): it passes a 50% witness 0.1875 of the time and fails an 80% one 0.263 | A witness win credited at a cell it did not play |
 | 11 | The side choice matters for this witness (primary) | Confirmation round, fresh launches, only after check 10 passes and the owner names this contrast | W against M, 16 per arm (8 per case); pooled two-sided Fisher p < 0.05; Newcombe interval (`exact_stats.newcombe`) reported; per-case counts descriptive | Offline, built (`test_wh3_exact_stats.py`): Fisher's tea table (3 of 4 against 1 of 4) gives 0.486 two-sided, and a one-sided version (0.243) fails |
 | 12 | Human win | `manual_demo record --scenario ksl-nor-lines-a-v1`, then b; neither has `reserve` or `custom`, so the observer session accepts them | One engine win per case; every attempt kept; pauses labelled from video. The recorder's handover is itself unverified | A recorder run whose setup readback fails must stop |
 
+JUDGEMENT?: Lines check 2b — Claude, 2026-11-09 (second look A1): proposed, owner decides. The
+rout order under `hold`, 3 of 3 per case; a failure goes to the owner and restages nothing.
+Another count, or a restage on failure, changes when P1's premise counts as failed; P1 rests on it.
+
 Primary round plan (check 11):
 - 32 fresh launches, W and M by two cases by 8, in a pre-drawn order of blocks of four (one of each
   arm and case per block), with neutral job names and the arm and case kept only in the private
-  plan record. The plan builder (portfolio S6) is not built.
-- A launch with no engine outcome is not an attempt and gets one new launch in a new plan. That is
-  Cannae row 3's agreed rule, applied here by extension, which the owner has not agreed for this
-  battle. There is no early stop.
+  plan record. The plan builder (portfolio S6) is not built. A block of four already holds one
+  launch of each arm and case, which is a time block in the sense of
+  [guideline 4.2](evaluation-guidelines.md#42-balance-who-plays-first-and-when); blocks run whole
+  within one night. When a block's Steam build, recorded in each job's `environment.json`
+  (`game.steam_build_id`), differs from that of the round's first block, the round pauses at the
+  end of that block and the owner is told. The comparison is with the round's own build, not the
+  pin ([set rule 1](historical-evals.md#method-rules-the-set-shares)), and a different build never
+  blocks (AGENTS.md). The owner decides before the round starts, in the plan record, whether a
+  build change restarts the round or splits it into strata read with an exact stratified test.
+- Replacement follows [guideline 5.2](evaluation-guidelines.md#52-freeze-how-every-trial-is-scored).
+  A controller exception that ends the episode is a forfeit, a loss for its arm; a
+  `PolicyFailure` with no cause, such as W's missing lobby cost, forfeits one decision and the
+  battle goes on to its engine outcome. Only a failed setup or readback check, a game silent
+  before the wall cap and an operator stop are replaced, each by one new launch in a new plan.
+  Replacements are printed per arm, and when the arms' counts differ by 2 or more the round also
+  reports [5.3](evaluation-guidelines.md#53-give-every-planned-trial-one-visible-disposition)'s
+  range from all lost to all won for the replaced launches, and is unresolved if the verdict
+  changes across it. There is no early stop.
+- Once the replay readers exist, checks 2-4 are also read on every W and M launch of the gate and
+  the round and reported beside the counts; they decide nothing there unless the owner adds a rule
+  before the round.
 - Exact power (`exact_stats.plan_power`, 16 per arm): 0.740 if the arms truly win 20% and 70%,
   0.786 for 10% and 60%, 0.962 for 0% and 50%. At 10 per arm the same gaps give 0.426, 0.474 and
   0.623. To pass, W must win at least 5 of 16 if M wins 0, 9 if M wins 2, 11 if M wins 4 and 15 if
@@ -506,31 +611,47 @@ Primary round plan (check 11):
   Lancers to the costlier relief group won more often than sending them to the group with more men.
   M picks the lighter group by construction, so a pass says nothing about models and nothing about
   whether a controller can read the main effort from public fields.
+- A pass with M ahead reads: the side choice matters for this witness, and W's rule is the worse
+  choice here; whether that earns a label is the owner's call. A non-pass reads "not shown at this
+  power" (0.281 for 20 to 50%, 0.269 for 30 to 60%, at 16 per arm), never "the side does not
+  matter".
 
 ## Live stages
 
-All $0. Game time starts only when the owner names a stage; the stages run one battle at a time,
-and a launch takes about 20 minutes (the 1,200 s timer plus loading; the design's estimate).
+All $0. Game time starts only when the owner names a stage; the stages run one battle at a time.
+A launch that runs to the timer takes about 20-25 minutes (the 1,200 s timer plus loading; the
+design's estimate, as no launch of this battle has run), and one that ends earlier takes less;
+the times below use 20-25 minutes a launch.
 
 | Stage | What runs | Launches and game time | What it can establish |
 |---|---|---|---|
-| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`) and the fixture boundary test (`test_wh3_eval_boundary.py`). Still to build: the replay readers for checks 2-4 with their synthetic plants, the boundary test on recorded first observations, the plan builder, and F and N if the owner wants them | None | That the code does what its tests say |
+| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). Still to build: the replay readers for checks 2-4 with their synthetic plants, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
 | 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the step files (it launches nothing) and `twwarhammer3 menu --steps` sends them; no live lobby has run them | One game session, minutes, no battle | Whether the Kislev and Norsca cards and the banner recruit; a Norsca failure starts the Greenskin version and a Kislev failure goes to the owner (see risks) |
-| 1b | One `hold` launch of case a | 1, about 20 min | Checks 1 and 5, the bearing offset, the funds charge |
-| 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7 h, plus about 2 per restage | Checks 2-4 at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass |
-| 2 | Probe, with one spare | 1-2, about 30 min | Check 7 and the window; then checks 2-4 are re-read on the stage 1 replays |
-| 3a | Shortcut screen: `attack_nearest`, `rush_nearest`, `skills`, `Evade`, `Concentrate`, C and M, cases alternated (`hold` comes from stage 1) | 7, about 2.3 h | Check 9 |
-| 3b | Frozen gate (check 10), plus W at 10 s / 10 s once per case as development evidence | At most 5 plus 2, about 2.3 h | Check 10 |
-| 3c | Ladder, only after a gate passes: harder is enemy rank +2 on all 12 units, easier is player rank +2; one factor a step, at most three steps. Each step reruns W twice per case and every shortcut once, and re-reads checks 2-4. The hardest step where W won at least 3 of 4 and no shortcut won is frozen and gets its own gate | About 11 per step (3.7 h), then at most 5 for the frozen step's gate | Check 9 and 10 at each step |
+| 1b | One `hold` launch of case a | 1, about 20-25 min | Checks 1 and 5, the bearing offset, the funds charge |
+| 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7-2.1 h, plus 6 per restage (2-2.5 h) | Checks 2-4 and 2b at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass; a 2b failure is reported and taken to the owner and does not restage. A restage costs 6 fresh holds, 3 per case, because checks 2-4 need 3 of 3 per case on each version (the earlier budget of 2 could not rerun them); the number of restages is reported, and a cap on them is [owner question 4](#decisions-for-owner-review) ([options](#options-for-questions-4-and-5)) |
+| 2 | Probe, with one spare | 1-2, about 20-50 min | Check 7 and the window; then checks 2-4 are re-read on the stage 1 replays |
+| 3a | Shortcut screen: `attack_nearest`, `rush_nearest`, `skills`, `Evade`, `Concentrate`, C and M, cases alternated (`hold` comes from stage 1). With the corner camp, if the owner adds it (question 4), one launch per case more | 7, about 2.3-2.9 h; 9, about 3-3.75 h, with the corner camp | Check 9 |
+| 3b | Frozen gate (check 10), plus W at 10 s / 10 s once per case as development evidence | At most 5 plus 2, about 2.3-2.9 h | Check 10 |
+| 3c | Ladder, only after a gate passes: harder is enemy rank +2 on all 12 units, easier is player rank +2; one factor a step, at most three steps. Each step reruns W twice per case and every shortcut once, and re-reads checks 2-4. The hardest step where W won at least 3 of 4 and no shortcut won is frozen and gets its own gate | About 11 per step (3.7-4.6 h), then at most 5 for the frozen step's gate (1.7-2.1 h) | Check 9 and 10 at each step |
 | 4 | The owner's demonstration, one engine win per case | Owner's time | Check 12 |
-| 5 | Confirmation round, only if the owner names it | 32, about 8-11 h | Check 11 |
-| 6 | Model pilot, if wanted | Paid, the owner's budget | Exploratory model results only |
+| 5 | Confirmation round, only if the owner names it | 32, about 11-13 h | Check 11 |
+| 6 | Model pilot, if wanted: `llm_rules`, or `llm` reported as a tips arm (the marker below) | Paid, the owner's budget | Exploratory model results only, each with its branch shares from `lines_readings.branch` |
 
 JUDGEMENT: Lines ladder — Claude, 2026-11-08 (two-front design): stage 3c's knob (enemy rank +2
 on all 12 units, player rank +2 for easier), at most three steps, frozen at the hardest step where
 W won at least 3 of 4 and no shortcut won. Adding units changes the cue; the difficulty rests on it.
 
-Through stage 3b that is about 21-22 launches and 7 hours of game time before any restage or
+As written, M and C are in the stage 3a shortcut list, so a single M win in a step's screen
+rules that step out of the freeze ("no shortcut won"). Whether M's screen and ladder launches
+may decide a step is [owner question 5](#decisions-for-owner-review) ([options](#options-for-questions-4-and-5)). A freeze that rests on
+single losses carries the error of check 9: one launch catches a shortcut that wins 30% of the
+time 0.30 of the time.
+
+JUDGEMENT?: Lines pilot prompt — Claude, 2026-11-09 (second look seat-3): a pilot runs `llm_rules`,
+and an `llm` result is reported as a tips arm. Reporting `llm` as the model arm credits its How to
+fight advice to the model; stage 6's reading rests on it.
+
+Through stage 3b that is about 21-22 launches and 7-9 hours of game time before any restage or
 ladder step.
 
 ## Risks
@@ -539,12 +660,13 @@ ladder step.
 |---|---|---|
 | Norsca cards or the banner do not recruit | 1a | A Greenskin enemy (Orc Boyz, Goblin Spearmen, Arrer Boyz, Big 'Uns, Black Orcs, Trolls) as a new version, starting stage 1 again |
 | Kislev cards do not recruit (most likely the Tzar Guard or the Winged Lancers, which no played scenario has recruited) | 1a | The player roster changes, which is the owner's choice (for example question 3 (b)); the new version starts stage 1 again |
-| The posted reserve rarely fights: an enemy 3 m in front of a sector regiment's centre is about 41 m from the Tzar Guard's post, just past the 40 m leash, so W's posted reserve may fight no more than C's until a regiment gives way (the build's implementer found this). W still differs from C in the Lancers' ride round the line's end, and from M in the side they ride to | 3 | Record it; a different leash is a new witness version and needs the owner, since the values are marked |
+| The posted reserve rarely fights: an enemy 3 m in front of a sector regiment's centre is about 41 m from the Tzar Guard's post, just past the 40 m leash, so W's posted reserve may fight no more than C's until a regiment gives way (the build's implementer found this). W still differs from C in the Lancers' ride round the line's end, and from M in the side they ride to. N and NM (owner question 4 (b) or (c)) differ only where the reserve posts, so for them this risk bears on the contrast itself | 3 | Record it; a different leash is a new witness version and needs the owner, since the values are marked |
+| H does not break its sector first under `hold` (check 2b fails) | 1c | Report it and take it to the owner, since P1's premise is then unsupported; it does not restage |
 | The groups merge, arrive staggered or go round the line ends | 1c (checks 2-4) | Restage in 15 m steps; a scripted hold (shared with Haengju's waves work) only if staging cannot fix it |
 | G arrives well before the relief | 1c | Move G 15 m at a time |
 | `Concentrate`, `skills` or `Evade` wins | 3a | Keep the win; narrow the label; the owner decides whether to keep the battle |
 | W never wins, or fails the gate | 3b | Easier ladder steps; with no win the battle stays unwitnessed and no round runs |
-| M wins as often as W | 5 | The side choice does not matter for this script here; the battle is not labelled with the decision |
+| M wins as often as W | 5 | A difference is not shown at this power (0.281 for 20 to 50%, 0.269 for 30 to 60%, at 16 per arm); the battle is not labelled with the decision |
 | The terrain under the two slots favours one side | 1c, 5 | Per-case counts are reported beside the pooled test |
 | A ladder step removes the premise (contacts stop coinciding) | 3c | Checks 2-4 are re-read at every step |
 | No rear contact ever lands | 2-3 | E2 stays untested |
@@ -553,27 +675,96 @@ ladder step.
 
 ## Decisions for owner review
 
-Three questions, with the recommendation first; the build at `e918091` used the recommended answer
-to each.
+Five questions. Questions 1-3 give the recommendation first, and the build at `e918091` used it
+for each. Questions 4 and 5 come from the second look of 2026-11-09
+(`runs/siege-evals-20261108/second-look.json`, its owner questions 3 and 4); their
+recommendation follows the options. Their options are built or written beside the current plan,
+which stays the default until the owner answers ([options](#options-for-questions-4-and-5)).
 
 1. **Keep this battle under a siege-set name?** (a) Keep it as a Land battle labelled "a two-front
    defence after Alesia's last day" (recommended): no WH3 siege mode puts a garrison inside the
    besieger's lines without about six untested engine behaviours, and this is the set's one
    powered test of reserve allocation. (b) Drop it from the siege set, because it does not play in
    WH3's siege mode.
-2. **The primary contrast.** (a) W against M at 16 per arm (recommended): 32 launches, about 8-11 h
+2. **The primary contrast.** (a) W against M at 16 per arm (recommended): 32 launches, about 11-13 h
    of $0 game time, exact power 0.740 for 20% against 70%. (b) 10 per arm, power 0.426-0.623.
    (c) W against C, which asks whether committing the reserve matters at all. (d) Paired
-   checkpoint branches compared with exact McNemar (portfolio S11), which first needs a declared
-   checkpoint check case for this map and army.
+   checkpoint branches compared with exact McNemar (portfolio S11). Here that is a branch at the
+   start: W and M choose a side at the first decision, when all 12 enemies are expected to be
+   visible (check 5), so a pair shares only the engine's randomness, and the register's
+   rematches show no sign of a gain from that (between different controllers in one job and
+   scenario, 34 of 52 pairs agreed, against 34.6 expected if independent). It also first needs a
+   declared checkpoint check case for this map and army.
 3. **Factions.** (a) Kislev against lordless Norsca (recommended): Norsca has fought in the game
    only as an autogenerated army, and a Greenskin enemy is the fallback version if its cards fail.
    (b) Empire against Greenskins: every card recruited before, but the same factions as two suite
    battles on the same map.
+4. **P1's arms, a corner-camp control and the restage cap.** W and M send both the reserve and
+   the Lancers to opposite sides, so a pass may come from the rear charge
+   ([overlap](#decisions)). (a) Keep both and rename the claim "reserve and counterstroke side".
+   (b) W and M both keep the Lancers on their start leash, as C does, so P1 tests the reserve
+   alone. (c) Build N (W without rule 6) and its men-weighted twin. Also: should stage 3a add a
+   12-unit corner-camp control, one launch per case (2 launches, about 40-50 min)? And should
+   restages, which cost 6 fresh holds each, be capped, for example at 3? The second look recommends
+   (b), the control and the cap. Each answer changes a marked spot: the Lines witness rules,
+   deciding checks or ladder. The corner camp's post also needs a choice (control table above).
+5. **M's screen and ladder launches.** Today a single M win in stage 3a or 3c rules a ladder
+   step out of the freeze. (a) Keep that. (b) Report M's screen and ladder launches and let them
+   decide nothing, knowing that the frozen version may then be one where M ties W, which the
+   round would report as not shown. The second look recommends (b).
 
 Other open choices are marked above: the separate multi-face siege, the settings, forces, enemy
-lord, banner, layout, reserve facing, briefing, withheld names, deciding checks and ladder on this
-page, and the witness rules, side weights, relief membership and rear point in `lines.py`.
+lord, banner, layout, reserve facing, briefing, withheld names, deciding checks, check 2b, ladder
+and pilot prompt on this page, the witness rules, side weights, relief membership and rear point
+in `lines.py`, and the sector rout and branch readings in `lines_readings.py`. The options for
+questions 4 and 5 carry their own markers: the claim rename, restage cap and report-only foil
+below, and the arms without the counterstroke and the corner camp in `lines.py`.
+
+### Options for questions 4 and 5
+
+Built or written on 2026-11-09 beside the current plan, which stays the default until the owner
+answers. No option is in any stage, and none has run in the game.
+
+P1's pair (question 4). N and NM are built and tested offline (above); under (b) or (c), check
+8's rule reads "N and NM differ only in the reserve's orders":
+
+| Option | Check 11 compares | Classes | What a pass shows |
+|---|---|---|---|
+| Current | W against M | `LinesWitness`, `LinesByMen` | For this witness, sending the reserve and the Lancers to the costlier relief group won more often than sending them to the group with more men |
+| (a) | W against M, with the claim named "reserve and counterstroke side" | The same | The same; [historical-evals.md](historical-evals.md)'s "reserve allocation" for this battle and its line that rear charges stay exploratory in the new battles would change with it |
+| (b) | N against NM, which replace W and M as the witness and its foil in checks 8, 10 and 11, stage 3a and the ladder | `LinesNoCounterstroke`, `LinesNoCounterstrokeByMen` | Sending the reserve alone to the costlier relief group won more often than sending it to the group with more men |
+| (c) | N against NM, added beside W and M | The same as (b) | As (b). Whether the gate (check 10) and the ladder run W or N is part of the choice; with W, the round's N has no gate of its own |
+
+Under (b) and (c) the two arms differ only where the reserve posts, and its leash does not reach
+the sector's front (the risk row above), so until a regiment gives way N and NM may play alike and
+the round may show no difference at this power. The leash is in the marked Lines witness rules.
+
+JUDGEMENT: Lines claim rename — Claude, 2026-11-09 (owner question 4 (a)): offered as "reserve and
+counterstroke side". The current "reserve allocation" credits any Lancer effect to the reserve;
+the meaning of a check 11 pass under (a) rests on it.
+
+Restaging in stage 1c (question 4). Today a version is restaged in 15 m steps, 6 fresh holds a
+restage, until checks 2 and 4 pass, with the count reported and no cap. The capped option stops
+after at most 3 restages: if the third restaged version still fails check 2 or 4, the battle goes
+back to the owner with every version's readings. Stage 1c then costs at most 5 + 3 x 6 = 23
+launches, about 7.7-9.6 h. If restaging changed nothing, a version whose checks 2 and 4 each hold
+in 90% of launches would fail all four tries 0.265 of the time (each passes 0.282 of the time, as
+above), and one where each holds in 80% would pass within four tries 0.248 of the time.
+
+JUDGEMENT: Lines restage cap — Claude, 2026-11-09 (owner question 4): offered as at most 3
+restages of 6 fresh holds, then the owner. No cap, or another, changes which version stage 1
+passes and how often a version passes by luck; stage 1c's budget rests on it.
+
+M's launches in stages 3a and 3c (question 5). Today M and C are shortcuts, and a single win in a
+step's screen rules that step out of the freeze. In the report-only option M's launches (C's too
+if C becomes the contrast under question 2 (c), and NM's in place of M's under question 4 (b) or
+(c)) still run once per step and are reported beside it, and the freeze reads "the hardest step
+where W won at least 3 of 4 and no other shortcut won". The frozen version may then be one where
+M ties W, which the round would report as not shown at this power.
+
+JUDGEMENT: Lines report-only foil — Claude, 2026-11-09 (owner question 5 (b)): offered as M's 3a
+and 3c launches reported, deciding no step. Letting them decide pushes the freeze toward steps
+where M loses; which version is frozen rests on it.
 
 ## Sources
 

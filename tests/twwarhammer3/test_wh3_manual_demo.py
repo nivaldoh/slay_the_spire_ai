@@ -2,6 +2,7 @@
 
 import copy
 import json
+import shutil
 from contextlib import nullcontext
 from types import SimpleNamespace
 
@@ -126,7 +127,7 @@ def fake_recording(tmp_path, monkeypatch, states):
 
 @pytest.mark.parametrize("bad_setup", [False, True])
 def test_record_keeps_success_and_failed_setup_and_never_sends_orders(
-        tmp_path, monkeypatch, bad_setup):
+        tmp_path, monkeypatch, capsys, bad_setup):
     states = [readback(), ending()]
     if bad_setup:
         states[0]["setup"]["unit_scale"] = .5
@@ -146,6 +147,8 @@ def test_record_keeps_success_and_failed_setup_and_never_sends_orders(
         assert set(manifest["setup_checks"]["deployment_formation"]) == {"f9", "f2", "e8"}
     raw = json.loads((output / "initial-observation.json").read_text())
     assert raw["setup"]["unit_scale"] == (.5 if bad_setup else .75)
+    # A land battle teleports its friendly side at Deployed: no siege start check.
+    assert "start_check" not in manifest and "Siege:" not in capsys.readouterr().out
 
 
 @pytest.mark.parametrize("name,used", [("emp-envelopment-a-v1", "emp-envelopment-a-v1"),
@@ -348,3 +351,93 @@ def test_a_waves_recording_checks_its_releases_again_at_the_end_and_keeps_the_at
     else:
         assert [(r["group"], r["reason"], r["released_ms"])
                 for r in manifest["reserve_final"]["releases"]] == [(1, "time", 150000)]
+
+
+GARRISON, IZMAIL = ["f1", "f2", "f3"], ["f1", "f2", "f3", "e1", "e2"]
+
+
+def private_record(shift=None, by=(0, 0), battle="b1"):
+    """Two private-record frames: the start of a Haengju-like garrison f1-f3 and two enemy units,
+    with ``shift`` (a unit id, or "all") moved by ``by`` metres, then every unit 200 m on from the
+    unshifted start. Only the first frame is a start."""
+    places = {"f1": (-40, 120), "f2": (0, 120), "f3": (40, 120),
+              "e1": (-60, -300), "e2": (60, -300)}
+    frames = []
+    for time_ms, moved, (dx, dz) in ((1000, shift, by), (2000, "all", (200, 0))):
+        frame = {"private_record": 1, "job": "attempt", "battle": battle, "time_ms": time_ms,
+                 "friendly": [], "enemy": []}
+        for unit_id, (x, z) in places.items():
+            ox, oz = (dx, dz) if moved in (unit_id, "all") else (0, 0)
+            side = "friendly" if unit_id.startswith("f") else "enemy"
+            frame[side].append({"id": unit_id, "x": x + ox, "y": 3.5, "z": z + oz})
+        frames.append(frame)
+    return frames
+
+
+def jsonl(frames):
+    return "".join(json.dumps(frame) + "\n" for frame in frames)
+
+
+# Haengju's garrison is engine-placed and its enemy teleported; Izmail places both armies. A mean
+# offset over 3 or 5 units stays under 25 m, and a friendly-only reading misses e1.
+@pytest.mark.parametrize("moved,ids", [("f2", GARRISON), ("e1", IZMAIL)])
+def test_demo_start_reads_one_engine_placed_unit_moved_40_m_as_own_deployment(moved, ids):
+    holds = [private_record(), private_record("all", (3, -4))]
+    demo = private_record(moved, (40, 0))
+    assert manual_demo.demo_start(demo, holds, ids) == "own deployment"
+
+
+def test_demo_start_needs_every_unit_within_25_m_of_every_hold():
+    holds = [private_record(), private_record("all", (3, -4))]
+    demo = private_record("all", (14, 14))  # 19.8 m and 21.1 m from the two holds
+    assert manual_demo.demo_start(demo, holds, IZMAIL) == "same start"
+    # 10 m from the first hold and 30 m from the second; rests on JUDGEMENT?
+    # src/twwarhammer3/battle/manual_demo.py Every hold a reference.
+    holds = [private_record(), private_record("all", (20, 0))]
+    demo = private_record("all", (-10, 0))
+    assert manual_demo.demo_start(demo, holds, IZMAIL) == "own deployment"
+
+
+@pytest.mark.parametrize("holds", [
+    [], [private_record()], [private_record(), private_record("f2", (0, 30))]],
+    ids=["no reference", "one hold", "holds 30 m apart"])
+def test_demo_start_without_a_repeated_engine_start_is_not_comparable(holds):
+    assert manual_demo.demo_start(private_record(), holds, GARRISON) == "start not comparable"
+
+
+def test_a_siege_recording_tells_the_owner_and_labels_its_start_in_the_manifest(
+        tmp_path, monkeypatch, capsys):
+    name = "ksl-emp-siege-a-v1"  # no deployment: the engine places both armies
+    output, _ = fake_recording(tmp_path, monkeypatch, [readback(), ending()])
+    monkeypatch.setattr(manual_demo, "check_battle", lambda *a: {"passed": True})
+    monkeypatch.setattr(manual_demo, "expected_mode", lambda *a: {})
+    episodes = []
+    for job, scenario, policy in (("holds", name, "hold"), ("holds", name, "hold"),
+                                  ("other", "cth-emp-siege-a-v1", "hold"),
+                                  ("scripted", name, "attack_nearest")):
+        (tmp_path / job).mkdir(exist_ok=True)
+        (tmp_path / job / "manifest.json").write_text(json.dumps({"scenario": {"name": scenario}}))
+        episode = tmp_path / job / f"episode-{len(episodes):04d}"
+        episode.mkdir()
+        (episode / "result.json").write_text(json.dumps({"policy": policy}))
+        (episode / "private.jsonl").write_text(jsonl(private_record(battle=f"h{len(episodes)}")))
+        episodes.append(episode)
+    shutil.copytree(tmp_path / "holds", tmp_path / "copied")  # the same battle under another path
+    other = "is not a hold episode of ksl-emp-siege-a-v1"
+    for wrong, why in ((episodes[2], other), (episodes[3], other),
+                       (episodes[0], "repeats an earlier hold"),
+                       (tmp_path / "copied/episode-0000", "repeats an earlier hold")):
+        with pytest.raises(ValueError, match=why):
+            manual_demo.record(output, "ffmpeg.exe", 3600, name, [episodes[0], wrong])
+    assert not output.exists()
+    (tmp_path / "bridge/private-b1.jsonl").write_text(jsonl(private_record("e2", (0, 40))))
+    manual_demo.record(output, "ffmpeg.exe", 3600, name, episodes[:2])
+    assert "without moving any unit" in capsys.readouterr().out
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["start_check"] == {"label": "own deployment", "units": IZMAIL,
+                                       "references": [str(path) for path in episodes[:2]]}
+    # Haengju's enemy is teleported, a null deployment teleports nobody, and a land battle
+    # without a deployment is not checked here.
+    assert [manual_demo.engine_placed(setup.scenarios()[key])
+            for key in ("cth-emp-siege-a-v1", "cth-emp-siege-a-all-gates-v1",
+                          "emp-mirror-cavalry-v1")] == [["friendly"], ["friendly", "enemy"], []]

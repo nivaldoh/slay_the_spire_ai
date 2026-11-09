@@ -57,11 +57,14 @@ def copy_private_record(bridge: Path, episode: Path, *, job: str, battle: str | 
     [{"category"?, "x"?, "z"?, "crew"? (our unit id) or "crew_ui_id"? (a unit we never
     registered)}]; the two are separate engine lists. ``gates`` keep raw hit points ("raw_hp",
     "raw_max_hp"), not the observation's percentage; ``captures`` are {"id", "key", "holder"?};
-    ``tickets`` hold every alliance's row {"side"?, "tickets", "per_s", "starting"}. A field
-    the engine did not give is absent, never false or zero; a section that failed is absent and
-    named in ``errors``, and an unreadable opposing alliance (``"opponent: ..."``) leaves every
-    friendly unit without "visible". Not yet read live: is_on_top_of_wall, the crew's
-    UniqueUiId, enemy starting_ammo, and friendly visibility to the enemy alliance."""
+    ``tickets`` hold every alliance's row {"side"?, "tickets", "per_s", "starting"}. ``per_s``
+    is neither a siege's drain rate nor a drain signal: in observations the same engine field read
+    0 throughout the four recorded Helmgart drains, three of which fell about 5 per second between
+    readings (engine/mailbox.py, mode.tickets), so a reader takes the rate from successive
+    ``tickets``. A field the engine did not give is absent, never false or zero; a section that
+    failed is absent and named in ``errors``, and an unreadable opposing alliance (``"opponent:
+    ..."``) leaves every friendly unit without "visible". Not yet read live: is_on_top_of_wall,
+    the crew's UniqueUiId, enemy starting_ammo, and friendly visibility to the enemy alliance."""
     return _copy_frames(bridge, episode, "private", "private_record", job=job, battle=battle)
 
 
