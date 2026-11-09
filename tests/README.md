@@ -50,7 +50,7 @@ For a manual Python branch report, use a fresh output directory under `runs/`:
 ```bash
 mkdir -p runs/test-coverage runs/test-scratch
 git rev-parse HEAD > runs/test-coverage/revision.txt
-git diff > runs/test-coverage/changes.patch
+git diff HEAD > runs/test-coverage/changes.patch
 uv run --locked --with coverage==7.17.2 coverage run --branch --source=src \
   --data-file=runs/test-coverage/.coverage -m pytest -ra \
   --basetemp=runs/test-scratch/coverage > runs/test-coverage/pytest.txt 2>&1

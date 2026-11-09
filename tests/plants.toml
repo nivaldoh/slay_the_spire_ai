@@ -10,6 +10,15 @@
 # copies those from the main checkout into its scratch worktree.
 
 [[plant]]
+id = "queue-restores-hardcoded-signal-defaults"
+guards = "The queue restores its caller's ignored or custom signal handlers"
+file = "scripts/wh3_queue.py"
+old = 'signal.signal(signum, handler)'
+new = 'signal.signal(signum, signal.default_int_handler if signum == signal.SIGINT else signal.SIG_DFL)'
+tests = ["tests/twwarhammer3/test_wh3_queue.py::test_sigterm_interrupts_the_running_job_once"]
+source = "2026-11-09 test reliability: explicit default, ignored and custom signal cases"
+
+[[plant]]
 id = "army-check-restores-without-snapshot"
 guards = "A failed army setup never restores settings it has not saved"
 file = "tests/twwarhammer3/check_wh3_army_setup.py"

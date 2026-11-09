@@ -154,7 +154,24 @@ def test_refuses_to_start(tmp_path, head, monkeypatch, problem):
     assert not (tmp_path / "screen-plan-state.json").exists()
 
 
-def test_sigterm_interrupts_the_running_job_once(tmp_path, head):
+@pytest.fixture(params=["default", "ignored", "custom"])
+def original_handlers(request):
+    def custom_handler(signum, frame):
+        pass
+
+    handlers = {signal.SIGINT: signal.default_int_handler, signal.SIGTERM: signal.SIG_DFL}
+    if request.param != "default":
+        handler = signal.SIG_IGN if request.param == "ignored" else custom_handler
+        handlers = dict.fromkeys(handlers, handler)
+    previous = {sig: signal.signal(sig, handler) for sig, handler in handlers.items()}
+    try:
+        yield handlers
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+
+
+def test_sigterm_interrupts_the_running_job_once(tmp_path, head, original_handlers):
     # The job signals the runner, then waits; the runner must pass it SIGINT.
     job = [sys.executable, "-c",
            "import os, signal, time; os.kill(os.getppid(), signal.SIGTERM); time.sleep(30)"]
@@ -165,8 +182,7 @@ def test_sigterm_interrupts_the_running_job_once(tmp_path, head):
     saved = state(tmp_path)
     assert saved["status"] == "interrupted"
     assert saved["completed"] == [{"output": str(tmp_path / "a"), "exit_code": -signal.SIGINT}]
-    assert signal.getsignal(signal.SIGTERM) == signal.SIG_DFL
-    assert signal.getsignal(signal.SIGINT) == signal.default_int_handler
+    assert {sig: signal.getsignal(sig) for sig in original_handlers} == original_handlers
 
 
 def test_a_stop_while_a_job_starts_still_interrupts_it(tmp_path, head, monkeypatch):

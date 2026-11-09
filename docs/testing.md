@@ -116,6 +116,12 @@ Test the decision boundary and the harmful side effect. Rejecting one bad input 
 accepting a nearby valid input can pass when the code rejects everything. An error message
 alone does not establish that no order was sent or that the owned process was stopped.
 
+Check that an injected fault actually happened: a patch on an unused interface can leave
+the happy path passing. Keep a witness, such as the replaced file or the recorded locked
+read, and assert it after the operation. For forbidden calls inside cleanup or exception
+handling, record the calls and assert afterwards; `pytest.fail()` inside a callback can
+itself be swallowed. The mailbox and army-check repairs of 2026-11-09 demonstrate both gaps.
+
 For a live check, use an observation capable of disagreeing with the implementation. The
 mod currently reports constant `speed: 1`; asserting that field cannot detect slowdown.
 The existing team check also compares game-clock progress with elapsed time. Any proposed
