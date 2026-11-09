@@ -6,17 +6,41 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
-## Haengju siege evaluation plan (2026-11-08)
+## Historical siege evaluations (2026-11-08)
 
-For the [second evaluation battle plan](twwarhammer3/haengju-eval.md). Each source guides the design
-and says nothing about the engine. Status as in the next section.
+For the [evaluation battles adapted from history](twwarhammer3/historical-evals.md): the pages
+on [Haengju](twwarhammer3/haengju-eval.md),
+[the camp attack after Belgrade](twwarhammer3/camp-eval.md),
+[the two-front defence after Alesia](twwarhammer3/lines-eval.md) and
+[the siege attack after Izmail](twwarhammer3/escalade-eval.md), and the five designs in
+`runs/siege-evals-20261108/` (Malta's included). Polybius, for Cannae, is listed under
+[Cannae evaluation proposal](#cannae-evaluation-proposal-2026-11-05). Each historical source guides
+a design and says nothing about the engine. Status: "read" means an agent fetched the page and saw
+what the line says, through a translation where marked; "secondary" means the line rests on a
+summary of the cited work, such as a Wikipedia article or a review; "abstract" means only an
+abstract, a search snippet or a catalogue entry was seen; "not read" means the fetch failed, and
+nothing rests on the source. "The adaptation agent" ran the first of each design's three stages
+(adaptation, two judges, final design), and the final design did not read that source again.
+
+### Haengju siege evaluation plan (2026-11-08)
+
 - Encyclopedia of Korean Culture, [행주대첩](https://encykorea.aks.ac.kr/Article/E0062859): two
   palisade lines and earth banks, under 10,000 Koreans with 1,000 monk soldiers, about 30,000
   ("3만여 명") Japanese in seven divisions from about 6 a.m., the northwest breach and Gwon Yul's
   counterattack, the arrow shortage and Yi Bin's two boats. Read, through a translating fetch.
+- Encyclopedia of Korean Culture, [고양 행주산성](https://encykorea.aks.ac.kr/Article/E0062861):
+  about 2,300 militia and monks against about 30,000; stake barricades, then earth-and-stone walls
+  (citing the Seonjo sillok); ridges at 70-100 m. Read, through a machine summary and translation.
 - Wikipedia, [Battle of Haengju](https://en.wikipedia.org/wiki/Battle_of_Haengju), citing Hawley,
   *The Imjin War* (2005), pp. 318-323: about 2,300 against about 30,000, attacks in turn because
-  of limited space, Ukita's and Kobayakawa's breaches, 10,000 arrows by boat. Secondary.
+  of limited space, Ukita's and Kobayakawa's breaches, 10,000 arrows by boat; losses of 110+ (Swope
+  2009, p. 168) and 10,000 dead and wounded (Turnbull 2002, p. 150). Secondary.
+- Korean Wikipedia, [행주 대첩](https://ko.wikipedia.org/wiki/행주_대첩): about 3,000 regulars and
+  6,000 militia, seven assaults, at least about 500 Japanese casualties. Secondary, read by the
+  adaptation agent through a machine summary; no number in the plan rests on it.
+- Gyeonggi Province, [Haengjusanseong Fortress](https://english.gg.go.kr/?p=6607): a 124.8 m
+  summit, 70-100 m ridges, steep south and south-west slopes, the Han River to the south. Read by
+  the adaptation agent.
 - M. G. Haynes, [Military Heritage article](https://warfarehistorynetwork.com/?p=100625): narrow
   approach and hwacha on the heights. Read; a popular article that cites no sources.
 - Wikipedia, [Siege of Eger (1552)](https://en.wikipedia.org/wiki/Siege_of_Eger_(1552)),
@@ -25,6 +49,151 @@ and says nothing about the engine. Status as in the next section.
   [Siege of Izmail](https://en.wikipedia.org/wiki/Siege_of_Izmail): figures for the rejected
   candidates (Belgrade's sortie "by some accounts" spontaneous; Izmail 31,000 against 35,000 in
   the article's text). Secondary.
+- Not read: warhistory.org, [The Assault on Haengju](https://warhistory.org/article/the-assault-on-haengju)
+  (HTTP 403), and an IPFS Wikipedia mirror (HTTP 504).
+
+### Camp attack after Belgrade (2026-11-08)
+
+- Wikipedia, [Siege of Belgrade (1456)](https://en.wikipedia.org/wiki/Siege_of_Belgrade_(1456)):
+  the forces and their spread, the 21 July assault and the burning tar (uncited), the 22 July
+  sortie (uncited) and the feigned retreat (reference 30), the capture of the guns (references 28
+  and 30) and the withdrawal on the night of 22-23 July. Secondary; its first 100,000 characters.
+- Hungarian Wikipedia, [Nándorfehérvári diadal](https://hu.wikipedia.org/wiki/N%C3%A1ndorfeh%C3%A9rv%C3%A1ri_diadal):
+  the defenders giving up the town, the cavalry counterattack in the inner courtyard, five
+  crusader archers, the Ottoman cavalry pulled away from the guns, the gun positions seized,
+  Mehmed's thigh wound and force estimates. Secondary, read through a machine translation.
+- Wikipedia, [Belgrade Fortress](https://en.wikipedia.org/wiki/Belgrade_Fortress): the lower town
+  on the Danube bank, the upper town and castle facing inland. Secondary, read by the adaptation
+  agent.
+- New World Encyclopedia, [Siege of Belgrade](https://www.newworldencyclopedia.org/entry/Siege_of_Belgrade):
+  derived from Wikipedia, so no independent source. Read by the adaptation agent.
+- T. R. Kovach, [Ottoman-Hungarian Wars: Siege of Belgrade in 1456](https://historynet.com/ottoman-hungarian-wars-siege-of-belgrade-in-1456/),
+  HistoryNet (first in *Military History*, August 1996): a popular article with no notes. Read by
+  the adaptation agent; nothing in the camp page rests on it.
+- J. D. Mixson, *The Crusade of 1456: Texts and Documentation in Translation* (University of
+  Toronto Press, 2022): the feigned retreat and the garrison driving the Ottomans from the upper
+  town, as English Wikipedia cites it. Abstract (a search snippet).
+- Not read (fetch refused): Britannica, Siege of Belgrade 1456; History Today, The Ottomans
+  Defeated at Belgrade; warhistory.org, The Siege of Belgrade 1456; a European Conservative review
+  of Mixson; a Chronica (Szeged) article.
+
+### Two-front defence after Alesia (2026-11-08)
+
+- Caesar, *Gallic War* [VII.63-74](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Caesar/Gallic_War/7F*.html)
+  and [VII.75-90](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Caesar/Gallic_War/7G*.html),
+  Loeb 1917 translation on LacusCurtius: the works (69, 72, 74), 80,000 in the town (71), 8,000
+  horse and about 250,000 foot in the relief (76), the north camp on sloping ground (83), the sally
+  (84, 86), the reserves and the cavalry sent round the outer works (86-87), the outcome (88) and
+  the surrender (89). Read; a primary source in translation.
+- Wikipedia, [Battle of Alesia](https://en.wikipedia.org/wiki/Battle_of_Alesia): Roman and Gallic
+  strengths with Dodge, Keppie, Plutarch, Strabo and Delbrück; Caesar's figure "probably an
+  exaggeration"; the lines "not continuous". Secondary; the first 100,000 of 129,350 characters.
+- Livius.org, [Alesia (52 BCE)](https://www.livius.org/articles/battle/alesia-52-bce/): twelve
+  legions, about 50,000 legionaries with allies, 39 cohorts, about 15 km of lines, a gap in the
+  northwest, Caesar's "very artful" narrative and the doubted surrender. Secondary.
+- French Wikipedia, [Siège d'Alésia](https://fr.wikipedia.org/wiki/Si%C3%A8ge_d%27Al%C3%A9sia):
+  240,000 infantry in the relief, 50,000-72,000 Romans plus 10,000 Germans, 39 cohorts, and line
+  totals that contradict each other. Secondary, read by the adaptation agent (first 100,000 of
+  173,000 characters).
+- G. M. Rogers, [review](https://michiganwarstudiesreview.com/2018-003.htm) of Sadler and
+  Serdiville, *Caesar's Greatest Victory: The Battle of Alesia, 52 BC* (2016), Michigan War Studies
+  Review 2018-003: ten to twelve legions, "Caesar's inflated numbers" for the relief, divided
+  Gallic leadership. Secondary (a book review), read by the adaptation agent.
+- M. Reddé and S. von Schnurbein (eds.), *Alésia: fouilles et recherches franco-allemandes* (Paris,
+  2001), [catalogue entry](https://zenon.dainst.org/Record/000383164): the excavations behind the
+  remarks on the lines. Abstract (a catalogue entry); the book was not read.
+- Not read: Britannica, [Battle of Alesia](https://www.britannica.com/event/Siege-of-Alesia)
+  (HTTP 403); the [Perseids translation](https://fgh.perseids.org/read/latinLit/phi0448/phi001/perseus-eng2/7.83-8.7)
+  of VII.83-VIII.7 (HTTP 502).
+
+### Siege attack after Izmail (2026-11-08)
+
+- Wikipedia, [Siege of Izmail](https://en.wikipedia.org/wiki/Siege_of_Izmail): 31,000 attackers
+  (15,000 irregular) against 35,000 or 40,000; the infobox's 40,000-42,000 and 500-600 guns against
+  the text's "40 field guns, but no siege guns"; training on replica works; signals at 3 a.m. and
+  5:30; three wings and Westphalen's 2,500 cavalry; the gates open by 8 a.m. and the cavalry kept
+  out until then; losses with their attributions. Secondary; characters 0-100,000 of 118,235.
+- Russian Wikipedia, [Штурм Измаила](https://ru.wikipedia.org/wiki/Штурм_Измаила): 16,000
+  regulars and 15,000 irregulars against 35,000; a ditch of 3-5 sazhens; Suvorov's "Крепость без
+  слабых мест" (a fortress without weak points); Meknob's ladders tied in pairs; Kutuzov's request
+  to withdraw; deserters; losses after Orlov (1890). Secondary, read through a translation.
+- "Измаил", *Военная энциклопедия Сытина* (Sytin Military Encyclopedia), vol. 10,
+  [on Wikisource](https://ru.wikisource.org/wiki/ВЭ/ВТ/Измаил): the rampart, the ditch, four gates
+  and 260 guns; 25,000-30,000 Russians; three detachments of three columns; the Bender-gate sortie;
+  the cavalry entering after the gates were opened; losses. Read; a pre-revolutionary encyclopedia.
+- S. N. Osipovsky, "Штурм Измаила в 1790 году А. В. Суворовым: противоречия в оценках численности
+  гарнизона и потерь турок", *Манускрипт* 19(2), 2026, doi:10.30853/mns20260095
+  ([abstract](https://www.gramota.net/en/article/mns20260095/fulltext),
+  [full text](https://manuscript-journal.ru/article/mns20260095/pdf)): Suvorov's 35,000 armed men
+  against rations for 42,000; armed defenders who "could not exceed 20 thousand", most likely
+  12,000-15,000; Turkish dead no more than 15,000. Read in full; peer-reviewed.
+- Cited only through the sources above and not fetched: Duffy, Orlov (1890), Gladky (1993),
+  Grant, Bodart and Arsenyev.
+- Not usable, and nothing rests on them: the Great Russian Encyclopedia (bigenc.ru, HTTP 401),
+  Britannica's Siege of Izmail (HTTP 403), booksite.ru (HTTP 403), prlib.ru (a browser check),
+  military-review.com (empty) and life.pravda.com.ua (HTTP 403).
+
+### Malta 1565, designed and not built (2026-11-08)
+
+- Wikipedia, [Great Siege of Malta](https://en.wikipedia.org/wiki/Great_Siege_of_Malta): 18 May to
+  8 September 1565; 35,000-40,000 against 2,500 (6,100 with militia and others) and the
+  contemporary estimates; on 7 August the breach, Anastagi's "daily sortie" against "the
+  unprotected Turkish field hospital" and the assault broken off by Turks "thinking the Christian
+  relief had arrived from Sicily"; the 7 September landing. Secondary; the first 100,000 characters.
+- Wikipedia, [Vincenzo Anastagi](https://en.wikipedia.org/wiki/Vincenzo_Anastagi): "about a
+  hundred cavalry", the "poorly guarded Turkish camp", and Crowley (2008, p. 176): "Malta survived
+  on 7 August purely through Anastagi's lucky strike"; its claim that the assault would otherwise
+  have succeeded is tagged "citation needed". Secondary; Crowley was not read.
+- Malta Culture 365, [Great Siege 1565 - Tuesday 7 August](https://maltaculture365.blogspot.com/2022/08/great-siege-1565-tuesday-7-august.html)
+  (2022): a first-person garrison diary with 8,000 attackers at St Michael and 4,000 at Castile,
+  about 100 horse and 100 foot from Mdina, the rumour of relief and the casualties. Read; it names
+  no author or source, so its attribution is unverified.
+- Kliem u Storja (M. Morana), [The Great Siege - 1565](https://kliemustorja.com/2021/09/07/the-great-siege-1565/):
+  the siege's course and about 3,000 men in the 15 July boats. Secondary (a popular article with a
+  bibliography), read by the adaptation agent.
+- Google Arts & Culture with the Grandmaster's Palace, [The 1565 Great Siege Cycle Frescos](https://artsandculture.google.com/story/mgXRIlkgkviiLg):
+  "the cavalry at Mdina devastated the besiegers' camp at Marsa". Read by the adaptation agent; a
+  museum caption.
+- Culture Malta, [Mdina's Military Role](https://culture-malta.org/mdinas-military-role/): the Marsa
+  raid and the Turks' retreat. Read by the adaptation agent; popular, with no citations.
+- Wikipedia, [Fort Saint Michael](https://en.wikipedia.org/wiki/Fort_Saint_Michael): the fort's
+  place on the Senglea land front, ten assaults withstood. Secondary, read by the adaptation agent.
+- Not read: Britannica, [Siege of Malta](https://www.britannica.com/event/Siege-of-Malta)
+  (HTTP 403); *Melita Historica* vol. 1 no. 4 (1955) on the
+  [University of Malta repository](https://www.um.edu.mt/library/oar/bitstream/123456789/34993/1/Pages%20from%20Melita%20Historica%20Vol.1%20no.4%201955.pdf),
+  a scanned PDF nobody could read.
+
+### Method and code references for the set (2026-11-08)
+
+- R. G. Newcombe, "Interval estimation for the difference between independent proportions:
+  comparison of eleven methods", *Statistics in Medicine* 17 (1998): method 10, the hybrid score
+  interval behind `exact_stats.newcombe`; its worked example (56/70 against 48/80 gives 0.0524 to
+  0.3339) is what `test_wh3_exact_stats.py` checks. Secondary; the build record does not say
+  whether the paper itself was read.
+- SciPy `scipy.stats.fisher_exact` (`scipy/stats/_stats_py.py`, 1.18.1): the classic two-sided
+  p-value and its relative tolerance of 1e-14, which `exact_stats.fisher` follows; the tests'
+  other Fisher values agree with it. Read (its source).
+- statsmodels `confint_proportions_2indep(method="newcomb")` (`statsmodels/stats/proportion.py`,
+  0.15.0): a second implementation of the Newcombe interval; the tests' other intervals agree
+  with it. Read.
+- robomimic, [`playback_dataset.py`](https://github.com/ARISE-Initiative/robomimic/blob/master/robomimic/scripts/playback_dataset.py),
+  `playback_trajectory_with_env`: plays a demonstration's actions open-loop after a reset, stepping
+  by index; `replay_schedule.py` replays by battle time, because decision gaps change with latency.
+  Code-structure reference.
+- W. R. Franklin, [pnpoly](https://wrfranklin.org/Research/Short_Notes/pnpoly.html): the even-odd
+  crossing test that `wall_readings.py` uses for the private breach polygon. Code-structure
+  reference.
+- SMAC's `get_agent_action_heuristic`, listed under
+  [Cannae evaluation proposal](#cannae-evaluation-proposal-2026-11-05): `camp.py`, `lines.py`,
+  `wall_defence.py` and `escalade.py` keep a target until it is unavailable in the same way.
+- Creative Assembly's battle-script documentation and scripts in the installed game
+  (`runs/twwarhammer3/vanilla/`, local, read-only, never copied): `battle_unit.html`
+  (`is_in_melee`, `is_on_top_of_wall`, `is_climbing_ladder`, `is_visible_to_alliance`,
+  `ammo_left`), `battle_unitcontroller.html` (`besiege_building`, `attack_building`),
+  `battle_building.html`, `battle_assault_equipment.html`, `battle_capture_location.html`,
+  `ai_planner.html` ("It is not recommended to try and use ai planners during siege battles") and
+  `lib_battle_manager.lua` lines 229-243, where gates are also fort walls; and the localisation
+  `all_loc.tsv` (siege objective and help texts). Read.
 
 ## Communication structure in one army (2026-11-08)
 

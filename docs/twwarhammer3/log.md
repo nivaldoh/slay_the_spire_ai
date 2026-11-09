@@ -29,6 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-09: Historical siege evaluations built offline, harness b54
+
+Owner, 2026-11-08: build the good battle ideas with a concrete, legitimate methodology, adapted
+well to WH3's game modes; "Build now, game when I say". Offline only: no game launched, $0, and
+every battle, helper and reading below is unverified (no agreed check covers them). Overview:
+[historical-evals.md](historical-evals.md); evidence `runs/siege-evals-20261108/`.
+- Five sieges were designed (adaptation agents, two judges each, a synthesizer, a portfolio
+  critic). Built: Haengju as a siege defence against divisions released in turn
+  ([page](haengju-eval.md)); Belgrade's camp attack and Alesia's two fronts as Land battles,
+  because WH3's siege mode did not fit them ([camp](camp-eval.md), [lines](lines-eval.md));
+  Izmail as a siege the player attacks ([escalade](escalade-eval.md)). Malta was designed and
+  not built: its main decision repeated Belgrade's with the same factions.
+- b54 (the Lua mod moves the pack hash): an evaluator-only 1 Hz record of every unit with
+  "private_record"; reserve profile v3 for divisions released in turn, also under the owner's
+  observer recording; a siege-attack interface behind "siege_assault" (fortifications, on_wall,
+  besiege and attack_building orders); setup's "siege_equipment" field and its battle-side check.
+- Shared helpers: exact_stats.py (Fisher, Newcombe, exact power, gate chances, McNemar),
+  evidence_rules.py, replay_schedule.py, a lobby-only readback steps script. Witnesses and
+  controls: camp.py, lines.py, wall_defence.py, escalade.py.
+- Existing scenarios keep byte-identical observations, replays, prompts and requests (tests pin
+  them). Parked for the owner: the llm.py change that lets a model use the siege orders (branch
+  `izmail-llm-orders`), because any llm.py edit changes every llm controller's card identity.
+- Each package was built, independently reviewed with planted wrong versions, and fixed; a
+  whole-branch integration review found a register crash on waves scenarios, fixed before landing.
+
 ## 2026-11-08: Repository upkeep and bug audit
 
 Claude Code, at the owner's request ("cleanup ... anything in general to improve"); offline, $0, no
@@ -1971,7 +1996,8 @@ visuals for those too."
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py` | [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
-| benchmark harness | b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | None played; built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54) |
+| benchmark harness | b54 (2026-11-09: private all-unit record, reserve v3 divisions in turn, siege-attack interface and siege_equipment, [entry](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54)); b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
 | checkpoint RL | merged 2026-10-28 (`6b942a3`) | `battle/rl.py`, `candidates.py`, `audit.py`, `confirm.py`, `checkpoint.py`, `gameai/lm.py`, mod export `twwarhammer3_inject` | Stage 1 and closed-loop checks agreed 2026-10-26 ([agreed-checks.md](../agreed-checks.md)); learning collapsed, held-out 0.76 ([2026-10-26](#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses); decision 11) |

@@ -54,11 +54,16 @@ def members(result: dict, field: str) -> str:
 
 
 def reserve_case(manifest: dict, episode: Path) -> str:
-    """This episode's own reserve draw as region/side/count; blank for a job without draws."""
+    """This episode's own reserve draw as region/side/count; blank for a job without draws.
+    A waves profile (reserve.py version 3) has no draw: play saves the declared profile for
+    every episode, so its case is always ``waves``. A blank would read like the Cannae B rows
+    written before this column; the summary splits a scenario's rows the same either way."""
     draws = manifest.get("reserve_draws")
     if not draws:
         return ""
     draw = draws[int(episode.name.split("-")[-1])]
+    if draw.get("kind") == "waves":
+        return "waves"
     return f"{draw['region']}/{draw['side']}/{draw['count']}"
 
 

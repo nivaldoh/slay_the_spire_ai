@@ -137,7 +137,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | Two mirror cases, a and b, both development; no held-out variant. The terrain under the two slots differs, so the mirror is not assumed equivalent |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Source `e918091`; `prototype_not_admitted`, split `development`; no Lua change, so the pack hash is unchanged; nothing launched |
+| Release record | Source `e918091`, which did not change the Lua or the pack hash; `prototype_not_admitted`, split `development`; nothing launched. The `private_record` opt-in and the `withheld` list were added after `f3fec92`. The Lua changed at `f3fec92` (the evaluator-only record, divisions in turn and the siege-attack interface), so every launch from `f3fec92` on, this battle's included, carries the new pack hash and a separate card setup identity |
 
 ### Settings
 
@@ -160,6 +160,7 @@ funds 14,000). Another difficulty, timer or funds changes how hard the battle is
 | Deployment | Authored for both sides, the whole roster placed by type, read back within 25 m (`setup.DEPLOYMENT_TOLERANCE_M`) |
 | Content | `wh_main`, `wh_dlc08`, `wh3_main` |
 | Scripted elements | None: no `reserve`, `custom`, `scoring` or `benchmark` key |
+| Evaluator-only record | `private_record: true` in both cases: once per engine second the mod writes every unit of both sides, hidden enemies included, to a file no controller reads ([measurements](#measurements)) |
 | Status | `prototype_not_admitted`, split `development`; no reserved set and no agreed check |
 
 ### Rosters
@@ -281,15 +282,21 @@ states the timer rule, `remaining_ms`, the enemy roster as ids and type keys, th
 the units it can see. The scenario's `brief` is for people and never reaches a controller.
 `test_no_declaration_text_names_the_history_or_reaches_a_controller` checks that `play.public`
 gives the same view with and without the scenario (so no `mode.benchmark` tag) and that the battle
-session holds only the behaviour defaults and the private deployment. The job name does reach
+session holds only the behaviour defaults, the private deployment and the private-record switch.
+The job name does reach
 controllers ([guideline 4.5](evaluation-guidelines.md#45-give-controllers-only-listed-public-fields-and-test-by-changing-hidden-data)),
 so jobs get neutral numbered names such as `lines-r1-017`, with the case and arm kept only in
-private plan records. Nothing enforces that yet: the plan builder (portfolio S6) is not built.
+private plan records. `play` and the owner's recorder refuse a job that holds one of the
+declaration's withheld words at a word start (`setup.check_job`), so `alesia-a-r1` is refused.
+Nothing keeps the case or the arm out of a job name: the plan builder (portfolio S6) is not built.
 
-The same test checks every key and string of the three new declarations against `WITHHELD` in
-test_wh3_land_eval_declarations.py, folded to lower-case ASCII. For this battle it holds alesia,
-caesar, vercingetorix, vercassivellaunus, labienus, reginus, rebilus, sedulius, gallic, gaul, roman
-and vallation; the rest are the camp attack's names.
+Both cases list the words under `withheld` (`ksl-nor-lines-b-v1` inherits case a's list), which
+`emp-chd-camp-v1` shares. For this battle the list holds alesia, caesar, vercingetorix,
+vercassivellaunus, labienus, reginus, rebilus, sedulius, gallic, gaul, roman, vallation,
+circumvallation and contravallation; the rest are the camp attack's names. The same test folds
+every key and string of the three new declarations, the list itself excepted, to lower-case ASCII
+and checks it against these words, and
+`test_a_job_that_names_the_history_is_refused_and_a_neutral_one_accepted` checks the job refusal.
 
 JUDGEMENT?: Withheld names — Claude, 2026-11-08: the designs' prompt-test lists plus other
 names in their sources, folded to lower-case ASCII. A shorter list would pass more names; the
@@ -321,8 +328,10 @@ Overlap rule (portfolio, "overlaps"). Reserve allocation between fronts or at a 
 times across the new designs and the suite: Haengju D2, Malta D2, this battle's P1,
 `coord-two-fronts` ("Two separate fights at once, one reserve to send") and `coord-siege` /
 `chd-reserve-grn-siege` ("committing one mobile reserve"). It is counted once, here, because this
-is the only one of them with a powered contrast (16 per arm); Haengju D2 and Malta D2 stay
-exploratory. Everything else in this battle stays exploratory and has no test:
+battle's design was the only one that already planned its contrast at 16 launches per arm; every
+built battle page now recommends 16 per arm for its round, so the assignment no longer follows
+from power and rests on JUDGEMENT docs/twwarhammer3/historical-evals.md Claim assignment. Haengju
+D2 and Malta D2 stay exploratory. Everything else in this battle stays exploratory and has no test:
 
 - **E1, inner economy.** When G reaches the inner line while the relief is engaged, holding with
   the three inner regiments and pulling outer regiments inward are both feasible. Holding should
@@ -443,9 +452,11 @@ named-briefing arm only if recognition becomes a claim.
 
 The contact and grouping readings rest on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py
 Contact rule and on JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership. The
-replay keeps enemies only while they are visible; if check 5 or stage 1 shows enemies leaving sight,
-the readings need the private all-unit record (portfolio S3), a Lua change. All readings are
-descriptive, and missing values stay unknown.
+replay keeps enemies only while they are visible. The evaluator-only all-unit record (portfolio
+S3), built at `f3fec92` (fields in `capture.copy_private_record`), holds every enemy unit, hidden
+ones included, and both cases opt into it with `"private_record": true`, so if check 5 or stage 1
+shows enemies leaving sight the readings can read it instead; no reader of it is built for this
+battle, and no game has written it. All readings are descriptive, and missing values stay unknown.
 
 ## Proposed deciding checks
 
@@ -471,7 +482,7 @@ of launches passes one case 0.512 of the time and the whole check, both cases, 0
 | 3 | Main effort on its side | Same | H's first melee lies on its slot's side of x = 130, 3 of 3 per case | The same replay read under the swapped case label |
 | 4 | Lines met at their front | Same | Per launch, at most 2 of 8 relief units' first melee lies north of z -280 or outside x -50 to 310, and at most 1 of 4 G units' first melee lies south of z -180 or outside x 10 to 250 | A synthetic replay in which relief units first meet in melee inside the band |
 | 5 | Visible at the start | First observation against the private reading, stage 1 | 12 of 12 enemies visible by the first decision | A reading that drops a hidden unit and still counts 12 |
-| 6 | Information boundary | Built: the declaration test above and the arms' hidden-key and job tests. To build: the rendered `llm` prompt and `play.public` view from recorded first observations of both cases (portfolio S2) | No case, slot, group label, "main effort" or withheld name in any input, the job name included; the two cases' views differ only in enemy positions, bearings and states | The case letter planted in the job name |
+| 6 | Information boundary | Built: the declaration test above, the arms' hidden-key and job tests, and `test_wh3_eval_boundary.py`, which renders the `llm` prompt and `play.public` view from fixture first observations of both cases and checks that the two views differ only in enemy positions, bearings and states. To build: the same from recorded first observations of both cases (portfolio S2) | No case, slot, group label, "main effort" or withheld name in any input, the job name included; the two cases' views differ only in enemy positions, bearings and states | The case letter planted in the job name |
 | 7 | Orders reach effects | Stage 2 probe, trace and video | The Tzar Guard runs between the posts (its time sets check 2's window); the Lancers reach the waypoint and the rear point, and an attack gives melee within 15 s; guard, fire at will and skirmish read back on the Kislev units. An effect seen once shows it can happen and says nothing about how often | An accepted move whose unit never arrives, reported as a non-arrival |
 | 8 | Arms wired | Offline, built (`test_wh3_lines.py`); to repeat on recorded first-observation sequences after stage 1 | W picks H's side and M L's side in both cases; arms differ only in the reserve and Lancer orders; the job changes no order | M's flag unwired; W weighing by men; W reading the case from anything but positions |
 | 9 | Shortcuts | Stage 3a, one launch per control, cases alternated, rerun at each ladder step | Reported only; a win is kept and narrows the label | Nothing; reported only |
@@ -503,8 +514,8 @@ and a launch takes about 20 minutes (the 1,200 s timer plus loading; the design'
 
 | Stage | What runs | Launches and game time | What it can establish |
 |---|---|---|---|
-| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Still to build: the replay readers for checks 2-4 with their synthetic plants, the rendered-prompt boundary test, the plan builder, and F and N if the owner wants them | None | That the code does what its tests say |
-| 1a | Lobby-only readback (check 0), shared with the other new battles. The pieces exist (`twwarhammer3 menu --steps`, `setup.army_checks`); the step file that stops before Start is not written | One game session, minutes, no battle | Whether the Kislev and Norsca cards and the banner recruit; a Norsca failure starts the Greenskin version and a Kislev failure goes to the owner (see risks) |
+| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`) and the fixture boundary test (`test_wh3_eval_boundary.py`). Still to build: the replay readers for checks 2-4 with their synthetic plants, the boundary test on recorded first observations, the plan builder, and F and N if the owner wants them | None | That the code does what its tests say |
+| 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the step files (it launches nothing) and `twwarhammer3 menu --steps` sends them; no live lobby has run them | One game session, minutes, no battle | Whether the Kislev and Norsca cards and the banner recruit; a Norsca failure starts the Greenskin version and a Kislev failure goes to the owner (see risks) |
 | 1b | One `hold` launch of case a | 1, about 20 min | Checks 1 and 5, the bearing offset, the funds charge |
 | 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7 h, plus about 2 per restage | Checks 2-4 at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass |
 | 2 | Probe, with one spare | 1-2, about 30 min | Check 7 and the window; then checks 2-4 are re-read on the stage 1 replays |
@@ -567,7 +578,8 @@ page, and the witness rules, side weights, relief membership and rear point in `
 ## Sources
 
 Read on 2026-11-08 for the design; Caesar VII.75-90, Wikipedia and Livius were read again for this
-page, VII.63-74 only for the design. They are not yet listed in [references](../references.md).
+page, VII.63-74 only for the design. They are listed in
+[references](../references.md#two-front-defence-after-alesia-2026-11-08).
 The history guides the design and is no evidence about the engine.
 
 - Caesar, *Gallic War* VII.63-74 and VII.75-90, Loeb 1917 translation on

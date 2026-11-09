@@ -96,9 +96,11 @@ The siege defence was rejected for four reasons, all from the design's review:
    the same mode and role.
 3. WH3 has nothing like the burning tar, which only the uncited English account gives, and
    captured guns cannot be turned on their owners.
-4. A siege defender wins at the timer, so a sortie on the guns would be optional, and enemy
-   ammunition is recorded nowhere: the battle Lua's `unit_record` sets `ammo` only for the player's
-   units, and the replay keeps enemies only while they are visible.
+4. A siege defender wins at the timer, so a sortie on the guns would be optional. When the design
+   was reviewed, enemy ammunition was also recorded nowhere: the battle Lua's `unit_record` sets
+   `ammo` only for the player's units, and the replay keeps enemies only while they are visible.
+   The evaluator-only record built at `f3fec92` now holds it for a scenario that opts in, so only
+   the first half of this reason stands.
 
 The 22 July action fits a Land attack for these reasons, each with what it rests on:
 
@@ -158,6 +160,7 @@ The declaration is `emp-chd-camp-v1` in
 | Loadouts | Default recruitment upgrades; the General's mount `wh_main_emp_cha_general_1`; war-machine upgrades at the lobby defaults, unread |
 | Toggles | `behaviour_defaults: true` (fire at will on at the start; the controller may change it) |
 | Script | None: no hold, reserve or custom objective |
+| Evaluator-only record | `private_record: true`: once per engine second the mod writes every unit of both sides, hidden enemies and enemy ammunition included, to a file no controller reads ([measurements](#measurements)) |
 | Public task | Win the battle; any engine win counts, and the timer ending is a loss for the attacker |
 | Input and control | The current public observation and orders; automated play unpaused at 1x |
 | Exposure and status | Development candidate; no reserved variant, no lobby readback, no agreed check |
@@ -276,7 +279,10 @@ The declaration has no `scoring`, `benchmark` or `reserve` key, so `play.public`
 the observation, and its `brief` text reaches no controller; a declaration test checks both. A
 model sees the native Battle section (mode, role, timeout winner, objective text), the rules
 prompt and the public enemy roster. The observation carries `job`, so job names stay neutral; no
-camp job has been named yet.
+camp job has been named yet. The declaration lists 28 `withheld` words, 14 for Belgrade and 14 for
+the lines battle (the same list as `ksl-nor-lines-a-v1`), and `play` and the owner's recorder
+refuse a job that holds one at a word start (`setup.check_job`), so `belgrade-camp-r1` is
+refused; this rests on JUDGEMENT? docs/twwarhammer3/lines-eval.md Withheld names.
 
 ## The decision
 
@@ -299,10 +305,11 @@ Z2, the unbuilt variant `emp-chd-camp-z-v1`: one Infernal Guard moves to the che
 (219,-470) beside the east Magma Cannon on the knights' approach, the knights meet braced heavy
 infantry there, and B should do better.
 
-Condition X, read from the evaluator-only record once it exists: the cover stays in melee with the
-levies for at least 60 s after the cue, no Infernal Guard stands within 50 m of a war machine on
-the knights' side, and the guns still hold at least 13 of their 25 shots at the cue. X decides only
-the exploratory view; every launch counts in the primary contrast.
+Condition X, read from the evaluator-only record (built at `f3fec92`; the reader for X is not
+built): the cover stays in melee with the levies for at least 60 s after the cue, no Infernal Guard
+stands within 50 m of a war machine on the knights' side, and the guns still hold at least 13 of
+their 25 shots at the cue. X decides only the exploratory view; every launch counts in the primary
+contrast.
 
 JUDGEMENT: Camp condition X — Claude, 2026-11-08: cover in melee 60 s after the cue, no Infernal
 Guard within 50 m of a gun, 13 of 25 shots left. Other thresholds change which launches count as X
@@ -381,21 +388,26 @@ The engine outcome is primary. The existing readings carry over: `own_left`, `en
 order age p50/p90, refusals and cost. Every reading below is descriptive until a check ties it to
 the decision, and a missing value stays unknown.
 
-| Reading | Source at `e918091` |
+| Reading | Source |
 |---|---|
 | Cue time, fallback, start time and reason | Controller metadata in the trace |
 | Levies' men at the cue and 120 s after | Public friendly rows |
-| How long engaged cover stays in melee beside the levies after the cue | Public rows while the cover is visible; unknown while hidden |
-| Each gun's ammunition at the cue, and the first time each could no longer fire (men 0, routing or shattered, or ammo 0), with every rout and rally | Needs the evaluator-only record; enemy ammunition is recorded nowhere today |
-| Whether X held | Needs the evaluator-only record |
-| The Overseer's and the General's death or rout | Public rows, and `enemy_roster`'s `dead` flag, which is set only for a unit seen dead; a hidden death or rout needs the evaluator-only record |
+| How long engaged cover stays in melee beside the levies after the cue | Public rows while the cover is visible; the evaluator-only record's `melee` while it is hidden |
+| Each gun's ammunition at the cue, and the first time each could no longer fire (men 0, routing or shattered, or ammo 0), with every rout and rally | The evaluator-only record's enemy `ammo` and `ammo0` (the engine's `ammo_left` and `starting_ammo`), `men`, `routing` and `shattered`; no reader is built |
+| Whether X held | The evaluator-only record; no reader is built |
+| The Overseer's and the General's death or rout | Public rows, and `enemy_roster`'s `dead` flag, which is set only for a unit seen dead; a hidden death or rout reads from the evaluator-only record |
 
-The evaluator-only record is shared work for the whole set (review item S3): a 1 Hz file beside
-the replay with every unit's position, men, state, visibility and `ammo_left`, which never enters
-the mailbox observation. It is not built. As a Lua change it moves the pack hash and splits every
-card cell's setup identity, so the review batches it with the set's other Lua changes before any
-new battle's first launch. Its digest readers must read a unit whose rows stop as unknown; a
-reader that counts such a unit as silenced is the wrong version their tests must catch.
+The evaluator-only record, shared work for the whole set (review item S3), was built at `f3fec92`
+(`record_private` in the battle Lua; `play` copies it to the episode's `private.jsonl`, fields in
+`capture.copy_private_record`). Once per engine second it holds every unit of both sides, hidden
+enemies included, with position, men, routing, shattered, melee, hidden, visibility and
+ammunition, and it never enters the mailbox observation or the replay. `emp-chd-camp-v1` opts in
+with `"private_record": true`, as does every other new declaration of the set. No game has written
+the record, so enemy `starting_ammo` and the record's CPU cost per second (`sample_cpu_ms`) are
+unread. The Lua changed at `f3fec92`, so every launch from then on, older battles included,
+carries a new pack hash and a separate card setup identity. The camp's readers of the record are
+not built. They must read a unit whose rows stop as unknown; a reader that counts such a unit as
+silenced is the wrong version their tests must catch.
 
 ## Proposed deciding checks
 
@@ -414,8 +426,8 @@ effect is possible; showing that it is reliable takes more launches. Exact chanc
 | 2 | Camp premise | Evaluator-only record in 3 `hold` launches | Each war machine stays within 30 m of its start until a friendly unit is within 100 m of it, and loses ammunition before 120 s; 3 of 3. Passes a premise that holds half the time 12.5%; fails one that holds 80% of the time 48.8% | A fixture whose gun ammunition never falls; a gun moved 40 m; a gun missing from the record must read unknown and fail |
 | 3 | Cue occurs | The 4 A and 4 B development launches | A cue before 180 s in at least 6 of 8; the fallback does not count. Passes a 50% cue 14.5%; fails an 80% one 20.3% | Cover idle 40 m away; cover fighting only the knights; a one-observation melee; it must fire when only the Bull Centaurs fight |
 | 4 | Orders reach effects | Stage 2 probes, trace and video | Seen once each: a knight attack on a Magma Cannon and on the Deathshrieker reaches the engine melee flag within 90 s and lowers hp; the next decision's attack on another gun; an attack on a cover unit fighting the levies | An accepted attack with no melee flag within 90 s; contact read from distance |
-| 5 | Information boundary | Rendered prompt and controller view from this battle's recorded first observation; the declaration-level part already runs offline in `test_wh3_land_eval_declarations.py` | No historical name, group label, cue rule, evaluator-only key or `mode.benchmark` text in any controller input | Job `belgrade-camp-r1`; a planted evaluator-only key; a benchmark tag |
-| 6 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario emp-chd-camp-v1 --output DIR --ffmpeg FFMPEG --timeout SECONDS`; the recorder refuses only `reserve` or `custom` scenarios, so this one records, though its handover is unverified | One engine win; every attempt kept; pauses labelled from video | A recording whose setup readback failed must be refused |
+| 5 | Information boundary | Rendered prompt and controller view from this battle's recorded first observation; the declaration-level part already runs offline in `test_wh3_land_eval_declarations.py`, and `test_wh3_eval_boundary.py` runs the prompt and view on a fixture first observation | No historical name, group label, cue rule, evaluator-only key or `mode.benchmark` text in any controller input | Job `belgrade-camp-r1`; a planted evaluator-only key; a benchmark tag |
+| 6 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario emp-chd-camp-v1 --output DIR --ffmpeg FFMPEG --timeout SECONDS`; the recorder refuses only a `custom` scenario or a `reserve` other than a waves profile, so this one records and copies its private record, though its handover is unverified | One engine win; every attempt kept; pauses labelled from video | A recording whose setup readback failed must be refused |
 | 7 | Shortcuts | One launch each of `hold` and `rush_nearest` | Reported only; a win is kept and narrows the label | Nothing; reported only |
 | 8 | Witness gate | `CampStrike`, fresh launches at 5 s added age and a 5 s interval, frozen version | 4 of 5, stopping at the 4th win or the 2nd loss. Passes a 50% witness 18.75%; fails an 80% one 26.3% | A win credited to a timing the witness did not play |
 | 9 | D1 matters, the one primary contrast | `CampStrike` against `CampSupport`, n fresh separate launches per arm fixed in advance, 5 s / 5 s, order drawn in blocks | Two-sided Fisher exact p < 0.05 (`fisher`), Newcombe interval (`newcombe`), a disposition table for every planned launch; every launch counts, fallback-cue launches included; the cue-conditional view and the timing controls are exploratory | Analysis code that drops a fallback-cue launch, counts a rematch as a launch, or reports a one-sided or Wald result |
@@ -445,8 +457,8 @@ owner names. Times use the design's estimate of 20-25 minutes for a launch whose
 | Stage | What runs | Time | What it can show |
 |---|---|---|---|
 | 0 (done offline) | Declaration, `camp.py`, tests; `check.py` passed at `e918091` (3461 passed, 70 skipped, by its commit message) | Done | The code does what its tests say |
-| 0b (offline) | The shared evaluator-only record and its digest readers, the information-boundary test, the plan builder | No game | Inputs for checks 2, 5 and 9 |
-| L | The set's lobby-only readback (check 0), one game session with no battle | Minutes | Whether every card recruits, before any Lua work |
+| 0b (offline) | Still to build: the camp's readers of the evaluator-only record (check 2's ammunition, condition X) and the plan builder. Built since `e918091`: the record itself (`f3fec92`) and a boundary test on fixture first observations (`test_wh3_eval_boundary.py`) | No game | Inputs for checks 2, 5 and 9 |
+| L | The set's lobby-only readback (check 0; step files from `scripts/wh3_lobby_readback.py`, which no live lobby has run), one game session with no battle | Minutes | Whether every card recruits, before stage 1 |
 | 1 | 3 `hold` launches | About 1-1.25 h | Checks 1 and 2; fields of the never-recorded units; whether the guns are visible at 5 s from the knights' start (enemies were seen at 537-603 m in `bench-b9` and 554 m at 5.3 s in pilot-r4); how the cover and Cutthroats react; whether the guns fire into melee |
 | 2 | 1-2 probe launches | About 20-50 min | Check 4; time for the knights to silence a gun |
 | 3a | One launch each of `rush_nearest` and `CampStrikeNow` | About 45 min | Check 7 and a timing reading |

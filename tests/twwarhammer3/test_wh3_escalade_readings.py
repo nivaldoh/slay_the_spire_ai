@@ -5,8 +5,9 @@ the portfolio's corrections (contact is the engine's melee flag, a breach is hp 
 SMOKE copies, in the private record's unit fields, two observations of the only recorded siege
 the player attacked (runs/twwarhammer3/battle/smoke-siege-attack-kho5-dwf5-probe_abilities-
 20261014-0830/episode-0000/trace.jsonl, 5.3 s and 714.5 s, positions and men as recorded): no
-unit carried the melee flag in its 776 observations, though 364 friendly-enemy pairs stood
-within 40 m, f3 and e5 10.1 m apart at 714.5 s. All five defenders were visible then, so the
+unit carried the melee flag in its 776 observations, though 6 friendly-enemy pairs stood within
+40 m, 364 pair readings in all. The 714.5 s copy holds two of the pairs, f3 with e2 (21.9 m) and
+with e5 (10.1 m, the closest in the battle). All five defenders were visible then, so the
 copy holds every enemy; a live private record would hold hidden ones too. Offline only: these
 readings have read no battle with the new interface.
 """

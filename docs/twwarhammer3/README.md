@@ -31,7 +31,11 @@ their reasoning; **record** pages are history, and their entries stay as written
 | [cannae-eval.md](cannae-eval.md) | live | Cannae A/B/C: candidates, results, deciding checks; all unverified |
 | [cannae-comparison.md](cannae-comparison.md) | live | battles A and B: familiar tactic against adaptation |
 | [cannae-communication.md](cannae-communication.md) | live | battle C: one army under limited communication |
-| [haengju-eval.md](haengju-eval.md) | open | second evaluation battle: a siege defence against divisions released in turn; plan only (decision 15) |
+| [historical-evals.md](historical-evals.md) | open | the evaluation battles adapted from history: what each claims, the shared method rules, the live order; nothing new launched |
+| [haengju-eval.md](haengju-eval.md) | open | second evaluation battle: a siege defence against divisions released in turn; built offline at `f3fec92`, nothing launched (decision 15) |
+| [camp-eval.md](camp-eval.md) | open | camp attack after Belgrade 1456: a Land battle the player attacks; built offline, nothing launched |
+| [lines-eval.md](lines-eval.md) | open | two-front defence after Alesia: a Land battle the player defends; built offline, nothing launched |
+| [escalade-eval.md](escalade-eval.md) | open | siege attack after Izmail 1790: a siege the player attacks; built offline, nothing launched |
 | [communication-structure.md](communication-structure.md) | open | peer messages against a commander on battle C; stages 0-3 built and run 2026-11-08, the stage-2 gate failed (decision 14) |
 | [tactic-judges.md](tactic-judges.md) | open | LLM and VLM tactic annotation; nothing adopted |
 | [../thesis/](../thesis/proposal.md) | open | proposed master's thesis |
@@ -265,6 +269,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/evade.py`: `Evade`, a free control: every unit runs from visible enemies
 - `src/twwarhammer3/battle/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
   Cannae development witnesses on public state
+- `src/twwarhammer3/battle/camp.py`: `CampStrike` and its controls for the camp attack land battle
+  (emp-chd-camp-v1), on public state
+- `src/twwarhammer3/battle/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
+  two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
   (version 3) that holds and releases enemy groups, kept apart from the public battle state
 - `src/twwarhammer3/battle/wall_defence.py`: `WallWitness` and its controls for the walled siege
@@ -275,6 +283,9 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   (ksl-emp-siege-a-v1), on public state with the siege orders
 - `src/twwarhammer3/battle/escalade_readings.py`: that siege's evaluator readings of finished
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
+- `src/twwarhammer3/battle/evidence_rules.py`: evidence rules the evaluation battles share:
+  contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture
+  holders, groups from the private first reading, units by type key
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and
@@ -286,6 +297,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
   and foils (fixed schedule, central concentration, `ThinkingRush`) for the
   communication-structure stage 2; each sleeps a model-like think time per decision
+- `src/twwarhammer3/battle/replay_schedule.py`: `ReplaySchedule`, the fixed-schedule foil that
+  replays a won episode's accepted orders by battle time on a fresh launch
 - `src/twwarhammer3/battle/configured.py`: JSON controller composition; a version 2 star arm's
   `local_team` node takes the commander, whose model leaf gets its own prompt
 - `src/twwarhammer3/battle/graph.py`: resumable graph nodes
@@ -313,6 +326,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/watch.py`: follow a job
 - `src/twwarhammer3/battle/stats.py`: results register
 - `src/twwarhammer3/battle/report.py`: paired statistics
+- `src/twwarhammer3/battle/exact_stats.py`: exact small-sample statistics for win rates: two-sided
+  Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
 - `src/twwarhammer3/battle/report_html.py`: the offline HTML report
 - `src/twwarhammer3/battle/replay.py`: the report's replay: public recorded frames and events
 - `src/twwarhammer3/battle/report_assets/`: the report's page, script, style and replay

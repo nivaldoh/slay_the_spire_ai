@@ -33,12 +33,19 @@ from twwarhammer3.protocol import HIDDEN_KEYS
 NAMES = ("emp-chd-camp-v1", "ksl-nor-lines-a-v1", "ksl-nor-lines-b-v1")
 # A play job before fill_timeouts: one episode, the default 900 s start cap (__main__.py).
 PLAY_CONFIG = {"episodes": 1, "start_timeout": 900, "episode_timeout": None, "run_timeout": None}
-# Historical names no declaration may hold; rests on JUDGEMENT? docs/twwarhammer3/lines-eval.md
-# Withheld names.
+# Historical names and the lines' own terms, which no declaration text or job may hold; each
+# declaration's withheld list must hold them all. Rests on JUDGEMENT?
+# docs/twwarhammer3/lines-eval.md Withheld names.
 WITHHELD = ("belgrade", "nandorfehervar", "hunyadi", "szilagyi", "capistran", "mehmed",
             "ottoman", "crusade", "janissar", "sipahi", "sultan", "1456", "hungar", "turk",
             "alesia", "caesar", "vercingetorix", "vercassivellaunus", "labienus", "reginus",
-            "rebilus", "sedulius", "gallic", "gaul", "roman", "vallation")
+            "rebilus", "sedulius", "gallic", "gaul", "roman", "vallation", "circumvallation",
+            "contravallation")
+# The designs' own prompt-test names (final-belgrade.md, Infrastructure; final-alesia.md, check 6),
+# folded to ASCII and spelled as a job might spell them.
+DESIGN_NAMES = ("belgrade", "nandorfehervar", "hunyadi", "szilagyi", "capistrano", "mehmed",
+                "ottoman", "crusader", "janissary", "sipahi", "1456", "alesia", "caesar",
+                "vercingetorix")
 # The mirror axis of the two cases; rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines
 # layout.
 MIRROR_X = 130
@@ -107,17 +114,38 @@ def test_every_roster_unit_is_placed_once_under_its_battle_type(name):
 def test_no_declaration_text_names_the_history_or_reaches_a_controller(name):
     """Labels and provenance carry no historical name, and the declaration adds nothing to what
     a controller reads: no benchmark tag, scoring rule or briefing in its view, and a battle
-    session with only the behaviour defaults and the private deployment. Wrong versions:
-    'belgrade' or 'alesia' in a name or brief; a benchmark tag or briefing that carries them."""
+    session with only the behaviour defaults, the private deployment and the evaluator-only
+    record. Wrong versions: 'belgrade' or 'alesia' in a name or brief; a benchmark tag or
+    briefing that carries them."""
     scenario = setup.scenarios()[name]
     entry = json.loads(setup.SCENARIOS_PATH.read_text())[name]
-    texts = [name, *strings(entry), *strings(scenario)]
+    texts = [name, *(text for value in (entry, scenario)
+                     for text in strings({k: v for k, v in value.items() if k != "withheld"}))]
     assert sorted({word for text in texts for word in WITHHELD if word in folded(text)}) == []
     observation = bridge_observation(1, 1000)
     observation.update(job=JOB, mode={"type": "land_normal", "role": "defender"})
     assert play.public(observation, scenario) == play.public(observation, {})
+    # The record rests on JUDGEMENT? src/twwarhammer3/battle/capture.py Private record in scored
+    # battles.
     assert play.battle_session(scenario) == {"benchmark": "behaviour-defaults",
-                                             "deployment": scenario["deployment"]}
+                                             "deployment": scenario["deployment"],
+                                             "private_record": True}
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_a_job_that_names_the_history_is_refused_and_a_neutral_one_accepted(name):
+    """The job reaches every controller, so play and the owner's recorder refuse one that holds a
+    withheld word at a word start (setup.check_job). Wrong versions: no withheld list, which
+    accepts any job; a list missing one of the designs' names or of WITHHELD; a word that also
+    starts a neutral job, such as camp or lines."""
+    scenario = setup.scenarios()[name]
+    assert set(WITHHELD) <= set(scenario["withheld"])
+    for job in ("belgrade-camp-r1", "alesia-a-r1", "bench-Hunyadi-a", "w-circumvallation-2",
+                *(f"{word}-r1" for word in DESIGN_NAMES)):
+        with pytest.raises(ValueError, match="withheld word"):
+            setup.check_job(scenario, job)
+    for job in ("camp-r1-003", JOB, "bench-ksl-nor-lines-hold-20261109"):
+        setup.check_job(scenario, job)
 
 
 def test_case_b_mirrors_every_enemy_placement_of_case_a_and_changes_nothing_else():

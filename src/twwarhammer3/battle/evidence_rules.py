@@ -5,9 +5,9 @@ observation or of a 1 Hz replay frame, which carries the same fields (``unit_rec
 ``mode_section`` in the battle Lua; the field list is in engine/mailbox.py). ``group_ids`` reads
 the private first reading in ``setup``, which holds the start position of every enemy unit,
 hidden ones included, so it stays out of policy code. Facts recorded in the traces the tests copy:
-- No unit flagged melee in an attack smoke with 364 friendly-enemy pairs within 40 m (closest
-  10.1 m), nor in a defence pair 1.7 m apart, while a defender read melee with no visible enemy
-  within 41 m.
+- No unit flagged melee in an attack smoke whose 776 observations held 6 friendly-enemy pairs
+  within 40 m, 364 pair readings in all (closest 10.1 m), nor in a defence pair 1.7 m apart, while
+  a defender read melee with no visible enemy within 41 m.
 - The melee flag stays on friendly units with no men left, and on live enemy units 61-168 m
   from every friendly unit.
 - Two gates read hp 0 with ``destroyed`` false from that moment to the end of the battle.

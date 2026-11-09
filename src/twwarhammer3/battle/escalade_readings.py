@@ -6,12 +6,16 @@ whose own units carry ``on_wall``) and the private record (``private.jsonl``, fi
 capture.copy_private_record), which holds every enemy unit, hidden ones included. Nothing here
 runs during a battle or reaches a controller. Contact is the engine's melee flag on a unit with
 men left (evidence_rules.in_melee's rule, read from the private record's ``melee``), never the
-distance between centres: in the 2026-10-14 attack smoke 364 friendly-enemy pairs stood within
-40 m, the closest 10.1 m apart, and none carried the flag. A gate is breached at public hp 0 or
-less (evidence_rules.gate_breached). The front line and ``inside`` are the witness's
-(escalade.front_line, rests on JUDGEMENT? escalade.py Front line).
+distance between centres: in the 2026-10-14 attack smoke 6 friendly-enemy pairs stood within
+40 m, 364 pair readings in all, the closest 10.1 m apart, and none carried the flag. A gate is
+breached at public hp 0 or less (evidence_rules.gate_breached). The front line and ``inside``
+are the witness's (escalade.front_line, rests on JUDGEMENT? escalade.py Front line).
 """
 
+# The battle's page is docs/twwarhammer3/escalade-eval.md. Its proposed check 7 counts D1 as
+# exercised from reallocation() over private frames that start at the end of staging, beside a
+# reading from the battle's start, and lancer_losses() is D2's descriptive reading (rests on
+# JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade deciding checks and Escalade claim).
 from twwarhammer3.battle.escalade import inside
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.scripted import distance

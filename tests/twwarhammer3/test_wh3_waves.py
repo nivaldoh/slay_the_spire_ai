@@ -26,20 +26,19 @@ from wh3_lua import load_battle
 from twwarhammer3.battle import llm, play, reserve, setup
 from twwarhammer3.protocol import ProtocolError
 
-# Marker lines for values of the two entries in configs/twwarhammer3/scenarios.json, which cannot
-# carry a comment (docs/judgement.md). The design they copy from is untracked (final-haengju.md).
-# JUDGEMENT: Siege construction profile — Claude, 2026-11-08 (siege defence design): scenarios.json
-# cth-emp-siege-a-all-v1 player, enemy, map, expect (very hard, 1.0, 0.75, 1,200 s, 20,000 funds).
-# Other forces, modifier or timer change the difficulty; every reading of both arms rests on it.
+# Marker lines and pointers for values of the three entries in configs/twwarhammer3/scenarios.json,
+# which cannot carry a comment (docs/judgement.md). The design they copy from is untracked
+# (final-haengju.md).
+# cth-emp-siege-a-all-v1's player, enemy, map and expect (very hard, 1.0, 0.75, 1,200 s, 20,000
+# funds) rest on JUDGEMENT docs/twwarhammer3/haengju-eval.md Construction profile.
 # JUDGEMENT: Cathay lobby faction — Claude, 2026-11-08: wh3_main_cth_cathay_mp, the only faction
 # whose custom-battle permissions list these cards. The design's example western_provinces would
 # need it as recruitment_faction and may bring faction effects; recruitment rests on it.
 # JUDGEMENT: Siege staging — Claude, 2026-11-08 (design's staging points, bearing 0): scenarios.json
 # enemy deployment, slots 1-4 D1, 5-8 D2, 9-13 D3, 14-18 D4, 32 m regiments and a 20 m General.
 # Other points or widths change arrival times and visibility; the division sequence rests on it.
-# JUDGEMENT: Division release times — Claude, 2026-11-08 (design, recommended over the 150/240/450
-# draft): scenarios.json cth-emp-siege-a-v1 reserve, 150, 300 and 450 s and release on damage.
-# Other times or no damage release change the event distribution; every waves reading rests on it.
+# cth-emp-siege-a-v1's reserve, released at 150, 300 and 450 s and on damage,
+# rests on JUDGEMENT docs/twwarhammer3/haengju-eval.md Division schedule.
 # JUDGEMENT: Siege toggles — Claude, 2026-11-08 (design: engine defaults): no behaviour_defaults, so
 # the engine's own toggles (defend and fire at will on in the recorded siege) stay. That field would
 # turn defend and skirmish off for every garrison unit; decision 1's fire baseline rests on it.
@@ -49,9 +48,15 @@ from twwarhammer3.protocol import ProtocolError
 # JUDGEMENT?: Withheld words — Claude, 2026-11-08: scenarios.json cth-emp-siege-a-all-v1 withheld,
 # the design's historical names. A longer list refuses more job names; the job-name guard and the
 # boundary test below rest on it.
+# JUDGEMENT?: Map screen entry — Claude, 2026-11-09: scenarios.json cth-emp-siege-a-all-gates-v1 is
+# the all-at-once arm on Eagle Gate with engine starts on both sides. Authored enemy starts there
+# would change the opening it reads; stage 1d's map choice rests on it.
 
 WAVES = "cth-emp-siege-a-v1"
 ALL = "cth-emp-siege-a-all-v1"
+# The Eagle Gate screen; its map rests on JUDGEMENT docs/twwarhammer3/haengju-eval.md Eagle Gate
+# screen.
+SCREEN = "cth-emp-siege-a-all-gates-v1"
 GUN, SWORD = "wh_main_emp_inf_handgunners", "wh_main_emp_inf_swordsmen"
 HALB, GREAT = "wh_main_emp_inf_halberdiers", "wh_main_emp_inf_greatswords"
 GENERAL, XBOW = "wh_main_emp_cha_general_0", "wh_main_emp_inf_crossbowmen"
@@ -94,7 +99,24 @@ def test_the_declarations_differ_only_in_the_hold_and_place_the_whole_enemy_rost
         setup.validate_declaration(short, config)
 
 
-def test_the_profile_is_returned_unchanged_takes_no_seed_and_is_saved_in_the_manifest(
+def test_the_map_screen_is_the_all_at_once_arm_on_another_siege_map_with_engine_starts():
+    """Stage 1d's one hold launch. Wrong versions: Helmgart's enemy points kept on another map
+    (the mod would teleport units onto them) or the waves hold, which binds them; a map key not in
+    the lobby's siege list; a roster or setting changed with the map; a withheld word in the new
+    text."""
+    every, screen = setup.scenarios()[ALL], setup.scenarios()[SCREEN]
+    assert {key for key in every.keys() | screen.keys() if every.get(key) != screen.get(key)} == {
+        "name", "brief", "calibration_change", "map", "deployment"}
+    siege = json.loads(setup.CATALOGUE_PATH.read_text())["battle_type_maps"]["siege"]
+    assert screen["map"] in siege and screen["map"] != every["map"]
+    config = {"episode_timeout": 1320, "run_timeout": 30000, "start_timeout": 900, "episodes": 1}
+    setup.validate_declaration(screen, config)
+    assert play.battle_session(screen) == {"private_record": True}
+    text = json.dumps({key: value for key, value in screen.items() if key != "withheld"})
+    assert [word for word in screen["withheld"] if word in text.lower()] == []
+
+
+def test_the_profile_is_returned_unchanged_takes_no_seed_and_is_saved_in_manifest_and_register(
         tmp_path, monkeypatch):
     base = scenario()
     assert reserve.materialize(base) == base["reserve"] == reserve.sequence(base, 3)[2]
@@ -120,7 +142,7 @@ def test_the_profile_is_returned_unchanged_takes_no_seed_and_is_saved_in_the_man
                         ("prepare_runtime", dict), ("collect_diagnostics", dict),
                         ("committed_revision", lambda *a: "r1"),
                         ("source_fingerprints", lambda *a: {}), ("start_frontend", lambda *a: None),
-                        ("check_menu", lambda *a: {}), ("record", lambda *a: None)):
+                        ("check_menu", lambda *a: {})):
         monkeypatch.setattr(play, name, value)
 
     def episode(directory, config, maker, mailbox, **kwargs):
@@ -139,6 +161,10 @@ def test_the_profile_is_returned_unchanged_takes_no_seed_and_is_saved_in_the_man
     assert saved["reserve_draws"] == [base["reserve"]] * 2
     assert saved["scenario"]["reserve"] == base["reserve"]
     assert sessions and all(value == base["reserve"] for value in sessions)
+    # The real register writer: a Cannae B case of region/side/count raised KeyError 'region' on
+    # the first episode here, so play stopped with one episode and no row.
+    register = (tmp_path / "results.csv").read_text().splitlines()
+    assert [line.rsplit(",", 1)[-1] for line in register] == ["case", "waves", "waves"]
 
 
 def broken(change):

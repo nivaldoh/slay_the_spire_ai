@@ -460,6 +460,15 @@ def test_the_battle_check_requires_the_siege_setup_to_have_read_the_fort():
     checks = setup.check_battle(scenario, state)
     assert checks["siege_assault"] == {"lists": {"gate": 1, "wall": 12, "tower": 4},
                                        "fortifications": {"gate": 1, "wall": 11, "tower": 4}}
+    # A setup that read ok while the engine listed no wall piece (or no gate) must stop as a
+    # setup failure. Without this check Escalade refuses at its first decision, and the battle
+    # is scored as the witness's forfeit.
+    for missing in ("wall", "gate"):
+        partial = deepcopy(state)
+        partial["mode"]["fortifications"] = [piece for piece in state["mode"]["fortifications"]
+                                             if piece["kind"] != missing]
+        with pytest.raises(ProtocolError, match="siege assault"):
+            setup.check_battle(scenario, partial)
     for broken in ({"ok": False, "error": "siege assault needs the player attacking"}, None):
         state["setup"]["siege_assault"] = broken
         with pytest.raises(ProtocolError, match="siege assault"):

@@ -10,11 +10,14 @@ c2 enemy-held from 336.7 s, c7 from 467.8 s, c1 from 699.1 s, tickets first belo
 """
 
 import copy
+import json
 
 import pytest
+from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 from wh3_helmgart import MODE
 
-from twwarhammer3.battle import wall_defence, wall_readings
+from twwarhammer3.battle import play, setup, wall_defence, wall_readings
+from twwarhammer3.battle.scripted import Hold
 
 HOLDERS = {  # time_ms -> holders of c1, c2, c3, c7 (None: neutral)
     5200: ("us", "us", None, "us"), 63700: ("us", "us", None, "us"),
@@ -107,19 +110,48 @@ def test_a_breach_is_an_on_wall_reading_or_two_frames_inside_the_private_polygon
                                                      "by": "on_wall"}
 
 
-def test_damage_releases_list_the_friendly_units_then_in_range_of_the_released_group():
-    release = {"group": 2, "reason": "damage", "released_ms": 40250, "ok": True,
-               "damaged": [{"id": "e15", "men": 89, "men0": 90, "under_fire": False}],
-               "units": [{"id": "e12", "x": -20, "z": -595}, {"id": "e15", "x": 100, "z": -595}]}
-    on_time = {"group": 1, "reason": "time", "released_ms": 150000, "ok": True, "units": []}
-    cannon = {"id": "f9", "x": 100, "z": -160, "range": 450}
-    archers = {"id": "f5", "x": -55, "z": -23, "range": 140}
-    observations = [{"time_ms": 40000, "friendly": [cannon, archers]},
-                    {"time_ms": 45000, "friendly": [{**cannon, "z": 300}, archers]},
-                    {"time_ms": 150000, "friendly": [], "evaluation": {"reserve": {
-                        "releases": [release, on_time]}}}]
-    assert wall_readings.damage_releases(observations) == [
-        {"group": 2, "time_ms": 40250, "damaged": ["e15"], "friendly_in_range": ["f9"]}]
+def test_damage_releases_are_read_from_the_trace_play_writes(tmp_path):
+    """The rows are the trace.jsonl that play.play_episode writes for hand-made observations
+    carrying waves evidence in the mod's shape. Wrong version: the releases read from the last
+    row's or the last logged view's ``evaluation``, which play's views never carry."""
+    profile = setup.scenarios()["cth-emp-siege-a-v1"]["reserve"]
+    held = [{"group": number, "slot": slot, "type": kind, "id": f"e{slot}"}
+            for number, group in enumerate(profile["groups"], 1)
+            for slot, kind in zip(group["slots"], group["types"], strict=True)]
+    shot = {"group": 2, "reason": "damage", "released_ms": 40250, "ok": True,
+            "damaged": [{"id": "e11", "men": 89, "men0": 90, "under_fire": False}],
+            "units": [{"id": f"e{slot}", "x": x, "z": -595, "men": 90}
+                      for slot, x in zip(range(9, 14), (-20, 10, 100, 130, 160), strict=True)]}
+    on_time = {"group": 1, "reason": "time", "released_ms": 150000, "ok": True,
+               "units": [{"id": f"e{slot}", "x": 0, "z": -400, "men": 90} for slot in range(5, 9)]}
+    cannon = {"id": "f9", "type": "wh3_main_cth_art_grand_cannon_0", "class": "artillery",
+              "x": 100.0, "z": -160.0, "men": 12, "men0": 12, "hp": 1.0, "state": [],
+              "range": 450}
+    archers = {**cannon, "id": "f5", "type": "wh3_main_cth_inf_peasant_archers_0",
+               "class": "infantry", "x": -55.0, "z": -23.0, "range": 140}
+    # The cannon is out of range of e11 (895 m) in the battle row, the start roster and the
+    # views after the release; only the view at 40,000 ms has it in range.
+    rows = []
+    for seq, time_ms, releases, z in ((0, 5000, [], 300), (1, 20000, [], 300),
+                                      (2, 40000, [], -160), (3, 41000, [shot], 300),
+                                      (4, 150500, [shot, on_time], 300)):
+        row = bridge_observation(seq, time_ms, ack=seq in (2, 3),
+                                 result="won" if seq == 4 else None)
+        row["friendly"] = [{**cannon, "z": float(z)}, archers]
+        row["enemy_roster"] = [{"id": unit["id"], "type": unit["type"]} for unit in held]
+        row["evaluation"] = {"reserve": {"config": profile, "units": held, "releases": releases}}
+        rows.append(row)
+    result = play.play_episode(tmp_path / "episode", {**CONFIG, "interval_ms": 0}, Hold,
+                               FakeMailbox(rows), not_battle=None, scenario={"reserve": profile})
+    assert result["status"] == "won"
+    lines = (tmp_path / "episode/trace.jsonl").read_text().splitlines()
+    trace = [json.loads(line) for line in lines]
+    views = [row["observation"] for row in trace if row["kind"] == "observation"]
+    assert [view["time_ms"] for view in views] == [20000, 40000, 41000]
+    assert not any("evaluation" in view for view in views)
+    # The view at 40,000 ms, before the release at 40,250, has the cannon 435 m from e11.
+    assert wall_readings.damage_releases(trace) == [
+        {"group": 2, "time_ms": 40250, "damaged": ["e11"], "friendly_in_range": ["f9"]}]
 
 
 def test_the_reserve_response_runs_from_the_breach_to_its_first_accepted_attack_and_melee():

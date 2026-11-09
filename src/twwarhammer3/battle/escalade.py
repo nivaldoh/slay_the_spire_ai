@@ -48,6 +48,10 @@ Code reference: SMAC smac/env/starcraft2/starcraft2.py get_agent_action_heuristi
 until it is unavailable, as camp.py and wall_defence.py do.
 """
 
+# The battle's page is docs/twwarhammer3/escalade-eval.md. Its one claim is D1, Escalade against
+# Concentrate; CavalryEarly's D2 and the other controls stay descriptive or shortcuts (rests on
+# JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade claim). No model can give the siege orders
+# until the parked llm.py change on branch izmail-llm-orders lands.
 import math
 from collections import Counter
 from copy import deepcopy

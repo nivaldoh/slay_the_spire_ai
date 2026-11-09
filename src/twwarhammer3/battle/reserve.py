@@ -28,9 +28,9 @@ TRIGGER_MS, V1_RELEASE_MS = 45000, 165000
 # reserve within 25 m of its final region, when unavailable, or at 360 s; others hold
 # to the bound. A fixed guessed duration differs; v1's outside routes were incomplete at 165 s.
 ARRIVAL_M, HARD_RELEASE_MS = 25, 360000
-# JUDGEMENT: Waves briefing — Claude, 2026-11-08 (design, Public briefing): this one sentence, no
-# times, groups or trigger; a prompt shows it after llm.py render_prompt's "Reserve briefing:" label
-# (line 415). Silence, the times or another label inform a model otherwise; its results rest on it.
+# The one sentence a waves profile shows: no times, groups or trigger. A prompt shows it after
+# llm.py render_prompt's "Reserve briefing:" label (line 415); this choice
+# rests on JUDGEMENT docs/twwarhammer3/haengju-eval.md Public presentation.
 WAVES_BRIEFING = ("The attacking army is drawn up in several divisions, which may attack at "
                   "different times.")
 

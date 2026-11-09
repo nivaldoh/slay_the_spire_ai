@@ -5205,6 +5205,37 @@
     }
    ]
   },
+  "private_record": true,
+  "withheld": [
+   "belgrade",
+   "nandorfehervar",
+   "hunyadi",
+   "szilagyi",
+   "capistran",
+   "mehmed",
+   "ottoman",
+   "crusade",
+   "janissar",
+   "sipahi",
+   "sultan",
+   "1456",
+   "hungar",
+   "turk",
+   "alesia",
+   "caesar",
+   "vercingetorix",
+   "vercassivellaunus",
+   "labienus",
+   "reginus",
+   "rebilus",
+   "sedulius",
+   "gallic",
+   "gaul",
+   "roman",
+   "vallation",
+   "circumvallation",
+   "contravallation"
+  ],
   "expect": {
    "battle_type": "land_normal",
    "difficulty": "ai_level_very_hard",
@@ -5475,6 +5506,37 @@
     }
    ]
   },
+  "private_record": true,
+  "withheld": [
+   "belgrade",
+   "nandorfehervar",
+   "hunyadi",
+   "szilagyi",
+   "capistran",
+   "mehmed",
+   "ottoman",
+   "crusade",
+   "janissar",
+   "sipahi",
+   "sultan",
+   "1456",
+   "hungar",
+   "turk",
+   "alesia",
+   "caesar",
+   "vercingetorix",
+   "vercassivellaunus",
+   "labienus",
+   "reginus",
+   "rebilus",
+   "sedulius",
+   "gallic",
+   "gaul",
+   "roman",
+   "vallation",
+   "circumvallation",
+   "contravallation"
+  ],
   "expect": {
    "battle_type": "land_normal",
    "difficulty": "ai_level_very_hard",
@@ -5592,6 +5654,7 @@
   "scenario_version": 1,
   "family": "siege defence",
   "brief": "A Grand Cathay garrison holds a walled fort against an Empire army drawn up in four divisions that all attack from the start. The defender wins when the timer runs out; every engine win counts.",
+  "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 siege defence design in runs/siege-evals-20261108 (Settings, Rosters, Map and placements, Scripted divisions), with the set review's corrections in portfolio.md there; a provisional construction profile the owner has not reviewed. cth-emp-siege-a-v1 inherits this entry and adds the version 3 waves reserve. The marked choices behind these values are on this battle's evaluation page in docs/twwarhammer3 (the README's second evaluation battle) and in tests/twwarhammer3/test_wh3_waves.py; this text names neither the page's file nor the history, because the declaration avoids its own withheld words. Database costs (main_units_tables multiplayer_cost, read 2026-11-08 with scripts/wh3_db.py): garrison 5,550 (Lord Magistrate 400, 2 x Jade Warriors 525, 2 x Peasant Spearmen 350, 2 x Peasant Archers 400, Jade Warrior Crossbowmen 600, Fire Rain Rocket Battery 1,100, Grand Cannon 900); attacker 9,550, 1.72 times the garrison's, by enemy deployment slots 1-4 1,275, 5-8 1,950, 9-13 3,400 and 14-18 2,925. Men at large scale (num_men x 0.75, single entities as 1, unread in battle): garrison 734.5, attacker 1,463.5. units_custom_battle_permissions_tables lists the seven Cathay cards only under wh3_main_cth_cathay_mp; no lobby has read either roster back. The engine places the garrison. The 18 enemy placements stand on clear cells of a recorded Helmgart terrain grid, and by the set review's reading no earlier battle teleported units in a siege. siege_equipment {} clears the attacker's lobby list, and check_battle compares the battle's own equipment reading with it. Without behaviour_defaults the engine's own toggles stay. Unverified: no game was launched.",
   "split": "development",
   "status": "prototype_not_admitted",
   "battle_type": "siege",
@@ -5896,6 +5959,14 @@
    ],
    "release_on_damage": true
   }
+ },
+ "cth-emp-siege-a-all-gates-v1": {
+  "base": "cth-emp-siege-a-all-v1",
+  "name": "cth-emp-siege-a-all-gates-v1",
+  "brief": "A map screen run with hold only: a Grand Cathay garrison holds a walled fort on the Eagle Gate map against the base's 18-unit Empire army, placed by the engine and attacking from the start. The defender wins when the timer runs out; every engine win counts.",
+  "calibration_change": "Map screen (Claude, 2026-11-09) for the screening launch of the 2026-11-08 siege defence design in runs/siege-evals-20261108 (Map and placements, Infrastructure): cth-emp-siege-a-all-v1 on battle_preset_wh2_main_minor_settlement_fortress_gates (Eagle Gate, in the siege map list of custom_battle.json from the 2026-10-14 battle type probe), with deployment null, so the engine places both armies. The base's 18 enemy placements stand on cells of a recorded Helmgart terrain grid and are not carried over, and the waves reserve binds those placements, so this entry has no reserve. Everything else is the base's: rosters, settings, siege_equipment {}, private_record and withheld. It is meant for one hold launch whose readings decide, by a rule fixed beforehand, whether this map replaces Helmgart; it is not an arm of any contrast. The marked choices behind it are on this battle's evaluation page in docs/twwarhammer3 and in tests/twwarhammer3/test_wh3_waves.py. Nothing on this map has been read: its terrain, capture points, starting positions and engine battle type are unread. Unverified: no game was launched.",
+  "map": "battle_preset_wh2_main_minor_settlement_fortress_gates",
+  "deployment": null
  },
  "ksl-emp-siege-a-v1": {
   "name": "ksl-emp-siege-a-v1",

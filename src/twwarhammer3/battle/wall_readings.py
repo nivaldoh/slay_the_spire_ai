@@ -2,11 +2,11 @@
 descriptive only (runs/siege-evals-20261108/final-haengju.md, Measurements and Infrastructure).
 
 They read a finished battle's records: its observations, whose hidden sections a reader may use,
-its trace (trace.jsonl's decisions and acks) and the private record (``private.jsonl``, fields in
-capture.copy_private_record). Nothing here runs during a battle or reaches a controller. Capture
-holders and tickets follow evidence_rules (a holder of None is neither side's; tickets are the
-defender's row). Divisions are lists of enemy ids fixed at the first observation
-(evidence_rules.group_ids). The wall line is the public one the witness uses
+its trace (trace.jsonl's decisions, acks and reserve rows) and the private record
+(``private.jsonl``, fields in capture.copy_private_record). Nothing here runs during a battle or
+reaches a controller. Capture holders and tickets follow evidence_rules (a holder of None is
+neither side's; tickets are the defender's row). Divisions are lists of enemy ids fixed at the
+first observation (evidence_rules.group_ids). The wall line is the public one the witness uses
 (wall_defence.wall_line); the breach polygon is a private one, frozen from stage 1's terrain grid
 and on_wall readings, and until then absent.
 """
@@ -146,18 +146,28 @@ def reserve_response(trace, frames, breached):
             "melee_ms": None if melee is None else melee - start}
 
 
-def damage_releases(observations):
-    """The waves releases damage caused, from the last observation's evaluation, each with the
-    friendly units then in their public ``range`` of a released unit (the observation at or just
-    before the release). Releases on time are left out."""
-    if not observations:
-        return []
-    evidence = (observations[-1].get("evaluation") or {}).get("reserve") or {}
+# JUDGEMENT?: Release friendly view — Claude, 2026-11-09 (integration review): a damage release's
+# friendly units are those of the trace's last view read at or before it, logged only with a
+# decision. The next view or 1 Hz replay frames list other units; the release reading rests on it.
+def damage_releases(trace):
+    """The waves releases damage caused, each with the friendly units then in their public
+    ``range`` of a released unit. ``trace`` holds the episode's trace.jsonl rows in order. The
+    releases come from its last "reserve" row, which play writes whenever the mod's
+    ``evaluation.reserve`` changes, so it holds every release, also in a battle that ended without
+    a "result" row; the "observation" rows are controller views (play.public) without
+    ``evaluation``. The friendly units come from the last "observation", "battle", "roster" or
+    "result" row (the kinds digest reads) whose observation was read at or before the release. A
+    view is logged only with a logged decision (play._drive), so it can be up to a decision
+    interval or ``observe_ms`` older than the release. Releases on time are left out."""
+    rows = [row for row in trace if row.get("kind") == "reserve"]
+    evidence = (rows[-1].get("evidence") if rows else None) or {}
+    views = [row["observation"] for row in trace
+             if row.get("kind") in ("observation", "battle", "roster", "result")]
     result = []
     for release in evidence.get("releases") or []:
         if release.get("reason") != "damage":
             continue
-        before = [o for o in observations if o["time_ms"] <= release["released_ms"]]
+        before = [o for o in views if o["time_ms"] <= release["released_ms"]]
         friendly = before[-1].get("friendly") or [] if before else []
         placed = [u for u in release.get("units") or [] if u.get("x") is not None]
         near = sorted(f["id"] for f in friendly if f.get("range") and any(
