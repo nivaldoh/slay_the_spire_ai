@@ -39,8 +39,8 @@ def prompt_path(base: str, profile: str | None) -> Path:
             else MODEL_PROMPTS[base])
 
 
-VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2",
-            "team_llm_rules": "v22+t2"}
+VERSIONS = {"llm": "v23", "llm_rules": "v23", "commander": "v8", "skills": "v1.2",
+            "team_llm_rules": "v23+t2"}
 
 
 class Controller(Protocol):

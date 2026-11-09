@@ -29,6 +29,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-09: Prompt v23: siege orders for the llm controller
+
+The owner, 2026-11-09: "I approve models using siege orders" ([directions](../owner-direction.md)).
+The `llm.py` change parked on branch `izmail-llm-orders` (`1869329`) landed, changed so that only a
+controller whose reply schema has the orders is told about them. Offline, $0, no game.
+- `llm`/`llm_rules` v23 is v22 plus, in a siege the player attacks with `siege_assault` (only
+  `ksl-emp-siege-a-v1`): the fortification list with piece health and tower holders, its siege
+  vehicles and crews, enemy-built structures, "on the wall", "can climb walls" and "can attack
+  buildings" on units, the `SIEGE_ORDERS` paragraph, and `SIEGE_REPLY_SCHEMA` with `besiege` and
+  `attack_building`. An accepted siege order clears the move or attack the prompt says a unit holds.
+- The shared `render_state` shows the lists as facts ("Fortifications:") to every controller.
+  `LLMPolicy` adds the paragraph and the schema only on a whole observation; on a team member's view
+  (`team.project`, which drops the climb fields validation reads) a siege order is refused as
+  unknown. That covers `team_llm_rules` v23+t2 members and a configured `team`'s `llm`/`llm_rules`
+  leaves (marker Team siege orders in [escalade-eval.md](escalade-eval.md)). `commander` (plan
+  schema without siege orders) stays v8, since `commander.py` did not change; `local_team` is
+  unchanged.
+- Every battle without `siege_assault` sends the same request as v22: the prompt snapshots and the
+  request hashes in `test_wh3_siege_assault.py` are unchanged. `llm.py`'s source hash moved, so
+  `llm` and `llm_rules` cards and the team's `member_source_sha256` split from recorded battles.
+- Checks: eight planted wrong versions each failed a test in `test_wh3_siege_assault.py` (three
+  in the prompt, five in the member rule); `scripts/check.py` passed (Ruff clean; 3650 passed, 70
+  skipped) in the `siege-review` worktree, which skips the diagram check. After the merge that
+  check should flag the code page's methods view, which states v22; `scripts/diagram_examples.py
+  methods` then regenerates its example.
+  Unverified: no battle has run on v23, and no game has carried out either order.
+
 ## 2026-11-09: Historical siege evaluations built offline, harness b54
 
 Owner, 2026-11-08: build the good battle ideas with a concrete, legitimate methodology, adapted
@@ -1987,13 +2014,13 @@ visuals for those too."
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v22 (2026-10-21) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Current v22 input played in the [coordination suite](#2026-11-04-first-comparison-of-control-methods). Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v22 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
+| `llm` | v23 (2026-11-09: [siege orders](#2026-11-09-prompt-v23-siege-orders-for-the-llm-controller)) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v23 unplayed; outside `siege_assault` battles its requests equal v22's, which played in the [coordination suite](#2026-11-04-first-comparison-of-control-methods). Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v23 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
 | `commander` | v8 (2026-10-21) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v8 played in the [coordination suite](#2026-11-04-first-comparison-of-control-methods); comparisons with single also differ in tactics advice |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest: the [starting-set screen](#2026-10-22-the-starting-set-screen) (30 floor launches, 2026-10-22); first: `bench-g1-cavalry-ai10-01-20261014` |
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages unimplemented; [native multiplayer](native-multiplayer.md) is a separate track |
-| `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
+| `team_llm_rules` | v23+t2 (2026-11-09; t2 2026-10-27): `llm_rules` per member plus the teammate's units and condition; a siege attack's fort as facts, without the siege orders | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py` | [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
 | Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | None played; built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54) |

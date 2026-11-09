@@ -8,7 +8,9 @@ gate building in the wall list too. The Lua tests run the mod's real definitions
 against a fake engine; no battle has read any of these getters (integration.md, Unverified), so
 they show what the mod does with the documented answers, not that the engine gives them. The
 Python tests show that only a siege the player attacks with the opt-in gets the new fields,
-orders, prompt lines and reply schema, and that every other request is unchanged.
+orders, prompt lines and reply schema, that only the llm controller is offered the siege orders
+(the commander and a team member read the fort as facts), and that every other request is
+unchanged.
 """
 
 import hashlib
@@ -22,7 +24,7 @@ from wh3_lua import load_battle, runtime
 from wh3_siege_attack import first_observation, later
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import escalade, llm, play, setup
+from twwarhammer3.battle import commander, configured, controllers, escalade, llm, play, setup, team
 from twwarhammer3.protocol import IllegalActionError, ProtocolError, validate_orders
 
 # Marker lines for ksl-emp-siege-a-v1's values in configs/twwarhammer3/scenarios.json, which
@@ -437,8 +439,97 @@ def test_a_battle_the_player_attacks_without_the_opt_in_sends_the_same_request(m
     assert hashlib.sha256(text).hexdigest() == BODY_SHA256[make.__name__]
 
 
-# The model's siege prompt and orders wait on the owner: the llm.py change that adds them
-# changes every llm controller's card identity (runs/siege-evals-20261108/parked/).
+# The fort as facts, in every controller's state under the opt-in.
+FORT_LINES = ("Fortifications:\n- g1 gate at (-32, -16): 100% health",
+              "- t1 tower at (-192, -81): 100% health, held by enemy",
+              "- t2 tower at (-62, -31): 100% health, held by nobody",
+              "Your siege vehicles: v1 battering_ram at (0, -231), crewed by f4.",
+              "Enemy-built structures: none.")
+
+
+def test_a_siege_attack_shows_the_fort_and_offers_the_siege_orders(tmp_path):
+    agent, send = model(tmp_path, CLIMB)
+    view = play.public(SIEGE, setup.scenarios()["ksl-emp-siege-a-v1"])
+    assert agent.decide(view) == json.loads(CLIMB)["orders"]
+    body = send.bodies[0]
+    assert body["text"]["format"]["schema"] == llm.SIEGE_REPLY_SCHEMA
+    kinds = [item["properties"]["type"]["enum"][0] for item in
+             body["text"]["format"]["schema"]["properties"]["orders"]["items"]["anyOf"]]
+    assert kinds[-2:] == ["besiege", "attack_building"]
+    prompt = body["input"][0]["content"]
+    for line in FORT_LINES + (llm.SIEGE_ORDERS,):
+        assert line in prompt
+    assert "can climb walls" in prompt and "cannot climb walls" in prompt
+    assert "e2 handgunners (infantry) at (-49, -21)" in prompt and "on the wall" in prompt
+    # Nothing hidden, historical or about ladders' engine effect reaches the model.
+    lowered = prompt.lower()
+    for word in setup.scenarios()["ksl-emp-siege-a-v1"]["withheld"] + [
+            "climbing", "hidden garrison", "staging pocket", "ladder"]:
+        assert word not in lowered
+    assert llm.describe_orders(json.loads(CLIMB)["orders"]) == "f2 besiege w3 run"
+
+
+def test_the_commander_and_team_members_see_the_fort_but_no_siege_order(tmp_path, monkeypatch):
+    """Wrong versions: a controller told of besiege or attack_building, which its reply schema
+    cannot express (the commander's plans), or offered them on a team member's projected view,
+    which has no can_climb (a team_llm_rules member, and a configured team's llm_rules leaf, a
+    plain LLMPolicy); a member's gate besiege accepted though its schema has no siege order."""
+    plan = json.dumps({"assignments": [], "abilities": [], "reason": "wait", "notes": None})
+    send = FakeSend(plan)
+    planner = commander.CommanderPolicy("gpt-6-luna", "low",
+                                        Ledger(tmp_path / "ledger.jsonl", 1.0), send=send)
+    view = play.public(SIEGE, setup.scenarios()["ksl-emp-siege-a-v1"])
+    try:
+        planner.decide(view)
+        planner.pending.result(timeout=5)
+    finally:
+        planner.close()
+    gate = json.dumps({"orders": [{"unit": "f2", "type": "besiege", "target": "g1", "run": True}],
+                       "reason": "gate", "notes": None})
+    member_send, configured_send = FakeSend(gate, gate, gate), FakeSend(gate, gate, gate)
+    monkeypatch.setattr(controllers, "api_key", lambda provider: "test-only")
+    monkeypatch.setattr(controllers, "post", lambda key, body, **options: configured_send(body))
+    path, ledger = tmp_path / "controller.json", tmp_path / "configured.jsonl"
+    path.write_text(json.dumps({"type": "team", "army_owner": "rest", "members": {
+        "climbers": {"unit_types": ["wh3_main_ksl_inf_armoured_kossars_0"],
+                     "controller": {"type": "llm_rules@gpt-6-luna/low"}},
+        "rest": {"unit_types": None, "controller": {"type": "llm_rules@gpt-6-luna/low"}}}}))
+    ledger.touch()
+    built = configured.factory(path, {"policy": "configured", "controller_config": str(path),
+                                      "scenario": "ksl-emp-siege-a-v1", "provider": "openai",
+                                      "budget_usd": 1, "ledger": str(ledger)})()
+    try:
+        members = [team.TeamLLM("gpt-6-luna", "low", Ledger(tmp_path / "member.jsonl", 1.0),
+                                send=member_send), built.members["climbers"].policy]
+        assert type(members[1]) is llm.LLMPolicy
+        for member in members:
+            assert member.decide(team.project(view, {"f2"})) == []
+            assert "unknown order type 'besiege'" in member.metadata()["dropped"][0]
+    finally:
+        built.close()
+    for body, schema in ((send.bodies[0], commander.REPLY_SCHEMA),
+                         (member_send.bodies[0], llm.REPLY_SCHEMA),
+                         (configured_send.bodies[0], llm.REPLY_SCHEMA)):
+        assert body["text"]["format"]["schema"] == schema
+        prompt = body["input"][0]["content"]
+        for line in FORT_LINES:
+            assert line in prompt
+        for word in ("besiege", "attack_building", "Siege orders"):
+            assert word not in prompt
+    assert "can climb walls" in send.bodies[0]["input"][0]["content"]
+
+
+def test_an_accepted_siege_order_replaces_the_move_the_prompt_says_a_unit_holds(tmp_path):
+    move = json.dumps({"orders": [{"unit": "f2", "type": "move", "x": -230, "z": -238,
+                                   "facing": None, "width": None, "run": False,
+                                   "queue": False}], "reason": "stage", "notes": None})
+    agent, _ = model(tmp_path, move, CLIMB)
+    view = play.public(SIEGE, {})
+    for expected in ("f2", None):
+        agent.decide(view)
+        agent.acknowledge({"request": "r", "applied_ms": 5300, "results": [
+            {"index": 1, "unit": "f2", "ok": True}]}, {"think_s": 1, "delay_ms": 0})
+        assert next(iter(agent.ordered), None) == expected
 
 
 def test_the_battle_check_requires_the_siege_setup_to_have_read_the_fort():

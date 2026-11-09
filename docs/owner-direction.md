@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-09 (historical siege evaluations, after the offline build), `/goal` verbatim: "I approve
+  models using siege orders. I aprove point 3 too. The rest I'll check later. For now let's just
+  review the tests, design, etc from a different perspective to see if we catch any different issues
+  and try to improve these battles". Point 3 was the two exit-check items of 050020e: the five
+  Haengju page markers stating the built values (for example releases at 150, 300 and 450 s) and the
+  re-anchored plant `recording-copies-before-identity-check`. The siege orders are the llm.py change
+  parked on branch `izmail-llm-orders`. The rest of decision 15 waits; no game window is named.
 - 2026-11-09 (agent context loading), goal verbatim: "Investigate the context-loading proceess
   as you start working on a goal. Let's try to optimize this proceed to load the correct
   information when needed, avoid loading unneeded context and make the start of each session

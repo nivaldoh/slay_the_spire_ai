@@ -242,12 +242,18 @@ battle by battle let a label mean different things per battle; comparing labels 
    presentation, and the withheld lists' JUDGEMENT? markers (Withheld names in lines-eval.md,
    Withheld words in test_wh3_waves.py, Siege attack withheld names in test_wh3_siege_assault.py).
    The plan builder that would name a round's jobs (portfolio S6) is not built.
-7. **The parked `llm.py` change.** The siege attack's fortification list and siege orders reach
-   scripted controllers only. The change that shows them to a model and adds the two orders to its
-   reply schema waits for the owner on branch `izmail-llm-orders` (`1869329`), because any edit to
-   `llm.py` changes the source hash on which every `llm` controller's cards pool
-   ([controllers](controllers.md)). Until the owner accepts it, a model's prompt shows no
-   fortification list and its reply schema has no siege order; no scripted stage needs it.
+7. **The siege orders for models.** The owner approved "models using siege orders" on 2026-11-09,
+   and the `llm.py` change from branch `izmail-llm-orders` landed as `llm`/`llm_rules` v23
+   ([log](log.md#2026-11-09-prompt-v23-siege-orders-for-the-llm-controller)). In a siege attack
+   with `siege_assault`, `llm` and `llm_rules` read the fortification list, a paragraph on
+   `besiege` and `attack_building` and a reply schema that carries both. The `commander` and the
+   team controllers cannot use the orders. The `commander` and every team member (`team_llm_rules`
+   members and the `llm` or `llm_rules` leaves of a configured `team`) read the fortification list
+   and the siege vehicles as facts, and a `local_team` member's view has no fortification list.
+   None of their reply schemas has the orders, and a team member's siege order is refused.
+   The edit moved `llm.py`'s source hash, on which every `llm` controller's cards pool
+   ([controllers](controllers.md)); every battle without `siege_assault` sends the same request
+   as v22. No battle has run on v23.
 8. **Game time.** No game runs until the owner names a window. Every live stage is $0 in API calls
    until a model pilot, which needs the owner's budget and arms.
 
@@ -308,7 +314,8 @@ Five questions, with the recommendation first:
    stage needs it, and a battle that cannot climb would never cost the split. (b) Merge it now,
    so that the split of every `llm` card cell from its recorded launches lands with the Lua
    batch's split of every cell's setup identity. (c) Keep the siege attack for scripted
-   controllers only.
+   controllers only. **Answered 2026-11-09:** "I approve models using siege orders"; it landed as
+   v23 (rule 7 above).
 5. **Confirmation rounds.** (a) None until a battle's gate passes, then one battle at a time at 16
    launches per arm, 32 launches and about 8-13.5 h of $0 game time each by the battle pages
    (recommended). (b) 10 per arm, power 0.426-0.623. (c) Paired branches restored from a checkpoint
@@ -325,5 +332,6 @@ Every outside source the battle pages and the designs cite is listed, with what 
 `runs/siege-evals-20261108/designs.json` and `final-*.md` (the five designs and their judges),
 `portfolio.md` (the review: overlaps, shared rules, build order and per-battle corrections),
 `build-offline.json` and `lua-batch.json` (the build cards, reviews and planted wrong versions), and
-`parked/` (the `llm.py` change). Game facts above are the battle pages' and the designs', each from
+`parked/` (the `llm.py` change as it was parked, before v23). Game facts above are the battle
+pages' and the designs', each from
 the recorded run or table they name.

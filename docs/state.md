@@ -9,7 +9,7 @@ WH3 [communication structure](twwarhammer3/communication-structure.md), night of
 
 Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Branch `spire-local-rl`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
-WH3 historical siege evaluations, 2026-11-08/09 (Claude, owner's goal): built offline at harness b54, nothing launched, all unverified ([overview](twwarhammer3/historical-evals.md)). Haengju (siege defence, divisions in turn), Belgrade's camp attack and Alesia's two fronts (Land), and Izmail (siege attack) have declarations, witnesses, controls and pages; Malta was designed and not built. The llm.py siege-order change waits on branch `izmail-llm-orders`. Next: decision 15, then a game window the owner names, starting with the lobby-only roster readback.
+WH3 historical siege evaluations, 2026-11-08/09 (Claude, owner's goal): built offline at harness b54, nothing launched, all unverified ([overview](twwarhammer3/historical-evals.md)). Haengju (siege defence, divisions in turn), Belgrade's camp attack and Alesia's two fronts (Land), and Izmail (siege attack) have declarations, witnesses, controls and pages; Malta was designed and not built. The owner approved models using the siege orders (2026-11-09): `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No battle has run on v23. Next: the rest of decision 15, then a game window the owner names, starting with the lobby-only roster readback.
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
@@ -37,7 +37,7 @@ Thesis (decision 10): the research question is open; the [proposal](thesis/propo
 Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed, version5 (decision 1): [definition](twwarhammer3/benchmark.md), [README](twwarhammer3/README.md), [results](twwarhammer3/results.csv). Controller ranking remains unverified.
 [Coordination suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) (`suite-v1`): 12 scenarios, 6 played, first comparison 26 of 28 battles, one per pair; exploratory, no ranking.
 
-- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b53; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
+- Runtime: `llm`/`llm_rules` v23, `commander` v8, `team_llm_rules` v23+t2, skills v1.2, harness b54; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`.
@@ -90,7 +90,7 @@ Numbers are unchanged; open the relevant item before acting.
 12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the missed plants, the test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** what "forced" means, which arms, and what may start ([spec](twwarhammer3/communication-structure.md#questions-for-the-owner)).
-15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), the parked llm.py siege orders, one test-plant re-anchor needing your yes, and when the first game window runs.
+15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and when the first game window runs.
 
 ## Runtime and ownership
 
@@ -105,7 +105,6 @@ Numbers are unchanged; open the relevant item before acting.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): attack-route draft, labelled v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): parked by the owner (2026-10-22); resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
-- `izmail-llm-orders` (`1869329`): the llm.py change that shows a model the fort and adds the siege orders to its schema; parked for the owner, since any llm.py edit changes every llm controller's card identity (decision 15).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
 - `team-check-battle-time` (`58a52ef`): agreed-check draft; `gate-xdist` (`668940e`): `check.py` on xdist workers. Each moves the report fingerprint.
 - `gcp-retry` (`f038dc5`): US VM retry record, unmerged; three owner directions live only there.

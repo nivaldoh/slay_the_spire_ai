@@ -13,14 +13,20 @@ in [battle/escalade_readings.py](../../src/twwarhammer3/battle/escalade_readings
 private all-unit record. The owner's choices are collected in
 [decisions for owner review](#decisions-for-owner-review).
 
-**A model cannot use the siege orders yet.** The `llm.py` change that shows the fort to a model and
-adds `besiege` and `attack_building` to its reply schema is parked on branch `izmail-llm-orders`
-(commit `1869329`), because any edit to `llm.py` changes the `source_sha256` of every `llm` and
-`llm_rules` card, which splits the card board from every recorded `llm` battle. On this branch a
-model in this battle would see the gate, the capture points and its units, could give only the
-orders of a land battle, and would not see the fortification list. Every model arm waits for the
-owner's answer to [question 4](#decisions-for-owner-review); the scripted witness and controls
-below do not depend on it.
+**The `llm` and `llm_rules` models can use the siege orders; the `commander` and team controllers
+cannot.** The owner approved "models using siege orders" on 2026-11-09
+([question 4](#decisions-for-owner-review)), and the `llm.py` change from branch
+`izmail-llm-orders` landed as `llm`/`llm_rules` v23
+([log](log.md#2026-11-09-prompt-v23-siege-orders-for-the-llm-controller)). Every controller that
+shares `llm.render_state` now reads the fortification list, its siege vehicles and enemy-built
+structures as facts. Only `llm` and `llm_rules` also read the paragraph on the two orders and send
+a reply schema that carries `besiege` and `attack_building`. The `commander`'s plan schema has no
+siege order. A team member, whether a `team_llm_rules` member or an `llm` or `llm_rules` leaf of a
+configured `team`, keeps the land-battle schema, and a siege order in its reply is refused as
+unknown (marker Team siege orders below). A `local_team` member's view carries no fortification
+list, and its schema copies the land-battle one. The edit moved `llm.py`'s `source_sha256`, so
+every `llm` and `llm_rules` card splits from the recorded `llm` battles. No battle has run on v23,
+and no game has shown what the orders do.
 
 The page follows the [scenario guidelines](scenario-guidelines.md), the
 [evaluation guidelines](evaluation-guidelines.md) and the [benchmark contract](benchmark.md):
@@ -283,17 +289,23 @@ The observation carries `job`, so job names stay neutral (for example `siege-r1-
 declaration test accepts); a name holding a withheld word is refused by `setup.check_job`, which
 `play` and the recorder both call.
 
-What a model would read once the parked `llm.py` change lands: the fortification list with each
-piece's health and each tower's holder, one paragraph describing the two siege orders and their
-refusals (`SIEGE_ORDERS`), its own siege vehicles and their crews, enemy-built structures, and on
-its units "on the wall", "can climb walls" or "cannot climb walls" and "can attack buildings". It
-reads no history, no battle name, no recommended tactic, no staging point, no hint that defenders
-move along the wall and no sentence about ladders. The design's one sentence on climbing waits
-until stage 2 shows that these units climb.
+What an `llm` or `llm_rules` model reads since v23: the fortification list with each piece's
+health and each tower's holder, one paragraph describing the two siege orders and their refusals
+(`SIEGE_ORDERS`), its own siege vehicles and their crews, enemy-built structures, and on its units
+"on the wall", "can climb walls" or "cannot climb walls" and "can attack buildings". It reads no
+history, no battle name, no recommended tactic, no staging point, no hint that defenders move
+along the wall and no sentence about ladders. The design's one sentence on climbing waits until
+stage 2 shows that these units climb. The `commander` reads the same without the paragraph; a
+team member reads the lists without the paragraph and without the climb, wall and building words,
+because `team.project` leaves `on_wall`, `can_climb` and `can_siege` out of every unit row.
 
 JUDGEMENT: Escalade briefing — Claude, 2026-11-08: a model gets the parked llm.py text on branch
 izmail-llm-orders (fort list, SIEGE_ORDERS, climb and building abilities) and no history, tactic
 or climbing sentence. More or less text changes what models know; model arms rest on it.
+
+JUDGEMENT: Team siege orders — Claude, 2026-11-09: llm.py LLMPolicy.decide gives a team member's
+view neither SIEGE_ORDERS nor the siege schema and refuses its siege orders. Members with them (and
+project() keeping the climb fields) could besiege; any team arm in this battle rests on it.
 
 ## The siege-attack interface as built
 
@@ -488,9 +500,9 @@ the Lancers' (`wh3_ablation.assert_ablation`, which also renames the job and req
 orders); every arm's orders pass `validate_orders` on two fixture sequences; each control plays
 its own rule; the replay keeps and drops siege orders as stated.
 [test_wh3_escalade_readings.py](../../tests/twwarhammer3/test_wh3_escalade_readings.py) (4) and
-[test_wh3_siege_assault.py](../../tests/twwarhammer3/test_wh3_siege_assault.py) (25, the interface
-and the declaration) cover the readings and the interface. The 47 tests in these three files pass
-in this worktree on 2026-11-09 (run for this page).
+[test_wh3_siege_assault.py](../../tests/twwarhammer3/test_wh3_siege_assault.py) (28, the interface,
+the declaration and each controller's siege prompt and schema) cover the readings and the
+interface. The 50 tests in these three files pass with v23 on 2026-11-09 (branch `siege-review`).
 
 The build planted 38 wrong versions, and the tests caught all of them, two only after a test was
 added. Three of the 38 edit `llm.py`: R7c and L1 plant faults in the parked change, and R7d adds
@@ -505,8 +517,11 @@ attacks). After the fix round, the fixer's rerun on a scratch copy that still he
 7 new ones), and four of them (R7c, M9, M10 and N7) plant faults in that parked code
 (`runs/siege-evals-20261108/lua-batch.json`, L3). This page's review reran the 53 on a copy of
 this branch on 2026-11-09: 49 applied and all 49 were caught, and those four found no text to
-change (`runs/siege-evals-20261108/scratch/review-D2-escalade-page/plants.txt`). None of this
-shows what the orders do in a game.
+change (`runs/siege-evals-20261108/scratch/review-D2-escalade-page/plants.txt`). When v23 landed,
+four more planted versions (a team member offered the orders, the paragraph in every controller's
+state, the `llm` prompt without it, the old list header) each failed a test in
+`test_wh3_siege_assault.py`; they are not in `tests/plants.toml`. None of this shows what the
+orders do in a game.
 
 ## Measurements
 
@@ -555,7 +570,7 @@ launches.
 | 1 | Constructed | Lobby readback and the private first reading, every launch; `check_battle` | Map, type `settlement_standard`, role attacker, timeout winner enemy, difficulty, modifier, scale, timer, funds, rank 0 and rosters by multiplicity; `assault_equipment` keys equal one ksl ram and `setup.siege_assault` reads ok with a gate and a wall piece (both built: `check_battle` raises otherwise) | One Armoured Kossars swapped for Kossars (Spears); an emp ram passing for the declared ksl ram and a failed siege setup ignored (both planted offline and caught); a setup that reads ok with no gate or no wall piece listed (a test added after `f3fec92`, when the set's integration review's plant of it survived) |
 | 2 | Fort registry | Stage 1 first and last observations against the engine's three fort lists, read in the same launch | The gate listed once; wall pieces equal the wall list minus gates; centres within 0.5 m of `central_position`; ids unchanged after a piece falls; g1 within 1 m of (-32,-16); a tower within 30 m of each of c3-c6; no building with both a w and a t id; tower owners agree with the Fort Tower capture holders | Offline, built and caught: ids reassigned in list order, the gate counted as a wall piece, towers dropped, `position()` used for the centre, a zero-based owner reading. Live: a building listed twice must be reported |
 | 3 | Orders reach effects, with the climb go/no-go | Stage 2 probe, trace, private record and video | (a) An Armoured Kossars and a Kossars (Spears) besieging a wall piece read `on_wall` within 150 s, with y within 3 m of the wall-top height the private record shows there. (b) The crew besieging g1 brings the ram within 15 m of the gate within 180 s. (c) The Grom's `attack_building` on g1 lowers its hp within 60 s while its ammunition falls; whether g1's `health()` reaches 0 when the door breaks is recorded. (d) Streltsi fire at a visible wall defender lowers its men within 60 s (descriptive). (e) A unit on the wall reads melee within 60 s of an attack on an adjacent wall defender. (f) Holding c7 lowers the defender's tickets, at a recorded rate. Go/no-go: no player unit reads `on_wall` in two attempts by both unit types stops the battle; a unit at wall-top height whose `on_wall` stays false is a getter fault and goes back to the interface | `besiege` sent as a move to the piece centre (no `on_wall`, as in the smoke) and `attack_building` sent to the same index of another list (gate hp unchanged): both planted offline and caught |
-| 4 | Information boundary | Built: the declaration test (no withheld word outside the list; `bench-izmail-r1` and `escalade-r1` refused), the Lua tests (climbing never shown, a hidden enemy's `on_wall` absent, unbuilt enemy slots absent) and the job-rename check in `assert_ablation`; the review's one-off script found the LLM request and all 7 arms' orders unchanged when `evaluation`, `setup`, `native` and `final` changed. To build: the rendered prompt and `play.public` view from this battle's recorded stage 1 first observation, after the owner's answer to question 4 | No `evaluation`, `setup`, `native`, `final`, climbing or private-record field in any controller input; enemy `on_wall` only on visible enemies; enemy structures only once finished; no withheld word, group label or staging point | A hidden enemy's `on_wall` and an unbuilt slot listed (both planted offline and caught); "izmail" in the job name (built test) |
+| 4 | Information boundary | Built: the declaration test (no withheld word outside the list; `bench-izmail-r1` and `escalade-r1` refused), the Lua tests (climbing never shown, a hidden enemy's `on_wall` absent, unbuilt enemy slots absent) and the job-rename check in `assert_ablation`; the review's one-off script found the LLM request and all 7 arms' orders unchanged when `evaluation`, `setup`, `native` and `final` changed. To build: the rendered prompt and `play.public` view from this battle's recorded stage 1 first observation (question 4 answered 2026-11-09) | No `evaluation`, `setup`, `native`, `final`, climbing or private-record field in any controller input; enemy `on_wall` only on visible enemies; enemy structures only once finished; no withheld word, group label or staging point | A hidden enemy's `on_wall` and an unbuilt slot listed (both planted offline and caught); "izmail" in the job name (built test) |
 | 5 | Shortcuts | C1 `hold`, C2 `rush_nearest` and `attack_nearest`, C3 `BesiegeNearest`, C4 `ShootOnly`, C5 `GateOnly`: one fresh launch each on the frozen version | Reported only; a win is kept and narrows the label. A control counts only if it carried out its play (C3: at least one `on_wall`; C4: at least half its ammunition spent; C5: the ram within 15 m of the gate). A C1 or C3 win sends the battle to a harder step before any gate | A control that never carried out its play must read "not carried out" in place of a loss (the reading is not built) |
 | 6 | Witness gate | `Escalade` at 5 s added age and a 5 s interval, frozen code, fresh launches; development launches never count | At least 4 of 5, stopping at the 4th win or the 2nd loss. It passes a 50% witness 0.1875 of the time and fails an 80% one 0.263 (`exact_stats.gate_pass`). Then 5 launches at 10 s / 10 s, reported only | A win credited to a timing the witness did not play |
 | 7 | D1 exercised and relevant, the one primary contrast | `Escalade` against `Concentrate`, n separate fresh launches per arm fixed in advance (10 in the design), 5 s / 5 s, order drawn in blocks | Exercised: in at least 6 of 10 `Concentrate` launches, at least 2 enemy units that stood more than 150 m along x outside an assaulted sector at the end of staging are flagged in melee inside it within 120 s of our first `on_wall` (`reallocation` over private frames from the end of staging; the reading over frames from the battle's start is reported beside it). The 6-of-10 rule passes a 50% rate 0.377 of the time and a 40% one 0.166, and fails an 80% one 0.033. Relevant: two-sided Fisher p < 0.05 (`fisher`), Newcombe interval (`newcombe`), a disposition for every planned launch, every launch counted. An unexercised D1 never carries the label; a relevant but unexercised D1 reads "mechanism not shown" | A proximity detector (planted offline and caught on two observations copied from the smoke, at 5.3 s and 714.5 s, the second holding 2 of its 6 friendly-enemy pairs within 40 m, none flagged); analysis code that drops a launch, counts a rematch, or reports a one-sided or Wald result |
@@ -612,7 +627,7 @@ a scenario can be won. Times use the design's estimate of about 25 minutes per l
 | 3c | The ladder, only after a gate passes: per step 5 witness launches plus C1, C3 and `Concentrate` once each, at most 4 steps | 8 launches per step, about 3.3 h per step | The hardest step the witness still wins, with the reallocation readings re-measured |
 | 4 | The owner's manual demonstration (check 8) | The owner's time | Human-demonstrated winnability |
 | 5 | The D1 round (check 7), only if the owner names it | 10 per arm: 20 launches, about 8.3 h; 16 per arm: 32 launches, about 13.3 h | The primary contrast |
-| 6 | A model pilot, only after the owner's answer to question 4 | Paid; the owner's budget and arms | Exploratory model results; no ranking |
+| 6 | A model pilot (question 4 answered 2026-11-09: `llm` and `llm_rules` only) | Paid; the owner's budget and arms | Exploratory model results; no ranking |
 
 Through stage 3b that is about 25-27 launches and 10.4-11.3 hours of game time before any ladder
 step or round. The design's stage 4 had 30 launches with `CavalryEarly` as a third arm; with D2
@@ -656,7 +671,7 @@ frozen experiment card gives the arms, launches, stop rule, budget and analysis,
 ## Decisions for owner review
 
 Five questions, with the recommendation first. The build at `f3fec92` took the recommended answer
-to questions 1-3; nothing built depends on questions 4 and 5.
+to questions 1-3; the owner answered question 4 on 2026-11-09; nothing built depends on question 5.
 
 1. **Whether Izmail counts.** Its disadvantage is the fortress, and its numbers are contested:
    31,000 against 35,000 on the official count, and about two to one for the attacker on
@@ -682,6 +697,9 @@ to questions 1-3; nothing built depends on questions 4 and 5.
    card cell's setup identity, so the source split lands at the same time. Either way, the
    `commander`, `team` and `local_team` schemas lack the siege orders, while the parked change's
    shared prompt rendering would show them the fort; a team arm needs that work too.
+   **Answered 2026-11-09:** "I approve models using siege orders"
+   ([directions](../owner-direction.md)). The change landed as v23, before stage 2, with the order
+   paragraph kept out of the `commander`'s and team members' prompts (marker Team siege orders).
 5. **How check 7 runs, once the gate passes.** (a) 16 separate fresh launches per arm at 5 s / 5 s
    (recommended): 32 launches, about 13.3 h, power 0.74 for a 20% → 70% gain; the exercised count
    must be restated for 16 `Concentrate` launches before the round (the same share would be 10 of
