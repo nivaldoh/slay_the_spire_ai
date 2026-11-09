@@ -19,7 +19,7 @@ from twwarhammer3.protocol import PolicyFailure, validate_orders
 A = setup.scenarios()["ksl-nor-lines-a-v1"]
 B = setup.scenarios()["ksl-nor-lines-b-v1"]
 ARMS = (lines.LinesWitness, lines.LinesByMen, lines.LinesCentral)
-# The mirror axis of the two cases; rests on JUDGEMENT test_wh3_land_eval_declarations.py Lines
+# The mirror axis of the two cases; rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines
 # layout.
 MIRROR_X = 130
 LINE = {"wh3_main_ksl_inf_kossars_1", "wh3_main_ksl_inf_armoured_kossars_0",
