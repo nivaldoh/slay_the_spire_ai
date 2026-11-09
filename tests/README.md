@@ -13,6 +13,8 @@ the refusal sweep).
 From the repository root:
 
 ```bash
+mkdir -p runs/test-scratch
+
 # Ordinary suite, including Lua 5.1 and image checks; no game or paid model calls.
 uv run --locked pytest -ra --basetemp=runs/test-scratch/default
 
@@ -40,6 +42,34 @@ The opt-in Windows tests in [test_windows.py](gameai/test_windows.py) and
 [test_wh3_runtime.py](twwarhammer3/test_wh3_runtime.py) additionally require WSL, Windows Python
 and `GAMEAI_TEST_WINDOWS=1`; they start test processes, not a game. Two run this checkout's
 source in native Windows Python (a cloud worker's side); one runs the read-only doctor there.
+
+## Inspecting coverage
+
+For a manual Python branch report, use a fresh output directory under `runs/`:
+
+```bash
+mkdir -p runs/test-coverage runs/test-scratch
+git rev-parse HEAD > runs/test-coverage/revision.txt
+git diff > runs/test-coverage/changes.patch
+uv run --locked --with coverage==7.17.2 coverage run --branch --source=src \
+  --data-file=runs/test-coverage/.coverage -m pytest -ra \
+  --basetemp=runs/test-scratch/coverage > runs/test-coverage/pytest.txt 2>&1
+uv run --locked --with coverage==7.17.2 coverage report \
+  --data-file=runs/test-coverage/.coverage -m
+uv run --locked --with coverage==7.17.2 coverage html \
+  --data-file=runs/test-coverage/.coverage -d runs/test-coverage/html
+```
+
+Check pytest's exit status and `pytest.txt` before interpreting the report. Keep
+`WH3_WRITE_PROMPTS`, `PYTEST_ADDOPTS` and `PYTHONOPTIMIZE` unset, as the exit gate does.
+This installs Coverage.py temporarily without changing the project lock. `--source=src`
+includes untouched importable modules; `--branch` shows unvisited decision paths
+([Coverage.py documentation](https://coverage.readthedocs.io/en/latest/branch.html)).
+The default dependency set skips optional training checks; repeat with one appropriate
+extra when investigating those modules. Python child processes, Lua, JavaScript, Windows
+and live games are outside this report. There is no acceptance threshold; use missed
+branches to investigate concrete gaps, alongside the behavior map and planted faults.
+Coverage reporting still rests on JUDGEMENT `docs/testing.md` Coverage reporting.
 
 ## What the checks establish
 

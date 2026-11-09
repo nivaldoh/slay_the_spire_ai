@@ -69,6 +69,8 @@ def test_live_checker_records_restore_failure_and_preserves_the_primary_exceptio
 
 
 def test_live_checker_does_not_restore_without_an_original_snapshot(tmp_path, monkeypatch):
+    restored = []
+
     def fail_before_snapshot(args):
         raise RuntimeError("lobby never opened")
 
@@ -76,9 +78,10 @@ def test_live_checker_does_not_restore_without_an_original_snapshot(tmp_path, mo
                                       str(tmp_path / "check")])
     monkeypatch.setattr(army_check, "run_checks", fail_before_snapshot)
     monkeypatch.setattr(army_check, "restore_settings",
-                        lambda output: pytest.fail("no saved settings"))
+                        restored.append)
     with pytest.raises(RuntimeError, match="lobby never opened"):
         army_check.main()
+    assert restored == []
 
 
 @pytest.mark.parametrize("blocked", [True, False], ids=["blocker", "warning-only"])

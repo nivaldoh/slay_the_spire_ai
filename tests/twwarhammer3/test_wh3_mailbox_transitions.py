@@ -8,7 +8,6 @@ The clock schedules file changes; it does not establish Windows timing or lock s
 
 import json
 from collections import deque
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -69,19 +68,21 @@ def test_wait_recovers_after_a_transient_read_lock(polling, monkeypatch, waiting
     box, on_poll = polling
     expected = publish(box)
     path = box.directory / "observation.json"
-    original_open = Path.open
+    original_open = mailbox_module.windows.open_shared
     locked = True
+    locked_reads = []
 
-    def open_file(self, *args, **kwargs):
-        if self == path and locked:
+    def open_file(target):
+        if target == path and locked:
+            locked_reads.append(target)
             raise PermissionError("simulated game read lock")
-        return original_open(self, *args, **kwargs)
+        return original_open(target)
 
     def unlock():
         nonlocal locked
         locked = False
 
-    monkeypatch.setattr(Path, "open", open_file)
+    monkeypatch.setattr(mailbox_module.windows, "open_shared", open_file)
     on_poll.append(unlock)
 
     if waiting_for == "observation":
@@ -90,6 +91,8 @@ def test_wait_recovers_after_a_transient_read_lock(polling, monkeypatch, waiting
         actual = box.wait_new_battle(not_battle="previous", timeout=2)
 
     assert actual == expected
+    assert locked_reads == [path], "read-lock fault never ran"
+    assert not locked
 
 
 def test_rematch_wait_delivers_loading_at_sequence_zero(polling):

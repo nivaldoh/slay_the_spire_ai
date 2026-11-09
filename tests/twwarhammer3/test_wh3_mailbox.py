@@ -25,6 +25,21 @@ def mailbox(tmp_path):
     return box
 
 
+@pytest.fixture
+def poll_clock(monkeypatch):
+    """Advance deadline tests by polling, with a bound even if a timeout guard breaks."""
+    now = 0.0
+
+    def sleep(seconds):
+        nonlocal now
+        now += seconds
+        assert now < 1, "mailbox failed to enforce its polling deadline"
+
+    clock = SimpleNamespace(monotonic=lambda: now, sleep=sleep)
+    monkeypatch.setattr(mailbox_module, "time", clock)
+    return clock
+
+
 def test_reset_removes_every_leftover_message_and_log(tmp_path):
     bridge = tmp_path / "bridge"
     bridge.mkdir()
@@ -63,25 +78,28 @@ def test_the_write_time_is_the_read_files_when_the_game_replaces_it_meanwhile(ma
     path = mailbox.directory / "observation.json"
     observation(mailbox.directory, seq=4)
     os.utime(path, ns=(1, 1_000_000_000))
-    opened = Path.open
+    opened = mailbox_module.windows.open_shared
 
-    def open_then_replace(self, *args, **kwargs):
-        file = opened(self, *args, **kwargs)
-        if self == path:  # the game's next publish lands right after the controller opens
+    def open_then_replace(target):
+        file = opened(target)
+        if target == path:  # the game's next publish lands right after the controller opens
             newer = path.with_name("next.json")
             newer.write_text(json.dumps({"schema": 1, "job": "job-a", "seq": 5}))
             os.utime(newer, ns=(1, 2_000_000_000))
             os.replace(newer, path)
         return file
 
-    monkeypatch.setattr(Path, "open", open_then_replace)
+    monkeypatch.setattr(mailbox_module.windows, "open_shared", open_then_replace)
     assert mailbox.read_observation()["seq"] == 4 and mailbox.written_ns == 1_000_000_000
+    assert json.loads(path.read_bytes())["seq"] == 5, "replacement fault never ran"
+    assert path.stat().st_mtime_ns == 2_000_000_000
 
 
-def test_wait_observation_needs_a_newer_seq_of_the_same_battle(mailbox):
+def test_wait_observation_needs_a_newer_seq_of_the_same_battle(mailbox, poll_clock):
     observation(mailbox.directory, seq=4)
     with pytest.raises(MailboxTimeout):
         mailbox.wait_observation(battle="b1", after_seq=4, timeout=0.05)
+    assert poll_clock.monotonic() > 0.05
     message = observation(mailbox.directory, seq=5)
     assert mailbox.wait_observation(battle="b1", after_seq=4, timeout=0.05) == message
     observation(mailbox.directory, battle="b2", seq=1)
@@ -90,25 +108,29 @@ def test_wait_observation_needs_a_newer_seq_of_the_same_battle(mailbox):
     assert restarted.value.observation["battle"] == "b2"
 
 
-def test_wait_new_battle_skips_the_previous_battle(mailbox):
+def test_wait_new_battle_skips_the_previous_battle(mailbox, poll_clock):
     observation(mailbox.directory, battle="b1")
     with pytest.raises(MailboxTimeout):
         mailbox.wait_new_battle(not_battle="b1", timeout=0.05)
+    assert poll_clock.monotonic() > 0.05
     assert mailbox.wait_new_battle(not_battle=None, timeout=0.05)["battle"] == "b1"
     message = observation(mailbox.directory, battle="b2")
     assert mailbox.wait_new_battle(not_battle="b1", timeout=0.05) == message
 
 
-def test_requests_are_distinct_and_wait_for_consumption(mailbox):
-    request = mailbox.write_orders("b1", 7, [{"unit": "f1", "type": "halt"}])
+@pytest.mark.parametrize("say, caption", [(None, {}), ("Advance", {"say": "Advance"})],
+                         ids=["silent", "advisor-message"])
+def test_requests_are_distinct_and_wait_for_consumption(mailbox, poll_clock, say, caption):
+    request = mailbox.write_orders("b1", 7, [{"unit": "f1", "type": "halt"}], say=say)
     message = json.loads((mailbox.directory / "orders.json").read_text())
     assert message == {
         "schema": 1, "job": "job-a", "battle": "b1", "request": request, "based_on": 7,
-        "orders": [{"unit": "f1", "type": "halt"}],
+        "orders": [{"unit": "f1", "type": "halt"}], **caption,
     }
     assert isinstance(request, str) and request
     with pytest.raises(MailboxTimeout, match="consume"):
         mailbox.write_control("b1", "restart", timeout=0.05)
+    assert poll_clock.monotonic() > 0.05
     (mailbox.directory / "orders.json").unlink()
     restart = mailbox.write_control("b1", "restart", timeout=0.05)
     assert restart != request

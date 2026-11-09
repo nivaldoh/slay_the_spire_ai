@@ -9,6 +9,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -433,8 +434,19 @@ class Reader:
         return observation
 
 
-def test_a_source_run_ends_at_its_result_and_records_saves_it_never_reached(tmp_path, monkeypatch):
-    monkeypatch.setattr(checkpoint, "SAVE_SETTLE_S", 0.3)
+@pytest.fixture
+def follow_clock(monkeypatch):
+    now = 0.0
+
+    def sleep(seconds):
+        nonlocal now
+        now += seconds
+        assert now < 40, "follow did not stop within the scripted time limit"
+
+    monkeypatch.setattr(checkpoint, "time", SimpleNamespace(time=lambda: now, sleep=sleep))
+
+
+def test_a_source_run_ends_at_its_result_and_records_saves_it_never_reached(tmp_path, follow_clock):
     log = tmp_path / "native.jsonl"
     log.write_text("")
     saves = [{"tick": t, "name": f"s{t}"} for t in (600, 900, 1200)]
@@ -451,9 +463,26 @@ def test_a_source_run_ends_at_its_result_and_records_saves_it_never_reached(tmp_
     assert logged[1]["native_rows"] == 951
 
 
+def test_follow_stops_waiting_for_a_save_that_never_arrives(tmp_path, follow_clock):
+    log = tmp_path / "native.jsonl"
+    log.write_text("")
+    script = [([{"event": "tick", "tick": 950}],
+               {**observation(95000, 300), "result": "lost"})]
+
+    end = checkpoint.follow(log, Agent(), Reader(log, script), tmp_path,
+                            {"save_at": [{"tick": 900, "name": "s900"}]},
+                            {"episode_timeout_s": 30})
+
+    assert end == {"by": "result", "tick": 950, "saves": [900], "not_saved": [900]}
+    elapsed = checkpoint.time.time()
+    assert elapsed > checkpoint.SAVE_SETTLE_S
+    assert elapsed == pytest.approx(checkpoint.SAVE_SETTLE_S, abs=0.05)  # one polling interval
+
+
 @pytest.mark.parametrize("reason,by", [("application-requested", "agent_deadline"),
                                        ("process-terminated", "fault")])
-def test_follow_ends_at_the_runners_own_detach_as_its_deadline_not_a_fault(tmp_path, reason, by):
+def test_follow_ends_at_the_runners_own_detach_as_its_deadline_not_a_fault(
+        tmp_path, follow_clock, reason, by):
     # Before STOP, the runner detaches itself only at its --seconds deadline.
     log = tmp_path / "native.jsonl"
     log.write_text("")

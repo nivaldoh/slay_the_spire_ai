@@ -3,6 +3,8 @@
 Updated 2026-11-09. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+Test reliability, 2026-11-09 (Codex): branch `test-trust-20261109`, worktree `runs/test-trust-20261109/worktree`; repairing ineffective fault injection, reviewing timing and redundant setup. Offline only; evidence and card in `runs/test-trust-20261109/`.
+
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 WH3 [communication structure](twwarhammer3/communication-structure.md), night of 2026-11-08 (Claude): stages 0-3 done under the owner's $10 ($6.58 spent); nothing runs and the game is closed (last launch ended 10:46 local). Stage 2's gate failed (best witness 2 of 4 at model-like timing), so the pilot cannot compare P, R and O; each of their six launches took less of the enemy (at most 30.0) than every scripted no-message launch at 2.0 s think time (at least 30.6), exploratory. The Massed horse draft passed its kill test, but its witness did not beat its muted control (2 of 6 against 1 of 6). [Results](twwarhammer3/communication-structure.md#results-so-far-night-of-2026-11-08), handoff `runs/comm-build-20261108/handoff.md`, page `runs/twwarhammer3/reports/comm-structure-20261108.html`. Next: decision 14.

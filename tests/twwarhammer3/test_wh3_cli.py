@@ -170,45 +170,44 @@ def test_spend_refuses_a_ledger_that_does_not_exist(tmp_path, monkeypatch, capsy
     assert not missing.exists()
 
 
-def test_report_command_prints_the_text_and_saves_text_json_and_html(tmp_path, monkeypatch,
-                                                                    capsys):
-    a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won")])
-    b = make_job(tmp_path, "b", [("hold", -.2, "lost"), ("skills", .1, "won")])
-    stem = tmp_path / "reports/nested/pair"
-    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "report", str(a), str(b),
-                                      "--output", str(stem)])
-    assert main() == 0
-    text = report.render(report.collect([a, b]))
-    assert capsys.readouterr().out == text + "\n"
-    assert (tmp_path / "reports/nested/pair.txt").read_text() == text + "\n"
-    assert json.loads((tmp_path / "reports/nested/pair.json").read_text()) == json.loads(
-        json.dumps(report.collect([a, b])))
-    assert "<html" in (tmp_path / "reports/nested/pair.html").read_text()
-    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "stats", "--report", str(a)])
-    with pytest.raises(SystemExit):
-        main()
-
-
-def test_report_command_collects_once_and_writes_json_text_and_html(tmp_path, monkeypatch,
-                                                                    capsys):
-    source = report.collect([configured_job(tmp_path, "a")])
+@pytest.mark.parametrize("make_jobs", [
+    pytest.param(lambda root: [
+        make_job(root, "a", [("hold", -.1, "lost"), ("skills", .1, "won")]),
+        make_job(root, "b", [("hold", -.2, "lost"), ("skills", .1, "won")]),
+    ], id="scripted-pair"),
+    pytest.param(lambda root: [configured_job(root, "a")], id="model"),
+])
+def test_report_command_collects_once_prints_text_and_saves_text_json_and_html(
+        tmp_path, monkeypatch, capsys, make_jobs):
+    jobs = make_jobs(tmp_path)
+    source = report.collect(jobs)
+    real_collect = report.collect
     calls = []
 
     def collect(jobs):
         calls.append(jobs)
-        return source
+        return real_collect(jobs)
 
     monkeypatch.setattr(report, "collect", collect)
-    stem = tmp_path / "nested/report"
-    monkeypatch.setattr("sys.argv", ["wh3", "report", "a", "--output", str(stem)])
+    stem = tmp_path / "reports/nested/pair"
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "report", *map(str, jobs),
+                                      "--output", str(stem)])
     assert main() == 0
-    assert len(calls) == 1
-    assert json.loads(stem.with_suffix(".json").read_text()) == source
+    assert calls == [jobs]
     text = report.render(source)
     assert capsys.readouterr().out == text + "\n"
-    assert stem.with_suffix(".txt").read_text().strip() == text
-    assert embedded(stem.with_suffix(".html").read_text())["report"]["groups"][0][
-        "controllers"] == source["groups"][0]["controllers"]
+    assert stem.with_suffix(".txt").read_text() == text + "\n"
+    assert json.loads(stem.with_suffix(".json").read_text()) == json.loads(json.dumps(source))
+    html = stem.with_suffix(".html").read_text()
+    assert "<html" in html
+    assert [group["controllers"] for group in embedded(html)["report"]["groups"]] == [
+        group["controllers"] for group in source["groups"]]
+
+
+def test_stats_rejects_the_report_flag(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "stats", "--report", "a"])
+    with pytest.raises(SystemExit):
+        main()
 
 
 def test_report_explicit_job_list_includes_failures_and_rejects_an_empty_selection(

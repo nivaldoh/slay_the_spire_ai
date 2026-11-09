@@ -996,6 +996,15 @@ Official sources read for [cloud usage](cloud.md); two live cleanup cases are re
   HumanLayer, about August 2025. Research, plan, implement. Reviewing the plan gives more leverage
   than reviewing the code. *Read.*
 
+## Testing tools
+
+Testing-tool documentation, read 2026-11-09 for the optional report in `tests/README.md`:
+[Coverage.py source scope](https://coverage.readthedocs.io/en/latest/source.html) includes
+untouched importable modules when `--source` is set;
+[branch measurement](https://coverage.readthedocs.io/en/latest/branch.html) records unvisited
+decision paths. [uv's temporary dependencies](https://docs.astral.sh/uv/guides/scripts/#running-a-script-with-dependencies)
+describe `--with`. These support a diagnostic command, not a correctness threshold.
+
 ## Claude Code and Anthropic
 
 Claude Code docs (undated; read 2026-10-28):

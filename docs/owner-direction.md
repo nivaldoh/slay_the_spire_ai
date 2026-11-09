@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-09 (test reliability), goal verbatim: "Let's improve our tests. Address clear gaps,
+  simplify what you can, remove redundancy. Let's make our tests more reliable and
+  trustworthy." Follows the review that identified ineffective mailbox fault hooks and
+  ad hoc coverage reporting. No new benchmark rule or verification threshold was adopted.
 - 2026-11-09 (historical siege evaluations, after the offline build), `/goal` verbatim: "I approve
   models using siege orders. I aprove point 3 too. The rest I'll check later. For now let's just
   review the tests, design, etc from a different perspective to see if we catch any different issues

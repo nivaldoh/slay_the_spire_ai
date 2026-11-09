@@ -10,6 +10,69 @@
 # copies those from the main checkout into its scratch worktree.
 
 [[plant]]
+id = "army-check-restores-without-snapshot"
+guards = "A failed army setup never restores settings it has not saved"
+file = "tests/twwarhammer3/check_wh3_army_setup.py"
+old = 'if args.integration and (args.output / "original-settings.json").exists():'
+new = 'if args.integration:'
+tests = ["tests/twwarhammer3/test_wh3_army_check.py::test_live_checker_does_not_restore_without_an_original_snapshot"]
+source = "2026-11-09 test reliability: record restore calls outside the swallowed exception"
+
+[[plant]]
+id = "checkpoint-follow-stops-before-late-saves"
+guards = "A source run drains save events published after its result"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'time.time() + SAVE_SETTLE_S'
+new = 'time.time() - 1'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py::test_a_source_run_ends_at_its_result_and_records_saves_it_never_reached"]
+source = "2026-11-09 test reliability: controlled clock preserves the save-settle window"
+
+[[plant]]
+id = "checkpoint-follow-never-expires-missing-save"
+guards = "A missing save stops waiting at the settle deadline"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'set(ended["saves"]) <= written or time.time() > ended["settle"]'
+new = 'set(ended["saves"]) <= written'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py::test_follow_stops_waiting_for_a_save_that_never_arrives"]
+source = "2026-11-09 test reliability: missing-save case with controlled time"
+
+[[plant]]
+id = "checkpoint-follow-waits-twice-the-settle-window"
+guards = "A missing save expires within one poll of the declared settle deadline"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = 'time.time() + SAVE_SETTLE_S'
+new = 'time.time() + 2 * SAVE_SETTLE_S'
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py::test_follow_stops_waiting_for_a_save_that_never_arrives"]
+source = "2026-11-09 independent review caught the loose deadline assertion"
+
+[[plant]]
+id = "report-cli-collects-twice"
+guards = "The report CLI collects once for every output"
+file = "src/twwarhammer3/__main__.py"
+old = 'if args.benchmark_plan else collect(jobs))'
+new = 'if args.benchmark_plan else (collect(jobs), collect(jobs))[1])'
+tests = ["tests/twwarhammer3/test_wh3_cli.py::test_report_command_collects_once_prints_text_and_saves_text_json_and_html"]
+source = "2026-11-09 report CLI consolidation preserves collection count"
+
+[[plant]]
+id = "report-cli-drops-extra-jobs"
+guards = "The report CLI includes every requested job"
+file = "src/twwarhammer3/__main__.py"
+old = 'if args.benchmark_plan else collect(jobs))'
+new = 'if args.benchmark_plan else collect(jobs[:1]))'
+tests = ["tests/twwarhammer3/test_wh3_cli.py::test_report_command_collects_once_prints_text_and_saves_text_json_and_html"]
+source = "2026-11-09 report CLI consolidation retains the scripted pair"
+
+[[plant]]
+id = "mailbox-discards-advisor-caption"
+guards = "An optional advisor caption is included in the transmitted request"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "        if say:\n"
+new = "        if False:\n"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_requests_are_distinct_and_wait_for_consumption"]
+source = "2026-11-09 branch report: exercise optional caption alongside the silent request"
+
+[[plant]]
 id = "provenance-allows-dirty-source"
 guards = "Uncommitted scoped source cannot be attributed to HEAD"
 file = "src/gameai/provenance.py"
