@@ -70,8 +70,8 @@ REGROUP_S = (10, 20)
 CLEAR_M = 80
 
 # JUDGEMENT: Lines side weights — Claude, 2026-11-08: W weighs a relief unit by its lobby cost,
-# which no model is told (Lines briefing), so W knows more than a model does. A weight from public
-# fields changes what W against M measures; that contrast and W's side choice rest on it.
+# which no model is told (lines-eval.md Lines briefing), so W knows more than a model does. A
+# public weight changes what W against M measures; that contrast and W's side choice rest on it.
 # main_units_tables multiplayer_cost, read 2026-11-08 with scripts/wh3_db.py, for every enemy type.
 COST = {
     "wh_main_nor_inf_chaos_marauders_0": 400,
