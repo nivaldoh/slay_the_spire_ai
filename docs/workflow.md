@@ -23,16 +23,27 @@ frozen at 2026-10-31 apart from corrections made on 2026-11-06 (open it in a loc
 
 ## Start here
 
-Read the opening above and the sections for the task; the tables below route to existing
-rules. `AGENTS.md` is already loaded by the agent. Start with [Active work](state.md#active-work)
-and the relevant track in `state.md`, then that track's page. Check Git and live processes
-before relying on a handoff's branch, running-job or completion claims. Completed reports
-and full deferred choices live in the [review queue](review-queue.md); open the relevant item
-before acting on it. A pending choice on another track does not block independent work.
+`AGENTS.md` is already in context. Start with the goal's named file or handoff. For current
+work, search [Active work](state.md#active-work) for the matching entry and read its linked
+page and state section. A docs or tooling task needs no unrelated game history. Check Git
+and relevant live processes before trusting a branch, job or completion claim. Completed
+reports and deferred choices live in the [review queue](review-queue.md); read the matching
+item before acting on a pending choice. Another track's pending choice does not block work.
+
+Search headings or a distinctive task name, then read the matching section and any rule it
+requires. Stop expanding context once the goal, authority, constraints, target files and
+check are clear. Reopen a source when it changes, conflicts with evidence or is missing after
+compaction. Historical logs and personal memory locate evidence; they do not override current
+owner directions or live state. No startup hook or extra instruction import is needed.
 
 | Task | Sections to read |
 |---|---|
+| Status question or read-only audit | Matching state entry, its track page and the evidence needed for the claim; no change/card/gate sections unless editing |
+| Research | Named question and relevant research page; [Research loop](#loops-what-runs-when) and [references](references.md); game rules only for game-specific claims/actions |
+| Resume an approved action | Matching [owner direction](owner-direction.md), handoff and current Git/process state; do not ask again for recorded authorization |
 | Any change | [Your own worktree](#several-sessions-at-once), [size](#sizes-of-change), the matching [loop](#loops-what-runs-when) and [report](#reports) |
+| Source/config/test/script change | [Development Layout](development.md#layout) and [Coding style and tests](development.md#coding-style-and-tests); [Architecture](development.md#architecture) for game/protocol/policy work; [Spire guidance](spire/AGENTS.md) if Spire or shared code affects it |
+| Game command or live-job conflict | [Development Commands](development.md#commands), matching game/runtime instructions and live process; check queue and source-scope conflicts before any commit/merge in its checkout |
 | Normal change, including a new or changed test | [Card](#before-a-change-the-card), [checks in layers](#checks-in-layers) and [reviewer](#agent-checks-and-the-reviewer) |
 | Commit | [Exit gate](#the-exit-gate-scriptscheckpy), including its warning and pass-record limits |
 | Check, hook or workflow change | Also [keeping the process working](#keeping-the-process-working) and [what exists](#what-exists-and-what-waits) |
@@ -500,8 +511,14 @@ a check that it helps.
 
 ### Session context improvements
 
+The 2026-11-09 owner goal implements shorter shared instructions and task-based reading
+routes; [context-loading.md](context-loading.md) records the loading mechanisms, measured
+file sizes, checks and remaining limits. The sections below preserve the original proposal
+and its unagreed comparison method. They are not extra startup reading.
+
 Saved at the owner's request on 2026-11-02 for later implementation planning. These are
-audit suggestions; no instruction, memory, plugin or verification change is adopted here.
+the original audit suggestions; that entry adopted no instruction, memory, plugin or
+verification change.
 
 - **Reconcile current information.** Keep current status and owner authorization in their
   respective shared homes, with pointers elsewhere. The audit found Claude's memory still

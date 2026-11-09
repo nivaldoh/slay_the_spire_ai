@@ -1,14 +1,27 @@
 # Repository Guidelines
 
-AI policies for original Windows games from WSL. Current focus: Total War: WARHAMMER III
-(WH3; real-time custom battles through a Lua mod). Start with [docs/state.md](docs/state.md):
-read "Active work" and the relevant track, then that track's page.
-Codex loads this file; Claude Code imports it through `CLAUDE.md`. It holds hard rules and
-pointers in at most 200 lines; detail goes in the page it governs. Cloud work: read [docs/cloud.md](docs/cloud.md).
-How a change is made (cards, checks, reviewer, reports): [workflow reading routes](docs/workflow.md#start-here).
+AI policies for original Windows games from WSL; current focus is Total War: WARHAMMER III
+(WH3). Codex loads this file; Claude Code imports it through `CLAUDE.md`. Keep hard rules and
+task routes here, at most 200 lines. Details belong in the page they govern.
 
-Before Spire work (its source, legacy configs, tests, scripts, or shared code affecting it),
-read [docs/spire/AGENTS.md](docs/spire/AGENTS.md); skip it for WH3-only work.
+## Start a goal
+
+- Use the goal's named file or handoff first. Do not reread instructions already in context.
+- For current work, search [state.md](docs/state.md)'s **Active work** for the relevant entry,
+  then read that track's page and matching state section. For a status question, stop when
+  the relevant evidence answers it. Docs, tooling and general research need no unrelated game track.
+- Before relying on a handoff's branch, job or completion claim, check Git and the relevant
+  live process. Read-only work can stay in main; before editing, use your own worktree below.
+- Read [workflow Start here](docs/workflow.md#start-here) for the matching task route, not the
+  whole workflow. Search [owner-direction.md](docs/owner-direction.md) for relevant authority;
+  read a matching [review-queue](docs/review-queue.md) item before acting on a pending decision.
+- Before source, config, test or script work, read the relevant [development](docs/development.md)
+  sections: Layout and Coding style and tests; Architecture for game/protocol/policy work;
+  Commands before invoking game tools. Before Spire work or shared code affecting it, also
+  read [docs/spire/AGENTS.md](docs/spire/AGENTS.md); skip it for WH3-only work.
+- Cloud work: [cloud.md](docs/cloud.md). Away work: [autonomy.md](docs/autonomy.md).
+  Load skills for their actual task, and linked references only when needed. Search headings
+  (`rg -n '^##' file`) and read the relevant range; a link is a route, not an automatic import.
 
 ## Verification (hard rule)
 
@@ -16,28 +29,19 @@ The owner's rule (2026-10-18): **if the owner has not explicitly discussed with 
 assistant how to verify (repeatably test) whether a feature is correct, assume it might
 have issues.** Be careful making claims about, or building on top of, unverified things.
 
-How the assistant applies it:
 - Passing tests, smoke runs and single battles are evidence, not verification. Say
-  "unverified" when reporting or building on anything without an agreed method.
-- Every claim carries what it rests on: the number of battles or runs behind a rate, the
-  check that decides it and its caveats. A summary never says more than its log entry.
-- When a feature matters, propose a repeatable check; add it to
-  [docs/agreed-checks.md](docs/agreed-checks.md) only after the owner agrees. A feature
-  counts as verified only at revisions where its check passed there.
-- Test what matters, and add no slop tests (owner, 2026-10-18): balance verifying
-  important behaviour against filling the codebase with low-value tests.
-
-For each change:
-
-1. State the observable behaviour and its independent reference (requirement, contract or
-   trusted example); a recorded output alone is not proof of correctness. A normal change
-   states them in its card ([workflow](docs/workflow.md#before-a-change-the-card)).
-2. Choose the cheapest relevant checks. For a bug, show the regression fails before the fix
-   where feasible; for important verification, check it detects a plausible wrong implementation.
-3. Iterate with focused tests and expand when a concrete risk requires it (extras, live
-   checks); before each commit run `scripts/check.py`. Preserve useful failure output.
-4. Report passed, failed, skipped and unavailable checks, and what each establishes.
-   Component tests and recorded cases do not establish live-game effects or policy strength.
+  "unverified" without an agreed method. Claims carry counts, deciding checks and caveats;
+  a summary never says more than its log entry.
+- Propose a repeatable check when a feature matters; add it to
+  [agreed-checks.md](docs/agreed-checks.md) only after the owner agrees. Verification holds
+  only at revisions where that check passed. Test what matters; add no slop tests.
+- For each change state observable behaviour and an independent requirement, contract or
+  trusted example; normal changes put these in a [card](docs/workflow.md#before-a-change-the-card). A recorded output
+  alone is not proof. Choose the cheapest relevant checks; show a bug's regression fails
+  before the fix where feasible, and challenge important checks with a plausible wrong version.
+- Iterate with focused tests; expand for concrete risk. Before **every commit** run
+  `uv run --locked python scripts/check.py`; preserve useful failures. Report passed, failed,
+  skipped and unavailable checks and their scope. Offline cases establish no live effect or strength.
 
 ## Judgement calls
 
@@ -57,144 +61,56 @@ the marking pass: [docs/judgement.md](docs/judgement.md).
 
 ## Working habits
 
-The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and token use):
-- `docs/state.md` stays status only, under about 120 lines, with the current next steps
-  (other pages keep candidates and deferred items). New owner directions go in
-  `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
-  evidence with counts, and what is unverified.
-- Read docs by section; do not reload full guidance already present in the session.
-  Use multi-agent workflows only for independent verification, the WH3 loop's review step,
-  or when the owner asks.
+- Reduce the owner's attention and manual review work as well as bookkeeping and tokens.
+  `docs/state.md` stays status only, about 120 lines; new directions go in `docs/owner-direction.md`.
+  Log entries stay about 20 lines: change, counted evidence and what is unverified.
+- Use multi-agent workflows only for independent verification, the WH3 loop's review step,
+  or when the owner asks. Normal changes use the [reviewer](docs/workflow.md#agent-checks-and-the-reviewer).
 - For complicated or ambiguous code (benchmarks, evaluation, environments, infrastructure,
-  tests, workflows), follow a well-known research repo and name the repo and file in a comment
-  or the commit (owner, 2026-10-28); outside sources go in [references.md](docs/references.md).
-- Put task-created scripts, logs, temporary artifacts, diagnostics and test scratch in the
-  ignored `runs/`, never in the home root or unrelated directories; inventory old garbage.
-- Edit tracked files only in your own worktree and branch, not in the shared main checkout
-  ([how](docs/workflow.md#several-sessions-at-once), owner 2026-11-02); game jobs stay there
+  tests, workflows), follow a well-known research repo and name its repo/file in a comment
+  or commit (owner, 2026-10-28). Outside sources go in [references.md](docs/references.md).
+- Put task scripts, logs, temporary artifacts, diagnostics and test scratch in ignored `runs/`,
+  never the home root or unrelated directories. Inventory old garbage; add no unused artifact,
+  scenario or diagnostic.
+- Edit tracked files only in your own worktree and branch, never the shared main checkout
+  ([how](docs/workflow.md#several-sessions-at-once), owner 2026-11-02). Game jobs stay in main
   (rests on JUDGEMENT? docs/workflow.md Worktree details). Delete both once merged. A running
   WH3 queue stops when its checkout's HEAD moves: commit or merge nothing there meanwhile.
-  Add no file, scenario or diagnostic that no planned experiment uses.
-- When `doctor` or a job warns that a game build differs from its pin, tell the owner;
-  re-pin only with their approval.
-
-## Working while the owner is away
-
-When the owner says they cannot review or are leaving, see [docs/autonomy.md](docs/autonomy.md):
-its standing menu and small interviews were agreed on 2026-10-28; its other rules (at most
-three changes waiting, park changes to benchmark meaning, game time only in an away window)
-are the 2026-10-21 proposal, in force once the owner says yes. A long run gets a brief and a
-handoff note ([workflow](docs/workflow.md#long-runs-while-the-owner-is-away)).
-
-## Layout
-
-```
-src/gameai/        Game-neutral code both games import; it never imports a game package:
-                   transport, budgets, datasets, provenance, local models, Windows ownership
-src/twwarhammer3/  WH3 custom battles; module map in docs/twwarhammer3/README.md (Code map)
-src/spire/         Slay the Spire; its map is in docs/spire/AGENTS.md
-configs/           Per-game prompts, scenarios and experiment declarations
-scripts/           Exit gate and tools; listed in the WH3 Code map
-tests/             Per package; tests/README.md routes checks
-docs/              Shared guidance and game tracks; thesis/ is untracked (git grep misses it)
-runs/              Local evidence, ignored by Git; see runs/README.md
-.claude/ .codex/   the same hooks and reviewer for each tool, skills in .agents/ (workflow.md)
-```
-
-A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
-`tests/<game>/`. Move code into `gameai` when a second game would otherwise copy it, not
-before; the job modules (play, digest, watch, stats) stay per game. Test files share one
-namespace (no `tests/__init__.py`): every test file name is unique across `tests/`.
-
-## Commands
-
-```bash
-uv sync --locked
-uv run --locked python scripts/check.py   # before each commit: Ruff, whole offline suite, warnings
-uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
-git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
-```
-
-More: the WH3 [README](docs/twwarhammer3/README.md#commands) (digest, stats, watch, report, export, spend,
-card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/README.md) (extras).
-- `twwarhammer3 play`, `launch`, `worker` without `--attach`, the `rl` phases `checkpoint`,
-  `audit` and `confirm`, `python -m twwarhammer3.battle.manual_demo record`,
-  `scripts/wh3_queue.py` and the six `check_wh3_*.py` checkers (except `--recount`) run a real
-  game (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
-  directory and refuses uncommitted changes in its source scope: `src/gameai/`,
-  `src/twwarhammer3/`, `configs/twwarhammer3/`, `pyproject.toml`, `uv.lock` and `.python-version`
-  (`battle/play.py` `SOURCES`). `launch` checks no scope.
-  A play job stops before its next episode if a file in its scope changes: while one runs,
-  merge nothing into its checkout that touches its scope (shared code counts for both games).
-- Never run two game controllers at once,
-  even for different games: each `RuntimeLock` only protects its own game.
-- WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
-  tests. Never pause or slow the battle to give a policy more thinking time. Restore exception
-  (owner, 2026-10-25): a checkpoint restore may rebuild the battle faster than 1x before
-  its handover; from the handover on, 1x.
-  Owner, 2026-11-04: only the owner may pause while manually demonstrating scenario winnability
-  ([plan](docs/twwarhammer3/scenario-guidelines.md#winnability-evidence)); never an agent or policy.
-
-## Architecture
-
-Both games run on Windows from their Steam installs under `/mnt/c`; the controller runs in
-WSL and owns the game process through `gameai.windows`. WH3's Lua mod is its API ([how it
-works](docs/twwarhammer3/README.md#how-it-works)); its build is pinned in `engine/runtime.py`,
-and a different build warns and is recorded but never blocks (owner, 2026-10-18).
-
-Information boundary: friendly units in full; enemy units only while
-`is_visible_to_alliance`, plus the enemy roster the custom battle screen shows; the
-observation's `evaluation`, `final` and `setup` never reach a policy, nor do replay
-frames or stills. Failure taxonomy (`protocol.py`): `ProtocolError`, `IllegalActionError`,
-`PolicyFailure`, `MailboxTimeout` and `BattleRestarted` are infrastructure, protocol or
-policy failures; a batch that fails validation is recorded as invalid and sent as no
-orders. Only an engine-reported won, lost or draw is a gameplay outcome.
+  Never link `.venv` or `runs/` between checkouts. A play job also stops when
+  its source scope changes; merge nothing touching that scope while it runs, shared code included.
+- When a build differs from its pin, tell the owner; re-pin only with approval.
+- When the owner is away, use [autonomy](docs/autonomy.md) and the
+  [long-run brief/handoff](docs/workflow.md#long-runs-while-the-owner-is-away). The standing menu
+  and small interviews were agreed 2026-10-28; other away rules still need the owner's yes.
 
 ## Evidence
 
-Run evidence stays out of Git ([runs/README.md](runs/README.md): layout and ledger paths).
-A job's `--budget-usd` caps its selected ledger's total, earlier jobs included. Two allowances
-cover both games, so leave room for the other game's ledger (`<game> spend --provider P`): the
-owner's $50 on OpenRouter and the Anthropic key's $200 (keep both ledgers under it; the key's
-own limit error is untested). Never move or reset a ledger. A play command refuses a ledger
-file that does not exist (a mistyped path or a job started from a worktree would count from $0):
-create it deliberately for a new ledger.
+- Never run two game controllers at once, even for different games; locks protect one game each.
+  WH3 always runs unpaused at 1x, including probes. Restore may rebuild faster before handover
+  (owner, 2026-10-25); from handover on, 1x. Only the owner may pause while manually demonstrating
+  winnability (2026-11-04), never an agent or policy.
+- Exclude hidden game state from policies: friendly units in full, visible enemies and the
+  custom-battle roster only; no `evaluation`, `final`, `setup`, replay frames or stills.
+  Failure classes and engine-only outcomes: [Architecture](docs/development.md#architecture).
+- `src/gameai` never imports a game package. Move code there when a second game would copy it,
+  not before; per-game job modules stay per game. [Layout](docs/development.md#layout).
+- Evidence stays out of Git ([runs/README.md](runs/README.md)). A job's `--budget-usd` caps its
+  selected ledger's total, earlier jobs included. Never move or reset a ledger. Deliberately
+  create a missing ledger for a new allowance; a mistyped/worktree path must not start at $0.
+  The owner's $50 OpenRouter allowance and the Anthropic key's $200 each cover **both games**;
+  leave room for both (`<game> spend --provider P`). The key's own limit error is untested.
+- WH3 `play` appends an episode row to `docs/twwarhammer3/results.csv`. Log every version in
+  `docs/twwarhammer3/log.md` and commit the register with it. Update state when work starts,
+  stops or changes direction; keep counts/history in logs. Record source, configuration,
+  engine/mod versions and evaluation output; distinguish infrastructure failures from losses.
 
-Each WH3 `play` appends one row per episode to `docs/twwarhammer3/results.csv`. Log every
-version in `docs/twwarhammer3/log.md` and commit the register with that entry. Update
-`docs/state.md` when work starts, stops or changes direction, and keep it short: what runs,
-what is stopped and why, what is next, with links. Results, validation counts and history
-go in the logs.
+## Commits and writing
 
-## Coding style and tests
+Use concise imperative commit subjects. The owner authorizes commits and pushes to `main`;
+keep changes focused and PRs clear about behaviour, checks and limitations. Never commit
+proprietary game files, mod jars, game packs or extracted files, saves, bulky trajectories,
+checkpoints, API keys or `*:Zone.Identifier` files.
 
-Four-space indentation, `snake_case` functions and modules, `PascalCase` classes,
-`UPPER_SNAKE_CASE` constants. Keep protocol handling separate from policy logic. Reserve
-bridge stdout for protocol traffic; send diagnostics elsewhere. Match the surrounding code.
-Do not run `ruff format` on hand-formatted files (most are); the WH3 report JavaScript uses
-`prettier --print-width 100`. No overengineering, excessive abstractions or overly safe code.
-Write in simple, concrete language (owner, 2026-10-20): say what a unit, controller or
-experiment actually does; no inflated wording; explain technical terms when they help.
-No punchlines in public or owner-voiced text (owner, 2026-11-04): whole connected sentences, no
-tagline headings, closers for effect or "X, not Y"; rules in `runs/portfolio/AGENTS.md`, Writing.
-
-Tests: [tests/README.md](tests/README.md); [docs/testing.md](docs/testing.md) holds proposed
-guidelines; no coverage threshold. Prioritize action and target identity, stale observations,
-terminal transitions, reproducible resets and bridge failures; add a regression for every
-observed failure; validate mechanics against the original engine, not fixtures alone.
-Regenerate the prompt snapshots in `tests/twwarhammer3/prompts/` (`WH3_WRITE_PROMPTS=1`) only
-for an intended prompt change, a logged version. Each top-level definition in
-`twwarhammer3_battle.lua` ends with an unindented `end` or `}` (Lua tests load them by name).
-
-## Commits and artifacts
-
-Concise, imperative subjects, such as `Add bridge readiness handshake`. Keep changes
-focused. The owner authorizes commits and pushes to `main`. PRs explain the problem,
-behavior changes, validation commands and results, and limitations.
-
-Exclude hidden game state from policy inputs. Record source revision, configuration, engine
-and mod versions, and evaluation output for each experiment; distinguish infrastructure
-failures from gameplay losses. Never commit proprietary game files, mod jars, game packs or
-files extracted from them (`runs/twwarhammer3/vanilla/`), saves, bulky trajectories or
-checkpoints, API keys, or `*:Zone.Identifier` files (`tests/test_repo_rules.py` checks the
-patterns it can).
+Write simply and concretely (owner, 2026-10-20); no inflated wording or unexplained terms.
+No punchlines in public or owner-voiced text (2026-11-04): connected sentences, no tagline
+headings, closers for effect or "X, not Y"; see `runs/portfolio/AGENTS.md`, Writing.

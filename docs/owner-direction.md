@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-09 (agent context loading), goal verbatim: "Investigate the context-loading proceess
+  as you start working on a goal. Let's try to optimize this proceed to load the correct
+  information when needed, avoid loading unneeded context and make the start of each session
+  for Codex and Claude Code as efficient as possible. Refer to Anthropic and OpenAI documentations
+  for best practices". [Audit and changes](context-loading.md); no verification method agreed.
 - 2026-11-08 (more evaluation battles, after the Haengju plan), verbatim: "Well if we have multiple
   good ideas for battles, we should implement them! We just need to make sure that their eval
   methodology is good (in a concrete, legitimate way)". Answers to two questions: game time "Build

@@ -609,6 +609,23 @@ Vendor pages (Sonar) are marketing: use their terms, not their numbers.
 
 ## Agent context loading
 
+Read 2026-11-09 for the [startup audit](context-loading.md):
+
+- OpenAI, [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md): startup
+  discovery follows the global and root-to-working-directory chain. Linked docs still need
+  explicit retrieval; this is the basis for the task routes.
+- OpenAI, [Skills](https://learn.chatgpt.com/docs/build-skills): metadata precedes selected
+  bodies; the catalog budget can shorten or omit entries. No catalog setting changed.
+- Anthropic, [Memory](https://code.claude.com/docs/en/memory): imports expand with their parent;
+  descendant instructions and topic memories load on demand. The first 200 lines or 25 KB
+  of `MEMORY.md`, whichever comes first, load at startup. The shared import remains supported.
+- Anthropic, [Skills](https://code.claude.com/docs/en/skills): descriptions load before bodies;
+  `skillOverrides` supports `user-invocable-only` for non-plugin skills. Plugin skills use
+  `/plugin` instead. No visibility setting changed.
+- Anthropic, [Best practices](https://code.claude.com/docs/en/best-practices): keep universal
+  instructions short and concrete, and supply checks. The local measurements establish file
+  size changes only; session speed and adherence remain unverified.
+
 Read 2026-11-02 for the [workflow reading routes](workflow.md#start-here):
 
 - OpenAI, [Rethinking skills and prompts for GPT-6 Astra](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra),
