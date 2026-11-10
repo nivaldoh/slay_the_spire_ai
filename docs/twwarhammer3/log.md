@@ -29,6 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Local Alesia contact-reader draft
+
+Local, unpushed branch `alesia-replay-readings`, based on `22a7cae`; no runtime-source merge.
+- `lines_readings.contacts` takes complete private frames and the original private setup,
+  binds G/H/L once to their declared slots, and returns first living-melee positions,
+  first two-of-four group contact times and their spread. It returns no gate verdict or score.
+- The private format's boolean `melee` differs from a public replay's state list. Missing
+  units, men/melee fields, duplicate identities, foreign battles and unsupported formats
+  are refused. The marked complete-record input choice stays for owner review.
+- Synthetic cases cover both mirrored declarations, shuffled identities, movement away
+  from starts, one/dead/non-simultaneous members, first rather than latest positions, zero
+  time, absent contact and unknown coordinates. The existing H-side refusal also has a new
+  split-group case. Focused check: 47 passed across the three selected test modules.
+- Seven of seven refusal removals were caught with no hangs. Twelve plausible wrong readers
+  were caught, including one/three-member thresholds, cumulative contact, dead flags, ID
+  order, overwritten zero/first points, private/public format confusion and invented points.
+  Two regression cases first exposed acceptance of the session's boolean opt-in as the
+  numeric recorder version; the strengthened guard rejects it, preserving numeric version 1.
+  Independent review also found an early-stop test gap; late-unit regressions now detect it.
+- Reference: pinned SMACv2 `init_units`/`update_units` stable episode maps, composed with
+  the existing WH3 deployment matcher. No upstream run, WH3 launch or paid call.
+- No original-engine contact record exists for Alesia. Its proposed checks, input choice,
+  battlefield correctness and strength remain unverified. Evidence/card:
+  `runs/benchmark-window-20261110/alesia-readings/`.
+
 ## 2026-11-10: Communication refusal sweep closes an intervention test gap
 
 Offline sweep of `battle/local_team.py` at `5f2ac23`; no runtime, prompt or scenario changes.

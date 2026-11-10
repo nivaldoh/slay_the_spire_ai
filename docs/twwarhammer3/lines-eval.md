@@ -520,8 +520,8 @@ briefing names H's side; and a named-briefing arm only if recognition becomes a 
 |---|---|---|
 | Engine outcome, `ended_by`, `battle_s`, `own_left`, `enemy_left`, `own_active`, `enemy_active`, `added_age_s` | Register row and trace | Yes |
 | The side the witness chose, when, its scores, any switch, the Lancers' phase and charges | `LinesWitness.metadata()`, which the trace records when it changes | Yes |
-| Each group's contact time (the first time 2 of its 4 units are in melee) and the spread between groups | 1 Hz replay, never a policy input; contact is the engine melee flag on a unit with men left, and groups come from the private first reading matched to the placements, never from current position | No |
-| Where each unit's first melee lay, relative to the lines and the split | Same | No |
+| Each group's contact time (the first time 2 of its 4 units are in melee) and the spread between groups | 1 Hz replay, never a policy input; contact is the engine melee flag on a unit with men left, and groups come from the private first reading matched to the placements, never from current position | Draft private-record reader described below; public replay reader unbuilt |
+| Where each unit's first melee lay, relative to the lines and the split | Same | Draft private-record reader described below; public replay reader unbuilt |
 | The reserve's arrival within 25 m of its post | Same | No |
 | Lancer arrival at the waypoint and melee behind a target | Same; a rear-contact detector stays later work, validated against owner-labelled clips chosen before its thresholds | No |
 | The Boyar's position, waver and death times | Same | No |
@@ -533,12 +533,30 @@ Contact rule and on JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group m
 replay keeps enemies only while they are visible. The evaluator-only all-unit record (portfolio
 S3), built at `f3fec92` (fields in `capture.copy_private_record`), holds every enemy unit, hidden
 ones included, and both cases opt into it with `"private_record": true`, so if check 5 or stage 1
-shows enemies leaving sight the readings can read it instead. Its one reader for this battle is
-`sector_routs`, and no game has written it. All readings are descriptive, and missing values stay
+shows enemies leaving sight the readings can read it instead. Private readers now include
+`sector_routs` and the contact-reader draft described below; no game has written the record.
+All readings are descriptive, and missing values stay
 unknown. Every timer win (`ended_by` `time_limit`) is reported with `own_left` and `own_active`,
 so that a win in which the army avoided the fight cannot pass for a held line; contact counts
 join them once the group-contact reader exists. A model's result on this battle is its win rate
 reported with its branch shares from `branch` (H, L, neither), never the win rate alone.
+
+The 2026-11-10 offline draft `lines_readings.contacts(frames, declaration, first)` reads
+the all-unit private record and the original observation's private setup reading. It returns
+G/H/L identity lists and first two-of-four contact times, their spread when all three exist,
+and each enemy unit's first living-melee sample and position. It uses private `melee` booleans;
+public replay state lists are a different format. Zero is a valid time, missing contact stays
+None, and missing coordinates stay None. No pass verdict, restaging choice or new score is
+implemented. It supplies raw readings for proposed checks 2-4, whose adoption remains open.
+
+The draft's strict input contract rests on JUDGEMENT?
+`src/twwarhammer3/battle/lines_readings.py` Complete contact record: each private frame must
+have the exact enemy identities and readable men/melee fields; duplicate, incomplete,
+foreign-battle and unsupported-format data are refused. It does not infer first contact from
+partial visibility. This choice stays on the unpushed `alesia-replay-readings` branch until
+owner review. Its tests use synthetic records for both mirrored cases, with moved units and
+scrambled identities; no new private record or battle has been read live. The proposed checks
+and this draft remain unverified. Evidence: `runs/benchmark-window-20261110/alesia-readings/`.
 
 ## Proposed deciding checks
 
@@ -627,7 +645,7 @@ the times below use 20-25 minutes a launch.
 
 | Stage | What runs | Launches and game time | What it can establish |
 |---|---|---|---|
-| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). Still to build: the replay readers for checks 2-4 with their synthetic plants, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
+| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). The 2026-11-10 contact/first-melee reader is a local private-record draft, with synthetic plants; its input contract awaits review. Still to build: public replay readers for checks 2-4, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
 | 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the files and `twwarhammer3 menu --steps` sends them; case a completed on 2026-11-10, 127 steps | No battle | Exact Kislev and Norsca roster/rank multiplicities read back; no deployment or battle readings |
 | 1b | One `hold` launch of case a | 1, about 20-25 min | Checks 1 and 5, the bearing offset, the funds charge |
 | 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7-2.1 h, plus 6 per restage (2-2.5 h) | Checks 2-4 and 2b at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass; a 2b failure is reported and taken to the owner and does not restage. A restage costs 6 fresh holds, 3 per case, because checks 2-4 need 3 of 3 per case on each version (the earlier budget of 2 could not rerun them); the number of restages is reported, and a cap on them is [owner question 4](#decisions-for-owner-review) ([options](#options-for-questions-4-and-5)) |

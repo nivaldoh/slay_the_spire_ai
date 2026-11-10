@@ -5,6 +5,8 @@ Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire ful
 ## Active work
 WH3 two-hour window, 2026-11-10 (Codex, until about 17:15 UTC): main benchmark HTML refreshed at `5f2ac23`; historical lobby readbacks ended. The conditional scripted-team rerun was not started before its cutoff. No game running or planned. Offline communication-guard audit added four intervention-refusal cases, with no runtime change; independently reviewed, unverified beyond its recorded checks. Cards/evidence: `runs/benchmark-window-20261110/`; handoff there. $0 API spend.
 
+Alesia contact readings, 2026-11-10 (Codex): local draft on `alesia-replay-readings`, own worktree. Complete private records plus the original setup bind G/H/L and give contact times and first-melee positions. Synthetic tests only; no score or gate wired, no live record read. The marked complete-record input choice awaits review; no runtime-source merge or push planned. Card/evidence: `runs/benchmark-window-20261110/alesia-readings/`.
+
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 

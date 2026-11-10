@@ -1,5 +1,5 @@
 """Evaluator readings for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), descriptive only
-(docs/twwarhammer3/lines-eval.md, Measurements and proposed check 2b).
+(docs/twwarhammer3/lines-eval.md, Measurements and proposed checks 2-4 and 2b).
 
 They read a finished battle's records: the private record (``private.jsonl``, fields in
 capture.copy_private_record), the trace's "decision" and "ack" rows, and the public observations
@@ -13,10 +13,12 @@ the side of the split where the declaration places it; L is the other relief gro
 written a private record or a trace for this battle; the tests use made-up records.
 """
 
+import math
+
 from twwarhammer3.battle.calibration import _active, _centre, _direction
 from twwarhammer3.battle.evidence_rules import group_ids, ids_by_type
 from twwarhammer3.battle.lines import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
-from twwarhammer3.protocol import visible_enemies
+from twwarhammer3.protocol import ProtocolError, visible_enemies
 
 HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_berserkers_0",
          "wh_dlc08_nor_mon_fimir_0"}
@@ -24,6 +26,9 @@ HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_ber
 # (lines-eval.md Map and placements): the sectors lines.py binds from start positions.
 SECTORS = {"west": [8, 9], "east": [11, 12]}
 MOVERS = {GUARD, BOYAR, LANCERS}
+# Rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines layout and Lines deciding checks,
+# and JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership.
+CONTACT_GROUPS = {"G": [1, 2, 3, 4], "H": [5, 6, 7, 8], "L": [9, 10, 11, 12]}
 
 
 def _front(declaration):
@@ -54,6 +59,65 @@ def h_side(declaration) -> str:
     if len(sides) != 1 or None in sides:
         raise ValueError("the declaration does not place H on one side of the split")
     return sides.pop()
+
+
+# JUDGEMENT?: Complete contact record — Codex, 2026-11-10: this draft requires complete private
+# enemy identities and men/melee fields in every frame; partial replay inference could change
+# first-contact times. Adoption of this input contract remains for owner review.
+def contacts(frames, declaration, first) -> dict:
+    """Descriptive first living-melee samples and G/H/L contact times; no pass verdict.
+
+    ``first`` is the original observation with its private setup.deployment_reading and battle
+    identity. ``frames`` are that battle's private.jsonl rows, in battle order. They use boolean
+    ``melee`` (capture.copy_private_record), not a public replay's state list. Each must contain
+    every registered enemy, including dead units, with readable men and melee; unavailable
+    evidence is refused. Missing point coordinates remain None. No timing is interpolated.
+
+    Groups bind once to authored slots through group_ids. Stable episode identities follow
+    SMACv2 smacv2/env/starcraft2/starcraft2.py init_units/update_units at 577ab5a (references.md);
+    these WH3 records use the existing deployment matcher. The two-of-four contact rule rests
+    on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines deciding checks and on JUDGEMENT
+    src/twwarhammer3/battle/evidence_rules.py Contact rule. No contact is None, never zero.
+    """
+    groups = group_ids(declaration, first, "enemy", CONTACT_GROUPS)
+    identities = [identity for members in groups.values() for identity in members]
+    expected = set(identities)
+    if len(expected) != len(identities):
+        raise ProtocolError("private initial enemy identities are not unique")
+    battle = first.get("battle")
+    if not isinstance(battle, str) or not battle:
+        raise ProtocolError("private contact reading needs its initial battle identity")
+    contact_ms = dict.fromkeys(groups)
+    first_melee = dict.fromkeys(identities)
+    for frame in frames:
+        version = frame.get("private_record")
+        if isinstance(version, bool) or version != 1:
+            raise ProtocolError("contact reading requires private_record version 1")
+        if frame.get("battle") != battle:
+            raise ProtocolError("contact reading contains a different battle")
+        rows = frame.get("enemy") or []
+        units = {unit.get("id"): unit for unit in rows}
+        if len(units) != len(rows) or set(units) != expected:
+            raise ProtocolError("private contact reading needs the exact unique enemy roster")
+        for unit in rows:
+            men = unit.get("men")
+            if type(men) not in (int, float) or not math.isfinite(men) \
+                    or type(unit.get("melee")) is not bool:
+                raise ProtocolError("private contact reading has unreadable men/melee")
+        engaged = {identity for identity, unit in units.items()
+                   if unit["melee"] and unit["men"] > 0}
+        for identity in engaged:
+            if first_melee[identity] is None:
+                first_melee[identity] = {"time_ms": frame["time_ms"],
+                                         "x": units[identity].get("x"),
+                                         "z": units[identity].get("z")}
+        for name, members in groups.items():
+            if contact_ms[name] is None and len(engaged.intersection(members)) >= 2:
+                contact_ms[name] = frame["time_ms"]
+    times = list(contact_ms.values())
+    spread = max(times) - min(times) if all(time is not None for time in times) else None
+    return {"battle": battle, "groups": groups, "contact_ms": contact_ms,
+            "contact_spread_ms": spread, "first_melee": first_melee}
 
 
 # JUDGEMENT?: Sector rout reading — Claude, 2026-11-09 (second look A1): a sector's first rout is
