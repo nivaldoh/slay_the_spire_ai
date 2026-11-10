@@ -3,7 +3,10 @@
 Draft for owner review, 2026-11-08. On the night of 2026-11-08 the owner asked for stages 0 to 3
 with a $10 cap; the build, the runs and their results are in
 [results so far](#results-so-far-night-of-2026-11-08) and `runs/comm-build-20261108/`. Stage 4 is
-not approved. [Owner direction](../owner-direction.md):
+deferred by the owner on 2026-11-10. The owner chose all three structures and a reasonable
+provisional messaging baseline; communication necessity is one experiment type rather than a
+universal benchmark prerequisite. [Current answers](#questions-for-the-owner).
+[Owner direction](../owner-direction.md):
 
 > I think one interesting thing that we can study is battle performance for one-army multi-agent
 > when the army's agents are allowed (and forced) to communicate directly with each other vs some
@@ -83,7 +86,9 @@ WH3. Sources and their checking status are in
 
 ## What "forced" means
 
-Until the owner answers question 1, the plan uses this meaning in every arm:
+The owner delegated a reasonable baseline on 2026-11-10. Codex retains the existing rule
+below in every arm for now. It uses the same requirement for every captain and requires no
+parser or prompt change. The rule remains provisional; no run starts under this decision.
 
 - The allowed links are the only way to send a message. In P a captain may address any other
   captain. In R and O a captain may address only the commander, and the commander any captain.
@@ -101,7 +106,8 @@ a neighbor move still works, and "exclusively" covers sent messages only.
 
 JUDGEMENT: Forcing rule — Claude, 2026-11-08: one or two messages per captain reply in every arm,
 commander zero to five. Exclusive links only or a time floor changes message volume; every
-arm's results rest on it.
+arm's results rest on it. Retained provisionally by Codex on 2026-11-10 under the owner's
+"Use a reasonable baseline for now"; this is delegated baseline selection, not verification.
 
 ## The arms
 
@@ -213,7 +219,11 @@ What exists ([C page](cannae-communication.md), [evaluation page](cannae-eval.md
   placements was the global-view script `WingSupport`, playing A v2, in one launch. That night the
   scripted witnesses won 4 of their 9 launches (overview 3 of 5, peer 1 of 4; see Results so far).
 
-So on v1 messages are not needed to win, and an effect of the links there could not show that a
+The following was the proposed v2 construction requirement of 2026-11-08. The owner later
+clarified that communication necessity is one experiment type, rather than a universal
+benchmark prerequisite; runs are deferred ([answers](#questions-for-the-owner)).
+
+On v1 messages are not needed to win, and an effect of the links there could not show that a
 message carried a needed fact. v2 is harder, so messages may matter there, but two things need
 showing first: that captains using messages can win it, and that a fact one group sees decides
 something for another. The study therefore runs a $0 construction test on v2 (stage 2) before any
@@ -874,10 +884,11 @@ or paid pilot follows this failed screen. No API spending occurred.
 
 This does not establish that communication has no benefit. The owner's question concerns
 relative battle performance; requiring every control to lose was an agent's construction
-choice and remains unagreed. The next owner decision is whether to retain communication
-dependence as a prerequisite for construction, or revise that gate for a separately frozen
-performance comparison. No revised threshold or experiment is adopted here. Independent
-methodology review: `runs/comm-next-20261110/review/screen/methodology.md`.
+choice and remains unagreed. The owner clarified on 2026-11-10 that communication necessity
+is one experiment type, rather than a universal requirement for every benchmark version. The failed screen remains
+evidence about this candidate under its proposed gate. It does not bar all future benchmark
+versions. No replacement threshold, verification method or run plan is adopted by that answer.
+Independent methodology review: `runs/comm-next-20261110/review/screen/methodology.md`.
 
 The final interactive report, `runs/comm-next-20261110/screen-report.html`, contains all
 seven launches, their separate controller rows and replays; JSON/text sit beside it. The
@@ -899,32 +910,25 @@ processes ended. The feature and proposed checks remain unverified under the own
 
 ## Questions for the owner
 
-1. **What does "forced" mean?** Now: (a) is built and runs tonight. (a, recommended) The
-   links are the only way to send messages, and every captain reply carries one or two; the
-   commander is not forced. This is the most literal reading of "allowed (and forced)" and keeps
-   forcing equal across arms. (b) Fixed links only, and captains may stay silent. Message volume
-   is then left to the models. Unforced Haiku captains attached a message to 463 of 716 completed
-   replies in the one model battle, but 435 of those were one-word signal codes, which these arms
-   turn off, so how often unforced captains would write text is unknown and an arm could drift
-   toward a silent team. (c) A time floor: each captain must send at least one message every 10
-   battle seconds, enforced by the dispatcher. This gives less chatter than (a) but needs more
-   code.
-2. **Which arms go into the scored comparison?** Now: P, R and O are built; stage 4 waits for its
-   own yes and cap. (a, recommended) P, R and O, 15 launches each (about $50 to $65, 6 to 8 game
-   hours), with O and R each against P. R tests the links without a wider view and O with one. O
-   against R is exploratory and also carries O's larger input and its captains' line about the
-   commander. (b) P and O only, 20 each (about $43 to $56, 5 to 7 game hours). This is the
-   comparison you asked for, with more power to resolve a true 0% against 30%: 0.76 at 20 launches
-   and 5%, against 0.28 for option (a)'s 15 launches at Holm's first step of 2.5%. R would come
-   later if O differs. (c) P and R only, 20 each (about $42 to $54, 5 to 7 game hours). This is
-   the cheapest test of the links with the same team observations, best if the commander's view
-   can wait, and it leaves "different information" untested.
-3. **What may start after tonight?** Tonight's stages 0 to 3 ran under your go-ahead. (a,
-   recommended) The offline build and checks, then the $0 probes and the v2 construction test in a
-   window you name (about 3.5 to 5 game hours). The paid pilot and the scored comparison each wait
-   for their own yes and cap. (b) v1 only, comparing how messages flow with no claim about results.
-   This is the quickest look at forced messages in play, best if you doubt the study is worth a
-   construction test, but it cannot show an effect on wins. (c) Design a new C variant first, with
-   groups beyond each other's view or a threat only one group can see. This is best if you expect
-   v2 to fail its test, since it skips about 4 game hours there, but it delays every live step and
-   needs your decision on a hidden event.
+Answered 2026-11-10; [recorded direction](../owner-direction.md). Earlier options remain in
+Git at `267b406`; their run counts, cost estimates and statistical rules were proposals.
+
+1. **Communication necessity:** "Communication won't be necessary to win for every single
+   version of our benchmark. It's just one type of experiment that we will do, to see how it
+   performs and compare to other approaches." A communication-dependent scenario remains an
+   experiment type. The failed all-controls-lose screen remains in the record; it is not a
+   universal benchmark prerequisite.
+2. **Structures:** "Compare all 3." Keep P (captains message each other), R (captains message
+   through a commander who sees only their reports), and O (the commander also sees the army's
+   visible battlefield). This chooses structures without approving 15 launches each or a
+   particular scoring or statistical protocol.
+3. **Messages:** "Not sure I get it. Use a reasonable baseline for now." Codex retains one or
+   two messages per captain reply, with the current rule that an invalid reply contributes no
+   orders. Commanders may send zero to five messages. This provisional choice keeps the same
+   forcing rule across structures and preserves the existing parser and prompts. It rests on
+   JUDGEMENT `docs/twwarhammer3/communication-structure.md` Forcing rule.
+4. **Runs:** "Let's leave the runs for later". No game, paid pilot or scored comparison is
+   scheduled. Run counts, budget, scoring and exact verification methods remain proposals.
+
+The other marked design choices and proposed mechanics check retain their existing review
+status. These answers do not establish benchmark validity or communication benefit.

@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 single-army window, 2026-11-10 (Codex): ownership repair landed at `7b8b9bf`; the unchanged agreed scripted-team check passed 4/4 there. Overlap/reinforcement rejection has offline regression evidence only; its added method is unverified. Both games are closed, no further game is scheduled, and API spend remains $0 of $20. Evidence: `runs/single-army-20261110/`.
+WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communication structures, delegated a provisional messaging baseline and deferred runs. Communication necessity is one experiment type, not a universal prerequisite. Test-cleanup review recommends selected fixture refactors and targeted regressions; neither draft has been merged. Ownership repair and its 4/4 agreed scripted-team check remain recorded at `7b8b9bf`; overlap/reinforcement regressions remain unverified offline evidence. Both games are closed; API spend for the window remains $0 of $20. Evidence: `runs/cleanup-review-20261110/` and `runs/single-army-20261110/`.
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
@@ -92,7 +92,7 @@ Numbers are unchanged; open the relevant item before acting.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
 12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the older test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
-14. **Communication structure:** keep communication dependence as a construction prerequisite, or revise the gate for a separately frozen performance comparison. Both muted controls won the [development screen](twwarhammer3/communication-structure.md#intermediate-force-development-results); earlier forcing/arm choices remain open.
+14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and when the first game window runs.
 
 ## Runtime and ownership

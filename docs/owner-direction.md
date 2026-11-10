@@ -5,6 +5,19 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-10 (communication-study choices and test-cleanup review), owner answers:
+  "Communication won't be necessary to win for every single version of our benchmark. It's just
+  one type of experiment that we will do, to see how it performs and compare to other approaches."
+  For the cleanup drafts: "Review and see what's worth combining, if anything." For team structures:
+  "Compare all 3." For forced messages: "Not sure I get it. Use a reasonable baseline for now."
+  For runs: "Let's leave the runs for later". Compare peer messages, an inbox-only commander
+  and a commander with the army's visible battlefield. Codex retains the existing one-or-two
+  messages per captain reply as the provisional baseline, including rejection of invalid replies;
+  commanders may send none. This choice rests on JUDGEMENT
+  `docs/twwarhammer3/communication-structure.md` Forcing rule. This delegates a baseline,
+  approves review of the cleanup drafts,
+  and defers runs; it adopts no run count, scoring rule, verification method or cleanup merge.
+  Review evidence: `runs/cleanup-review-20261110/`.
 - 2026-11-10 (four-hour single-army window), goal verbatim: "Continue to make progress towards our multi-agent benchmarks (single-army) and improving the repo in general (for instance, we probably have some trash to clean up). I'll be back in like 4 hours. We can set an API budget of $20 if needed". Brief: `runs/single-army-20261110/brief.md`; existing pending benchmark choices remain open.
 - 2026-11-10 (two-hour autonomous window), goal verbatim: "Proceed for the next ~2 hours with any goals that don't depend on me, including live battles as needed. We can set a $20 budget for this session. Also, if there's anything interesting in our latest runs to add to our main benchark HTML, we should do so." Brief: `runs/benchmark-window-20261110/brief.md`. Existing pending benchmark decisions remain open.
 - 2026-11-10 (one-army communication benchmark follow-up), goal verbatim: "Proceed with the
