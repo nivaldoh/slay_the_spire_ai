@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Local Alesia contact-reader draft retained for review
+
+`fb9a814` on local, unpushed `alesia-replay-readings`, based on `22a7cae`; no source merge.
+- The reader returns descriptive contact times and first-melee positions using original
+  setup identities and private records. It implements no score, pass verdict or policy input.
+- A new marked input-contract choice remains for owner review, under existing decision 15.
+  The draft's page/card describe its requirements; no benchmark criterion was adopted.
+- 47 focused synthetic cases passed. Independent review reproduced all seven refusal
+  removals and twelve reader mistakes being caught, with no hangs. A boolean-format
+  regression failed before correction, and added late-unit cases detect premature stopping.
+- Full draft gate: Ruff clean, 3,813 passed, 70 skipped; worktree evidence skips apply.
+  This does not verify live contact readings or battlefield correctness. No original-engine
+  Alesia contact record was read. Main's latest landed gate at `22a7cae`: 3,831 passed,
+  44 skipped, 13/13 agreed component commands; CI passed all three jobs.
+- No WH3 battle, paid model call, runtime-source adoption or controller change followed the probes.
+  Window API spend remains $0 of $20. The conditional agreed-team check never started.
+- Card, failed cases, raw checks, primary-source reference and independent review:
+  `runs/benchmark-window-20261110/alesia-readings/`; whole-window handoff in its parent.
+
 ## 2026-11-10: Communication refusal sweep closes an intervention test gap
 
 Offline sweep of `battle/local_team.py` at `5f2ac23`; no runtime, prompt or scenario changes.

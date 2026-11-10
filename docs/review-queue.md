@@ -36,6 +36,11 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     rosters/ranks/settings, with Haengju's empty attacker equipment and Izmail's one ram.
     Belgrade stopped at refused Flagellants recruitment; cause unknown and no army change
     chosen. No historical battle has run. [Readings and limits](twwarhammer3/historical-evals.md#first-lobby-readbacks-2026-11-10).
+    Local offline continuation: `alesia-replay-readings` (`fb9a814`, unpushed) adds descriptive
+    contact/first-melee readings, with synthetic cases and independent mutation checks. Its
+    new marked input-contract choice stays for your review. No Alesia source was merged, no proposed
+    gate was adopted, and no original-engine Alesia contact record has been checked. Evidence:
+    `runs/benchmark-window-20261110/alesia-readings/`.
 
 ## Completed work and handoffs
 
