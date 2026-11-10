@@ -3,6 +3,8 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+WH3 two-hour window, 2026-11-10 (Codex): refresh the main benchmark HTML with the completed communication screen, and run the historical evaluations' existing lobby-only roster readback. No battle or paid comparison planned. Game cutoff 16:15 UTC; session cutoff about 17:15 UTC. Brief/card: `runs/benchmark-window-20261110/brief.md`; branch/worktree `benchmark-window`.
+
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 

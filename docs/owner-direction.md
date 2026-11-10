@@ -5,6 +5,7 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-10 (two-hour autonomous window), goal verbatim: "Proceed for the next ~2 hours with any goals that don't depend on me, including live battles as needed. We can set a $20 budget for this session. Also, if there's anything interesting in our latest runs to add to our main benchark HTML, we should do so." Brief: `runs/benchmark-window-20261110/brief.md`. Existing pending benchmark decisions remain open.
 - 2026-11-10 (one-army communication benchmark follow-up), goal verbatim: "Proceed with the
   next planned steps. Use live games freely. We can set a budget of $20 if needed. If you finish
   before I return, take your time to review the code and tests, clean up any leftover garbage,
