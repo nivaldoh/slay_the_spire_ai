@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 autonomous window, 2026-11-10 (Codex): main benchmark HTML refreshed at `5f2ac23`; historical lobby readbacks ended. Four intervention-refusal cases landed at `22a7cae`; runtime unchanged, CI passed. No game running or planned; the conditional scripted-team rerun missed its start cutoff and never ran. Handoff/evidence: `runs/benchmark-window-20261110/`. $0 API spend.
+WH3 single-army window, 2026-11-10 (Codex): preparing one rerun of the agreed four-launch scripted-team check on current main; no benchmark comparison or design change. Game cutoff 21:10 UTC, check must start by 20:35 UTC. $20 allowance, planned $0 API spend. Brief/evidence: `runs/single-army-20261110/`. Prior HTML/lobby/test work completed; handoff `runs/benchmark-window-20261110/handoff.md`.
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
