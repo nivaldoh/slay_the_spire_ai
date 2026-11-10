@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 single-army window, 2026-11-10 (Codex): ordinary team ownership now refuses overlapping class/type matches before new work, retaining disjoint mixed selectors and missing-owner failures. Offline repair; latest agreed scripted check remains 4/4 at `792fe37` before it. Preparing one unchanged scripted-team rerun after the repair's review/gates; main freezes for that check. Game cutoff 21:10 UTC, latest start 20:35 UTC; $0 of $20 spent. Brief: `runs/single-army-20261110/ownership-live-brief.md`.
+WH3 single-army window, 2026-11-10 (Codex): ownership repair landed at `7b8b9bf`; the unchanged agreed scripted-team check passed 4/4 there. Overlap/reinforcement rejection has offline regression evidence only; its added method is unverified. Both games are closed, no further game is scheduled, and API spend remains $0 of $20. Evidence: `runs/single-army-20261110/`.
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
@@ -43,7 +43,7 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 - Runtime: `llm`/`llm_rules` v23, `commander` v8, `team_llm_rules` v23+t2, skills v1.2, harness b54; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
-- Scripted-team agreed checks passed at recorded revisions (latest live 4/4 at `792fe37`); direct model-team mechanics passed one live case at `c1ad84d`.
+- Scripted-team agreed checks passed at recorded revisions (latest live 4/4 at `7b8b9bf`); direct model-team mechanics passed one live case at `c1ad84d`.
 - [Communication follow-up](twwarhammer3/communication-structure.md#intermediate-force-development-results), 2026-11-10: mechanics probes and the seven-run intermediate-force screen completed; no game running. Each witness won once, but both muted controls also won, failing the proposed construction gate. $0 API spend; no comparison or verification claim. Next: decision 14; handoff `runs/comm-next-20261110/handoff.md`.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $13.89 on 2026-11-08 (WH3 $13.6806, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`, build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.

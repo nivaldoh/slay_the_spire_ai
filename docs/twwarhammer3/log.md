@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Scripted-team check passes after the ownership repair
+
+The unchanged agreed four-launch check passed 4/4 at `7b8b9bf`, build 26403568: four fresh
+launches alternating delayed members, 1x, no paid calls. Independent raw recount matched
+1,106 member feedbacks to engine acknowledgements and source ages, with eight successful
+first moves and a qualifying movement witness before peer completion in every launch.
+All 1,131 recorded speed samples read 1; all four episodes reached the check's time cap,
+closed their owned game processes and retained the existing movement/clock limitations.
+
+This is preservation evidence for valid two-member scripts. Overlapping class/type
+declarations and reinforcement failures remain offline cases; no new verification method,
+communication comparison or strength result was adopted. Source CI passed all three jobs;
+the main gate passed 3,855 tests/44 skipped and all 13 agreed component commands. $0 API spend.
+Raw evidence: `runs/twwarhammer3/team-live-20261110-ownership-fix/`; independent review,
+separate recount and final checks: `runs/single-army-20261110/ownership-*`.
+
 ## 2026-11-10: Refuse overlapping team owners
 
 Repair the existing exclusive-ownership invariant in `team.py`. At `511a45a`, a unit matched

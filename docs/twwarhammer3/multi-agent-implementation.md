@@ -6,7 +6,7 @@ one army: the two scripted probes, the two-member model team, and the class-base
 Each member decides on its own copy of the public state and gets its orders sent while peers
 are still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
 live check passed 4/4 at `45fe7b0`, `b0ac9e3`, `31823f3` (the model-team branch before its
-rebase onto `main`), `3adbaa4` (rebased), and `792fe37` (2026-11-10)
+rebase onto `main`), `3adbaa4` (rebased), `792fe37` and `7b8b9bf` (2026-11-10)
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
 progress, feedback and cleanup for two scripts. Messages and teamwork quality remain
 unverified. The direct model team's seven-point mechanics check passed in one battle
@@ -200,16 +200,17 @@ reassesses saved evidence without a game and without rewriting its `checks.json`
 check.
 Mid-battle rematch is not used and remains unverified.
 
-Latest rerun: 4/4 at `792fe37` (2026-11-10), with four fresh launches on build 26403568,
+Latest rerun: 4/4 at `7b8b9bf` (2026-11-10, after the ownership repair), with four fresh launches on build 26403568,
 alternating the delayed member, unpaused at 1x and $0 API spend. Independent raw recount
 checked ownership, engine acknowledgements, source ages, movement and recorded cleanup;
 the unchanged checker and separate saved-data recount agree. All four episodes ended at
-the check's time cap. Evidence: `runs/twwarhammer3/team-live-20261110-current/`, independent
-audit `runs/single-army-20261110/review/live/`. This covers the declared scripted mechanics
+the check's time cap. Evidence: `runs/twwarhammer3/team-live-20261110-ownership-fix/`, independent
+audit `runs/single-army-20261110/ownership-live-review/`. This covers the declared scripted mechanics
 at that revision, with the existing age, movement and clock-band markers; model-team
 strength and communication remain unverified.
 
-Earlier results: 4/4 at `3adbaa4` (2026-10-28, `runs/twwarhammer3/team-live-20261027-rebased/`;
+Earlier results: 4/4 at `792fe37` before that repair (`runs/twwarhammer3/team-live-20261110-current/`),
+and 4/4 at `3adbaa4` (2026-10-28, `runs/twwarhammer3/team-live-20261027-rebased/`;
 fast members 0.6 s, delayed 3.6-3.9 s, clock ratio 0.991-1.010), at `b0ac9e3` on `main`
 (2026-10-23) and at `31823f3` on the branch (`runs/twwarhammer3/team-live-20261022-tip/`); after the rebase onto `main` the saved runs
 of `45fe7b0` and `31823f3` recount 4/4 with the merged checker. `31823f3`, these recounts
@@ -304,5 +305,6 @@ The repair checks intersecting unit ids before adding each member's assignment t
 set, then checks complete roster coverage. Disjoint mixed selectors still work. New offline
 cases exercise initial and reinforcement overlaps, worker submission, valid mixed selectors,
 missing owners and the existing `unsupported_or_invalid` disposition through the configured
-factory. This repair has no new live check; the latest recorded live pass remains `792fe37`.
-The additional regression method has not been agreed, and live effect remains unverified.
+factory. The unchanged agreed live check passed 4/4 at `7b8b9bf` for valid two-member scripts.
+It does not exercise overlapping declarations or reinforcements in the engine. The additional
+regression method has not been agreed, and those cases retain offline evidence only.
