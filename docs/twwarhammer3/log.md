@@ -29,6 +29,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Main report refresh and first historical lobby readbacks
+
+The two-hour window adds all seven frozen intermediate-C screen jobs to the main
+`runs/twwarhammer3/reports/benchmark.html`, preserving its selected Sol cavalry example
+and mirror plans. The page states that both muted controls won and the proposed gate failed.
+- Fixed a mixed-page omission: each scripted-only scenario now keeps every controller row
+  even beside model scenarios. No score, policy, scenario or gate changed. Source remains b54.
+- Independent recount retained all 140 historical job paths, 148 prior collector jobs and
+  239 prior trials; seven new conditions have separate rows/replays. Eight mirror conditions
+  match raw unit records. The selected cavalry replay is unchanged after decompression.
+- New browser regression passes the candidate and fails the original mixed page. Review
+  found its first version missed merged controls; the strengthened check also rejects that
+  mutation. A scratch mirror checker retains the mixed page's historical headline; all
+  original score assertions pass. Existing tests were not edited.
+- Two lobby sessions at `2105a9c`, build 26403568, no battle: Belgrade failed at step 48,
+  refused Flagellants after five recruit commands; cause unknown. Independent remaining
+  roster files completed: Alesia 127 steps, 12/12 units; Haengju 156, 10/18; Izmail 157, 13/12.
+  Exact roster/rank reads passed; Haengju's attacker equipment was empty; Izmail had one
+  Kislev ram and no tower. The paired declarations generate identical lobby steps and were not sent separately.
+- All game processes closed. $0 API spend. Lobby/battle correctness and strength remain
+  unverified; no deployment, siege-order, wave or timer behaviour was tested.
+- Cards, raw failures, browser checks and independent reviews: `runs/benchmark-window-20261110/`.
+
 ## 2026-11-10: Intermediate-force screen fails the proposed communication gate
 
 Seven fresh scripted launches at `9d84cf3`, game build 26403568, unpaused 1x; $0 API spending.

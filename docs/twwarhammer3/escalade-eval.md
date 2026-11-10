@@ -1,9 +1,12 @@
 # Siege attack evaluation after Izmail, 1790
 
 Development candidate, 2026-11-08 (Claude); this page was written on 2026-11-09. **Built offline
-at `f3fec92`; nothing has been launched or measured, and everything on this page is
-unverified.** The owner's direction of 2026-11-08 was "Build now, game when I say"
-([owner direction](../owner-direction.md)), and no game window has been named. The battle adapts
+at `f3fec92`; no battle has been played, and everything on this page is
+unverified.** The 2026-11-10 lobby-only readback completed 157 steps: exact 13/12 rosters and
+ranks, one player `ksl_battering_ram` and no tower
+([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)). No battle stage is scheduled.
+The owner's earlier direction was "Build now, game when I say"
+([owner direction](../owner-direction.md)). The battle adapts
 the Russian assault on the Ottoman fortress of Izmail in December 1790 as a WH3 siege in which the
 controller attacks a walled fort held by a native AI garrison. It is built from the declaration
 `ksl-emp-siege-a-v1` in [scenarios.json](../../configs/twwarhammer3/scenarios.json), the
@@ -208,7 +211,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | One development version, split `development`, no reserved variant ([variation](#variation)); this page and the code are public |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted`; nothing launched |
+| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted`; no battle played |
 
 The settings:
 

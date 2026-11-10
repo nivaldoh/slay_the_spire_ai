@@ -2,7 +2,10 @@
 
 Development candidate (Claude). Written on 2026-11-08 as a plan, brought in line with the offline
 build on 2026-11-09 and revised after that day's second look at the set. **Built offline at
-`f3fec92`; nothing has been launched or measured, and everything on this page is unverified.** On
+`f3fec92`; no battle has been played, and everything on this page is unverified.** The 2026-11-10
+lobby-only readback passed the all-at-once declaration's 10/18 rosters, ranks and empty attacker
+equipment list; the divisions declaration generates identical lobby steps and was not sent
+separately ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)). On
 2026-11-08 the owner asked for a second evaluation
 battle: a real siege in which one side had a clear disadvantage and still won through better
 tactics. Later that day the owner asked to build the good battle ideas now and to play them only
@@ -221,7 +224,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | The waves arm, the all-at-once arm and the Eagle Gate screen `cth-emp-siege-a-all-gates-v1`, all split `development`; no held-out or reserved variant; this page and the code are public |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [development stages](#development-stages) |
-| Release record | Lua and pack hash from `f3fec92`; the Eagle Gate screen declared at `050020e`; the readings and tests revised on 2026-11-09; `prototype_not_admitted`; nothing launched |
+| Release record | Lua and pack hash from `f3fec92`; the Eagle Gate screen declared at `050020e`; the readings and tests revised on 2026-11-09; `prototype_not_admitted`; no battle played |
 
 JUDGEMENT: Situation and fidelity — Claude, 2026-11-08: Haengju as a siege defence against
 divisions released in turn. A literal hill fort, an all-at-once assault or another battle
@@ -713,7 +716,7 @@ live: whether the garrison's engine start repeats within 25 m is unknown until s
 
 No version 1 attacker can damage the gate, so a fall would mean an engine source the design did
 not plan for. The same rule catches a lobby that failed to remove the attacker's siege equipment,
-which no lobby has run yet.
+which the 2026-11-10 all-at-once lobby readback completed; no battle has read the equipment yet.
 
 Check 5's recorded basis, recounted on 2026-11-09 from the two episodes of
 `bench-b12-siege-baselines-20261016` (episode 0 `attack_nearest`, episode 1 `hold`; 9.0.4, Chaos

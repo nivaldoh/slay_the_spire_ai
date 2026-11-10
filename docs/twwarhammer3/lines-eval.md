@@ -1,7 +1,9 @@
 # Alesia inspired two-front defence plan
 
-Development candidate, 2026-11-08 (Claude). **Built offline at `e918091`; nothing has been
-launched, and everything on this page is unverified.** On 2026-11-08 the owner asked to build the
+Development candidate, 2026-11-08 (Claude). **Built offline at `e918091`; no battle has been
+played, and everything on this page is unverified.** The 2026-11-10 lobby-only readback passed
+case a's exact 12/12 rosters and ranks; case b generates identical lobby steps and was not
+sent separately ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)). On 2026-11-08 the owner asked to build the
 good battle ideas now and to play them only when the owner says so ("Build now, game when I say",
 [owner direction](../owner-direction.md)). This page documents the last day of the siege of
 Alesia (52 BCE), adapted as a WH3 Land battle in which the player defends two lines back to back:
@@ -12,7 +14,7 @@ Alesia (52 BCE), adapted as a WH3 Land battle in which the player defends two li
 tests in [test_wh3_lines.py](../../tests/twwarhammer3/test_wh3_lines.py),
 [test_wh3_lines_readings.py](../../tests/twwarhammer3/test_wh3_lines_readings.py) and
 [test_wh3_land_eval_declarations.py](../../tests/twwarhammer3/test_wh3_land_eval_declarations.py).
-No stage is scheduled; every live stage below waits for a window the owner names. The design, its
+No further stage is scheduled; battle stages wait for a window the owner names. The design, its
 reviews and the build records are in `runs/siege-evals-20261108/` (`final-alesia.md`,
 `portfolio.md`, `build-offline.json`), which Git does not keep.
 
@@ -148,7 +150,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | Two mirror cases, a and b, both development; no held-out variant. The terrain under the two slots differs, so the mirror is not assumed equivalent |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Source `e918091`, which did not change the Lua or the pack hash; `prototype_not_admitted`, split `development`; nothing launched. The `private_record` opt-in and the `withheld` list were added after `f3fec92`. The Lua changed at `f3fec92` (the evaluator-only record, divisions in turn and the siege-attack interface), so every launch from `f3fec92` on, this battle's included, carries the new pack hash and a separate card setup identity |
+| Release record | Source `e918091`, which did not change the Lua or the pack hash; `prototype_not_admitted`, split `development`; no battle played. The `private_record` opt-in and the `withheld` list were added after `f3fec92`. The Lua changed at `f3fec92` (the evaluator-only record, divisions in turn and the siege-attack interface), so every launch from `f3fec92` on, this battle's included, carries the new pack hash and a separate card setup identity |
 
 ### Settings
 
@@ -626,7 +628,7 @@ the times below use 20-25 minutes a launch.
 | Stage | What runs | Launches and game time | What it can establish |
 |---|---|---|---|
 | 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). Still to build: the replay readers for checks 2-4 with their synthetic plants, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
-| 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the step files (it launches nothing) and `twwarhammer3 menu --steps` sends them; no live lobby has run them | One game session, minutes, no battle | Whether the Kislev and Norsca cards and the banner recruit; a Norsca failure starts the Greenskin version and a Kislev failure goes to the owner (see risks) |
+| 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the files and `twwarhammer3 menu --steps` sends them; case a completed on 2026-11-10, 127 steps | No battle | Exact Kislev and Norsca roster/rank multiplicities read back; no deployment or battle readings |
 | 1b | One `hold` launch of case a | 1, about 20-25 min | Checks 1 and 5, the bearing offset, the funds charge |
 | 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7-2.1 h, plus 6 per restage (2-2.5 h) | Checks 2-4 and 2b at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass; a 2b failure is reported and taken to the owner and does not restage. A restage costs 6 fresh holds, 3 per case, because checks 2-4 need 3 of 3 per case on each version (the earlier budget of 2 could not rerun them); the number of restages is reported, and a cap on them is [owner question 4](#decisions-for-owner-review) ([options](#options-for-questions-4-and-5)) |
 | 2 | Probe, with one spare | 1-2, about 20-50 min | Check 7 and the window; then checks 2-4 are re-read on the stage 1 replays |

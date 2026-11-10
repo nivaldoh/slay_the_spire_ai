@@ -1,9 +1,12 @@
 # Camp attack evaluation after Belgrade, 1456
 
-Development candidate, 2026-11-08 (Claude). **Nothing here has been launched or measured, and
-everything is unverified.** The owner's direction of 2026-11-08 was "Build now, game when I say"
+Development candidate, 2026-11-08 (Claude). **No battle has been played, and everything is
+unverified.** The 2026-11-10 lobby-only attempt stopped at step 48 when the engine refused
+`wh_dlc04_emp_inf_flagellants_0`, after five successful recruit commands; no complete army
+or equipment readback followed ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)).
+The refusal's cause remains unknown. The owner's direction of 2026-11-08 was "Build now, game when I say"
 ([owner direction](../owner-direction.md)), so the scenario `emp-chd-camp-v1`, its witness and its
-controls were built offline at `e918091`, and no game window has been named. The battle adapts the
+controls were built offline at `e918091`. No battle stage is scheduled. The battle adapts the
 sortie on the Ottoman gun camp outside Belgrade on 22 July 1456 as a WH3 Land battle in which the
 controller attacks. Its levies start fighting on the camp's flank at once, and its mounted group
 then chooses between the war machines and the cavalry that left them to fight the levies. Two
@@ -169,7 +172,7 @@ The declaration is `emp-chd-camp-v1` in
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | One development version, and two candidate second versions for owner question 1 ([candidate second versions](#candidate-second-versions)); Z2 unbuilt; a held-out map proposed ([variation](#variation)) |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Source `e918091`; the `private_record` opt-in and the `withheld` list were added after `f3fec92`, whose Lua change gives every later launch a new pack hash and a separate card setup identity; the readers in `camp_readings.py` and the two candidate second versions were added on 2026-11-09. `prototype_not_admitted`, split `development`; nothing launched |
+| Release record | Source `e918091`; the `private_record` opt-in and the `withheld` list were added after `f3fec92`, whose Lua change gives every later launch a new pack hash and a separate card setup identity; the readers in `camp_readings.py` and the two candidate second versions were added on 2026-11-09. `prototype_not_admitted`, split `development`; no battle played |
 
 The settings:
 
@@ -586,7 +589,7 @@ Battles that end earlier take less.
 |---|---|---|---|
 | 0 (done offline) | Declaration, `camp.py`, tests; `check.py` passed at `e918091` (3461 passed, 70 skipped, by its commit message) | Done | The code does what its tests say |
 | 0b (offline) | Still to build: check 2's and condition X's readers of the evaluator-only record, and the plan builder. Built since `e918091`: the record itself (`f3fec92`), a boundary test on fixture first observations (`test_wh3_eval_boundary.py`), and the readers in `camp_readings.py` (2026-11-09) | No game | Inputs for checks 2, 5 and 9 |
-| L | The set's lobby-only readback (check 0; step files from `scripts/wh3_lobby_readback.py`, which no live lobby has run), one game session with no battle. Without names it reads `emp-chd-camp-v1`; a picked lordless version needs its own file, `uv run --locked python scripts/wh3_lobby_readback.py emp-chd-camp-lordless-v2`. The equidistant version's armies are v1's | Minutes | Whether every card recruits, before stage 1; for the lordless version, whether a Chaos Dwarf AI slot takes no lord |
+| L | The set's lobby-only readback (check 0; `scripts/wh3_lobby_readback.py`), attempted 2026-11-10 and stopped at refused Flagellants recruitment. The failed input is parked. A picked lordless version needs its own file; the equidistant version's armies are v1's | No battle | No complete roster reading yet; the refusal must be resolved before stage 1 |
 | 1 | 3 `hold` launches on the version question 1 picks (`emp-chd-camp-v1` until the owner answers) | About 1-1.25 h | Checks 1 and 2; fields of the never-recorded units; whether the guns are visible at 5 s from the knights' start (enemies were seen at 537-603 m in `bench-b9` and 554 m at 5.3 s in pilot-r4, both before 9.0.5); how the cover and Cutthroats react, re-read on 9.0.5; whether the guns fire into melee, by the rule below the table; on the lordless version, which unit carries the enemy's commander flag, read only once that unit is seen (no evaluator-only record carries it) |
 | 2 | 1-2 probe launches | About 20-50 min | Check 4; time for the knights to silence a gun |
 | 3a | One launch each of `rush_nearest` and `CampStrikeNow` | About 45 min | Check 7 and a timing reading |

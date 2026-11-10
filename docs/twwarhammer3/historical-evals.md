@@ -381,7 +381,7 @@ The first step is a lobby-only readback of every new roster, run in one game ses
 each scenario's lobby steps without the Start click, then `setup.army_checks`.
 `scripts/wh3_lobby_readback.py` writes those step files for the four battles' six declarations and
 launches nothing; the owner starts the game with `twwarhammer3 launch` and sends each file with
-`twwarhammer3 menu --steps`. No live lobby has run the files. The readback settles the roster
+`twwarhammer3 menu --steps`. The first live readbacks are recorded below. The readback settles the roster
 questions before any battle. After it, stage 1 runs one battle at a time, smallest first, which
 here means the battle that needs the fewest untried engine behaviours: the two Land battles use only
 existing orders, Haengju adds the scripted hold and teleporting in a siege, and Izmail adds the new
@@ -390,6 +390,31 @@ step adds its order probes. Shortcut screens, gates, the owner's demonstrations 
 later, battle by battle, each in a window the owner names. The mod's Lua changed at `f3fec92`, so
 every launch from then on, older battles included, carries a new pack hash and a separate card setup
 identity.
+
+### First lobby readbacks, 2026-11-10
+
+In the owner's two-hour window, two lobby sessions at `2105a9c`, build 26403568 and pack
+`bfe8fb3de86aba5a17b1df5e272fa25d85e29053f93bacadd44f086e71e6a571`, started no battle.
+Belgrade's file stopped at step 48: the engine refused `wh_dlc04_emp_inf_flagellants_0`
+after five successful recruit commands. This does not identify the refusal's cause or
+establish a complete army, mount, enemy or equipment readback. The original failure stays.
+A separate session checked the independent remaining rosters without retrying Belgrade:
+
+| File | Completed steps | Final player/enemy unit counts | Equipment readback |
+|---|---:|---:|---|
+| Alesia case a | 127 | 12 / 12 | No siege equipment required |
+| Haengju all-at-once | 156 | 10 / 18 | Attacker slot 1 empty |
+| Izmail | 157 | 13 / 12 | Player slot 0: one `ksl_battering_ram`, no tower |
+
+Each completed file read exact roster keys and rank multiplicities, plus its required lobby
+settings. Alesia case b and Haengju's divisions declaration generate identical lobby steps
+to their listed partners, and were not sent separately. No Eagle Gate file was tried.
+These are lobby readings, with no map/deployment, battle timer, wave, movement or strength
+evidence. The procedure remains unverified without an agreed check. All games closed;
+$0 API spend. Raw logs, generated steps and independent recount:
+`runs/benchmark-window-20261110/`, `review/report-new-test/audit_lobby.json`.
+
+### Estimated battle windows
 
 The times below use one estimate, 20-25 min, for a launch that runs to its 1,200 s timer, as the
 designs estimated; battles that end earlier take less. Six single-launch Land jobs on Taurox that
@@ -402,7 +427,7 @@ patch includes battle balance changes, and equivalence with earlier results is u
 
 | Step | What runs | Launches and game time | What it settles | Builds of the runs its page cites |
 |---|---|---|---|---|
-| L | Lobby-only readback (`scripts/wh3_lobby_readback.py`) | One session, minutes, no battle | Chaos Dwarf cards in the AI slot under `wh3_dlc23_chd_legion_of_azgorh`; Norsca cards by key; Tzar Guard and Winged Lancers; the Cathay garrison; the Kislev ram and both equipment slot types; the Flagellants, Free Company, Reiksguard, Warrior Priest, the General's mount and the Deathshrieker | No run; the database values the pages quote (permissions, costs, ranges, ammunition) were read on 2026-11-08, after the 2026-11-03 update to 9.0.5 |
+| L | Lobby-only readback (`scripts/wh3_lobby_readback.py`) | Two sessions on 2026-11-10, no battle | Alesia, Haengju and Izmail completed; Belgrade stopped before its first Flagellants recruited (readings above) | Build 26403568; the database values the pages quote were read on 2026-11-08 |
 | 1 | Belgrade: 3 `hold` launches | About 1-1.25 h | The camp premise (its check 2) and construction | 9.0.3 (`bench-b9-assault-medium-ai10-20261014`) and 9.0.4 (the b12 siege jobs, pilot-r4); the `coord-suite-20261104` placements on 9.0.5 |
 | 2 | Alesia: 1 `hold` of case a, then 5 more, 3 per case in all | 20-25 min, then about 1.7-2.1 h, plus 6 launches per restage (2-2.5 h; [its stage 1c](lines-eval.md#live-stages)) | Construction, visibility, the two fronts at once, the main effort on its side, the lines met at their front | 9.0.4 (the b12 Kislev reserve and siege reserve jobs); the Cannae window 1 placements on 9.0.5 |
 | 3 | Haengju stages 1a-1e: 3 `hold` launches of `cth-emp-siege-a-v1` (1a, 1b), then 1 of `cth-emp-siege-a-all-v1` (1c) and 1 of the Eagle Gate screen `cth-emp-siege-a-all-gates-v1` (1d); the optional 1e adds 1 `hold` launch with one `emp_battering_ram` and one `emp_siege_tower_15m` | 1a-1d: 5 launches, about 100-125 min, plus 20-25 min for the optional 1e: 5-6 launches, about 100-150 min ([its page](haengju-eval.md#development-stages)) | The hold and release, teleporting in a siege, the engine's garrison start, ammunition across divisions (check 6 at 3 of 3), how far apart the divisions arrive with no hold (check 7), with 1d whether Eagle Gate replaces Helmgart, and with 1e which division mans each piece | 9.0.3 (`smoke-random-siege-skills-20261014-0511`) and 9.0.4 (`bench-b12-siege-baselines-20261016`, `bench-b12-siege-reserve-r2-20261016`) |
@@ -423,7 +448,8 @@ owner asks.
 
 The offline items these steps waited for are now on this branch: the readback step files,
 `"private_record": true` on `emp-chd-camp-v1` and both lines declarations, and Haengju's Eagle Gate
-declaration for 1d. None has run in a game. Still open offline: the camp's and the lines' readers
+declaration for 1d. Only the lobby readbacks above have run; no battle or Eagle Gate file has.
+Still open offline: the camp's and the lines' readers
 of the private record. Before any round each battle also needs the plan builder (portfolio S6) and
 a boundary check on its own recorded first observation.
 

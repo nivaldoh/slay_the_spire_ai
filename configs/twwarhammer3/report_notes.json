@@ -625,43 +625,49 @@
       "title": "Intermediate C: peer captains",
       "short": "Peer captains",
       "heading": "Peer captains on the intermediate force",
-      "challenge": "Captains control separate groups through local views and exchange messages directly.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "Captains control separate groups through local views and exchange messages directly. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     },
     "emp-envelopment-c-mid-relay-v3": {
       "title": "Intermediate C: relay commander",
       "short": "Relay commander",
       "heading": "Relay commander on the intermediate force",
-      "challenge": "Captains exchange messages only through a commander who receives their reports and has no live unit view.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "Captains exchange messages only through a commander who receives their reports and has no live unit view. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     },
     "emp-envelopment-c-mid-overview-v3": {
       "title": "Intermediate C: overview commander",
       "short": "Overview commander",
       "heading": "Overview commander on the intermediate force",
-      "challenge": "Captains exchange messages only through a commander who sees every friendly regiment and every enemy visible to the army.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "Captains exchange messages only through a commander who sees every friendly regiment and every enemy visible to the army. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     },
     "emp-envelopment-c-mid-muted-v3": {
       "title": "Intermediate C: muted peers",
       "short": "Muted peers",
       "heading": "Muted peers on the intermediate force",
-      "challenge": "The peer witness runs with the same local views and policy, but messages are accepted and never delivered.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "The peer witness runs with the same local views and policy, but messages are accepted and never delivered. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     },
     "emp-envelopment-c-mid-muted-overview-v3": {
       "title": "Intermediate C: muted overview",
       "short": "Muted overview",
       "heading": "Muted overview on the intermediate force",
-      "challenge": "The overview witness keeps its commander and wider commander view, but none of the team messages are delivered.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "The overview witness keeps its commander and wider commander view, but none of the team messages are delivered. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     },
     "emp-envelopment-c-mid-silent-v3": {
       "title": "Intermediate C: no-message shortcuts",
       "short": "No-message shortcuts",
       "heading": "No-message shortcuts on the intermediate force",
-      "challenge": "Local controllers act without messages; this arm tests rush and concentration shortcuts.",
-      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+      "challenge": "Local controllers act without messages; this arm tests rush and concentration shortcuts. This scripted development screen used one launch per condition. Both muted controls won, so the proposed all-controls-lose prerequisite failed. No model comparison or communication benefit is established; the candidate and its checks remain unverified.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established.",
+      "core_candidate": true
     }
   },
   "units": {

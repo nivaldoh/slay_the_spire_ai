@@ -9,7 +9,10 @@ remain separate from this first profile.
 ## Main report and retained example
 
 The main entry point is `runs/twwarhammer3/reports/benchmark.html`: the earlier suite plus
-the current mirror plans, with their scenario definitions and scoring kept separate.
+the current mirror plans and the latest scripted communication development screen, with
+their scenario definitions and scoring kept separate. The development scenarios state that
+both muted controls won and the proposed construction prerequisite failed; they establish
+no model comparison or communication benefit.
 Owner, 2026-11-02: retain the earlier GPT Sol cavalry-flanking result until a better
 replacement is agreed. Its recordings and previous reports were never removed; the
 mirror-only page linked earlier simply did not include them.
@@ -239,6 +242,25 @@ pilots and their failed/interrupted setup attempts. It excludes unrelated contro
 tuning and presentation-camera probes. Add new jobs to that list as the suite grows;
 never glob all local runs or select by outcome. The report JSON records every input job.
 Existing scenario reports remain historical artifacts.
+
+JUDGEMENT?: Recent development selection — Codex, 2026-11-10, under the owner's latest-runs request:
+append all seven intermediate-C jobs and display their six variants through `core_candidate`.
+Leaving them on a separate page changes coverage; the main page's coverage rests on this selection.
+
+This selection does not admit the candidate or change a score, gate or benchmark definition.
+The scenario text states the failed prerequisite and single-launch limits. The results
+matrix keeps every scripted row in a scenario with no models, including on a page that
+also contains historical model battles. The index retains its compact best-rule summary.
+The offline browser regression takes the frozen screen list and checks its visible rows,
+engine outcomes and embedded replays against the original records:
+
+```bash
+NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_scripted_screen_browser.cjs \
+  runs/twwarhammer3/reports/benchmark.html runs/comm-next-20261110/screen-report-jobs.json \
+  runs/benchmark-window-20261110/browser
+```
+
+This is a proposed display check, with no agreed verification or performance claim.
 
 JUDGEMENT?: Report job list — assistant, 2026-10-15 to 10-17 (flagged by Claude, 2026-10-28):
 `benchmark_jobs.json` holds 140 jobs ending at b23; no chariot, Empire or starting-set job was
@@ -671,8 +693,9 @@ See [communication-structure.md](communication-structure.md).
 
 `runs/comm-next-20261110/screen-report.{html,json,txt}` retains the seven scripted
 intermediate-force launches of 2026-11-10, at source `9d84cf3`. The [track page](communication-structure.md#intermediate-force-development-results)
-records the failed proposed gate and the limits of these single runs. This report is separate
-from the main benchmark page and its retained historical example. Rebuild from the exact job list:
+records the failed proposed gate and the limits of these single runs. The same seven jobs
+now also appear on the main benchmark page beside its retained historical example. The
+dedicated report remains available. Rebuild it from the exact job list:
 
 ```bash
 uv run python -m twwarhammer3 report --jobs-file runs/comm-next-20261110/screen-report-jobs.json --output runs/comm-next-20261110/screen-report

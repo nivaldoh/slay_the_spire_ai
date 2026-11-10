@@ -1459,7 +1459,8 @@
             );
             bars.append(line);
           }
-        for (const cell of cells(item, !models.length)) bars.append(scoreRow(cell, top));
+        for (const cell of cells(item, !item.rows.some((row) => row.kind === "model")))
+          bars.append(scoreRow(cell, top));
         block.append(name, bars);
         section.append(block);
       }
@@ -1471,7 +1472,7 @@
     );
     const caption = el("p", null, "figcap");
     const legacy = models.length
-      ? "Each model's mean legacy score over its completed battles and the best scripted rule's (seconds survived in endless survival). "
+      ? "Each model's mean legacy score over its completed battles and the best scripted rule's (seconds survived in endless survival). Scenarios with only scripted controllers keep every scripted row. "
       : "Each scripted controller's mean legacy score over its completed battles (seconds survived in endless survival). Every scripted control has its own row. ";
     caption.append(
       el("b", "Figure 3. "),
