@@ -81,6 +81,10 @@ revisions written below are the earlier passes.
   `runs/cleanup-20261102/plants-main-515491c.txt` and `runs/checks/20261102-120816-*.log`.
   On a clean tree, CI passed all three jobs at `d605605` (run 41475393465). The owner accepted
   this pass as verifying the 2026-11-02 cleanup's test work (owner: "Accept as verified").
+  Passed at `773e9e7` (2026-11-09): main gate 3803 passed, 44 skipped; all 451 plants
+  caught, no misses or hangs. Evidence: `runs/test-trust-20261109/gate-main-final.txt`,
+  `runs/test-trust-20261109/plants-main.txt` and the detailed logs they name. This repairs
+  the two missed mailbox plants recorded on 2026-11-06; the method and its limits are unchanged.
 
 - WH3 initial mirror benchmark measurements (agreed 2026-11-02, owner: "Use this check"):
   saved UI screenshots of both rosters/settings, engine ending and displayed tactical-unit

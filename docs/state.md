@@ -3,8 +3,6 @@
 Updated 2026-11-09. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Test reliability, 2026-11-09 (Codex): branch `test-trust-20261109`, worktree `runs/test-trust-20261109/worktree`; repairing ineffective fault injection, reviewing timing and redundant setup. Offline only; evidence and card in `runs/test-trust-20261109/`.
-
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 WH3 [communication structure](twwarhammer3/communication-structure.md), night of 2026-11-08 (Claude): stages 0-3 done under the owner's $10 ($6.58 spent); nothing runs and the game is closed (last launch ended 10:46 local). Stage 2's gate failed (best witness 2 of 4 at model-like timing), so the pilot cannot compare P, R and O; each of their six launches took less of the enemy (at most 30.0) than every scripted no-message launch at 2.0 s think time (at least 30.6), exploratory. The Massed horse draft passed its kill test, but its witness did not beat its muted control (2 of 6 against 1 of 6). [Results](twwarhammer3/communication-structure.md#results-so-far-night-of-2026-11-08), handoff `runs/comm-build-20261108/handoff.md`, page `runs/twwarhammer3/reports/comm-structure-20261108.html`. Next: decision 14.
@@ -29,7 +27,7 @@ GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md
 Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
 Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): its fixes landed, the last 14 moving the report fingerprint ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB).
 
-Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test review](testing.md#mailbox-transition-review-2026-11-03). Later planning: [workflow](workflow.md#session-context-improvements).
+Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test repairs](twwarhammer3/log.md#2026-11-09-test-faults-timing-and-duplicate-setup). Later planning: [workflow](workflow.md#session-context-improvements).
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews; correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
@@ -61,7 +59,6 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
-- The agreed plant check does not pass at HEAD: replayed at `b299f2d`, 406 of 408 caught, 2 MISSED, the same 2 at `8029e1b` and in `runs/benchmark-improve-20261105/plants-replay.log`, because since `ea6f1c6` (2026-11-03) two mailbox tests patch `Path.open` while `engine/mailbox.py` calls `windows.open_shared`. The fix waits on branch `repo-improve-proposals`; it edits a file an agreed check names.
 - Ctrl-C during a job's final copying leaves a won battle with no `result.json` and no register row, the ending staying in the trace: reproduced offline at `bd46129` with a real SIGINT (one probe, no live game, 0 of 650 saved episodes show it; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. No wrong outcome is counted today, though a benchmark row then has no outcome and the suite's cost leaves out that battle's spend. A draft fix was withdrawn after two reviews, because in a simulated case it lets a partial replay into benchmark measures: what a stopped job should count is an owner choice (handoff `runs/repo-improve-20261106/handoff.md`).
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
@@ -70,7 +67,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 - Since `1cc4582` each observation's `speed` is the engine's (one probe: 440/440 read 1); a slowed battle was never tried. A pause stops the `repeat_callback` tick, so no observation is written ([integration](twwarhammer3/integration.md#loading-phases-and-control)); the Windows-clock line (b51) covers pauses.
 - WSL clocks ran about 6-8% slow against Windows (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23; [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before more Spire game time.
-- Under parallel load `test_wh3_capture.py`'s passive-capture test failed once (11-01, before its wait became 30 s at `6079201`) and `test_wh3_checkpoint_rl.py`'s source-run test once: rerun before calling a regression.
+- Passive capture failed once under parallel load (11-01, before its wait became 30 s at `6079201`). The checkpoint source-run test now uses controlled time (`e10e85d`); no general flake-rate claim.
 - Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
@@ -89,7 +86,7 @@ Numbers are unchanged; open the relevant item before acting.
 9. **Spire:** restore/profile decision first, after WH3; other comparisons wait.
 10. **Thesis/RL:** research question and environment details remain open.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
-12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the missed plants, the test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
+12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the older test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** what "forced" means, which arms, and what may start ([spec](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and when the first game window runs.

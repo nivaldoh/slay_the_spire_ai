@@ -29,6 +29,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-09: Test faults, timing and duplicate setup
+
+Owner's test-improvement goal; changes `e10e85d`, `773e9e7`, offline and $0.
+- Repaired two mailbox fault hooks and required evidence that the faults occurred.
+  The army restoration test now checks recorded calls outside exception handling.
+  All three original false passes were reproduced and then caught by the repaired tests.
+- Mailbox deadlines and checkpoint save settling use controlled time. All five mailbox
+  guard removals fail assertions; three previously hung. Missing saves now have a bounded
+  deadline check; independent review caught a loose bound, and its counterexample is kept.
+- Consolidated report CLI setup while retaining single/model and multiple/scripted jobs,
+  all output checks and the invalid stats flag. Added the untested advisor-caption case.
+  Queue tests now cover default, ignored and custom signal handlers and restore the caller's
+  state. The original test failed with ignored SIGINT despite correct runner behavior.
+- Added eight permanent faults and a manual branch-coverage recipe in `tests/README.md`.
+  No source, benchmark rule, snapshot, skip condition or dependency pin changed.
+- At `773e9e7`, main gate: Ruff clean, **3803 passed, 44 skipped** (40 missing torch,
+  4 Windows opt-ins); 13/13 agreed pytest commands passed. Full replay: **451/451 caught**,
+  no misses or hangs. Independent reviews found no remaining findings.
+- Evidence: `runs/test-trust-20261109/` (cards, before/after failures, reviews, gates,
+  `plants-main.txt`, exploratory coverage metadata/report). Live game behavior, Windows and
+  optional training execution remain outside these results. Older cleanup drafts remain pending.
+
 ## 2026-11-09: Second look at the historical siege evaluations
 
 Owner, 2026-11-09: "review the tests, design, etc from a different perspective ... and try to
