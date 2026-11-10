@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 two-hour window, 2026-11-10 (Codex): main benchmark refresh and historical lobby readbacks complete in draft. Next rerun the existing agreed scripted-team live check (four launches, $0, at most 30 minutes) if started before 15:40 UTC. Game cutoff 16:15 UTC; session cutoff about 17:15 UTC. Brief: `runs/benchmark-window-20261110/brief.md`; branch/worktree `benchmark-window`. No model comparison planned.
+WH3 two-hour window, 2026-11-10 (Codex, until about 17:15 UTC): main benchmark HTML refreshed at `5f2ac23`; historical lobby readbacks ended. The conditional scripted-team rerun was not started before its cutoff. No game running or planned. Offline communication-guard audit added four intervention-refusal cases, with no runtime change; independently reviewed, unverified beyond its recorded checks. Cards/evidence: `runs/benchmark-window-20261110/`; handoff there. $0 API spend.
 
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 

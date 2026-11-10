@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Communication refusal sweep closes an intervention test gap
+
+Offline sweep of `battle/local_team.py` at `5f2ac23`; no runtime, prompt or scenario changes.
+Card and raw evidence: `runs/benchmark-window-20261110/refusal/`.
+- The unplanted focused baseline passed 182 tests. Removing each of 11 supported raises
+  separately was caught in nine cases, with no hangs. Two removals passed the tests.
+- Four new tests require v1/v2 declarations to reject existing reserve/custom interventions.
+  With them, 186 focused tests pass and ten of 11 removals are caught; the reserve/custom
+  refusal now fails for its intended missing-refusal reason, rather than an incidental error.
+- The remaining removal is the model's explicit commander-order guard. With that guard
+  removed, four synthetic cases through the real relay/overview projector still forfeit: unit orders fail
+  downstream friendly-unit validation, and army abilities fail availability validation.
+  Commanders' views contain no owned units or army ability/purchase state. This supports
+  the existing forfeit contract for those views; the guard remains, and broader equivalence
+  or future projection changes are not verified.
+- The sweep omits one attribute-call raise (`llm.invalid_reply`). A separate removal is
+  caught: an expected `PolicyFailure` becomes `UnboundLocalError`. It is outside the 11-site
+  sweep count. Every scratch mutation was restored. Existing assertions/checks unchanged.
+- No game launched and $0 API spending. This is test-gap evidence, not live correctness,
+  communication benefit or strength verification. Final checks and review are in the handoff.
+
 ## 2026-11-10: Main report refresh and first historical lobby readbacks
 
 The two-hour window adds all seven frozen intermediate-C screen jobs to the main
