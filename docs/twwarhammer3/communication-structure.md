@@ -788,6 +788,21 @@ freeze any revised witness before fresh construction trials with matched muted c
 Keep failed rounds. The existing construction thresholds remain proposals; changing a
 battle, view, failure rule or scored experiment needs an explicit marked decision.
 
+### Mechanics recheck results
+
+At `c5071c6`, all three initial message-to-engine chains met the proposed 10 m check:
+peer moved 35.1 m, relay 37.1 m and overview 34.4 m strictly before the next order. Both
+star-link probes rejected the prohibited direct send; no forbidden delivery or missing
+snapshot appeared across 5,835 member inputs and 9,394 router events. All 5,824 recorded
+global observations said speed 1. The independent raw recount is
+`runs/comm-next-20261110/review/probes/aggregate-raw-audit.json`.
+
+These are mechanics probes, not witness performance trials: all three lost, at 493.0,
+523.1 and 772.9 battle seconds, with 3, 5 and 10 later invalid order batches respectively.
+No member calls failed. The initial chains do not establish every later order's effect,
+a communication benefit or benchmark readiness. The method is still proposed and the
+feature remains unverified under the owner's rule. No API spending occurred.
+
 ### Intermediate-force development card
 
 JUDGEMENT: Intermediate C force — Codex, 2026-11-10: the new development candidate keeps
@@ -805,7 +820,12 @@ muted peer, muted overview, silent rush and central concentration, all $0 and un
 Stop the candidate on a shortcut win or repeated setup failure; retain every launch. Engine
 won/lost/draw is the main reading; missing endings stay separate, with enemy losses and
 timings descriptive. The normal setup checks must read back the rosters and placements.
-Read the existing `gates.py` output and independently recount the raw records.
+Read `runs/comm-next-20261110/read_probes.py` and independently recount the raw records.
+
+JUDGEMENT?: Screen order — Codex, 2026-11-10: rush, concentration, muted peer, muted overview,
+peer, relay, overview; a rush or concentration win stops the remaining launches. Randomized
+or interleaved launches would address order effects in a comparison; this screen estimates
+no arm effect and places the shortcuts first to reject an unsuitable candidate early.
 
 This screen cannot admit the candidate. If witnesses win and controls lose, freeze a fresh
 construction round, including an order-replay foil and independent cue checks, before any

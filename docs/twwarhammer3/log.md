@@ -29,6 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Communication mechanics recheck and an intermediate-force candidate
+
+Owner authorized next construction/testing steps, live games and up to $20 new spending.
+Evidence/cards/reviews: `runs/comm-next-20261110/`; $0 spent. All new checks remain proposed.
+- At `c5071c6`, three fresh P/R/O scripted mechanics probes completed at 1x, all engine losses
+  (493.0, 523.1, 772.9 s). Their initial message-to-engine chains moved 35.1, 37.1 and 34.4 m
+  before the next order. Both required prohibited-link sends were rejected. Independent raw
+  recount: no forbidden delivery, missing input/router snapshot or failed member call;
+  18 later invalid order batches remain. These are mechanics evidence, not strength claims.
+- Fixed an analysis boundary: the old reader included the next-order frame. The new reader
+  passes both independent boundary cases; the original fails both. Historical records remain.
+- Rejection-recovery regression: 2 passed; no-op acknowledgement mutant 1 failed/1 passed.
+  Existing local-v2 plants: 14/14 caught (scoped replay). No script behavior changed.
+- At `17df48d`, added a development candidate replacing only the two outer front Greatswords
+  with Swordsmen; 14 declaration/controller cases passed. All 158 old declarations are intact.
+  The fresh screen and every inference from it rest on the track page's marked force choice.
+- Browser check now distinguishes empty replies and selects duplicate names by army side.
+  Saved team/single browser checks passed; executable wrong-label page failed. This changes
+  an assertion in an agreed-check file, within the authorized report-testing next step.
+- Timer-win wording corrected without changing scores; 4 new cases passed and the persisted
+  win=100 mutant failed 1/4. Independent reviews found no remaining findings in these changes.
+- Worktree gate: 3,767 passed, 70 skipped, Ruff clean, 13/13 agreed pytest commands passed on
+  the changed tree. Earlier worker timeout retained; isolated and full reruns passed. Main
+  gate follows landing. Live reliability, useful communication and scored comparison unverified.
+
 ## 2026-11-09: Test faults, timing and duplicate setup
 
 Owner's test-improvement goal; changes `e10e85d`, `773e9e7`, offline and $0.
@@ -2065,7 +2090,7 @@ visuals for those too."
 | scripted team | v1 (`45fe7b0`, b49; input `team-v3` since b50) | `battle/team.py` | Agreed $0 movement/cleanup probes 4/4 at `3adbaa4` ([b50](#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)); messages unimplemented; [native multiplayer](native-multiplayer.md) is a separate track |
 | `team_llm_rules` | v23+t2 (2026-11-09; t2 2026-10-27): `llm_rules` per member plus the teammate's units and condition; a siege attack's fort as facts, without the siege orders | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
-| Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py` | [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
+| Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` plus v2 communication arms | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py`, `local_scripts.py` | [Communication mechanics recheck](#2026-11-10-communication-mechanics-recheck-and-an-intermediate-force-candidate); [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
 | Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | None played; built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54) |
 | benchmark harness | b54 (2026-11-09: private all-unit record, reserve v3 divisions in turn, siege-attack interface and siege_equipment, [entry](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54)); b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
