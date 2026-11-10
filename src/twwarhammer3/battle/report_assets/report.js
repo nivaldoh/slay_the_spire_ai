@@ -281,9 +281,19 @@
   // A scenario's comparison, as Figure 3 and the index draw it: each model's score pooled over
   // its battles (seconds survived in survival) and the best scripted rule's, when any ran.
   const anyRule = data.scenarios.some((s) => s.rows.some((r) => r.kind === "scripted"));
-  function cells(item) {
+  function cells(item, everyScript = false) {
     if (item.benchmark) return [];
     const metric = item.mode === "survival" ? "duration" : "score";
+    if (everyScript)
+      return item.rows
+        .filter((row) => row.kind === "scripted")
+        .map((row) => ({
+          kind: "scripted",
+          label: row.name,
+          rows: [row],
+          metric,
+          s: rowStats(row),
+        }));
     const out = models.map((family) => {
       const rows = item.rows.filter((row) => row.family === family);
       return {
@@ -425,6 +435,14 @@
         `${all.length} engine-completed battles in ${data.scenarios.length} recorded condition${data.scenarios.length === 1 ? "" : "s"}. Exploratory results; controller ranking and winnability remain unverified. Every planned attempt is listed below when a plan is supplied.`;
       document.querySelector(".dek").textContent =
         "The initial Empire battle benchmark, with its engine outcomes, condition scores and recorded decisions. The map replays the units the controller could observe; game screenshots are presentation only. Battles ran unpaused at normal speed.";
+      return;
+    }
+    if (all.length && all.every((entry) => who(entry).kind === "scripted")) {
+      $("page-title").textContent = "Scripted battle development";
+      $("page-dek").textContent =
+        "Recorded battles played by scripted controllers. Use the replays to inspect each witness and control; these development runs establish no model ranking.";
+      $("finding").textContent =
+        `Early results from scripted controllers: ${all.length} battles in ${data.scenarios.length} scenarios. Every displayed controller is scripted. Correctness and performance claims remain limited to their recorded checks.`;
       return;
     }
     const dated = all
@@ -1378,11 +1396,11 @@
       line.append(
         el(
           "span",
-          cell.kind === "model"
-            ? cell.rows.length
-              ? "not measured"
-              : "no battles yet"
-            : "no scripted baseline yet",
+          cell.rows.length
+            ? "not measured"
+            : cell.kind === "model"
+              ? "no battles yet"
+              : "no scripted baseline yet",
           "none",
         ),
       );
@@ -1441,7 +1459,7 @@
             );
             bars.append(line);
           }
-        for (const cell of cells(item)) bars.append(scoreRow(cell, top));
+        for (const cell of cells(item, !models.length)) bars.append(scoreRow(cell, top));
         block.append(name, bars);
         section.append(block);
       }
@@ -1452,9 +1470,12 @@
       (key) => data.battles[key].progress_basis === "killed" && !won(entries.get(key)),
     );
     const caption = el("p", null, "figcap");
+    const legacy = models.length
+      ? "Each model's mean legacy score over its completed battles and the best scripted rule's (seconds survived in endless survival). "
+      : "Each scripted controller's mean legacy score over its completed battles (seconds survived in endless survival). Every scripted control has its own row. ";
     caption.append(
       el("b", "Figure 3. "),
-      `${data.scenarios.some((item) => !item.benchmark) ? "Each model's mean legacy score over its completed battles and the best scripted rule's (seconds survived in endless survival). † pools settings or test-setup versions; it is not a controlled comparison. " : ""}Mirror profiles show every controller's outcome record and individual condition values, with different test setups kept separate. Click a scenario to watch it above.${killed.length ? ` ${killed.length} lost battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
+      `${data.scenarios.some((item) => !item.benchmark) ? `${legacy}† pools settings or test-setup versions; it is not a controlled comparison. ` : ""}Mirror profiles show every controller's outcome record and individual condition values, with different test setups kept separate. Click a scenario to watch it above.${killed.length ? ` ${killed.length} lost battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
     );
     box.append(caption);
   }

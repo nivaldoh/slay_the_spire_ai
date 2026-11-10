@@ -63,7 +63,14 @@ RACES = {"brt": ("Bretonnia", "Bretonnian"), "emp": ("Empire", "Empire"),
          "def": ("Dark Elves", "Dark Elf"), "lzd": ("Lizardmen", "Lizardmen"),
          "tmb": ("Tomb Kings", "Tomb Kings"), "cst": ("Vampire Coast", "Vampire Coast"),
          "bst": ("Beastmen", "Beastmen"), "nor": ("Norsca", "Norscan")}
-SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
+LOCAL_CONTROLS = {
+    "twwarhammer3.battle.local_scripts:ThinkingRush": (
+        "Local rush", "each group attacks locally without messages"),
+    "twwarhammer3.battle.local_scripts:CentralConcentration": (
+        "Central concentration", "every group joins the centre's fight without messages"),
+}
+SCRIPTED = {**LOCAL_CONTROLS,
+            "attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
             "skills": ("Unit skills", "each unit follows its class's default skill"),
@@ -237,10 +244,19 @@ def commander(trial: dict, definition: dict) -> dict:
     # rules only), gateway ("via OpenRouter") and added age.
     scenario = definition.get("scenario") or {}
     # A team on a battle C v2 arm is a compared method too; before 2026-11-08 its battles were
-    # probes, off the page and without a replay. C v1's arms stay probes.
+    # probes, off the page and without a replay. C v1 model teams stay probes.
     communication = scenario.get("communication") or {}
     if card.get("kind") == "composed" and communication.get("version") == 2:
         return _arm(card, communication.get("arm"), detail)
+    if card.get("kind") == "composed" and communication == {"version": 1, "arm": "silent"}:
+        # The construction card's silent controls must stay beside its witnesses; a
+        # version-1 channel does not make these known scripted policies delivery probes.
+        members = ((card.get("disclosure") or {}).get("member_controllers") or {}).values()
+        classes = {member.get("class") for member in members}
+        if len(classes) == 1 and not any(member.get("kind") == "model" for member in members):
+            candidate = next(iter(classes))
+            if candidate in LOCAL_CONTROLS:
+                base = candidate
     # A composed controller on a benchmark battle is a compared method, not a probe: without this
     # the suite's graph battles left the page without a replay (2026-11-04).
     composed = card.get("kind") == "composed" and scenario.get("benchmark")

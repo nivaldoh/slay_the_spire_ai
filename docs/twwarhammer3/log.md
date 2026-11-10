@@ -29,6 +29,32 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Intermediate-force screen fails the proposed communication gate
+
+Seven fresh scripted launches at `9d84cf3`, game build 26403568, unpaused 1x; $0 API spending.
+- Peer, relay and overview witnesses each won once (290.9, 232.3, 274.8 s). Muted peer and
+  muted overview also won (834.7, 450.8 s); silent rush and concentration lost (744.7, 438.6 s).
+  Every group attacked and entered melee; rush's containing cavalry joined late (619.0 s).
+- Both muted controls delivered and received zero messages. The unmuted relay's commander
+  had inbox-only information; the overview commander had the declared wider view. Neither
+  commanded units. Independent audits checked views, links, setup, source and the register.
+- All seven engine endings occurred before timer expiry. Nine invalid batches remain;
+  no failed member call or missing snapshot. The overview's later accepted move after one
+  visibility refusal does not establish an identical-order retry live.
+- The candidate fails the proposed all-controls-lose gate; this does not establish no
+  communication benefit. No confirmation round, replay foil, cue-response validation or
+  paid pilot followed. The gate and force are marked choices; verification remains unagreed.
+- Fixed the final report's omission of two silent controls. New regression: old classifier
+  1 failed/3 passed; corrected report tests 66 passed. Original model/probe exclusions remain.
+  Script-only headings are accurate; the seven-job HTML now includes seven replays. New
+  visible-row assertions also caught the summary hiding the second silent control; fixed.
+  The exit gate caught an ignored-artifact link; the page now uses a plain local path.
+- Evidence, original failures, audits and report: `runs/comm-next-20261110/`. The ledger is
+  unchanged at $13.680632800000000542614. Earlier main gate: 3,823 passed/44 skipped at `9d84cf3`;
+  final exit-gate records accompany this change. Retained useful failures and raw game data.
+- Next owner decision: retain the strict construction gate, or revise it for a separately
+  frozen performance comparison. All seven one-run conditions remain development evidence.
+
 ## 2026-11-10: Communication mechanics recheck and an intermediate-force candidate
 
 Owner authorized next construction/testing steps, live games and up to $20 new spending.
@@ -51,8 +77,9 @@ Evidence/cards/reviews: `runs/comm-next-20261110/`; $0 spent. All new checks rem
 - Timer-win wording corrected without changing scores; 4 new cases passed and the persisted
   win=100 mutant failed 1/4. Independent reviews found no remaining findings in these changes.
 - Worktree gate: 3,767 passed, 70 skipped, Ruff clean, 13/13 agreed pytest commands passed on
-  the changed tree. Earlier worker timeout retained; isolated and full reruns passed. Main
-  gate follows landing. Live reliability, useful communication and scored comparison unverified.
+  the changed tree. Main gate at `9d84cf3`: 3,823 passed, 44 skipped, Ruff clean, 13/13 agreed
+  pytest commands. Earlier worker timeout retained; isolated and full reruns passed. Live
+  reliability, useful communication and scored comparison unverified.
 
 ## 2026-11-09: Test faults, timing and duplicate setup
 

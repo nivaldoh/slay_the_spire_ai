@@ -553,6 +553,19 @@ async function main() {
           `${item.title}: ${family}`,
         );
       });
+      if (!families.length && !item.benchmark) {
+        // A scripted development screen must display every control, including its losses.
+        const expected = item.rows.filter((row) => row.kind === "scripted");
+        const labels = await page
+          .locator(`#matrix .scenario-row[data-scenario="${item.id}"] .bar-row .who`)
+          .allInnerTexts();
+        assert.equal(values.length, expected.length, `${item.title}: every scripted row`);
+        assert.deepEqual(
+          labels.map((label) => label.replace(/†/g, "").replace(/\s+/g, " ").trim()),
+          expected.map((row) => row.name),
+          `${item.title}: scripted row identities`,
+        );
+      }
     }
     // Only completed battles become run options; the rest are counted in the method.
     assert.equal(await page.locator("#run-select option").count(), scenario.battles.length);

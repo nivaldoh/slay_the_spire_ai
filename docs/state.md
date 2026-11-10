@@ -5,7 +5,6 @@ Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire ful
 ## Active work
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
-WH3 [communication structure](twwarhammer3/communication-structure.md), 2026-11-10 (Codex): next construction/testing steps active; live games and up to $20 new spending authorized. Branch `comm-next-20261110`, worktree `runs/comm-next-20261110/worktree`; brief and handoff in `runs/comm-next-20261110/`. Mechanics probes completed and independently recounted; next is the intermediate-force development screen, shortcuts first, under its frozen plan and timeouts. Stop on a shortcut win or setup failure. Checks remain proposed, the previous construction gate failed, and no scored comparison is established. [Follow-up card/results](twwarhammer3/communication-structure.md#follow-up-construction-and-testing-2026-11-10); decision 14 retains the design choices.
 
 Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Branch `spire-local-rl`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
@@ -41,6 +40,7 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`.
+- [Communication follow-up](twwarhammer3/communication-structure.md#intermediate-force-development-results), 2026-11-10: mechanics probes and the seven-run intermediate-force screen completed; no game running. Each witness won once, but both muted controls also won, failing the proposed construction gate. $0 API spend; no comparison or verification claim. Next: decision 14; handoff `runs/comm-next-20261110/handoff.md`.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $13.89 on 2026-11-08 (WH3 $13.6806, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`, build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 
@@ -88,7 +88,7 @@ Numbers are unchanged; open the relevant item before acting.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
 12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the older test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
-14. **Communication structure:** what "forced" means, which arms, and what may start ([spec](twwarhammer3/communication-structure.md#questions-for-the-owner)).
+14. **Communication structure:** keep communication dependence as a construction prerequisite, or revise the gate for a separately frozen performance comparison. Both muted controls won the [development screen](twwarhammer3/communication-structure.md#intermediate-force-development-results); earlier forcing/arm choices remain open.
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and when the first game window runs.
 
 ## Runtime and ownership

@@ -803,6 +803,13 @@ No member calls failed. The initial chains do not establish every later order's 
 a communication benefit or benchmark readiness. The method is still proposed and the
 feature remains unverified under the owner's rule. No API spending occurred.
 
+A separate audit of the later invalid batches found no recovery violation. The probes use
+`TextProbeMember` and `RushNearest`, not the scripted witnesses' `_Member`. Of 19 rejected
+orders, 12 had a later eligible input; all 12 immediately issued another order, accepted by
+the engine. Seven had no later eligible input to assess. The audit replayed all 5,835 probe decisions exactly;
+`runs/comm-next-20261110/review/probes/invalid-orders-review.md` retains the cases. This
+explains rejection handling, not why the battles were lost.
+
 ### Intermediate-force development card
 
 JUDGEMENT: Intermediate C force — Codex, 2026-11-10: the new development candidate keeps
@@ -834,6 +841,61 @@ repeat an unchanged failed screen until it passes. Full card and exposure record
 `runs/comm-next-20261110/card-intermediate-force.md`. Only scripted teams calibrate this
 candidate. The author has read the previous C pilot's outcomes and a peer trace for mechanics
 and report checks; this is a tuned development battle, with no held-out performance claim.
+
+### Intermediate-force development results
+
+The frozen screen uses source `9d84cf3`, one fresh launch per condition, and the plans and
+hashes in `runs/comm-next-20261110/screen-manifest.json`. These are scripted development
+runs, not a model comparison. All seven outcomes and their raw records were independently recounted:
+
+| Condition | Engine outcome | Battle seconds |
+|---|---|---:|
+| Silent local rush | lost | 744.7 |
+| Central concentration | lost | 438.6 |
+| Muted peer witness | won | 834.7 |
+| Muted overview witness | won | 450.8 |
+| Peer witness | won | 290.9 |
+| Relay witness | won | 232.3 |
+| Overview witness | won | 274.8 |
+
+All five groups attacked and entered melee in each control. The rush's containing cavalry
+joined late (first accepted attack 605.5 s, first melee 619.0 s); its execution check does
+not establish coordinated fighting. Both muted wins occurred before the timer expired.
+The peer control had 2,260 accepted messages, all explicitly muted; the overview control
+had 1,431 muted arrivals and four accepted messages still pending at the ending. Neither
+control delivered a message or recorded a received text. The overview commander owned no
+units and issued no orders. Full raw audits are in `runs/comm-next-20261110/review/screen/`.
+
+The candidate fails the proposed all-controls-lose prerequisite. This rests on JUDGEMENT
+`docs/twwarhammer3/communication-structure.md` Test bed and gate, JUDGEMENT
+`docs/twwarhammer3/communication-structure.md` Stage thresholds and size, and JUDGEMENT
+`docs/twwarhammer3/communication-structure.md` Intermediate C force. All seven frozen launches are retained; no fresh confirmation round
+or paid pilot follows this failed screen. No API spending occurred.
+
+This does not establish that communication has no benefit. The owner's question concerns
+relative battle performance; requiring every control to lose was an agent's construction
+choice and remains unagreed. The next owner decision is whether to retain communication
+dependence as a prerequisite for construction, or revise that gate for a separately frozen
+performance comparison. No revised threshold or experiment is adopted here. Independent
+methodology review: `runs/comm-next-20261110/review/screen/methodology.md`.
+
+The final interactive report, `runs/comm-next-20261110/screen-report.html`, contains all
+seven launches, their separate controller rows and replays; JSON/text sit beside it. The
+first HTML omitted both silent controls because all version 1 teams were classified as
+diagnostics. A new regression reproduced the omission (one failure, three passes); the
+fix recognizes these two known scripted controls and preserves model/probe exclusions.
+The report also identifies its script-only data. A second omission kept only the best
+scripted rule in the results matrix; new visible-row assertions fail on that HTML, and the
+corrected matrix keeps every scripted row on script-only pages. Prior browser assertions
+stayed intact for these corrections; the original omitted report and failed wording check remain evidence.
+
+No fresh 4-of-5 confirmation, order-replay foil, independent cue-response validation or
+model comparison ran after the prerequisite failed. The last overview witness had one
+local visibility refusal, then accepted moves, but no later view made the same target
+eligible; it does not establish the new identical-order retry regression live. Across the
+screen, nine invalid batches remain (six rush, two concentration, one overview), with no
+failed member calls or missing snapshots. Game build 26403568 matched the pin. All game
+processes ended. The feature and proposed checks remain unverified under the owner's rule.
 
 ## Questions for the owner
 

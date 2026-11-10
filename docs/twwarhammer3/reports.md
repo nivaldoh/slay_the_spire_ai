@@ -657,8 +657,26 @@ leaves screenshots there.
 A composed controller on a scenario with a `communication` declaration of version 2 is a compared
 method, named by its arm: Peer captains, Relay commander, Overview commander, No links, Muted peers
 or Muted overview. Model teams and scripted teams of one arm get separate rows (the detail names the
-member model or the scripted classes). Version 1 C arms stay diagnostic probes, off the page.
+member model or the scripted classes). Version 1 model teams and delivery probes stay
+diagnostic, off the page. Silent teams whose members are all `ThinkingRush` or all
+`CentralConcentration` are scripted controls, with separate rows and replays; the channel
+version must not hide those conditions from a construction screen. A page containing only
+scripted non-benchmark battles identifies itself as scripted development evidence. Its
+results matrix keeps every scripted row, including both silent controls; the compact index
+keeps its best-rule summary. Reports with model rows retain the existing model/best-rule
+comparison.
 See [communication-structure.md](communication-structure.md).
+
+## Communication follow-up report
+
+`runs/comm-next-20261110/screen-report.{html,json,txt}` retains the seven scripted
+intermediate-force launches of 2026-11-10, at source `9d84cf3`. The [track page](communication-structure.md#intermediate-force-development-results)
+records the failed proposed gate and the limits of these single runs. This report is separate
+from the main benchmark page and its retained historical example. Rebuild from the exact job list:
+
+```bash
+uv run python -m twwarhammer3 report --jobs-file runs/comm-next-20261110/screen-report-jobs.json --output runs/comm-next-20261110/screen-report
+```
 
 ## Saved reports
 
