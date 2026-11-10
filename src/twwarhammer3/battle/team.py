@@ -229,7 +229,7 @@ class TeamPolicy:
             self._fault("team received a different battle")
         if len({row["id"] for row in roster}) != len(roster):
             self._fault("team received duplicate friendly unit ids")
-        owned = 0
+        owned = set()
         for name, member in list(self.members.items()):
             units = frozenset(row["id"] for row in roster if (
                 _declares(_types(member.kinds), row) if member.kinds is not None
@@ -240,9 +240,12 @@ class TeamPolicy:
             if not units or (isinstance(member.kinds, str) and len(units) != 1) or (
                     self.battle is not None and not units >= member.units):
                 self._fault(f"{name}: expected stable units of {member.kinds or 'the rest'}")
-            owned += len(units)
+            # A duplicate owner can otherwise balance an unowned unit in the count.
+            if owned & units:
+                self._fault("team assigns friendly units to multiple members")
+            owned.update(units)
             member.units = units
-        if owned != len(roster):
+        if len(owned) != len(roster):
             self._fault("team leaves friendly units unowned")
         if self.battle is None:
             self.battle = observation["battle"]

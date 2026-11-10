@@ -34,8 +34,8 @@ first waits 3 s on a stop event that cleanup can wake.
   rest. A unit left unowned (or a second unit for a one-unit member), a vanished unit ID or a
   different battle raises `TeamHarnessError`, a `ProtocolError`, so the episode ends as
   `unsupported_or_invalid`, not as a loss. Dead units stay in the roster. Reinforcements and
-  behaviour through rout or rally are untested live. An overlapping class/type declaration
-  can evade the partition check; the known gap is recorded below.
+  behaviour through rout or rally are untested live. Actual class/type matches must also be
+  disjoint: overlapping owners raise the same harness failure before new work is submitted.
 - **Member input** (`team-v3`). `project()` copies an allowlist: battle, sequence, phase,
   time, remaining time, speed, the enemy roster, magic, `mode` (its purchase parts only for
   the army owner), terrain when present, the member's units in `friendly` with every field
@@ -293,11 +293,16 @@ choices. The [team-structures plan](team-structures.md) still refers to a parked
 its wider stages need a chosen benchmark and revised card before execution. Messages,
 regrouping and native allied armies remain separate later work.
 
-Known ownership gap, 2026-11-10: a configured team declaring `class:infantry` for one member
+Ownership repair, 2026-11-10: at `511a45a`, a configured team declaring `class:infantry` for one member
 and the Swordsmen type for another can give both the Swordsmen while leaving the Knights
-unowned. `_partition` sums assignment counts, so the duplicate offsets the missing owner.
+unowned. `_partition` summed assignment counts, so the duplicate offset the missing owner.
 An independent synthetic reproduction through `configured.load` and `factory` reached both
 workers with bridge-supported classes. None of the three tracked ordinary team
 configurations mixes class and unit-type declarations; no saved-job
 or live impact was assessed. Evidence: `runs/single-army-20261110/review/partition/`.
-No runtime repair was adopted in this window.
+The repair checks intersecting unit ids before adding each member's assignment to the owned
+set, then checks complete roster coverage. Disjoint mixed selectors still work. New offline
+cases exercise initial and reinforcement overlaps, worker submission, valid mixed selectors,
+missing owners and the existing `unsupported_or_invalid` disposition through the configured
+factory. This repair has no new live check; the latest recorded live pass remains `792fe37`.
+The additional regression method has not been agreed, and live effect remains unverified.

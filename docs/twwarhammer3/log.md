@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Refuse overlapping team owners
+
+Repair the existing exclusive-ownership invariant in `team.py`. At `511a45a`, a unit matched
+by a class selector and a type selector could receive two owners while an unowned unit
+balanced the assignment count. `_partition` now checks intersection before collecting ids,
+then checks roster coverage. Disjoint mixed selectors remain legal; failures retain the
+existing `TeamHarnessError` / `unsupported_or_invalid` classification before new work.
+
+Nine new offline cases cover masked and unmasked overlap in both declaration orders,
+disjoint selectors, missing coverage, reinforcement overlap and the configured play-loop
+failure. Before repair: seven failed, two passed; after repair: nine passed. The surrounding
+team/play/controller/digest/configured selection passed 400 cases. No old test or criterion
+changed. These are component results, with no new agreed regression method or live claim.
+
+Source fingerprints change; old recorded live verification stays at `792fe37`. No prompt,
+roster, score, controller split or historical register row changed. $0 API spend; no game.
+Card, raw failures, reviews and full-gate output: `runs/single-army-20261110/ownership-*`.
+
 ## 2026-11-10: Scripted-team mechanics rerun and configured-controller test gaps
 
 The agreed scripted-team live check passed 4/4 at `792fe37`, build 26403568: four fresh

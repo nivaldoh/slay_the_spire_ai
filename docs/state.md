@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 single-army window, 2026-11-10 (Codex): agreed scripted-team live check passed 4/4 at `792fe37`; game closed, no further game planned. Added 15 configured-controller guard cases; the selected tests reject all 22 refusal removals and 12 further predicate variants. Runtime unchanged; the new test method is unverified. $0 of $20 API allowance spent. Brief/evidence: `runs/single-army-20261110/`. Prior work: `runs/benchmark-window-20261110/handoff.md`.
+WH3 single-army window, 2026-11-10 (Codex): ordinary team ownership now refuses overlapping class/type matches before new work, retaining disjoint mixed selectors and missing-owner failures. Offline repair; latest agreed scripted check remains 4/4 at `792fe37` before it. Preparing one unchanged scripted-team rerun after the repair's review/gates; main freezes for that check. Game cutoff 21:10 UTC, latest start 20:35 UTC; $0 of $20 spent. Brief: `runs/single-army-20261110/ownership-live-brief.md`.
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
@@ -63,7 +63,6 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
-- Custom team declarations mixing a class and one of its unit types can give both members the same unit while leaving another unit unowned. Reproduced offline through the configured factory; no runtime fix or live impact assessed ([details](twwarhammer3/multi-agent-implementation.md#next)).
 - Ctrl-C during a job's final copying leaves a won battle with no `result.json` and no register row, the ending staying in the trace: reproduced offline at `bd46129` with a real SIGINT (one probe, no live game, 0 of 650 saved episodes show it; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. No wrong outcome is counted today, though a benchmark row then has no outcome and the suite's cost leaves out that battle's spend. A draft fix was withdrawn after two reviews, because in a simulated case it lets a partial replay into benchmark measures: what a stopped job should count is an owner choice (handoff `runs/repo-improve-20261106/handoff.md`).
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
