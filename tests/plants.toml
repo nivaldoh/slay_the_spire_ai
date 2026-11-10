@@ -4196,3 +4196,15 @@ old = "        except UnicodeEncodeError as error:"
 new = "        except UnicodeDecodeError as error:"
 tests = ["tests/gameai/test_model.py::test_a_key_that_cannot_be_encoded_as_a_header_fails_at_once_without_a_charge"]
 source = "2026-11-08 repo upkeep"
+[[plant]]
+id = "local-v2-witness-rejection-not-retried"
+file = "src/twwarhammer3/battle/local_scripts.py"
+guards = "a rejected scripted order is retried before the ordinary idle refresh"
+tests = ["tests/twwarhammer3/team/test_wh3_local_script_recovery.py"]
+old = '''    def acknowledge(self, ack, latency):
+        for result in ack.get("results", []):
+            if not result.get("ok"):
+                self.sent.pop(result.get("unit"), None)'''
+new = '''    def acknowledge(self, ack, latency):
+        pass'''
+

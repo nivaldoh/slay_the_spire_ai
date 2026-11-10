@@ -761,13 +761,17 @@ The owner authorized the next steps, live games and up to $20 new API spending;
 failed construction screen. No model ranking or new verification agreement follows from it.
 
 First experiment card: recheck the existing P, R and O mechanics with one scripted probe per
-arm on C v2, $0 and unpaused 1x. Each launch allows 600 seconds for preparation, 45 seconds
-of episode time and 750 seconds overall. Use the existing probe configs and
+arm on C v2, $0 and unpaused 1x. Each startup wait allows 600 seconds, the episode wall-time
+cap is 1,320 seconds, and the game-process watchdog is 2,000 seconds. Python startup waits and
+cleanup can outlast that watchdog; these flags do not bound the whole job. Use the existing probe configs and
 `runs/comm-build-20261108/gates.py`: require the observation/message/recipient/order/engine
 chain and at least 10 m movement, no off-link deliveries or missing snapshots, and an
-explicit `link` refusal in R and O. Recount those rows independently. Timeout endings are
-mechanics-only records, not scored battle outcomes. Stop on an unexpected closure or two
+explicit `link` refusal in R and O. Recount those rows independently. Preserve endings, but
+make no comparison of methods from these scripted probes. Stop on an unexpected closure or two
 consecutive failed launches. Freeze the queue plan and its hash before the first launch.
+
+The following initial proposal was rejected before any launch: scenario validation requires
+the finite game timer plus 120 seconds. The card above uses the existing full-battle limits.
 
 JUDGEMENT?: Follow-up probe duration — Codex, 2026-11-10: 45 seconds of episode time is a
 bounded check of the initial release chain; full battles would also exercise later lifecycle
