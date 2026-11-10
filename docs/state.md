@@ -3,7 +3,7 @@
 Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 single-army window, 2026-11-10 (Codex): preparing one rerun of the agreed four-launch scripted-team check on current main; no benchmark comparison or design change. Game cutoff 21:10 UTC, check must start by 20:35 UTC. $20 allowance, planned $0 API spend. Brief/evidence: `runs/single-army-20261110/`. Prior HTML/lobby/test work completed; handoff `runs/benchmark-window-20261110/handoff.md`.
+WH3 single-army window, 2026-11-10 (Codex): agreed scripted-team live check passed 4/4 at `792fe37`; game closed, no further game planned. Added 15 configured-controller guard cases; the selected tests reject all 22 refusal removals and 12 further predicate variants. Runtime unchanged; the new test method is unverified. $0 of $20 API allowance spent. Brief/evidence: `runs/single-army-20261110/`. Prior work: `runs/benchmark-window-20261110/handoff.md`.
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
@@ -43,7 +43,7 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 - Runtime: `llm`/`llm_rules` v23, `commander` v8, `team_llm_rules` v23+t2, skills v1.2, harness b54; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
-- Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); direct model-team mechanics passed one live case at `c1ad84d`.
+- Scripted-team agreed checks passed at recorded revisions (latest live 4/4 at `792fe37`); direct model-team mechanics passed one live case at `c1ad84d`.
 - [Communication follow-up](twwarhammer3/communication-structure.md#intermediate-force-development-results), 2026-11-10: mechanics probes and the seven-run intermediate-force screen completed; no game running. Each witness won once, but both muted controls also won, failing the proposed construction gate. $0 API spend; no comparison or verification claim. Next: decision 14; handoff `runs/comm-next-20261110/handoff.md`.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $13.89 on 2026-11-08 (WH3 $13.6806, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`, build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
@@ -63,6 +63,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
+- Custom team declarations mixing a class and one of its unit types can give both members the same unit while leaving another unit unowned. Reproduced offline through the configured factory; no runtime fix or live impact assessed ([details](twwarhammer3/multi-agent-implementation.md#next)).
 - Ctrl-C during a job's final copying leaves a won battle with no `result.json` and no register row, the ending staying in the trace: reproduced offline at `bd46129` with a real SIGINT (one probe, no live game, 0 of 650 saved episodes show it; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. No wrong outcome is counted today, though a benchmark row then has no outcome and the suite's cost leaves out that battle's spend. A draft fix was withdrawn after two reviews, because in a simulated case it lets a partial replay into benchmark measures: what a stopped job should count is an owner choice (handoff `runs/repo-improve-20261106/handoff.md`).
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.

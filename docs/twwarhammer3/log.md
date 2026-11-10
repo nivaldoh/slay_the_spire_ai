@@ -29,6 +29,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-10: Scripted-team mechanics rerun and configured-controller test gaps
+
+The agreed scripted-team live check passed 4/4 at `792fe37`, build 26403568: four fresh
+launches alternating the delayed member, unpaused 1x, $0 API spend. All episodes ended at
+the check's time cap and closed their owned processes. Independent raw recount checked
+1,131 observations, 1,104 member feedbacks, eight successful moves and source fingerprints;
+six altered evidence cases were rejected. Existing movement, age and clock-band limits
+remain; this establishes the declared scripted mechanics at that revision, no team strength.
+
+An offline `configured.py` refusal audit found three misses among 22 supported removals
+(453 selected tests). Fifteen new cases cover local-team configuration shape, nested
+controllers, incompatible model interfaces and valid neighbours, including qualified names.
+The 468-case selection
+rejects all 22 removals, with no hangs. Runtime/config/prompts/existing tests are unchanged.
+Independent review caught a surviving raw-name comparison; the added qualified cases reject
+it, and all 15 focused review plants now fail (three repeat the refusal removals).
+Corrected stale team docs about class teams, pool workers and engine speed readings.
+
+A separate synthetic reproduction through the configured factory found overlapping class
+and type selectors assigning one unit twice while another stays unowned. None of the three
+tracked ordinary team configurations mixes those selectors; no live impact assessed or
+runtime repair adopted. [Details](multi-agent-implementation.md#next).
+
+Full gate output and skip reasons, cards, independent reviews and cleanup records:
+`runs/single-army-20261110/`. Worktree evidence skips require the main recheck. These test
+additions remain unverified without an agreed method.
+
 ## 2026-11-10: Local Alesia contact-reader draft retained for review
 
 `fb9a814` on local, unpushed `alesia-replay-readings`, based on `22a7cae`; no source merge.

@@ -1,11 +1,12 @@
 # The WH3 agent team: what is built and what comes next
 
-Updated 2026-11-02. [team.py](../../src/twwarhammer3/battle/team.py) runs two members on
-one army: the scripted probes, each owning one unit, and the model team (`team_llm_rules`).
-Each member decides on its own copy of the public state and gets its orders sent while the
-other is still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
+Updated 2026-11-10. [team.py](../../src/twwarhammer3/battle/team.py) dispatches members on
+one army: the two scripted probes, the two-member model team, and the class-based suite team
+(`team_llm_rules`). [Local command groups](communication-structure.md) reuse its dispatcher.
+Each member decides on its own copy of the public state and gets its orders sent while peers
+are still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
 live check passed 4/4 at `45fe7b0`, `b0ac9e3`, `31823f3` (the model-team branch before its
-rebase onto `main`) and `3adbaa4` (rebased)
+rebase onto `main`), `3adbaa4` (rebased), and `792fe37` (2026-11-10)
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
 progress, feedback and cleanup for two scripts. Messages and teamwork quality remain
 unverified. The direct model team's seven-point mechanics check passed in one battle
@@ -26,14 +27,15 @@ ahead along its unit's bearing on its first decision and `[]` after that; the de
 first waits 3 s on a stop event that cleanup can wake.
 
 - **Ownership.** A member is declared by one unit type (exactly one unit of it), a tuple of
-  types (one or more units) or `None` (every unit nobody else declares). On the first
-  `decide` (the first Deployed observation), `_partition` binds each member's units by type,
+  types or `class:NAME` entries (one or more units), or `None` (every unit nobody else declares).
+  On the first `decide` (the first Deployed observation), `_partition` binds units by declaration,
   not ID order; the probes declare one Swordsmen and one Knights unit. A new friendly unit
   (a reinforcement or summon) joins the member declaring its type or the one owning the
   rest. A unit left unowned (or a second unit for a one-unit member), a vanished unit ID or a
   different battle raises `TeamHarnessError`, a `ProtocolError`, so the episode ends as
   `unsupported_or_invalid`, not as a loss. Dead units stay in the roster. Reinforcements and
-  behaviour through rout or rally are untested live.
+  behaviour through rout or rally are untested live. An overlapping class/type declaration
+  can evade the partition check; the known gap is recorded below.
 - **Member input** (`team-v3`). `project()` copies an allowlist: battle, sequence, phase,
   time, remaining time, speed, the enemy roster, magic, `mode` (its purchase parts only for
   the army owner), terrain when present, the member's units in `friendly` with every field
@@ -47,7 +49,7 @@ first waits 3 s on a stop event that cleanup can wake.
   that unit; the single controller sees it. Neither can order an attack on an unseen enemy.
   In the b43-b45 traces 11 of 24,248 friendly targets (7 of 10,293 observations, 45
   episodes) were hidden enemies.
-- **Dispatch.** Each member has at most one decision running, on a two-thread pool. Each
+- **Dispatch.** Each member has at most one decision running, with one pool worker per member. Each
   outer `decide` collects finished work without waiting, checks it, starts idle members on
   fresh copies and returns one member's whole batch, so engine feedback indices need no
   remapping. The earliest completed batch goes first; on a tie, not the member chosen last.
@@ -186,8 +188,9 @@ launch passes when:
 - the delayed worker took 3-4.5 s (wall clock, like the observation samples; a wall step
   over 1.5 s in a wait's last moments could still exceed 4.5 s, rarely);
 - a clock sample of at least 10 s runs within 15% of 1x. This catches gross slowdown, not a
-  brief stall; the per-sample speed check cannot fail, because the mod writes `speed` 1 and
-  `awaiting_orders` false as constants;
+  brief stall. Since `1cc4582`, battle observations read engine speed; the per-sample check
+  rejects a recorded speed other than 1. A paused battle stops script callbacks, so those
+  samples alone cannot establish that no pause occurred. `awaiting_orders` stays false;
 - the episode ended `truncated` or with an engine result, the manifest is closed and no game
   process is left.
 
@@ -197,7 +200,16 @@ reassesses saved evidence without a game and without rewriting its `checks.json`
 check.
 Mid-battle rematch is not used and remains unverified.
 
-Results: 4/4 at `3adbaa4` (2026-10-28, `runs/twwarhammer3/team-live-20261027-rebased/`;
+Latest rerun: 4/4 at `792fe37` (2026-11-10), with four fresh launches on build 26403568,
+alternating the delayed member, unpaused at 1x and $0 API spend. Independent raw recount
+checked ownership, engine acknowledgements, source ages, movement and recorded cleanup;
+the unchanged checker and separate saved-data recount agree. All four episodes ended at
+the check's time cap. Evidence: `runs/twwarhammer3/team-live-20261110-current/`, independent
+audit `runs/single-army-20261110/review/live/`. This covers the declared scripted mechanics
+at that revision, with the existing age, movement and clock-band markers; model-team
+strength and communication remain unverified.
+
+Earlier results: 4/4 at `3adbaa4` (2026-10-28, `runs/twwarhammer3/team-live-20261027-rebased/`;
 fast members 0.6 s, delayed 3.6-3.9 s, clock ratio 0.991-1.010), at `b0ac9e3` on `main`
 (2026-10-23) and at `31823f3` on the branch (`runs/twwarhammer3/team-live-20261022-tip/`); after the rebase onto `main` the saved runs
 of `45fe7b0` and `31823f3` recount 4/4 with the merged checker. `31823f3`, these recounts
@@ -280,3 +292,12 @@ Broader comparison design, equal-resource arms, repetitions and budgets remain t
 choices. The [team-structures plan](team-structures.md) still refers to a parked scenario;
 its wider stages need a chosen benchmark and revised card before execution. Messages,
 regrouping and native allied armies remain separate later work.
+
+Known ownership gap, 2026-11-10: a configured team declaring `class:infantry` for one member
+and the Swordsmen type for another can give both the Swordsmen while leaving the Knights
+unowned. `_partition` sums assignment counts, so the duplicate offsets the missing owner.
+An independent synthetic reproduction through `configured.load` and `factory` reached both
+workers with bridge-supported classes. None of the three tracked ordinary team
+configurations mixes class and unit-type declarations; no saved-job
+or live impact was assessed. Evidence: `runs/single-army-20261110/review/partition/`.
+No runtime repair was adopted in this window.
