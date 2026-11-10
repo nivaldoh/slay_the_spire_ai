@@ -754,6 +754,30 @@ Each needs its own card.
 - Other battles from the [coordination suite](benchmark.md#the-coordination-suite-suite-v1),
   larger armies, and allied armies in [native multiplayer](native-multiplayer.md).
 
+## Follow-up construction and testing (2026-11-10)
+
+The owner authorized the next steps, live games and up to $20 new API spending;
+`runs/comm-next-20261110/brief.md` records the scope and stopping rules. This continues the
+failed construction screen. No model ranking or new verification agreement follows from it.
+
+First experiment card: recheck the existing P, R and O mechanics with one scripted probe per
+arm on C v2, $0 and unpaused 1x. Each launch allows 600 seconds for preparation, 45 seconds
+of episode time and 750 seconds overall. Use the existing probe configs and
+`runs/comm-build-20261108/gates.py`: require the observation/message/recipient/order/engine
+chain and at least 10 m movement, no off-link deliveries or missing snapshots, and an
+explicit `link` refusal in R and O. Recount those rows independently. Timeout endings are
+mechanics-only records, not scored battle outcomes. Stop on an unexpected closure or two
+consecutive failed launches. Freeze the queue plan and its hash before the first launch.
+
+JUDGEMENT?: Follow-up probe duration — Codex, 2026-11-10: 45 seconds of episode time is a
+bounded check of the initial release chain; full battles would also exercise later lifecycle
+behaviour. These probes establish no full-battle mechanics or strength claim.
+
+Next inspect the failed witness traces, correct demonstrated implementation faults, and
+freeze any revised witness before fresh construction trials with matched muted controls.
+Keep failed rounds. The existing construction thresholds remain proposals; changing a
+battle, view, failure rule or scored experiment needs an explicit marked decision.
+
 ## Questions for the owner
 
 1. **What does "forced" mean?** Now: (a) is built and runs tonight. (a, recommended) The

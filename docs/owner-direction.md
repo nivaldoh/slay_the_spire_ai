@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-10 (one-army communication benchmark follow-up), goal verbatim: "Proceed with the
+  next planned steps. Use live games freely. We can set a budget of $20 if needed. If you finish
+  before I return, take your time to review the code and tests, clean up any leftover garbage,
+  etc." Continues the communication-study handoff's construction and testing steps; brief
+  `runs/comm-next-20261110/brief.md`. No exact verification method was separately agreed.
 - 2026-11-09 (test reliability), goal verbatim: "Let's improve our tests. Address clear gaps,
   simplify what you can, remove redundancy. Let's make our tests more reliable and
   trustworthy." Follows the review that identified ineffective mailbox fault hooks and
