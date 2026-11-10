@@ -620,6 +620,48 @@
       "noun": "muted-overview battle",
       "heading": "Scripted control: the overview team's messages never arrive",
       "challenge": "Five captains split the army as in the overview arm: a captain may message only a commander who commands no regiments and sees every friendly regiment and every enemy the army can see. Every message is accepted and never delivered. Scripted teams play it to test whether their messages matter."
+    },
+    "emp-envelopment-c-mid-peer-v3": {
+      "title": "Intermediate C: peer captains",
+      "short": "Peer captains",
+      "heading": "Peer captains on the intermediate force",
+      "challenge": "Captains control separate groups through local views and exchange messages directly.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+    },
+    "emp-envelopment-c-mid-relay-v3": {
+      "title": "Intermediate C: relay commander",
+      "short": "Relay commander",
+      "heading": "Relay commander on the intermediate force",
+      "challenge": "Captains exchange messages only through a commander who receives their reports and has no live unit view.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+    },
+    "emp-envelopment-c-mid-overview-v3": {
+      "title": "Intermediate C: overview commander",
+      "short": "Overview commander",
+      "heading": "Overview commander on the intermediate force",
+      "challenge": "Captains exchange messages only through a commander who sees every friendly regiment and every enemy visible to the army.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+    },
+    "emp-envelopment-c-mid-muted-v3": {
+      "title": "Intermediate C: muted peers",
+      "short": "Muted peers",
+      "heading": "Muted peers on the intermediate force",
+      "challenge": "The peer witness runs with the same local views and policy, but messages are accepted and never delivered.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+    },
+    "emp-envelopment-c-mid-muted-overview-v3": {
+      "title": "Intermediate C: muted overview",
+      "short": "Muted overview",
+      "heading": "Muted overview on the intermediate force",
+      "challenge": "The overview witness keeps its commander and wider commander view, but none of the team messages are delivered.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
+    },
+    "emp-envelopment-c-mid-silent-v3": {
+      "title": "Intermediate C: no-message shortcuts",
+      "short": "No-message shortcuts",
+      "heading": "No-message shortcuts on the intermediate force",
+      "challenge": "Local controllers act without messages; this arm tests rush and concentration shortcuts.",
+      "footnote": "Development construction screen. Read the recorded witness and control outcomes; no model ranking is established."
     }
   },
   "units": {

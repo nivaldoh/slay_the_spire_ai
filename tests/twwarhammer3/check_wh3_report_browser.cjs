@@ -307,7 +307,13 @@ async function main() {
     for (const fact of first.next) assert.ok(facts.includes(fact.text));
     assert.doesNotMatch(panel, /[{[]\s*"|"\w+"\s*:/, "no JSON in the default panel");
     assert.equal(await count("#moment details[open]"), 0);
-    assert.match(panel, /\d+\.\d s old when the game accepted these orders/);
+    // A completed team reply may contain no orders; the recorded list decides the noun.
+    assert.match(
+      panel,
+      first.steps.length
+        ? /\d+\.\d s old when the game accepted these orders/
+        : /\d+\.\d s old when the game accepted this reply/,
+    );
     assert.match(await text("#method"), /accepted is not the same as carried out/);
 
     // Keyboard: ←/→ step through decisions, [ ] through events, Space plays and pauses.
@@ -363,7 +369,9 @@ async function main() {
     // map; a selected unit is named on the map even when it is crowded.
     const archer = replay.roster.find((u) => u.glyph === "missile_cavalry") || replay.roster[0];
     assert.equal(await page.locator(".armies").getAttribute("open"), "");
-    await page.locator(`#roster button[aria-label^="${archer.display},"]`).click();
+    await page
+      .locator(`#roster .roster-side.${archer.side} button[aria-label^="${archer.display},"]`)
+      .click();
     assert.ok((await text("#moment .unit-card")).includes(archer.role));
     assert.ok((await text("#map-selection")).includes(archer.display));
     assert.ok(

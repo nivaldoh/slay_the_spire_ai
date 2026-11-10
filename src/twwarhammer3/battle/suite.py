@@ -164,7 +164,7 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
 
 
 def killed(result):
-    """Percent of the enemy's men dead at the end. taken reads 100 on every win; this does not."""
+    """Percent of enemy men dead; unlike taken, excludes routed or departed survivors."""
     enemy = (result.get("final") or {}).get("enemy") or {}
     men0, men = enemy.get("men0"), enemy.get("men")
     if not men0 or men is None:

@@ -770,6 +770,12 @@ explicit `link` refusal in R and O. Recount those rows independently. Preserve e
 make no comparison of methods from these scripted probes. Stop on an unexpected closure or two
 consecutive failed launches. Freeze the queue plan and its hash before the first launch.
 
+Analysis correction during the follow-up: the historical `gates.py` includes a replay frame
+at the next order's timestamp while calling its displacement "before" that order. The new
+`runs/comm-next-20261110/read_probes.py` keeps the other readings and excludes that endpoint,
+as the card requires. The historical reader and raw records remain unchanged; the boundary
+regression and original failing cases are in the follow-up folder.
+
 The following initial proposal was rejected before any launch: scenario validation requires
 the finite game timer plus 120 seconds. The card above uses the existing full-battle limits.
 
@@ -781,6 +787,33 @@ Next inspect the failed witness traces, correct demonstrated implementation faul
 freeze any revised witness before fresh construction trials with matched muted controls.
 Keep failed rounds. The existing construction thresholds remain proposals; changing a
 battle, view, failure rule or scored experiment needs an explicit marked decision.
+
+### Intermediate-force development card
+
+JUDGEMENT: Intermediate C force — Codex, 2026-11-10: the new development candidate keeps
+two middle front Greatswords and replaces the two outer ones with Swordsmen. Retiming the
+witness or changing the layout tests another candidate; this construction screen rests on
+the choice and does not adopt a new scored benchmark.
+
+`emp-envelopment-c-mid-*-v3` retains C v2's friendly army, all placements, the remaining
+enemy units, lobby settings and communication rules. It reuses the existing witnesses at
+their marked think times (JUDGEMENT `local_scripts.py` Witness timing). Only the number of
+front enemy Greatswords changes. Existing C v2 scenarios stay available unchanged.
+
+The development screen is one fresh launch each of peer, relay and overview witnesses,
+muted peer, muted overview, silent rush and central concentration, all $0 and unpaused 1x.
+Stop the candidate on a shortcut win or repeated setup failure; retain every launch. Engine
+won/lost/draw is the main reading; missing endings stay separate, with enemy losses and
+timings descriptive. The normal setup checks must read back the rosters and placements.
+Read the existing `gates.py` output and independently recount the raw records.
+
+This screen cannot admit the candidate. If witnesses win and controls lose, freeze a fresh
+construction round, including an order-replay foil and independent cue checks, before any
+scored model comparison. Otherwise inspect the orders before changing the candidate; never
+repeat an unchanged failed screen until it passes. Full card and exposure record:
+`runs/comm-next-20261110/card-intermediate-force.md`. Only scripted teams calibrate this
+candidate. The author has read the previous C pilot's outcomes and a peer trace for mechanics
+and report checks; this is a tuned development battle, with no held-out performance claim.
 
 ## Questions for the owner
 

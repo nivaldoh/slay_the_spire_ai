@@ -4337,6 +4337,149 @@
      "arm": "unlinked"
    }
  },
+ "emp-envelopment-c-mid-v3": {
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-mid-v3",
+   "scenario_version": 3,
+   "family": "limited_command",
+   "enemy": {
+     "units": [
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_cav_empire_knights",
+       "wh_main_emp_cav_empire_knights"
+     ]
+   },
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -95,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -415,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Development only. Rests on JUDGEMENT docs/twwarhammer3/communication-structure.md Intermediate C force: replace the two outer front enemy Greatswords with Swordsmen; preserve every placement and other setting. No model-based calibration or benchmark admission."
+ },
+ "emp-envelopment-c-mid-peer-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-peer-v3",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-envelopment-c-mid-relay-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-relay-v3",
+   "communication": {
+     "version": 2,
+     "arm": "relay"
+   }
+ },
+ "emp-envelopment-c-mid-overview-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-overview-v3",
+   "communication": {
+     "version": 2,
+     "arm": "overview"
+   }
+ },
+ "emp-envelopment-c-mid-muted-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-muted-v3",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-envelopment-c-mid-muted-overview-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-muted-overview-v3",
+   "communication": {
+     "version": 2,
+     "arm": "muted_overview"
+   }
+ },
+ "emp-envelopment-c-mid-silent-v3": {
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-silent-v3",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
  "emp-wing-horse-south-v1": {
    "base": "emp-envelopment-a-v2",
    "name": "emp-wing-horse-south-v1",

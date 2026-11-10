@@ -4208,3 +4208,11 @@ old = '''    def acknowledge(self, ack, latency):
 new = '''    def acknowledge(self, ack, latency):
         pass'''
 
+[[plant]]
+id = "suite-timer-win-overrides-enemy-totals"
+file = "src/twwarhammer3/battle/suite.py"
+guards = "timer wins retain physical enemy percentages and unavailable totals"
+tests = ["tests/twwarhammer3/test_wh3_suite_timer_measures.py"]
+old = '    return round(100 * (1 - active / men0), 1)'
+new = '    return 100 if (result.get("engine_ending") or {}).get("result") == "won" else round(100 * (1 - active / men0), 1)'
+

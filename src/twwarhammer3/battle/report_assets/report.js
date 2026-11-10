@@ -737,7 +737,7 @@
       el("h3", "Control methods, every dimension"),
       el(
         "p",
-        "Won counts completed battles. Own, taken and killed are 0 to 100; taken reads 100 on every win, killed does not. Arms did not all play the same scenarios, so compare them in the scenario table. Think is the median model reply. Age is observation to engine application for the orders sent, which for commander and gap come from scripts between replies; plan age is how old a commander's plan is when adopted. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
+        "Won counts completed battles. Own, taken and killed are 0 to 100. Taken counts enemy men dead, routed or gone; killed counts only deaths. A timer win can leave either percentage below 100. Arms did not all play the same scenarios, so compare them in the scenario table. Think is the median model reply. Age is observation to engine application for the orders sent, which for commander and gap come from scripts between replies; plan age is how old a commander's plan is when adopted. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
         "benchmark-summary",
       ),
       table(

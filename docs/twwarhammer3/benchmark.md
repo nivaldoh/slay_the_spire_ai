@@ -132,7 +132,7 @@ They do not isolate the cause of a difference, and equal-resource arms come late
 
 | Dimension | Measures | Read from |
 |---|---|---|
-| Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead, routed or gone at the end, 100 on every win; `killed`, percent of its men dead | Engine ending and totals |
+| Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead, routed or gone at the end; `killed`, percent of its men dead. A timer win can leave active enemies, so neither percentage is necessarily 100 | Engine ending and totals |
 | Cost | dollars, calls, tokens; for `gap`, what writing the graphs cost, shown apart | Ledger-backed result |
 | Speed | median and 90th-percentile order age, observation to engine application | Engine acknowledgements |
 | Reliability | orders the engine refused; bad replies, which void a decision; failed calls, provider faults or calls closed unsent; every failed or unplayed battle | Trace and plan |
