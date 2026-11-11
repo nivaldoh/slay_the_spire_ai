@@ -3,6 +3,11 @@
 Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+One-army diagnosis, 2026-11-11 (Codex): inspect the six P/R/O pilot losses and prepare
+bounded follow-up evidence under the owner's new $20 window. Game cutoff 18:00 UTC;
+no new game card frozen yet. Branch `comm-diagnosis-20261111`; evidence and brief:
+`runs/comm-diagnosis-20261111/`. Scoring, check agreement and rankings remain open.
+
 Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts
 and report update finished. All six battles lost; no ranking.
 Belgrade's Flagellants and Free Company report unowned in the lobby; no battle or

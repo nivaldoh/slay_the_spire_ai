@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-11 (one-army diagnosis window), goal verbatim: "Keep making progress autonomously.
+  You are free to run games. Budget $20. I'll be back in a few hours."
+  Continues the one-army next-steps discussion. Brief: `runs/comm-diagnosis-20261111/brief.md`.
+  New exploratory work is authorized; unanswered scoring, verification and design questions
+  remain open.
 - 2026-11-11 (benchmark progress window), goal verbatim: "Let's make progress. $30 budget.
   I'll be back in like 10 hours." Follows the three-way single-army Cannae next-steps
   discussion. Brief: `runs/benchmark-progress-20261111/brief.md`. Resumes progress and
