@@ -165,6 +165,11 @@ nothing rests on the source. "The adaptation agent" ran the first of each design
 
 ### Method and code references for the set (2026-11-08)
 
+- Alesia contact-reader draft, 2026-11-10: [SMACv2 `starcraft2.py` at 577ab5a](https://github.com/oxwhirl/smacv2/blob/577ab5a2cff2391f8df582da5731ea9cd6adf3c6/smacv2/env/starcraft2/starcraft2.py),
+  `init_units` and `update_units`: establish episode unit maps, then match updates by each
+  unit's tag. Reference for retaining episode identities after movement. The WH3 draft uses
+  its existing deployment matcher; no upstream environment or experiment was reproduced.
+
 - R. G. Newcombe, "Interval estimation for the difference between independent proportions:
   comparison of eleven methods", *Statistics in Medicine* 17 (1998): method 10, the hybrid score
   interval behind `exact_stats.newcombe`; its worked example (56/70 against 48/80 gives 0.0524 to

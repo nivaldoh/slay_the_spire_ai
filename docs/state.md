@@ -7,6 +7,8 @@ WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communi
 
 Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
 
+Alesia contact readings, 2026-11-10 (Codex): local draft on `alesia-replay-readings`, own worktree. Complete private records plus the original setup bind G/H/L and give contact times and first-melee positions. Synthetic tests only; no score or gate wired, no live record read. The marked complete-record input choice awaits review; no runtime-source merge or push planned. Card/evidence: `runs/benchmark-window-20261110/alesia-readings/`.
+
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 
