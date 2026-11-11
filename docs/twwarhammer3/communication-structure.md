@@ -977,3 +977,46 @@ the earlier scripted screen. Optional controlled message reasks were not sent:
 preflight still found a prototype summary defect after a simulated ledger-write
 failure at the third review round. That prototype stays parked, with no new metric
 adopted. Next agree the performance endpoint and repeatable checks before scored stage 4.
+
+## Failed-reply audit (2026-11-11)
+
+Under the owner's new autonomous $20 window, all 40 failed replies in the six pilot battles
+were matched to their actual source request and immediate next request for the same member.
+The production parser reproduced every failure. First errors were 31 unowned-unit and nine
+invisible-target errors; one reply had both kinds of violation. All 40 requests explicitly
+said to order only owned regiments, and their friendly lists matched the declared ownership.
+These records do not show a missing ownership instruction or a parser/view mismatch.
+
+Every successor received unchanged notes, history and order feedback, without the parser's
+error explanation. Fourteen successors also failed, eight with the exact same error. All 169
+incoming message appearances from the rejected calls were retained in their successors,
+covering 115 distinct message identities within recipient and launch. This follows the
+existing Forfeited mail choice in `local_team.py`; it is not evidence of lost incoming mail.
+
+The audit establishes recorded behavior, not why the battles were lost or whether a different
+feedback rule improves play. Raw joins, trace hashes, reader and independent recount:
+`runs/comm-diagnosis-20261111/`, review `review/audit/review.md`. No game or paid request
+was needed for this audit. Feature verification and the scored comparison remain open.
+
+## Offline rejection feedback probe (unrun 2026-11-11)
+
+An unagreed away card compares the saved next requests after those failures: one unchanged
+request and one adding the previous parser error and whole-reply discard facts for each case.
+The 80-call ceiling uses the same model, instructions, schema and source views, with no retries.
+The question is legal complete-reply production on these selected development inputs, not
+live recovery or battle performance. Empty legal replies are reported separately.
+
+The probe rests on JUDGEMENT `runs/comm-diagnosis-20261111/card-feedback.md` Feedback
+treatment and Cases and repeats, and JUDGEMENT? Offline cutoff. Its cumulative WH3 Anthropic
+ledger cap is $22.12, below the existing total plus a $2 allowance inside the owner's new $20.
+Stop on the first transport, billing or recording failure; missing outcomes stay missing.
+No controller, prompt, score or check is adopted. The earlier listening prototype stays parked.
+Frozen requests, script, preflight review and exact card: `runs/comm-diagnosis-20261111/`.
+
+Preflight review found that saving only the provider-translated reply could lose an already
+received response when translation failed. The revised task-local recorder saves successful
+HTTP response bytes before JSON parsing and translation. Independent checks covered malformed
+provider usage, billing/recording failures, exact payload preservation and corrupted loggers.
+The 19:00 UTC last-start cutoff passed before a paid launch; all 80 calls remain unstarted,
+with no new API spend. The plan is not scheduled and needs a fresh operational window before
+use. Its checking establishes offline recording behavior, not the treatment's effectiveness.

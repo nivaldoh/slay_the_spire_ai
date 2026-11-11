@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-11: Audit rejection feedback in the communication pilot
+
+Under the owner's new autonomous $20 window, audited every failed reply in the six prior
+P/R/O pilot launches; no new game or API request. The production parser reproduced all 40
+failures. Their next requests kept notes/history/order feedback unchanged and omitted the
+parser error; 14 next calls failed too, eight with the same error. All 169 incoming message
+appearances were retained (115 distinct identities). Independent raw recount and fault
+challenges support these recorded behaviors, not a cause-of-loss or communication claim.
+
+A separate offline feedback probe is prepared: 40 saved successor inputs, two conditions
+each, unchanged versus explicit rejection feedback. First review caught response capture
+after translation; revised capture preserves exact HTTP response bytes before parsing.
+Second independent review passed its simulations and corruption challenges. No paid call
+started before the operational cutoff, so the probe remains unrun and unscheduled.
+No production controller, prompt, score or verification method changed. New spend $0/$20.
+Evidence, cards, hashes and reviews: `runs/comm-diagnosis-20261111/`; current findings and
+limits: [communication study](communication-structure.md#failed-reply-audit-2026-11-11).
+Feature correctness, feedback effectiveness and battle strength remain unverified.
+
 ## 2026-11-10: Scripted-team check passes after the ownership repair
 
 The unchanged agreed four-launch check passed 4/4 at `7b8b9bf`, build 26403568: four fresh

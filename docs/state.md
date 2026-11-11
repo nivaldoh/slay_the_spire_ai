@@ -3,10 +3,10 @@
 Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-One-army diagnosis, 2026-11-11 (Codex): inspect the six P/R/O pilot losses and prepare
-bounded follow-up evidence under the owner's new $20 window. Game cutoff 18:00 UTC;
-no new game card frozen yet. Branch `comm-diagnosis-20261111`; evidence and brief:
-`runs/comm-diagnosis-20261111/`. Scoring, check agreement and rankings remain open.
+One-army diagnosis, 2026-11-11 (Codex): failed-reply audit reviewed; incoming mail survived
+but the next requests omitted parser-error feedback. Offline feedback probe passed preflight
+review but remains unrun after its cutoff. No games or API spending in this $20 window.
+Evidence: `runs/comm-diagnosis-20261111/`. Next: decision 14; no scoring or check adopted.
 
 Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts
 and report update finished. All six battles lost; no ranking.
@@ -17,9 +17,6 @@ roster change. Both games closed; recorded spend $6.45 of $30. Evidence:
 Unmerged-work cleanup, 2026-11-11: selected tests, Spire rule policy/environment/replay and experimental Alesia contacts are merged. Fourteen original local branches and three remote branches were removed. The owner kept `wh3-human-opponent` and its worktree; experimental training is archived at `archive/spire-local-rl-20261111`, with results retained and three reproduced defects documented. No cleanup choice remains pending. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 
 WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communication structures, delegated a provisional messaging baseline and deferred runs. Communication necessity is one experiment type, not a universal prerequisite. Selected test-cleanup fixtures and targeted regressions landed during the 2026-11-11 cleanup; both old drafts were removed. Ownership repair and its 4/4 agreed scripted-team check remain recorded at `7b8b9bf`; overlap/reinforcement regressions remain unverified offline evidence. Both games are closed; API spend for the window remains $0 of $20. Evidence: `runs/cleanup-review-20261110/` and `runs/single-army-20261110/`.
-
-
-
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 
