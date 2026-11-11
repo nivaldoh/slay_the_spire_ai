@@ -541,7 +541,7 @@ so that a win in which the army avoided the fight cannot pass for a held line; c
 join them once the group-contact reader exists. A model's result on this battle is its win rate
 reported with its branch shares from `branch` (H, L, neither), never the win rate alone.
 
-The 2026-11-10 offline draft `lines_readings.contacts(frames, declaration, first)` reads
+The experimental offline reader `lines_readings.contacts(frames, declaration, first)` reads
 the all-unit private record and the original observation's private setup reading. It returns
 G/H/L identity lists and first two-of-four contact times, their spread when all three exist,
 and each enemy unit's first living-melee sample and position. It uses private `melee` booleans;
@@ -553,7 +553,7 @@ The draft's strict input contract rests on JUDGEMENT?
 `src/twwarhammer3/battle/lines_readings.py` Complete contact record: each private frame must
 have the exact enemy identities and readable men/melee fields; duplicate, incomplete,
 foreign-battle and unsupported-format data are refused. It does not infer first contact from
-partial visibility. This choice stays on the unpushed `alesia-replay-readings` branch until
+partial visibility. The reader is merged as experimental code; adopting this contract still awaits
 owner review. Its tests use synthetic records for both mirrored cases, with moved units and
 scrambled identities; no new private record or battle has been read live. The proposed checks
 and this draft remain unverified. Evidence: `runs/benchmark-window-20261110/alesia-readings/`.
@@ -645,7 +645,7 @@ the times below use 20-25 minutes a launch.
 
 | Stage | What runs | Launches and game time | What it can establish |
 |---|---|---|---|
-| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). The 2026-11-10 contact/first-melee reader is a local private-record draft, with synthetic plants; its input contract awaits review. Still to build: public replay readers for checks 2-4, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
+| 0 | Offline. Done at `e918091`: declarations, W, M and C, the ablation helper, statistics and evidence helpers, their tests. Built since: the evaluator-only record (`f3fec92`), the fixture boundary test (`test_wh3_eval_boundary.py`) and, on 2026-11-09, the sector rout and branch readers (`lines_readings.py`). The 2026-11-10 contact/first-melee reader is an experimental private-record reader, with synthetic plants; its input contract awaits review. Still to build: public replay readers for checks 2-4, the boundary test on recorded first observations, the plan builder, and F if the owner wants it. Built on 2026-11-09 as options for owner question 4, in no stage: N, NM and the corner camp (`lines.py`) | None | That the code does what its tests say |
 | 1a | Lobby-only readback (check 0), shared with the other new battles: `scripts/wh3_lobby_readback.py` writes the files and `twwarhammer3 menu --steps` sends them; case a completed on 2026-11-10, 127 steps | No battle | Exact Kislev and Norsca roster/rank multiplicities read back; no deployment or battle readings |
 | 1b | One `hold` launch of case a | 1, about 20-25 min | Checks 1 and 5, the bearing offset, the funds charge |
 | 1c | Five more `hold` launches, 3 per case in all | 5, about 1.7-2.1 h, plus 6 per restage (2-2.5 h) | Checks 2-4 and 2b at the provisional window, Norsca travel times, the hold floor. G or the relief is restaged in 15 m steps as development versions until checks 2 and 4 pass; a 2b failure is reported and taken to the owner and does not restage. A restage costs 6 fresh holds, 3 per case, because checks 2-4 need 3 of 3 per case on each version (the earlier budget of 2 could not rerun them); the number of restages is reported, and a cap on them is [owner question 4](#decisions-for-owner-review) ([options](#options-for-questions-4-and-5)) |

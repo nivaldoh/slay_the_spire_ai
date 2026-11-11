@@ -5,6 +5,7 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-10 (unmerged-work cleanup), goal verbatim: "Let's clean up our unmerged work by either merging it if it makes sense or deleting the branch if it doesn't. You can ask me if you're not sure. Probably we've been accumulating a lot of garbage."
 - 2026-11-10 (communication-study choices and test-cleanup review), owner answers:
   "Communication won't be necessary to win for every single version of our benchmark. It's just
   one type of experiment that we will do, to see how it performs and compare to other approaches."
@@ -251,6 +252,20 @@ Both games:
 - 2026-11-04 (foundation reference probe): owner chose "Use a local window after the
   current game closes" for a bounded deployment-readiness reference probe, with no cloud
   VM or paid calls. The previous checkpoint game has since closed; recheck before launch.
+- 2026-11-03 (disk expiry): "$25 a month is a problem ... It shouldn't stay allocated
+  forever. Maybe we can set the storage to be deleted about one day after creation."
+  This supersedes indefinite retention: preserve the new game disk between compute
+  sessions, then schedule its deletion about 24 hours after creation; disclose daily cost.
+- 2026-11-03 (retain game storage and handoff): "It's fine to have some storage costs
+  as long as I'm aware of it. We shouldn't have to redownload the entire game again
+  right now." Keep the game disk across compute sessions; disclose recurring storage.
+  The prior disk had already been deleted under its original plan, so that copy cannot
+  be reused. Assistant disclosed about $25/month prorated for the new 250 GiB disk.
+  Owner also asks to wrap up for a fresh chat; preserve a concrete handoff.
+- 2026-11-03 (GCP retry): "We can start a new VM, yes" accepts the pending proposal
+  for one additional session capped at $5 and three hours with automatic deletion.
+  "Hopefully one with lower latency this time." Record the previous workflow problems
+  and make this attempt more time-efficient. Prior spending remains recorded separately.
 - 2026-11-03 (multiplayer foundation plan): "Remember that here we will not implement
   anything. We will just write the plan to implement later." Save the
   [plan](twwarhammer3/multiplayer-control-foundation.md) and summarize the approach and tests

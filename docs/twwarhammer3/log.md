@@ -8515,3 +8515,22 @@ flags, no enemy missile range, moves to unreachable points acknowledged as appli
 `attack-m3-20261013`: lost at 344 s, won at 400 s. Before `c3c9177` the baseline did not
 re-order units whose attack had lapsed, so units stood idle under fire for minutes; the
 two episodes understate it.
+
+## 2026-11-11: unmerged-work cleanup
+
+Owner: merge useful unmerged work or delete its branch; ask on uncertain choices.
+Selected test fixtures/regressions landed in `0f3fa08`; bulk rewrites/removals were discarded.
+Independent review preserved all 504 prior assertions and reproduced the 16 peer cases;
+seven challenged wrong versions were caught and two browser cases passed. Existing plants stayed unchanged.
+Spire rule policy/RealGame/replay drafts landed in `84aa8d2`; focused integration passed 300 cases.
+Replay protects only its two marked preference files; live environment/replay and policy strength remain unverified.
+Experimental Alesia contacts landed in `aec2c44`, with a reviewer-found initial-identity fix:
+eight regressions failed before the fix; the focused integration passed 98 cases after it.
+The reader has no policy/scorer wiring; complete-record adoption and original-engine evidence remain open.
+Worktree gate at that change: Ruff clean, 3,946 passed, 70 skipped (torch, Windows and local evidence among them);
+13 agreed pytest commands passed on the dirty tree, establishing no agreed pass at HEAD.
+Cleanup retained the GCP retry's three owner directions and bounded Spire profile/training corrections;
+expired runtime status, stale numerical refreshes and unadopted process additions were dropped.
+Six branches await owner answers, including training code with three independently reproduced collector/trainer defects.
+No game, training, cloud resource or paid API was started. Cards, reviews, raw gates, mutation replay,
+dispositions, retained worktree logs and recoverable original commits: `runs/unmerged-cleanup-20261110/`.

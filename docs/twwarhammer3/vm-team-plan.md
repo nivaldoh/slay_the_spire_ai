@@ -64,7 +64,7 @@ no step 7. A model demo, step 7 or a split army changes S2 and the session count
    here as a new allowance from $0). S1 (≤2.75 h, ≤$3.75) and S2 (≤3 h, ≤$3.39) at the $1.131/h
    quote ([costs](gcp-client-setup.md#costs)), each with $1 held back (rests on JUDGEMENT
    `scripts/wh3_gcp.py` Reserve), total ≤$9.14. Still yours: keeping S1's disk ≤24 h for S2, as
-   you directed for the retry (branch `gcp-retry`, `owner-direction.md`; read). Then S2 must start
+   you directed for the retry ([owner directions](../owner-direction.md), 2026-11-03; read). Then S2 must start
    within 21 h of S1's creation, and a failed S1 deletes the disk. If that zone has no free L4 by
    then (9 of 11 creates so far were stockouts; checked: both `provision/state.json`), S2 downloads
    the game again: either battle 2 moves to a later session beyond this $10, or S2 runs ≤4 h
@@ -151,11 +151,10 @@ JUDGEMENT?: Session grouping — Claude, 2026-11-03: a single-player worker move
 sessions, S1's disk kept ≤24 h, O4 only after S1's probe. O4 before S1, or one long session,
 changes cost and order.
 
-**O1. Close the retry record** (assistant; you approve the commits, 5 min; no game). Now: correct
-"GCP retry VM running" in `state.md`. After 04:20 UTC, with no play job running (the branch touches
-`configs/twwarhammer3/`): land `gcp-retry` (`f038dc5`), resolving its conflicts in
-`owner-direction.md` and `state.md`. Exit: empty instance and disk lists, support resources listed,
-`check.py` passes; nothing billable left. Stop: a disk remains → report it.
+**O1. Retry record closed.** The VM and disk are gone ([current cloud state](../cloud.md)).
+The 2026-11-11 branch cleanup retained the retry's three owner directions in
+[owner-direction.md](../owner-direction.md) and discarded its expired running-VM status.
+No old session budget or storage authorization is renewed.
 
 **O2. Your PC on 9.0.5** (assistant; needs decision 3; 45 PC minutes, 10 of yours). Three launches
 to the main menu, saving `mp_log.txt` and `modified.log` after each (the game overwrites them): (a)

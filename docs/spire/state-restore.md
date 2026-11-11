@@ -244,9 +244,12 @@ launch. Scripts, outputs and a skeptic's rerun of every claim are in
   data runs (26 of 44 with that day's smoke run) started with an empty `STSDataVagabond`
   (Ironclad statistics), which the game restored from its `.backUp` copy. All logs show
   41 such recoveries, plus 2 for `STSUnlockProgress`. The likely cause is the game being
-  killed between deleting and rewriting a file. `STSDataVagabond` is 0 bytes on disk now,
-  and `STSUnlockProgress` currently has no `.backUp`. This predates restore work and can
-  affect any Spire run.
+  killed between deleting and rewriting a file. At that inspection, `STSDataVagabond` was
+  empty and `STSUnlockProgress` had no `.backUp`. This predates restore work and can affect
+  any Spire run. The 2026-11-06 local-RL session later wiped and rebuilt `STSUnlockProgress`,
+  losing the Silent and Defect entries. Its pre-night profile copy is in
+  `runs/local-rl-20261106/profile-backup/`; the handoff there has the restore commands.
+  Restoring the profile remains the owner's decision.
 - **Steam Cloud.** Steam's app info lists the game's `preferences/` and `saves/` folders for
   Auto-Cloud; synced records so far hold only preferences. A save or preference left on
   disk would probably sync at the owner's next Steam-launched session.

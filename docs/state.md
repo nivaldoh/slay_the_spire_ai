@@ -1,13 +1,13 @@
 # Project state
 
-Updated 2026-11-10. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communication structures, delegated a provisional messaging baseline and deferred runs. Communication necessity is one experiment type, not a universal prerequisite. Test-cleanup review recommends selected fixture refactors and targeted regressions; neither draft has been merged. Ownership repair and its 4/4 agreed scripted-team check remain recorded at `7b8b9bf`; overlap/reinforcement regressions remain unverified offline evidence. Both games are closed; API spend for the window remains $0 of $20. Evidence: `runs/cleanup-review-20261110/` and `runs/single-army-20261110/`.
+Unmerged-work cleanup, 2026-11-11: selected test fixtures/regressions, the Spire rule policy/environment/replay driver and experimental Alesia contact reader are integrated. Obsolete drafts were removed; six branches below await the owner's answers. Training review found source-attribution, pointer-checkpoint and frozen-row defects on `spire-local-rl`; it has not landed. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 
-Alesia contact readings: local, unpushed draft `alesia-replay-readings` at `fb9a814`, own worktree. Descriptive contact times and first-melee positions, independently checked on synthetic records; no scorer/policy integration or live contact record. The marked input-contract choice awaits owner review; source remains outside main. [Existing decision 15](review-queue.md#decisions); evidence `runs/benchmark-window-20261110/alesia-readings/`.
+WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communication structures, delegated a provisional messaging baseline and deferred runs. Communication necessity is one experiment type, not a universal prerequisite. Selected test-cleanup fixtures and targeted regressions landed during the 2026-11-11 cleanup; both old drafts were removed. Ownership repair and its 4/4 agreed scripted-team check remain recorded at `7b8b9bf`; overlap/reinforcement regressions remain unverified offline evidence. Both games are closed; API spend for the window remains $0 of $20. Evidence: `runs/cleanup-review-20261110/` and `runs/single-army-20261110/`.
 
-Alesia contact readings, 2026-11-10 (Codex): local draft on `alesia-replay-readings`, own worktree. Complete private records plus the original setup bind G/H/L and give contact times and first-melee positions. Synthetic tests only; no score or gate wired, no live record read. The marked complete-record input choice awaits review; no runtime-source merge or push planned. Card/evidence: `runs/benchmark-window-20261110/alesia-readings/`.
+
 
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
@@ -54,8 +54,8 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54 (v8; `main` has v10).
 Local Qwen3-0.6B (2026-11-07, unverified): a learned fight adapter with a run-level adapter taught by public human run files reached 17.82 floors on `LRTEST061`-`120` against 15.02 for the 2026-11-06 fight adapter (+2.80, +0.92 to +4.67) and 11.45 for the warm start; an earlier pick, 15.88 on `LRTEST001`-`060`, beat only the warm start, whose arm there spanned two revisions. Rests on the branch's marked choices, including the human-run rows and the outcome tables ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)).
-The hand-written rule policy (`spire-teacher`, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod on `spire-local-rl` plays a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
-Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md). Its first live step, a $0 replay check (driver on branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
+The hand-written rule policy (now merged, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod on `spire-local-rl` plays a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
+Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md). Its first live step, a $0 replay check (driver now merged, never run live), needs a game window and your profile decision first.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
 Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decision 9) and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
@@ -107,14 +107,9 @@ Numbers are unchanged; open the relevant item before acting.
   that game); one GPU job at a time.
 
 ## Branches
-- `alesia-replay-readings` (`fb9a814`, worktree `../slay_the_spire_ai-alesia-replay-readings`): local contact-reader draft, unpushed; input-contract adoption remains under decision 15. No original-engine contact record checked.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): attack-route draft, labelled v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): parked by the owner (2026-10-22); resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
-- `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
 - `team-check-battle-time` (`58a52ef`): agreed-check draft; `gate-xdist` (`668940e`): `check.py` on xdist workers. Each moves the report fingerprint.
-- `gcp-retry` (`f038dc5`): US VM retry record, unmerged; three owner directions live only there.
-- `tests-cleanup` (`ef90ec6`), `simplify-tests` (`2a36b13`): test-suite cleanups of 11-03, unmerged (decision 12).
-- `spire-teacher` (`72b9233`), `spire-env` (`0b879d4`, contains `spire-teacher`) and `spire-docfix` (`95797bb`, docs only), each in worktree `../slay_the_spire_ai-<name>`: the rule policy, a `RealGame` environment and Spire doc corrections of 2026-11-06; landing waits on decision 4 of `runs/spire-offline-20261106/handoff.md`.
-- `repo-improve-proposals` (worktree `../slay_the_spire_ai-repo-proposals`): 2026-11-06 changes that need the owner, one commit per choice; one-line choices in `runs/repo-improve-20261106/handoff.md`.
-- Archived drafts are tags (`git tag --list 'archive/*'`).
+- `spire-local-rl` (`5a227e5`, worktree `../slay_the_spire_ai-local-rl`): owner choice on experimental speed/human-data code; three generic collector/trainer defects are documented in `runs/unmerged-cleanup-20261110/review/rl/report.md`.
+- Archived drafts are tags (`git tag --list 'archive/*'`); deleted drafts from this cleanup are recoverable from its local `unmerged-before.bundle`.

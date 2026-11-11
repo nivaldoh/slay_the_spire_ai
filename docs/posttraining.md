@@ -15,11 +15,12 @@ change the student, benchmark or agreed verification methods on this page.
   (`--provider openrouter`): baseline play and the traces that become training data. It
   has no fine-tuning API, and a fine-tuned model cannot be served there except through
   Enterprise private endpoints.
-- **Training happens elsewhere.** Tinker is planned (remote LoRA for Qwen3.6-35B-A3B; prices
-  and the RL plan are on the [open-weight track page](spire/open-weight/README.md)); no
-  credential exists yet. Until then a local RTX 3060 (12 GB) runs only a small smoke test
-  on Qwen3-0.6B with the `llm` extra, never while a game runs (the script refuses to start
-  then).
+- **Training.** Tinker is planned (remote LoRA for Qwen3.6-35B-A3B; prices and the RL plan
+  are on the [open-weight track page](spire/open-weight/README.md)); no credential exists yet.
+  The local RTX 3060 (12 GB) has also run Qwen3-0.6B training, including the experimental
+  [Spire work](#local-rl-on-complete-runs), whose learning claims remain unverified. The smoke
+  test refuses to run while a game runs; Spire's experimental collection keeps the local
+  model resident during combats.
 
 ## Student model
 

@@ -119,7 +119,7 @@ UPGRADE_VALUE = {
 # Best first; unlisted boss relics rank below every listed one.
 BOSS_RELICS = [
     "Philosopher's Stone", "Sozu", "Runic Pyramid", "Snecko Eye", "Empty Cage", "Black Star",
-    "Astrolabe", "Calling Bell", "Pandora's Box", "Black Blood", "Slaver's Collar", 
+    "Astrolabe", "Calling Bell", "Pandora's Box", "Black Blood", "Slaver's Collar",
     "SacredBark", "Velvet Choker", "Mark of Pain", "Coffee Dripper", "Fusion Hammer", "Ectoplasm",
     "Busted Crown", "Tiny House",
 ]
