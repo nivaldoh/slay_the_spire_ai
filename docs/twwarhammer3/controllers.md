@@ -376,6 +376,13 @@ Code can bill its own use to. The key has a $200 budget for both games and expir
 call returns once the key's budget is spent is undocumented and untested (a 400 counts as
 the model failing in WH3).
 
+The shared transport timeout is per read, with retries; it gives no absolute total
+request deadline. A team can stop issuing calls while its worker threads still wait
+on existing calls, and those threads can delay controller exit. The Windows supervisor
+separately limits the game process. Observe the controller's actual exit before the
+next launch; a closed game window alone does not establish that it ended. The existing
+timeout value rests on JUDGEMENT? `src/gameai/llm.py` 600 s per read x 3 attempts.
+
 ## Candidate changes for the next version
 
 Verified contradictions between the prompts and the code. Each changes prompt bytes or

@@ -48,8 +48,8 @@ marking them for the owner's review; the rule for agents is in
   decision 3 in [tactic-cards.md](twwarhammer3/tactic-cards.md) proposes other sizes; code
   and tests present the rule as settled.
 - `src/gameai/llm.py`, `READ_TIMEOUT_S`: `JUDGEMENT?`. The raise from 60 s to 600 s was
-  forced by the owner's 16k output cap, yet the value sets how long one stalled call
-  silences a direct controller (up to 30 minutes) and what it bills.
+  the assistant's response to the owner's 16k output cap. It sets each read wait;
+  `post` has no total deadline, and retries affect controller waiting and billing.
 
 ## Status and how to continue
 
