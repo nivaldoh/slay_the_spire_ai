@@ -299,7 +299,8 @@ With evidence so far, in priority order (v3–v10 took the earlier ones):
   elite path for an Emerald Key it already held and died on that path. Candidate in
   `llm.py`: remember keys from the choices that take them (the Emerald and Sapphire Key
   rewards, Recall at a rest site) and show them in the header. Drafted as v11 on branch
-  `v11-keys` (`cd97667`), unmerged.
+  `v11-keys` (`cd97667`); the owner deleted that draft during the 2026-11-11 cleanup.
+  The keys-memory gap remains unimplemented.
 - **Power rules**: v7 and v8 RUNDEV1 played Corruption+ without knowing it exhausts every
   skill (spending the last Defends; halving Second Wind+). Candidate: short checked notes
   for the player's powers, shown while active, like `monsters.json`.
@@ -367,4 +368,5 @@ runs, whole-text note rewrites, and paid post-training.
   most of the wall time here, so batching would buy iterations per night.
 
 - **Moved from the state page inbox (2026-10-28), verbatim.** Item 9: **Spire's next step.** After WH3, run one meaningful comparison or freeze this track. Proposed comparison: current controller against ablated scaffolding, 20–30 fresh seeds per arm, about $5 and three nights. `v11-keys` waits on that choice; [other Spire questions](#open-owner-decisions) stay secondary. No held-out seeds have been played. The state-restore investigation comes first (owner, 2026-10-23). To decide later: whether the next data night uses a teacher (GLM-5.3) or Qwen3.6 with reasoning on.
+  Cleanup update, 2026-11-11: the owner deleted the old `v11-keys` draft; the comparison question remains open.
 - Item 10: **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is"). It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.

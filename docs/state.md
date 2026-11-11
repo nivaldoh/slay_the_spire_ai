@@ -3,7 +3,7 @@
 Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Unmerged-work cleanup, 2026-11-11: selected test fixtures/regressions, the Spire rule policy/environment/replay driver and experimental Alesia contact reader are integrated. Obsolete drafts were removed; six branches below await the owner's answers. Training review found source-attribution, pointer-checkpoint and frozen-row defects on `spire-local-rl`; it has not landed. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
+Unmerged-work cleanup, 2026-11-11: selected tests, Spire rule policy/environment/replay and experimental Alesia contacts are merged. Fourteen original local branches and three remote branches were removed. The owner kept `wh3-human-opponent` and its worktree; experimental training is archived at `archive/spire-local-rl-20261111`, with results retained and three reproduced defects documented. No cleanup choice remains pending. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 
 WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communication structures, delegated a provisional messaging baseline and deferred runs. Communication necessity is one experiment type, not a universal prerequisite. Selected test-cleanup fixtures and targeted regressions landed during the 2026-11-11 cleanup; both old drafts were removed. Ownership repair and its 4/4 agreed scripted-team check remain recorded at `7b8b9bf`; overlap/reinforcement regressions remain unverified offline evidence. Both games are closed; API spend for the window remains $0 of $20. Evidence: `runs/cleanup-review-20261110/` and `runs/single-army-20261110/`.
 
@@ -12,7 +12,7 @@ WH3 single-army follow-up, 2026-11-10 (Codex): the owner chose all three communi
 Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-memory cleanup](context-loading.md); handoff `runs/context-loading-20261109/handoff.md`. No game work. Session speed and adherence remain unverified.
 
 
-Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Branch `spire-local-rl`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
+Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Code archived as `archive/spire-local-rl-20261111`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
 WH3 historical siege evaluations, harness b54: no battle played; all unverified ([overview](twwarhammer3/historical-evals.md)). The 2026-11-10 lobby-only probe passed Alesia, Haengju and Izmail; Belgrade stopped at refused Flagellants recruitment, with no complete army readback. Haengju, Belgrade, Alesia and Izmail have declarations, witnesses, controls and pages; Malta remains unbuilt. The owner approved models using siege orders: `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No battle has run on v23. Next: resolve Belgrade's unavailable card and the rest of decision 15 before battle construction trials.
 
@@ -53,11 +53,11 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
 ## Slay the Spire
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54 (v8; `main` has v10).
-Local Qwen3-0.6B (2026-11-07, unverified): a learned fight adapter with a run-level adapter taught by public human run files reached 17.82 floors on `LRTEST061`-`120` against 15.02 for the 2026-11-06 fight adapter (+2.80, +0.92 to +4.67) and 11.45 for the warm start; an earlier pick, 15.88 on `LRTEST001`-`060`, beat only the warm start, whose arm there spanned two revisions. Rests on the branch's marked choices, including the human-run rows and the outcome tables ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)).
-The hand-written rule policy (now merged, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod on `spire-local-rl` plays a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
+Local Qwen3-0.6B (2026-11-07, unverified): a learned fight adapter with a run-level adapter taught by public human run files reached 17.82 floors on `LRTEST061`-`120` against 15.02 for the 2026-11-06 fight adapter (+2.80, +0.92 to +4.67) and 11.45 for the warm start; an earlier pick, 15.88 on `LRTEST001`-`060`, beat only the warm start, whose arm there spanned two revisions. Rests on the archived code's marked choices, including the human-run rows and the outcome tables ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)).
+The hand-written rule policy (now merged, no model) reached 26.0 floors on 37 seeds, unpaired with the models; whether the model may train on its choices is the owner's terms decision. A speed mod in that archived code played a run in about 30 s. Every floor above was played with it, and floors at speed do not pair with 1x.
 Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md). Its first live step, a $0 replay check (driver now merged, never run live), needs a game window and your profile decision first.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
-Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decision 9) and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
+Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decision 9) waits; the owner deleted the old `v11-keys` draft; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
 ## Post-training
 
@@ -92,7 +92,7 @@ Numbers are unchanged; open the relevant item before acting.
 9. **Spire:** restore/profile decision first, after WH3; other comparisons wait.
 10. **Thesis/RL:** research question and environment details remain open.
 11. **Local checkpoint RL:** stays paused; no recovery decision needed now.
-12. **Factory:** test edits and approval for edits to `check.py` remain open; so do the older test-cleanup branches, `gate-xdist` and `team-check-battle-time` (handoff `runs/repo-improve-20261106/handoff.md`), and the tally suggestions and formal-map candidates (`runs/factory-multiagent-20261102/handoff.md`).
+12. **Factory:** unrelated test/process approvals, tally suggestions and formal-map candidates remain open (review queue). The old cleanup, xdist and battle-time drafts were removed during the owner-directed cleanup.
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and when the first game window runs.
@@ -107,9 +107,6 @@ Numbers are unchanged; open the relevant item before acting.
   that game); one GPU job at a time.
 
 ## Branches
-- `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
-- `wh3-rules-v21-attack-path` (`5baf28b`): attack-route draft, labelled v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): parked by the owner (2026-10-22); resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
-- `team-check-battle-time` (`58a52ef`): agreed-check draft; `gate-xdist` (`668940e`): `check.py` on xdist workers. Each moves the report fingerprint.
-- `spire-local-rl` (`5a227e5`, worktree `../slay_the_spire_ai-local-rl`): owner choice on experimental speed/human-data code; three generic collector/trainer defects are documented in `runs/unmerged-cleanup-20261110/review/rl/report.md`.
-- Archived drafts are tags (`git tag --list 'archive/*'`); deleted drafts from this cleanup are recoverable from its local `unmerged-before.bundle`.
+- `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): owner explicitly kept both on 2026-11-11. Still parked; resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps) when requested.
+- Archived training: pushed tag `archive/spire-local-rl-20261111` (`5a227e5`); results stay recorded. Generic collector/trainer defects: `runs/unmerged-cleanup-20261110/review/rl/report.md`.
+- Other archived drafts are tags (`git tag --list 'archive/*'`); deleted drafts from this cleanup are recoverable from its local `unmerged-before.bundle`.

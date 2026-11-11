@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-11 (cleanup answers): "Delete all four (Recommended)" applies to `v11-keys`,
+  `wh3-rules-v21-attack-path`, `gate-xdist` and `team-check-battle-time`, including remote
+  branches where present. For `wh3-human-opponent`: "Keep branch and worktree".
+  For training, the owner first chose "Merge as experimental (Recommended)", then answered
+  the replacement question "Archive branch (Recommended)" after the three reproduced
+  defects. The later archive answer supersedes the earlier merge answer. Preserve training
+  code/results under `archive/spire-local-rl-20261111`; start no runs.
 - 2026-11-10 (unmerged-work cleanup), goal verbatim: "Let's clean up our unmerged work by either merging it if it makes sense or deleting the branch if it doesn't. You can ask me if you're not sure. Probably we've been accumulating a lot of garbage."
 - 2026-11-10 (communication-study choices and test-cleanup review), owner answers:
   "Communication won't be necessary to win for every single version of our benchmark. It's just

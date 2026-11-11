@@ -8527,10 +8527,11 @@ Replay protects only its two marked preference files; live environment/replay an
 Experimental Alesia contacts landed in `aec2c44`, with a reviewer-found initial-identity fix:
 eight regressions failed before the fix; the focused integration passed 98 cases after it.
 The reader has no policy/scorer wiring; complete-record adoption and original-engine evidence remain open.
-Worktree gate at that change: Ruff clean, 3,946 passed, 70 skipped (torch, Windows and local evidence among them);
-13 agreed pytest commands passed on the dirty tree, establishing no agreed pass at HEAD.
+Main gate at `4ccfd55`: Ruff clean, 4,002 passed, 44 skipped (40 torch, four opt-in Windows);
+13 agreed component commands passed. Mutation replay at `aec2c44`: all 459 registered wrong versions caught.
 Cleanup retained the GCP retry's three owner directions and bounded Spire profile/training corrections;
 expired runtime status, stale numerical refreshes and unadopted process additions were dropped.
-Six branches await owner answers, including training code with three independently reproduced collector/trainer defects.
+Owner follow-up deleted four drafts, archived training at `archive/spire-local-rl-20261111` after its three reproduced
+defects, and kept the human-opponent branch/worktree. Fourteen original local and three remote branches were removed.
 No game, training, cloud resource or paid API was started. Cards, reviews, raw gates, mutation replay,
 dispositions, retained worktree logs and recoverable original commits: `runs/unmerged-cleanup-20261110/`.

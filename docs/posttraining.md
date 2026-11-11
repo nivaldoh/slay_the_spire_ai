@@ -136,7 +136,7 @@ before using WH3 traces for those studies.
 
 ### Local RL on complete runs
 
-*2026-11-06, overnight, branch `spire-local-rl`; report in `runs/local-rl-20261106/handoff.md`. Unverified: no
+*2026-11-06, overnight; code now archived as `archive/spire-local-rl-20261111`; report in `runs/local-rl-20261106/handoff.md`. Unverified: no
 agreed check covers it.* `src/spire/localrl/` trains Qwen3-0.6B with a LoRA on complete Spire runs: the policy reads
 one next-token distribution over a symbol per legal choice, and a fresh JVM is no longer needed per run. Rewards come from
 the game. In the overnight loop Anthropic's model only sets numbers in `research.SPACE`, so none of its text reaches that loop's
@@ -151,7 +151,7 @@ not pair.
 On 40 fresh seeds that afternoon, at training speed, that PPO adapter did not separate from the warm start: 12.62 against 12.60
 (interval -1.90 to +1.90). Warm's 10.25 was at 1x on 12 other seeds and does not pair with 12.60; at speed those 12 seeds gave 10.0.
 Prompt and scorer changes on recorded rows did not separate either (best +0.72, interval -1.10 to +2.70). These rest on the marked
-choices for training speed, prompt facts and the fight reward on branch `spire-local-rl`. The hand-written rule
+choices for training speed, prompt facts and the fight reward in that archived code. The hand-written rule
 policy reached 26.0 floors on 37 other seeds. Training on its choices is an open question under [Provider terms](#provider-terms),
 because Claude wrote it, so it trained nothing. Prompt 2's card and potion text was written by Claude from memory of the public card
 text, so the prompt 2 arms' prompts hold Claude-written strings and the terms question covers them too. Online RL with fight rewards
