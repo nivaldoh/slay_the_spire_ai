@@ -128,7 +128,7 @@ the full prompt, every API attempt with usage, cost, latency, reason and notes, 
 commands sent. `result.json` holds the outcome, the final act, floor, HP, deck and relics,
 and LLM totals. A trace record of kind `decision` holds `decision.observation`,
 `decision.candidates` (each with `id`, `command` and `label`), the `choice_id` taken, and
-`behavior`, whose `type` is `llm` (with `reason` and `notes`) or `forced`;
+`behavior`, whose `type` is `llm` (with `reason` and `notes`), `rules`, `environment` or `forced`;
 `digest._decisions` reads them. Since harness v10.2 (2026-10-23, `model_exchange_version`
 2) a decision's attempts omit the request and output items, which its `model_exchange`
 event keeps once, with Qwen3.6's token logprobs; and `run-NNNN/saves/` holds a copy of each
@@ -145,6 +145,11 @@ uv run python -m spire spend                   # OpenAI ledger total; --provider
 uv run python -m spire stats                  # milestones per model, effort and harness version
 uv run python -m spire stats --rebuild        # rewrite results.csv from every saved job
 ```
+
+`spire rules --seed SEED --output runs/fullrun/<job>` plays complete runs with the rule policy
+(`src/spire/fullrun/rules.py`), a rule baseline with no model calls. Its later live diagnostic is recorded in
+[the 2026-11-06 log](log.md#2026-11-06-afternoon-training-speed-rule-policy-and-no-separated-gain-on-unseen-seeds).
+Strength remains unverified, and using its choices for training still needs the owner’s terms decision.
 
 `spire play` appends one row per run to the committed [results.csv](results.csv): date, job,
 run, seed, character, ascension, model, effort, harness version (from the job name), source,

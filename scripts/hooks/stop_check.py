@@ -38,10 +38,10 @@ ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "runs" / "checks" / "stop-hook.json"
 TIMEOUT_S = 600
 CHECK_COMMAND = ["uv", "run", "--locked", "python", "scripts/check.py"]
-# Commands that start or drive a game (`spire replay` is on the spire-restore-replay branch).
+# Commands that start or drive a game, including rule-policy runs and recorded replays.
 GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl", "worker"),
                  "twwarhammer3.battle.manual_demo": ("record",),
-                 "spire": ("play", "rollout", "train", "evaluate", "replay")}
+                 "spire": ("play", "rules", "rollout", "train", "evaluate", "replay")}
 LIVE_CHECKERS = {"check_wh3_army_setup.py", "check_wh3_checkpoint.py",
                  "check_wh3_checkpoint_siege.py", "check_wh3_restored_episode.py",
                  "check_wh3_team.py", "check_wh3_graph.py"}

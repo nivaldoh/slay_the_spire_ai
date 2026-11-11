@@ -136,6 +136,8 @@ Each step has its check written first; a failed check stops the steps that depen
    difference, and stops before the command that ends the run, so no score reaches the
    unlock progress. It writes to `runs/spire-restore-<name>/` outside `runs/fullrun/`,
    adds no results row, and records its branch commit and the profile before and after.
+   The driver is `spire replay TRACE --output runs/spire-restore-<name>/`
+   (`fullrun/replay.py`, drafted 2026-10-29; tested with a fake game only, never run live).
    - DATA001 (212 commands, floor 16) twice. Its 24 recorded snapshots also let the driver
      compare each autosave, timing fields aside, so hidden counters are checked.
    - The long Luna run (`llm-luna-v7-dev-20261012`, RUNDEV2, 881 commands, acts 1-3, died

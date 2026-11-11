@@ -321,6 +321,8 @@ def _job(path: Path, files: dict) -> dict:
     manifest = _read(path / "manifest.json", files)
     if manifest.get("scope") != "full_run":
         raise ValueError(f"{path}: not a full-run job")
+    if manifest.get("config", {}).get("model") == "rules":
+        raise ValueError(f"{path}: a rule policy job has no model requests to export")
     if manifest.get("status") == "running":
         raise ValueError(f"{path}: job manifest is still running; use stopped evidence")
     system = None

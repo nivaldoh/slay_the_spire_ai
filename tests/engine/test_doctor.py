@@ -136,3 +136,30 @@ def test_a_changed_workshop_jar_stops_the_launch_before_the_mod_config(setup, mo
     with pytest.raises(RuntimeError, match="Workshop hash changed for CommunicationMod.jar"):
         runtime.prepare_runtime("172.18.0.1", 9000)
     assert not config.exists()
+
+
+def _preferences_folder(root, files):
+    folder = root / "preferences"
+    folder.mkdir()
+    for name, text in files.items():
+        (folder / name).write_text(text)
+
+
+def test_profile_warnings_name_a_file_a_kill_could_lose(tmp_path):
+    files = {name: "{}" for name in doctor.GUARDED_PREFERENCES}
+    files.update({f"{name}.backUp": "{}" for name in doctor.GUARDED_PREFERENCES})
+    del files["STSUnlockProgress.backUp"]
+    files["STSDataVagabond"] = ""
+    _preferences_folder(tmp_path, files)
+    warnings = doctor.profile_warnings(tmp_path)
+    assert len(warnings) == 2
+    assert any("STSUnlockProgress has no usable backup" in warning for warning in warnings)
+    assert any("STSDataVagabond is missing or empty" in warning for warning in warnings)
+
+
+def test_a_healthy_profile_has_no_warnings_and_a_slot_uses_its_prefix(tmp_path):
+    names = [f"2_{name}" for name in doctor.GUARDED_PREFERENCES]
+    _preferences_folder(tmp_path, {
+        **{name: "{}" for name in names}, **{f"{name}.backUp": "{}" for name in names}})
+    assert doctor.profile_warnings(tmp_path, 2) == []
+    assert doctor.profile_warnings(tmp_path, 0)
