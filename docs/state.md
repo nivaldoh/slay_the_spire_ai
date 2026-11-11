@@ -3,11 +3,12 @@
 Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Benchmark progress, 2026-11-11 (Codex): preparing an exploratory P/R/O model pilot on
-the existing intermediate-C candidate; owner window about 05:48–15:48 UTC, game cutoff
-14:47 UTC, new API allowance $30 (WH3 Anthropic cumulative cap $43.68). No scored
-comparison or verification method adopted. Own branch/worktree `benchmark-progress-20261111`;
-brief and evidence: `runs/benchmark-progress-20261111/`.
+Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O model pilot ended; raw
+recounts and report work continue. Preparing a Belgrade lobby-only refusal diagnostic,
+with no historical battle or roster change. Owner window about 05:48–15:48 UTC,
+game cutoff 14:47 UTC, new API allowance $30 (WH3 Anthropic cumulative cap $43.68).
+No scored comparison or verification method adopted. Branch/worktree and evidence:
+`benchmark-progress-20261111`, `runs/benchmark-progress-20261111/`.
 
 Unmerged-work cleanup, 2026-11-11: selected tests, Spire rule policy/environment/replay and experimental Alesia contacts are merged. Fourteen original local branches and three remote branches were removed. The owner kept `wh3-human-opponent` and its worktree; experimental training is archived at `archive/spire-local-rl-20261111`, with results retained and three reproduced defects documented. No cleanup choice remains pending. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 
