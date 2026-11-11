@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-11 (benchmark progress window), goal verbatim: "Let's make progress. $30 budget.
+  I'll be back in like 10 hours." Follows the three-way single-army Cannae next-steps
+  discussion. Brief: `runs/benchmark-progress-20261111/brief.md`. Resumes progress and
+  exploratory pilot work within that window; adopts no verification method, score,
+  readiness gate or architecture ranking.
 - 2026-11-11 (cleanup answers): "Delete all four (Recommended)" applies to `v11-keys`,
   `wh3-rules-v21-attack-path`, `gate-xdist` and `team-check-battle-time`, including remote
   branches where present. For `wh3-human-opponent`: "Keep branch and worktree".

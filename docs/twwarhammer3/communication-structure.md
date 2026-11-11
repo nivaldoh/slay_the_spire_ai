@@ -6,6 +6,10 @@ with a $10 cap; the build, the runs and their results are in
 deferred by the owner on 2026-11-10. The owner chose all three structures and a reasonable
 provisional messaging baseline; communication necessity is one experiment type rather than a
 universal benchmark prerequisite. [Current answers](#questions-for-the-owner).
+A new $30 progress window on 2026-11-11 prepares an exploratory model pilot on the
+existing intermediate-C candidate (`runs/benchmark-progress-20261111/`). It does not
+admit that candidate through the failed construction gate or schedule scored stage 4;
+verification and scoring choices remain open.
 [Owner direction](../owner-direction.md):
 
 > I think one interesting thing that we can study is battle performance for one-army multi-agent
