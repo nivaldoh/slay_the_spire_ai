@@ -414,6 +414,26 @@ evidence. The procedure remains unverified without an agreed check. All games cl
 $0 API spend. Raw logs, generated steps and independent recount:
 `runs/benchmark-window-20261110/`, `review/report-new-test/audit_lobby.json`.
 
+The 2026-11-11 Belgrade lobby diagnostic at `25fc787`, the same build and pack,
+reproduced the first five recruitments and read 4450 main-army funds remaining.
+The native unit records then reported:
+
+| Card | Cost | Can recruit | IsOwned |
+|---|---:|---|---|
+| Flagellants | 600 | false | false |
+| Free Company Militia | 450 | false | false |
+| Swordsmen | 375 | true | true |
+| Greatswords | 850 | true | true |
+
+The refusal is not explained by insufficient remaining funds. Both unavailable
+cards report unowned in the same native field that the game's UI uses for ownership
+locks. This identifies a content-access blocker; exact package/license causes remain
+unestablished. No purchase, substitution, further recruitment or battle followed.
+Belgrade still has no complete army readback and needs content access or an explicit
+owner roster decision. The owned launch ended; no game/controller remained.
+Cards, exact scalar logs, cached-binding references and independent recount:
+`runs/benchmark-progress-20261111/`. The procedure remains unverified without an agreed check.
+
 ### Estimated battle windows
 
 The times below use one estimate, 20-25 min, for a launch that runs to its 1,200 s timer, as the

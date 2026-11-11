@@ -145,5 +145,11 @@
   "runs/comm-next-20261110/screen-muted-overview-01",
   "runs/comm-next-20261110/screen-peer-01",
   "runs/comm-next-20261110/screen-relay-01",
-  "runs/comm-next-20261110/screen-overview-01"
+  "runs/comm-next-20261110/screen-overview-01",
+  "runs/benchmark-progress-20261111/pilot-peer-01",
+  "runs/benchmark-progress-20261111/pilot-overview-01",
+  "runs/benchmark-progress-20261111/pilot-relay-01",
+  "runs/benchmark-progress-20261111/pilot-overview-02",
+  "runs/benchmark-progress-20261111/pilot-peer-02",
+  "runs/benchmark-progress-20261111/pilot-relay-02"
 ]

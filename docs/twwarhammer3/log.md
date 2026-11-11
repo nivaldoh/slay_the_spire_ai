@@ -8535,3 +8535,28 @@ Owner follow-up deleted four drafts, archived training at `archive/spire-local-r
 defects, and kept the human-opponent branch/worktree. Fourteen original local and three remote branches were removed.
 No game, training, cloud resource or paid API was started. Cards, reviews, raw gates, mutation replay,
 dispositions, retained worktree logs and recoverable original commits: `runs/unmerged-cleanup-20261110/`.
+
+## 2026-11-11: intermediate-C model pilot and Belgrade lobby diagnosis
+
+Owner: about ten hours of benchmark progress, $30. Six fresh launches were planned at `54c3c79`,
+unchanged Haiku 5.5 low P/R/O controllers, build 26403568, harness b54 and pack `bfe8fb3d…`.
+All six lost, two per structure. Raw enemy taken: P 32.2/32.8%, R 40.1/26.8%, O 45.3/29.0%.
+The 5161 calls cost $6.4477859; WH3 ledger $13.6806328 to $20.1284187, below the $43.68 cap.
+Independent recounts matched all 142 source hashes per job, recorded request/view boundaries,
+ledger rows/response IDs and six register additions; the original 847 rows stayed unchanged.
+Forty replies failed; 15 local refusal batches and 70 engine order rejections remain separate.
+No missing input/communication snapshot or prohibited captain-to-captain delivery in R/O was found.
+Exact wall duration/Windows stretch range and whole-enemy replay reconstruction remain unavailable.
+No architecture ranking, communication benefit, readiness gate or verification method is established.
+Belgrade lobby-only follow-up at `25fc787`: five recruited cards, 4450 funds; Flagellants cost 600
+and Free Company 450, both CanRecruit=false and IsOwned=false. Swordsmen 375 and Greatswords 850
+were both recruitable/owned. Native ownership flags identify a content-access blocker; exact
+package/license causes remain unknown. No purchase, substitution, extra recruitment or battle followed.
+The owned lobby closed; the final Windows snapshot has no game, and no WSL controller remained.
+Optional controlled message reasks stayed parked at preflight after a prototype summary defect;
+no paid call, card commit or metric adoption. The three-file timeout description correction
+preserves executable AST, timeout values and the original judgement-marker line.
+The report selection keeps all 147 prior jobs and adds all six model attempts; the browser
+checked seven scripted conditions and six model attempts, including exported replay identities.
+Report integration and gate evidence: `runs/benchmark-progress-20261111/`; all game findings
+remain unverified without an agreed method. Next: endpoint/check agreement and Belgrade access.

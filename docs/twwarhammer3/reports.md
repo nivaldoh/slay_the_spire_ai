@@ -701,6 +701,29 @@ dedicated report remains available. Rebuild it from the exact job list:
 uv run python -m twwarhammer3 report --jobs-file runs/comm-next-20261110/screen-report-jobs.json --output runs/comm-next-20261110/screen-report
 ```
 
+JUDGEMENT?: Pilot display selection — Codex, 2026-11-11: `benchmark_jobs.json` appends
+every launched attempt from the frozen exploratory P/R/O pilot. Keeping a separate
+page changes coverage; this selection admits no scenario, score or architecture ranking.
+
+The 2026-11-11 model pilot uses the existing intermediate-C candidate and keeps the
+scripted screen alongside its model rows. Its frozen plan, every planned attempt,
+raw readings and independent recounts are under `runs/benchmark-progress-20261111/`.
+The historical scripted screen's failed proposed prerequisite remains visible. The
+pilot establishes no architecture ranking or communication benefit.
+
+The task-local display check opens each of the seven original scripted conditions
+and six model attempts, compares native outcomes, and downloads each replay to match
+its portable instance, episode and timestamps to the original manifest/result. It
+also checks typed controller rows and desktop/phone layout:
+
+```bash
+NODE_PATH=~/.cache/wh3-playwright/node_modules node runs/benchmark-progress-20261111/check-pilot-browser.cjs \
+  runs/twwarhammer3/reports/benchmark.html runs/comm-next-20261110/screen-report-jobs.json \
+  runs/benchmark-progress-20261111/pilot-model-jobs.json runs/benchmark-progress-20261111/browser-final
+```
+
+This checks the recorded display and exports; the method has no verification agreement.
+
 ## Saved reports
 
 Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `jobs`:

@@ -6,10 +6,10 @@ with a $10 cap; the build, the runs and their results are in
 deferred by the owner on 2026-11-10. The owner chose all three structures and a reasonable
 provisional messaging baseline; communication necessity is one experiment type rather than a
 universal benchmark prerequisite. [Current answers](#questions-for-the-owner).
-A new $30 progress window on 2026-11-11 prepares an exploratory model pilot on the
-existing intermediate-C candidate (`runs/benchmark-progress-20261111/`). It does not
-admit that candidate through the failed construction gate or schedule scored stage 4;
-verification and scoring choices remain open.
+The $30 progress window on 2026-11-11 completed an exploratory model pilot on the
+existing intermediate-C candidate: six engine losses, with raw evidence and limits
+[below](#exploratory-model-pilot-2026-11-11). It admits no candidate through the failed
+construction gate or scored stage 4; verification and scoring choices remain open.
 [Owner direction](../owner-direction.md):
 
 > I think one interesting thing that we can study is battle performance for one-army multi-agent
@@ -936,3 +936,44 @@ Git at `267b406`; their run counts, cost estimates and statistical rules were pr
 
 The other marked design choices and proposed mechanics check retain their existing review
 status. These answers do not establish benchmark validity or communication benefit.
+
+## Exploratory model pilot (2026-11-11)
+
+The owner's new progress window resumed exploratory runs. The card was committed
+before launch at `54c3c79`; all six fresh launches used that source, existing
+`emp-envelopment-c-mid-*-v3` declarations and model controllers, Haiku 5.5 low on
+Anthropic, build 26403568, harness b54 and pack `bfe8fb3d…`. Nothing was tuned between
+launches. This is the existing development candidate, not a held-out evaluation.
+The scenario and size/order rest on JUDGEMENT `runs/benchmark-progress-20261111/card-pilot.md`
+Pilot candidate and JUDGEMENT? Pilot size/order; its other inherited choices remain marked.
+
+| Frozen order | Structure | Engine result | Engine seconds | Raw enemy taken % | Calls | Recorded USD |
+|---|---|---|---:|---:|---:|---:|
+| 1 | Peer | lost | 409.3 | 32.2 | 731 | 0.9402084 |
+| 2 | Overview | lost | 412.6 | 45.3 | 879 | 1.1093290 |
+| 3 | Relay | lost | 547.6 | 40.1 | 1188 | 1.4171158 |
+| 4 | Overview | lost | 351.8 | 29.0 | 771 | 1.0234900 |
+| 5 | Peer | lost | 460.9 | 32.8 | 823 | 0.9845574 |
+| 6 | Relay | lost | 354.1 | 26.8 | 769 | 0.9730853 |
+
+All six engine endings were losses: two per structure. The 5161 calls cost $6.4477859
+of the new $30 window (WH3 ledger $13.6806328 to $20.1284187). Raw taken uses native
+final active-men totals, without replacing a win with 100. Forty replies failed the
+member parser; there were also 15 local refusal batches and 70 engine order rejections.
+Those populations stay separate. All 142 saved source-file hashes per job matched
+the frozen revision. Independent recount found no request/view mismatch, missing
+input/communication snapshot or captain-to-captain delivery in R/O in these records;
+the star commanders issued no orders.
+
+These observations establish no architecture ranking, communication benefit or
+readiness gate. Exact wall duration and saved Windows clock ranges cannot be
+independently reconstructed; replay frames omit some enemies, so whole-enemy totals
+come from native final records rather than a complete replay reconstruction. The
+checks and feature remain unverified without an agreed method at this revision.
+
+The frozen plans, native records, reader and independent job/aggregate recounts are
+in `runs/benchmark-progress-20261111/`. The main report retains all six attempts beside
+the earlier scripted screen. Optional controlled message reasks were not sent:
+preflight still found a prototype summary defect after a simulated ledger-write
+failure at the third review round. That prototype stays parked, with no new metric
+adopted. Next agree the performance endpoint and repeatable checks before scored stage 4.

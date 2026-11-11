@@ -3,12 +3,11 @@
 Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O model pilot ended; raw
-recounts and report work continue. Preparing a Belgrade lobby-only refusal diagnostic,
-with no historical battle or roster change. Owner window about 05:48–15:48 UTC,
-game cutoff 14:47 UTC, new API allowance $30 (WH3 Anthropic cumulative cap $43.68).
-No scored comparison or verification method adopted. Branch/worktree and evidence:
-`benchmark-progress-20261111`, `runs/benchmark-progress-20261111/`.
+Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts
+and report update finished. All six battles lost; no ranking.
+Belgrade's Flagellants and Free Company report unowned in the lobby; no battle or
+roster change. Both games closed; recorded spend $6.45 of $30. Evidence:
+`runs/benchmark-progress-20261111/`. Next: endpoint/check agreement and Belgrade access.
 
 Unmerged-work cleanup, 2026-11-11: selected tests, Spire rule policy/environment/replay and experimental Alesia contacts are merged. Fourteen original local branches and three remote branches were removed. The owner kept `wh3-human-opponent` and its worktree; experimental training is archived at `archive/spire-local-rl-20261111`, with results retained and three reproduced defects documented. No cleanup choice remains pending. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 
@@ -21,7 +20,7 @@ Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-m
 
 Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Code archived as `archive/spire-local-rl-20261111`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
-WH3 historical siege evaluations, harness b54: no battle played; all unverified ([overview](twwarhammer3/historical-evals.md)). The 2026-11-10 lobby-only probe passed Alesia, Haengju and Izmail; Belgrade stopped at refused Flagellants recruitment, with no complete army readback. Haengju, Belgrade, Alesia and Izmail have declarations, witnesses, controls and pages; Malta remains unbuilt. The owner approved models using siege orders: `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No battle has run on v23. Next: resolve Belgrade's unavailable card and the rest of decision 15 before battle construction trials.
+WH3 historical evaluations beyond Cannae, harness b54: no battle played; all unverified ([overview](twwarhammer3/historical-evals.md)). Alesia, Haengju and Izmail retain their 2026-11-10 lobby readbacks. On 11-11 Belgrade's Flagellants and Free Company both reported unowned and unrecruitable despite sufficient funds; no complete army readback. Haengju, Belgrade, Alesia and Izmail have declarations, witnesses, controls and pages; Malta remains unbuilt. The owner approved models using siege orders: `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No siege battle has run on v23. Next: Belgrade access or an owner roster choice, and the rest of decision 15 before construction trials.
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
@@ -53,8 +52,8 @@ Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed,
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (latest live 4/4 at `7b8b9bf`); direct model-team mechanics passed one live case at `c1ad84d`.
-- [Communication follow-up](twwarhammer3/communication-structure.md#intermediate-force-development-results), 2026-11-10: mechanics probes and the seven-run intermediate-force screen completed; no game running. Each witness won once, but both muted controls also won, failing the proposed construction gate. $0 API spend; no comparison or verification claim. Next: decision 14; handoff `runs/comm-next-20261110/handoff.md`.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $13.89 on 2026-11-08 (WH3 $13.6806, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
+- [Communication follow-up](twwarhammer3/communication-structure.md#exploratory-model-pilot-2026-11-11), 2026-11-11: two fresh model launches per chosen structure, six losses at `54c3c79`; raw recounts completed. The earlier scripted screen still failed its proposed gate. No ranking, benefit or verification claim. Next: decision 14; handoff `runs/benchmark-progress-20261111/handoff.md`.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33; Anthropic game ledgers $20.34 on 2026-11-11 (WH3 $20.1284, Spire $0.2124; includes estimates for failed calls); the key also spent $0.0211 on provider smoke calls, under its shared $200. GaP has a $5 cap.
 - Battle checkpoints: Land live-value rule and all four declared siege states passed at `210e356`, build 26403568 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0 still targets build 25961564.
 
 ## Slay the Spire
