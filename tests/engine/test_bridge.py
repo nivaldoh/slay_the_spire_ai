@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 
 import pytest
 
@@ -138,8 +139,9 @@ def test_address_reuse_does_not_allow_two_live_listeners():
             assert original.receive() == {"original": True}
 
 
+@contextmanager
 def launch_relay(address, *args):
-    return subprocess.Popen(
+    with subprocess.Popen(
         [
             sys.executable,
             str(RELAY),
@@ -154,7 +156,13 @@ def launch_relay(address, *args):
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-    )
+    ) as process:
+        try:
+            yield process
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.communicate(timeout=2)
 
 
 def test_real_relay_handshake_and_bidirectional_bytes():
@@ -163,30 +171,25 @@ def test_real_relay_handshake_and_bidirectional_bytes():
         listener.listen(1)
         listener.settimeout(2)
         with launch_relay(listener.getsockname()) as process:
-            try:
-                connection, _ = listener.accept()
-                with connection:
-                    connection.settimeout(2)
-                    # Readiness must precede the first state, not wait for it.
-                    with ThreadPoolExecutor(max_workers=1) as executor:
-                        ready = executor.submit(process.stdout.readline)
-                        assert ready.result(timeout=2) == b"ready\n"
-                    state = '{"name":"é","x":1}\r\n'.encode()
-                    process.stdin.write(state)
-                    process.stdin.flush()
-                    with connection.makefile("rb") as states:
-                        assert states.readline() == state
-                    # A command cut short by the disconnect never reaches the game.
-                    connection.sendall(b"PLAY 1 0\nEND\nPLAY 2")
-                stdout, stderr = process.communicate(timeout=3)
-                assert stdout == b"PLAY 1 0\nEND\n"
-                assert process.returncode == 1
-                assert b"windows_relay:" in stderr
-                assert b"Fatal Python error" not in stderr
-            finally:
-                if process.poll() is None:
-                    process.kill()
-                    process.communicate(timeout=2)
+            connection, _ = listener.accept()
+            with connection:
+                connection.settimeout(2)
+                # Readiness must precede the first state, not wait for it.
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    ready = executor.submit(process.stdout.readline)
+                    assert ready.result(timeout=2) == b"ready\n"
+                state = '{"name":"é","x":1}\r\n'.encode()
+                process.stdin.write(state)
+                process.stdin.flush()
+                with connection.makefile("rb") as states:
+                    assert states.readline() == state
+                # A command cut short by the disconnect never reaches the game.
+                connection.sendall(b"PLAY 1 0\nEND\nPLAY 2")
+            stdout, stderr = process.communicate(timeout=3)
+            assert stdout == b"PLAY 1 0\nEND\n"
+            assert process.returncode == 1
+            assert b"windows_relay:" in stderr
+            assert b"Fatal Python error" not in stderr
 
 
 def test_relay_does_not_claim_readiness_if_connection_fails():
@@ -203,44 +206,34 @@ def test_relay_does_not_claim_readiness_if_connection_fails():
 def test_bridge_alone_enforces_the_line_limit_on_relayed_state():
     with BridgeServer(timeout=2, max_line_bytes=8) as bridge:
         with launch_relay(bridge.address) as process:
-            try:
-                bridge.accept()
-                process.stdin.write(b'{"x":12345}\n')
-                process.stdin.flush()
-                with pytest.raises(BridgeProtocolError, match="byte limit"):
-                    bridge.receive()
-                stdout, stderr = process.communicate(timeout=3)
-                assert stdout == b"ready\n"
-                assert b"windows_relay:" in stderr
-                assert process.returncode == 1
-            finally:
-                if process.poll() is None:
-                    process.kill()
-                    process.communicate(timeout=2)
+            bridge.accept()
+            process.stdin.write(b'{"x":12345}\n')
+            process.stdin.flush()
+            with pytest.raises(BridgeProtocolError, match="byte limit"):
+                bridge.receive()
+            stdout, stderr = process.communicate(timeout=3)
+            assert stdout == b"ready\n"
+            assert b"windows_relay:" in stderr
+            assert process.returncode == 1
 
 
 def test_relay_waits_past_its_connect_timeout_for_a_slow_runner():
     # A model may think longer than any idle limit; only the connection is bounded.
     with BridgeServer(timeout=2) as bridge:
         with launch_relay(bridge.address, "--timeout", "0.05") as process:
-            try:
-                bridge.accept()
-                with pytest.raises(subprocess.TimeoutExpired):
-                    process.wait(timeout=0.5)
-                bridge.send("END")
-                bridge.close()
-                # The runner's disconnect alone ends the relay. communicate() closes stdin, so
-                # calling it first raced the relay's "CommunicationMod disconnected" (3 of 64
-                # runs under load, and one GitHub run, 2026-10-29).
-                process.wait(timeout=2)
-                stdout, stderr = process.communicate(timeout=2)
-                assert stdout == b"ready\nEND\n"
-                assert b"runner disconnected" in stderr
-                assert process.returncode == 1
-            finally:
-                if process.poll() is None:
-                    process.kill()
-                    process.communicate(timeout=2)
+            bridge.accept()
+            with pytest.raises(subprocess.TimeoutExpired):
+                process.wait(timeout=0.5)
+            bridge.send("END")
+            bridge.close()
+            # The runner's disconnect alone ends the relay. communicate() closes stdin, so
+            # calling it first raced the relay's "CommunicationMod disconnected" (3 of 64
+            # runs under load, and one GitHub run, 2026-10-29).
+            process.wait(timeout=2)
+            stdout, stderr = process.communicate(timeout=2)
+            assert stdout == b"ready\nEND\n"
+            assert b"runner disconnected" in stderr
+            assert process.returncode == 1
 
 
 def test_second_client_cannot_be_accepted_after_first_session():

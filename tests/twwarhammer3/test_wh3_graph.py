@@ -9,6 +9,7 @@ from copy import deepcopy
 
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
+from wh3_graph_fixtures import attack_graph, move_graph
 
 from twwarhammer3.battle import graph, play
 from twwarhammer3.battle import skill_contracts as catalog
@@ -19,24 +20,6 @@ def state(seq=1, time_ms=10000, **changes):
     return {"battle": "b1", "phase": "Deployed", "seq": seq, "time_ms": time_ms,
             "friendly": [{"id": "u", "x": 0, "z": 0, "men": 100, "state": []}],
             "enemy": [{"id": "e", "x": 20, "z": 0, "men": 100, "state": []}], **changes}
-
-
-def move_graph():
-    return {"version": graph.VERSION, "entry": "move", "nodes": {
-        "move": {"op": "move", "inputs": {"units": ["u"], "point": {"x": 20, "z": 0}},
-                 "next": {"succeeded": "end", "failed": "end", "cancelled": "end"}},
-        "end": {"op": "end", "inputs": {}, "next": {}}}}
-
-
-def attack_graph(op="engage"):
-    return {"version": graph.VERSION, "entry": "owned", "nodes": {
-        "owned": {"op": "owned", "inputs": {},
-                  "next": {"succeeded": "pick", "empty": "owned"}},
-        "pick": {"op": "select_target", "inputs": {"units": {"ref": "owned.units"}},
-                 "next": {"succeeded": "act", "empty": "owned"}},
-        "act": {"op": op, "inputs": {"units": {"ref": "owned.units"},
-                                       "target": {"ref": "pick.target"}},
-                "next": {"succeeded": "owned", "failed": "owned", "cancelled": "owned"}}}}
 
 
 def test_move_needs_arrival_not_ack_and_preserves_run_source():
@@ -274,3 +257,25 @@ def test_single_graph_dispatch_also_checks_latest_view_when_input_is_delayed(tmp
     assert mailbox.requests[0][1:] == (1, [])  # old source seq retained; no stale orders sent
     events = [json.loads(line) for line in (directory / "trace.jsonl").read_text().splitlines()]
     assert "expired" in next(e for e in events if e["kind"] == "invalid")["error"]
+
+
+def test_end_node_closes_the_graph_on_its_next_observation():
+    # A graph_llm member stops goal requests only once its graph is closed (graph_goals.decide).
+    policy = graph.GraphPolicy(move_graph())
+    policy.decide(state())
+    arrived = state(2, 12000)
+    arrived["friendly"][0]["x"] = 16
+    policy.decide(arrived)
+    policy.drain_events()
+
+    assert policy.decide(state(3, 13000)) == []
+
+    assert policy.closed
+    assert [(e["event"], e["node"]) for e in policy.drain_events()] == [
+        ("started", "end"), ("closed", "end")]
+
+def test_shoot_without_ammunition_fails_without_orders():
+    view = state()
+    view["friendly"][0].update(ammo=0, range=100)
+    run = catalog.SkillRun("shoot", {"units": ["u"], "target": "e"}, 10000)
+    assert run.tick(view) == ("failed", [], "no ammunition")

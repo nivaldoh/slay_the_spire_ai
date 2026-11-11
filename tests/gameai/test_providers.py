@@ -116,6 +116,8 @@ def test_structured_calls_route_with_price_caps_and_charge_reported_cost(tmp_pat
     assert sent[0]["text"]["format"]["schema"] == SCHEMA
     route = sent[0]["provider"]
     assert route["require_parameters"] is True and route["max_price"]["request"] == 0
+    price_in, _, price_out = OPENROUTER.prices[name]
+    assert route["max_price"] == {"prompt": price_in, "completion": price_out, "request": 0}
     assert agent.ledger.spent == .0002  # actual billed cost, not the conservative ceiling
     assert json.loads(agent.ledger.path.read_text())["provider"] == "openrouter"
 
@@ -425,3 +427,10 @@ def test_anthropic_usage_without_cache_counts_is_charged_as_reported(tmp_path, m
     assert attempt["usage"]["input_tokens"] == 1000
     assert attempt["usage"]["input_tokens_details"] == {"cached_tokens": 0}
     assert attempt["usd"] == pytest.approx((1000 * .10 + 40 * .50) / 1e6)
+
+
+def test_glm_routing_ceilings_are_its_declared_input_and_output_prices():
+    # GLM's declared $1.40/M input and $4.80/M output, written out: the parametrized test above
+    # reads the same price table as routing() and would not see the columns swapped.
+    assert routing("openrouter", "z-ai/glm-5.3")["provider"]["max_price"] == {
+        "prompt": 1.40, "completion": 4.80, "request": 0}

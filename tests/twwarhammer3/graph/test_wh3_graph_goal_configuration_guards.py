@@ -8,7 +8,7 @@ import json
 from copy import deepcopy
 
 import pytest
-from test_wh3_graph_goal_factory import configuration
+from wh3_graph_goal_support import configuration
 
 from twwarhammer3.battle import configured, controllers, team
 

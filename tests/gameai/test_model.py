@@ -703,3 +703,18 @@ def test_a_key_that_cannot_be_encoded_as_a_header_fails_at_once_without_a_charge
     with pytest.raises(api.APIError, match="^UnicodeEncodeError: ") as error:
         api.post("sk-pasted\u2019", {})
     assert error.value.uncertain_attempts == 0 and len(sent) == 1 and slept == []
+
+
+def test_failed_responses_with_zero_allowance_raise_after_one_billed_attempt(tmp_path):
+    failed_resends, sends = 0, 1
+    bodies = []
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0),
+                      send=replying(["fail"] * sends, bodies), failed_resends=failed_resends,
+                      instructions="Press a key.", max_output_tokens=200)
+    with pytest.raises(api.APIError) as failure:
+        model.ask("Wall ahead.", {}, parse_up, retries=2)
+    attempts = failure.value.attempts
+    assert failure.value.retryable and all(body == bodies[0] for body in bodies)
+    assert [a["response_id"] for a in attempts] == [f"r{n}" for n in range(1, sends + 1)]
+    assert failure.value.attempt is attempts[-1] and model.totals["calls"] == sends
+    assert model.ledger.spent == pytest.approx(sum(a["usd"] for a in attempts))

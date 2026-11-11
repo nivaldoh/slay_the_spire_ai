@@ -8,7 +8,7 @@ import json
 from copy import deepcopy
 
 import pytest
-from test_wh3_graph import attack_graph
+from wh3_graph_fixtures import attack_graph
 
 from twwarhammer3.battle import configured, setup
 

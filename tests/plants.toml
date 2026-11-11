@@ -4216,3 +4216,48 @@ tests = ["tests/twwarhammer3/test_wh3_suite_timer_measures.py"]
 old = '    return round(100 * (1 - active / men0), 1)'
 new = '    return 100 if (result.get("engine_ending") or {}).get("result") == "won" else round(100 * (1 - active / men0), 1)'
 
+
+[[plant]]
+id = "model-ignores-configured-failed-resends"
+guards = "The caller can forbid failed-response resends"
+file = "src/gameai/llm.py"
+old = "attempts, feedback, resends = [], \"\", self.failed_resends"
+new = "attempts, feedback, resends = [], \"\", FAILED_RESENDS"
+tests = ["tests/gameai/test_model.py::test_failed_responses_with_zero_allowance_raise_after_one_billed_attempt"]
+source = "2026-11-10 selected cleanup integration: independent fault challenge"
+
+[[plant]]
+id = "routing-swaps-price-columns"
+guards = "Routing preserves declared input and output price columns"
+file = "src/gameai/providers.py"
+old = "\"max_price\": {\"prompt\": price_in, \"completion\": price_out, \"request\": 0}"
+new = "\"max_price\": {\"prompt\": price_out, \"completion\": price_in, \"request\": 0}"
+tests = ["tests/gameai/test_providers.py::test_glm_routing_ceilings_are_its_declared_input_and_output_prices"]
+source = "2026-11-10 selected cleanup integration: independent fault challenge"
+
+[[plant]]
+id = "capture-ignores-initial-battle"
+guards = "A screenshot belongs to the requested battle before capture"
+file = "src/twwarhammer3/engine/windows_capture.py"
+old = "if before.get(\"job\") != job or before.get(\"battle\") != battle:"
+new = "if before.get(\"job\") != job:"
+tests = ["tests/twwarhammer3/test_wh3_windows_capture.py::test_a_capture_is_discarded_when_the_battle_or_foreground_window_changes"]
+source = "2026-11-10 selected cleanup integration: independent fault challenge"
+
+[[plant]]
+id = "capture-ignores-final-battle"
+guards = "A screenshot belongs to the requested battle after capture"
+file = "src/twwarhammer3/engine/windows_capture.py"
+old = "if after.get(\"job\") != job or after.get(\"battle\") != battle:"
+new = "if after.get(\"job\") != job:"
+tests = ["tests/twwarhammer3/test_wh3_windows_capture.py::test_a_capture_is_discarded_when_the_battle_or_foreground_window_changes"]
+source = "2026-11-10 selected cleanup integration: independent fault challenge"
+
+[[plant]]
+id = "shoot-dry-waits-instead-of-failing"
+guards = "A fresh shoot skill with no ammunition fails without orders"
+file = "src/twwarhammer3/battle/skill_contracts.py"
+old = "if error:\n            self.status, self.reason = \"failed\", error\n            return self.status, [], error"
+new = "if error:\n            return \"running\", [], None"
+tests = ["tests/twwarhammer3/test_wh3_graph.py::test_shoot_without_ammunition_fails_without_orders"]
+source = "2026-11-10 selected cleanup integration: independent fault challenge"

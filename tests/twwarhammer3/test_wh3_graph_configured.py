@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from test_wh3_graph import move_graph
+from wh3_graph_fixtures import move_graph
 
 from gameai.ledger import BudgetExhausted
 from twwarhammer3.battle import controllers, graph, llm, team

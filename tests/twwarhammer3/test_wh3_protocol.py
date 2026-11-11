@@ -166,8 +166,14 @@ SIEGE = {**OBSERVATION, "mode": {"supplies": 1000, "slots": [
 ]}}
 
 
+def test_a_build_on_an_empty_slot_is_allowed_once_per_batch():
+    orders = [{"unit": "army", "type": "build", "slot": "s1", "option": "tower_piercing_1"}]
+    protocol.validate_orders(orders, SIEGE)
+    with pytest.raises(protocol.IllegalActionError, match="ordered twice"):
+        protocol.validate_orders(orders * 2, SIEGE)
+
+
 @pytest.mark.parametrize("order, error", [
-    ({"slot": "s1", "option": "tower_piercing_1"}, None),
     ({"slot": "s9", "option": "tower_piercing_1"}, "unknown building slot"),
     ({"slot": "s2", "option": "tower_piercing_1"}, "already has a building"),
     ({"slot": "s1", "option": "tower_cannon_9"}, "has no option"),
@@ -175,15 +181,8 @@ SIEGE = {**OBSERVATION, "mode": {"supplies": 1000, "slots": [
 ])
 def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order, error):
     orders = [{"unit": "army", "type": "build", **order}]
-    if error is None:
+    with pytest.raises(protocol.IllegalActionError, match=error):
         protocol.validate_orders(orders, SIEGE)
-    else:
-        with pytest.raises(protocol.IllegalActionError, match=error):
-            protocol.validate_orders(orders, SIEGE)
-    twice = [orders[0], orders[0]]
-    if error is None:
-        with pytest.raises(protocol.IllegalActionError, match="ordered twice"):
-            protocol.validate_orders(twice, SIEGE)
 
 
 SURVIVAL = {**OBSERVATION, "mode": {
@@ -197,9 +196,13 @@ SURVIVAL = {**OBSERVATION, "mode": {
 }}
 
 
+@pytest.mark.parametrize("count", [1, 2])
+def test_reinforcements_within_the_pool_and_supplies_are_allowed(count):
+    orders = [{"unit": "army", "type": "reinforce", "reinforcement": "marauders", "zone": 14}]
+    protocol.validate_orders(orders * count, SURVIVAL)
+
+
 @pytest.mark.parametrize("orders, error", [
-    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 14}], None),
-    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 14}] * 2, None),
     ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14},
       {"type": "reinforce", "reinforcement": "marauders", "zone": 14}],
      "marauders costs 400, supplies 1000 \\(900 already ordered\\)"),  # the cheaper one first
@@ -215,11 +218,8 @@ SURVIVAL = {**OBSERVATION, "mode": {
 ])
 def test_purchases_come_from_the_pool_or_usable_slots_within_the_batchs_supplies(orders, error):
     orders = [{"unit": "army", **order} for order in orders]
-    if error is None:
+    with pytest.raises(protocol.IllegalActionError, match=error):
         protocol.validate_orders(orders, SURVIVAL)
-    else:
-        with pytest.raises(protocol.IllegalActionError, match=error):
-            protocol.validate_orders(orders, SURVIVAL)
 
 
 def test_a_purchase_after_a_unit_ability_or_toggle_in_the_same_batch_validates():

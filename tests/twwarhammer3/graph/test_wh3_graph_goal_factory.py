@@ -4,26 +4,11 @@ import json
 from copy import deepcopy
 
 import pytest
-from test_wh3_graph_goals import spec, state
+from wh3_graph_goal_support import configuration, spec, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.provenance import sha256
 from twwarhammer3.battle import configured, controllers, graph, graph_author, graph_goals
-
-
-def configuration(tmp_path, *, team=False):
-    leaf = {"type": "graph_llm", "graph": spec(), "model": "claude-haiku-5-5",
-            "effort": "low", "task": "Prefer a useful public target.", "max_requests": 1}
-    value = {"type": "team", "members": {
-        "line": {"unit_types": ["foot"], "controller": leaf},
-        "cavalry": {"unit_types": None, "controller": {"type": "llm"}}}} if team else leaf
-    path = tmp_path / "controller.json"
-    path.write_text(json.dumps(value))
-    ledger = tmp_path / "test-ledger.jsonl"
-    ledger.touch()
-    config = {"policy": "configured", "controller_config": str(path), "provider": "anthropic",
-              "model": "claude-haiku-5-5", "effort": "low", "budget_usd": 5, "ledger": str(ledger)}
-    return path, config, value
 
 
 def test_goal_configuration_is_resolved_without_a_key_or_model_instance(tmp_path, monkeypatch):

@@ -4,6 +4,8 @@ through the worker's own ``Worker.watch`` (engine/worker.py), so the evidence fi
 worker's event shape and the coordinator's layout. Positions and identities are made up;
 nothing here says how real peers' observations line up."""
 
+from operator import setitem
+
 import pytest
 
 from twwarhammer3.battle.peers import compare
@@ -261,58 +263,44 @@ def test_the_first_difference_is_the_earliest_whichever_side_lacks_the_unit(tmp_
     assert pair["first_difference_ms"] == 2000  # before the 3000 position difference
 
 
-def _broken(event, change):
-    data = event["event"]["data"]["observation"]
-    rows = data["native"]["units"]
-    if change in ("kind", "data"):
-        del event["event"][change]
-    elif change == "no observation":
-        del event["event"]["data"]["observation"]
-    elif change == "no battle":
-        del data["battle"]
-    elif change == "error row without index":
-        rows[0] = {"alliance": 1, "army": 1, "error": "position: no unit"}
-    elif change in ("type", "ui_id"):
-        del rows[0][change]
-    elif change == "z not a number":
-        rows[1]["z"] = None
-    elif change == "observation not an object":
-        event["event"]["data"]["observation"] = "seen"
-    elif change == "no time":
-        del data["time_ms"]
-    elif change == "no units":
-        del data["native"]["units"]
-    elif change == "row without x":
-        del data["native"]["units"][1]["x"]
-    elif change == "row not an object":
-        data["native"]["units"][2] = "f3"
-    elif change == "x not a number":
-        data["native"]["units"][0]["x"] = "100.25"
-    elif change == "no event":
-        del event["event"]
-    return event
+def observed(event):
+    return event["event"]["data"]["observation"]
 
 
-@pytest.mark.parametrize("change, problem", [
-    ("not JSON", "is not JSON"),
-    ("no event", "KeyError: 'event'"),
-    ("no time", "missing time_ms"),
-    ("no units", "KeyError: 'units'"),
-    ("row without x", "missing units\\[1\\].x"),
-    ("row not an object", "units\\[2\\] is not an object"),
-    ("x not a number", "units\\[0\\] has a position that is not a number"),
-    ("z not a number", "units\\[1\\] has a position that is not a number"),
-    ("kind", "KeyError: 'kind'"),
-    ("data", "KeyError: 'data'"),
-    ("no observation", "KeyError: 'observation'"),
-    ("no battle", "missing battle"),
-    ("error row without index", "missing units\\[0\\].index"),
-    ("type", "missing units\\[0\\].type"),
-    ("ui_id", "missing units\\[0\\].ui_id"),
-    ("observation not an object", "the observation is not an object"),
+def native_units(event):
+    return observed(event)["native"]["units"]
+
+
+@pytest.mark.parametrize("edit, problem", [
+    pytest.param(None, "is not JSON", id="not JSON"),
+    pytest.param(lambda e: e.pop("event"), "KeyError: 'event'", id="no event"),
+    pytest.param(lambda e: observed(e).pop("time_ms"), "missing time_ms", id="no time"),
+    pytest.param(lambda e: observed(e)["native"].pop("units"), "KeyError: 'units'", id="no units"),
+    pytest.param(lambda e: native_units(e)[1].pop("x"),
+                 r"missing units\[1\].x", id="row without x"),
+    pytest.param(lambda e: setitem(native_units(e), 2, "f3"),
+                 r"units\[2\] is not an object", id="row not an object"),
+    pytest.param(lambda e: native_units(e)[0].update(x="100.25"),
+                 r"units\[0\] has a position that is not a number", id="x not a number"),
+    pytest.param(lambda e: native_units(e)[1].update(z=None),
+                 r"units\[1\] has a position that is not a number", id="z not a number"),
+    pytest.param(lambda e: e["event"].pop("kind"), "KeyError: 'kind'", id="kind"),
+    pytest.param(lambda e: e["event"].pop("data"), "KeyError: 'data'", id="data"),
+    pytest.param(lambda e: e["event"]["data"].pop("observation"),
+                 "KeyError: 'observation'", id="no observation"),
+    pytest.param(lambda e: observed(e).pop("battle"), "missing battle", id="no battle"),
+    pytest.param(lambda e: setitem(native_units(e), 0, {
+        "alliance": 1, "army": 1, "error": "position: no unit"}),
+        r"missing units\[0\].index", id="error row without index"),
+    pytest.param(lambda e: native_units(e)[0].pop("type"),
+                 r"missing units\[0\].type", id="type"),
+    pytest.param(lambda e: native_units(e)[0].pop("ui_id"),
+                 r"missing units\[0\].ui_id", id="ui_id"),
+    pytest.param(lambda e: e["event"]["data"].update(observation="seen"),
+                 "the observation is not an object", id="observation not an object"),
 ])
 def test_a_malformed_events_line_is_refused_by_its_number_and_compare_peers_says_why(
-        tmp_path, monkeypatch, capsys, change, problem):
+        tmp_path, monkeypatch, capsys, edit, problem):
     import json
     import sys
 
@@ -323,8 +311,12 @@ def test_a_malformed_events_line_is_refused_by_its_number_and_compare_peers_says
     lines = path.read_text().splitlines()
     assert len(lines) == 2  # the worker's two observation events, as the coordinator wrote
     last = json.loads(lines[-1])
-    path.write_text("\n".join(lines + [
-        "{not json" if change == "not JSON" else json.dumps(_broken(last, change))]) + "\n")
+    if edit is None:
+        broken = "{not json"
+    else:
+        edit(last)
+        broken = json.dumps(last)
+    path.write_text("\n".join([*lines, broken]) + "\n")
     with pytest.raises(ValueError, match=f"events-A.jsonl line 3 .*{problem}"):
         compare(tmp_path / "a1")
     monkeypatch.setattr(sys, "argv", ["wh3", "compare-peers", str(tmp_path / "a1")])

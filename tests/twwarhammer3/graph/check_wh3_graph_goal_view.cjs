@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 from twwarhammer3.battle import graph_view
 sys.path.insert(0, "tests/twwarhammer3/graph")
-from test_wh3_graph_goal_view import recording, write
+from wh3_graph_goal_support import recording, write
 out = Path(sys.argv[1])
 for used in (True, False):
     episode, result, rows = recording(out / str(used))

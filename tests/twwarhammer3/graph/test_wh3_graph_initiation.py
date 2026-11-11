@@ -4,7 +4,7 @@ import sys
 from copy import deepcopy
 
 import pytest
-from test_wh3_graph_author import END, WAIT, Canned, completed, ledger, replies
+from wh3_graph_author_support import END, WAIT, Canned, completed, ledger, replies
 
 from gameai.llm import InvalidReply
 from gameai.provenance import REPO_ROOT

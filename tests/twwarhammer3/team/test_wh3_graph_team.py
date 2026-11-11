@@ -8,7 +8,7 @@ from threading import Event, Thread
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from test_wh3_graph import attack_graph, move_graph
+from wh3_graph_fixtures import attack_graph, move_graph
 from wh3_team_fixtures import Script, Workers, ack, state
 
 from twwarhammer3.battle import controllers, graph, team

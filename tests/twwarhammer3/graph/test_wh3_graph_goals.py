@@ -11,31 +11,12 @@ from concurrent.futures import Future
 from threading import Event, Thread
 
 import pytest
+from wh3_graph_goal_support import spec, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import InvalidReply, Model
 from twwarhammer3.battle import graph, graph_goals, team
 from twwarhammer3.protocol import PolicyFailure
-
-
-def state(seq=1, ms=1000):
-    return {"battle": "battle-A", "seq": seq, "time_ms": ms, "phase": "Deployed",
-            "friendly": [{"id": "u", "type": "foot", "x": 0, "z": 0,
-                          "men": 10, "state": []}],
-            "enemy": [{"id": "near", "x": 10, "z": 0, "men": 10, "state": []},
-                      {"id": "far", "x": 50, "z": 0, "men": 10, "state": []}]}
-
-
-def spec(mode="nearest"):
-    return {"version": graph.VERSION, "entry": "owned", "nodes": {
-        "owned": {"op": "owned", "inputs": {},
-                  "next": {"succeeded": "pick", "empty": "owned"}},
-        "pick": {"op": "select_target", "mode": mode,
-                 "inputs": {"units": {"ref": "owned.units"}},
-                 "next": {"succeeded": "act", "empty": "owned"}},
-        "act": {"op": "engage", "inputs": {"units": {"ref": "owned.units"},
-                                               "target": {"ref": "pick.target"}},
-                "next": {"succeeded": "owned", "failed": "owned", "cancelled": "owned"}}}}
 
 
 class Canned:

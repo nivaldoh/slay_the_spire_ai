@@ -1,56 +1,10 @@
 """Model preferences retain their own producer identity in the graph view."""
 
-import json
-from copy import deepcopy
 
 import pytest
-from test_wh3_graph_goals import spec, state
+from wh3_graph_goal_support import recording, write
 
-from twwarhammer3.battle import graph, graph_view
-
-
-def recording(root):
-    root.mkdir(parents=True)
-    definition = spec()
-    revision = graph.digest(definition)
-    configuration = {"type": "team", "members": {
-        "line": {"unit_types": ["foot"], "controller": {"type": "graph_llm", "graph": definition}},
-        "other": {"unit_types": None, "controller": {"type": "hold"}}}}
-    result = {"battle": "battle-A", "status": "synthetic test only", "card": {"disclosure": {
-        "configuration": configuration, "configuration_sha256": graph.digest(configuration),
-        "member_controllers": {"line": {"disclosure": {"goal_controller": "goal-L"}}}}}}
-    source = {"battle": "battle-A", "seq": 1, "time_ms": 1000}
-    goal = {**source, "producer": "goal_request", "controller": "goal-L",
-            "graph_sha256": revision, "owned": ["u"], "node_run": 1}
-    owned = {**source, "graph_sha256": revision, "producer": "owned", "node_run": 1,
-             "value": ["u"]}
-
-    def node(event, name, seq, ms, **fields):
-        return {"kind": "team", "event": "member_event", "member": "line", "record": {
-            "event": event, "node": name, "node_run": 1, "graph_sha256": revision,
-            "source": {"battle": "battle-A", "seq": seq, "time_ms": ms}, **fields}}
-
-    rows = [
-        {"kind": "observation", "observation": state()},
-        node("started", "owned", 1, 1000, inputs={}),
-        node("transition", "owned", 1, 1000, status="succeeded", successor="pick",
-             outputs={"units": ["u"]}),
-        {"kind": "observation", "observation": state(2, 1100)},
-        {"kind": "team", "event": "member_event", "member": "line", "record": {
-            "event": "goal_adopted", "node": "goal_request", "node_run": 1,
-            "graph_sha256": revision, "source": deepcopy(goal), "target": "far", "reason": "test"}},
-        node("started", "pick", 2, 1100, inputs={"units": ["u"]}, input_sources={"units": owned}),
-        node("transition", "pick", 2, 1100, status="succeeded", successor="act",
-             outputs={"target": "far"}, selection={"preference": {
-                 "target": "far", "reason": "test", "source": deepcopy(goal)}, "used": True}),
-    ]
-    write(root, result, rows)
-    return root, result, rows
-
-
-def write(root, result, rows):
-    (root / "result.json").write_text(json.dumps(result))
-    (root / "trace.jsonl").write_text("\n".join(map(json.dumps, rows)) + "\n")
+from twwarhammer3.battle import graph_view
 
 
 def test_selection_matches_a_known_model_goal_and_its_recorded_scope(tmp_path):
