@@ -44,8 +44,9 @@ version 1 stays the default. ``EscaladeV2``, ``ConcentrateV2``, ``CavalryEarlyV2
 changes (``Version2``), and ``BesiegeNearestV2`` takes (b) only; each writes version 2 in its
 metadata. (a) Phase 3 goes to c7, then c1 (VICTORY_TIERS_V2). (b) g1 counts as fallen once the
 public gate nearest it, its door, reads hp 0 or less (``door_view``), so the crew walks in, and a
-unit whose last order besieges or attacks g1 and that gets no new one, the Grom among them, gets
-one halt (``door_halts``): in the one recording, a standing attack_building kept firing until the
+unit whose last accepted order besieges or attacks g1 and that gets no new one, the Grom among
+them, gets a halt until it or another replacement is accepted (``door_halts``): in the one
+recording, a standing attack_building kept firing until the
 building itself read 0, and whether a halt ends one is unread. Validation still accepts an order
 on g1 above 0%. (c) West's and East's staging rows (in ``GateOnly`` the reserve's as well) move
 south, whole metres at a time, until every spot stands STAGING_M or more from every listed piece
@@ -65,8 +66,7 @@ until it is unavailable, as camp.py and wall_defence.py do.
 
 # The battle's page is docs/twwarhammer3/escalade-eval.md. Its one claim is D1, Escalade against
 # Concentrate; CavalryEarly's D2 and the other controls stay descriptive or shortcuts (rests on
-# JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade claim). No model can give the siege orders
-# until the parked llm.py change on branch izmail-llm-orders lands.
+# JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade claim).
 import math
 from collections import Counter
 from copy import deepcopy
@@ -716,48 +716,77 @@ VICTORY_TIERS_V2 = (("c7",), ("c1",))
 # JUDGEMENT: Witness v2 door rule — Claude, 2026-11-09 (owner question 6(b)): g1 counts as fallen
 # once its door reads hp 0, and a unit still on a g1 siege order is halted. Keying on the building
 # (v1) keeps both at an open gate until it falls; version 2's breach play and checks 5-6 rest on it.
-def door_view(observation):
+def door_view(observation, breached=False):
     """``observation`` with g1 at hp 0 in mode.fortifications once the public gate nearest g1 (its
-    door) reads hp 0 or less, else ``observation`` itself. Rules keyed on g1 at 0% then treat it
-    as fallen; validation reads the true list, so this only takes orders on g1 away."""
+    door) reads hp 0 or less, else ``observation`` itself. ``breached`` retains a breach seen
+    earlier, so a missing door read cannot restart attacks on g1. Rules keyed on g1 at 0% then
+    treat it as fallen; validation reads the true list, so this only takes orders on g1 away."""
     mode = observation.get("mode") or {}
     pieces = mode.get("fortifications") or []
     gate = next((p for p in pieces if p.get("id") == GATE), None)
-    door = gate and _nearest(gate, [g for g in mode.get("gates") or [] if g.get("x") is not None])
-    if not door or not gate_breached(door) or gate_breached(gate):
+    if gate is None or gate_breached(gate):
         return observation
+    if not breached:
+        door = _nearest(gate, [g for g in mode.get("gates") or [] if g.get("x") is not None])
+        if not door or not gate_breached(door):
+            return observation
     fallen = [{**p, "hp": 0} if p is gate else p for p in pieces]
     return {**observation, "mode": {**mode, "fortifications": fallen}}
 
 
-def door_halts(policy, view):
-    """One halt for each able unit whose last sent order still besieges or attacks g1 once g1
-    reads 0% in ``view`` (door_view's). The engine keeps a standing attack_building in force: in
+def door_halts(policy, view, orders):
+    """Retry pending door halts for able units that get no replacement order this decision.
+
+    The engine keeps a standing attack_building in force: in
     siege-905-20261103's helmgart-defender recording the AI's Great Cannon, ordered once at 10 s,
     went from 55 to 52 ammunition between the readings at 120 s (the door's first at 0) and 150 s
     (the building's first at 0), then stayed at 52 to 240 s. Whether a halt ends such an order is
     unread."""
-    gate = next((p for p in (view.get("mode") or {}).get("fortifications") or []
-                 if p.get("id") == GATE), None)
-    if gate is None or not gate_breached(gate):
+    if not policy.breached:
         return []
     units, halts = friendly_units(view), []
-    for identity, order in list(policy.sent.items()):
+    replaced = {order["unit"] for order in orders}
+    for identity in policy.gate_orders:
         unit = units.get(identity)
-        if (unit is not None and able(unit) and order.get("type") in SIEGE_ORDER_TYPES
-                and order.get("target") == GATE):
+        if unit is not None and able(unit) and identity not in replaced:
             halts += policy._send(unit, {"unit": identity, "type": "halt"})
     return halts
 
 
-class Version2:
+class _DoorBreach:
+    """V2's door view and halt delivery, shared by the witness and BesiegeNearest."""
+
+    def __init__(self):
+        super().__init__()
+        # Last accepted g1 orders, preserving insertion order when issuing their halts.
+        self.gate_orders = {}
+        self.breached = False
+
+    def decide(self, observation):
+        view = door_view(observation, self.breached)
+        gate = next((p for p in (view.get("mode") or {}).get("fortifications") or []
+                     if p.get("id") == GATE), None)
+        if gate is not None and gate_breached(gate):
+            self.breached = True
+        orders = super().decide(view)
+        return orders + door_halts(self, view, orders)
+
+    def acknowledge(self, ack, latency):
+        super().acknowledge(ack, latency)
+        for result in ack.get("results", []):
+            if result.get("ok"):
+                identity = result.get("unit")
+                order = self.sent.get(identity) or {}
+                if order.get("type") in SIEGE_ORDER_TYPES and order.get("target") == GATE:
+                    self.gate_orders[identity] = None
+                else:
+                    self.gate_orders.pop(identity, None)
+
+
+class Version2(_DoorBreach):
     """Version 2's three changes (module docstring), mixed in before a version 1 Escalade class."""
 
     victory_tiers = VICTORY_TIERS_V2
-
-    def decide(self, observation):
-        view = door_view(observation)
-        return super().decide(view) + door_halts(self, view)
 
     # JUDGEMENT: Witness v2 staging — Claude, 2026-11-09 (owner question 6(c)): flank rows go south
     # to 150 m from every piece, 40 m from earlier spots (fixture approach: Concentrate 188-194 m,
@@ -810,14 +839,10 @@ class GateOnlyV2(Version2, GateOnly):
     """gate_only, version 2: its West, East and reserve rows also move south (rule (c))."""
 
 
-class BesiegeNearestV2(BesiegeNearest):
+class BesiegeNearestV2(_DoorBreach, BesiegeNearest):
     """besiege_nearest, version 2: once g1's door reads hp 0 (door_view) its crew and Grom attack
     the visible enemy nearest them, as for a target at 0%, and with none in view get a halt
     (door_halts)."""
-
-    def decide(self, observation):
-        view = door_view(observation)
-        return super().decide(view) + door_halts(self, view)
 
     def metadata(self):
         return {**super().metadata(), "version": 2}

@@ -685,6 +685,14 @@ a Grom whose door has fallen would keep firing at the building. Whether a halt e
 `attack_building` is unread: the mod sends it as `controller:halt()`, and no recording shows that
 call on a unit firing at a building.
 
+The 2026-11-12 offline review corrected V2's handling of refused replacements. It now retains
+the last accepted gate order separately from its duplicate-order cache. Once the door is seen
+breached, a refused halt or replacement leaves the halt pending, including across a missing
+fort read; an accepted replacement clears it. A missing door read cannot restart an attack
+on a gate whose breach was already observed. Routing or missing units receive no halt.
+V1 and the order probe are unchanged; V2 remains an unadopted option. The engine effect of an
+accepted halt remains unread. Regressions and review: `runs/battle-review/halt-review/`.
+
 Offline evidence for version 2 in
 [test_wh3_escalade.py](../../tests/twwarhammer3/test_wh3_escalade.py): a unit inside the front line
 with c7 ours runs to c1 in version 2 and to c8 in version 1; with the door at hp 0 and g1 at 10%

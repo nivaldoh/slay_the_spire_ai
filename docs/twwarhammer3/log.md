@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-12: Battle review, Escalade V2 rejected replacements
+
+- A refused halt after the gate door fell erased V2's only reminder to stop the standing
+  gate attack. A refused move/attack replacement could lose it too, before or after the breach.
+  These failures were reproduced on public fixture observations; no live occurrence is known.
+- V2 now keeps the last accepted gate order apart from its duplicate-order cache. Rejected
+  replacements retain it; an accepted replacement clears it. Missing fort/door reads preserve
+  the observed breach; pending halts wait for an able unit. No unit gets two orders in one decision.
+- One mixin shares this delivery handling between the V2 witness/controls and BesiegeNearestV2.
+  Version 1 and OrderProbe are unchanged. This does not adopt V2 or change a tactical threshold,
+  engine pin, scenario or benchmark rule. Acknowledgement still establishes no visible action.
+- Initial regressions: 12 failed, 2 passed before correction. The earlier replacement case
+  failed on the first correction. Review caught missing door reads restarting the attack;
+  four regressions failed before correction. Focused V1/V2, feedback, reader and siege checks:
+  105 passed. Full gates, card and independent review: `runs/battle-review/halt-review/`.
+- Whether a halt stops a building attack, the fixture geometry and battle suitability remain
+  unverified. No game or paid call ran; the broader battle review continues.
+
 ## 2026-11-12: Battle review, planned attribution and failure accounting
 
 - The plan reader now requires explicitly planned provider and configured-controller paths
