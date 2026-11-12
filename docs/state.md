@@ -1,8 +1,13 @@
 # Project state
 
-Updated 2026-11-11. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-12. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+Communication feedback probe, 2026-11-12 (Codex): resuming the unrun 80-call saved-input
+comparison under the new $20 window; probe ceiling under $2, existing ledger cap $22.12.
+No game planned; last API start 15:10 UTC, window ends 15:47 UTC. Existing model prompts
+and benchmark choices stay unchanged. Evidence: `runs/comm-feedback-20261112/`.
+
 One-army diagnosis, 2026-11-11 (Codex): failed-reply audit reviewed; incoming mail survived
 but the next requests omitted parser-error feedback. Offline feedback probe passed preflight
 review but remains unrun after its cutoff. No games or API spending in this $20 window.

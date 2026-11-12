@@ -5,6 +5,8 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-12 (two-hour autonomous window), goal verbatim: "Continue to make progress on the project while I'm away for ~2h. You are free to run game sessions as needed. Budget $20."
+  Brief: `runs/comm-feedback-20261112/brief.md`. Unanswered benchmark choices remain open.
 - 2026-11-11 (one-army diagnosis window), goal verbatim: "Keep making progress autonomously.
   You are free to run games. Budget $20. I'll be back in a few hours."
   Continues the one-army next-steps discussion. Brief: `runs/comm-diagnosis-20261111/brief.md`.
