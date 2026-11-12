@@ -14,11 +14,13 @@ from pathlib import Path
 
 from twwarhammer3.battle.capture import RECORDER_VERSION
 from twwarhammer3.battle.llm import short_type
+from twwarhammer3.protocol import SIEGE_ORDER_TYPES
 
 SCHEMA = 1
 UNIT_FIELDS = ("id", "type", "name", "class", "commander", "x", "z", "bearing", "men", "men0",
                "hp", "morale", "state", "target", "destination", "abilities", "ammo", "ammo0",
-               "range", "dest", "command_queue", "navigation", "attack_mode", "flying", "error")
+               "range", "dest", "command_queue", "navigation", "attack_mode", "flying", "error",
+               "on_wall", "can_climb", "can_siege")
 FRAME_FIELDS = ("time_ms", "seq", "phase", "magic", "army", "mode", "remaining_ms", "result")
 # Role and map glyph by recorded class, for unit types the notes do not describe.
 CLASS_ROLES = {"lord": ("Lord or hero", "general"), "hero": ("Lord or hero", "general"),
@@ -315,6 +317,8 @@ def step_text(order: dict, origin, labels: dict) -> str:
         mode = order.get("mode")
         return (f"attack {target} in melee" if mode == "melee"
                 else f"shoot at {target}" if mode == "ranged" else f"attack {target}")
+    if kind in SIEGE_ORDER_TYPES:
+        return f"{'besiege' if kind == 'besiege' else 'attack building'} {target}"
     if kind == "behaviour":
         behaviour = str(order.get("behaviour")).removeprefix("change_").replace("_", " ")
         return f"turn {behaviour} {'on' if order.get('enabled') else 'off'}"
@@ -355,10 +359,12 @@ def order_steps(decision: dict, basis: dict | None, labels: dict) -> list[dict]:
             step.update(x=order.get("x"), z=order.get("z"))
         elif kind == "attack":
             step.update(target=order.get("target"), mode=order.get("mode"))
+        elif kind in SIEGE_ORDER_TYPES:
+            step.update(target=order.get("target"))
         elif kind == "ability":
             step.update(ability=order.get("ability"), target=order.get("target"))
         # A queued move starts at the previous waypoint; after an attack it is unknown.
-        if kind in ("move", "attack", "halt"):
+        if kind in ("move", "attack", "halt", *SIEGE_ORDER_TYPES):
             waypoint[unit] = (order["x"], order["z"]) if kind == "move" else None
         steps.append(step)
     return steps

@@ -13,7 +13,7 @@ leave it out. The pattern is wall_readings.py's.
 from math import inf
 
 from twwarhammer3.battle.camp import COVER, CUE_HOLD_MS, CUE_M, FALLBACK_MS, GUNS, LEVIES, MOUNTED
-from twwarhammer3.battle.evidence_rules import in_melee
+from twwarhammer3.battle.evidence_rules import accepted_orders, in_melee
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES
 
@@ -30,22 +30,6 @@ def _alive(unit):
 
 def _down(unit):
     return unit.get("men") == 0 or unit.get("routing") is True or unit.get("shattered") is True
-
-
-def _accepted(trace):
-    """(applied ms, order) for each order the engine accepted, in trace order: a decision row's
-    orders matched to its ack's results by one-based index, as wall_readings.reserve_response
-    reads them."""
-    orders = {row["request"]: row["orders"] for row in trace if row.get("kind") == "decision"}
-    for row in trace:
-        ack = row.get("ack") if row.get("kind") == "ack" else None
-        if not ack or ack.get("applied_ms") is None:
-            continue
-        sent = orders.get(row.get("request", ack.get("request"))) or []
-        for result in ack.get("results") or []:
-            index = result.get("index")
-            if result.get("ok") is True and isinstance(index, int) and 0 < index <= len(sent):
-                yield ack["applied_ms"], sent[index - 1]
 
 
 # JUDGEMENT?: Lord down — Claude, 2026-11-09 (second look B1): the Overseer is down at his first row
@@ -113,7 +97,7 @@ def kept_cover_distance(trace, frames):
     leads the mounted group away from the levies."""
     first = next((frame for frame in frames if frame.get("friendly")), {})
     mounted = {unit["id"] for unit in first.get("friendly") or [] if unit.get("type") in MOUNTED}
-    accepted, current, result = list(_accepted(trace)), {}, {}
+    accepted, current, result = list(accepted_orders(trace)), {}, {}
     for frame in frames:
         while accepted and accepted[0][0] <= frame["time_ms"]:
             order = accepted.pop(0)[1]
@@ -217,7 +201,7 @@ def branch(trace, observations):
     mounted = {unit["id"] for unit in first.get("friendly") or [] if unit.get("type") in MOUNTED}
     kinds = {unit["id"]: unit.get("type") for observation in observations
              for unit in (observation.get("enemy_roster") or []) + (observation.get("enemy") or [])}
-    for applied, order in _accepted(trace):
+    for applied, order in accepted_orders(trace):
         kind = kinds.get(order.get("target"))
         if (applied >= start and order.get("type") == "attack" and order.get("unit") in mounted
                 and kind in GUNS | COVER):

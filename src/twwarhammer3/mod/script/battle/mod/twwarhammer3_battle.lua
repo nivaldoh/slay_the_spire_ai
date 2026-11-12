@@ -827,7 +827,10 @@ local function teleport_units(deployment)
             if borrowed then
                 bm:callback(function()
                     local ok, err = pcall(function() controller:release_control() end)
-                    if not ok then log("deployment release failed: " .. clean_error(err)) end
+                    if not ok then
+                        state.setup.deployment_error = "deployment release failed: " .. clean_error(err)
+                        log(state.setup.deployment_error)
+                    end
                 end, session.tick_ms or 250)
             end
         end

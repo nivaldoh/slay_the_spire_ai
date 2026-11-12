@@ -3,6 +3,8 @@
 Updated 2026-11-12. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and siege replay omissions; evidence readers share accepted-order decoding. First fixes checked offline; broader controller review continues and battle suitability remains unverified. Evidence: `runs/battle-review/`. No game or paid run scheduled.
+
 Feedback and Alesia construction, 2026-11-12 (Codex): saved-input feedback probe and one
 case-a hold completed; independent recounts done, report selection updated. The feedback
 candidate remains unadopted. The hold missed the proposed first-rout-in-heavy-sector clause;
@@ -50,7 +52,7 @@ Thesis (decision 10): the research question is open; the [proposal](thesis/propo
 Benchmark [initial implementation](twwarhammer3/benchmark-initial.md) completed, version5 (decision 1): [definition](twwarhammer3/benchmark.md), [README](twwarhammer3/README.md), [results](twwarhammer3/results.csv). Controller ranking remains unverified.
 [Coordination suite](twwarhammer3/benchmark.md#the-coordination-suite-suite-v1) (`suite-v1`): 12 scenarios, 6 played, first comparison 26 of 28 battles, one per pair; exploratory, no ranking.
 
-- Runtime: `llm`/`llm_rules` v23, `commander` v8, `team_llm_rules` v23+t2, skills v1.2, harness b54; game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
+- Runtime: `llm`/`llm_rules` v23, `commander` v8, `team_llm_rules` v23+t2, skills v1.2, harness b55 (handover fix checked offline); game [9.0.5/build 26403568](twwarhammer3/integration.md#pins).
   evaluator v2 plus mirror-v1, track `obs-v4+terrain/act-v2/live-1x`. Recording/arithmetic passed at `b1136e8`; strength and winnability remain unverified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results; chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
 - Scripted-team agreed checks passed at recorded revisions (latest live 4/4 at `7b8b9bf`); direct model-team mechanics passed one live case at `c1ad84d`.
@@ -110,9 +112,7 @@ Numbers are unchanged; open the relevant item before acting.
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad at unlock level 5 of 5 since the 2026-11-06 runs; runs record profile evidence).
 - WH3 ([engine facts](twwarhammer3/integration.md)): a launch's mod list and startup-video skip
   persist for ordinary Steam launches ([how to reverse](twwarhammer3/README.md#commands)). Steam auto-update stays on.
-- Also authorized: game windows, local GPU work, commits and pushes to public `main`, and paid API
-  use within each ledger's cap. One game controller at a time across both games (each game's lock and process check cover only
-  that game); one GPU job at a time.
+- Also authorized: game windows, local GPU work, commits and pushes to public `main`, and paid API use within each ledger's cap. One game controller at a time across both games (each game's lock and process check cover only that game); one GPU job at a time.
 
 ## Branches
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): owner explicitly kept both on 2026-11-11. Still parked; resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps) when requested.

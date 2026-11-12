@@ -22,8 +22,9 @@ attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all,
 from math import floor
 
 from twwarhammer3.battle.escalade import inside
-from twwarhammer3.battle.evidence_rules import gate_breached, holds
+from twwarhammer3.battle.evidence_rules import accepted_orders, gate_breached, holds
 from twwarhammer3.battle.scripted import distance
+from twwarhammer3.protocol import SIEGE_ORDER_TYPES
 
 # JUDGEMENT?: Escalade readings — Claude, 2026-11-08 (design Measurements, check 7): a sector is
 # its target piece's x plus or minus 60 m; 150 m, 120 s and the gate's 20 m are the design's.
@@ -198,25 +199,17 @@ def siege_order_acted_on(trace, frames) -> list:
     ``acted_on`` is True when either came, False when neither came with ``start_m`` read, and
     None otherwise. No pass rule, and no outcome: the wall, the ram at the gate and the door's hp
     are read elsewhere."""
-    centres, orders, accepted = {}, {}, []
+    centres = {}
     for row in trace:
         if row.get("kind") == "observation":
             for piece in ((row.get("observation") or {}).get("mode") or {}).get(
                     "fortifications") or []:
                 if piece.get("x") is not None and piece.get("z") is not None:
                     centres.setdefault(piece["id"], piece)
-        elif row.get("kind") == "decision":
-            orders[row["request"]] = row.get("orders") or []
-        elif row.get("kind") == "ack" and (row.get("ack") or {}).get("applied_ms") is not None:
-            ack = row["ack"]
-            sent = orders.get(row.get("request", ack.get("request"))) or []
-            for result in ack.get("results") or []:
-                index = result.get("index")
-                if (result.get("ok") is True and isinstance(index, int) and 0 < index <= len(sent)
-                        and sent[index - 1].get("type") in ("besiege", "attack_building")):
-                    accepted.append((ack["applied_ms"], sent[index - 1]))
     readings = []
-    for applied, order in accepted:
+    for applied, order in accepted_orders(trace):
+        if order.get("type") not in SIEGE_ORDER_TYPES:
+            continue
         target = centres.get(order.get("target"))
         rows = [(frame["time_ms"], unit) for frame in frames for unit in frame.get("friendly") or []
                 if unit["id"] == order.get("unit")]

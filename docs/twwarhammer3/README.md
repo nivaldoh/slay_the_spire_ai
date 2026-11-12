@@ -285,7 +285,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
 - `src/twwarhammer3/battle/evidence_rules.py`: evidence rules the evaluation battles share:
   contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture
-  holders, groups from the private first reading, units by type key
+  holders, groups from the private first reading, units by type key, accepted trace orders
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and

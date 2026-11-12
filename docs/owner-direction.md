@@ -5,6 +5,7 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-12 (battle review), goal verbatim: "Let's review our battles carefully and ensure that they're working as intended. Take the opportunity to see if we can improve the code to better organize it, simplify it, remove bloat, de-slopify it, etc". Work and evidence: `runs/battle-review/`.
 - 2026-11-12 (two-hour autonomous window), goal verbatim: "Continue to make progress on the project while I'm away for ~2h. You are free to run game sessions as needed. Budget $20."
   Brief: `runs/comm-feedback-20261112/brief.md`. Unanswered benchmark choices remain open.
 - 2026-11-11 (one-army diagnosis window), goal verbatim: "Keep making progress autonomously.

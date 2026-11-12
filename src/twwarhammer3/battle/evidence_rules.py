@@ -1,6 +1,6 @@
 """Evidence rules shared by the siege-set readers and witnesses (portfolio S7).
 
-Every rule except ``group_ids`` reads public fields: the unit records and ``mode`` of the
+The unit and mode rules read public fields: the unit records and ``mode`` of the
 observation or of a 1 Hz replay frame, which carries the same fields (``unit_record`` and
 ``mode_section`` in the battle Lua; the field list is in engine/mailbox.py). ``group_ids`` reads
 the private first reading in ``setup``, which holds the start position of every enemy unit,
@@ -15,6 +15,25 @@ hidden ones included, so it stays out of policy code. Facts recorded in the trac
 """
 
 from twwarhammer3.battle.setup import match_deployment
+
+
+def accepted_orders(trace):
+    """(applied ms, order) in acknowledgement order from one episode's trace.jsonl.
+
+    Match a decision's request and its one-based result indices, as play._drive writes them.
+    Missing acknowledgements, unreadable indices and rejected orders contribute nothing.
+    An accepted order (including a queued order) is not evidence that the unit acted on it.
+    """
+    orders = {row["request"]: row["orders"] for row in trace if row.get("kind") == "decision"}
+    for row in trace:
+        ack = row.get("ack") if row.get("kind") == "ack" else None
+        if not ack or ack.get("applied_ms") is None:
+            continue
+        sent = orders.get(row.get("request", ack.get("request"))) or []
+        for result in ack.get("results") or []:
+            index = result.get("index")
+            if result.get("ok") is True and isinstance(index, int) and 0 < index <= len(sent):
+                yield ack["applied_ms"], sent[index - 1]
 
 
 # JUDGEMENT: Contact rule — Claude, 2026-11-08 (portfolio S7a): the engine's melee flag on a unit

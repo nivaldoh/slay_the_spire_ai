@@ -22,6 +22,35 @@ def unit(uid="f1", states=None, **extra):
             "men": 10, "men0": 10, "x": 0, "z": 0, **extra}
 
 
+def test_public_replay_keeps_siege_readings_without_inventing_missing_flags():
+    # mailbox.py's public siege fields: climbing is private and must stay out.
+    observation = frame(1000, [unit(on_wall=True, can_climb=True, can_siege=False,
+                                     climbing=True), unit("f2")],
+                        [unit("e1", on_wall=False)],
+                        setup={"private": "SECRET"}, evaluation={"private": "SECRET"})
+    recorded = replay.public_frame(observation, {"file": "replay.jsonl", "line": 1})
+    own, absent = recorded["friendly"]
+    assert own["on_wall"] is True and own["can_climb"] is True and own["can_siege"] is False
+    assert recorded["enemy"][0]["on_wall"] is False
+    assert not {"on_wall", "can_climb", "can_siege"} & absent.keys()
+    assert "climbing" not in own and "SECRET" not in json.dumps(recorded)
+
+
+@pytest.mark.parametrize("kind,text", [("besiege", "besiege w3"),
+                                      ("attack_building", "attack building g1")])
+def test_replay_siege_steps_keep_the_target_and_acknowledgement(kind, text):
+    target = "w3" if kind == "besiege" else "g1"
+    decision = {"orders": [{"order": {"unit": "f1", "type": kind, "target": target},
+                            "status": "acknowledged", "ack": {"ok": True}}]}
+    step, = replay.order_steps(decision, frame(0, [unit()]), {})
+    assert step["target"] == target
+    assert step["text"] == text and step["status"] == "acknowledged"
+    decision["orders"][0].update(status="rejected", ack={"ok": False, "error": "unreachable"})
+    refused, = replay.order_steps(decision, None, {})
+    assert refused["target"] == target and refused["status"] == "rejected"
+    assert "rejected" in replay.summary_lines([refused], {})[0]["text"]
+
+
 def test_missing_observation_or_state_never_becomes_death_rally_or_contact():
     frames = [frame(0, [unit(states=["routing"])], [unit("e1")]), frame(1000),
               frame(2000, [unit(states=["melee"])], [unit("e1", men=0)])]

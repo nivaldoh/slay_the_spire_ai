@@ -629,6 +629,15 @@ def record_ending(result: dict, observation: dict, scenario: dict) -> None:
                                "version": scenario["benchmark"]}
 
 
+def check_deployment_error(result: dict, observation: dict, scenario: dict) -> None:
+    """A delayed handover failure can arrive after startup or while a policy is deciding."""
+    error = (observation.get("setup") or {}).get("deployment_error")
+    if error:
+        if observation.get("result"):
+            record_ending(result, observation, scenario)
+        raise ProtocolError(f"authored deployment failed: {error}")
+
+
 # Launch identifiers and the mod's own memory of its orders: a restore has none of it, so
 # two launches that reach one engine state differ only here (checkpoint-rl-plan.md).
 # JUDGEMENT: context_projection — Claude, 2026-10-25: the context drops launch ids, seq and
@@ -662,6 +671,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
     battle = result["battle"] = first["battle"]
     seq = first["seq"]
     event("battle", observation=first)
+    check_deployment_error(result, first, scenario)
     applied_ms = None
     outstanding = None
     logged_ms, logged_behavior = None, None
@@ -685,6 +695,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             result["final_time_ms"] = observation["time_ms"]
         result["battle_ms"] = observation["time_ms"]
         result["remaining_ms"] = observation.get("remaining_ms")
+        check_deployment_error(result, observation, scenario)
         if (scenario.get("benchmark") and not observation.get("result")
                 and (observation.get("setup") or {}).get("benchmark_release_pending", 0)):
             event("setup_wait", reason="benchmark_enemy_handover", observation=observation)
@@ -783,7 +794,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             sourced = record_exchanges(policy, event) and isinstance(policy, TeamPolicy)
         # The mod publishes the result observation last, so a battle that ended during the
         # call shows it now: the result stands and whatever the call returned is not sent.
-        if (mailbox.read_observation() or {}).get("result"):
+        latest = mailbox.read_observation() or {}
+        check_deployment_error(result, latest, scenario)
+        if latest.get("result"):
             if sourced:
                 event("observation", observation=basis, since_previous_applied_ms=since)
             continue

@@ -84,6 +84,60 @@ def test_incompatible_live_observation_stops_before_a_policy_decision(tmp_path, 
     assert result["decisions"] == 0 and mailbox.requests == []
 
 
+@pytest.mark.parametrize("late", [False, True])
+@pytest.mark.parametrize("ending", [None, "won"])
+def test_deployment_release_error_stops_orders_even_after_startup(tmp_path, late, ending):
+    observations = [bridge_observation(0, 0)]
+    if late:
+        observations.append(bridge_observation(1, 1000))
+    failed = bridge_observation(2, 2000, ack=late)
+    failed["setup"] = {"deployment_error": "deployment release failed: release refused"}
+    if ending:
+        failed["result"] = ending
+    observations.append(failed)
+    mailbox = FakeMailbox(observations)
+    result = play.play_episode(tmp_path / "episode", CONFIG, AttackNearest, mailbox,
+                               not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"
+    assert "release refused" in result["error"]
+    assert result["decisions"] == len(mailbox.requests) == int(late)
+    if ending:
+        assert result["engine_ending"]["result"] == ending
+
+
+@pytest.mark.parametrize("ending", [None, "won"])
+def test_deployment_error_in_the_first_observation_needs_no_later_snapshot(tmp_path, ending):
+    failed = bridge_observation(0, 1000, result=ending)
+    failed["setup"] = {"deployment_error": "release refused before first read"}
+    mailbox = FakeMailbox([failed])
+    result = play.play_episode(tmp_path / "episode", CONFIG, AttackNearest, mailbox,
+                               not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"
+    assert "release refused before first read" in result["error"]
+    assert mailbox.requests == []
+    if ending:
+        assert result["engine_ending"]["result"] == ending
+
+
+@pytest.mark.parametrize("ending", [None, "won"])
+def test_deployment_error_arriving_during_decide_prevents_dispatch(tmp_path, ending):
+    failed = bridge_observation(2, 2000, result=ending)
+    failed["setup"] = {"deployment_error": "release refused during policy call"}
+
+    class ConcurrentMailbox(FakeMailbox):
+        def read_observation(self):
+            return failed
+
+    mailbox = ConcurrentMailbox([bridge_observation(0, 0), bridge_observation(1, 1000), failed])
+    result = play.play_episode(tmp_path / "episode", CONFIG, AttackNearest, mailbox,
+                               not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"
+    assert "release refused during policy call" in result["error"]
+    assert mailbox.requests == []
+    if ending:
+        assert result["engine_ending"]["result"] == ending
+
+
 def test_default_has_no_wait_and_uses_ack_observation_for_next_decision(tmp_path):
     mailbox = FakeMailbox([
         bridge_observation(0, 0), bridge_observation(1, 1000),

@@ -12,6 +12,7 @@ and on_wall readings, and until then absent.
 """
 
 from twwarhammer3.battle.evidence_rules import (
+    accepted_orders,
     defender_tickets,
     gate_breached,
     holds,
@@ -151,20 +152,9 @@ def reserve_response(trace, frames, breached):
     start = breached["time_ms"]
     first = next((frame for frame in frames if frame.get("friendly")), {})
     reserve = set(ids_by_type(first.get("friendly") or [], RESERVE))
-    orders = {row["request"]: row["orders"] for row in trace if row.get("kind") == "decision"}
-    attack = None
-    for row in trace:
-        ack = row.get("ack") if row.get("kind") == "ack" else None
-        if not ack or ack.get("applied_ms") is None or ack["applied_ms"] < start:
-            continue
-        sent = orders.get(row.get("request", ack.get("request"))) or []
-        if any(result.get("ok") is True and isinstance(result.get("index"), int)
-               and 0 < result["index"] <= len(sent)
-               and sent[result["index"] - 1].get("type") == "attack"
-               and sent[result["index"] - 1].get("unit") in reserve
-               for result in ack.get("results") or []):
-            attack = ack["applied_ms"]
-            break
+    attack = next((applied for applied, order in accepted_orders(trace)
+                   if applied >= start and order.get("type") == "attack"
+                   and order.get("unit") in reserve), None)
     melee = next((frame["time_ms"] for frame in frames
                   if frame["time_ms"] >= start and reserve & in_melee(frame)), None)
     return {"attack_ms": None if attack is None else attack - start,

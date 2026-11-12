@@ -1079,6 +1079,25 @@ def test_an_enemy_returns_to_the_ai_only_a_tick_after_its_teleport():
     assert list(g.calls.values())[-1] == "goblin release"
 
 
+def test_failed_deployment_release_is_retained_as_a_setup_error():
+    lua = runtime()
+    teleport = authored_battle(lua)
+    lua.execute("""
+        state.setup = {}
+        function clean_error(err) return tostring(err) end
+        local create = state.enemy.e2.army.create_unit_controller
+        state.enemy.e2.army.create_unit_controller = function()
+            local controller = create()
+            function controller:release_control() error('release refused') end
+            return controller
+        end
+    """)
+    teleport(lua.eval("{enemy = {{type = 'goblin', x = 3, z = 4, bearing = 0, width = 50}}}"))
+    assert lua.globals().state.setup.deployment_error is None
+    lua.globals().delayed[1]()
+    assert "release refused" in (lua.globals().state.setup.deployment_error or "")
+
+
 def test_an_authored_placement_with_no_unit_of_its_type_is_an_error():
     lua = runtime()
     teleport = authored_battle(lua)
