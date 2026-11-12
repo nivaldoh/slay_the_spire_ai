@@ -1018,5 +1018,39 @@ received response when translation failed. The revised task-local recorder saves
 HTTP response bytes before JSON parsing and translation. Independent checks covered malformed
 provider usage, billing/recording failures, exact payload preservation and corrupted loggers.
 The 19:00 UTC last-start cutoff passed before a paid launch; all 80 calls remain unstarted,
-with no new API spend. The plan is not scheduled and needs a fresh operational window before
-use. Its checking establishes offline recording behavior, not the treatment's effectiveness.
+with no new API spend. The original plan remained unscheduled that day. It was resumed in the new window below;
+its preflight checking alone established no treatment effect.
+
+## Offline rejection feedback results (2026-11-12)
+
+The new autonomous window completed the unchanged 80-request comparison, planned at
+`6d686cb`. Only the expired operational deadline changed. Each of the 40 saved successor
+inputs was sent once unchanged and once with the previous parser error and whole-reply
+discard facts. Haiku 5.5 low answered all 80 calls; recorded cost was $0.1172126.
+
+| Condition | LocalModel parser accepted | Of those, replies with no orders | Parser rejected |
+|---|---:|---:|---:|
+| Unchanged request | 39/40 | 8 | 1 |
+| Added rejection feedback | 35/40 | 12 | 5 |
+
+Both replies parsed in 34 pairs; only the control parsed in five, only feedback in one,
+and neither in zero. The control rejection named an invisible target; the feedback
+rejections named four unowned units and one invisible target. Thus fewer feedback replies
+parsed in these calls. The inputs are selected, correlated development cases from six
+battles, with one draw per condition; these counts establish no general treatment effect,
+live recovery, useful orders, communication benefit or battle strength. No prompt changed.
+
+Acceptance here means the LocalModel parser only. Six accepted replies, three per condition,
+contained an empty text message. Offline replay through collection and the router discarded
+those messages individually, retaining one reply's attack order; the other five had no
+orders. The prompt and saved rules state a byte maximum without explicitly prohibiting
+empty text, whereas the router imposes a positive size. This is a contract ambiguity; the
+replay establishes no latest-view dispatch, delivery or engine acceptance.
+
+This probe rests on JUDGEMENT `runs/comm-diagnosis-20261111/card-feedback.md` Feedback
+treatment and Cases and repeats, and JUDGEMENT? `runs/comm-feedback-20261112/brief.md`
+Window cutoff. No score, verification method or feedback rule was adopted. Independent
+recount reconstructed all 80 requests from the six source traces and reconciled all raw
+responses and ledger rows. Evidence, exact cards and preflight/reader challenges:
+`runs/comm-feedback-20261112/`, particularly `review/recount/review.md`. Decision 14 remains
+open; this result provides no basis for claiming that the candidate improves play.

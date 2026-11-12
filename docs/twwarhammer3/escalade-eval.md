@@ -276,12 +276,15 @@ In `helmgart-defender` the siege tower at (262,-236) read no occupant and never 
 AI's infantry climbed ladders, so a tower may stay uncrewed (the second look's reading, rechecked
 for this page). If the crew is an Armoured Kossars, the Reserve holds no Armoured Kossars.
 
-Recruitment: the Boyar, Armoured Kossars, Kossars (Spears), Streltsi and Little Grom appear in the
+Recruitment evidence at design time (2026-11-08): the Boyar, Armoured Kossars, Kossars
+(Spears), Streltsi and Little Grom appeared in the
 first observation of `bench-b12-m1-kislev-20261016` (the design's reading). The Winged Lancers are
-declared in `ksl-ffa-grn-dwf-12`, which has no register rows, and in the unlaunched two-front
-battles, so their recruitment is unread, and so is a ksl ram in the player's slot. No recorded
-lobby has run the equipment removal step: the 2026-11-03 lobbies held no equipment
-(`setup.siege_equipment_steps`).
+declared in `ksl-ffa-grn-dwf-12`, which had no register rows, and in the then-unlaunched
+two-front battles, so their recruitment and a ksl ram in the player's slot were unread.
+No recorded lobby had run the equipment removal step: the 2026-11-03 lobbies held no
+equipment (`setup.siege_equipment_steps`). Later evidence: the 2026-11-10 Izmail lobby
+read back one ram, and the 2026-11-12 Alesia construction battle read back the Winged
+Lancers. Izmail's ram crew, movement and battle behavior remain unread.
 
 ### Map and starts
 

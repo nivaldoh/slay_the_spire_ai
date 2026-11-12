@@ -9,8 +9,9 @@ centre and front, and the split at that centre's x (130), which is also the case
 The midpoint between the two lines' centres, (130, -230) in both cases, separates the outer front
 from the town side.
 H is the page's heavy relief group (two Marauder Champions, the Berserkers and the Fimir), on
-the side of the split where the declaration places it; L is the other relief group. No game has
-written a private record or a trace for this battle; the tests use made-up records.
+the side of the split where the declaration places it; L is the other relief group. The tests use
+synthetic records. The first case-a original-engine record and its independent recount are
+documented in lines-eval.md, First construction battle (2026-11-12).
 """
 
 import math

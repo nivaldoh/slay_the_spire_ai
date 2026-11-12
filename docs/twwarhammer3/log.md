@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-12: Rejection feedback probe and first Alesia construction battle
+
+- The unchanged saved-input probe, planned at `6d686cb`, completed all 80 calls: parser
+  acceptance 39/40 control, 35/40 feedback; accepted empty-order replies 8/12. Recorded
+  spend $0.1172126. Independent raw/ledger recount matched; no feedback rule adopted.
+  Six empty text messages were rejected later by the router; acceptance is parser-only.
+- One existing Alesia case-a `hold` at `6cff227`, build 26403568, harness b54, pack
+  `bfe8fb3d…`, lost at 338.5 s; 1,098 empty batches, $0 API. Game closed normally.
+  All 12 enemies were visible at the first unit reading; all 24 roster identities/ranks matched,
+  largest position difference 8.105 m. Actual army purchase charge remains unavailable.
+- Middle outer Kossars f8 routed at 95.2 s, before west 115.0/east 297.1; this launch
+  misses the proposed first-rout-in-heavy-sector clause. Experimental G/H/L contacts were
+  42.1/50.2/55.0 s. No six-launch premise check, readiness verdict or strength claim.
+- Main-report selection adds this sole planned construction trial; the preview preserves
+  all 252 prior trial records and both mirror plans. Existing scripted/model rows and
+  portable replay identities passed browser checks; a swapped losing replay was caught.
+- Existing choices remain marked; selection rests on JUDGEMENT? in the task game card and
+  `reports.md` Construction display. Methods remain unagreed; no runtime or score changed.
+  Cards, raw evidence, independent reviews, check outputs and handoff:
+  `runs/comm-feedback-20261112/`. Next: decisions 14 and 15; no further game scheduled.
+
 ## 2026-11-11: Audit rejection feedback in the communication pilot
 
 Under the owner's new autonomous $20 window, audited every failed reply in the six prior

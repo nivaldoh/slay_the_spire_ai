@@ -666,8 +666,9 @@ descriptive until a check ties it to a decision, and a missing value stays unkno
 The private record (`capture.copy_private_record`) holds every unit of both sides once per engine
 second, hidden enemies included, with men, routing, melee, `on_wall`, `climbing`, visibility and
 ammunition where the engine gives them; raw gate hit points, holders and tickets. A field the
-engine did not give is absent, never false or zero. No game has written it, and its CPU cost per
-second for 28 units is unmeasured (`sample_cpu_ms` keeps it). Its use in every opted-in battle
+engine did not give is absent, never false or zero. The first Alesia construction battle
+wrote this format on 2026-11-12, but Haengju has no such record yet; its CPU cost per second
+for 28 units remains unmeasured (`sample_cpu_ms` keeps it). Its use in every opted-in battle
 rests on JUDGEMENT? src/twwarhammer3/battle/capture.py Private record in scored battles, and its
 fields on the Private record fields marker there. Publishing `on_wall` and `climbing` to the
 controllers would change policy input and the prompt snapshots. At `f3fec92` `on_wall` (with

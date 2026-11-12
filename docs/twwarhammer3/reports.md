@@ -9,9 +9,10 @@ remain separate from this first profile.
 ## Main report and retained example
 
 The main entry point is `runs/twwarhammer3/reports/benchmark.html`: the earlier suite plus
-the current mirror plans and the latest scripted communication development screen, with
-their scenario definitions and scoring kept separate. The development scenarios state that
-both muted controls won and the proposed construction prerequisite failed; they establish
+the current mirror plans, the communication development screen and model pilot, and the
+first Alesia hold construction reading, with
+their scenario definitions and scoring kept separate. The communication development
+scenarios state that both muted controls won and the proposed construction prerequisite failed; they establish
 no model comparison or communication benefit.
 Owner, 2026-11-02: retain the earlier GPT Sol cavalry-flanking result until a better
 replacement is agreed. Its recordings and previous reports were never removed; the
@@ -242,6 +243,11 @@ pilots and their failed/interrupted setup attempts. It excludes unrelated contro
 tuning and presentation-camera probes. Add new jobs to that list as the suite grows;
 never glob all local runs or select by outcome. The report JSON records every input job.
 Existing scenario reports remain historical artifacts.
+
+JUDGEMENT?: Construction display — Codex, 2026-11-12, under the standing whole-report request:
+append the sole planned Alesia case-a hold and set its report-note `core_candidate` to show it.
+Leaving it outside the page changes coverage; this controls presentation, not admission.
+Its text records the single-launch premise issue and adopts no score, gate or comparison.
 
 JUDGEMENT?: Recent development selection — Codex, 2026-11-10, under the owner's latest-runs request:
 append all seven intermediate-C jobs and display their six variants through `core_candidate`.

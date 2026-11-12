@@ -1,7 +1,7 @@
 # Evaluation battles adapted from history
 
-Overview, written 2026-11-09 (Claude). **None of the four new battles has been launched, and
-everything on this page is unverified** under the
+Overview, written 2026-11-09 (Claude). **The first Alesia hold ran on 2026-11-12; the other
+three new battles remain unplayed. Everything on this page remains unverified** under the
 [hard rule](../../AGENTS.md#verification-hard-rule). On 2026-11-08 the owner asked that good battle
 ideas be implemented with an evaluation method that is "good (in a concrete, legitimate way)". The
 owner's answers that day said to try building the five sieges the question listed (Haengju, Malta
@@ -23,7 +23,7 @@ history guides its design and is no evidence about the engine; the sources are i
 | Cannae, 216 BCE | [cannae-eval.md](cannae-eval.md) | Land; the player defends | `emp-envelopment-*` | None by a powered contrast | Built and played since 2026-11-05 (windows 1 and 2: 22 launches) |
 | Haengju, 1593 | [haengju-eval.md](haengju-eval.md) | Siege; the player defends against divisions released in turn | `cth-emp-siege-a-v1`, `cth-emp-siege-a-all-v1`, the map screen `cth-emp-siege-a-all-gates-v1` | Fire across divisions | Built offline at `f3fec92` |
 | Belgrade, 1456 | [camp-eval.md](camp-eval.md) | Land; the player attacks a camp | `emp-chd-camp-v1` | Guns or cover | Built offline at `e918091` |
-| Alesia, 52 BCE | [lines-eval.md](lines-eval.md) | Land; the player defends two lines back to back | `ksl-nor-lines-a-v1`, `-b-v1` | The main effort | Built offline at `e918091` |
+| Alesia, 52 BCE | [lines-eval.md](lines-eval.md) | Land; the player defends two lines back to back | `ksl-nor-lines-a-v1`, `-b-v1` | The main effort | One case-a hold at `6cff227`; first-rout premise not met ([reading](lines-eval.md#first-construction-battle-2026-11-12)) |
 | Izmail, 1790 | [escalade-eval.md](escalade-eval.md) | Siege; the player attacks | `ksl-emp-siege-a-v1` | Spread or concentrate | Built offline at `f3fec92` |
 
 Several decision families appear in more than one design and in older battles. The review counted
@@ -297,10 +297,12 @@ battle by battle let a label mean different things per battle; comparing labels 
    the three siege declarations at `f3fec92` (and the Eagle Gate screen, which inherits it), and
    `emp-chd-camp-v1`, `ksl-nor-lines-a-v1` and `ksl-nor-lines-b-v1` after it. Belgrade's camp
    premise needs enemy ammunition, which only this record holds, and Alesia's group readings need
-   it if enemies leave sight; neither battle's readers of it are built. The fields and its use in
+   it if enemies leave sight. Alesia now has experimental contact/sector readers and one
+   recorded case-a reading; the camp-specific gun-position/ammunition reader remains unbuilt.
+   The fields and its use in
    scored battles rest on JUDGEMENT? src/twwarhammer3/battle/capture.py Private record fields and
-   Private record in scored battles. No game has written it, and its CPU cost per second is
-   unmeasured.
+   Private record in scored battles. Alesia has now written the first record; recording
+   overhead has not been assessed across these scenarios.
 6. **Neutral names.** Scenario names carry factions and a version, and job names are neutral and
    numbered, such as `lines-r1-017`, because the observation carries `job`. No new declaration has a
    `benchmark` key, which `play.public` would copy into the mode a controller sees. Every new
@@ -434,6 +436,15 @@ owner roster decision. The owned launch ended; no game/controller remained.
 Cards, exact scalar logs, cached-binding references and independent recount:
 `runs/benchmark-progress-20261111/`. The procedure remains unverified without an agreed check.
 
+### First construction reading, 2026-11-12
+
+One Alesia case-a `hold` launch ended in a native loss at 338.5 s, with all 12 enemies
+visible at the first unit observation. The middle outer Kossars routed before either tracked
+sector, so this launch does not meet the proposed heavy-sector-first clause. The actual
+army purchase charge remains unavailable. See the [full reading and limits](lines-eval.md#first-construction-battle-2026-11-12).
+No other new battle ran, and no gate, scenario change or comparison was adopted. Evidence:
+`runs/comm-feedback-20261112/`. Further construction waits on the premise review.
+
 ### Estimated battle windows
 
 The times below use one estimate, 20-25 min, for a launch that runs to its 1,200 s timer, as the
@@ -468,9 +479,9 @@ owner asks.
 
 The offline items these steps waited for are now on this branch: the readback step files,
 `"private_record": true` on `emp-chd-camp-v1` and both lines declarations, and Haengju's Eagle Gate
-declaration for 1d. Only the lobby readbacks above have run; no battle or Eagle Gate file has.
-Still open offline: the camp's and the lines' readers
-of the private record. Before any round each battle also needs the plan builder (portfolio S6) and
+declaration for 1d. The lobby readbacks and the single Alesia hold above have run; Eagle Gate remains unrun.
+Still open offline: the camp-specific reader and adoption of the lines' experimental
+private-record contract. Before any round each battle also needs the plan builder (portfolio S6) and
 a boundary check on its own recorded first observation.
 
 ## Recognition and later versions

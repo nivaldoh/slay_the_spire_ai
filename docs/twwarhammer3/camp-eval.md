@@ -517,9 +517,9 @@ The evaluator-only record, shared work for the whole set (review item S3), was b
 `capture.copy_private_record`). Once per engine second it holds every unit of both sides, hidden
 enemies included, with position, men, routing, shattered, melee, hidden, visibility and
 ammunition, and it never enters the mailbox observation or the replay. `emp-chd-camp-v1` opts in
-with `"private_record": true`, as does every other new declaration of the set. No game has written
-the record, so enemy `starting_ammo` and the record's CPU cost per second (`sample_cpu_ms`) are
-unread. The Lua changed at `f3fec92`, so every launch from then on, older battles included,
+with `"private_record": true`, as does every other new declaration of the set. The first
+Alesia construction battle wrote this format on 2026-11-12; no camp battle has yet written it,
+so camp enemy `starting_ammo` and recording CPU cost per second (`sample_cpu_ms`) remain unread. The Lua changed at `f3fec92`, so every launch from then on, older battles included,
 carries a new pack hash and a separate card setup identity. The readers in `camp_readings.py`
 read a unit whose rows stop as unknown, and their test fails on a version that counts such a unit
 as silenced. Still unbuilt: check 2's reader of gun positions and ammunition, and condition X's.
