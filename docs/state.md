@@ -5,8 +5,9 @@ Updated 2026-11-12. Status only. History: [WH3](twwarhammer3/log.md), [Spire ful
 ## Active work
 Communication feedback probe, 2026-11-12 (Codex): resuming the unrun 80-call saved-input
 comparison under the new $20 window; probe ceiling under $2, existing ledger cap $22.12.
-No game planned; last API start 15:10 UTC, window ends 15:47 UTC. Existing model prompts
-and benchmark choices stay unchanged. Evidence: `runs/comm-feedback-20261112/`.
+One existing Alesia case-a hold construction launch is also planned ($0 API); latest start
+14:12 UTC, game closed by 14:47. Last API start 15:10, window ends 15:47 UTC. Existing
+model prompts and benchmark choices stay unchanged. Evidence: `runs/comm-feedback-20261112/`.
 
 One-army diagnosis, 2026-11-11 (Codex): failed-reply audit reviewed; incoming mail survived
 but the next requests omitted parser-error feedback. Offline feedback probe passed preflight
