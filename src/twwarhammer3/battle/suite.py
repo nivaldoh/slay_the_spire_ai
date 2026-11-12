@@ -297,9 +297,16 @@ def measure(row):
              "age_p90_s": None, "plan_age_s": None, "orders": None, "refused": None,
              "bad_replies": None, "call_failures": None, "first_contact_s": None,
              "spread_s": None, "idle_share": None, "local_share": None}
-    if result is None or not row["evidence_matches_plan"]:
+    if not row["evidence_matches_plan"]:
         return empty
-    metrics = trial_metrics(path.parent, result)
+    if result is None and not (path.parent / "trace.jsonl").exists():
+        return empty
+    metrics = trial_metrics(path.parent, result or {})
+    failures = {"bad_replies": metrics["reply_validation"]["failed"],
+                "call_failures": (metrics["transport_failures"]
+                                  + metrics["reply_validation"]["failed_responses"])}
+    if result is None:
+        return {**empty, **failures}
     llm = result.get("llm") or {}
     trace = metrics["trace"]
     return {"own": row["condition"], "taken": taken(result), "killed": killed(result),
@@ -310,8 +317,7 @@ def measure(row):
             "think_s": metrics["call_seconds"]["p50"], "age_s": metrics["order_age_s"]["p50"],
             "age_p90_s": metrics["order_age_s"]["p90"], "plan_age_s": metrics["plan_age_s"]["p50"],
             "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
-            "bad_replies": metrics["reply_validation"]["failed"],
-            "call_failures": metrics["transport_failures"],
+            **failures,
             **coordination(read_frames(path.parent))}
 
 
@@ -365,22 +371,32 @@ def scenario_value(rows):
     done = [row for row in rows if row["outcome"]]
     if not done:
         return None
+    # Owner, 2026-11-12: "Show the comparison as unavailable (recommended); keep all known
+    # outcomes and flag the missing data." A missing component in any repeat invalidates
+    # this tie-break; it cannot become zero or shrink its sample to complete cases.
+    tie = (mean([row["own"] + row["taken"] for row in done])
+           if all(row["own"] is not None and row["taken"] is not None for row in done) else None)
     return (mean([row["outcome"] == "won" for row in done]),
-            mean([(row["own"] or 0) + (row["taken"] or 0) for row in done]))
+            tie)
 
 
 def paired(rows, arm, reference, scenarios):
     """How an arm compares with the reference, scenario by scenario, on completed battles."""
-    better = worse = tied = 0
+    better = worse = tied = unavailable = 0
     for scenario in scenarios:
         a = scenario_value([r for r in rows if r["arm"] == arm and r["scenario"] == scenario])
         b = scenario_value([r for r in rows if r["arm"] == reference and r["scenario"] == scenario])
         if a is None or b is None:
             continue
+        if a[0] == b[0] and (a[1] is None or b[1] is None):
+            unavailable += 1
+            continue
+        # The tie-break is irrelevant when known win rates differ, even if it is missing.
         better += a > b
         worse += a < b
         tied += a == b
     return {"against": reference, "better": better, "worse": worse, "tied": tied,
+            "unavailable": unavailable,
             "sign_test_p": sign_test(better, worse)}
 
 
@@ -420,7 +436,7 @@ def summarize(rows):
             "usd": mean([r["usd"] for r in done]),
             "authoring_usd": mean([r["authoring_usd"] for r in done]),
             "usd_total": round(sum(r["usd"] or 0 for r in mine), 4),
-            "usd_per_win": round(sum(r["usd"] or 0 for r in done) / wins, 4) if wins else None,
+            "usd_per_win": round(sum(r["usd"] or 0 for r in mine) / wins, 4) if wins else None,
             "calls": mean([r["calls"] for r in done]),
             "think_s": median([r["think_s"] for r in done]),
             "age_s": median([r["age_s"] for r in done]),
@@ -429,8 +445,8 @@ def summarize(rows):
             "orders": mean([r["orders"] for r in done]),
             "refused_share": (round(sum(r["refused"] for r in decided)
                                     / sum(r["orders"] for r in decided), 3) if decided else None),
-            "bad_replies": sum(r["bad_replies"] or 0 for r in done),
-            "call_failures": sum(r["call_failures"] or 0 for r in done),
+            "bad_replies": sum(r["bad_replies"] or 0 for r in mine),
+            "call_failures": sum(r["call_failures"] or 0 for r in mine),
             "spread_s": median([r["spread_s"] for r in done]),
             "idle_share": mean([r["idle_share"] for r in done]),
             "local_share": mean([r["local_share"] for r in done]),
@@ -484,6 +500,7 @@ def render(data):
                 gap = pair["taken"]
                 lines.append(f"{arm} against {pair['against']}: better on {pair['better']}"
                              f" scenarios, worse on {pair['worse']}, tied on {pair['tied']};"
+                             f" unavailable tie-break on {pair['unavailable']};"
                              f" sign test p={pair['sign_test_p']}; taken {gap['mean']} points,"
                              f" t 95% {gap['t_95']}, {gap['scenarios']} scenarios.")
     lines.append("")

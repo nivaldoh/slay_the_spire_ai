@@ -140,7 +140,8 @@ def test_plan_report_keeps_all_attempts_and_preserves_outcomes(tmp_path):
     (directory / "manifest.json").write_text(json.dumps({
         "source_revision": planned["source_revision"], "status": "completed",
         "scenario": setup.scenarios()[benchmark.SCENARIO], "config": {
-            "scenario": benchmark.SCENARIO, "policy": "hold", "episodes": 1}}))
+            "scenario": benchmark.SCENARIO, "policy": "hold", "episodes": 1,
+            "provider": "anthropic"}}))
     result = ended()
     result.update(battle="b1", policy="hold", status="policy_failure", error="cleanup failed")
     (episode / "result.json").write_text(json.dumps(result))

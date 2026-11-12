@@ -806,7 +806,7 @@
       ),
       el("h3", "Pairs, scenario by scenario"),
       table(
-        ["Method", "Against", "Better", "Worse", "Tied", "Sign test p", "Taken gap", "t 95%"],
+        ["Method", "Against", "Better", "Worse", "Tied", "Unavailable tie-break", "Sign test p", "Taken gap", "t 95%"],
         arms.flatMap(([name, arm]) =>
           [arm.paired, arm.control]
             .filter(Boolean)
@@ -816,6 +816,7 @@
               pair.better,
               pair.worse,
               pair.tied,
+              pair.unavailable,
               pair.sign_test_p,
               pair.taken.mean,
               pair.taken.t_95 ? pair.taken.t_95.join(" to ") : null,

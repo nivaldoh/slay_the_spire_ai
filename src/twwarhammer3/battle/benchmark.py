@@ -5,6 +5,7 @@ plan, then join evidence, keeping missing attempts. No donor code. Historical ca
 retain their own evaluator; this module only reads the versioned mirror profile.
 """
 
+import argparse
 import json
 import math
 import signal
@@ -208,6 +209,27 @@ def read_json(path):
     return json.loads(path.read_text()) if path.exists() else None
 
 
+def controller_matches(job, config):
+    """Compare the controller's explicit plan options; old plans may omit these arguments.
+
+    Graph paths identify the declared artifact. Older plans did not freeze content hashes,
+    so this cannot detect an artifact edited in place.
+    """
+    # Match play's argparse spelling rules, including unambiguous option prefixes.
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--provider")
+    parser.add_argument("--controller-config")
+    expected, _ = parser.parse_known_args(list(map(str, job.get("args") or [])))
+    if expected.provider is not None and config.get("provider") != expected.provider:
+        return False
+    if expected.controller_config is not None:
+        actual = config.get("controller_config")
+        if (not actual or (REPO_ROOT / actual).resolve()
+                != (REPO_ROOT / expected.controller_config).resolve()):
+            return False
+    return config.get("policy") == job["controller"]
+
+
 def collect(plan_path: Path) -> dict:
     """One row per planned attempt, including queue failures before an episode exists."""
     plan = json.loads(plan_path.read_text())
@@ -282,7 +304,7 @@ def collect(plan_path: Path) -> dict:
         matches = (manifest.get("source_revision") == plan["source_revision"]
                    and config.get("scenario") == scenario
                    and manifest.get("scenario") == profile
-                   and config.get("policy") == job["controller"]
+                   and controller_matches(job, config)
                    and (not result or result.get("policy") == job["controller"])
                    and config.get("episodes") == 1 and not trace_mismatch)
         if manifest and not matches:

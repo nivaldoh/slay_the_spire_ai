@@ -3,7 +3,7 @@
 Updated 2026-11-12. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and siege replay omissions; evidence readers share accepted-order decoding. First fixes checked offline; broader controller review continues and battle suitability remains unverified. Evidence: `runs/battle-review/`. No game or paid run scheduled.
+Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and siege replay omissions; evidence readers share accepted-order decoding. Outcome review fixes planned provider/graph attribution and failure accounting. Missing tie-break comparisons show unavailable, as the owner chose. Broader controller review continues; battle suitability remains unverified. Evidence: `runs/battle-review/`. No game or paid run scheduled.
 
 Feedback and Alesia construction, 2026-11-12 (Codex): saved-input feedback probe and one
 case-a hold completed; independent recounts done, report selection updated. The feedback

@@ -138,6 +138,20 @@ They do not isolate the cause of a difference, and equal-resource arms come late
 | Reliability | orders the engine refused; bad replies, which void a decision; failed calls, provider faults or calls closed unsent; every failed or unplayed battle | Trace and plan |
 | Coordination (descriptive) | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
 
+Bad-reply and failed-call totals include every matching attempt with recorded evidence, including
+terminal failures without an engine outcome. Failed calls include transport failures and provider-reported
+failed responses, including events retained only in a trace when the result is missing.
+Total play cost and dollars per win include all recorded result-ledger costs; an attempt
+without a result keeps its cost unavailable. Per-battle means still describe engine-completed
+battles. Explicit provider and configured-controller paths must match the plan. Older plans pin paths without artifact hashes, so editing a graph
+in place remains undetectable by this join.
+
+The owner chose on 2026-11-12 to keep known outcomes and show a comparison as unavailable
+when its tie-break is missing. If either arm has any completed repeat missing `own` or
+`taken`, equal win rates yield no better/worse/tied verdict; reports count these unavailable
+tie-breaks separately. Different known win rates still compare. An arm without a completed
+battle continues to have no paired comparison. This is a reporting choice, not verification.
+
 `taken` exists because `own` alone rewards fleeing: the mirror's best Haiku condition, 28.4, was an
 army that routed having removed 2% of the enemy.
 

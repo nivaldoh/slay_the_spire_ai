@@ -29,6 +29,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-12: Battle review, planned attribution and failure accounting
+
+- The plan reader now requires explicitly planned provider and configured-controller paths
+  to match the manifest. A mismatch keeps the raw engine result but gives the plan no credit.
+  Equivalent relative and absolute paths match; legacy plans without those options still read.
+  Old plans pin no artifact hash, so edits at the same path remain undetectable here.
+- Suite failure totals include matching attempts without an engine ending. Provider-reported
+  failed responses count as failed calls; spend per win includes recorded incomplete-attempt costs.
+  Completed-battle means, known outcomes and historical timer rules are unchanged.
+- Six regression cases failed before the fixes; two equivalent-path cases passed. The focused
+  suite/mirror/report checks passed 111 cases after review caught abbreviated/numeric CLI
+  options and failures retained only in a trace. Their regressions failed before correction.
+  Gates and review: `runs/battle-review/report-review/`; no live battle effect established.
+- A separate independent recount of three saved plans found 34 planned rows, 32 results
+  (8 wins, 24 losses), two missing results, and no observed provider/path mismatch or missing
+  condition in completed records. Raw evidence: `runs/battle-review/outcomes-review/`.
+- The owner chose unavailable comparisons when a needed tie-break reading is missing.
+  Known outcomes stay counted; two missing-data regressions failed before correction,
+  and text/HTML expose the unavailable count. No new score formula, agreed check, controller,
+  scenario, engine pin or live run was adopted. Approval does not verify battle suitability.
+
 ## 2026-11-12: Battle review, deployment handover and siege replay (b55)
 
 - An independent actual-Lua fault injection found a failed deployment release that only
