@@ -184,6 +184,46 @@ def test_peer_witness_ignores_a_report_older_than_the_contact_age(age, moves):
     assert bool(orders) is moves
 
 
+@pytest.mark.parametrize("arm", ("peer", "relay"))
+def test_witness_captain_keeps_eligible_target_then_replaces_it_when_routed(arm):
+    """WingSupport retains an eligible target, even when another horse becomes nearer."""
+    unit = regiment(6)
+    first = foe("first", "cavalry", unit["x"] + 60, unit["z"])
+    nearer = foe("nearer", "cavalry", unit["x"] + 10, unit["z"])
+    policy = PeerWitness()
+    for time_ms, enemy, target in (
+        (30000, [first], "first"),
+        (31000, [first, nearer], None),
+        (32000, [dict(first, state=["routing"]), nearer], "nearer"),
+    ):
+        view = member_view("decisive_cavalry", arm=arm, time_ms=time_ms, enemy=enemy)
+        orders = policy.decide(view)
+        validate_orders(orders, view)
+        assert [(o["unit"], o["type"], o["target"]) for o in orders] == (
+            [(identity, "attack", target) for identity in ("f7", "f8")] if target else [])
+        policy.acknowledge({"results": [{"unit": o["unit"], "ok": True} for o in orders]}, {})
+
+
+def test_overview_commander_keeps_eligible_target_then_replaces_it_when_routed():
+    """A nearer horse alone must not trigger a replacement assignment."""
+    unit = regiment(6)
+    first = foe("first", "cavalry", unit["x"] + 60, unit["z"])
+    nearer = foe("nearer", "cavalry", unit["x"] + 10, unit["z"])
+    commander = OverviewWitnessCommander()
+
+    def reply(time_ms, enemy):
+        view = member_view("commander", arm="overview", time_ms=time_ms, enemy=enemy)
+        assert commander.decide(view) == []
+        messages = commander.drain_messages()
+        check_messages(messages, view)
+        return [m["text"] for m in messages if m["to"] == "decisive_cavalry"]
+
+    assert reply(1000, [first]) == [f"target first {first['x']} {first['z']} 1000"]
+    assert reply(2000, [first, nearer]) == []
+    assert reply(3000, [dict(first, state=["routing"]), nearer]) == [
+        f"target nearer {nearer['x']} {nearer['z']} 3000"]
+
+
 def test_overview_commander_orders_nothing_and_texts_only_new_or_due_targets():
     """Wrong version caught: re-sending every assignment on each reply (the unchanged reply
     would carry four texts), or a target for a role WingSupport leaves without one."""

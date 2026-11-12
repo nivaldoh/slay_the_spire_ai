@@ -29,6 +29,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-12: Battle review, local-team target retention
+
+- The local-script audit reproduced no policy defect. Replacing target retention with
+  always-nearest selection passed all 35 existing witness/recovery cases, exposing a test gap.
+- Three added cases observe peer/relay attack orders and overview assignment messages:
+  keep a still-eligible target when a nearer horse appears, then switch when the first routes.
+  All 38 cases pass; the same wrong version fails all three additions and passes the original 35.
+- Independent review repeated those counts, 29 transition assertions, 169 local-interface
+  cases and the effective declarations of all six communication variants. The variants differ
+  only in name, brief and communication; no physical scenario difference was found.
+- Cards, raw checks and review: `runs/battle-review/target-check/`, `local-witness-audit/`
+  and `local-interface-audit/` under the same root. Runtime code and marked choices are unchanged.
+  No game or paid call ran. Live effects, communication benefit and battle suitability remain
+  unverified; these tests are not a newly agreed verification method.
+
 ## 2026-11-12: Battle review, Escalade V2 rejected replacements
 
 - A refused halt after the gate door fell erased V2's only reminder to stop the standing
