@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-13 (three choices from the 2026-11-08 audit), answers: the suite's refused share:
+  "Engine only, validation beside (Recommended)"; the commander dropping a stop from its last
+  call: "Fix now (Recommended)"; team pages' view age counting the dispatcher's empty polls:
+  "Count member replies only (Recommended)" (with comm-structure-20261108.html rebuilt).
 - 2026-11-13 (quota refusals and Ctrl-C), answers to two questions: for a provider's quota or
   credit refusal, which play counted as the model's forfeit: "Stop like 401/402 (Recommended)";
   for what a job stopped by Ctrl-C during its final copying records: "interrupted, readers skip

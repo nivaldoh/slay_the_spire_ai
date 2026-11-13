@@ -6,6 +6,7 @@ import pytest
 from wh3_fixtures import USAGE, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
+from gameai.llm import APIError
 from twwarhammer3.battle.commander import CommanderPolicy
 from twwarhammer3.protocol import PolicyFailure
 
@@ -226,3 +227,52 @@ def test_off_schema_plans_are_retried_then_fail_as_policy_failure(commander, bad
         failing.decide(observation(31000))
     assert failure.value.failure["kind"] == "invalid_reply"
     assert [a["error"][:len(message)] for a in failure.value.failure["attempts"]] == [message] * 2
+
+
+def raising(error):
+    def send(body):
+        raise error
+    return send
+
+
+@pytest.mark.parametrize("error,stops", [
+    (BudgetExhausted("cap"), True),
+    (APIError('HTTP 429: {"error": {"type": "insufficient_quota", "code": "insufficient_quota"}}'),
+     True),
+    (APIError("HTTP 500: upstream fault"), False),
+], ids=["budget", "account-limit", "provider-fault"])
+def test_close_raises_a_stop_from_the_last_call_and_ignores_other_failures(tmp_path, error,
+                                                                           stops):
+    """Owner, 2026-11-13: "Fix now (Recommended)". A budget or account stop raised by the call
+    still in flight at the end reaches play, as a team member's does; another failure after the
+    battle stays ignored. Wrong version: close never reads the last call, so the stop is lost."""
+    agent = CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1.0),
+                            send=raising(error), system_prompt="Command well.")
+    agent.decide(observation(30000))
+    _, unfinished = wait([agent.pending], timeout=5)
+    assert not unfinished
+    if stops:
+        with pytest.raises(BudgetExhausted):
+            agent.close()
+    else:
+        agent.close()
+
+
+def test_a_stop_in_the_last_call_ends_the_battle_as_budget_exhausted(tmp_path):
+    from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
+
+    from twwarhammer3.battle import play
+
+    error = APIError('HTTP 429: {"type":"error","error":{"type":"rate_limit_error","message":'
+                     '"spend cap","details":{"error_code":"enforced_spend_limit_reached"}}}')
+
+    def make():
+        return CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1.0),
+                               send=raising(error), system_prompt="Command well.")
+
+    # One decision submits the call; the battle ends before the commander decides again.
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000),
+                           bridge_observation(2, 2000, result="won")])
+    result = play.play_episode(tmp_path / "episode", CONFIG, make, mailbox, not_battle=None)
+    assert result["status"] == "budget_exhausted"
+    assert result["engine_ending"]["result"] == "won"

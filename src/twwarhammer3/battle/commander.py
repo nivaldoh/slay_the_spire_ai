@@ -13,8 +13,8 @@ import json
 from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 
-from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model, check_fields
+from gameai.ledger import BudgetExhausted, Ledger
+from gameai.llm import APIError, InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.llm import (
     ABILITY_SCHEMA,
@@ -241,4 +241,16 @@ class CommanderPolicy:
         return self._metadata
 
     def close(self) -> None:
+        """Wait for the call still in flight. A budget stop or account-limit refusal from it is
+        raised, as a team member's is, so play ends the battle as budget_exhausted (owner,
+        2026-11-13: "Fix now (Recommended)"); any other failure after the battle is ignored."""
+        from twwarhammer3.battle.play import account_stop  # play imports this module
+
         self.pool.shutdown(wait=True)
+        if self.pending is None or self.pending.cancelled():
+            return
+        error = self.pending.exception()
+        if isinstance(error, BudgetExhausted):
+            raise error
+        if isinstance(error, APIError) and account_stop(str(error)):
+            raise BudgetExhausted(f"commander's last call: {error}") from error

@@ -29,6 +29,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: The commander raises a stop from its last call
+
+The owner answered: "Fix now (Recommended)". `CommanderPolicy.close` waited for the call still in
+flight but never read it, so a budget stop or account-limit refusal from that call was lost and
+the battle kept its engine result; a team member's stop is re-raised. `close` now raises it, so
+play ends the battle as `budget_exhausted`; any other failure after the battle stays ignored. No
+prompt change; the commander stays v8. 4 new cases: the budget, account-limit and play-level
+cases fail on the old code, and a provider fault stays ignored. Offline only (2026-11-08 audit).
+
 ## 2026-11-13: A Ctrl-C during final copying keeps the record; benchmark readers skip it
 
 The owner answered: "interrupted, readers skip it (Recommended)". A KeyboardInterrupt during the
