@@ -417,6 +417,12 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
     return result
 
 
+# JUDGEMENT?: Account-limit markers — Claude, 2026-11-13, under the owner's "Stop like 401/402":
+# these six markers, matched in the first 500 characters of an HTTP 4xx body (as gameai/llm.py
+# keeps it), make own and workspace spend limits and OpenRouter's key limit operator stops and
+# leave Anthropic's ramp_limit_exceeded a forfeit. Another list moves battles between a forfeit
+# (a card loss) and an excluded stop; an OpenRouter 429 passing on an upstream insufficient_quota
+# body would also stop (unverified). Rests on JUDGEMENT play.py Operator errors.
 # Markers of a provider refusing because the account's quota, credit or spend limit is used up,
 # as each documents them (read 2026-11-13): OpenAI's 429 code insufficient_quota (2026-11-08
 # finding P1); OpenRouter's 403 limit_source openrouter_key_limit (openrouter.ai/docs/

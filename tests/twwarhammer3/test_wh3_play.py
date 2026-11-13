@@ -1215,6 +1215,9 @@ STILL_FORFEITS = {
     "bad-request": 'HTTP 400: {"type":"error","error":{"type":"invalid_request_error",'
                    '"message":"messages: at least one message is required"}}',
     "not-http": "unparseable reply mentioning insufficient_quota",
+    "server-error": 'HTTP 500: {"error":{"message":"credit balance is too low upstream"}}',
+    "near-miss": 'HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":'
+                 '"You have reached your maximum number of images per request."}}',
 }
 
 
