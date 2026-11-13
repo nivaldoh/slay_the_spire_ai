@@ -29,6 +29,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: Quota and credit refusals stop the job
+
+The owner answered: "Stop like 401/402 (Recommended)". `play.policy_call` now turns an HTTP 4xx
+whose body carries a documented account-limit marker into `BudgetExhausted`, so the battle ends
+unscored and the job stops: OpenAI `insufficient_quota`; OpenRouter `openrouter_key_limit`
+(its key-limit 403); Anthropic `enforced_spend_limit_reached` (tier spend cap), "You have
+reached your specified [workspace] API usage limits" (own limits) and "credit balance is too
+low". Before, each was the model's forfeit and a job kept recording losses with no ledger charge
+(finding P1, 2026-11-08). Ordinary rate limits, Anthropic's `ramp_limit_exceeded` and other 4xx
+stay forfeits. 12 new cases: the 6 refusals and a job-level stop fail on the old code, 5 rate
+limits and other errors stay forfeits, and dropping any marker or the 4xx guard fails a case. Sources: the providers' error pages, read 2026-11-13. No provider has
+returned one of these to a job; untested live. Evidence: `runs/account-stops-20261113/`.
+
 ## 2026-11-13: Cannae and Alesia witness refusals end the battle
 
 The owner answered review queue 13: "End the battle (Recommended)". The 11 refusals of the Cannae

@@ -1179,3 +1179,76 @@ def test_each_observation_wait_is_bounded_by_the_observation_timeout(tmp_path):
     mailbox = Timed([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
     play.play_episode(tmp_path / "e", CONFIG, Hold, mailbox, not_battle=None)
     assert timeouts == [CONFIG["observation_timeout"]]
+
+
+# Account-limit refusals as the providers document them (read 2026-11-13): OpenAI's quota 429;
+# OpenRouter's key-limit 403 (only `limit_source` is documented, the message is invented);
+# Anthropic's tier spend cap (429), own and workspace spend limits (400) and low credit balance.
+ACCOUNT_STOPS = {
+    "openai-quota": 'HTTP 429: {"error": {"message": "You exceeded your current quota, please'
+                    ' check your plan and billing details.", "type": "insufficient_quota",'
+                    ' "param": null, "code": "insufficient_quota"}}',
+    "openrouter-key-limit": 'HTTP 403: {"error":{"code":403,"message":"Key limit exceeded",'
+                            '"metadata":{"limit_source":"openrouter_key_limit"}}}',
+    "anthropic-spend-cap": 'HTTP 429: {"type":"error","error":{"type":"rate_limit_error",'
+                           '"message":"You have reached your API usage limits: your organization'
+                           ' has crossed its monthly API usage threshold.","details":'
+                           '{"error_code":"enforced_spend_limit_reached"}},"request_id":"req_1"}',
+    "anthropic-own-limit": 'HTTP 400: {"type":"error","error":{"type":"invalid_request_error",'
+                           '"message":"You have reached your specified API usage limits. You will'
+                           ' regain access on 2026-12-01 at 00:00 UTC."},"request_id":"req_1"}',
+    "anthropic-workspace-limit": 'HTTP 400: {"type":"error","error":{"type":'
+                                 '"invalid_request_error","message":"You have reached your'
+                                 ' specified workspace API usage limits."}}',
+    "anthropic-credit": 'HTTP 400: {"type":"error","error":{"type":"invalid_request_error",'
+                        '"message":"Your credit balance is too low to access the Anthropic API."}}',
+}
+# Rate limits and other errors stay the model's forfeit (the first as recorded in a trace).
+STILL_FORFEITS = {
+    "openrouter-upstream": 'HTTP 429: {"error":{"message":"Provider returned error","code":429,'
+                           '"metadata":{"raw":"qwen/qwen3.6-35b-a3b is temporarily rate-limited'
+                           ' upstream."}}}',
+    "anthropic-rate": 'HTTP 429: {"type":"error","error":{"type":"rate_limit_error","message":'
+                      '"Number of request tokens has exceeded your per-minute rate limit"}}',
+    "anthropic-ramp": 'HTTP 429: {"type":"error","error":{"type":"rate_limit_error","message":'
+                      '"ramp","details":{"error_code":"ramp_limit_exceeded"}}}',
+    "bad-request": 'HTTP 400: {"type":"error","error":{"type":"invalid_request_error",'
+                   '"message":"messages: at least one message is required"}}',
+    "not-http": "unparseable reply mentioning insufficient_quota",
+}
+
+
+def _raising(text):
+    class Raises(Hold):
+        def decide(self, observation):
+            raise APIError(text)
+    return Raises()
+
+
+@pytest.mark.parametrize("name", ACCOUNT_STOPS)
+def test_an_account_limit_refusal_is_an_operator_stop_not_a_forfeit(name):
+    """Owner, 2026-11-13: "Stop like 401/402 (Recommended)". Wrong version: only 401/402 stop,
+    so the job keeps recording losses after the money runs out."""
+    with pytest.raises(BudgetExhausted):
+        play.policy_call(_raising(ACCOUNT_STOPS[name]), "decide", {})
+
+
+@pytest.mark.parametrize("name", STILL_FORFEITS)
+def test_rate_limits_and_other_errors_stay_the_models_forfeit(name):
+    with pytest.raises(PolicyFailure) as failure:
+        play.policy_call(_raising(STILL_FORFEITS[name]), "decide", {})
+    assert play.is_forfeit(failure.value)
+
+
+def test_an_account_limit_refusal_stops_the_job_unscored(tmp_path, harness):
+    class Capped(Hold):
+        def decide(self, observation):
+            raise APIError(ACCOUNT_STOPS["anthropic-spend-cap"])
+
+    harness.append(FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000),
+                                bridge_observation(0, 0, battle="b2")]))
+    config = {**CONFIG, "episodes": 2, "results": str(tmp_path / "r.csv")}
+    manifest = play.play(tmp_path / "job", config, makers={"attack_nearest": Capped})
+    assert manifest["status"] == "stopped"
+    assert manifest["episodes"][0]["status"] == "budget_exhausted"
+    assert len(manifest["episodes"]) == 1 and harness[0].controls == []

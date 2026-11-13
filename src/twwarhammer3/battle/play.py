@@ -417,6 +417,27 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
     return result
 
 
+# Markers of a provider refusing because the account's quota, credit or spend limit is used up,
+# as each documents them (read 2026-11-13): OpenAI's 429 code insufficient_quota (2026-11-08
+# finding P1); OpenRouter's 403 limit_source openrouter_key_limit (openrouter.ai/docs/
+# api-reference/errors); Anthropic's tier spend cap, a 429 with error_code
+# enforced_spend_limit_reached, its own and workspace spend limits, 400s whose message starts
+# "You have reached your specified [workspace] API usage limits"
+# (platform.claude.com/docs/en/api/rate-limits), and its low credit balance message. Ordinary
+# rate limits, including Anthropic's ramp_limit_exceeded, stay transient and then a forfeit.
+ACCOUNT_LIMITS = ("insufficient_quota", "openrouter_key_limit", "enforced_spend_limit_reached",
+                  "You have reached your specified API usage limits",
+                  "You have reached your specified workspace API usage limits",
+                  "credit balance is too low")
+
+
+def account_stop(error: str) -> bool:
+    """An APIError text that is the operator's to fix: a bad key, no credit, an account limit,
+    or a ledger safety stop. Only an HTTP 4xx body can carry an account-limit marker."""
+    return (error.startswith(("HTTP 401", "HTTP 402")) or error.endswith("and stopped")
+            or error.startswith("HTTP 4") and any(mark in error for mark in ACCOUNT_LIMITS))
+
+
 def policy_call(policy, method: str, *args):
     try:
         return getattr(policy, method)(*args)
@@ -428,8 +449,9 @@ def policy_call(policy, method: str, *args):
         # per the log, no owner-direction entry): HTTP 401/402 and a ledger stop end the battle
         # unscored, other API errors are the model's forfeit. Interview question 18 still asks.
         # The account's key or credit, or a ledger safety stop: the operator's, no forfeit.
-        if isinstance(exc, APIError) and (str(exc).startswith(("HTTP 401", "HTTP 402"))
-                                          or str(exc).endswith("and stopped")):
+        # Owner, 2026-11-13: "Stop like 401/402 (Recommended)" for a provider's quota or credit
+        # refusal too (ACCOUNT_LIMITS).
+        if isinstance(exc, APIError) and account_stop(str(exc)):
             raise BudgetExhausted(message) from exc
         failure = {"method": method, "error_type": type(exc).__name__}
         if getattr(exc, "attempts", None) is not None:  # an APIError's billed attempts

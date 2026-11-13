@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-13 (quota refusals and Ctrl-C), answers to two questions: for a provider's quota or
+  credit refusal, which play counted as the model's forfeit: "Stop like 401/402 (Recommended)";
+  for what a job stopped by Ctrl-C during its final copying records: "interrupted, readers skip
+  it (Recommended)" (status interrupted; benchmark readers skip a copy-interrupted trial, while a
+  Ctrl-C during controller close keeps today's count). Interview question 18 and the Ctrl-C
+  known issue.
 - 2026-11-13 (witness refusals and push), answers to two questions: for the Cannae witnesses'
   (cannae.py, 7) and the Alesia lines witness's (lines.py, 4) bare PolicyFailures, which
   `play.is_forfeit` counted as forfeits: "End the battle (Recommended)"; for pushing main's 14
