@@ -532,3 +532,26 @@ def test_a_copy_interrupted_trial_has_no_gameplay_measures_but_keeps_its_spend(
                 "local_share"):
         assert cut[key] is None, key
     assert cut["usd"] == .25
+
+
+def test_the_refused_share_counts_engine_refusals_and_validation_stands_beside(
+        tmp_path, monkeypatch):
+    """Owner, 2026-11-13: "Engine only, validation beside (Recommended)". benchmark.md defines
+    reliability as orders the engine refused. Wrong version: one share that also counts the
+    batches the harness refused before sending (the gap arm read 0.005 with no engine refusal)."""
+    episode = tmp_path / "battle/episode-0000"
+    episode.mkdir(parents=True)
+    (episode / "result.json").write_text(json.dumps({"llm": {"usd": 0.1, "calls": 4}}))
+    monkeypatch.setattr(suite, "trial_metrics", lambda directory, result: {
+        "reply_validation": {"failed": 0, "failed_responses": 0}, "transport_failures": 0,
+        "trace": {"orders": 10}, "call_seconds": {"p50": 1.0},
+        "order_age_s": {"p50": 2.0, "p90": 3.0}, "plan_age_s": {"p50": None},
+        "rejections": {"engine: unreachable": 1, "validation: unknown target": 3}})
+    monkeypatch.setattr(suite, "coordination", lambda frames: dict.fromkeys(
+        ("first_contact_s", "spread_s", "idle_share", "local_share")))
+    measured = suite.measure({"output": str(tmp_path / "battle"), "evidence_matches_plan": True,
+                              "condition": 80})
+    assert (measured["orders"], measured["refused"], measured["validation_refused"]) == (10, 1, 3)
+    battle = {**row("a", "single", "won"), **measured, "status": "won"}
+    arm = suite.summarize([battle])["arms"]["single"]
+    assert arm["refused_share"] == 0.1 and arm["validation_refused"] == 3

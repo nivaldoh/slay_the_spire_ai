@@ -29,6 +29,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: The suite's refused share counts engine refusals only
+
+The owner answered: "Engine only, validation beside (Recommended)". The suite's `refused` per battle
+summed engine refusals (per order) and the harness's validation refusals (per voided batch), so
+the gap arm read 0.005 with no engine refusal in 1,703 orders, unlike benchmark.md's "orders the
+engine refused". `refused` now counts engine refusals only, `refused_share` divides them by orders,
+and `validation_refused` (batches refused before sending) is a separate column ("Batches refused by
+validation") on the page and in the text table. Future suite reports change; recorded traces keep
+both kinds. A new case fails on the old code and on the old combined count. Offline only.
+
 ## 2026-11-13: The commander raises a stop from its last call
 
 The owner answered: "Fix now (Recommended)". `CommanderPolicy.close` waited for the call still in

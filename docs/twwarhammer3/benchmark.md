@@ -135,7 +135,7 @@ They do not isolate the cause of a difference, and equal-resource arms come late
 | Effectiveness | engine outcome; `own` (the [mirror formula](benchmark-implementation.md#first-version-follow-up-2026-11-02) at any army size); `taken`, percent of the enemy dead, routed or gone at the end; `killed`, percent of its men dead. A timer win can leave active enemies, so neither percentage is necessarily 100 | Engine ending and totals |
 | Cost | dollars, calls, tokens; for `gap`, what writing the graphs cost, shown apart | Ledger-backed result |
 | Speed | median and 90th-percentile order age, observation to engine application | Engine acknowledgements |
-| Reliability | orders the engine refused; bad replies, which void a decision; failed calls, provider faults or calls closed unsent; every failed or unplayed battle | Trace and plan |
+| Reliability | orders the engine refused (batches the harness refused before sending are shown beside, owner 2026-11-13); bad replies, which void a decision; failed calls, provider faults or calls closed unsent; every failed or unplayed battle | Trace and plan |
 | Coordination (descriptive) | `spread_s`, how long after first contact the median unit joined; `local_share`, friendly men over all men near each fight; `idle_share`, able melee units standing idle after contact | 1 Hz recorder, the same for every arm |
 
 Bad-reply and failed-call totals include every matching attempt with recorded evidence, including

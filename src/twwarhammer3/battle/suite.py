@@ -295,6 +295,7 @@ def measure(row):
     empty = {"own": None, "taken": None, "killed": None, "battle_s": None, "usd": None,
              "authoring_usd": None, "calls": None, "tokens": None, "think_s": None, "age_s": None,
              "age_p90_s": None, "plan_age_s": None, "orders": None, "refused": None,
+             "validation_refused": None,
              "bad_replies": None, "call_failures": None, "first_contact_s": None,
              "spread_s": None, "idle_share": None, "local_share": None}
     if not row["evidence_matches_plan"]:
@@ -322,7 +323,14 @@ def measure(row):
             "tokens": (llm.get("input_tokens") or 0) + (llm.get("output_tokens") or 0),
             "think_s": metrics["call_seconds"]["p50"], "age_s": metrics["order_age_s"]["p50"],
             "age_p90_s": metrics["order_age_s"]["p90"], "plan_age_s": metrics["plan_age_s"]["p50"],
-            "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
+            # Owner, 2026-11-13: "Engine only, validation beside (Recommended)": refused
+            # counts orders the engine refused (benchmark.md, Reliability); batches the harness
+            # refused before sending are counted beside it.
+            "orders": trace.get("orders", 0),
+            "refused": sum(count for kind, count in metrics["rejections"].items()
+                           if kind.startswith("engine: ")),
+            "validation_refused": sum(count for kind, count in metrics["rejections"].items()
+                                      if kind.startswith("validation: ")),
             **failures, **replay}
 
 
@@ -450,6 +458,7 @@ def summarize(rows):
             "orders": mean([r["orders"] for r in done]),
             "refused_share": (round(sum(r["refused"] for r in decided)
                                     / sum(r["orders"] for r in decided), 3) if decided else None),
+            "validation_refused": sum(r.get("validation_refused") or 0 for r in mine),
             "bad_replies": sum(r["bad_replies"] or 0 for r in mine),
             "call_failures": sum(r["call_failures"] or 0 for r in mine),
             "spread_s": median([r["spread_s"] for r in done]),
@@ -487,6 +496,7 @@ COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
            ("calls", lambda a: a["calls"]), ("think s", lambda a: a["think_s"]),
            ("age s", lambda a: a["age_s"]), ("p90 s", lambda a: a["age_p90_s"]),
            ("plan s", lambda a: a["plan_age_s"]), ("refused", lambda a: a["refused_share"]),
+           ("refused batches", lambda a: a["validation_refused"]),
            ("bad replies", lambda a: a["bad_replies"]),
            ("failed calls", lambda a: a["call_failures"]), ("spread s", lambda a: a["spread_s"]),
            ("idle", lambda a: a["idle_share"]), ("local", lambda a: a["local_share"]))
