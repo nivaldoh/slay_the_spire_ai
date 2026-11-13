@@ -77,6 +77,18 @@ def test_only_a_two_sided_siege_the_player_attacks_can_opt_in():
         assert "siege_assault" not in play.battle_session(setup.scenarios()[name])
 
 
+@pytest.mark.parametrize("withheld", [["Izmail"], [], "izmail", [""], [7]])
+def test_withheld_words_are_a_nonempty_list_of_lower_case_words(withheld):
+    """check_job lower-cases the job name, not the words. Wrong version (2026-11-13 refusal
+    sweep): without the refusal an upper-case word is accepted and then never matches, so a job
+    named after the history (bench-izmail-r1) passes the guard and reaches the controllers."""
+    base = setup.scenarios()["ksl-emp-siege-a-v1"]
+    config = {"episodes": 1, "start_timeout": 900, "episode_timeout": None, "run_timeout": None}
+    setup.fill_timeouts(base, config)
+    with pytest.raises(ValueError, match="withheld must list lower-case words"):
+        setup.validate_declaration({**base, "withheld": withheld}, config)
+
+
 # A fake engine: a unit or building answers each getter it names with that value (a function of
 # the call's arguments, or ERROR to fail); a getter it does not name is missing.
 ENGINE = """
