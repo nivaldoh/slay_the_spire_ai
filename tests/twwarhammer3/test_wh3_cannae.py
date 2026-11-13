@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import pytest
 
+from twwarhammer3.battle import cannae, play
 from twwarhammer3.battle.cannae import GREATSWORDS, KNIGHTS, SWORDS, Envelop
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
@@ -233,3 +234,62 @@ def test_a_route_without_public_terrain_bounds_is_refused(terrain):
     policy.decide(view)
     with pytest.raises(PolicyFailure, match="public terrain bounds"):
         policy.decide(contact(view))
+
+
+def _unplaced(view):
+    view["friendly"][0]["x"] = None
+
+
+def _one_short(view):
+    view["friendly"].pop()
+
+
+def _no_terrain(view):
+    del view["terrain"]
+
+
+def _duplicate_row(view):
+    view["friendly"].append(deepcopy(view["friendly"][0]))
+
+
+def _changed_type(view):
+    view["friendly"][6]["type"] = "artillery"
+
+
+# (witness, refusal, change, at contact): the change is made to the opening view, or to the next
+# view after an opening decision bound the roles.
+WING, CENTRE = cannae.WingSupport, cannae.CentreSupport
+REFUSALS = [
+    (Envelop, "placed starting regiments", _unplaced, False),
+    (Envelop, "four Swordsmen", _one_short, False),
+    (Envelop, "public terrain bounds", _no_terrain, True),
+    (Envelop, "Cannae witness received a malformed own roster", _duplicate_row, False),
+    (Envelop, "Cannae witness regiment identity or type changed", _changed_type, True),
+    (WING, "Cannae support witness received a malformed own roster", _duplicate_row, False),
+    (WING, "Cannae support witness regiment identity or type changed", _changed_type, True),
+    (CENTRE, "Cannae support witness regiment identity or type changed", _changed_type, True),
+]
+
+
+@pytest.mark.parametrize("make,refusal,change,later", REFUSALS,
+                         ids=[f"{m.__name__}-{c.__name__[1:]}" for m, _, c, _ in REFUSALS])
+def test_a_witness_refusal_ends_the_battle_rather_than_costing_one_decision(
+        make, refusal, change, later):
+    """A bare refusal is a forfeit (play.is_forfeit): the army would stand on its last orders and
+    could still win at the timer. The owner chose on 2026-11-13 that these end the battle, as
+    Evade's, Escalade's and ReplaySchedule's do. Wrong version: any refusal raised without a
+    cause."""
+    policy, view = make(), opening()
+    if later:
+        if change is _no_terrain:
+            change(view)
+            policy.decide(view)
+            view = contact(view)
+        else:
+            policy.decide(deepcopy(view))
+            change(view)
+    else:
+        change(view)
+    with pytest.raises(PolicyFailure, match=refusal) as failure:
+        policy.decide(view)
+    assert not play.is_forfeit(failure.value)

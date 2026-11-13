@@ -118,16 +118,21 @@ class LinesWitness(SmallDiagnostic):
         self.lancers = {"phase": "wait", "target": None, "contact_s": None, "since_s": None,
                         "retreat": None, "threat": None, "charges": 0}
 
+    # Every refusal here carries a cause, which ends the episode (play.is_forfeit): a bare
+    # PolicyFailure is a forfeit, and the army would stand on its last orders and could win at
+    # the timer (owner, 2026-11-13: "End the battle"; as Evade and Escalade do).
     def _bind(self, units):
         if Counter(u.get("type") for u in units) != ARMY or any(
                 u.get("x") is None or u.get("z") is None for u in units):
-            raise PolicyFailure("the lines witness needs the declared Kislev army, placed")
+            raise PolicyFailure("the lines witness needs the declared Kislev army, placed") \
+                from ValueError(dict(Counter(u.get("type") for u in units)))
         line = [u for u in units if u["type"] in LINE]
         middle = (max(u["z"] for u in line) + min(u["z"] for u in line)) / 2
         inner = [u for u in line if u["z"] > middle]
         outer = sorted((u for u in line if u["z"] <= middle), key=lambda u: u["x"])
         if len(inner) != 3 or len(outer) != 5:
-            raise PolicyFailure("the lines witness needs three regiments north, five south")
+            raise PolicyFailure("the lines witness needs three regiments north, five south") \
+                from ValueError({"north": len(inner), "south": len(outer)})
         self.roles = {"inner": [u["id"] for u in inner], "outer": [u["id"] for u in outer],
                       "reserve": ids_by_type(units, {GUARD, BOYAR}),
                       "lancers": ids_by_type(units, {LANCERS})}
@@ -160,7 +165,8 @@ class LinesWitness(SmallDiagnostic):
         if self.rule == "men":
             return enemy.get("men") or 0
         if enemy.get("type") not in COST:
-            raise PolicyFailure(f"the lines witness has no lobby cost for {enemy.get('type')!r}")
+            raise PolicyFailure(f"the lines witness has no lobby cost for {enemy.get('type')!r}") \
+                from KeyError(enemy.get("type"))
         return COST[enemy["type"]]
 
     def _choose(self, relief, enemies):
@@ -258,7 +264,9 @@ class LinesWitness(SmallDiagnostic):
                 return []
             self._bind(everyone)
         elif any(unit.get("id") not in self.posts for unit in everyone):
-            raise PolicyFailure("the lines witness saw a unit it did not bind")
+            unbound = sorted(str(u.get("id")) for u in everyone if u.get("id") not in self.posts)
+            raise PolicyFailure("the lines witness saw a unit it did not bind") \
+                from ValueError(unbound)
         units, enemies = self.observe(observation)
         own = {unit["id"]: unit for unit in units}
         for enemy in visible_enemies(observation).values():

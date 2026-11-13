@@ -482,3 +482,45 @@ def test_the_corner_camp_takes_cornerholds_post_and_spreads_the_army():
         assert sorted(order["unit"] for order in moves) == sorted(f"f{i}" for i in range(1, 13))
         assert min(math.dist((a["x"], a["z"]), (b["x"], b["z"]))
                    for a, b in itertools.combinations(moves, 2)) >= 20
+
+
+def _other_army(first, later):
+    next(u for u in first["friendly"] if u["id"] == "f6")["type"] = "wh3_main_ksl_inf_tzar_guard_0"
+    return first, None
+
+
+def _four_north(first, later):
+    next(u for u in first["friendly"] if u["id"] == "f10")["z"] = -165
+    return first, None
+
+
+def _unknown_cost(first, later):
+    relief = {"e5", "e8", "e9", "e10", "e11", "e12"}
+    later["enemy"] = [u for u in later["enemy"] if u["id"] in relief | {"e1", "e2", "e3", "e4"}]
+    next(u for u in later["enemy"] if u["id"] == "e8")["type"] = "wh_dlc08_nor_mon_war_mammoth_0"
+    return first, later
+
+
+def _stranger(first, later):
+    later["friendly"][0]["id"] = "f99"
+    return first, later
+
+
+@pytest.mark.parametrize("refusal,change", [
+    ("declared Kislev army", _other_army), ("three regiments north, five south", _four_north),
+    ("no lobby cost", _unknown_cost), ("did not bind", _stranger),
+], ids=["army", "lines", "cost", "unbound"])
+def test_a_lines_witness_refusal_ends_the_battle_rather_than_costing_one_decision(
+        refusal, change):
+    """A bare refusal is a forfeit (play.is_forfeit): the army would stand on its last orders and
+    could still win at the timer. The owner chose on 2026-11-13 that these end the battle, as
+    Evade's, Escalade's and ReplaySchedule's do. Wrong version: any refusal raised without a
+    cause."""
+    first, later = (deepcopy(view) for view in battle(A)[:2])
+    first, later = change(first, later)
+    policy = lines.LinesWitness()
+    if later is not None:
+        policy.decide(first)
+    with pytest.raises(PolicyFailure, match=refusal) as failure:
+        policy.decide(later if later is not None else first)
+    assert not play.is_forfeit(failure.value)

@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-13 (witness refusals and push), answers to two questions: for the Cannae witnesses'
+  (cannae.py, 7) and the Alesia lines witness's (lines.py, 4) bare PolicyFailures, which
+  `play.is_forfeit` counted as forfeits: "End the battle (Recommended)"; for pushing main's 14
+  local commits, including `49a6d44`: "Push all 14 (Recommended)". Pushed at `685b409`.
+- 2026-11-13 (goal re-armed at 10:28): "Goal set: again", read as continuing the overnight goal.
 - 2026-11-13 (overnight window), goal verbatim: "keep trying to make progress overnight autonomously".
   Names no budget, game window or return time: offline only at $0 under docs/autonomy.md.
   Brief: `runs/overnight-20261113/brief.md`.

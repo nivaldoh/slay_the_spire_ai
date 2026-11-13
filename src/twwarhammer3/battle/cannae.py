@@ -41,16 +41,21 @@ class Envelop:
         self.enemy_wings = {}
         self.now = 0
 
+    # Every refusal here carries a cause, which ends the episode (play.is_forfeit): a bare
+    # PolicyFailure is a forfeit, and the army would stand on its last orders and could win at
+    # the timer (owner, 2026-11-13: "End the battle"; as Evade and Escalade do).
     def _bind(self, units):
         expected = ((SWORDS, 4), (GREATSWORDS, 2), (KNIGHTS, 3))
         if any(u.get("x") is None or u.get("z") is None for u in units.values()):
-            raise PolicyFailure("Cannae witness needs placed starting regiments")
+            raise PolicyFailure("Cannae witness needs placed starting regiments") from ValueError(
+                sorted(i for i, u in units.items() if u.get("x") is None or u.get("z") is None))
         by_type = {kind: sorted((u for u in units.values() if u.get("type") == kind),
                                 key=lambda u: (-u["z"], u["x"], u["id"]))
                    for kind, _ in expected}
         if len(units) != 9 or any(len(by_type[kind]) != n for kind, n in expected):
             raise PolicyFailure("Cannae witness needs four Swordsmen, two Greatswords, "
-                                "three Knights")
+                                "three Knights") from ValueError(
+                {kind: len(by_type[kind]) for kind, _ in expected} | {"units": len(units)})
         self.groups = {"centre": [u["id"] for u in by_type[SWORDS]],
                        "left": [by_type[GREATSWORDS][0]["id"]],
                        "right": [by_type[GREATSWORDS][1]["id"]],
@@ -119,7 +124,8 @@ class Envelop:
         # route. The public terrain bounds limit waypoints, not hidden enemy positions.
         bounds = (observation.get("terrain") or {}).get("bounds")
         if not bounds:
-            raise PolicyFailure("Cannae route needs public terrain bounds")
+            raise PolicyFailure("Cannae route needs public terrain bounds") from ValueError(
+                observation.get("terrain"))
 
         def point(x, z):
             return {"x": round(min(bounds["max_x"] - ARRIVED_M,
@@ -154,12 +160,14 @@ class Envelop:
         if (not isinstance(roster, list) or any(not isinstance(u, dict)
                 or not isinstance(u.get("id"), str) or not u["id"] for u in roster)
                 or len({u["id"] for u in roster}) != len(roster)):
-            raise PolicyFailure("Cannae witness received a malformed own roster")
+            raise PolicyFailure("Cannae witness received a malformed own roster") \
+                from ValueError("friendly rows need unique nonempty string ids")
         units = friendly_units(observation)
         if self.groups is None:
             self._bind(units)
         elif {identity: u.get("type") for identity, u in units.items()} != self.types:
-            raise PolicyFailure("Cannae witness regiment identity or type changed")
+            raise PolicyFailure("Cannae witness regiment identity or type changed") \
+                from ValueError(sorted(units))
         visible = list(visible_enemies(observation).values())
         enemies = [e for e in visible if able(e)]
         infantry = [e for e in enemies if e.get("class") == "infantry"]
@@ -251,12 +259,14 @@ class WingSupport(Envelop):
         if (not isinstance(roster, list) or any(not isinstance(u, dict)
                 or not isinstance(u.get("id"), str) or not u["id"] for u in roster)
                 or len({u["id"] for u in roster}) != len(roster)):
-            raise PolicyFailure("Cannae support witness received a malformed own roster")
+            raise PolicyFailure("Cannae support witness received a malformed own roster") \
+                from ValueError("friendly rows need unique nonempty string ids")
         units = friendly_units(observation)
         if self.groups is None:
             self._bind(units)
         elif {identity: u.get("type") for identity, u in units.items()} != self.types:
-            raise PolicyFailure("Cannae support witness regiment identity or type changed")
+            raise PolicyFailure("Cannae support witness regiment identity or type changed") \
+                from ValueError(sorted(units))
         visible = list(visible_enemies(observation).values())
         for enemy in (e for e in visible if e.get("class") == "cavalry"):
             self.enemy_wings.setdefault(enemy["id"], "north" if enemy["z"] >= self.mid_z

@@ -29,6 +29,17 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: Cannae and Alesia witness refusals end the battle
+
+The owner answered review queue 13: "End the battle (Recommended)". The 11 refusals of the Cannae
+witnesses (`cannae.py`: Envelop, WingSupport, CentreSupport) and the Alesia lines witness
+(`lines.py`) now raise `PolicyFailure` from a cause, so `play.is_forfeit` is false and play ends
+the episode as a policy failure. Before, each counted as a forfeit: the army stood on its last
+orders and could win at the timer. Evade (`8e809ac`), Escalade and ReplaySchedule already did this.
+Messages and conditions are unchanged; no recorded trace since 2026-11-05 has such a forfeit, so no
+result changes. 12 new cases fail on the old code and on each cause dropped singly (11 of 11).
+Evidence: `runs/witness-causes-20261113/`. Offline only; no live battle has hit these refusals.
+
 ## 2026-11-13: Refusal sweeps close 55 test gaps
 
 Claude Code, under the owner's goal ("keep trying to make progress overnight autonomously", then
