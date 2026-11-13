@@ -108,6 +108,15 @@ def test_a_failing_baseline_or_this_tree_is_refused(tmp_path):
     assert (tmp_path / "src/toy.py").read_text() == TOY
 
 
+def test_a_failing_baseline_names_its_first_failed_test(tmp_path):
+    """Wrong version: the baseline line gives only pytest's summary, so a flaky failure cannot be
+    traced (2026-11-13: one baseline failed once, unnamed, and passed on rerun)."""
+    result = sweep(tmp_path, TESTS + "\n\ndef test_broken():\n    assert False\n")
+    first = result.stdout.splitlines()[0]
+    assert first.startswith("baseline: exit 1")
+    assert first.endswith("<- tests/test_toy.py::test_broken")
+
+
 WHERE = '''import toy
 
 
