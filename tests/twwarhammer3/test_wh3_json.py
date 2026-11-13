@@ -36,3 +36,71 @@ def test_json_preserves_nested_unicode_with_standard_or_game_string_sub(game_str
     for ascii_only in (False, True):
         encoded = json.dumps(expected, ensure_ascii=ascii_only)
         assert json.loads(codec.encode(codec.decode(encoded))) == expected
+
+
+def codec():
+    lua = runtime()
+    return lua, lua.execute((MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
+
+
+# The refusals of rxi/json.lua 0.1.2, whose own test/test.lua checks that these raise. Here each
+# names its reason: the mod logs that reason, and without its refusal each case below instead
+# writes invalid JSON, silently drops values, or fails later with an unrelated Lua error
+# (2026-11-13 refusal sweep and review). Lua 5.1's length of a table with a hole may count past
+# it, so the sparse-array check alone lets {1, nil, 3, x = 1} through as [1].
+ENCODE_REFUSALS = [
+    ("local t = {}; t.self = t; return t", "circular reference"),
+    ("return {[1] = 1, [3] = 3}", "invalid table: sparse array"),
+    ("return {1, nil, 3, x = 1}", "invalid table: mixed or invalid key types"),
+    ("return {x = 1, [2] = 2}", "invalid table: mixed or invalid key types"),
+    ("return {[true] = 1}", "invalid table: mixed or invalid key types"),
+    ("return {0 / 0}", "unexpected number value"),
+    ("return {1 / 0}", "unexpected number value"),
+    ("return {-1 / 0}", "unexpected number value"),
+    ("return {1, function() end}", "unexpected type 'function'"),
+]
+
+
+@pytest.mark.parametrize("value,reason", ENCODE_REFUSALS, ids=[r for _, r in ENCODE_REFUSALS])
+def test_the_encoder_refuses_what_json_cannot_hold_and_names_why(value, reason):
+    lua, json_codec = codec()
+    lua.globals().codec = json_codec
+    ok, error = lua.execute(f"return pcall(codec.encode, (function() {value} end)())")
+    assert ok is False and reason in str(error)
+
+
+# Truncated files are what a reader can meet while the other side is still writing.
+DECODE_REFUSALS = [
+    ('{"orders": [1, 2', "expected ']' or ','"),
+    ('{"a": 1', "expected '}' or ','"),
+    ('{"a" 1}', "expected ':' after key"),
+    ("[1] x", "trailing garbage"),
+    ("nul", "invalid literal 'nul'"),
+    ("@", "unexpected character '@'"),
+    ('"\\udbff\\uffff"', "invalid unicode codepoint"),
+]
+
+
+@pytest.mark.parametrize("text,reason", DECODE_REFUSALS, ids=[r for _, r in DECODE_REFUSALS])
+def test_the_decoder_refuses_malformed_or_truncated_text_and_names_why(text, reason):
+    lua, json_codec = codec()
+    lua.globals().codec, lua.globals().text = json_codec, text
+    ok, error = lua.execute("return pcall(codec.decode, text)")
+    assert ok is False and reason in str(error)
+
+
+@pytest.mark.parametrize("value,kind", [("nil", "nil"), ("5", "number")])
+def test_the_decoder_takes_only_a_string(value, kind):
+    lua, json_codec = codec()
+    lua.globals().codec = json_codec
+    ok, error = lua.execute(f"return pcall(codec.decode, {value})")
+    assert ok is False and f"expected argument of type string, got {kind}" in str(error)
+
+
+def test_a_table_shared_twice_is_not_a_circular_reference():
+    """Wrong version (2026-11-13 review): the encoder keeps an object on its stack after encoding
+    it, so a table met again elsewhere is refused as circular."""
+    lua, json_codec = codec()
+    lua.globals().codec = json_codec
+    text = lua.execute("local s = {a = 1}; return codec.encode({x = s, y = {s}})")
+    assert json.loads(text) == {"x": {"a": 1}, "y": [{"a": 1}]}

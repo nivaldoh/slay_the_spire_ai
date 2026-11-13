@@ -170,6 +170,22 @@ def test_frontend_preserves_explicit_waits_and_visible_component_retries(tmp_pat
     assert "menu request-a: done" in driver.log
 
 
+def test_frontend_never_clicks_a_component_still_invisible_at_its_timeout(tmp_path):
+    """Wrong versions (2026-11-13 refusal sweep and review): without the refusal the component
+    that never became visible is clicked once its timeout passes, as if it had appeared; with one
+    retry too many the step outlasts its timeout."""
+    driver = MenuDriver(tmp_path, "frontend")
+    driver.send([{"find": ["button"], "click": True, "timeout_ms": 1000, "required": True},
+                 command("After()")])
+    driver.tick(3)  # Receive, then two unsuccessful 500 ms finds.
+    assert "not found within" not in driver.log
+    driver.tick()
+    assert "not found within 1000 ms: button" in driver.log
+    driver.tick(2)
+    assert driver.calls == []
+    assert "menu request-a: failed" in driver.log
+
+
 def test_frontend_retries_context_readbacks_and_stops_at_the_timeout(tmp_path):
     driver = MenuDriver(tmp_path, "frontend")
     driver.lua.execute('''
