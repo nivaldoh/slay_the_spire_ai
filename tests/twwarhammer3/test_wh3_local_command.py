@@ -310,6 +310,9 @@ def test_a_send_names_a_known_sender_and_a_basis_no_later_than_its_time():
     message decided on an observation from the future, or before battle time 0, is accepted."""
     with pytest.raises(TeamHarnessError, match="unknown message sender"):
         router().send("z", {"channel": "signal", "code": "HOLD"}, 1000, current())
+    text = router(mode="text", links={("a", "b")}, profile=local.TEXT_PROFILE)
+    with pytest.raises(TeamHarnessError, match="unknown message sender"):
+        text.send("z", {"channel": "text", "to": "b", "text": "hold"}, 1000, current())
     for source_ms in (1001, -1):
         with pytest.raises(TeamHarnessError, match="invalid message observation basis"):
             router().send("a", {"channel": "signal", "code": "HOLD"}, 1000, current(),

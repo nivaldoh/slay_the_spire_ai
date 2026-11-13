@@ -205,6 +205,7 @@ def test_a_manual_battle_in_another_mode_than_declared_ends_the_attempt(
     assert json.loads((output / "manifest.json").read_text())["status"] == "failure"
     assert len(consumed) == 1
 
+
 def test_a_manual_battle_must_be_at_1x_when_its_setup_is_read_back(tmp_path, monkeypatch):
     """Only the owner pauses, after the setup readback. Wrong version (2026-11-13 refusal sweep):
     without the refusal a battle paused at its readback is recorded, since play allows 0 later."""
@@ -217,14 +218,15 @@ def test_a_manual_battle_must_be_at_1x_when_its_setup_is_read_back(tmp_path, mon
 
 
 def test_a_source_change_during_a_manual_attempt_ends_it(tmp_path, monkeypatch):
-    """Wrong version (2026-11-13 refusal sweep): without the refusal the attempt keeps the
+    """The source changes after the setup readback. Wrong versions (2026-11-13 refusal sweep and
+    review): without the refusal, or checking only at the readback, the attempt keeps the
     fingerprints of source files that changed under it."""
     output, consumed = fake_recording(tmp_path, monkeypatch, [readback(), ending()])
     reads = []
 
-    def fingerprints(*args):
+    def fingerprints(*args):  # read for the manifest, at the readback, then at the ending
         reads.append(True)
-        return {"source": "hash" if len(reads) == 1 else "edited"}
+        return {"source": "hash" if len(reads) <= 2 else "edited"}
 
     monkeypatch.setattr(manual_demo, "source_fingerprints", fingerprints)
     with pytest.raises(RuntimeError, match="source changed during manual attempt"):
@@ -238,7 +240,10 @@ def test_a_capture_that_stops_before_the_battle_ends_fails_the_attempt(tmp_path,
     states = [readback()]
     output, consumed = fake_recording(tmp_path, monkeypatch, states)
 
-    class Stops(manual_demo.subprocess.Popen):  # fake_recording's Process
+    fake = manual_demo.subprocess.Popen
+    assert fake.__module__ == __name__  # fake_recording's Process, never the real Popen
+
+    class Stops(fake):
         def poll(self):
             return None if states else 0
 
@@ -247,6 +252,7 @@ def test_a_capture_that_stops_before_the_battle_ends_fails_the_attempt(tmp_path,
         manual_demo.record(output, "ffmpeg.exe", 3600)
     manifest = json.loads((output / "manifest.json").read_text())
     assert manifest["status"] == "failure" and "engine_ending" not in manifest
+
 
 def test_a_capture_that_exits_before_it_is_ready_ends_the_attempt(tmp_path, monkeypatch):
     """Wrong version (2026-11-13 refusal sweep): without the refusal the recorder waits forever
@@ -310,7 +316,7 @@ def test_pause_labels_require_independent_bounded_video_intervals_and_cannot_ove
         manual_demo.label_pauses(tmp_path, path)
 
 
-@pytest.mark.parametrize("change", [{"reviewer": ""}, {"complete": False},
+@pytest.mark.parametrize("change", [{"reviewer": ""}, {"complete": False}, {"complete": "yes"},
                                     {"video_sha256": "0" * 64}])
 def test_pause_labels_name_a_reviewer_say_complete_and_match_the_video(tmp_path, change):
     """Wrong version (2026-11-13 refusal sweep): without the refusal anonymous, partial or
