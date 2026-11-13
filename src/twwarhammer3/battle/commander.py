@@ -247,7 +247,7 @@ class CommanderPolicy:
         from twwarhammer3.battle.play import account_stop  # play imports this module
 
         self.pool.shutdown(wait=True)
-        if self.pending is None or self.pending.cancelled():
+        if self.pending is None:
             return
         error = self.pending.exception()
         if isinstance(error, BudgetExhausted):
