@@ -28,6 +28,10 @@ revisions written below are the earlier passes.
   verdict on adaptation or strength. Ran complete at `d3ddc7b`, before agreement, with the rules
   fixed in its plan: 5 of 8, so sufficiency is not shown; the centre/south/2 win is an incomplete
   route. Evidence: `runs/cannae-window-1/`; [results](twwarhammer3/cannae-eval.md#window-1-results-2026-11-05).
+  Since 2026-11-13 a CentreSupport roster refusal ends its launch as policy_failure (owner: "End the
+  battle (Recommended)"). Owner, 2026-11-13: "Relaunch once, then unplayed (Recommended)": such a
+  launch gets one relaunch, and a second refusal leaves that case unplayed and reported, never a
+  win or a loss.
 
 - WH3 Cannae shortcut challenges (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"): one launch each, $0,
   unpaused at 1x, 600/1320/2000 s limits: `emp-envelopment-a-v2` with Hold and with

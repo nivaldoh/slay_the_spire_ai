@@ -35,7 +35,8 @@ The owner answered review queue 13: "End the battle (Recommended)". The 11 refus
 witnesses (`cannae.py`: Envelop, WingSupport, CentreSupport) and the Alesia lines witness
 (`lines.py`) now raise `PolicyFailure` from a cause, so `play.is_forfeit` is false and play ends
 the episode as a policy failure. Before, each counted as a forfeit: the army stood on its last
-orders and could win at the timer. Evade (`8e809ac`), Escalade and ReplaySchedule already did this.
+orders and could win at the timer. Evade (`8e809ac`), Escalade and ReplaySchedule's in-battle
+refusals already did this.
 Messages and conditions are unchanged; no recorded trace since 2026-11-05 has such a forfeit, so no
 result changes. 12 new cases fail on the old code and on each cause dropped singly (11 of 11).
 Evidence: `runs/witness-causes-20261113/`. Offline only; no live battle has hit these refusals.
@@ -61,7 +62,8 @@ Claude Code, under the owner's goal ("keep trying to make progress overnight aut
 - `refusal_sweep.py` names the first FAILED test of a failed baseline (one failed once, unnamed).
 - Found, not changed: the Cannae and Alesia witnesses' bare `PolicyFailure`s count as forfeits
   (`play.is_forfeit`), so the army would stand on its last orders and could win at the timer;
-  Evade, Escalade and ReplaySchedule raise from a cause. No trace since 2026-11-05 has one.
+  Evade, Escalade and ReplaySchedule's in-battle refusals raise from a cause. No trace since
+  2026-11-05 has one.
   A failure-rule choice: review queue 13.
 - No runtime, prompt, scenario or score change; nothing here shows live behaviour. On local
   `main` from `bceed08`, unpushed (handoffs).

@@ -8,7 +8,10 @@ Both games:
 - 2026-11-13 (witness refusals and push), answers to two questions: for the Cannae witnesses'
   (cannae.py, 7) and the Alesia lines witness's (lines.py, 4) bare PolicyFailures, which
   `play.is_forfeit` counted as forfeits: "End the battle (Recommended)"; for pushing main's 14
-  local commits, including `49a6d44`: "Push all 14 (Recommended)". Pushed at `685b409`.
+  local commits, including `49a6d44`: "Push all 14 (Recommended)". Pushed at `685b409`. Then, on the agreed check "WH3 Cannae
+  fixed rule on harder B", where a CentreSupport refusal now ends a launch with no engine
+  outcome: "Relaunch once, then unplayed (Recommended)" (one relaunch; a second refusal leaves
+  the case unplayed and reported, never a win or a loss). Recorded in agreed-checks.md.
 - 2026-11-13 (goal re-armed at 10:28): "Goal set: again", read as continuing the overnight goal.
 - 2026-11-13 (overnight window), goal verbatim: "keep trying to make progress overnight autonomously".
   Names no budget, game window or return time: offline only at $0 under docs/autonomy.md.

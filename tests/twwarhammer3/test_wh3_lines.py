@@ -514,8 +514,8 @@ def test_a_lines_witness_refusal_ends_the_battle_rather_than_costing_one_decisio
         refusal, change):
     """A bare refusal is a forfeit (play.is_forfeit): the army would stand on its last orders and
     could still win at the timer. The owner chose on 2026-11-13 that these end the battle, as
-    Evade's, Escalade's and ReplaySchedule's do. Wrong version: any refusal raised without a
-    cause."""
+    Evade's, Escalade's and ReplaySchedule's in-battle refusals do. Wrong version: any refusal
+    raised without a cause."""
     first, later = (deepcopy(view) for view in battle(A)[:2])
     first, later = change(first, later)
     policy = lines.LinesWitness()

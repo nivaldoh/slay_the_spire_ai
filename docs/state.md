@@ -3,7 +3,7 @@
 Updated 2026-11-13. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Refusal sweeps, 2026-11-13 (Claude, overnight then from 10:28): tests now catch 55 of 59 refusal removals that the tests of nineteen WH3 files missed; tests, twelve plants and one sweep-tool fix; offline, $0. The Cannae and Alesia witnesses' 11 refusals now end the battle instead of counting as forfeits (owner's answer, 2026-11-13). Evidence: `runs/overnight-20261113/`, `runs/sweeps-20261113b/`. Main is unpushed.
+Refusal sweeps, 2026-11-13 (Claude, overnight then from 10:28): tests now catch 55 of 59 refusal removals that the tests of nineteen WH3 files missed; tests, twelve plants and one sweep-tool fix; offline, $0. The Cannae and Alesia witnesses' 11 refusals now end the battle instead of counting as forfeits (owner's answer, 2026-11-13). Evidence: `runs/overnight-20261113/`, `runs/sweeps-20261113b/`.
 
 Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and siege replay omissions; evidence readers share accepted-order decoding. Reports retain planned attribution, failure costs and unavailable tie-breaks. Escalade V2 retains refused gate-attack replacements; V2 is still unadopted. The local-team audit found a target-retention test gap, now covered; no new policy defect reproduced. Live handover, halt effects and battle suitability remain unverified. Evidence: `runs/battle-review/`. No game or paid run scheduled.
 
