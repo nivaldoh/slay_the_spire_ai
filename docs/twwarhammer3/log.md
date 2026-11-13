@@ -33,12 +33,13 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 The owner answered: "Stop like 401/402 (Recommended)". `play.policy_call` now turns an HTTP 4xx
 whose body carries a documented account-limit marker into `BudgetExhausted`, so the battle ends
-unscored and the job stops: OpenAI `insufficient_quota`; OpenRouter `openrouter_key_limit`
+unscored and the job stops: OpenAI `insufficient_quota` and its four billing codes (credit,
+organization and project spend, usage limit); OpenRouter `openrouter_key_limit`
 (its key-limit 403); Anthropic `enforced_spend_limit_reached` (tier spend cap), "You have
 reached your specified [workspace] API usage limits" (own limits) and "credit balance is too
 low". Before, each was the model's forfeit and a job kept recording losses with no ledger charge
 (finding P1, 2026-11-08). Ordinary rate limits, Anthropic's `ramp_limit_exceeded` and other 4xx
-stay forfeits. 14 new cases: the 6 refusals and a job-level stop fail on the old code, 7 rate
+stay forfeits. 18 new cases: the 10 refusals and a job-level stop fail on the old code, 7 rate
 limits and other errors (a 5xx, a near-miss message) stay forfeits, and dropping any marker or
 the 4xx guard fails a case. The marker list is marked `JUDGEMENT?` (Account-limit markers).
 Sources: the providers' error pages, read 2026-11-13. No provider has returned one of these to

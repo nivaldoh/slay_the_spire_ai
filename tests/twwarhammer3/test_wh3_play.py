@@ -1181,13 +1181,18 @@ def test_each_observation_wait_is_bounded_by_the_observation_timeout(tmp_path):
     assert timeouts == [CONFIG["observation_timeout"]]
 
 
-# Account-limit refusals as the providers document them (read 2026-11-13): OpenAI's quota 429;
+# Account-limit refusals as the providers document them (read 2026-11-13): OpenAI's quota 429 and
+# its billing codes (the type here is invented, so only the code can match);
 # OpenRouter's key-limit 403 (only `limit_source` is documented, the message is invented);
 # Anthropic's tier spend cap (429), own and workspace spend limits (400) and low credit balance.
 ACCOUNT_STOPS = {
     "openai-quota": 'HTTP 429: {"error": {"message": "You exceeded your current quota, please'
                     ' check your plan and billing details.", "type": "insufficient_quota",'
                     ' "param": null, "code": "insufficient_quota"}}',
+    **{f"openai-{code}": f'HTTP 429: {{"error": {{"message": "...", "type": "billing_error",'
+                         f' "param": null, "code": "{code}"}}}}'
+       for code in ("credit_balance_exhausted", "organization_spend_limit_exceeded",
+                    "project_spend_limit_exceeded", "organization_usage_limit_exceeded")},
     "openrouter-key-limit": 'HTTP 403: {"error":{"code":403,"message":"Key limit exceeded",'
                             '"metadata":{"limit_source":"openrouter_key_limit"}}}',
     "anthropic-spend-cap": 'HTTP 429: {"type":"error","error":{"type":"rate_limit_error",'
