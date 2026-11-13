@@ -29,6 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: A Ctrl-C during final copying keeps the record; benchmark readers skip it
+
+The owner answered: "interrupted, readers skip it (Recommended)". A KeyboardInterrupt during the
+recording, private-record or imagery copy after a battle now writes `result.json` (status
+`interrupted` if the battle had ended without a failure, that copy `{"status": "interrupted"}`,
+a new `interrupted_copy` field, the engine ending kept) and then propagates, so the manifest and
+register keep the episode. Before, the record and register row were lost (one offline SIGINT probe;
+0 of 650 saved episodes). `benchmark.collect` gives such a trial no outcome (error category
+`interrupted_copy`, `recorded_engine_outcome` kept); `suite.measure` drops its battle and replay
+measures but keeps its spend. A Ctrl-C during controller close still counts by its engine ending.
+7 new cases: 5 fail on the old code, and keeping `won`, counting the trial, skipping every interrupt
+or measuring it each fails one. Not covered: an interrupt in other cleanup steps, a second
+interrupt, a live SIGINT. Evidence: `runs/ctrl-c-record-20261113/`.
+
 ## 2026-11-13: Quota and credit refusals stop the job
 
 The owner answered: "Stop like 401/402 (Recommended)". `play.policy_call` now turns an HTTP 4xx

@@ -318,6 +318,12 @@ def collect(plan_path: Path) -> dict:
             errors.append({"category": "incomplete", "detail": result.get("status")})
         if measured["outcome"] and measured["condition"] is None:
             errors.append({"category": "measurement", "detail": measured["unavailable"]})
+        # Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". A trial stopped by
+        # Ctrl-C during its final copying has no outcome or measures, as its copies may be cut;
+        # recorded_engine_outcome keeps what the engine ended.
+        if (result or {}).get("interrupted_copy"):
+            errors.append({"category": "interrupted_copy", "detail": result["interrupted_copy"]})
+            measured = evaluate(None)
         rows.append({"output": str(directory), "controller": job["controller"],
                      "scenario": scenario, "arm": job.get("arm"),
                      "started": bool(result_battle or traced_battle),

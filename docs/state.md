@@ -73,7 +73,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
-- Ctrl-C during a job's final copying leaves a won battle with no `result.json` and no register row, the ending staying in the trace: reproduced offline at `bd46129` with a real SIGINT (one probe, no live game, 0 of 650 saved episodes show it; `runs/repo-improve-20261106/preflight/unlanded-bugs/probe_play_signal.py`). First found in `runs/tests-cleanup/handoff.md`. No wrong outcome is counted today, though a benchmark row then has no outcome and the suite's cost leaves out that battle's spend. A draft fix was withdrawn after two reviews, because in a simulated case it lets a partial replay into benchmark measures: what a stopped job should count is an owner choice (handoff `runs/repo-improve-20261106/handoff.md`).
+- A Ctrl-C during a job's final copying now writes the record as `interrupted`, and benchmark readers skip that trial (owner's answer, 2026-11-13; offline tests only). An interrupt in other cleanup steps, or a second one, can still lose the record.
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.

@@ -87,3 +87,34 @@ def test_only_a_benchmark_plan_is_collected(tmp_path, monkeypatch, version):
     path.write_text(json.dumps(plan))
     with pytest.raises(ValueError, match="not a benchmark plan"):
         benchmark.collect(path)
+
+
+@pytest.mark.parametrize("copy", [None, "recording"], ids=["close-interrupt", "copy-interrupt"])
+def test_a_copy_interrupted_trial_is_skipped_and_a_close_interrupted_one_counts(
+        tmp_path, monkeypatch, copy):
+    """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)": a trial stopped by Ctrl-C
+    during its final copying gets no outcome (its replay may be cut), its engine outcome stays
+    recorded; one stopped during controller close keeps its engine ending, as before."""
+    monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
+    plan = tmp_path / "pilot.json"
+    declared = benchmark.make_plan(plan, "pilot", 2)
+    directory = tmp_path / "pilot-01"
+    episode = directory / "episode-0000"
+    episode.mkdir(parents=True)
+    (directory / "manifest.json").write_text(json.dumps({
+        "source_revision": declared["source_revision"], "status": "interrupted",
+        "scenario": scenarios()[benchmark.SCENARIO], "config": {
+            "scenario": benchmark.SCENARIO, "policy": "hold", "episodes": 1,
+            "provider": "anthropic"}}))
+    result = {"battle": "b1", "policy": "hold", "status": "interrupted",
+              "engine_ending": {"result": "won"}}
+    if copy:
+        result.update(interrupted_copy=copy, recording={"status": "interrupted"})
+    (episode / "result.json").write_text(json.dumps(result))
+    row = benchmark.collect(plan)["rows"][0]
+    assert row["recorded_engine_outcome"] == "won"
+    if copy:
+        assert row["outcome"] is None and row["rank"] is None
+        assert {"category": "interrupted_copy", "detail": "recording"} in row["errors"]
+    else:
+        assert row["outcome"] == "won"

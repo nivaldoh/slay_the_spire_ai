@@ -503,3 +503,32 @@ def test_a_suite_plan_with_no_repeat_is_refused(tmp_path):
     with pytest.raises(ValueError, match="at least one repeat"):
         suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["hold"], 0, 5, seed=1)
     assert not (tmp_path / "p.json").exists()
+
+
+def test_a_copy_interrupted_trial_has_no_gameplay_measures_but_keeps_its_spend(
+        tmp_path, monkeypatch):
+    """Owner, 2026-11-13: benchmark readers skip a trial stopped by Ctrl-C during its final
+    copying, whose replay frames may be cut; what it spent still counts."""
+    from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
+
+    from twwarhammer3.battle import play
+    from twwarhammer3.battle.scripted import Hold
+
+    output = tmp_path / "job"
+    output.mkdir()
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
+    play.play_episode(output / "episode-0000", CONFIG, Hold, mailbox, not_battle=None)
+    path = output / "episode-0000/result.json"
+    monkeypatch.setattr(suite, "coordination", lambda frames: {
+        "first_contact_s": 5, "spread_s": 2, "idle_share": .1, "local_share": .9})
+    row = {"output": str(output), "evidence_matches_plan": True, "condition": None}
+    whole = suite.measure(row)
+    result = json.loads(path.read_text())
+    path.write_text(json.dumps({**result, "status": "interrupted",
+                                "interrupted_copy": "recording", "llm": {"usd": .25}}))
+    cut = suite.measure(row)
+    assert whole["first_contact_s"] == 5 and whole["battle_s"] is not None
+    for key in ("taken", "killed", "battle_s", "first_contact_s", "spread_s", "idle_share",
+                "local_share"):
+        assert cut[key] is None, key
+    assert cut["usd"] == .25

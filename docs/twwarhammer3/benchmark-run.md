@@ -252,7 +252,10 @@ with one row per planned battle.
 - **A job**: press Ctrl+C in its terminal, or send one SIGINT to its `uv run` or play
   process (`uv run` forwards it). Play records the running episode and the manifest as
   `interrupted`, appends the register row, and the supervisor closes the game. An
-  interrupted trial is a failure in the report, never a loss.
+  interrupted trial is a failure in the register and stats, never a loss. Benchmark readers
+  skip one stopped during its final copying (no outcome; `recorded_engine_outcome` keeps the
+  engine's) and count one stopped during controller close by its engine ending (owner,
+  2026-11-13: "interrupted, readers skip it (Recommended)").
 - **A queue after its current job**: create `my-plan-stop` beside the plan; the running job
   plays its remaining episodes and the plan ends `stopped`.
 - **A queue now**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in

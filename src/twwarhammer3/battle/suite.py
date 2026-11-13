@@ -309,16 +309,21 @@ def measure(row):
         return {**empty, **failures}
     llm = result.get("llm") or {}
     trace = metrics["trace"]
-    return {"own": row["condition"], "taken": taken(result), "killed": killed(result),
-            "battle_s": result.get("battle_s"),
+    # A trial stopped by Ctrl-C during its final copying is skipped (owner, 2026-11-13); what it
+    # spent and how its calls went still count, its battle and replay measures do not.
+    battle = {"own": row["condition"], "taken": taken(result), "killed": killed(result),
+              "battle_s": result.get("battle_s")}
+    replay = coordination(read_frames(path.parent))
+    if result.get("interrupted_copy"):
+        battle, replay = dict.fromkeys(battle), dict.fromkeys(replay)
+    return {**battle,
             "usd": llm.get("usd", 0), "authoring_usd": authoring_usd(result),
             "calls": llm.get("calls", 0),
             "tokens": (llm.get("input_tokens") or 0) + (llm.get("output_tokens") or 0),
             "think_s": metrics["call_seconds"]["p50"], "age_s": metrics["order_age_s"]["p50"],
             "age_p90_s": metrics["order_age_s"]["p90"], "plan_age_s": metrics["plan_age_s"]["p50"],
             "orders": trace.get("orders", 0), "refused": sum(metrics["rejections"].values()),
-            **failures,
-            **coordination(read_frames(path.parent))}
+            **failures, **replay}
 
 
 def authoring_usd(result):

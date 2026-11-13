@@ -386,25 +386,35 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
         result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
         result["finished_at"] = datetime.now(UTC).isoformat()
-        # Optional evidence failures become metadata; still save the engine's result.
+        # Optional evidence failures become metadata; still save the engine's result. A Ctrl-C
+        # here still writes the record (interrupt_copy).
         if config.get("record_replay"):
             try:
                 result["recording"] = copy_recording(mailbox.directory, directory,
                                                     job=mailbox.job, battle=result.get("battle"))
             except Exception as exc:
                 result["recording"] = {"status": "error", "error": str(exc)}
+            except KeyboardInterrupt as exc:
+                stopped = stopped or exc
+                interrupt_copy(result, "recording")
         if (scenario or {}).get("private_record"):
             try:
                 result["private_record"] = copy_private_record(
                     mailbox.directory, directory, job=mailbox.job, battle=result.get("battle"))
             except Exception as exc:
                 result["private_record"] = {"status": "error", "error": str(exc)}
+            except KeyboardInterrupt as exc:
+                stopped = stopped or exc
+                interrupt_copy(result, "private_record")
         if config.get("stills"):
             try:
                 result["imagery"] = copy_presentation(mailbox.directory, directory,
                                                      job=mailbox.job, battle=result.get("battle"))
             except Exception as exc:
                 result["imagery"] = {"status": "error", "error": str(exc)}
+            except KeyboardInterrupt as exc:
+                stopped = stopped or exc
+                interrupt_copy(result, "imagery")
         if result.get("start") and start_reference:
             result["start_comparison"] = compare_starts(start_reference, result["start"])
         delays = result["delays_ms"]
@@ -447,6 +457,17 @@ def account_stop(error: str) -> bool:
     or a ledger safety stop. Only an HTTP 4xx body can carry an account-limit marker."""
     return (error.startswith(("HTTP 401", "HTTP 402")) or error.endswith("and stopped")
             or error.startswith("HTTP 4") and any(mark in error for mark in ACCOUNT_LIMITS))
+
+
+def interrupt_copy(result: dict, key: str) -> None:
+    """A Ctrl-C during a final copy: the record is still written, as interrupted (owner,
+    2026-11-13: "interrupted, readers skip it (Recommended)"). Benchmark readers skip a trial
+    with interrupted_copy, whose copy may be cut short; one stopped during controller close
+    keeps its engine ending. An earlier failure keeps its status."""
+    result[key] = {"status": "interrupted"}
+    result.setdefault("interrupted_copy", key)
+    if result["status"] in ENDED:
+        result.update(status="interrupted", error=f"{key} copy: interrupted")
 
 
 def policy_call(policy, method: str, *args):

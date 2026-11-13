@@ -87,3 +87,43 @@ def test_optional_capture_failures_preserve_losses_and_draws(tmp_path, ending,
     assert json.loads((episode / "result.json").read_text()) == result
     assert result["status"] == result["engine_ending"]["result"] == ending
     assert result[metadata]["status"] == "error"
+
+
+class Closing(Hold):
+    def close(self):
+        raise KeyboardInterrupt
+
+
+@pytest.mark.parametrize("option,copier,key", [
+    ("record_replay", "copy_recording", "recording"),
+    ("private_record", "copy_private_record", "private_record"),
+    ("stills", "copy_presentation", "imagery")])
+def test_a_copy_interrupt_still_writes_the_battle_as_interrupted(tmp_path, monkeypatch, option,
+                                                                 copier, key):
+    """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". Wrong versions: the
+    record is lost (no result.json, no register row), or it keeps status won although its copy
+    may be cut short."""
+    def interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(play, copier, interrupt)
+    mailbox = FakeMailbox([bridge_observation(0, 0),
+                           bridge_observation(1, 1000, result="won")])
+    config = {**CONFIG, option: True} if option != "private_record" else CONFIG
+    with pytest.raises(KeyboardInterrupt):
+        play.play_episode(tmp_path / "episode", config, Hold, mailbox, not_battle=None,
+                          scenario={"private_record": True} if key == "private_record" else None)
+    result = json.loads((tmp_path / "episode/result.json").read_text())
+    assert result["engine_ending"]["result"] == "won"
+    assert result["status"] == "interrupted" and result["interrupted_copy"] == key
+    assert result[key] == {"status": "interrupted"}
+
+
+def test_an_interrupt_during_controller_close_is_not_a_copy_interrupt(tmp_path):
+    """Its engine ending keeps counting, as before (the owner's answer of 2026-11-13)."""
+    mailbox = FakeMailbox([bridge_observation(0, 0),
+                           bridge_observation(1, 1000, result="won")])
+    with pytest.raises(KeyboardInterrupt):
+        play.play_episode(tmp_path / "episode", CONFIG, Closing, mailbox, not_battle=None)
+    result = json.loads((tmp_path / "episode/result.json").read_text())
+    assert result["status"] == "interrupted" and "interrupted_copy" not in result
