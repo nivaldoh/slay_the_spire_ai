@@ -481,8 +481,8 @@ def test_the_tips_arm_differs_from_single_by_the_tips_alone():
 def test_a_plan_is_written_once_and_only_under_a_cap_above_0_and_at_most_200(
         tmp_path, monkeypatch, write):
     """A frozen plan is never rewritten, and its ledger cap is a real allowance. Wrong versions
-    (2026-11-13 refusal sweep): an existing plan overwritten in place, so a queue already
-    reading it runs other jobs than were declared; a cap of 0, past $200 or not a number."""
+    (2026-11-13 refusal sweep): an existing plan overwritten in place, so the plan no longer
+    records the jobs a queue ran from it; a cap of 0, past $200 or not a number."""
     monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
     monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
     for budget in (0, -1, 200.01, float("nan"), float("inf")):

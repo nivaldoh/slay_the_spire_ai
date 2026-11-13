@@ -194,7 +194,6 @@ def test_the_private_record_keeps_hidden_enemies_that_the_observation_and_replay
     assert "assault_equipment" not in json.loads(g.json.encode(fn["observation"](3000)))["setup"]
 
 
-
 def test_a_failed_private_write_is_logged_with_its_cause_and_closes_an_opened_file():
     """The replay recorder's contract (test_wh3_battle_lua.py, the recorder test) for the private
     record: each failure is logged with its cause, not as a later nil index or not at all, and a

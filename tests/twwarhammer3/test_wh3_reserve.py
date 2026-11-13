@@ -366,12 +366,14 @@ def test_a_reserve_declaration_other_than_the_two_supported_profiles_is_refused(
         reserve.materialize({**deepcopy(scenario()), "reserve": profile}, seed=1)
 
 
-def test_reserve_slots_that_place_another_unit_type_are_refused():
-    """Slots 8 and 9 swap places (Swordsmen and Knights): the roster is unchanged, so only a check
-    of the type each held slot places finds it. Wrong version (2026-11-13 refusal sweep): without
-    the refusal a draw is made for a hold that would bind a Knights regiment."""
+@pytest.mark.parametrize("slot", [7, 8])
+def test_reserve_slots_that_place_another_unit_type_are_refused(slot):
+    """A held slot and slot 9 swap places (Swordsmen and Knights): the roster is unchanged, so
+    only a check of the type each held slot places finds it. Wrong versions (2026-11-13 refusal
+    sweep and review): without the refusal, or checking one held slot only, a draw is made for
+    a hold that would bind a Knights regiment."""
     entry = deepcopy(scenario())
     enemy = entry["deployment"]["enemy"]
-    enemy[7], enemy[8] = enemy[8], enemy[7]
+    enemy[slot - 1], enemy[8] = enemy[8], enemy[slot - 1]
     with pytest.raises(ValueError, match="must bind the declared swordsmen"):
         reserve.materialize(entry, seed=1)

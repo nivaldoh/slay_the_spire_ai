@@ -305,13 +305,15 @@ def rewrite(episode, change):
     path.write_text("".join(json.dumps(change(row)) + "\n" for row in rows))
 
 
-def test_a_trace_whose_acknowledgements_number_no_order_is_refused(tmp_path):
-    """Older traces' acknowledgements carry no order index. Wrong version (2026-11-13 refusal
-    sweep): without the refusal the first accepted order fails as a KeyError."""
+@pytest.mark.parametrize("which", [slice(None), slice(1, None)], ids=["all", "all-but-first"])
+def test_a_trace_whose_acknowledgements_number_no_order_is_refused(tmp_path, which):
+    """Older traces' acknowledgements carry no order index. Wrong versions (2026-11-13 refusal
+    sweep and review): without the refusal the first accepted order fails as a KeyError, and a
+    refusal only when no result is numbered lets a partly numbered acknowledgement through."""
     episode = record(tmp_path)
 
     def unnumbered(row):
-        for item in (row.get("ack") or {}).get("results", []):
+        for item in (row.get("ack") or {}).get("results", [])[which]:
             item.pop("index", None)
         return row
 
@@ -347,9 +349,15 @@ def test_an_own_unit_without_type_or_place_at_the_first_view_ends_the_replay(key
     assert failure.value.__cause__ is not None  # ends the episode, as a roster mismatch does
 
 
-def test_a_schedule_of_another_version_is_refused():
-    """Wrong version (2026-11-13 refusal sweep): without the refusal a version 2 schedule is
-    replayed as if it were version 1."""
-    schedule = {**schedule_of((5700, [{"order": move("f1", 0, 0)}])), "version": 2}
-    with pytest.raises(ValueError, match="replay schedule version 2, not 1"):
+@pytest.mark.parametrize("version", [2, None])
+def test_a_schedule_of_another_or_no_version_is_refused(version):
+    """Wrong versions (2026-11-13 refusal sweep and review): without the refusal a version 2
+    schedule is replayed as if it were version 1, and an unversioned one if the check defaults
+    a missing version to 1."""
+    schedule = schedule_of((5700, [{"order": move("f1", 0, 0)}]))
+    if version is None:
+        del schedule["version"]
+    else:
+        schedule["version"] = version
+    with pytest.raises(ValueError, match=f"replay schedule version {version!r}, not 1"):
         ReplaySchedule(schedule, scenario=SCENARIO)
