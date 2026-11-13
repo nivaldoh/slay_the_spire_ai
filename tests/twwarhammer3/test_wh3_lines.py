@@ -278,6 +278,7 @@ def test_the_witness_refuses_a_relief_unit_it_has_no_lobby_cost_for():
     with pytest.raises(PolicyFailure, match="no lobby cost for 'wh_dlc08_nor_mon_war_mammoth_0'"):
         policy.decide(frame)
 
+
 def test_line_regiments_set_guard_and_keep_a_leash_from_their_own_posts():
     """At the first decision each of the eight line regiments sets guard and fire at will on and
     skirmish off, and no other unit gets a setting. An outer regiment pulled 40 m out of line

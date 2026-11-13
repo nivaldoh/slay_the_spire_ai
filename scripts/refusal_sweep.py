@@ -61,7 +61,8 @@ def run():
 path = S / FILE
 original = path.read_text()
 code, first, last = run()
-# Name the first failure: a flaky baseline is otherwise undiagnosable (2026-11-13, one unnamed).
+# Name the first FAILED test (an ERROR stays unnamed): a flaky baseline is otherwise
+# undiagnosable (2026-11-13, one unnamed).
 print(f"baseline: exit {code}: {last}" + (f"  <- {first}" if first else ""), flush=True)
 if code != 0:
     sys.exit("the unplanted baseline fails; fix it before sweeping")

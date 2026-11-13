@@ -4270,3 +4270,111 @@ old = "    if any(not isinstance(identity, str) or not identity for identity in 
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_lines_contacts.py::test_contacts_refuse_unidentified_initial_units"]
 source = "2026-11-10 cleanup integration: independent reviewer null-identity reproduction"
+
+[[plant]]
+id = "reserve-binds-checks-one-held-slot"
+guards = "Every held reserve slot must place the declared Swordsmen"
+file = "src/twwarhammer3/battle/reserve.py"
+old = "for slot in profile[\"slots\"]):"
+new = "for slot in profile[\"slots\"][1:]):"
+tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_reserve_slots_that_place_another_unit_type_are_refused"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 1"
+
+[[plant]]
+id = "cannae-route-refuses-only-absent-bounds"
+guards = "A Cannae route needs nonempty public terrain bounds"
+file = "src/twwarhammer3/battle/cannae.py"
+old = "        if not bounds:\n            raise PolicyFailure(\"Cannae route needs public terrain bounds\")"
+new = "        if bounds is None:\n            raise PolicyFailure(\"Cannae route needs public terrain bounds\")"
+tests = ["tests/twwarhammer3/test_wh3_cannae.py::test_a_route_without_public_terrain_bounds_is_refused"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 1"
+
+[[plant]]
+id = "cannae-route-reads-terrain-key-directly"
+guards = "A view without a terrain key is refused, not a KeyError"
+file = "src/twwarhammer3/battle/cannae.py"
+old = "bounds = (observation.get(\"terrain\") or {}).get(\"bounds\")"
+new = "bounds = (observation[\"terrain\"] or {}).get(\"bounds\")"
+tests = ["tests/twwarhammer3/test_wh3_cannae.py::test_a_route_without_public_terrain_bounds_is_refused"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 2"
+
+[[plant]]
+id = "replay-schedule-defaults-missing-version"
+guards = "A replay schedule without a version is refused"
+file = "src/twwarhammer3/battle/replay_schedule.py"
+old = "if schedule.get(\"version\") != VERSION:"
+new = "if schedule.get(\"version\", VERSION) != VERSION:"
+tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_of_another_or_no_version_is_refused"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 1"
+
+[[plant]]
+id = "replay-schedule-refuses-only-fully-unnumbered-acks"
+guards = "A partly numbered acknowledgement is refused"
+file = "src/twwarhammer3/battle/replay_schedule.py"
+old = "if any(\"index\" not in item for item in results):"
+new = "if all(\"index\" not in item for item in results):"
+tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_trace_whose_acknowledgements_number_no_order_is_refused"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 1"
+
+[[plant]]
+id = "manual-demo-checks-source-only-at-readback"
+guards = "A manual attempt checks its source at every observation"
+file = "src/twwarhammer3/battle/manual_demo.py"
+old = "if source_fingerprints(SOURCES) != manifest[\"source_files\"]:"
+new = "if not manifest.get(\"source_checked\") and not manifest.update(source_checked=True) and source_fingerprints(SOURCES) != manifest[\"source_files\"]:"
+tests = ["tests/twwarhammer3/test_wh3_manual_demo.py::test_a_source_change_during_a_manual_attempt_ends_it"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 3"
+
+[[plant]]
+id = "pause-labels-accept-truthy-complete"
+guards = "Pause labels need complete exactly true"
+file = "src/twwarhammer3/battle/manual_demo.py"
+old = "labels.get(\"complete\") is not True"
+new = "not labels.get(\"complete\")"
+tests = ["tests/twwarhammer3/test_wh3_manual_demo.py::test_pause_labels_name_a_reviewer_say_complete_and_match_the_video"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 3"
+
+[[plant]]
+id = "text-router-skips-sender-check"
+guards = "A text router refuses an unknown sender"
+file = "src/twwarhammer3/battle/local_command.py"
+old = "        if sender not in self.counts:"
+new = "        if self.mode != \"text\" and sender not in self.counts:"
+tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_send_names_a_known_sender_and_a_basis_no_later_than_its_time"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 3"
+
+[[plant]]
+id = "json-mixed-key-refusal-removed"
+guards = "The mod's JSON encoder refuses an array with a hole and a string key"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_json.lua"
+old = "      if type(k) ~= \"number\" then\n        error(\"invalid table: mixed or invalid key types\")"
+new = "      if type(k) ~= \"number\" then\n        tostring(\"invalid table: mixed or invalid key types\")"
+tests = ["tests/twwarhammer3/test_wh3_json.py::test_the_encoder_refuses_what_json_cannot_hold_and_names_why"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 4 (refuted equivalence)"
+
+[[plant]]
+id = "json-object-stays-on-stack"
+guards = "A table shared twice is not a circular reference"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_json.lua"
+old = "    stack[val] = nil\n    return \"{\" .. table.concat(res, \",\") .. \"}\""
+new = "    return \"{\" .. table.concat(res, \",\") .. \"}\""
+tests = ["tests/twwarhammer3/test_wh3_json.py::test_a_table_shared_twice_is_not_a_circular_reference"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 4"
+
+[[plant]]
+id = "json-decode-refuses-only-nil"
+guards = "The mod's JSON decoder takes only a string"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_json.lua"
+old = "  if type(str) ~= \"string\" then"
+new = "  if str == nil then"
+tests = ["tests/twwarhammer3/test_wh3_json.py::test_the_decoder_takes_only_a_string"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 4"
+
+[[plant]]
+id = "frontend-find-retries-once-too-often"
+guards = "A timed find fails at its timeout, not one poll later"
+file = "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua"
+old = "if state.retries * POLL_MS < step.timeout_ms then"
+new = "if state.retries * POLL_MS <= step.timeout_ms then"
+tests = ["tests/twwarhammer3/test_wh3_ui_requests.py::test_frontend_never_clicks_a_component_still_invisible_at_its_timeout"]
+source = "2026-11-13 overnight refusal sweeps: independent review round 4"
