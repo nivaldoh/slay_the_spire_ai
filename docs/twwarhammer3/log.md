@@ -29,37 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
-## 2026-11-13: Overnight refusal sweeps close 51 test gaps
+## 2026-11-13: Refusal sweeps close 55 test gaps
 
-Claude Code, under the owner's overnight goal ("keep trying to make progress overnight
-autonomously"); offline, $0, no game. Handoff and raw sweeps: `runs/overnight-20261113/`.
-- `scripts/refusal_sweep.py` over the whole WH3 suite, on fifteen files unswept or changed since
-  their last sweep: 53 of 272 refusal removals went uncaught. Missed/total: reserve 3/23, battle
-  Lua 5/56, suite 3/7, benchmark 6/9, cannae 2/7, replay_schedule 4/7, play 0/15, setup 1/61,
-  protocol 0/43, local_command 6/8, escalade 4/5, manual_demo 9/16, the mod's JSON codec 9/9,
-  UI library 0/4, frontend script 1/2.
-- New tests cover 51: each fails, in a planted scratch copy, when its refusal is removed. Examples:
-  our own tower listed as an enemy structure when the army id is unreadable; plan files overwritten
-  or written with a cap outside (0, 200]; a benchmark job off the frozen profile; a request sent
-  over another deadline timer; an upper-case withheld word, which `check_job` never matches; a
-  manual demonstration whose setup is paused or whose capture stops before the ending; the JSON
-  codec writing NaN or non-string keys, or accepting truncated text; a menu click on a component
-  that never became visible.
-- Left: manual_demo's positive-timeout refusal is equivalent (validate_declaration refuses the same
-  input); its `raise SystemExit(main())` exit code is untested.
-- After-sweeps of the files with misses: every removal caught except the two above and the
-  codec's mixed-key refusal, covered after review (207 of 210 sites).
-- Independent review, four rounds: every covered site replanted, over 75 other wrong versions
-  planted. It found one wrong docstring, one lost realistic case (no terrain key), a commit
-  message that understated its edits and one false equivalence (the codec's mixed-key refusal);
-  the ten wrong versions it found uncaught are now caught.
-- Found, not changed: the Cannae and Alesia (`lines.py`) witnesses raise bare `PolicyFailure`s on
-  roster/terrain problems, which `play.is_forfeit` counts as forfeits, so the army would stand on
-  its last orders and a timer win could count; Evade (`8e809ac`), Escalade and ReplaySchedule raise
-  theirs from a cause to end the battle. No recorded trace since 2026-11-05 has such a forfeit.
-  A failure-rule change: review queue item 13.
-- Tests only; no runtime, Lua, prompt, scenario or score change. Says nothing about live behaviour.
-  Test commits `bceed08`..`7aab9f4` and `bf8f58d`; on local `main`, unpushed (see the handoff).
+Claude Code, under the owner's goal ("keep trying to make progress overnight autonomously", then
+"again" at 10:28); offline, $0, no game. Evidence: `runs/overnight-20261113/` and
+`runs/sweeps-20261113b/`.
+- `scripts/refusal_sweep.py` (whole WH3 suite) on nineteen files unswept or changed since their
+  last sweep: 59 of 294 removals uncaught. Missed/total: reserve 3/23, battle Lua 5/56, suite 3/7,
+  benchmark 6/9, cannae 2/7, replay_schedule 4/7, play 0/15, setup 1/61, protocol 0/43,
+  local_command 6/8, escalade 4/5, manual_demo 9/16, JSON codec 9/9, UI 0/4, frontend 1/2,
+  lines_readings 0/8, lines 2/4, report_html 2/5, support_timing 2/5.
+- New tests cover 55, each failing in a planted copy without its refusal: e.g. our tower listed as
+  an enemy structure, plans overwritten or capped outside (0, 200], an upper-case withheld word
+  `check_job` never matches, a paused manual readback, NaN or truncated JSON, a click on a
+  never-visible component. Left: manual_demo:147 (equivalent), :353 (script exit) and
+  support_timing's two (track stopped 2026-11-05). After-sweeps: 216 of 219 sites caught.
+- Five independent review rounds found one wrong docstring, a lost realistic case, an understated
+  commit message and a false equivalence (the codec's mixed-key refusal, now tested); twelve
+  wrong versions it found are now plants. `check.py --plants`: 471 of 471 caught at `0fc6b6b`.
+- `refusal_sweep.py` names the first FAILED test of a failed baseline (one failed once, unnamed).
+- Found, not changed: the Cannae and Alesia witnesses' bare `PolicyFailure`s count as forfeits
+  (`play.is_forfeit`), so the army would stand on its last orders and could win at the timer;
+  Evade, Escalade and ReplaySchedule raise from a cause. No trace since 2026-11-05 has one.
+  A failure-rule choice: review queue 13.
+- No runtime, prompt, scenario or score change; nothing here shows live behaviour. On local
+  `main` from `bceed08`, unpushed (handoffs).
 
 ## 2026-11-12: Battle review, local-team target retention
 
