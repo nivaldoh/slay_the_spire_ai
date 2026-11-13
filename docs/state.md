@@ -7,11 +7,7 @@ Overnight refusal sweeps, 2026-11-13 (Claude): tests now catch 41 of 43 refusal 
 
 Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and siege replay omissions; evidence readers share accepted-order decoding. Reports retain planned attribution, failure costs and unavailable tie-breaks. Escalade V2 retains refused gate-attack replacements; V2 is still unadopted. The local-team audit found a target-retention test gap, now covered; no new policy defect reproduced. Live handover, halt effects and battle suitability remain unverified. Evidence: `runs/battle-review/`. No game or paid run scheduled.
 
-Feedback and Alesia construction, 2026-11-12 (Codex): saved-input feedback probe and one
-case-a hold completed; independent recounts done, report selection updated. The feedback
-candidate remains unadopted. The hold missed the proposed first-rout-in-heavy-sector clause;
-actual army charge is unread. Both games closed. Evidence: `runs/comm-feedback-20261112/`.
-Next: decisions 14 and 15; no new game planned.
+Feedback and Alesia construction, 2026-11-12 (Codex): saved-input feedback probe and one case-a hold completed; independent recounts done, report selection updated. The feedback candidate remains unadopted. The hold missed the proposed first-rout-in-heavy-sector clause; actual army charge is unread. Both games closed. Evidence: `runs/comm-feedback-20261112/`. Next: decisions 14 and 15; no new game planned.
 
 Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts
 and report update finished. All six battles lost; no ranking.
