@@ -296,3 +296,60 @@ def test_it_reads_no_hidden_key():
                                                                     "enemy": enemy}})
     policy = ReplaySchedule(schedule_of((5700, entries)), scenario=SCENARIO)
     assert policy.decide(hidden) == [attack("f1", "e2")]
+
+
+def rewrite(episode, change):
+    """Apply ``change`` to every row of a recorded episode's trace."""
+    path = episode / "trace.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    path.write_text("".join(json.dumps(change(row)) + "\n" for row in rows))
+
+
+def test_a_trace_whose_acknowledgements_number_no_order_is_refused(tmp_path):
+    """Older traces' acknowledgements carry no order index. Wrong version (2026-11-13 refusal
+    sweep): without the refusal the first accepted order fails as a KeyError."""
+    episode = record(tmp_path)
+
+    def unnumbered(row):
+        for item in (row.get("ack") or {}).get("results", []):
+            item.pop("index", None)
+        return row
+
+    rewrite(episode, unnumbered)
+    with pytest.raises(ValueError, match="acknowledgements without order indices"):
+        build(episode)
+
+
+def test_a_trace_with_no_own_unit_in_any_observation_is_refused(tmp_path):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal the schedule is written
+    with no starting places, so a replay could pair no unit."""
+    episode = record(tmp_path)
+
+    def unarmed(row):
+        if row["kind"] == "observation":
+            row["observation"]["friendly"] = []
+        return row
+
+    rewrite(episode, unarmed)
+    with pytest.raises(ValueError, match="no observation with own units"):
+        build(episode)
+
+
+@pytest.mark.parametrize("key", ["type", "x", "z"])
+def test_an_own_unit_without_type_or_place_at_the_first_view_ends_the_replay(key):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal an untyped unit reads as a
+    different roster and an unplaced one is paired silently, at an infinite distance."""
+    policy = ReplaySchedule(schedule_of((5700, [{"order": move("f1", 0, 0)}])), scenario=SCENARIO)
+    friendly, enemy = recorded_armies(START_MS)
+    friendly[0][key] = None
+    with pytest.raises(PolicyFailure, match="typed and placed") as failure:
+        policy.decide(frame(1, START_MS, (friendly, enemy)))
+    assert failure.value.__cause__ is not None  # ends the episode, as a roster mismatch does
+
+
+def test_a_schedule_of_another_version_is_refused():
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a version 2 schedule is
+    replayed as if it were version 1."""
+    schedule = {**schedule_of((5700, [{"order": move("f1", 0, 0)}])), "version": 2}
+    with pytest.raises(ValueError, match="replay schedule version 2, not 1"):
+        ReplaySchedule(schedule, scenario=SCENARIO)

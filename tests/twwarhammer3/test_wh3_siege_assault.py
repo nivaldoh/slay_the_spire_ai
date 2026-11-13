@@ -278,6 +278,25 @@ def test_the_mode_lists_our_crewed_vehicles_and_only_finished_enemy_structures()
         "enemy_structures failed: unreadable ArmyList.Size"]
 
 
+def test_enemy_structures_without_our_army_id_are_left_out_never_ours_shown_as_theirs():
+    """Every army whose id differs from ours is an enemy's. Wrong version (2026-11-13 refusal
+    sweep): without the unreadable-id refusal no army equals a missing id, so our own finished
+    tower (ArmyList.At(0), 1|2) is listed among the enemy's structures."""
+    lua, fn = mod()
+    fn["setup_fortifications"]()
+    lua.execute("""
+        state.info.army_id = nil
+        contexts = {['ArmyList.Size'] = 2, ['ArmyList.At(0).UniqueID'] = 7,
+                    ['ArmyList.At(1).UniqueID'] = 9}
+        slot_rows = {['ArmyList.At(0)'] = 'tower|1|2|1|false|false',
+                     ['ArmyList.At(1)'] = 'tower|10|20|2|false|false'}
+    """)
+    section = dict(fn["mode_section"]().items())
+    assert "enemy_structures" not in section
+    assert "enemy_structures failed: unreadable player army id" in list(
+        lua.globals().logged.values())
+
+
 def test_a_siege_attack_lists_no_slot_and_a_defence_keeps_its_slots():
     """Wrong versions: the slots left out only in render_mode, so the scripts, the commander and
     team members of the attack still read the defender's slots and build timers; the slots left

@@ -198,6 +198,19 @@ def test_a_profile_that_would_hold_the_wrong_units_or_times_is_refused(entry, me
         reserve.materialize(entry)
 
 
+@pytest.mark.parametrize("change", [
+    lambda group: group.update(delay_ms=0),  # a field the hold does not read
+    lambda group: group.pop("types"),
+    lambda group: group.pop("release_ms"),
+], ids=["extra-key", "no-types", "no-release"])
+def test_a_waves_group_with_another_set_of_keys_is_refused(change):
+    """A group has exactly slots, types and release_ms. Wrong version (2026-11-13 refusal sweep):
+    without the refusal an unknown key is silently dropped from what the hold does, and a missing
+    one fails later as a KeyError rather than as this declaration error."""
+    with pytest.raises(ValueError, match="needs slots, their types and release_ms"):
+        reserve.materialize(broken(lambda s, g: change(g[0])))
+
+
 def codec(lua):
     return lua.execute((wh3_lua.MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
 

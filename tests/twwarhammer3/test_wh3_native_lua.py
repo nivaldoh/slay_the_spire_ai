@@ -524,6 +524,21 @@ def test_ready_is_refused_in_single_player_and_in_observe(mode, setup, expected)
     assert g.clicks == 0 and expected in logged(g) and list(g.trapped.values()) == []
 
 
+def test_ready_without_a_shown_start_button_says_so_and_clicks_nothing():
+    """Only the hidden panel's button exists. Wrong version (2026-11-13 refusal sweep): without
+    the refusal the missing button is indexed, so the reply names a nil index, not the button."""
+    g = battle({"multiplayer": "control"}, READY + """
+        ui_root = component("root", true, {
+            component("deployment_sp", false, {component("button_battle_start", true, {},
+                function() hidden_clicks = hidden_clicks + 1 end)})})
+    """)
+    seen = ready(g)
+    assert g.clicks == 0 and g.hidden_clicks == 0
+    assert seen["orders"]["results"] == [{"index": 1, "control": "ready", "ok": False,
+                                          "error": "no shown button_battle_start"}]
+    assert "multiplayer ready: no shown button_battle_start" in logged(g)
+
+
 LEAVE = READY + """
     context_calls = {}
     common.call_context_command = function(context, id, command)

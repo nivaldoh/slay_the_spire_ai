@@ -206,3 +206,25 @@ def test_map_clipping_cannot_turn_a_failed_exit_into_a_backwards_or_inside_move(
     orders = policy.decide(view)
     validate_orders(orders, view)
     assert {o["unit"] for o in orders if o["type"] == "attack"} >= {"k1", "k2"}
+
+
+@pytest.mark.parametrize("missing", ["x", "z"])
+def test_an_unplaced_starting_regiment_is_refused_before_roles_are_bound(missing):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a regiment with no x is
+    bound silently, and one with no z fails as a TypeError instead of this refusal."""
+    view = opening()
+    view["friendly"][0][missing] = None
+    policy = Envelop()
+    with pytest.raises(PolicyFailure, match="placed starting regiments"):
+        policy.decide(view)
+    assert policy.groups is None
+
+
+def test_a_route_without_public_terrain_bounds_is_refused():
+    """Wrong version (2026-11-13 refusal sweep): without the refusal the flank route reads the
+    missing bounds and fails as a TypeError instead of this refusal."""
+    policy, view = Envelop(), opening()
+    del view["terrain"]
+    policy.decide(view)
+    with pytest.raises(PolicyFailure, match="public terrain bounds"):
+        policy.decide(contact(view))

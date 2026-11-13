@@ -194,6 +194,33 @@ def test_the_private_record_keeps_hidden_enemies_that_the_observation_and_replay
     assert "assault_equipment" not in json.loads(g.json.encode(fn["observation"](3000)))["setup"]
 
 
+
+def test_a_failed_private_write_is_logged_with_its_cause_and_closes_an_opened_file():
+    """The replay recorder's contract (test_wh3_battle_lua.py, the recorder test) for the private
+    record: each failure is logged with its cause, not as a later nil index or not at all, and a
+    file once opened is closed. Wrong versions (2026-11-13 refusal sweep): each of the three file
+    refusals removed; an unopened file is then indexed, a frame that failed to encode is written
+    to its closed file, and a failed append goes unlogged."""
+    lua, fn = battle()
+    g = lua.globals()
+    lua.execute("closes = 0; function fake_file(write) return {write = write, close = function()"
+                " closes = closes + 1 end} end")
+    for now, failing, cause, closed in (
+            (1000, "io.open = function() return nil, 'permission denied' end",
+             "permission denied", 0),
+            (2000, """io.open = function() return fake_file(function() return true end) end
+                      json.encode = function() error('cyclic table') end""", "cyclic table", 1),
+            (3000, """json.encode = function() return 'frame' end
+                      io.open = function()
+                          return fake_file(function() return nil, 'disk full' end) end""",
+             "disk full", 1)):
+        lua.execute(failing)
+        logged, closes = list(g.logged.values()), g.closes
+        fn["record_private"](now, False)
+        new = list(g.logged.values())[len(logged):]
+        assert len(new) == 1 and new[0].startswith("private record failed: ") and cause in new[0]
+        assert g.closes == closes + closed
+
 def test_a_getter_that_fails_or_answers_another_type_leaves_its_field_absent_not_false():
     lua, fn = battle()
     lua.execute("""

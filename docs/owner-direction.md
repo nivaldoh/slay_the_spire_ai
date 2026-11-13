@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-13 (overnight window), goal verbatim: "keep trying to make progress overnight autonomously".
+  Names no budget, game window or return time: offline only at $0 under docs/autonomy.md.
+  Brief: `runs/overnight-20261113/brief.md`.
 - 2026-11-12 (battle report missing data): "Show the comparison as unavailable (recommended); keep all known outcomes and flag the missing data." Applies when arms have equal win rates but either lacks the suite tie-break data. Evidence: `runs/battle-review/report-review/`.
 - 2026-11-12 (battle review), goal verbatim: "Let's review our battles carefully and ensure that they're working as intended. Take the opportunity to see if we can improve the code to better organize it, simplify it, remove bloat, de-slopify it, etc". Work and evidence: `runs/battle-review/`.
 - 2026-11-12 (two-hour autonomous window), goal verbatim: "Continue to make progress on the project while I'm away for ~2h. You are free to run game sessions as needed. Budget $20."

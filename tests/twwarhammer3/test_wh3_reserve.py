@@ -351,3 +351,27 @@ def test_bad_private_interventions_are_reported(damage):
         evidence["error"] = "native adapter failed"
     with pytest.raises(ProtocolError, match="reserve"):
         reserve.check(instance, observation)
+
+
+@pytest.mark.parametrize("profile", [
+    {"version": 3, "slots": [7, 8]},  # a version with no catalogue draw
+    {"version": 1, "slots": [8, 7]},  # the same slots in another order
+    {"version": 1, "slots": [7, 8], "seed": "7"},  # a draw's private key in the declaration
+])
+def test_a_reserve_declaration_other_than_the_two_supported_profiles_is_refused(profile):
+    """materialize accepts exactly the v1 and v2 profiles on slots 7 and 8. Wrong version
+    (2026-11-13 refusal sweep): without the refusal an unknown version is drawn with v2's 360 s
+    bound but no arrival rule, and the other two are drawn as declared (the seed overwritten)."""
+    with pytest.raises(ValueError, match="unsupported reserve profile"):
+        reserve.materialize({**deepcopy(scenario()), "reserve": profile}, seed=1)
+
+
+def test_reserve_slots_that_place_another_unit_type_are_refused():
+    """Slots 8 and 9 swap places (Swordsmen and Knights): the roster is unchanged, so only a check
+    of the type each held slot places finds it. Wrong version (2026-11-13 refusal sweep): without
+    the refusal a draw is made for a hold that would bind a Knights regiment."""
+    entry = deepcopy(scenario())
+    enemy = entry["deployment"]["enemy"]
+    enemy[7], enemy[8] = enemy[8], enemy[7]
+    with pytest.raises(ValueError, match="must bind the declared swordsmen"):
+        reserve.materialize(entry, seed=1)

@@ -472,3 +472,34 @@ def test_the_tips_arm_differs_from_single_by_the_tips_alone():
     assert section.rstrip().splitlines()[-1].startswith("- Routs:")
     assert section in tips_prompt
     assert tips_prompt.replace(section, "") == rules
+
+
+@pytest.mark.parametrize("write", [
+    lambda path, budget: suite.make_plan(path, ["coord-relief"], ["hold"], 1, budget, seed=1),
+    lambda path, budget: benchmark.make_plan(path, "pilot", budget),
+], ids=["suite", "mirror"])
+def test_a_plan_is_written_once_and_only_under_a_cap_above_0_and_at_most_200(
+        tmp_path, monkeypatch, write):
+    """A frozen plan is never rewritten, and its ledger cap is a real allowance. Wrong versions
+    (2026-11-13 refusal sweep): an existing plan overwritten in place, so a queue already
+    reading it runs other jobs than were declared; a cap of 0, past $200 or not a number."""
+    monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
+    monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
+    for budget in (0, -1, 200.01, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="positive cumulative ledger cap"):
+            write(tmp_path / f"cap-{budget}.json", budget)
+        assert not (tmp_path / f"cap-{budget}.json").exists()
+    plan = tmp_path / "p.json"
+    write(plan, 200)
+    frozen = plan.read_text()
+    with pytest.raises(ValueError, match="plan already exists"):
+        write(plan, 5)
+    assert plan.read_text() == frozen
+
+
+def test_a_suite_plan_with_no_repeat_is_refused(tmp_path):
+    """Wrong version (2026-11-13 refusal sweep): a plan of zero jobs is written and its queue
+    ends at once, as if every planned battle had been played."""
+    with pytest.raises(ValueError, match="at least one repeat"):
+        suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["hold"], 0, 5, seed=1)
+    assert not (tmp_path / "p.json").exists()
