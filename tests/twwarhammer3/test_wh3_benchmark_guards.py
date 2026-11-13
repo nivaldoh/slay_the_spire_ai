@@ -118,3 +118,15 @@ def test_a_copy_interrupted_trial_is_skipped_and_a_close_interrupted_one_counts(
         assert {"category": "interrupted_copy", "detail": "recording"} in row["errors"]
     else:
         assert row["outcome"] == "won"
+
+
+def test_every_benchmark_reader_sees_no_outcome_for_a_copy_interrupted_trial():
+    """benchmark.evaluate is what stats, the report's trial groups, export and the plan table
+    read. Wrong version (review, 2026-11-13): only the plan table skips the trial, so stats and
+    the report still count the engine's win."""
+    result = {"status": "interrupted", "engine_ending": {"result": "won"},
+              "interrupted_copy": "imagery"}
+    assessed = benchmark.evaluate(result)
+    assert assessed["outcome"] is None and assessed["rank"] is None
+    assert benchmark.recorded_outcome(result) == "won"
+    assert benchmark.evaluate({**result, "interrupted_copy": None})["outcome"] == "won"

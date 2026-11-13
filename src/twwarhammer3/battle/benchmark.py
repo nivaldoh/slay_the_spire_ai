@@ -138,13 +138,21 @@ def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:
             "units": rows, "unavailable": missing}
 
 
-def evaluate(result: dict | None) -> dict:
-    """Only engine-completed attempts have a rank; errors never invent a loss."""
+def recorded_outcome(result: dict | None) -> str | None:
+    """won, lost or draw as the engine ended the battle, else as the status says, else None."""
     result = result or {}
-    ending = result.get("engine_ending") or {}
-    outcome = ending.get("result")
+    outcome = (result.get("engine_ending") or {}).get("result")
     if outcome not in OUTCOMES:
         outcome = result.get("status") if result.get("status") in OUTCOMES else None
+    return outcome
+
+
+def evaluate(result: dict | None) -> dict:
+    """Only engine-completed attempts have a rank; errors never invent a loss. Every benchmark
+    reader skips a trial stopped by Ctrl-C during its final copying, whose copies may be cut
+    (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"): it has no outcome."""
+    result = result or {}
+    outcome = None if result.get("interrupted_copy") else recorded_outcome(result)
     measured = result.get("benchmark") or {}
     version = SUITE if measured.get("version") == SUITE else VERSION
     scored = {"condition": None, "units": [], "unavailable": ["no first-ending measurement"]}
@@ -311,19 +319,17 @@ def collect(plan_path: Path) -> dict:
             errors.append({"category": "provenance",
                            "detail": "source/profile/controller/battle differs"})
         measured = evaluate(result)
-        recorded_outcome = measured["outcome"]
+        recorded = recorded_outcome(result)
         if not matches:
             measured = evaluate(None)
         if result and not measured["outcome"]:
             errors.append({"category": "incomplete", "detail": result.get("status")})
         if measured["outcome"] and measured["condition"] is None:
             errors.append({"category": "measurement", "detail": measured["unavailable"]})
-        # Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". A trial stopped by
-        # Ctrl-C during its final copying has no outcome or measures, as its copies may be cut;
-        # recorded_engine_outcome keeps what the engine ended.
+        # evaluate skips a trial stopped during its final copying; recorded_engine_outcome
+        # keeps what the engine ended.
         if (result or {}).get("interrupted_copy"):
             errors.append({"category": "interrupted_copy", "detail": result["interrupted_copy"]})
-            measured = evaluate(None)
         rows.append({"output": str(directory), "controller": job["controller"],
                      "scenario": scenario, "arm": job.get("arm"),
                      "started": bool(result_battle or traced_battle),
@@ -331,7 +337,7 @@ def collect(plan_path: Path) -> dict:
                      "source_revision": manifest.get("source_revision"),
                      "evidence_matches_plan": matches,
                      "recorded_controller": config.get("policy"),
-                     "recorded_engine_outcome": recorded_outcome,
+                     "recorded_engine_outcome": recorded,
                      "engine_ending": (result or {}).get("engine_ending"),
                      "queue_execution": execution,
                      "not_started_reason": (state.get("error") or state.get("stopped")

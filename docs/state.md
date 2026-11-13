@@ -73,7 +73,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
-- A Ctrl-C during a job's final copying now writes the record as `interrupted`, and benchmark readers skip that trial (owner's answer, 2026-11-13; offline tests only). An interrupt in other cleanup steps, or a second one, can still lose the record.
+- A Ctrl-C during a job's final copying now writes the record as `interrupted`, and benchmark readers (via `benchmark.evaluate`) skip that trial (owner's answer, 2026-11-13; offline tests only). An interrupt in other cleanup steps, or a second one, can still lose the record.
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
