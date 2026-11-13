@@ -255,6 +255,29 @@ def test_roles_bind_once_by_type_and_start_position_not_by_id():
         policy.decide(stranger)
 
 
+def test_the_line_regiments_must_stand_three_north_and_five_south():
+    """The middle Kossars (f10) start on the inner line: four north, four south. Wrong version
+    (2026-11-13 refusal sweep): without the refusal the roles are bound with four regiments in
+    each line, so the sectors and posts come from another formation."""
+    first = deepcopy(battle(A)[0])
+    next(u for u in first["friendly"] if u["id"] == "f10")["z"] = -165
+    with pytest.raises(PolicyFailure, match="three regiments north, five south"):
+        lines.LinesWitness().decide(first)
+
+
+def test_the_witness_refuses_a_relief_unit_it_has_no_lobby_cost_for():
+    """Scoring by lobby cost needs every relief type's cost. Wrong version (2026-11-13 refusal
+    sweep): without the refusal the unknown type fails as a KeyError instead."""
+    first, later = battle(A)[:2]
+    policy = lines.LinesWitness()
+    policy.decide(deepcopy(first))
+    frame = deepcopy(later)
+    relief = {"e5", "e8", "e9", "e10", "e11", "e12"}
+    frame["enemy"] = [u for u in frame["enemy"] if u["id"] in relief | {"e1", "e2", "e3", "e4"}]
+    next(u for u in frame["enemy"] if u["id"] == "e8")["type"] = "wh_dlc08_nor_mon_war_mammoth_0"
+    with pytest.raises(PolicyFailure, match="no lobby cost for 'wh_dlc08_nor_mon_war_mammoth_0'"):
+        policy.decide(frame)
+
 def test_line_regiments_set_guard_and_keep_a_leash_from_their_own_posts():
     """At the first decision each of the eight line regiments sets guard and fire at will on and
     skirmish off, and no other unit gets a setting. An outer regiment pulled 40 m out of line

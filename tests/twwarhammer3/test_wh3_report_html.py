@@ -300,6 +300,21 @@ def test_demo_is_explicit_and_cannot_mix_with_recorded_evidence(tmp_path):
         report_html.render(demo)
 
 
+def test_a_report_names_one_of_the_two_evidence_kinds_and_labels_each_synthetic_replay(tmp_path):
+    """Wrong versions (2026-11-13 refusal sweep): without the refusals a report of a third kind
+    is rendered as if it were recorded, and a replay without the synthetic label is shown inside
+    a synthetic report."""
+    demo = demo_report(tmp_path / "demo")
+    other = json.loads(json.dumps(demo))
+    for item in [other, *other["groups"], *other["jobs"]]:
+        item["evidence_kind"] = "simulated"
+    with pytest.raises(ValueError, match="unknown evidence kind"):
+        report_html.render(other)
+    demo["replays"]["g0-t0"].pop("evidence_kind")
+    with pytest.raises(ValueError, match="synthetic replay must carry its evidence label"):
+        report_html.render(demo)
+
+
 def test_prepooled_different_controller_cards_are_refused(tmp_path):
     job = make_job(tmp_path, "mixed", [("llm", .1, "won"), ("llm", .2, "won")])
     source = report.collect([job])
