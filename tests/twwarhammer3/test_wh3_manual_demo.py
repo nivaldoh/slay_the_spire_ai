@@ -191,6 +191,94 @@ def test_a_scenario_the_observer_cannot_run_is_refused_before_any_output(
     assert manual_demo.Mailbox.sessions == []
 
 
+@pytest.mark.parametrize("key,value", [("type", "land_domination"), ("role", "attacker")])
+def test_a_manual_battle_in_another_mode_than_declared_ends_the_attempt(
+        tmp_path, monkeypatch, key, value):
+    """The owner starts the battle by hand, so the mode is read back, not assumed. Wrong version
+    (2026-11-13 refusal sweep): without the refusal a battle of another type or role is recorded
+    as this scenario's demonstration."""
+    state = readback()
+    state["mode"][key] = value
+    output, consumed = fake_recording(tmp_path, monkeypatch, [state, ending()])
+    with pytest.raises(ProtocolError, match=f"manual setup: wrong {key}"):
+        manual_demo.record(output, "ffmpeg.exe", 3600)
+    assert json.loads((output / "manifest.json").read_text())["status"] == "failure"
+    assert len(consumed) == 1
+
+def test_a_manual_battle_must_be_at_1x_when_its_setup_is_read_back(tmp_path, monkeypatch):
+    """Only the owner pauses, after the setup readback. Wrong version (2026-11-13 refusal sweep):
+    without the refusal a battle paused at its readback is recorded, since play allows 0 later."""
+    state = readback()
+    state["speed"] = 0
+    output, consumed = fake_recording(tmp_path, monkeypatch, [state, ending()])
+    with pytest.raises(ProtocolError, match="manual setup must start at 1x"):
+        manual_demo.record(output, "ffmpeg.exe", 3600)
+    assert json.loads((output / "manifest.json").read_text())["status"] == "failure"
+
+
+def test_a_source_change_during_a_manual_attempt_ends_it(tmp_path, monkeypatch):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal the attempt keeps the
+    fingerprints of source files that changed under it."""
+    output, consumed = fake_recording(tmp_path, monkeypatch, [readback(), ending()])
+    reads = []
+
+    def fingerprints(*args):
+        reads.append(True)
+        return {"source": "hash" if len(reads) == 1 else "edited"}
+
+    monkeypatch.setattr(manual_demo, "source_fingerprints", fingerprints)
+    with pytest.raises(RuntimeError, match="source changed during manual attempt"):
+        manual_demo.record(output, "ffmpeg.exe", 3600)
+    assert json.loads((output / "manifest.json").read_text())["status"] == "failure"
+
+
+def test_a_capture_that_stops_before_the_battle_ends_fails_the_attempt(tmp_path, monkeypatch):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal the attempt returns as a
+    stopped recording with no engine ending, and no error."""
+    states = [readback()]
+    output, consumed = fake_recording(tmp_path, monkeypatch, states)
+
+    class Stops(manual_demo.subprocess.Popen):  # fake_recording's Process
+        def poll(self):
+            return None if states else 0
+
+    monkeypatch.setattr(manual_demo.subprocess, "Popen", Stops)
+    with pytest.raises(RuntimeError, match="capture stopped before an engine ending"):
+        manual_demo.record(output, "ffmpeg.exe", 3600)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["status"] == "failure" and "engine_ending" not in manifest
+
+def test_a_capture_that_exits_before_it_is_ready_ends_the_attempt(tmp_path, monkeypatch):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal the recorder waits forever
+    for a video that cannot start (here the 100th wait fails the test). Every launch step is a
+    fake."""
+    output, _ = fake_recording(tmp_path, monkeypatch, [])
+
+    class Exited:
+        def __init__(self, command, **kwargs):
+            self.returncode = 1
+
+        def poll(self):
+            return self.returncode
+
+        def wait(self, timeout=None):
+            return self.returncode
+
+    waits = []
+
+    def sleep(seconds):
+        waits.append(seconds)
+        assert len(waits) < 100, "still waiting for a capture that exited"
+
+    monkeypatch.setattr(manual_demo.subprocess, "Popen", Exited)
+    monkeypatch.setattr(manual_demo.time, "sleep", sleep)
+    with pytest.raises(RuntimeError, match="video did not become ready"):
+        manual_demo.record(output, "ffmpeg.exe", 3600)
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["status"] == "failure" and "video did not become ready" in manifest["error"]
+    assert (output / "stop-capture").exists() and waits == []
+
+
 def test_capture_identity_and_windows_timestamps_are_preserved(tmp_path):
     path = tmp_path / "observation.json"
     path.write_text(json.dumps({"job": "ours", "seq": 1, "time_ms": 10}))
@@ -220,6 +308,36 @@ def test_pause_labels_require_independent_bounded_video_intervals_and_cannot_ove
     path.write_text(json.dumps(labels))
     with pytest.raises(ValueError, match="invalid/overlapping"):
         manual_demo.label_pauses(tmp_path, path)
+
+
+@pytest.mark.parametrize("change", [{"reviewer": ""}, {"complete": False},
+                                    {"video_sha256": "0" * 64}])
+def test_pause_labels_name_a_reviewer_say_complete_and_match_the_video(tmp_path, change):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal anonymous, partial or
+    other-video labels are attached to the attempt."""
+    (tmp_path / "video.mkv").write_bytes(b"fake video")
+    (tmp_path / "video-progress.txt").write_text("out_time_us=20000000\n")
+    labels = {"reviewer": "owner", "complete": True,
+              "video_sha256": sha256(tmp_path / "video.mkv"), "intervals": [], **change}
+    path = tmp_path / "labels-input.json"
+    path.write_text(json.dumps(labels))
+    with pytest.raises(ValueError, match="need reviewer, complete=true and matching"):
+        manual_demo.label_pauses(tmp_path, path)
+    assert not (tmp_path / "pause-labels.json").exists()
+
+
+def test_no_pause_labels_attach_to_a_video_without_a_duration(tmp_path):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a labelling with no pauses
+    is attached to a video whose length was never read, as if it had been watched."""
+    (tmp_path / "video.mkv").write_bytes(b"fake video")
+    (tmp_path / "video-progress.txt").write_text("out_time_us=0\n")
+    labels = {"reviewer": "owner", "complete": True,
+              "video_sha256": sha256(tmp_path / "video.mkv"), "intervals": []}
+    path = tmp_path / "labels-input.json"
+    path.write_text(json.dumps(labels))
+    with pytest.raises(ValueError, match="video duration unavailable"):
+        manual_demo.label_pauses(tmp_path, path)
+    assert not (tmp_path / "pause-labels.json").exists()
 
 
 @pytest.mark.parametrize("mirror", [False, True])

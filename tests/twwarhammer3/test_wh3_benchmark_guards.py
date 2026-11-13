@@ -14,8 +14,9 @@ from twwarhammer3.battle import benchmark
 from twwarhammer3.battle.setup import scenarios
 
 # The frozen profile: one fresh launch and battle, no added waits, 900/1320 s caps and
-# 1000/250 ms observation/tick (benchmark.validate_config). These values rest on JUDGEMENT
-# docs/twwarhammer3/benchmark-implementation.md Starter limits and inputs.
+# 1000/250 ms observation/tick (benchmark.validate_config). The caps and the no-added-wait
+# rule rest on JUDGEMENT docs/twwarhammer3/benchmark-implementation.md Starter limits and inputs;
+# the observation and tick values are validate_config's own, with no marker of their own.
 FROZEN = {"policy": "hold", "episodes": 1, "start_timeout": 900, "episode_timeout": 1320,
           "observe_ms": 1000, "tick_ms": 250}
 

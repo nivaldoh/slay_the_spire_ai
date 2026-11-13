@@ -220,6 +220,7 @@ def test_a_failed_private_write_is_logged_with_its_cause_and_closes_an_opened_fi
         assert len(new) == 1 and new[0].startswith("private record failed: ") and cause in new[0]
         assert g.closes == closes + closed
 
+
 def test_a_getter_that_fails_or_answers_another_type_leaves_its_field_absent_not_false():
     lua, fn = battle()
     lua.execute("""

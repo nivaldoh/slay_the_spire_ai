@@ -220,13 +220,16 @@ def test_an_unplaced_starting_regiment_is_refused_before_roles_are_bound(missing
     assert policy.groups is None
 
 
-@pytest.mark.parametrize("terrain", [None, {"bounds": {}}], ids=["no-terrain", "empty-bounds"])
+@pytest.mark.parametrize("terrain", ["absent", {"bounds": {}}], ids=["no-terrain", "empty-bounds"])
 def test_a_route_without_public_terrain_bounds_is_refused(terrain):
-    """Wrong versions (2026-11-13 refusal sweep and review): without the refusal, or refusing only
-    absent bounds, the flank route reads missing bounds and fails as a TypeError or KeyError
-    instead of this refusal."""
+    """The mod leaves the terrain key out when its read fails. Wrong versions (2026-11-13 refusal
+    sweep and reviews): without the refusal, refusing only absent bounds, or reading the key
+    directly, the flank route fails as a TypeError or KeyError instead of this refusal."""
     policy, view = Envelop(), opening()
-    view["terrain"] = terrain
+    if terrain == "absent":
+        del view["terrain"]
+    else:
+        view["terrain"] = terrain
     policy.decide(view)
     with pytest.raises(PolicyFailure, match="public terrain bounds"):
         policy.decide(contact(view))

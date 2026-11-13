@@ -264,3 +264,63 @@ def test_a_courier_reaches_exactly_the_published_rendezvous_radius(beyond, deliv
     positions["b"]["x"] += local.PROFILE["rendezvous_m"] + beyond
     channel.advance(courier_due(200), positions)
     assert bool(channel.inbox("b")) is delivered
+
+
+def army():
+    placements = deepcopy(scenarios()["emp-envelopment-a-v1"]["deployment"]["friendly"])
+    return placements, [dict(p, id=f"f{i}", men=90) for i, p in enumerate(placements, 1)]
+
+
+@pytest.mark.parametrize("count", [8, 10])
+def test_binding_needs_exactly_the_nine_declared_regiments(count):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal eight placements fail later
+    as an IndexError, and a tenth placed regiment is bound to no group, so no captain owns it."""
+    placements, units = army()
+    if count == 8:
+        placements, units = placements[:8], units[:8]
+    else:
+        placements.append(dict(placements[0], x=placements[0]["x"] + 200))
+        units.append(dict(placements[-1], id="f10", men=90))
+    with pytest.raises(TeamHarnessError, match="nine-regiment army"):
+        local.bind(placements, units)
+
+
+def test_binding_refuses_a_regiment_no_slot_claims():
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a tenth friendly regiment
+    beside the nine placed ones is left out of every group, unowned."""
+    placements, units = army()
+    units.append(dict(units[0], id="f10", x=units[0]["x"] + 200))
+    with pytest.raises(TeamHarnessError, match="duplicate or unowned regiment"):
+        local.bind(placements, units)
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"mode": "radio"}, {"mode": "text"}, {"mode": "bounded", "links": {("a", "b")}},
+    {"mode": "bounded", "muted": True},
+], ids=["unknown", "text-without-links", "links-without-text", "muted-without-text"])
+def test_a_router_refuses_a_mode_it_does_not_define(kwargs):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal each is built and routes
+    under rules no declaration names."""
+    with pytest.raises(ValueError, match="unknown local communication mode"):
+        router(**kwargs)
+
+
+def test_a_send_names_a_known_sender_and_a_basis_no_later_than_its_time():
+    """Wrong versions (2026-11-13 refusal sweep): an unknown sender fails as a KeyError, and a
+    message decided on an observation from the future, or before battle time 0, is accepted."""
+    with pytest.raises(TeamHarnessError, match="unknown message sender"):
+        router().send("z", {"channel": "signal", "code": "HOLD"}, 1000, current())
+    for source_ms in (1001, -1):
+        with pytest.raises(TeamHarnessError, match="invalid message observation basis"):
+            router().send("a", {"channel": "signal", "code": "HOLD"}, 1000, current(),
+                          source_ms=source_ms)
+
+
+def test_a_text_router_refuses_a_send_before_its_last_observation():
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a message stamped before the
+    observation already delivered is accepted into the earlier battle time. Built as
+    local_team builds the text router."""
+    text = router(mode="text", links={("a", "b")}, profile=local.TEXT_PROFILE)
+    text.advance(5000, current())
+    with pytest.raises(TeamHarnessError, match="message clock moved backwards"):
+        text.send("a", {"channel": "text", "to": "b", "text": "hold"}, 4000, current())

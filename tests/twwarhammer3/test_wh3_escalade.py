@@ -428,6 +428,53 @@ def test_escalade_refuses_fortifications_without_the_gate():
         escalade.Escalade().decide(play.public(start, {}))
 
 
+@pytest.mark.parametrize("change", ["one-short", "unplaced", "other-type"])
+def test_escalade_refuses_any_army_but_the_thirteen_declared_placed_units(change):
+    """Its cause ends the episode (play.is_forfeit) rather than costing every decision while the
+    army stands. Wrong version (2026-11-13 refusal sweep): without the refusal each army is bound
+    and played, or fails later with another error."""
+    start = first_observation()
+    if change == "one-short":
+        start["friendly"].pop()
+    elif change == "unplaced":
+        start["friendly"][0]["x"] = None
+    else:
+        start["friendly"][0]["type"] = "wh_main_emp_inf_swordsmen"
+    with pytest.raises(PolicyFailure, match="thirteen placed units") as failure:
+        escalade.Escalade().decide(play.public(start, {}))
+    assert failure.value.__cause__ is not None
+
+
+@pytest.mark.parametrize("change", ["missing", "other-key"])
+def test_escalade_refuses_capture_points_other_than_helmgarts(change):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal a missing or different
+    point is read as Helmgart's, or fails later as a KeyError."""
+    start = first_observation()
+    points = start["mode"]["capture_points"]
+    if change == "missing":
+        points.pop(0)
+    else:
+        points[0]["key"] = "capture_point_somewhere_else"
+    with pytest.raises(PolicyFailure, match="Helmgart's capture points") as failure:
+        escalade.Escalade().decide(play.public(start, {}))
+    assert failure.value.__cause__ is not None
+
+
+@pytest.mark.parametrize("make,name", [(escalade.BesiegeNearest, "besiege_nearest"),
+                                       (escalade.OrderProbe, "order_probe")])
+@pytest.mark.parametrize("keep", ["walls-only", "gate-only"])
+def test_the_besiege_control_and_the_order_probe_need_the_gate_and_walls(make, name, keep):
+    """Wrong version (2026-11-13 refusal sweep): without the refusal both build their plan from
+    fortifications without g1 or without walls, or fail later with another error."""
+    start = first_observation()
+    pieces = start["mode"]["fortifications"]
+    start["mode"]["fortifications"] = [
+        p for p in pieces if (p["id"] != "g1" if keep == "walls-only" else p["kind"] != "wall")]
+    with pytest.raises(PolicyFailure, match=f"{name} needs mode.fortifications") as failure:
+        make().decide(play.public(start, {}))
+    assert failure.value.__cause__ is not None
+
+
 def test_the_order_probe_sends_assault_luas_orders_at_10_s_and_resends_only_to_idle_units():
     """OrderProbe (stage 2's probe, a port of checkpoint_siege/assault.lua) on the attack
     fixture: f2 still busy at 20 s, g1 at 0% at 31 s; and on degraded(). Wrong versions: a probe
