@@ -19,4 +19,5 @@ build/
 *.safetensors
 runs/**
 !runs/README.md
+/tmp/
 .claude/worktrees/
