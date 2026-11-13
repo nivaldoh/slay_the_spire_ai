@@ -550,7 +550,7 @@ def read_trace(episode: Path) -> tuple[dict, list[dict], list[dict], dict]:
                 invalid=pending_invalid)
             if behavior.get("member"):  # a team member decided on its own, older source state
                 decision.update({key: behavior[key] for key in ("source_seq", "source_ms")
-                                 if key in behavior})
+                                 if key in behavior}, member=behavior["member"])
             notes_text, pending_invalid = new_notes, None
             by_request[record["request"]] = decision
             decisions.append(decision)
@@ -641,6 +641,19 @@ def sample_interval(frames: list[dict], recorded: int, manifest: dict) -> int:
     return max(least, round(statistics.median(spacing) / 100) * 100) if spacing else least
 
 
+def mark_view_replies(decisions: list[dict]) -> None:
+    """view_reply: the replies whose view the page's view-age band and Model's view follow.
+    Every applied reply; for the asynchronous commander only its plan adoptions (its executor
+    follows the latest plan); on a team page only members' replies, not the dispatcher's empty
+    polls (owner, 2026-11-13: "Count member replies only (Recommended)")."""
+    planned = any(d.get("plan_age_s") is not None for d in decisions)
+    team = any(d.get("member") for d in decisions)
+    for decision in decisions:
+        decision["view_reply"] = (decision.get("applied_ms") is not None
+                                  and (not planned or decision.get("plan_age_s") is not None)
+                                  and (not team or bool(decision.get("member"))))
+
+
 def build(episode: Path, manifest: dict | None = None, notes: dict | None = None) -> dict:
     manifest = manifest or json.loads((episode.parent / "manifest.json").read_text())
     result_path = episode / "result.json"
@@ -671,6 +684,7 @@ def build(episode: Path, manifest: dict | None = None, notes: dict | None = None
                         steps=steps, summary=summary_lines(steps, labels))
         decision["displacements"] = (displacements(ordered[basis], ordered[after])
                                      if basis is not None and after is not None else [])
+    mark_view_replies(decisions)
     events = state_events(ordered, scenario.get("protected", []), labels)
     for index, decision in enumerate(decisions):
         facts = next_facts(index, decisions, ordered, labels, events)

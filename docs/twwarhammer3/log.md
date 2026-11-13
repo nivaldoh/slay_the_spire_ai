@@ -29,6 +29,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: Team pages' view age follows members' replies only
+
+The owner answered: "Count member replies only (Recommended)". On team pages the view-age band
+and the Model's view outlines counted the dispatcher's empty polls as replies dated at the poll.
+`replay.mark_view_replies` now decides which replies the view follows (`view_reply`): every
+applied reply; the commander's plan adoptions; on a team page members' replies only. `replay.js`
+reads the flag (older replays fall back to the earlier rule). Rebuilt
+`runs/twwarhammer3/reports/comm-structure-20261108-r2.html` (original kept): over its 26 team
+replays the view now rests on 21,835 member replies, median 2.7 s, instead of 29,365 replies
+with polls, median 2.4 s. The page loads in headless Chromium with no errors; the band itself was
+not opened there. The report browser check fails on main and here at the same unrelated text
+expectation. 4 new cases; the team cases fail on the old rule. Offline only.
+
 ## 2026-11-13: The suite's refused share counts engine refusals only
 
 The owner answered: "Engine only, validation beside (Recommended)". The suite's `refused` per battle

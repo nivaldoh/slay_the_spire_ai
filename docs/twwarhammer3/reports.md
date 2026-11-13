@@ -593,10 +593,10 @@ result.
   moment, how old the observation behind the latest applied reply is (empty replies
   included; a commander's plan view for the commander). It drops when a reply lands and
   grows by one second per second until the next (view and application times, battle
-  clock). On a team page a member's reply dates from the member's own state, but the
-  dispatcher's empty polls still count as replies dated at the poll, so the band and the
-  Model's view outlines read younger than the members' views (counting only member replies would change this
-  definition; not done, 2026-11-08). The collector's `order_age_median_s` (the median of per-battle medians) stays in
+  clock). On a team page only members' replies count, each dated from the member's own state;
+  the dispatcher's empty polls do not (owner, 2026-11-13: "Count member replies only
+  (Recommended)"). Before that they counted as replies dated at the poll, so the band and the
+  Model's view outlines read younger than the members' views. The collector's `order_age_median_s` (the median of per-battle medians) stays in
   the JSON. `visual-sol-low-20261015`: 4.2 s over 45 batches; 3.9 s over all 91 applied
   replies, empty ones included.
 - **Per decision** (moment panel): that reply's observation age when applied (battle

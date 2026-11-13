@@ -840,10 +840,11 @@ const Viewer = (() => {
     placeLabels(layer);
   }
 
-  // Replies whose view the overlay and strip follow: every applied decision, or for the
-  // asynchronous commander only its plan adoptions (its executor follows the latest plan).
+  // Replies whose view the overlay and strip follow: replay.mark_view_replies decides
+  // (view_reply). A replay built before that field falls back to the earlier rule.
   const planned = () => r.decisions.some((d) => d.plan_age_s != null);
-  const answers = (d) => d.applied_ms != null && (!planned() || d.plan_age_s != null);
+  const answers = (d) =>
+    d.view_reply ?? (d.applied_ms != null && (!planned() || d.plan_age_s != null));
   // The model's view: the observation behind the latest reply that reached the game (for the
   // asynchronous commander, its plan's older one), drawn as outlines joined to where each
   // unit is now.

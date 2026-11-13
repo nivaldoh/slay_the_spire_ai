@@ -512,3 +512,39 @@ def test_a_team_members_orders_act_on_its_own_source_state_not_the_dispatchers_p
         0.3, 1, "walk 70 m north")
     assert "source_ms" not in single and single["displacements"][0]["metres"] == 10
     assert report_html.timing(data)["ages"] == [2.7, 0.3]
+
+
+@pytest.mark.parametrize("decisions,expected", [
+    # A team page: members' replies only, never the dispatcher's empty polls.
+    ([{"applied_ms": 900, "member": "m1"}, {"applied_ms": 1000}, {"member": "m2"}],
+     [True, False, False]),
+    # A single controller: every applied reply.
+    ([{"applied_ms": 900}, {"applied_ms": None}], [True, False]),
+    # The asynchronous commander: only its plan adoptions.
+    ([{"applied_ms": 900, "plan_age_s": 2.0}, {"applied_ms": 1000}], [True, False]),
+], ids=["team", "single", "commander"])
+def test_the_view_follows_members_replies_on_a_team_page(decisions, expected):
+    """Owner, 2026-11-13: "Count member replies only (Recommended)". Wrong version: the
+    dispatcher's polls count, so the band and the outlines read younger than members' views."""
+    replay.mark_view_replies(decisions)
+    assert [d["view_reply"] for d in decisions] == expected
+
+
+def test_a_built_team_replay_marks_the_member_batch_and_not_the_poll(tmp_path):
+    episode = tmp_path / "episode-0000"
+    episode.mkdir()
+    source, poll = frame(5200, [unit()]), frame(7600, [unit(z=30)])
+    source["seq"], poll["seq"] = 1, 9
+    move = {"unit": "f1", "type": "move", "x": 0, "z": 100}
+    records = [{"kind": "observation", "observation": source},
+               {"kind": "observation", "observation": poll},
+               {"kind": "decision", "seq": 9, "time_ms": 7600, "request": "r1", "orders": [move],
+                "behavior": {"member": "m1", "source_seq": 1, "source_ms": 5200}},
+               {"kind": "ack", "request": "r1", "ack": {"applied_ms": 7900, "results": [
+                   {"index": 1, "unit": "f1", "ok": True}]}},
+               {"kind": "decision", "seq": 9, "time_ms": 7600, "request": "r2", "orders": []},
+               {"kind": "ack", "request": "r2", "ack": {"applied_ms": 7700, "results": []}}]
+    (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records))
+    member, polled = replay.build(episode, {"config": {}, "scenario": {}})["decisions"]
+    assert (member["member"], member["view_reply"]) == ("m1", True)
+    assert "member" not in polled and polled["view_reply"] is False
