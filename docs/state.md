@@ -103,7 +103,7 @@ Numbers are unchanged; open the relevant item before acting.
 12. **Factory:** unrelated test/process approvals, tally suggestions and formal-map candidates remain open (review queue). The old cleanup, xdist and battle-time drafts were removed during the owner-directed cleanup.
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
-15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), one test-plant re-anchor needing your yes, and the Alesia first-rout premise before more construction battles.
+15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), and the Alesia first-rout premise before more construction battles.
 
 ## Runtime and ownership
 
