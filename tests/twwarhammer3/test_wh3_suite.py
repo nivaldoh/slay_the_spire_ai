@@ -641,3 +641,17 @@ def test_an_account_limit_stops_authoring_like_a_budget_stop(tmp_path, monkeypat
     with pytest.raises(SystemExit) as error:
         cli.main()
     assert error.value.code == 2 and "authoring coord-relief: HTTP 402" in capsys.readouterr().err
+
+
+def test_a_ledger_cap_stops_authoring_and_is_not_a_failed_try(tmp_path):
+    """Review round 12: BudgetExhausted must leave author. Wrong version: it joins the failed-try
+    errors, so a spent budget writes three failed tries for every scenario."""
+    from gameai.ledger import BudgetExhausted
+
+    send, canned = authoring_send([])
+    (tmp_path / "spend.jsonl").touch()
+    book = Ledger(tmp_path / "spend.jsonl", 0.000001, must_exist=True)
+    with pytest.raises(BudgetExhausted):
+        suite.author(tmp_path / "written", ["coord-relief", "coord-pincer"], book, send=send)
+    assert [p.name for p in (tmp_path / "written").iterdir()] == ["coord-relief"]
+    assert len(canned) == 4

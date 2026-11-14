@@ -253,3 +253,19 @@ def test_ascii_lua_still_reaches_the_launch(offline):
     with pytest.raises(LaunchAttempted):
         launch({**SOURCE, "lua_at": [{"tick": 5, "label": "orders", "lua": "return 1"}],
                 "readings": {"every": 100, "lua": "return '{}'"}}, tmp_path / "run")
+
+
+def test_a_restore_with_non_ascii_lua_is_refused_before_any_replay_moves(offline, monkeypatch):
+    """Review round 12: run() and restore_episode() move or copy replays before launched();
+    the refusal must come first. Wrong version: only launched() checks."""
+    tmp_path, _, _ = offline
+    moved = []
+    monkeypatch.setattr(checkpoint, "only_replay", lambda name: moved.append(name))
+    lua = [{"tick": 1, "label": "setup", "lua": "return 'é'"}]
+    restore = {"checkpoint": {"name": "cp", "tick": 100}, "stop_tick": 200, "lua_at": lua}
+    with pytest.raises(ValueError, match="non-ASCII character"):
+        checkpoint.run(restore, tmp_path / "run")
+    with pytest.raises(ValueError, match="non-ASCII character"):
+        checkpoint.restore_episode(tmp_path / "library/record.json", {"lua_at": lua},
+                                   tmp_path / "episode")
+    assert moved == [] and list((tmp_path / "user/replays").iterdir()) == []

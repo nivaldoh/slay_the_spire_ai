@@ -114,6 +114,7 @@ def run(plan: dict, output: Path) -> dict:
     A restore's lua_at may hold only tick-1 setup and orders after the checkpoint:
     earlier inputs come from the replay.
     """
+    ascii_lua(plan)  # before only_replay moves other replays aside
     restore = plan.get("checkpoint")
     if restore and any(1 < item["tick"] <= restore["tick"] for item in plan.get("lua_at", [])):
         raise ValueError("a restore runs Lua only at tick 1 and after its checkpoint")
@@ -921,6 +922,7 @@ def restore_episode(record_path: Path, plan: dict, output: Path) -> dict:
     """Restore a library record as a step run: copy its replay in, check its hash, leave it
     alone in the Replays list, run the episode; afterwards re-hash and remove the copy. A
     copy that changed marks the library entry SUSPECT, refusing later restores."""
+    ascii_lua(plan)  # before the replay is copied in
     record = json.loads(record_path.read_text())
     directory = record_path.parent
     if (directory / "SUSPECT").exists():

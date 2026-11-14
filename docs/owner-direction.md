@@ -10,7 +10,9 @@ Both games:
   (checkpoint.py refuses it; agent unchanged); suite scenarios without a page question:
   "A row for every scenario (Recommended)"; repeats of one pair on the suite page: "First battle
   everywhere (Recommended)"; BQ4 (authoring stops on one provider error) and P4 (watch's spend
-  misses uncertain charges): "Fix both now (Recommended)".
+  misses uncertain charges): "Fix both now (Recommended)". Asked again for P4 once its fix was
+  found to edit src/gameai/llm.py, which moves Spire's source fingerprint too: "Fix in gameai now
+  (Recommended)".
 - 2026-11-13 (three choices from the 2026-11-08 audit), answers: the suite's refused share:
   "Engine only, validation beside (Recommended)"; the commander dropping a stop from its last
   call: "Fix now (Recommended)"; team pages' view age counting the dispatcher's empty polls:

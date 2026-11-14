@@ -32,10 +32,11 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-11-13: Four more audit choices
 
 The owner answered four 2026-11-08 audit choices with the recommended option (owner-direction.md).
-- Checkpoint Lua: `checkpoint.launched` refuses a plan whose `lua_at` or `readings` Lua has a
-  non-ASCII character, before writing anything; the agent would cut such a chunk short, and
-  changing the agent would refuse every saved record. Today's plan Lua is all ASCII. 3 cases; the
-  2 refusal cases fail without the check.
+- Checkpoint Lua: `checkpoint.run`, `restore_episode` and `launched` refuse a plan whose `lua_at`
+  or `readings` Lua has a non-ASCII character, before any replay moves or anything is written; the
+  agent would cut such a chunk short, and changing the agent would refuse every saved record.
+  Today's plan Lua is all ASCII. 4 cases; the 3 refusal cases fail without the checks (review
+  round 12 found the first version let a restore move replays aside before refusing).
 - Suite page: a scenario without page notes (coord-mirror, coord-line-raid, coord-swarm,
   coord-caster, coord-siege, coord-cavalry) now gets a grid row titled by its name, placed after
   the noted ones, so each arm's footer totals the rows above it; opening it says "This scenario has
@@ -48,8 +49,9 @@ The owner answered four 2026-11-08 audit choices with the recommended option (ow
 - BQ4: `suite.author` records a provider error (APIError) as a failed try and goes on to the next
   try and scenario; an account-limit refusal (`play.account_stop`) is raised as a budget stop, and
   `benchmark` prints a budget stop or provider error as one line. A directory still cannot be
-  resumed. 2 cases; both fail on the old code, and dropping the CLI catch or the account stop
-  fails one each. P4 is not built: its fix edits `src/gameai/llm.py`, which Spire's source scope
+  resumed. During an outage each failed try now charges its transport reservations (review round
+  12's estimate: up to about $0.08 per scenario for claude-haiku-5-5), within the ledger cap. 3
+  cases; dropping the CLI catch, the account stop or the budget stop fails one each. P4 is not built: its fix edits `src/gameai/llm.py`, which Spire's source scope
   also covers, a cost the question did not state; it went back to the owner.
 
 ## 2026-11-13: The report's opening sentence counts only scenarios a model played
