@@ -19,7 +19,8 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-from gameai.llm import InvalidReply
+from gameai.ledger import BudgetExhausted
+from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle.benchmark import EFFORT, MODEL, SUITE, collect
 from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
@@ -85,8 +86,12 @@ def author(directory, scenario_names, ledger, *, send=None):
 
     A scenario gets AUTHOR_TRIES whole tries, so one bad reply costs that scenario a little
     money rather than the night its arm; what every try cost counts as the arm's writing cost.
+    A provider error is a failed try too, so one outage does not stop later scenarios; a budget
+    stop or an account-limit refusal stops the run (2026-11-08 audit BQ4; owner, 2026-11-13: "Fix
+    both now (Recommended)").
     """
     from twwarhammer3.battle import graph_author
+    from twwarhammer3.battle.play import account_stop
     from twwarhammer3.battle.setup import scenarios
 
     known, directory, totals = scenarios(), Path(directory), {}
@@ -97,7 +102,9 @@ def author(directory, scenario_names, ledger, *, send=None):
                     REPO_ROOT / GRAPH_TEMPLATE, author_task(known[name]),
                     directory / name / f"attempt-{attempt}", ledger, model=MODEL, effort=EFFORT,
                     provider="anthropic", send=send)
-            except (InvalidReply, ValueError) as exc:
+            except (InvalidReply, ValueError, APIError) as exc:
+                if isinstance(exc, APIError) and account_stop(str(exc)):
+                    raise BudgetExhausted(f"authoring {name}: {exc}") from exc
                 totals[name] = {"status": "failed", "tries": attempt, "error": str(exc)}
                 continue
             totals[name] = {"status": "ready", "tries": attempt, **manifest["totals"]}

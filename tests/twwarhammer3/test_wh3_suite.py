@@ -578,3 +578,66 @@ def test_a_suite_plan_keeps_a_start_before_time_with_an_offset(tmp_path, monkeyp
     plan = suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["hold"], 1, 5, seed=1,
                            start_before="2026-11-09T07:00+00:00")
     assert plan["start_before"] == "2026-11-09T07:00+00:00"
+
+
+def authoring_send(failures):
+    """A provider that raises each of ``failures`` in turn, then writes one good set of graphs."""
+    from gameai.llm import APIError
+
+    end = {"version": graph.VERSION, "entry": "owned", "nodes": {
+        "owned": {"op": "owned", "inputs": {}, "next": {"succeeded": "pick", "empty": "owned"}},
+        "pick": {"op": "select_target", "inputs": {"units": {"ref": "owned.units"}},
+                 "next": {"succeeded": "owned", "empty": "owned"}}}}
+    tasks = [{"member": name, "task": "Fight."} for name in team.CLASS_PARTITION]
+    canned = [json.dumps({"tasks": tasks}), *[json.dumps({"graph_json": json.dumps(end)})] * 3]
+    failures = list(failures)
+
+    def send(body):
+        if failures:
+            raise APIError(failures.pop(0))
+        return {"id": "canned", "status": "completed",
+                "usage": {"input_tokens": 100, "output_tokens": 100},
+                "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": canned.pop(0)}]}]}
+    return send, canned
+
+
+def test_a_provider_error_is_a_failed_try_and_later_scenarios_are_still_written(tmp_path):
+    """2026-11-08 audit BQ4; owner, 2026-11-13: "Fix both now (Recommended)". Wrong version:
+    the first HTTP 529 leaves author, and coord-pincer is never attempted."""
+    send, canned = authoring_send(["HTTP 529: overloaded"] * suite.AUTHOR_TRIES)
+    (tmp_path / "spend.jsonl").touch()
+    book = Ledger(tmp_path / "spend.jsonl", 5, must_exist=True)
+    totals = suite.author(tmp_path / "written", ["coord-relief", "coord-pincer"], book, send=send)
+    assert totals["coord-relief"] == {"status": "failed", "tries": suite.AUTHOR_TRIES,
+                                      "error": "HTTP 529: overloaded"}
+    assert totals["coord-pincer"]["status"] == "ready" and totals["coord-pincer"]["tries"] == 1
+    assert not canned
+    with pytest.raises(ValueError, match="no ready graphs for coord-relief"):
+        suite.written_graphs(tmp_path / "written", "coord-relief")
+
+
+def test_an_account_limit_stops_authoring_like_a_budget_stop(tmp_path, monkeypatch, capsys):
+    import sys
+
+    import twwarhammer3.__main__ as cli
+    from gameai.ledger import BudgetExhausted
+
+    send, _ = authoring_send(["HTTP 402: credit balance is too low"])
+    (tmp_path / "spend.jsonl").touch()
+    book = Ledger(tmp_path / "spend.jsonl", 5, must_exist=True)
+    with pytest.raises(BudgetExhausted, match="authoring coord-relief: HTTP 402"):
+        suite.author(tmp_path / "written", ["coord-relief", "coord-pincer"], book, send=send)
+    assert [p.name for p in (tmp_path / "written").iterdir()] == ["coord-relief"]
+    # The command prints one line, not a traceback.
+    def stopped(*args, **kwargs):
+        raise BudgetExhausted("authoring coord-relief: HTTP 402")
+
+    monkeypatch.setattr(suite, "author", stopped)
+    monkeypatch.setattr("gameai.provenance.committed_revision", lambda *args: "rev")
+    monkeypatch.setitem(cli.LEDGERS, "anthropic", tmp_path / "spend.jsonl")
+    monkeypatch.setattr(sys, "argv", ["wh3", "benchmark", "author", str(tmp_path / "w2"),
+                                      "--scenarios", "coord-relief"])
+    with pytest.raises(SystemExit) as error:
+        cli.main()
+    assert error.value.code == 2 and "authoring coord-relief: HTTP 402" in capsys.readouterr().err

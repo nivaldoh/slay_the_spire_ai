@@ -45,6 +45,12 @@ The owner answered four 2026-11-08 audit choices with the recommended option (ow
   the grid showed the first and the tiles and overlap the last; `suite.js` now loads each arm's
   first battle, as the grid shows. The two built suite pages have no repeated pair, so neither
   changes. 1 page case; it fails on the old code (the overlap pair follows the repeat).
+- BQ4: `suite.author` records a provider error (APIError) as a failed try and goes on to the next
+  try and scenario; an account-limit refusal (`play.account_stop`) is raised as a budget stop, and
+  `benchmark` prints a budget stop or provider error as one line. A directory still cannot be
+  resumed. 2 cases; both fail on the old code, and dropping the CLI catch or the account stop
+  fails one each. P4 is not built: its fix edits `src/gameai/llm.py`, which Spire's source scope
+  also covers, a cost the question did not state; it went back to the owner.
 
 ## 2026-11-13: The report's opening sentence counts only scenarios a model played
 

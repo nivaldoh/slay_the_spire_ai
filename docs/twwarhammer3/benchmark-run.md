@@ -243,7 +243,10 @@ uv run python scripts/wh3_queue.py runs/<task>/round.json
 uv run --locked python -m twwarhammer3 benchmark report runs/<task>/round.json
 ```
 
-`--budget-usd` is the cumulative Anthropic ledger cap. Paid arms need the Anthropic key variables
+`--budget-usd` is the cumulative Anthropic ledger cap. `benchmark author` gives each scenario
+three tries: a bad reply or a provider error fails a try and authoring goes on, while a budget stop
+or an account-limit refusal stops it with a one-line error (2026-11-13). It cannot resume into a
+directory it wrote, so a rerun needs a new one. Paid arms need the Anthropic key variables
 in the queue's environment. The report writes `.report.txt` and `.report.json` beside the plan,
 with one row per planned battle.
 

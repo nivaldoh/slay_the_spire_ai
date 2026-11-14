@@ -309,6 +309,8 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "benchmark":
+        from gameai.ledger import BudgetExhausted
+        from gameai.llm import APIError
         from twwarhammer3.battle import benchmark
 
         try:
@@ -333,7 +335,7 @@ def main() -> int:
             else:
                 data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"),
                                         args.also)
-        except (ValueError, OSError) as exc:
+        except (ValueError, OSError, APIError, BudgetExhausted) as exc:
             parser.error(str(exc))
         print(json.dumps(data, indent=2))
         return 0
