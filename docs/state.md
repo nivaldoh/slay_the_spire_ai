@@ -3,7 +3,7 @@
 Updated 2026-11-13. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Haengju stage 1, 2026-11-14 (Claude, from 03:18): `hold` construction launches of `cth-emp-siege-a-v1` (1a, then 1b and 1c only on a go), $0, game cutoff 08:00 local. Claims the WH3 game; brief `runs/haengju-20261114/brief.md`.
+Historical-battle construction holds, 2026-11-14 (Claude, from 03:18): Haengju 1a played (lost at 928 s); D1 Spearmen broke the gate, so JUDGEMENT? Gate stop ends Haengju's stage 1 there. Next Izmail stage 1, two `hold` launches, $0, game cutoff 08:00 local. Claims the WH3 game; brief `runs/haengju-20261114/brief.md`.
 
 Refusal sweeps, 2026-11-13 (Claude, overnight then from 10:28): tests now catch 55 of 59 refusal removals that the tests of nineteen WH3 files missed; tests, twelve plants and one sweep-tool fix; offline, $0. The Cannae and Alesia witnesses' 11 refusals now end the battle instead of counting as forfeits (owner's answer, 2026-11-13). Evidence: `runs/overnight-20261113/`, `runs/sweeps-20261113b/`.
 
