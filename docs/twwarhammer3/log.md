@@ -29,6 +29,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-14: Code-quality cleanup without behaviour change
+
+Claude, at the owner's goal "Review and address the issues identified" after a read-only review
+of 12 findings; answers in owner-direction.md, handoff `runs/code-quality-20261114/handoff.md`.
+Branch `code-quality-20261114`, offline, $0, no game.
+- `__main__.main` (572 lines) is `build_parser` plus one `run_<command>` per subcommand.
+- The $50 OpenRouter allowance is `controllers.check_allowance` and the 900/1320/2280 s launch
+  limits are named once in `benchmark.py`; `pack_sha256` lives once in `engine/runtime.py`.
+- About twenty late imports moved to the top; three stay late for real cycles.
+- `policy_call`, `is_forfeit`, `account_stop` and `TeamHarnessError` live in `protocol.py`.
+- `APIError` carries `status` and `stop`, and `account_stop` reads them instead of the message.
+  One outcome changed: an HTTP error whose body ends in "and stopped" is now a forfeit.
+- `controllers.check_policy` replaces configured.load's dummy `rotation` call, and `load` is split
+  per node type.
+- Card hashes changed only for team.py, commander.py and graph_goals.py (owner: "Team files
+  only"); other controller files and the Lua are byte-identical.
+- Export's `--jobs-file` now refuses an empty path.
+- Checks: `check.py` passed before each commit (last 4168 passed, 70 skipped). All 474 plants
+  were caught at `dbed6ba`; 8 plants were retargeted or added. 7 new tests. A fresh reviewer
+  found 4 items, all handled in `bdc5c38`.
+- Unverified: no live run; behaviour preservation rests on the offline suite and that review.
+  Waiting for a controller version bump: findings 3, 5, 7, 8 (handoff).
+
 ## 2026-11-14: First Haengju and Izmail construction holds
 
 Claude, in the owner's away window (goal in owner-direction.md; brief, cards, analysis scripts,
