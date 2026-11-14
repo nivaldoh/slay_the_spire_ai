@@ -1481,9 +1481,9 @@ source = "2026-10-31 run, B4 speed reading"
 id = "model-ask-drops-uncaptured-transport-reraise"
 guards = "A transport error without response metadata stays an APIError and releases its reservation"
 file = "src/gameai/llm.py"
-old = "                    if not hasattr(error, \"attempt\"):\n                        raise\n"
-new = "                    if not hasattr(error, \"attempt\"):\n                        pass\n"
-tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+old = "                    if error.attempt is None:\n                        raise\n"
+new = "                    if error.attempt is None:\n                        pass\n"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend", "tests/gameai/test_model.py::test_an_uncaptured_transport_failure_records_no_attempt"]
 source = "2026-10-31 branch-coverage error-path test audit"
 
 [[plant]]

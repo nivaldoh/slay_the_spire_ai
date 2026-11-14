@@ -59,11 +59,18 @@ JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int,
 class APIError(RuntimeError):
     """Transport or service failure: infrastructure, never a gameplay outcome. ``retryable``
     names the failure kind, a failed response, which ``Model.ask`` resends unchanged up to
-    FAILED_RESENDS times; it stays set on the one raised after they run out."""
+    FAILED_RESENDS times; it stays set on the one raised after they run out. ``status`` is the
+    HTTP status of a refused request, else None. ``stop`` marks a ledger safety stop: the call
+    was charged and nothing more may be sent. ``attempt`` is the billed attempt of a failed call
+    (None when no attempt was recorded), ``attempts`` every attempt of the ``ask`` that raised."""
 
-    def __init__(self, message: str, uncertain_attempts: int = 0, retryable: bool = False):
+    def __init__(self, message: str, uncertain_attempts: int = 0, retryable: bool = False, *,
+                 status: int | None = None, stop: bool = False):
         super().__init__(message)
         self.uncertain_attempts, self.retryable = uncertain_attempts, retryable
+        self.status, self.stop = status, stop
+        self.attempt: dict | None = None
+        self.attempts: list[dict] | None = None
 
 
 class InvalidReply(RuntimeError):
@@ -166,7 +173,8 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
                 detail = f"<error body unreadable: {type(unreadable).__name__}>"
             uncertain += error.code >= 500 or error.code == 408
             if error.code not in transient or attempt == attempts:
-                raise APIError(f"HTTP {error.code}: {detail}", uncertain) from None
+                raise APIError(f"HTTP {error.code}: {detail}", uncertain,
+                               status=error.code) from None
         except UnicodeEncodeError as error:
             # A header value that is not Latin-1 fails before connecting, the same way each time.
             raise APIError(f"{type(error).__name__}: {error}", uncertain) from None
@@ -464,9 +472,10 @@ class Model:
             )
         self.totals.update(totals)
         if cost_error:
-            error = APIError(f"{cost_error}; charged reservation and stopped")
+            error = APIError(f"{cost_error}; charged reservation and stopped", stop=True)
         elif usd > reservation:
-            error = APIError("Reported cost exceeded reservation; charged actual cost and stopped")
+            error = APIError("Reported cost exceeded reservation; charged actual cost and stopped",
+                             stop=True)
         elif response.get("error"):
             attempt["error"] = f"{self.provider} returned a failed response {response.get('id')}"
             error = APIError(attempt["error"], retryable=True)
@@ -500,7 +509,7 @@ class Model:
                 try:
                     attempt = self.call(prompt + feedback, schema)
                 except APIError as error:
-                    if not hasattr(error, "attempt"):
+                    if error.attempt is None:
                         raise
                     failure, attempt = error, error.attempt
                 if self.record_exchanges:

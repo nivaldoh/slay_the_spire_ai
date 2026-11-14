@@ -718,3 +718,57 @@ def test_failed_responses_with_zero_allowance_raise_after_one_billed_attempt(tmp
     assert [a["response_id"] for a in attempts] == [f"r{n}" for n in range(1, sends + 1)]
     assert failure.value.attempt is attempts[-1] and model.totals["calls"] == sends
     assert model.ledger.spent == pytest.approx(sum(a["usd"] for a in attempts))
+
+
+def test_an_http_refusal_carries_its_status_and_a_lost_connection_none(monkeypatch):
+    """Callers read a refusal's status from the error, not from its message. Wrong version:
+    the status left None, or set on a failure that never got an HTTP answer."""
+    outcomes = [urllib.error.HTTPError("u", 402, "no", {}, io.BytesIO(b"no credit")),
+                ConnectionResetError("reset")]
+
+    def urlopen(request, timeout):
+        raise outcomes.pop(0)
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    with pytest.raises(api.APIError) as refused:
+        api.post("k", {}, attempts=1)
+    assert refused.value.status == 402 and refused.value.stop is False
+    with pytest.raises(api.APIError) as lost:
+        api.post("k", {}, attempts=1)
+    assert lost.value.status is None and lost.value.stop is False
+
+
+@pytest.mark.parametrize("usage,error,stop", [
+    pytest.param([1], None, True, id="invalid-usage"),
+    pytest.param(dict(USAGE, output_tokens=100_000), None, True, id="over-reservation"),
+    pytest.param(USAGE, {"message": "failed"}, False, id="failed-response"),
+])
+def test_only_the_ledger_safety_stops_are_marked_stop(tmp_path, usage, error, stop):
+    """A charged call the ledger cannot trust stops the job (``stop``); a provider's failed
+    response does not. Wrong version: either safety stop left unmarked, or every error marked."""
+    def send(body):
+        return {"id": "r", "status": "completed", "usage": usage, "error": error,
+                "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": "{}"}]}]}
+
+    model = api.Model("gpt-6-astra", "low", Ledger(tmp_path / "spend.jsonl", 100.0),
+                      instructions="Return an object.", max_output_tokens=2000, send=send,
+                      failed_resends=0)
+    with pytest.raises(api.APIError) as failure:
+        model.ask("test", {}, lambda text: text, retries=0)
+    assert failure.value.stop is stop and failure.value.status is None
+    assert failure.value.attempt is failure.value.attempts[-1]
+
+
+def test_an_uncaptured_transport_failure_records_no_attempt(tmp_path):
+    """Without exchange capture a transport failure carries no attempt record, so ``attempts``
+    stays empty: its readers expect every entry to be a record. Wrong version: a None
+    placeholder appended for the attempt that was never recorded."""
+    def send(body):
+        raise api.APIError("connection lost")
+
+    model = api.Model("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1),
+                      instructions="system", max_output_tokens=200, send=send)
+    with pytest.raises(api.APIError) as error:
+        model.ask("user", {}, lambda text: text, retries=1)
+    assert error.value.attempt is None and error.value.attempts == []
