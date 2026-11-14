@@ -145,8 +145,7 @@ def factory(path, config, *, ledger=None):
     if models or goal_models:
         if config.get("budget_usd") is None:
             raise ValueError("model controllers require --budget-usd")
-        if provider == "openrouter" and config["budget_usd"] > 50:
-            raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
+        controllers.check_allowance(provider, config["budget_usd"])
         if ledger is None:
             ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
     makers = controllers.factories({**config, "policy": ",".join(sorted(leaves))},

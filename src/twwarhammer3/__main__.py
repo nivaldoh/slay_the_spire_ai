@@ -9,7 +9,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from gameai.providers import PROVIDERS, get_provider
-from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES
+from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES, check_allowance
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
 from twwarhammer3.battle.watch import STALL_S
@@ -32,7 +32,7 @@ def add_session_arguments(parser: argparse.ArgumentParser) -> None:
                         help="capture up to four presentation stills and readable unit names")
 
 
-def run_rl(args) -> int:
+def run_rl(args, parser) -> int:
     """Game phases (checkpoint, audit, confirm's launch) hold the GPU lease, so no model
     process starts beside them; model phases refuse while the game runs."""
     import subprocess
@@ -90,7 +90,7 @@ def run_rl(args) -> int:
     return 0
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="twwarhammer3",
         description="Total War: WARHAMMER III custom battles for scripted and API-model policies",
@@ -305,363 +305,396 @@ def main() -> int:
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--provider", default="openai", choices=PROVIDERS)
     spend.add_argument("--ledger", type=Path, default=None, help="override the provider's ledger")
+    return parser
 
-    args = parser.parse_args()
 
-    if args.command == "benchmark":
-        from gameai.ledger import BudgetExhausted
-        from gameai.llm import APIError
-        from twwarhammer3.battle import benchmark
+def read_paths(path: Path) -> list[Path]:
+    """The paths a ``--jobs-file`` lists: a JSON list of nonempty strings."""
+    try:
+        names = json.loads(path.read_text())
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"cannot read --jobs-file: {exc}") from exc
+    if not isinstance(names, list) or any(not isinstance(name, str) or not name
+                                          for name in names):
+        raise ValueError("--jobs-file must contain a JSON list of paths")
+    return [Path(name) for name in names]
 
-        try:
-            if args.action == "author":
-                from gameai.ledger import Ledger
-                from gameai.provenance import committed_revision
-                from twwarhammer3.battle import suite
-                from twwarhammer3.battle.play import SOURCES
 
-                committed_revision("attributable graph authoring", SOURCES)
-                data = suite.author(args.plan, args.scenarios.split(","),
-                                    Ledger(LEDGERS["anthropic"], args.budget_usd, must_exist=True))
-            elif args.action == "plan" and args.stage == "suite":
-                from twwarhammer3.battle import suite
+def run_benchmark(args, parser) -> int:
+    from gameai.ledger import BudgetExhausted
+    from gameai.llm import APIError
+    from twwarhammer3.battle import benchmark
 
-                data = suite.make_plan(args.plan, args.scenarios.split(","),
-                                       args.arms.split(","), args.repeats, args.budget_usd,
-                                       seed=args.seed, start_before=args.start_before,
-                                       graphs=args.graphs)
-            elif args.action == "plan":
-                data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
-            else:
-                data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"),
-                                        args.also)
-        except (ValueError, OSError, APIError, BudgetExhausted) as exc:
-            parser.error(str(exc))
-        print(json.dumps(data, indent=2))
-        return 0
+    try:
+        if args.action == "author":
+            from gameai.ledger import Ledger
+            from gameai.provenance import committed_revision
+            from twwarhammer3.battle import suite
+            from twwarhammer3.battle.play import SOURCES
 
-    if args.command == "export":
-        from twwarhammer3.battle.export import export_traces
-
-        try:
-            paths = list(args.paths)
-            if args.jobs_file:
-                names = json.loads(args.jobs_file.read_text())
-                if not isinstance(names, list) or any(not isinstance(p, str) for p in names):
-                    raise ValueError("--jobs-file must contain a JSON list of paths")
-                paths += [Path(name) for name in names]
-            summary = export_traces(paths, args.output,
-                                    prompt_versions=tuple(args.prompt_version),
-                                    models=tuple(args.model),
-                                    prompt_hashes=tuple(args.prompt_sha256))
-        except (OSError, ValueError) as error:
-            parser.error(str(error))
-        print(json.dumps({"output": str(args.output), "counts": summary["counts"],
-                          "issues": summary["issues"]}, sort_keys=True))
-        return 0
-
-    if args.command == "rl":
-        return run_rl(args)
-
-    if args.command == "doctor":
-        from twwarhammer3.engine.doctor import collect_diagnostics, render_diagnostics
-
-        report = collect_diagnostics()
-        if args.json:
-            print(json.dumps(report, indent=2, sort_keys=True))
-        else:
-            print(render_diagnostics(report))
-        return 0 if report["status"] == "ready" else 1
-
-    if args.command == "coordinator":
-        from twwarhammer3.engine.worker import serve
-
-        try:
-            return serve(args.match, args.attempt, args.clients.split(","), port=args.port)
-        except (ValueError, FileExistsError) as error:
-            parser.error(str(error))
-
-    if args.command == "worker":
-        from twwarhammer3.engine import runtime
-        from twwarhammer3.engine.worker import MAX_MINUTES, run
-
-        if args.bridge and not args.attach:
-            parser.error("--bridge needs --attach: an owned game's mod reads C:/wh3-agent/bridge")
-        try:
-            return run(args.coordinator, args.token_file.read_text().strip(), match=args.match,
-                       attempt=args.attempt, client=args.client, mode=args.mode,
-                       attach=args.attach, bridge=args.bridge or runtime.BRIDGE_DIR,
-                       max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes),
-                       menu=args.menu, native=args.native_adapter)
-        except (RuntimeError, OSError, ValueError) as error:
-            print(f"worker: {error}", file=sys.stderr)
-            return 1
-        except KeyboardInterrupt:
-            print("worker: stopped", file=sys.stderr)
-            return 0
-
-    if args.command == "pack":
-        from twwarhammer3.engine import pack as packs
-        from twwarhammer3.engine.runtime import mod_files
-
-        if args.list:
-            for name, _, size, compressed in packs.read_index(args.list):
-                print(f"{size:>10} {'z' if compressed else ' '} {name}")
-            return 0
-        if args.extract:
-            sys.stdout.buffer.write(packs.extract(Path(args.extract[0]), args.extract[1]))
-            return 0
-        files = mod_files()
-        packs.write_pack(args.output, files)
-        print(f"{args.output}: {len(files)} files")
-        return 0
-
-    if args.command == "launch":
-        from twwarhammer3.battle.capture import PassiveCapture
-        from twwarhammer3.battle.play import session
-        from twwarhammer3.engine.mailbox import Mailbox
-        from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
-
-        job = f"launch-{datetime.now():%Y%m%d-%H%M%S}"
-        output = args.output or Path("runs/twwarhammer3") / job
-        output.mkdir(parents=True, exist_ok=True)
-        with RuntimeLock():
-            record = prepare_runtime()
-            write_json(output / "deployment.json", record)
-            print(json.dumps(record, sort_keys=True))
-            mailbox = Mailbox(BRIDGE_DIR, job=job)
-            mailbox.reset()
-            try:
-                with (mailbox.owned_session(session(vars(args))),
-                      OwnedGame(output / "game.log", timeout=args.timeout) as game,
-                      PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
-                                     enabled=args.stills)):
-                    print(json.dumps(game.info), flush=True)
-                    offsets = {"mod.log": 0, "menu.log": 0}
-                    while game.process.poll() is None:
-                        for name in offsets:
-                            text = mailbox.log_since(offsets[name], name)
-                            if text:
-                                offsets[name] += len(text.encode())
-                                print(f"{name}: {text.rstrip()}", flush=True)
-                        time.sleep(1)
-                    print("game exited", flush=True)
-            except KeyboardInterrupt:
-                print("stopping", flush=True)
-        return 0
-
-    if args.command == "menu":
-        from twwarhammer3.engine.mailbox import Mailbox
-        from twwarhammer3.engine.runtime import BRIDGE_DIR
-
-        if not (BRIDGE_DIR / "session.json").exists():
-            parser.error("menu needs an active launch session")
-        live = json.loads((BRIDGE_DIR / "session.json").read_text())
-        mailbox = Mailbox(BRIDGE_DIR, job=live["job"])
-        if args.steps:
-            steps = json.loads(args.steps.read_text())
-        elif args.dump is not None:
-            steps = [{"dump": "ui_tree.txt", "depth": args.dump}]
-            if args.find:
-                steps[0]["find"] = args.find
-        elif args.find:
-            steps = [{"find": args.find, "click": args.click}]
-        else:
-            parser.error("menu needs --steps, --dump or --find")
-        # The battle script runs menu.json steps too (the frontend is unloaded in battle).
-        log = "mod.log" if args.battle else "menu.log"
-        offset = mailbox.log_offset(log)
-        request = mailbox.write_menu(steps)
-        deadline = time.monotonic() + args.wait
-        while time.monotonic() < deadline:
-            text = mailbox.log_since(offset, log)
-            if text:
-                offset += len(text.encode())
-                print(text.rstrip(), flush=True)
-                lines = text.splitlines()
-                if any(line.endswith(f"menu {request}: failed") for line in lines):
-                    return 1
-                if any(line.endswith(f"menu {request}: done") for line in lines):
-                    return 0
-            time.sleep(0.5)
-        print("menu request timed out before completion", file=sys.stderr)
-        return 1
-
-    if args.command == "graph-author":
-        from gameai.ledger import BudgetExhausted, Ledger
-        from gameai.llm import APIError, InvalidReply
-        from gameai.provenance import committed_revision
-        from twwarhammer3.battle import graph_author
-        from twwarhammer3.battle.play import SOURCES
-
-        try:
             committed_revision("attributable graph authoring", SOURCES)
-            if args.provider == "openrouter" and args.budget_usd > 50:
-                raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
-            ledger = Ledger(args.ledger or LEDGERS[args.provider], args.budget_usd, must_exist=True)
-            manifest = graph_author.generate(
-                args.template, args.task, args.output, ledger,
-                model=args.model or next(iter(get_provider(args.provider).prices)),
-                effort=args.effort, provider=args.provider,
-                previous=args.previous, evidence=args.evidence,
-                starting_episode=args.starting_episode, initiators=args.initiator)
-        except (ValueError, OSError, BudgetExhausted, APIError, InvalidReply) as exc:
-            parser.error(str(exc))
-        print(json.dumps({"output": str(args.output), "status": manifest["status"],
-                          "totals": manifest["totals"]}))
-        return 0
+            data = suite.author(args.plan, args.scenarios.split(","),
+                                Ledger(LEDGERS["anthropic"], args.budget_usd, must_exist=True))
+        elif args.action == "plan" and args.stage == "suite":
+            from twwarhammer3.battle import suite
 
-    if args.command == "play":
-        from twwarhammer3.battle.controllers import factories, rotation
-        from twwarhammer3.battle.play import play as run_play
-
-        config = {key: value for key, value in vars(args).items()
-                  if key not in ("command", "output")}
-        if config.get("controller_config"):
-            config["controller_config"] = str(config["controller_config"].resolve())
-        config["model"] = args.model or next(iter(get_provider(args.provider).prices))
-        config.update(ledger=str(LEDGERS[args.provider]), results=str(RESULTS_PATH))
-        try:
-            rotation(config)
-            makers = factories(config)
-        except (ValueError, ImportError, AttributeError, FileNotFoundError) as exc:
-            parser.error(str(exc))
-        manifest = run_play(args.output, config, makers=makers)
-        return 0 if manifest["status"] == "completed" else 1
-
-    if args.command == "digest":
-        from twwarhammer3.battle.digest import decision_at, digest, units_digest
-
-        if not args.path.is_dir():
-            parser.error(f"no job or episode directory at {args.path}")
-        if args.units:
-            print(units_digest(args.path))
-        elif args.at is None:
-            print(digest(args.path))
-        elif (args.path / "trace.jsonl").exists():
-            print(decision_at(args.path, args.at))
+            data = suite.make_plan(args.plan, args.scenarios.split(","),
+                                   args.arms.split(","), args.repeats, args.budget_usd,
+                                   seed=args.seed, start_before=args.start_before,
+                                   graphs=args.graphs)
+        elif args.action == "plan":
+            data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
         else:
-            parser.error("--at needs an episode directory")
-        return 0
+            data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"),
+                                    args.also)
+    except (ValueError, OSError, APIError, BudgetExhausted) as exc:
+        parser.error(str(exc))
+    print(json.dumps(data, indent=2))
+    return 0
 
-    if args.command == "watch":
-        from twwarhammer3.battle.watch import follow, next_event
-        from twwarhammer3.engine.runtime import BRIDGE_DIR
 
-        if args.next:  # the job directory may not exist yet beside a starting play
-            if args.path is None or args.path.name.startswith("episode-"):
-                parser.error("--next needs the job directory")
-            print(next_event(args.path, args.stall_minutes * 60))
-            return 0
-        path = args.path or JOBS_ROOT / json.loads(
-            (BRIDGE_DIR / "session.json").read_text())["job"]
-        if not path.is_dir():
-            parser.error(f"no job or episode directory at {path}")
-        print(f"following {path}", flush=True)
-        try:
-            follow(path, args.prompts)
-        except KeyboardInterrupt:
-            pass
-        return 0
+def run_export(args, parser) -> int:
+    from twwarhammer3.battle.export import export_traces
 
-    if args.command == "card":
-        from twwarhammer3.battle.cards import CARDS, board
-
-        if args.name not in CARDS:
-            parser.error(f"unknown card {args.name!r}; cards: {', '.join(sorted(CARDS))}")
-        print(board(args.name, args.paths or None))
-        return 0
-
-    if args.command == "stats":
-        from twwarhammer3.battle.stats import summary
-
-        print(summary(args.results))
-        return 0
-
-    if args.command == "compare-peers":
-        from twwarhammer3.battle.peers import compare, compare_captures, load_capture
-
-        if bool(args.attempt) == bool(args.native):
-            parser.error("give an attempt directory or --native, not both")
-        if args.attempt and (args.packets or args.start is not None or args.end is not None):
-            parser.error("--packets, --start and --end need --native")
-        try:
-            if args.native:
-                captures, expected = {}, {}
-                for item in args.native:
-                    client, _, target = item.partition("=")
-                    path, _, generation = target.partition("#")
-                    captures[client] = load_capture(
-                        Path(path), generation=int(generation) if generation else None)
-                for item in args.packets:
-                    client, _, count = item.partition("=")
-                    command, _, number = count.partition(":")
-                    expected.setdefault(client, {})[int(command)] = int(number)
-                summary = compare_captures(captures, start=args.start, end=args.end,
-                                           expected_packets=expected)
-            else:
-                summary = compare(args.attempt)
-        except (OSError, ValueError) as exc:
-            parser.error(str(exc))
-        except (KeyError, TypeError, AttributeError) as exc:  # a shape unreadable() lets by
-            parser.error(f"{args.attempt or args.native}: evidence the comparison cannot read: "
-                         f"{type(exc).__name__}: {exc}")
-        print(json.dumps(summary, indent=1))
-        return 0
-
-    if args.command == "report":
-        from twwarhammer3.battle.report import collect, render
-        from twwarhammer3.battle.report_html import write
-
-        jobs = list(args.jobs)
+    try:
+        paths = list(args.paths)
         if args.jobs_file:
-            try:
-                listed = json.loads(args.jobs_file.read_text())
-            except (OSError, ValueError) as exc:
-                parser.error(f"cannot read --jobs-file: {exc}")
-            if not isinstance(listed, list) or any(not isinstance(p, str) or not p for p in listed):
-                parser.error("--jobs-file must contain a JSON list of job paths")
-            jobs.extend(Path(path) for path in listed)
-        if not jobs and not args.benchmark_plan:
-            parser.error("report needs JOB directories, --jobs-file or --benchmark-plan")
-        for job in jobs:
-            if not Path(job).is_dir():
-                parser.error(f"no job or episode directory at {job}")
-        for plan in args.benchmark_plan:
-            if not plan.is_file():
-                parser.error(f"no benchmark plan at {plan}")
-        data = (collect(jobs, benchmark_plans=args.benchmark_plan)
-                if args.benchmark_plan else collect(jobs))
-        text = render(data)
-        stem = args.output
-        stem.parent.mkdir(parents=True, exist_ok=True)
-        write(stem.with_name(stem.name + ".html"), data)  # first: it may need Pillow
-        write_json(stem.with_name(stem.name + ".json"), data)
-        stem.with_name(stem.name + ".txt").write_text(text + "\n")
-        print(text)
+            paths += read_paths(args.jobs_file)
+        summary = export_traces(paths, args.output,
+                                prompt_versions=tuple(args.prompt_version),
+                                models=tuple(args.model),
+                                prompt_hashes=tuple(args.prompt_sha256))
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    print(json.dumps({"output": str(args.output), "counts": summary["counts"],
+                      "issues": summary["issues"]}, sort_keys=True))
+    return 0
+
+
+def run_doctor(args, parser) -> int:
+    from twwarhammer3.engine.doctor import collect_diagnostics, render_diagnostics
+
+    report = collect_diagnostics()
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        print(render_diagnostics(report))
+    return 0 if report["status"] == "ready" else 1
+
+
+def run_coordinator(args, parser) -> int:
+    from twwarhammer3.engine.worker import serve
+
+    try:
+        return serve(args.match, args.attempt, args.clients.split(","), port=args.port)
+    except (ValueError, FileExistsError) as error:
+        parser.error(str(error))
+
+
+def run_worker(args, parser) -> int:
+    from twwarhammer3.engine import runtime
+    from twwarhammer3.engine.worker import MAX_MINUTES, run
+
+    if args.bridge and not args.attach:
+        parser.error("--bridge needs --attach: an owned game's mod reads C:/wh3-agent/bridge")
+    try:
+        return run(args.coordinator, args.token_file.read_text().strip(), match=args.match,
+                   attempt=args.attempt, client=args.client, mode=args.mode,
+                   attach=args.attach, bridge=args.bridge or runtime.BRIDGE_DIR,
+                   max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes),
+                   menu=args.menu, native=args.native_adapter)
+    except (RuntimeError, OSError, ValueError) as error:
+        print(f"worker: {error}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("worker: stopped", file=sys.stderr)
         return 0
 
-    if args.command == "graph-view":
-        from twwarhammer3.battle import graph_view
 
+def run_pack(args, parser) -> int:
+    from twwarhammer3.engine import pack as packs
+    from twwarhammer3.engine.runtime import mod_files
+
+    if args.list:
+        for name, _, size, compressed in packs.read_index(args.list):
+            print(f"{size:>10} {'z' if compressed else ' '} {name}")
+        return 0
+    if args.extract:
+        sys.stdout.buffer.write(packs.extract(Path(args.extract[0]), args.extract[1]))
+        return 0
+    files = mod_files()
+    packs.write_pack(args.output, files)
+    print(f"{args.output}: {len(files)} files")
+    return 0
+
+
+def run_launch(args, parser) -> int:
+    from twwarhammer3.battle.capture import PassiveCapture
+    from twwarhammer3.battle.play import session
+    from twwarhammer3.engine.mailbox import Mailbox
+    from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
+
+    job = f"launch-{datetime.now():%Y%m%d-%H%M%S}"
+    output = args.output or Path("runs/twwarhammer3") / job
+    output.mkdir(parents=True, exist_ok=True)
+    with RuntimeLock():
+        record = prepare_runtime()
+        write_json(output / "deployment.json", record)
+        print(json.dumps(record, sort_keys=True))
+        mailbox = Mailbox(BRIDGE_DIR, job=job)
+        mailbox.reset()
         try:
-            output = graph_view.write(args.paths, args.output)
-        except (OSError, ValueError, KeyError, TypeError) as exc:
-            parser.error(str(exc))
-        print(output)
-        return 0
+            with (mailbox.owned_session(session(vars(args))),
+                  OwnedGame(output / "game.log", timeout=args.timeout) as game,
+                  PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
+                                 enabled=args.stills)):
+                print(json.dumps(game.info), flush=True)
+                offsets = {"mod.log": 0, "menu.log": 0}
+                while game.process.poll() is None:
+                    for name in offsets:
+                        text = mailbox.log_since(offsets[name], name)
+                        if text:
+                            offsets[name] += len(text.encode())
+                            print(f"{name}: {text.rstrip()}", flush=True)
+                    time.sleep(1)
+                print("game exited", flush=True)
+        except KeyboardInterrupt:
+            print("stopping", flush=True)
+    return 0
 
-    if args.command == "spend":
-        from gameai.ledger import Ledger
 
-        path = args.ledger or LEDGERS[args.provider]
-        try:
-            ledger = Ledger(path, budget_usd=0, must_exist=True)
-        except FileNotFoundError as exc:
-            parser.error(str(exc))
-        print(f"${ledger.spent:.4f} spent ({path})")
-        return 0
+def run_menu(args, parser) -> int:
+    from twwarhammer3.engine.mailbox import Mailbox
+    from twwarhammer3.engine.runtime import BRIDGE_DIR
+
+    if not (BRIDGE_DIR / "session.json").exists():
+        parser.error("menu needs an active launch session")
+    live = json.loads((BRIDGE_DIR / "session.json").read_text())
+    mailbox = Mailbox(BRIDGE_DIR, job=live["job"])
+    if args.steps:
+        steps = json.loads(args.steps.read_text())
+    elif args.dump is not None:
+        steps = [{"dump": "ui_tree.txt", "depth": args.dump}]
+        if args.find:
+            steps[0]["find"] = args.find
+    elif args.find:
+        steps = [{"find": args.find, "click": args.click}]
+    else:
+        parser.error("menu needs --steps, --dump or --find")
+    # The battle script runs menu.json steps too (the frontend is unloaded in battle).
+    log = "mod.log" if args.battle else "menu.log"
+    offset = mailbox.log_offset(log)
+    request = mailbox.write_menu(steps)
+    deadline = time.monotonic() + args.wait
+    while time.monotonic() < deadline:
+        text = mailbox.log_since(offset, log)
+        if text:
+            offset += len(text.encode())
+            print(text.rstrip(), flush=True)
+            lines = text.splitlines()
+            if any(line.endswith(f"menu {request}: failed") for line in lines):
+                return 1
+            if any(line.endswith(f"menu {request}: done") for line in lines):
+                return 0
+        time.sleep(0.5)
+    print("menu request timed out before completion", file=sys.stderr)
     return 1
+
+
+def run_graph_author(args, parser) -> int:
+    from gameai.ledger import BudgetExhausted, Ledger
+    from gameai.llm import APIError, InvalidReply
+    from gameai.provenance import committed_revision
+    from twwarhammer3.battle import graph_author
+    from twwarhammer3.battle.play import SOURCES
+
+    try:
+        committed_revision("attributable graph authoring", SOURCES)
+        check_allowance(args.provider, args.budget_usd)
+        ledger = Ledger(args.ledger or LEDGERS[args.provider], args.budget_usd, must_exist=True)
+        manifest = graph_author.generate(
+            args.template, args.task, args.output, ledger,
+            model=args.model or next(iter(get_provider(args.provider).prices)),
+            effort=args.effort, provider=args.provider,
+            previous=args.previous, evidence=args.evidence,
+            starting_episode=args.starting_episode, initiators=args.initiator)
+    except (ValueError, OSError, BudgetExhausted, APIError, InvalidReply) as exc:
+        parser.error(str(exc))
+    print(json.dumps({"output": str(args.output), "status": manifest["status"],
+                      "totals": manifest["totals"]}))
+    return 0
+
+
+def run_play(args, parser) -> int:
+    from twwarhammer3.battle.controllers import factories, rotation
+    from twwarhammer3.battle.play import play as run_play
+
+    config = {key: value for key, value in vars(args).items()
+              if key not in ("command", "output")}
+    if config.get("controller_config"):
+        config["controller_config"] = str(config["controller_config"].resolve())
+    config["model"] = args.model or next(iter(get_provider(args.provider).prices))
+    config.update(ledger=str(LEDGERS[args.provider]), results=str(RESULTS_PATH))
+    try:
+        rotation(config)
+        makers = factories(config)
+    except (ValueError, ImportError, AttributeError, FileNotFoundError) as exc:
+        parser.error(str(exc))
+    manifest = run_play(args.output, config, makers=makers)
+    return 0 if manifest["status"] == "completed" else 1
+
+
+def run_digest(args, parser) -> int:
+    from twwarhammer3.battle.digest import decision_at, digest, units_digest
+
+    if not args.path.is_dir():
+        parser.error(f"no job or episode directory at {args.path}")
+    if args.units:
+        print(units_digest(args.path))
+    elif args.at is None:
+        print(digest(args.path))
+    elif (args.path / "trace.jsonl").exists():
+        print(decision_at(args.path, args.at))
+    else:
+        parser.error("--at needs an episode directory")
+    return 0
+
+
+def run_watch(args, parser) -> int:
+    from twwarhammer3.battle.watch import follow, next_event
+    from twwarhammer3.engine.runtime import BRIDGE_DIR
+
+    if args.next:  # the job directory may not exist yet beside a starting play
+        if args.path is None or args.path.name.startswith("episode-"):
+            parser.error("--next needs the job directory")
+        print(next_event(args.path, args.stall_minutes * 60))
+        return 0
+    path = args.path or JOBS_ROOT / json.loads(
+        (BRIDGE_DIR / "session.json").read_text())["job"]
+    if not path.is_dir():
+        parser.error(f"no job or episode directory at {path}")
+    print(f"following {path}", flush=True)
+    try:
+        follow(path, args.prompts)
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+
+def run_card(args, parser) -> int:
+    from twwarhammer3.battle.cards import CARDS, board
+
+    if args.name not in CARDS:
+        parser.error(f"unknown card {args.name!r}; cards: {', '.join(sorted(CARDS))}")
+    print(board(args.name, args.paths or None))
+    return 0
+
+
+def run_stats(args, parser) -> int:
+    from twwarhammer3.battle.stats import summary
+
+    print(summary(args.results))
+    return 0
+
+
+def run_compare_peers(args, parser) -> int:
+    from twwarhammer3.battle.peers import compare, compare_captures, load_capture
+
+    if bool(args.attempt) == bool(args.native):
+        parser.error("give an attempt directory or --native, not both")
+    if args.attempt and (args.packets or args.start is not None or args.end is not None):
+        parser.error("--packets, --start and --end need --native")
+    try:
+        if args.native:
+            captures, expected = {}, {}
+            for item in args.native:
+                client, _, target = item.partition("=")
+                path, _, generation = target.partition("#")
+                captures[client] = load_capture(
+                    Path(path), generation=int(generation) if generation else None)
+            for item in args.packets:
+                client, _, count = item.partition("=")
+                command, _, number = count.partition(":")
+                expected.setdefault(client, {})[int(command)] = int(number)
+            summary = compare_captures(captures, start=args.start, end=args.end,
+                                       expected_packets=expected)
+        else:
+            summary = compare(args.attempt)
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
+    except (KeyError, TypeError, AttributeError) as exc:  # a shape unreadable() lets by
+        parser.error(f"{args.attempt or args.native}: evidence the comparison cannot read: "
+                     f"{type(exc).__name__}: {exc}")
+    print(json.dumps(summary, indent=1))
+    return 0
+
+
+def run_report(args, parser) -> int:
+    from twwarhammer3.battle.report import collect, render
+    from twwarhammer3.battle.report_html import write
+
+    jobs = list(args.jobs)
+    if args.jobs_file:
+        try:
+            jobs += read_paths(args.jobs_file)
+        except ValueError as exc:
+            parser.error(str(exc))
+    if not jobs and not args.benchmark_plan:
+        parser.error("report needs JOB directories, --jobs-file or --benchmark-plan")
+    for job in jobs:
+        if not Path(job).is_dir():
+            parser.error(f"no job or episode directory at {job}")
+    for plan in args.benchmark_plan:
+        if not plan.is_file():
+            parser.error(f"no benchmark plan at {plan}")
+    data = (collect(jobs, benchmark_plans=args.benchmark_plan)
+            if args.benchmark_plan else collect(jobs))
+    text = render(data)
+    stem = args.output
+    stem.parent.mkdir(parents=True, exist_ok=True)
+    write(stem.with_name(stem.name + ".html"), data)  # first: it may need Pillow
+    write_json(stem.with_name(stem.name + ".json"), data)
+    stem.with_name(stem.name + ".txt").write_text(text + "\n")
+    print(text)
+    return 0
+
+
+def run_graph_view(args, parser) -> int:
+    from twwarhammer3.battle import graph_view
+
+    try:
+        output = graph_view.write(args.paths, args.output)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        parser.error(str(exc))
+    print(output)
+    return 0
+
+
+def run_spend(args, parser) -> int:
+    from gameai.ledger import Ledger
+
+    path = args.ledger or LEDGERS[args.provider]
+    try:
+        ledger = Ledger(path, budget_usd=0, must_exist=True)
+    except FileNotFoundError as exc:
+        parser.error(str(exc))
+    print(f"${ledger.spent:.4f} spent ({path})")
+    return 0
+
+
+COMMANDS = {"benchmark": run_benchmark, "export": run_export, "rl": run_rl,
+            "doctor": run_doctor, "coordinator": run_coordinator, "worker": run_worker,
+            "pack": run_pack, "launch": run_launch, "menu": run_menu,
+            "graph-author": run_graph_author, "play": run_play, "digest": run_digest,
+            "watch": run_watch, "card": run_card, "stats": run_stats,
+            "compare-peers": run_compare_peers, "report": run_report,
+            "graph-view": run_graph_view, "spend": run_spend}
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    return COMMANDS[args.command](args, parser)
 
 
 if __name__ == "__main__":

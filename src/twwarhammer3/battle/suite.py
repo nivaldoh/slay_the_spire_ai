@@ -22,7 +22,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
-from twwarhammer3.battle.benchmark import EFFORT, MODEL, SUITE, collect
+from twwarhammer3.battle.benchmark import EFFORT, LAUNCH_ARGS, MODEL, SUITE, collect
 from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
 
@@ -159,9 +159,7 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
     for repeat in range(1, repeats + 1):
         for scenario, arm in rng.sample(pairs, len(pairs)):
             directory = output.parent / output.stem / f"{scenario}--{arm}--{repeat}"
-            args = ["--scenario", scenario, *ARMS[arm], "--episodes", "1",
-                    "--start-timeout", "900", "--episode-timeout", "1320",
-                    "--run-timeout", "2280"]
+            args = ["--scenario", scenario, *ARMS[arm], "--episodes", "1", *LAUNCH_ARGS]
             if arm == "gap":
                 args += ["--controller-config", str(written_graphs(graphs, scenario))]
             if PAID[0] in args:

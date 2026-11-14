@@ -41,6 +41,16 @@ def prompt_path(base: str, profile: str | None) -> Path:
 
 VERSIONS = {"llm": "v23", "llm_rules": "v23", "commander": "v8", "skills": "v1.2",
             "team_llm_rules": "v23+t2"}
+# The owner's OpenRouter allowance, shared by both games (AGENTS.md, Evidence).
+OPENROUTER_ALLOWANCE_USD = 50
+
+
+def check_allowance(provider: str, budget_usd: float) -> None:
+    """Refuse a cumulative ledger cap above the owner's OpenRouter allowance; $50 itself is
+    allowed."""
+    if provider == "openrouter" and budget_usd > OPENROUTER_ALLOWANCE_USD:
+        raise ValueError("OpenRouter's cumulative budget cannot exceed"
+                         f" ${OPENROUTER_ALLOWANCE_USD}")
 
 
 class Controller(Protocol):
@@ -184,8 +194,7 @@ def factories(config: dict, *, _ledger=None) -> dict:
             validate(provider, model, effort)
         config["model_routing"] = {parts[name][1]: routing(provider, parts[name][1])
                                    for name in sorted(models)}
-        if provider == "openrouter" and config["budget_usd"] > 50:
-            raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
+        check_allowance(provider, config["budget_usd"])
         if ledger is None:
             ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
         key = api_key(provider)

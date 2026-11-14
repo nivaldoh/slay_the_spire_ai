@@ -32,6 +32,11 @@ BATTLE_USD = 2
 SUITE_CALL_LIMIT = 5000
 SUITE_BATTLE_USD = 3
 READ_TIMEOUT_S = 60
+# One battle per fresh launch: the play limits every benchmark plan passes and validate_config
+# requires (seconds).
+START_TIMEOUT_S, EPISODE_TIMEOUT_S, RUN_TIMEOUT_S = 900, 1320, 2280
+LAUNCH_ARGS = ["--start-timeout", str(START_TIMEOUT_S), "--episode-timeout",
+               str(EPISODE_TIMEOUT_S), "--run-timeout", str(RUN_TIMEOUT_S)]
 FACTORS = {"wavering": .8, "routing": .5, "shattered": 0}
 OUTCOMES = {"won": 2, "draw": 1, "lost": 0}
 # JUDGEMENT: Initial model screen — Codex, 2026-11-02, under the owner's cheap-Anthropic
@@ -178,11 +183,12 @@ def validate_config(scenario, config):
     if (len(names) != 1 or names[0].partition("@")[0] not in allowed
             or config.get("episodes") != 1 or config.get("attach")
             or config.get("interval_ms", 0) or str(config.get("delay_seconds", "0")) != "0"
-            or config.get("start_timeout") != 900 or config.get("episode_timeout") != 1320
+            or config.get("start_timeout") != START_TIMEOUT_S
+            or config.get("episode_timeout") != EPISODE_TIMEOUT_S
             or config.get("observe_ms") != 1000 or config.get("tick_ms") != 250):
         raise ValueError(f"{scenario['benchmark']} requires one fresh launch/battle, a frozen"
-                         " controller, no added waits, 900/1320 s caps and 1000/250 ms"
-                         " observation/tick")
+                         f" controller, no added waits, {START_TIMEOUT_S}/{EPISODE_TIMEOUT_S} s"
+                         " caps and 1000/250 ms observation/tick")
 
 
 def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
@@ -200,7 +206,7 @@ def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
         directory = output.parent / f"{output.stem}-{index + 1:02d}"
         args = ["--scenario", SCENARIO, "--policy", controller, "--episodes", "1",
                 "--provider", "anthropic", "--budget-usd", str(budget_usd), "--stills",
-                "--start-timeout", "900", "--episode-timeout", "1320", "--run-timeout", "2280"]
+                *LAUNCH_ARGS]
         jobs.append({"output": str(directory.resolve()), "args": args, "controller": controller})
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"],
                                        cwd=REPO_ROOT, text=True).strip()

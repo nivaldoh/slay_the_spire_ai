@@ -2374,8 +2374,8 @@ source = "2026-11-02 cleanup test-gap batch wh3-tests"
 id = "graph-author-allows-openrouter-over-50"
 guards = "graph-author refuses an OpenRouter budget over the owner's $50"
 file = "src/twwarhammer3/__main__.py"
-old = 'if args.provider == "openrouter" and args.budget_usd > 50:'
-new = 'if False:'
+old = 'check_allowance(args.provider, args.budget_usd)'
+new = 'pass'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py::test_author_cli_keeps_openrouter_within_the_owners_50_dollars"]
 source = "2026-11-02 cleanup test-gap batch wh3-tests"
 
@@ -2900,18 +2900,27 @@ source = "2026-11-02 checkpoint survivor tests"
 [[plant]]
 id = "configured-openrouter-cap-refuses-exactly-50"
 guards = "An OpenRouter goal budget of exactly $50 is allowed (owner: cannot exceed $50)"
-file = "src/twwarhammer3/battle/configured.py"
-old = 'if provider == "openrouter" and config["budget_usd"] > 50:'
-new = 'if provider == "openrouter" and config["budget_usd"] >= 50:'
+file = "src/twwarhammer3/battle/controllers.py"
+old = 'if provider == "openrouter" and budget_usd > OPENROUTER_ALLOWANCE_USD:'
+new = 'if provider == "openrouter" and budget_usd >= OPENROUTER_ALLOWANCE_USD:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
 source = "2026-11-02 GaP survivors (cleanup batch gap)"
 
 [[plant]]
+id = "configured-skips-the-openrouter-allowance"
+guards = "A configured job with goal models refuses an OpenRouter budget over the owner's $50"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'controllers.check_allowance(provider, config["budget_usd"])'
+new = 'pass'
+tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
+source = "2026-11-14 code-quality: the cap moved to controllers.check_allowance"
+
+[[plant]]
 id = "configured-openrouter-cap-limits-every-provider"
 guards = "The $50 OpenRouter cap does not limit another provider's budget"
-file = "src/twwarhammer3/battle/configured.py"
-old = 'if provider == "openrouter" and config["budget_usd"] > 50:'
-new = 'if provider == "openrouter" or config["budget_usd"] > 50:'
+file = "src/twwarhammer3/battle/controllers.py"
+old = 'if provider == "openrouter" and budget_usd > OPENROUTER_ALLOWANCE_USD:'
+new = 'if provider == "openrouter" or budget_usd > OPENROUTER_ALLOWANCE_USD:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
 source = "2026-11-02 GaP survivors (cleanup batch gap)"
 
