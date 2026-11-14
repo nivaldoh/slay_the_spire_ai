@@ -4425,3 +4425,13 @@ new = '''    for result in ack.get("results", []):
             sent.pop(result.get("unit"), None)'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_script_recovery.py"]
 source = "2026-11-14 code-quality: the witnesses' copied acknowledge became scripted.forget_refused"
+
+[[plant]]
+id = "lua-army-orders-skip-the-deployment-refusal"
+guards = "The army's own orders are refused with deployment until the battle starts"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
+        local apply = '''
+new = '''        local apply = '''
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py::test_orders_for_unknown_units_or_before_deployment_ends_are_refused"]
+source = "2026-11-14 code-quality: apply_order's three army branches became one"

@@ -1669,19 +1669,13 @@ local function apply_order(order)
     if state.multiplayer and (order.unit == "army" or order.type ~= "move" or order.queue) then
         return {unit = order.unit, ok = false, error = "unsupported_in_multiplayer"}
     end
-    if order.unit == "army" and order.type == "reinforce" then
+    -- The army's own orders: a reinforcement purchase, a building or an army ability.
+    if order.unit == "army" and (order.type == "reinforce" or order.type == "build"
+                                 or order.type == "ability") then
         if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
-        local ok, err = pcall(apply_reinforce, order)
-        return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
-    end
-    if order.unit == "army" and order.type == "build" then
-        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
-        local ok, err = pcall(apply_build, order)
-        return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
-    end
-    if order.unit == "army" and order.type == "ability" then
-        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
-        local ok, err = pcall(apply_army_ability, order)
+        local apply = ({reinforce = apply_reinforce, build = apply_build,
+                        ability = apply_army_ability})[order.type]
+        local ok, err = pcall(apply, order)
         return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
     end
     local entry = state.friendly[order.unit]
