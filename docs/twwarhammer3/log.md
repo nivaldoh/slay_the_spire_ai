@@ -29,6 +29,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-14: Controller-file cleanup, Lua included, and two splits
+
+Claude, second and third rounds of the same goal; answers in owner-direction.md ("Everything now",
+"Do both now"). Offline, $0, no game. No behaviour change except as stated in the commits.
+- Source hashes change for llm, team, scripted, camp, wall_defence, escalade, cannae, lines,
+  local_scripts, reference and support_timing. The Lua's pack hash changes too, and with it
+  every card cell's setup identity; card-board cells mixing earlier runs are starred.
+- `LLMPolicy.prompt_suffix` replaces TeamLLM's patched `ask`; one `team.stop_guarded`; `llm.py`
+  names `benchmark.VERSION`/`SUITE`; the ticket line is a loop.
+- Identical witness helpers live once (`forget_refused`, `nearest`, `find`, `distance`, `able`).
+- The Lua `apply_order` has one army-order branch, chosen by type. A first version chose by
+  lookup and failed 3 Lua tests.
+- The diagram check moved from `check.py` to `scripts/diagram_files.py`. Plans moved from
+  `benchmark.py` to `benchmark_plans.py`, and `report.plan_report` writes a mirror plan's
+  report.
+- Not done, with reasons in the commits: a controller base class (finding 7, three no-op
+  methods), merging the witnesses' differing `_send` lapse rules (behaviour), and
+  replay_schedule's `digest`.
+- Code page: four views re-pinned to the changed lines (graph, members, methods, map); the check
+  flags 0 of 6. A citation refresh, not a full-view review.
+- Checks: `check.py` passed before each commit (4170 passed, 70 skipped in the worktree);
+  plants retargeted (23) and added (4, all caught). A fresh reviewer and a full plant replay
+  ran before merging (handoff).
+- Unverified: no live run; the Lua change rests on the Lua tests' simulated game APIs.
+
 ## 2026-11-14: Code-quality cleanup without behaviour change
 
 Claude, at the owner's goal "Review and address the issues identified" after a read-only review

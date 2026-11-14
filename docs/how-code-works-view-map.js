@@ -308,6 +308,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/evidence_rules.py",
         "src/twwarhammer3/battle/exact_stats.py",
         "src/twwarhammer3/battle/benchmark.py",
+        "src/twwarhammer3/battle/benchmark_plans.py",
         "src/twwarhammer3/battle/suite.py",
         "src/twwarhammer3/battle/report.py",
         "src/twwarhammer3/battle/report_html.py",
@@ -323,12 +324,13 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/benchmark_jobs.json"
       ],
       "status": "built, component tests only",
-      "commit": "bdfee38",
+      "commit": "9dc3731",
       "refs": [
         "src/twwarhammer3/battle/stats.py:1-3",
         "src/twwarhammer3/battle/report.py:1",
         "docs/twwarhammer3/results.csv",
-        "src/twwarhammer3/battle/benchmark.py:1-6",
+        "src/twwarhammer3/battle/benchmark.py:1-4",
+        "src/twwarhammer3/battle/benchmark_plans.py:1-6",
         "src/twwarhammer3/battle/suite.py:1-11"
       ]
     },

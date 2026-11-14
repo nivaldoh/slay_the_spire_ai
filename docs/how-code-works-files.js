@@ -150,7 +150,7 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/benchmark_plans.py",
    "text": "frozen benchmark plans and every planned attempt read back",
-   "box": null,
+   "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
