@@ -12,7 +12,9 @@ Both games:
   calibration, llm, skills, local_team and the witness modules wait for a version bump); one
   rule for trace readers' truncated or invalid lines: "Leave as is (Recommended)"; fixture-only
   edits to tests the agreed check `pytest -ra tests/twwarhammer3` names: "Yes, fixtures only
-  (Recommended)". Branch `code-quality-20261114`.
+  (Recommended)". Branch `code-quality-20261114`. Then, on the branch's five retargeted plants
+  and three path-only JUDGEMENT edits (rests-on now names protocol.py): "Approve all
+  (Recommended)"; on landing it with this morning's 7 unpushed commits: "Merge and push all".
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.
