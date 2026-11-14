@@ -67,10 +67,11 @@ from gameai import windows
 from gameai.provenance import REPO_ROOT, sha256, source_fingerprints
 from twwarhammer3.battle import setup
 from twwarhammer3.battle.play import SOURCES
-from twwarhammer3.engine import pack, runtime
+from twwarhammer3.engine import runtime
 from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.multiplayer_adapter import REQUEST_S, Helper
+from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import IllegalActionError, validate_orders
 
 ROOT = REPO_ROOT / "runs/twwarhammer3/native-multiplayer"
@@ -122,11 +123,6 @@ def source_sha256() -> str:
     files = {Path(name).as_posix(): digest
              for name, digest in source_fingerprints(SOURCES).items()}
     return hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
-
-
-def pack_sha256() -> str:
-    """The pack this checkout's mod source builds, hashed in memory (nothing is installed)."""
-    return hashlib.sha256(pack.pack_bytes(runtime.mod_files())).hexdigest()
 
 
 def expected_manifest() -> dict:

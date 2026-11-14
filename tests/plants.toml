@@ -3750,8 +3750,8 @@ source = "2026-11-05 card-tests: the far side of the exact radius"
 id = "public-copies-the-reserve-side-into-mode"
 guards = "A branch label nested in the public mode section fails B's input differentials (cannae-comparison.md item 1)"
 file = "src/twwarhammer3/battle/play.py"
-old = '''view["reserve_briefing"] = briefing(scenario)'''
-new = '''view["reserve_briefing"] = briefing(scenario)
+old = '''view["reserve_briefing"] = reserve.briefing(scenario)'''
+new = '''view["reserve_briefing"] = reserve.briefing(scenario)
         view["mode"] = {**(view.get("mode") or {}), "side": scenario["reserve"].get("side")}'''
 tests = ["tests/twwarhammer3/test_wh3_reserve.py::test_complete_policy_inputs_do_not_depend_on_future_assignment_and_a_nested_plant_is_detected", "tests/twwarhammer3/test_wh3_foreknowledge.py::test_public_rules_invariant_but_announced_choice_matches_same_episode_activation"]
 source = "2026-11-05 benchmark audit, boundary m30; replaces the two dict plants in those tests"

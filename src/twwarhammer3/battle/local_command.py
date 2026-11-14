@@ -8,6 +8,7 @@ These are trusted adapters, not a sandbox for arbitrary Python/tool submissions.
 from copy import deepcopy
 from math import hypot
 
+from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
 from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS, TeamHarnessError
 
 # JUDGEMENT: Local command development profile — Codex, 2026-11-05: local view 160 m,
@@ -48,8 +49,6 @@ def bind(placements, friendly):
     The 25 m tolerance is the existing setup contract (setup.DEPLOYMENT_TOLERANCE_M).
     No tactical regrouping from changing positions or later roster ordering is allowed.
     """
-    from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
-
     if len(placements) != 9:
         raise TeamHarnessError("local command requires the declared nine-regiment army")
     used, slots = set(), []

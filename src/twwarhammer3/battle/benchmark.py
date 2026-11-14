@@ -17,6 +17,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, post
 from gameai.provenance import REPO_ROOT, write_json
+from twwarhammer3.battle import setup
 
 VERSION = "mirror-v1"
 SUITE = "suite-v1"  # the coordination suite; its plan, measures and report are in suite.py
@@ -193,8 +194,6 @@ def validate_config(scenario, config):
 
 def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
     """Write a queue plan without launching or paying; the existing queue executes it once."""
-    from twwarhammer3.battle.setup import scenarios
-
     if output.exists():
         raise ValueError(f"plan already exists: {output}")
     if not math.isfinite(budget_usd) or not 0 < budget_usd <= 200:
@@ -211,7 +210,7 @@ def make_plan(output: Path, stage: str, budget_usd: float) -> dict:
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"],
                                        cwd=REPO_ROOT, text=True).strip()
     plan = {"benchmark": VERSION, "source_revision": revision, "stage": stage,
-            "scenario": scenarios()[SCENARIO],
+            "scenario": setup.scenarios()[SCENARIO],
             "purpose": "exploratory initial mirror benchmark; no reliable ranking claim",
             "preparation_usd": 0, "cumulative_ledger_cap_usd": budget_usd,
             "keep_going": stage == "model", "jobs": jobs}
@@ -365,6 +364,7 @@ def collect(plan_path: Path) -> dict:
 
 
 def report(plan_path: Path, output: Path, more: list[Path] | None = None) -> dict:
+    # report and suite import this module.
     from twwarhammer3.battle import report as trials
     from twwarhammer3.battle import report_html
 

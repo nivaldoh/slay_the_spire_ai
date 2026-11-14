@@ -9,6 +9,7 @@ startup cinematic; those changes persist for ordinary Steam launches.
 """
 
 import functools
+import hashlib
 import os
 import re
 import shutil
@@ -88,6 +89,12 @@ def running_pids() -> str:
 
 def mod_files() -> dict[str, bytes]:
     return pack.files_in(MOD_SOURCE)
+
+
+def pack_sha256() -> str:
+    """The hash of the pack this checkout's mod source builds, the one prepare_runtime would
+    install now; built in memory, nothing is installed."""
+    return hashlib.sha256(pack.pack_bytes(mod_files())).hexdigest()
 
 
 def mod_list_text(working_directory: str) -> str:

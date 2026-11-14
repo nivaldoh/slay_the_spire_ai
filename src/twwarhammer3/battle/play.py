@@ -31,6 +31,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
+from twwarhammer3.battle import benchmark, local_team, reserve
 from twwarhammer3.battle.capture import (
     PassiveCapture,
     copy_presentation,
@@ -128,21 +129,15 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     fill_timeouts(scenario, config)
     validate_declaration(scenario, config)
     check_job(scenario, output.name)
-    from twwarhammer3.battle.local_team import validate_config as validate_local_config
-
-    validate_local_config(scenario, config)
-    from twwarhammer3.battle.benchmark import validate_config
-
-    validate_config(scenario, config)
+    local_team.validate_config(scenario, config)
+    benchmark.validate_config(scenario, config)
     environment = collect_diagnostics()
     steps = scenario_steps(scenario, build_id=environment.get("game", {}).get("steam_build_id"))
     revision = committed_revision("attributable battles", SOURCES)
     files = source_fingerprints(SOURCES)
     reserve_draws = None
     if scenario.get("reserve"):
-        from twwarhammer3.battle.reserve import sequence
-
-        reserve_draws = sequence(scenario, len(trials), seed=config.get("reserve_seed"))
+        reserve_draws = reserve.sequence(scenario, len(trials), seed=config.get("reserve_seed"))
     output.mkdir(parents=True)
     write_json(output / "environment.json", environment)
     manifest = {
@@ -176,11 +171,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 raise RuntimeError("Implementation changed during the job; stopped")
             trial_scenario = scenario
             if scenario.get("reserve"):
-                from twwarhammer3.battle.reserve import episode_scenario
-
                 draw = manifest["reserve_draws"][index]
                 mailbox.write_session({**settings, "reserve": draw})
-                trial_scenario = episode_scenario(scenario, draw)
+                trial_scenario = reserve.episode_scenario(scenario, draw)
             if index:
                 mailbox.write_control(previous, "restart")
             directory = output / f"episode-{index:04d}"
@@ -201,9 +194,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 "episode", "status", "battle_s", "decisions", "invalid", "delay_s", "error",
             )}, sort_keys=True), flush=True)
             if scenario.get("benchmark"):
-                from twwarhammer3.battle.benchmark import evaluate
-
-                assessment = evaluate(result)
+                assessment = benchmark.evaluate(result)
                 if assessment["outcome"] and assessment["condition"] is None:
                     manifest["error"] = "terminal condition unavailable: " + str(
                         assessment["unavailable"])
@@ -653,9 +644,7 @@ def public(observation: dict, scenario: dict) -> dict:
     if scenario.get("benchmark") and view.get("mode"):
         view["mode"] = {**view["mode"], "benchmark": scenario["benchmark"]}
     if scenario.get("reserve"):
-        from twwarhammer3.battle.reserve import briefing
-
-        view["reserve_briefing"] = briefing(scenario)
+        view["reserve_briefing"] = reserve.briefing(scenario)
     return view
 
 
@@ -790,13 +779,11 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             record_ending(result, observation, scenario)
             timer, ended_by = observation.get("timer") or {}, result["engine_ending"]["ended_by"]
         if scenario.get("reserve") and "scenario" in result:
-            from twwarhammer3.battle.reserve import check
-
             evidence = (observation.get("evaluation") or {}).get("reserve")
             if evidence != result.get("reserve"):
                 event("reserve", time_ms=observation["time_ms"], evidence=evidence)
             result["reserve"] = evidence
-            check(scenario, observation)
+            reserve.check(scenario, observation)
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             applied_ms = _acknowledge(result, outstanding, ack, policy, event)

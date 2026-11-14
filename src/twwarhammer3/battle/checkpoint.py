@@ -31,9 +31,10 @@ from gameai.windows import windows_path
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
 from twwarhammer3.battle import play, setup
-from twwarhammer3.engine import pack, runtime
+from twwarhammer3.engine import runtime
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
+from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import scenario_key, validate_orders
 
 ENGINE = Path(__file__).resolve().parents[1] / "engine"
@@ -823,11 +824,6 @@ def reward(attempt: dict) -> int | None:
 
 
 AGENT_FIELDS = ("name", "tick", "checksum", "lua_seed", "seed_at_tick")
-
-
-def pack_sha256() -> str:
-    """The hash of the pack prepare_runtime would install now."""
-    return hashlib.sha256(pack.pack_bytes(runtime.mod_files())).hexdigest()
 
 
 def source_records(source: Path, library: Path, *, root: str, late_margin_s: float) -> list[dict]:

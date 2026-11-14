@@ -22,7 +22,10 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
+from twwarhammer3.battle import graph_author, report_html, setup
+from twwarhammer3.battle import report as trials
 from twwarhammer3.battle.benchmark import EFFORT, LAUNCH_ARGS, MODEL, SUITE, collect
+from twwarhammer3.battle.play import account_stop
 from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
 
@@ -90,11 +93,7 @@ def author(directory, scenario_names, ledger, *, send=None):
     stop or an account-limit refusal stops the run (2026-11-08 audit BQ4; owner, 2026-11-13: "Fix
     both now (Recommended)").
     """
-    from twwarhammer3.battle import graph_author
-    from twwarhammer3.battle.play import account_stop
-    from twwarhammer3.battle.setup import scenarios
-
-    known, directory, totals = scenarios(), Path(directory), {}
+    known, directory, totals = setup.scenarios(), Path(directory), {}
     for name in scenario_names:
         for attempt in range(1, AUTHOR_TRIES + 1):
             try:
@@ -126,8 +125,6 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
 
     Shuffling pairs, not arms inside a scenario, spreads a scenario's battles over the night
     and keeps one broken scenario from failing twice in a row and stopping the queue."""
-    from twwarhammer3.battle.setup import scenarios
-
     output = Path(output)
     if output.exists():
         raise ValueError(f"plan already exists: {output}")
@@ -135,7 +132,7 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
         raise ValueError("budget must be a positive cumulative ledger cap, at most $200")
     if repeats < 1:
         raise ValueError("a plan needs at least one repeat")
-    known = scenarios()
+    known = setup.scenarios()
     if "gap" in arm_names and not graphs:
         raise ValueError("the gap arm needs --graphs, a directory of authored scenarios")
     for name in scenario_names:
@@ -569,9 +566,6 @@ def gather(plans):
 
 def report(plans, output):
     """Text, JSON and the one visual report: its replays, with the suite's tables on top."""
-    from twwarhammer3.battle import report as trials
-    from twwarhammer3.battle import report_html
-
     data = gather(plans)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)

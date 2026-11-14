@@ -9,21 +9,19 @@ from threading import Event
 from gameai.ledger import Ledger
 from gameai.llm import APIError, Model, api_key, post
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import benchmark, graph, graph_goals, team
+from twwarhammer3.battle import benchmark, controllers, graph, graph_goals, local_team, team
 from twwarhammer3.battle.setup import scenarios
 
 
 def load(path, config):
     """Resolve and validate data without credentials, budgets, models or game access."""
-    from twwarhammer3.battle import controllers
-
     path = Path(path).resolve()
     artifact = None
     manifest = path / "manifest.json" if path.is_dir() else path.parent / "manifest.json"
     if path.is_dir() and not manifest.is_file():
         raise ValueError("controller artifact needs manifest.json")
     if (path.is_dir() or path.name == "controller.json") and manifest.is_file():
-        from twwarhammer3.battle import graph_author
+        from twwarhammer3.battle import graph_author  # it imports this module
 
         metadata = json.loads(manifest.read_text())
         if (path.is_dir() or metadata.get("artifact_type") == graph_author.ARTIFACT_TYPE
@@ -41,8 +39,6 @@ def load(path, config):
             raise ValueError("controller needs a type")
         kind = node["type"]
         if kind == "local_team":
-            from twwarhammer3.battle import local_team
-
             arm = local_team.declaration(scenarios().get(config.get("scenario"), {}))
             if set(node) != {"type", "members"} or not isinstance(node["members"], dict):
                 raise ValueError("local_team needs only its five members")
@@ -136,8 +132,6 @@ def load(path, config):
 
 
 def factory(path, config, *, ledger=None):
-    from twwarhammer3.battle import controllers
-
     frozen, leaves, goal_models, artifact = load(path, config)
     models = {name for name in leaves
               if controllers.policy_parts(name, config)[0] in controllers.MODEL_POLICIES}
@@ -155,8 +149,6 @@ def factory(path, config, *, ledger=None):
         for name in sorted(models)}
     arm = None
     if frozen["type"] == "local_team":
-        from twwarhammer3.battle import local_team
-
         arm = local_team.declaration(scenarios()[config["scenario"]])
         if arm in local_team.TOPOLOGIES:  # one prompt per leaf and role: the commander's differs
             prompts = {f"{leaf} {local_team.role(name)}": prompts[leaf] + "\n\n"
@@ -181,8 +173,6 @@ def factory(path, config, *, ledger=None):
     def build(node, stop=None, book=None):
         kind = node["type"]
         if kind == "local_team":
-            from twwarhammer3.battle import local_team
-
             stop = Event()
             members = {}
             for name, member in node["members"].items():

@@ -19,7 +19,7 @@ from gameai.ledger import Ledger
 from gameai.llm import api_key, post
 from gameai.provenance import sha256
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import commander, llm, team
+from twwarhammer3.battle import benchmark, commander, llm, local_team, setup, team
 from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
 
@@ -33,8 +33,6 @@ MODEL_POLICIES = frozenset(MODEL_PROMPTS)
 def prompt_path(base: str, profile: str | None) -> Path:
     """A model policy's prompt. In the suite `llm` is `single`'s prompt plus only the tips, as
     `team_llm_rules` there is ClassTeam: the suite's own arm, not a new policy name."""
-    from twwarhammer3.battle import benchmark
-
     return (llm.TIPS_PROMPT_PATH if base == "llm" and profile == benchmark.SUITE
             else MODEL_PROMPTS[base])
 
@@ -175,10 +173,7 @@ def card(name: str, policy, config: dict) -> dict:
 
 def factories(config: dict, *, _ledger=None) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
-    from twwarhammer3.battle import benchmark
-    from twwarhammer3.battle.setup import scenarios
-
-    profile = scenarios().get(config.get("scenario"), {}).get("benchmark")
+    profile = setup.scenarios().get(config.get("scenario"), {}).get("benchmark")
     is_benchmark = profile == benchmark.VERSION
     is_suite = profile == benchmark.SUITE
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
@@ -230,16 +225,14 @@ def factories(config: dict, *, _ledger=None) -> dict:
                                        system_prompt=MODEL_PROMPTS[base].read_text())
     for name in parts.keys() - models:
         if name == "configured":
-            from twwarhammer3.battle.configured import factory
+            from twwarhammer3.battle.configured import factory  # it imports this module
 
             makers[name] = factory(config["controller_config"], config, ledger=ledger)
         else:
             kind = controller_class(name)
-            if scenarios().get(config.get("scenario"), {}).get("communication"):
-                from twwarhammer3.battle.local_team import LocalTeam
-
-                if issubclass(kind, LocalTeam):
-                    makers[name] = partial(kind, scenario=scenarios()[config["scenario"]])
+            if setup.scenarios().get(config.get("scenario"), {}).get("communication"):
+                if issubclass(kind, local_team.LocalTeam):
+                    makers[name] = partial(kind, scenario=setup.scenarios()[config["scenario"]])
                     continue
             makers[name] = kind
     return makers
