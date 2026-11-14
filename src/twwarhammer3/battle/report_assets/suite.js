@@ -297,22 +297,28 @@ function suitePage(data, api) {
   }
 
   async function load(name) {
+    // Each arm's battle in the grid (battleIn: its first); later repeats of a scenario and arm
+    // stay in the JSON (2026-11-08 audit). Owner, 2026-11-13: "First battle everywhere
+    // (Recommended)".
+    const battles = suite.pictures[name].battles;
     const runs = await Promise.all(
-      suite.pictures[name].battles.map(async (battle) => {
-        const payload = await api.decode(keyOf.get(battle.output));
-        const frames = payload.frames.filter((frame) => frame.friendly.length);
-        const kinds = new Map(payload.roster.map((entry) => [entry.id, kindOf(entry.glyph)]));
-        // Each unit's own path: an average over a kind would put a split army where nobody stood.
-        const paths = new Map(frames[0].friendly.map((u) => [u.id, []]));
-        frames.forEach((frame, index) => {
-          if (index % 4) return;
-          for (const u of frame.friendly)
-            if (able(u) && placed(u))
-              paths.get(u.id)?.push({ t: frame.time_ms / 1000, x: u.x, z: u.z });
-        });
-        const hue = (id) => memberHue(method(battle.arm), battle.owners[id]);
-        return { battle, frames, kinds, paths, hue, terrain: payload.terrain };
-      }),
+      battles
+        .filter((battle, index) => battles.findIndex((b) => b.arm === battle.arm) === index)
+        .map(async (battle) => {
+          const payload = await api.decode(keyOf.get(battle.output));
+          const frames = payload.frames.filter((frame) => frame.friendly.length);
+          const kinds = new Map(payload.roster.map((entry) => [entry.id, kindOf(entry.glyph)]));
+          // Each unit's own path: an average over a kind would put a split army where nobody stood.
+          const paths = new Map(frames[0].friendly.map((u) => [u.id, []]));
+          frames.forEach((frame, index) => {
+            if (index % 4) return;
+            for (const u of frame.friendly)
+              if (able(u) && placed(u))
+                paths.get(u.id)?.push({ t: frame.time_ms / 1000, x: u.x, z: u.z });
+          });
+          const hue = (id) => memberHue(method(battle.arm), battle.owners[id]);
+          return { battle, frames, kinds, paths, hue, terrain: payload.terrain };
+        }),
     );
     return Object.fromEntries(runs.map((run) => [run.battle.arm, run]));
   }

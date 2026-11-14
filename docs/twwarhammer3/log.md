@@ -41,6 +41,10 @@ The owner answered four 2026-11-08 audit choices with the recommended option (ow
   the noted ones, so each arm's footer totals the rows above it; opening it says "This scenario has
   no page notes." No plan so far used one, so no built page changes. The existing picture test
   asserted the skip; its name and that assert changed with the owner's answer (needs your yes).
+- Suite repeats: with two battles of one scenario and arm (`--repeats 2`, or plans that overlap),
+  the grid showed the first and the tiles and overlap the last; `suite.js` now loads each arm's
+  first battle, as the grid shows. The two built suite pages have no repeated pair, so neither
+  changes. 1 page case; it fails on the old code (the overlap pair follows the repeat).
 
 ## 2026-11-13: The report's opening sentence counts only scenarios a model played
 

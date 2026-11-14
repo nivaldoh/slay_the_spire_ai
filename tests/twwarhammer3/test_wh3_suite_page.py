@@ -316,3 +316,21 @@ def test_a_scenario_without_page_notes_gets_a_row_that_opens(tmp_path):
     assert state["rows"][0]["link"] and state["rows"][0]["current"]
     assert state["question"] == "This scenario has no page notes."
     assert "designer" not in state["page"] and "undefined" not in state["page"]
+
+
+def test_a_repeated_pair_shows_its_first_battle_in_the_tiles_and_the_overlap(tmp_path):
+    """Owner, 2026-11-13: "First battle everywhere (Recommended)". Wrong version: the grid shows
+    the first battle and the tiles and overlap the last, here single's repeat at 95%."""
+    data, replays = page({"coord-relief": [("single", 40), ("team", 10), ("rush", 50)]})
+    first = data["suite"]["pictures"]["coord-relief"]["battles"][0]
+    repeat = {**first, "output": "coord-relief--single-2", "taken": 95, "outcome": "won"}
+    data["suite"]["pictures"]["coord-relief"]["battles"].append(repeat)
+    data["benchmark_plans"][0]["rows"].append({"output": repeat["output"], "arm": "single",
+                                               "battle_key": repeat["output"],
+                                               "scenario": "coord-relief"})
+    replays[repeat["output"]] = replays[first["output"]]
+    state = run_payload(tmp_path, data, replays)
+    assert state["errors"] == [] and state["busy"] == "false"
+    assert "Lost" in state["rows"][0]["cells"] and "Won" not in state["rows"][0]["cells"]
+    assert sorted(state["pair"]) == ["rush", "team"] and sorted(state["tiles"]) == [
+        "rush", "single", "team"]
