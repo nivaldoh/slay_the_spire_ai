@@ -440,7 +440,7 @@ def test_the_page_names_every_arm_and_every_controller_and_every_played_scenario
         assert {who for part in note["plan"] for who in part["who"]} == set(team.CLASS_PARTITION)
 
 
-def test_a_picture_lists_played_battles_and_skips_scenarios_without_a_question(tmp_path):
+def test_a_picture_lists_played_battles_and_names_scenarios_without_a_question(tmp_path):
     rows = [{"scenario": "s", "arm": "team", "outcome": "won", "output": str(tmp_path / "job"),
              "battle_s": 100, "taken": 100.0},
             {"scenario": "s", "arm": "gap", "outcome": None, "output": str(tmp_path / "none"),
@@ -448,7 +448,13 @@ def test_a_picture_lists_played_battles_and_skips_scenarios_without_a_question(t
             {"scenario": "other", "arm": "gap", "outcome": "lost", "output": "x",
              "battle_s": 9, "taken": 1.0}]
     pictures = suite.scenario_pictures(rows, {"s": {"title": "S", "question": "Q?"}})
-    assert list(pictures) == ["s"] and [b["arm"] for b in pictures["s"]["battles"]] == ["team"]
+    assert list(pictures) == ["s", "other"]
+    assert [b["arm"] for b in pictures["s"]["battles"]] == ["team"]
+    # Owner, 2026-11-13: "A row for every scenario (Recommended)"; the footer totals every row.
+    assert pictures["other"]["title"] == "other" and pictures["other"]["question"] is None
+    assert pictures["other"]["plan"] == [] and len(pictures["other"]["battles"]) == 1
+    assert suite.scenario_order({"z": {}, "other": {}, "s": {}, "a": {}},
+                                {"s": {}, "nope": {}, "z": {}}) == ["s", "z", "a", "other"]
 
 
 def test_a_composed_method_on_a_benchmark_battle_is_compared_and_elsewhere_stays_a_probe():

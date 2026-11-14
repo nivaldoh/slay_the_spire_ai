@@ -280,21 +280,30 @@ def owners(episode):
 
 
 def scenario_pictures(rows, notes):
-    """The page's picture of each scenario: its question, and who controlled what in each battle."""
+    """The page's picture of each scenario: its question, and who controlled what in each battle.
+    A scenario without page notes still gets a grid row, titled by its name, so each arm's footer
+    totals the cells above it (2026-11-08 audit; owner, 2026-11-13: "A row for every scenario
+    (Recommended)")."""
     pictures = {}
     for row in rows:
         note = notes.get(row["scenario"]) or {}
-        if not note.get("question"):
-            continue
         picture = pictures.setdefault(row["scenario"], {
-            key: note.get(key) for key in ("title", "question", "why", "plan", "seen")}
-            | {"battles": []})
+            "title": note.get("title") or row["scenario"], "question": note.get("question"),
+            "why": note.get("why"), "plan": note.get("plan") or [], "seen": note.get("seen"),
+            "battles": []})
         if row["outcome"]:
             picture["battles"].append({
                 "output": row["output"], "arm": row["arm"], "outcome": row["outcome"],
                 "battle_s": row["battle_s"], "taken": row["taken"],
                 "owners": owners(Path(row["output"]) / "episode-0000")})
     return pictures
+
+
+def scenario_order(pictures, notes):
+    """Scenarios with page notes in the notes' order, then the others by name."""
+    known = list(notes)
+    return sorted(pictures, key=lambda name: (known.index(name) if name in known else len(known),
+                                              name))
 
 
 def measure(row):
@@ -567,7 +576,7 @@ def report(plans, output):
     visual = trials.collect([], benchmark_plans=plans)
     pictures = scenario_pictures(data["rows"], notes["scenarios"])
     page = {**data["summary"], "pictures": pictures,
-            "scenarios": sorted(pictures, key=list(notes["scenarios"]).index),
+            "scenarios": scenario_order(pictures, notes["scenarios"]),
             "page": {**notes.get("suite", {}), "plans": [Path(plan).stem for plan in plans]}}
     report_html.write(output.with_name(output.name + ".html"), {**visual, "suite": page})
     return data

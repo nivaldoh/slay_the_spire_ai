@@ -292,3 +292,27 @@ def test_a_scenario_with_no_finished_battle_does_not_open_and_says_so(tmp_path):
     assert state["errors"] == [] and state["busy"] == "false"
     assert state["question"] == "coord-rear-raid?" and state["tiles"] == []
     assert "No battle has finished" in state["tilesText"] and state["overlap"] == 0
+
+
+def run_payload(tmp_path, data, replays):
+    """run() for a payload edited after page()."""
+    payload = tmp_path / "payload.json"
+    payload.write_text(json.dumps({"data": data, "replays": replays}))
+    result = subprocess.run([shutil.which("node"), "-", str(report_html.ASSETS / "replay.js"),
+                             str(report_html.ASSETS / "suite.js"), str(payload)],
+                            input=RUN, capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def test_a_scenario_without_page_notes_gets_a_row_that_opens(tmp_path):
+    """Owner, 2026-11-13: "A row for every scenario (Recommended)". suite.scenario_pictures
+    gives such a scenario its name, no question and no plan; the page must open it."""
+    data, replays = page({"coord-siege": [("single", 40)]})
+    data["suite"]["pictures"]["coord-siege"].update(title="coord-siege", question=None,
+                                                    why=None, seen=None, plan=[])
+    state = run_payload(tmp_path, data, replays)
+    assert state["errors"] == [] and state["busy"] == "false"
+    assert [row["scenario"] for row in state["rows"]] == ["coord-siege"]
+    assert state["rows"][0]["link"] and state["rows"][0]["current"]
+    assert state["question"] == "This scenario has no page notes."
+    assert "designer" not in state["page"] and "undefined" not in state["page"]

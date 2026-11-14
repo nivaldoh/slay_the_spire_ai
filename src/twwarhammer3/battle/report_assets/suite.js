@@ -704,11 +704,13 @@ function suitePage(data, api) {
     const item = suite.pictures[name];
     for (const line of document.querySelectorAll(".suite-grid tbody tr"))
       line.classList.toggle("current", line.dataset.scenario === name);
-    $("suite-question").textContent = item.question;
-    $("suite-why").textContent = item.why;
-    $("suite-seen").textContent = page.current ? item.seen : "";
+    // A scenario without page notes has only its name (suite.scenario_pictures).
+    $("suite-question").textContent = item.question ?? "This scenario has no page notes.";
+    $("suite-why").textContent = item.why ?? "";
+    $("suite-seen").textContent = page.current ? (item.seen ?? "") : "";
     const plan = $("suite-plan");
-    plan.replaceChildren(el("b", "One possible tactic (designer’s suggestion):"));
+    plan.replaceChildren();
+    if (item.plan.length) plan.append(el("b", "One possible tactic (designer’s suggestion):"));
     for (const part of item.plan) {
       const entry = el("span");
       for (const who of part.who) entry.append(swatch(KINDS[who], HUES[who]));

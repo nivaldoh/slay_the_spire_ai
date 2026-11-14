@@ -36,6 +36,11 @@ The owner answered four 2026-11-08 audit choices with the recommended option (ow
   non-ASCII character, before writing anything; the agent would cut such a chunk short, and
   changing the agent would refuse every saved record. Today's plan Lua is all ASCII. 3 cases; the
   2 refusal cases fail without the check.
+- Suite page: a scenario without page notes (coord-mirror, coord-line-raid, coord-swarm,
+  coord-caster, coord-siege, coord-cavalry) now gets a grid row titled by its name, placed after
+  the noted ones, so each arm's footer totals the rows above it; opening it says "This scenario has
+  no page notes." No plan so far used one, so no built page changes. The existing picture test
+  asserted the skip; its name and that assert changed with the owner's answer (needs your yes).
 
 ## 2026-11-13: The report's opening sentence counts only scenarios a model played
 
