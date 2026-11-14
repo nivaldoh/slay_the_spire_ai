@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from twwarhammer3.battle import benchmark, setup
+from twwarhammer3.battle import benchmark, benchmark_plans, setup
 
 
 def pending_attempt(tmp_path, *, terminal=False, trace_job=None):
@@ -28,7 +28,7 @@ def pending_attempt(tmp_path, *, terminal=False, trace_job=None):
 
 @pytest.mark.parametrize("terminal", [False, True])
 def test_a_matching_battle_trace_counts_a_started_attempt_without_a_result(tmp_path, terminal):
-    data = benchmark.collect(pending_attempt(tmp_path, terminal=terminal))
+    data = benchmark_plans.collect(pending_attempt(tmp_path, terminal=terminal))
     assert data["planned"] == data["started"] == 1
     assert data["never_started"] == data["completed"] == 0
     assert data["rows"][0]["outcome"] is None and data["rows"][0]["condition"] is None
@@ -40,7 +40,7 @@ def test_a_matching_battle_trace_counts_a_started_attempt_without_a_result(tmp_p
 
 
 def test_a_foreign_battle_trace_cannot_start_this_attempt(tmp_path):
-    data = benchmark.collect(pending_attempt(tmp_path, trace_job="other-job"))
+    data = benchmark_plans.collect(pending_attempt(tmp_path, trace_job="other-job"))
     assert data["started"] == data["completed"] == 0
     assert data["rows"][0]["evidence_matches_plan"] is False
     assert data["error_categories"]["provenance"] == 1
@@ -51,6 +51,6 @@ def test_a_partial_final_trace_line_keeps_the_known_start_and_error(tmp_path):
     trace = tmp_path / "attempt/episode-0000/trace.jsonl"
     with trace.open("a") as stream:
         stream.write('{"kind":')
-    data = benchmark.collect(plan)
+    data = benchmark_plans.collect(plan)
     assert data["started"] == 1 and data["completed"] == 0
     assert data["error_categories"]["trace"] == 1

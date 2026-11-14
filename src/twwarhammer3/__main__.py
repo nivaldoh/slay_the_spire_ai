@@ -343,10 +343,19 @@ def run_benchmark(args, parser) -> int:
                                    seed=args.seed, start_before=args.start_before,
                                    graphs=args.graphs)
         elif args.action == "plan":
-            data = benchmark.make_plan(args.plan, args.stage, args.budget_usd)
+            from twwarhammer3.battle import benchmark_plans
+
+            data = benchmark_plans.make_plan(args.plan, args.stage, args.budget_usd)
         else:
-            data = benchmark.report(args.plan, args.output or args.plan.with_suffix(".report"),
-                                    args.also)
+            output = args.output or args.plan.with_suffix(".report")
+            if json.loads(args.plan.read_text()).get("benchmark") == benchmark.SUITE:
+                from twwarhammer3.battle import suite
+
+                data = suite.report([args.plan, *args.also], output)
+            else:
+                from twwarhammer3.battle import report
+
+                data = report.plan_report(args.plan, output)
     except (ValueError, OSError, APIError, BudgetExhausted) as exc:
         parser.error(str(exc))
     print(json.dumps(data, indent=2))

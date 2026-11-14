@@ -143,8 +143,14 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/benchmark.py",
-   "text": "initial mirror evaluator, limits, plans and reports",
+   "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition",
    "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/benchmark_plans.py",
+   "text": "frozen benchmark plans and every planned attempt read back",
+   "box": null,
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -443,7 +449,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/report.py",
-   "text": "paired statistics",
+   "text": "paired statistics and a mirror plan's report",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },

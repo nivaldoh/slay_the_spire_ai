@@ -252,7 +252,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 
 `src/twwarhammer3/battle/`, jobs and controllers:
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
-- `src/twwarhammer3/battle/benchmark.py`: initial mirror evaluator, limits, plans and reports
+- `src/twwarhammer3/battle/benchmark.py`: the mirror profile: limits, one-call transport, battle
+  budget and the first-ending condition
+- `src/twwarhammer3/battle/benchmark_plans.py`: frozen benchmark plans and every planned attempt
+  read back
 - `src/twwarhammer3/battle/suite.py`: the coordination suite: arms, plans, measures and comparison
 - `src/twwarhammer3/battle/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
 - `src/twwarhammer3/battle/support_evidence.py`: offline event brackets and proposed numerical contrast
@@ -330,7 +333,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/digest.py`: trace summaries
 - `src/twwarhammer3/battle/watch.py`: follow a job
 - `src/twwarhammer3/battle/stats.py`: results register
-- `src/twwarhammer3/battle/report.py`: paired statistics
+- `src/twwarhammer3/battle/report.py`: paired statistics and a mirror plan's report
 - `src/twwarhammer3/battle/exact_stats.py`: exact small-sample statistics for win rates: two-sided
   Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
 - `src/twwarhammer3/battle/report_html.py`: the offline HTML report

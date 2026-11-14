@@ -12,8 +12,10 @@ import statistics
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from twwarhammer3.battle.benchmark import collect as collect_plan
-from twwarhammer3.battle.benchmark import evaluate
+from gameai.provenance import write_json
+from twwarhammer3.battle import report_html
+from twwarhammer3.battle.benchmark import VERSION, evaluate
+from twwarhammer3.battle.benchmark_plans import collect as collect_plan
 from twwarhammer3.battle.stats import active_left, configuration
 
 OUTCOMES = {"won", "lost", "draw"}
@@ -519,3 +521,27 @@ def render(report: dict) -> str:
                              f"resources: {measures['resources']}")
         lines.append("")
     return "\n".join([*lines, report["limitations"]])
+
+
+def plan_report(plan_path: Path, output: Path) -> dict:
+    """A mirror benchmark plan's report: STEM.txt, STEM.json and the visual STEM.html, where
+    ``output`` is STEM; a coordination-suite plan's is suite.report."""
+    visual = collect([], benchmark_plans=[plan_path])
+    data = visual["benchmark_plans"][0]
+    text = (f"{VERSION}: {data['completed']}/{data['planned']} engine-completed; "
+            f"{data['never_started']} never started; outcomes {data['outcomes']}.\n"
+            "Rank completed battles by win > draw > loss, then own condition; "
+            "unavailable condition has no tie-break. No aggregate controller ranking.\n"
+            "Error categories count recorded events, which can describe the same failure.\n")
+    for row in data["rows"]:
+        text += (f"{row['controller']}: {row['outcome'] or row['status']}; "
+                 f"condition {row['condition']}; errors {len(row['errors'])}; {row['output']}\n")
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    def artifact(suffix):
+        return output.with_name(output.name + suffix)
+
+    report_html.write(artifact(".html"), visual)
+    write_json(artifact(".json"), data)
+    artifact(".txt").write_text(text)
+    return data

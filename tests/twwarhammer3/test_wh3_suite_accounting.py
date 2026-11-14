@@ -5,7 +5,7 @@ import json
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import benchmark, suite
+from twwarhammer3.battle import benchmark, benchmark_plans, suite
 
 
 def attempts(tmp_path, results, *, args=(), config=None):
@@ -36,7 +36,7 @@ def test_explicit_provider_and_graph_path_must_match_the_plan(tmp_path, field, a
     config[field] = actual
     plan = attempts(tmp_path, [{"status": "won"}], config=config, args=[
         "--provider", "anthropic", "--controller-config", "runs/planned-graphs"])
-    data = benchmark.collect(plan)
+    data = benchmark_plans.collect(plan)
     row, = data["rows"]
     assert not row["evidence_matches_plan"]
     assert row["outcome"] is None and row["recorded_engine_outcome"] == "won"
@@ -51,7 +51,7 @@ def test_equivalent_graph_paths_and_cli_spellings_still_match(tmp_path, equals):
         args = ["--provider=anthropic", "--controller-config=runs/planned-graphs"]
     plan = attempts(tmp_path, [{"status": "won"}], args=args, config={
         "provider": "anthropic", "controller_config": str(REPO_ROOT / "runs/planned-graphs")})
-    assert benchmark.collect(plan)["rows"][0]["evidence_matches_plan"]
+    assert benchmark_plans.collect(plan)["rows"][0]["evidence_matches_plan"]
 
 
 @pytest.mark.parametrize("args", [["--prov", "anthropic"],
@@ -60,7 +60,7 @@ def test_abbreviated_play_options_cannot_hide_a_foreign_controller(tmp_path, arg
     # Play uses argparse's unambiguous prefix syntax, even though generators use long names.
     plan = attempts(tmp_path, [{"status": "won"}], args=args, config={
         "provider": "openrouter", "controller_config": "runs/different-graphs"})
-    assert not benchmark.collect(plan)["rows"][0]["evidence_matches_plan"]
+    assert not benchmark_plans.collect(plan)["rows"][0]["evidence_matches_plan"]
 
 
 def test_failure_totals_keep_incomplete_attempts_and_all_provider_faults(tmp_path):
@@ -94,7 +94,7 @@ def test_provider_failed_response_counts_even_when_battle_finishes(tmp_path):
 def test_numeric_queue_arguments_use_the_same_spelling_as_at_launch(tmp_path):
     plan = attempts(tmp_path, [{"status": "won"}], args=[
         "--episodes", 1, "--provider", "anthropic"], config={"provider": "anthropic"})
-    assert benchmark.collect(plan)["rows"][0]["evidence_matches_plan"]
+    assert benchmark_plans.collect(plan)["rows"][0]["evidence_matches_plan"]
 
 
 def test_trace_failures_survive_a_missing_result_without_inventing_cost(tmp_path):

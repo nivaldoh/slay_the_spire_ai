@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from wh3_fixtures import configured_job, embedded
 
-from twwarhammer3.battle import benchmark, report, report_html
+from twwarhammer3.battle import benchmark, benchmark_plans, report, report_html
 
 
 def mirror_job(tmp_path, name, *, version=5, hp=.6, outcome="lost"):
@@ -41,9 +41,9 @@ def plan_for(tmp_path, job):
 def test_plan_report_reuses_visual_page_without_changing_raw_plan_contract(tmp_path):
     job = mirror_job(tmp_path, "completed")
     plan = plan_for(tmp_path, job)
-    expected = benchmark.collect(plan)
+    expected = benchmark_plans.collect(plan)
     output = tmp_path / "visual"
-    assert benchmark.report(plan, output) == expected
+    assert report.plan_report(plan, output) == expected
     assert json.loads((tmp_path / "visual.json").read_text()) == expected
     page = (tmp_path / "visual.html").read_text()
     assert 'id="map"' in page and 'id="benchmark-results"' in page
@@ -128,7 +128,7 @@ def test_a_damaged_trace_keeps_the_attempt_score_and_recording_error(tmp_path):
     plan = plan_for(tmp_path, job)
     (job / "episode-0000/trace.jsonl").write_text('{"kind": "decision"')
     output = tmp_path / "damaged"
-    raw = benchmark.report(plan, output)
+    raw = report.plan_report(plan, output)
     assert raw["completed"] == 1 and raw["error_categories"]["trace"] == 1
     data = embedded((tmp_path / "damaged.html").read_text())
     row = data["benchmark_plans"][0]["rows"][0]

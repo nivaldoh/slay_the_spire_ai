@@ -9,7 +9,15 @@ import pytest
 
 from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import benchmark, configured, controllers, graph, suite, team
+from twwarhammer3.battle import (
+    benchmark,
+    benchmark_plans,
+    configured,
+    controllers,
+    graph,
+    suite,
+    team,
+)
 from twwarhammer3.battle.setup import check_battle, scenarios, validate_declaration
 from twwarhammer3.protocol import ProtocolError
 
@@ -482,7 +490,7 @@ def test_the_tips_arm_differs_from_single_by_the_tips_alone():
 
 @pytest.mark.parametrize("write", [
     lambda path, budget: suite.make_plan(path, ["coord-relief"], ["hold"], 1, budget, seed=1),
-    lambda path, budget: benchmark.make_plan(path, "pilot", budget),
+    lambda path, budget: benchmark_plans.make_plan(path, "pilot", budget),
 ], ids=["suite", "mirror"])
 def test_a_plan_is_written_once_and_only_under_a_cap_above_0_and_at_most_200(
         tmp_path, monkeypatch, write):
@@ -490,7 +498,7 @@ def test_a_plan_is_written_once_and_only_under_a_cap_above_0_and_at_most_200(
     (2026-11-13 refusal sweep): an existing plan overwritten in place, so the plan no longer
     records the jobs a queue ran from it; a cap of 0, past $200 or not a number."""
     monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
-    monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
+    monkeypatch.setattr(benchmark_plans.subprocess, "check_output", lambda *a, **k: "abc\n")
     for budget in (0, -1, 200.01, float("nan"), float("inf")):
         with pytest.raises(ValueError, match="positive cumulative ledger cap"):
             write(tmp_path / f"cap-{budget}.json", budget)

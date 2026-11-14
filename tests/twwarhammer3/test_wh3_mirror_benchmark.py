@@ -16,7 +16,7 @@ from wh3_lua import load_battle, runtime
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, post
-from twwarhammer3.battle import benchmark, llm, play, setup
+from twwarhammer3.battle import benchmark, benchmark_plans, llm, play, report, setup
 from twwarhammer3.protocol import PolicyFailure, ProtocolError
 
 
@@ -130,7 +130,7 @@ def test_per_battle_limits_include_failed_calls_and_keep_cumulative_spend(tmp_pa
 
 def test_plan_report_keeps_all_attempts_and_preserves_outcomes(tmp_path):
     plan = tmp_path / "pilot.json"
-    planned = benchmark.make_plan(plan, "pilot", 2)
+    planned = benchmark_plans.make_plan(plan, "pilot", 2)
     assert [job["controller"] for job in planned["jobs"]] == [
         "hold", "attack_nearest", "rush_nearest"]
     job = planned["jobs"][0]
@@ -147,14 +147,14 @@ def test_plan_report_keeps_all_attempts_and_preserves_outcomes(tmp_path):
     (episode / "result.json").write_text(json.dumps(result))
     (episode / "trace.jsonl").write_text(
         json.dumps({"kind": "forfeit", "error": "APIError"}) + "\n")
-    data = benchmark.report(plan, tmp_path / "report")
+    data = report.plan_report(plan, tmp_path / "report")
     assert data["planned"] == 3 and data["completed"] == 1 and data["never_started"] == 2
     assert data["outcomes"] == {"won": 1, "draw": 0, "lost": 0}
     assert data["error_categories"] == {"forfeit": 1, "episode": 1}
     assert data["rows"][0]["condition"] == 100
     assert data["rows"][0]["output"] == job["output"]
     assert all((tmp_path / ("report" + ext)).exists() for ext in (".json", ".txt", ".html"))
-    model_plan = benchmark.make_plan(tmp_path / "model.json", "model", 2)
+    model_plan = benchmark_plans.make_plan(tmp_path / "model.json", "model", 2)
     assert len(model_plan["jobs"]) == 5
     assert all("claude-haiku-5-5" in j["controller"] for j in model_plan["jobs"])
 
@@ -179,14 +179,14 @@ def test_total_deadline_interrupts_trickling_or_stalled_send_without_resend(monk
 
 def test_queue_failures_and_capture_errors_are_not_silent(tmp_path):
     plan = tmp_path / "pilot.json"
-    declared = benchmark.make_plan(plan, "pilot", 2)
+    declared = benchmark_plans.make_plan(plan, "pilot", 2)
     (tmp_path / "pilot-state.json").write_text(json.dumps({"status": "failed", "error": "key",
         "completed": [{"output": declared["jobs"][0]["output"], "exit_code": 2}]}))
     directory = tmp_path / "pilot-01/episode-0000"
     directory.mkdir(parents=True)
     (directory / "stills.json").write_text(json.dumps([
         {"status": "capture_failed", "error": "capture failed"}]))
-    data = benchmark.collect(plan)
+    data = benchmark_plans.collect(plan)
     assert data["error_categories"] == {"queue": 1, "screenshot": 1}
     assert data["rows"][0]["not_started_reason"] == "key"
     assert data["completed"] == 0 and data["never_started"] == 3
@@ -194,14 +194,14 @@ def test_queue_failures_and_capture_errors_are_not_silent(tmp_path):
 
 def test_foreign_profile_controller_or_source_is_never_credited(tmp_path):
     plan = tmp_path / "model.json"
-    declared = benchmark.make_plan(plan, "model", 2)
+    declared = benchmark_plans.make_plan(plan, "model", 2)
     episode = tmp_path / "model-01/episode-0000"
     episode.mkdir(parents=True)
     (episode / "result.json").write_text(json.dumps(ended()))
     (episode.parent / "manifest.json").write_text(json.dumps({
         "source_revision": declared["source_revision"], "scenario": {"name": "foreign"},
         "config": {"policy": "hold", "scenario": "foreign", "episodes": 1}}))
-    data = benchmark.collect(plan)
+    data = benchmark_plans.collect(plan)
     assert data["completed"] == 0 and data["engine_completed"] == 1
     assert data["rows"][0]["recorded_engine_outcome"] == "won"
     assert data["rows"][0]["condition"] is None

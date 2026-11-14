@@ -10,7 +10,7 @@ import signal
 import pytest
 
 from gameai.llm import APIError
-from twwarhammer3.battle import benchmark
+from twwarhammer3.battle import benchmark, benchmark_plans
 from twwarhammer3.battle.setup import scenarios
 
 # The frozen profile: one fresh launch and battle, no added waits, 900/1320 s caps and
@@ -77,16 +77,16 @@ def test_only_a_benchmark_plan_is_collected(tmp_path, monkeypatch, version):
     """A plan of another version, or an ordinary queue plan, is never read as the mirror's
     attempts. Without the refusal the first is collected row by row as a mirror plan, and the
     second fails later as a KeyError."""
-    monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
+    monkeypatch.setattr(benchmark_plans.subprocess, "check_output", lambda *a, **k: "abc\n")
     path = tmp_path / "pilot.json"
-    plan = benchmark.make_plan(path, "pilot", 2)
+    plan = benchmark_plans.make_plan(path, "pilot", 2)
     if version is None:
         del plan["benchmark"]
     else:
         plan["benchmark"] = version
     path.write_text(json.dumps(plan))
     with pytest.raises(ValueError, match="not a benchmark plan"):
-        benchmark.collect(path)
+        benchmark_plans.collect(path)
 
 
 @pytest.mark.parametrize("copy", [None, "recording"], ids=["close-interrupt", "copy-interrupt"])
@@ -95,9 +95,9 @@ def test_a_copy_interrupted_trial_is_skipped_and_a_close_interrupted_one_counts(
     """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)": a trial stopped by Ctrl-C
     during its final copying gets no outcome (its replay may be cut), its engine outcome stays
     recorded; one stopped during controller close keeps its engine ending, as before."""
-    monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: "abc\n")
+    monkeypatch.setattr(benchmark_plans.subprocess, "check_output", lambda *a, **k: "abc\n")
     plan = tmp_path / "pilot.json"
-    declared = benchmark.make_plan(plan, "pilot", 2)
+    declared = benchmark_plans.make_plan(plan, "pilot", 2)
     directory = tmp_path / "pilot-01"
     episode = directory / "episode-0000"
     episode.mkdir(parents=True)
@@ -111,7 +111,7 @@ def test_a_copy_interrupted_trial_is_skipped_and_a_close_interrupted_one_counts(
     if copy:
         result.update(interrupted_copy=copy, recording={"status": "interrupted"})
     (episode / "result.json").write_text(json.dumps(result))
-    row = benchmark.collect(plan)["rows"][0]
+    row = benchmark_plans.collect(plan)["rows"][0]
     assert row["recorded_engine_outcome"] == "won"
     if copy:
         assert row["outcome"] is None and row["rank"] is None

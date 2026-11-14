@@ -6,7 +6,7 @@ from copy import deepcopy
 import pytest
 from wh3_lua import load_battle, runtime
 
-from twwarhammer3.battle import benchmark, setup
+from twwarhammer3.battle import benchmark, benchmark_plans, setup
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -82,6 +82,6 @@ def test_later_profile_edits_do_not_rewrite_a_frozen_attempt(tmp_path, monkeypat
         "status": "won", "policy": "hold", "battle": "b"}))
     monkeypatch.setattr(setup, "scenarios", lambda: {
         benchmark.SCENARIO: {**profile, "scenario_version": 999}})
-    data = benchmark.collect(plan_path)
+    data = benchmark_plans.collect(plan_path)
     assert data["rows"][0]["evidence_matches_plan"] is True
     assert data["completed"] == 1 and "provenance" not in data["error_categories"]
