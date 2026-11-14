@@ -25,6 +25,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua": "92485ef8964f01b2fab7aac32a5932adef5afb7cfa9f413ee55ad5a86175150f"
   },
   "changed_since": [
+   "configs/twwarhammer3/benchmark_jobs.json",
    "src/gameai/llm.py",
    "src/gameai/providers.py",
    "src/gameai/windows.py",

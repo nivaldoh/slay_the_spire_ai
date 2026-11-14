@@ -17,7 +17,9 @@ Object.assign(DIAGRAM_EXAMPLES, {
   },
   "changed_since": [
    "src/twwarhammer3/battle/play.py",
-   "src/twwarhammer3/battle/team.py"
+   "src/twwarhammer3/battle/team.py",
+   "src/twwarhammer3/engine/mailbox.py",
+   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
   ],
   "messages": {
    "split": {

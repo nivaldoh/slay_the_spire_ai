@@ -11,8 +11,8 @@ DIAGRAM.tabs.push({
     "Each member thinks about its own units on its own clock, and each request carries at most one member's batch, so neither waits for the other.",
   "summary":
     "Probe 1 of the scripted team's live check on 31 Oct: the infantry member waits 3 s on purpose.",
-  "commit": "7bf32e6",
-  "reviewed": "2026-11-01",
+  "commit": "601d249",
+  "reviewed": "2026-11-14",
   "example": "members",
   "size": [1000, 300],
   "bands": [
@@ -45,8 +45,8 @@ DIAGRAM.tabs.push({
       "note": "Applies one request per tick and writes the state.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1368"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2103-2107",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2172"
       ]
     },
     {
@@ -61,7 +61,7 @@ DIAGRAM.tabs.push({
       "h": 54,
       "note": "The newest state only.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762"]
+      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341"]
     },
     {
       "id": "m.orders",
@@ -75,7 +75,7 @@ DIAGRAM.tabs.push({
       "h": 54,
       "note": "The play loop is its only writer.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/engine/mailbox.py:212"]
+      "refs": ["src/twwarhammer3/engine/mailbox.py:248"]
     },
     {
       "id": "m.play",
@@ -91,10 +91,10 @@ DIAGRAM.tabs.push({
       "status":
         "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
-        "src/twwarhammer3/battle/play.py:662-663",
-        "src/twwarhammer3/battle/play.py:724",
-        "src/twwarhammer3/battle/team.py:9-11",
-        "docs/twwarhammer3/log.md:577-579"
+        "src/twwarhammer3/battle/play.py:818-819",
+        "src/twwarhammer3/battle/play.py:890",
+        "src/twwarhammer3/battle/team.py:10-12",
+        "docs/twwarhammer3/log.md:2837-2839"
       ]
     },
     {
@@ -108,15 +108,15 @@ DIAGRAM.tabs.push({
       "w": 200,
       "h": 56,
       "note":
-        "Splits the units by type, runs one call per member on two threads, and sends the oldest finished batch; no member waits for the other.",
+        "Splits the units by declared type or class, runs each member's call on its own thread, and sends the oldest finished batch; no member waits for the other.",
       "status":
         "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
-        "src/twwarhammer3/battle/team.py:126-127",
-        "src/twwarhammer3/battle/team.py:142",
-        "src/twwarhammer3/battle/team.py:205-230",
-        "src/twwarhammer3/battle/team.py:312-344",
-        "docs/twwarhammer3/log.md:577-579"
+        "src/twwarhammer3/battle/team.py:140-141",
+        "src/twwarhammer3/battle/team.py:156-157",
+        "src/twwarhammer3/battle/team.py:221-252",
+        "src/twwarhammer3/battle/team.py:348-380",
+        "docs/twwarhammer3/log.md:2837-2839"
       ]
     },
     {
@@ -133,9 +133,9 @@ DIAGRAM.tabs.push({
       "status":
         "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
-        "docs/twwarhammer3/log.md:577-579",
-        "src/twwarhammer3/battle/team.py:462-478",
-        "src/twwarhammer3/battle/team.py:487-493"
+        "docs/twwarhammer3/log.md:2837-2839",
+        "src/twwarhammer3/battle/team.py:519-535",
+        "src/twwarhammer3/battle/team.py:544-550"
       ]
     },
     {
@@ -152,9 +152,9 @@ DIAGRAM.tabs.push({
       "status":
         "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
-        "docs/twwarhammer3/log.md:577-579",
-        "src/twwarhammer3/battle/team.py:462-478",
-        "src/twwarhammer3/battle/team.py:487-493"
+        "docs/twwarhammer3/log.md:2837-2839",
+        "src/twwarhammer3/battle/team.py:519-535",
+        "src/twwarhammer3/battle/team.py:544-550"
       ]
     }
   ],
@@ -165,7 +165,7 @@ DIAGRAM.tabs.push({
       "to": "m.obs",
       "label": "writes the state",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762"]
+      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341"]
     },
     {
       "id": "m.obs>play",
@@ -173,7 +173,7 @@ DIAGRAM.tabs.push({
       "to": "m.play",
       "label": "read every 0.1 s",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/engine/mailbox.py:287-300"]
+      "refs": ["src/twwarhammer3/engine/mailbox.py:323-336"]
     },
     {
       "id": "m.play>team",
@@ -181,7 +181,7 @@ DIAGRAM.tabs.push({
       "to": "m.team",
       "label": "decide",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:680", "src/twwarhammer3/battle/team.py:312"],
+      "refs": ["src/twwarhammer3/battle/play.py:836", "src/twwarhammer3/battle/team.py:348"],
       "bend": -16
     },
     {
@@ -190,7 +190,7 @@ DIAGRAM.tabs.push({
       "to": "m.play",
       "label": "one batch",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/team.py:337-344"],
+      "refs": ["src/twwarhammer3/battle/team.py:373-380"],
       "bend": -16
     },
     {
@@ -199,7 +199,7 @@ DIAGRAM.tabs.push({
       "to": "m.A",
       "label": "its own view",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/team.py:325-333"],
+      "refs": ["src/twwarhammer3/battle/team.py:361-369"],
       "bend": -14
     },
     {
@@ -208,7 +208,7 @@ DIAGRAM.tabs.push({
       "to": "m.team",
       "label": "batch",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/team.py:242-248"],
+      "refs": ["src/twwarhammer3/battle/team.py:274-280"],
       "bend": -14
     },
     {
@@ -217,7 +217,7 @@ DIAGRAM.tabs.push({
       "to": "m.B",
       "label": "its own view",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/team.py:325-333"],
+      "refs": ["src/twwarhammer3/battle/team.py:361-369"],
       "bend": -14
     },
     {
@@ -226,7 +226,7 @@ DIAGRAM.tabs.push({
       "to": "m.team",
       "label": "batch",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/team.py:242-248"],
+      "refs": ["src/twwarhammer3/battle/team.py:274-280"],
       "bend": -14
     },
     {
@@ -235,7 +235,7 @@ DIAGRAM.tabs.push({
       "to": "m.orders",
       "label": "one request",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:724"]
+      "refs": ["src/twwarhammer3/battle/play.py:890"]
     },
     {
       "id": "m.orders>game",
@@ -244,8 +244,8 @@ DIAGRAM.tabs.push({
       "label": "applied at a tick",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1375-1377",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2179-2181",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2103-2107"
       ]
     }
   ],
@@ -517,7 +517,7 @@ DIAGRAM.tabs.push({
             "example": "members",
             "key": "start"
           },
-          "refs": ["src/twwarhammer3/battle/team.py:205-230"]
+          "refs": ["src/twwarhammer3/battle/team.py:221-252"]
         },
         {
           "at": 5430,
@@ -528,9 +528,9 @@ DIAGRAM.tabs.push({
           "box": "m.B",
           "who": "B",
           "refs": [
-            "src/twwarhammer3/battle/team.py:325-333",
-            "src/twwarhammer3/battle/team.py:462-478",
-            "src/twwarhammer3/battle/team.py:487-493"
+            "src/twwarhammer3/battle/team.py:361-369",
+            "src/twwarhammer3/battle/team.py:519-535",
+            "src/twwarhammer3/battle/team.py:544-550"
           ]
         },
         {
@@ -549,7 +549,7 @@ DIAGRAM.tabs.push({
             "example": "members",
             "key": "cavalry"
           },
-          "refs": ["src/twwarhammer3/battle/team.py:337-344", "src/twwarhammer3/battle/play.py:724"]
+          "refs": ["src/twwarhammer3/battle/team.py:373-380", "src/twwarhammer3/battle/play.py:890"]
         },
         {
           "at": 5900,
@@ -560,8 +560,8 @@ DIAGRAM.tabs.push({
           "box": "m.A",
           "who": "A",
           "refs": [
-            "src/twwarhammer3/battle/team.py:346-350",
-            "src/twwarhammer3/battle/play.py:499-507"
+            "src/twwarhammer3/battle/team.py:382-386",
+            "src/twwarhammer3/battle/play.py:612-620"
           ]
         },
         {
@@ -576,8 +576,8 @@ DIAGRAM.tabs.push({
             "key": "idle"
           },
           "refs": [
-            "src/twwarhammer3/battle/team.py:337-339",
-            "src/twwarhammer3/battle/team.py:346-348"
+            "src/twwarhammer3/battle/team.py:373-375",
+            "src/twwarhammer3/battle/team.py:382-384"
           ],
           "every": 300
         },
@@ -589,7 +589,7 @@ DIAGRAM.tabs.push({
           "dots": [["m.B>team"]],
           "box": "m.B",
           "who": "B",
-          "refs": ["src/twwarhammer3/battle/team.py:339-341"]
+          "refs": ["src/twwarhammer3/battle/team.py:375-377"]
         },
         {
           "at": 8900,
@@ -608,8 +608,8 @@ DIAGRAM.tabs.push({
             "key": "infantry"
           },
           "refs": [
-            "src/twwarhammer3/battle/team.py:277-278",
-            "src/twwarhammer3/battle/team.py:292-298"
+            "src/twwarhammer3/battle/team.py:313-314",
+            "src/twwarhammer3/battle/team.py:328-334"
           ]
         },
         {
@@ -623,7 +623,7 @@ DIAGRAM.tabs.push({
             "example": "members",
             "key": "alternate"
           },
-          "refs": ["src/twwarhammer3/battle/team.py:340-341"]
+          "refs": ["src/twwarhammer3/battle/team.py:376-377"]
         }
       ]
     }

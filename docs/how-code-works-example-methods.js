@@ -363,7 +363,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
     "calls": "0 / 92 / 0: 92 calls during the battle: 88 decisions, 3 re-asks after a refused batch, and 1 call still out when the battle ended, its reply unused (result.json llm.calls; split recounted from trace.jsonl); none before or between battles",
     "decisions": "88 decisions from 5.3 s to the end at 335.2 s; 39 carried orders, 28 of them new and 11 the same as the previous non-empty batch (recounted from trace.jsonl)",
     "view_age": "Orders used a view 3.3 s old: median of 88, range 1.8-18.0 s, in battle time (result.json delays_ms; empty batches included)",
-    "example": "bench-b45-knights3-glm-low-l1-20261020 · 20 Oct · llm_rules v21 at b7e2dd1, v22 on main, never played · GLM 5.3 low · lost at 335.2 s · one battle (results.csv:598)"
+    "example": "bench-b45-knights3-glm-low-l1-20261020 · 20 Oct · llm_rules v21 at b7e2dd1, v23 on main, never played · GLM 5.3 low · lost at 335.2 s · one battle (results.csv:598)"
    },
    "gap": {
     "calls": "3 / 0 / 3: before the battle initial-02, about 20 s wall clock, $0.0025; between battles revised-01, about 19 s, $0.0065 (manifest.json totals); none during it (result.json members.*.calls)",
@@ -512,7 +512,10 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/battle/configured.py",
    "src/twwarhammer3/battle/controllers.py",
    "src/twwarhammer3/battle/graph.py",
-   "src/twwarhammer3/battle/graph_author.py"
+   "src/twwarhammer3/battle/graph_author.py",
+   "src/twwarhammer3/battle/play.py",
+   "src/twwarhammer3/battle/skill_contracts.py",
+   "src/twwarhammer3/battle/team.py"
   ],
   "messages": {
    "task": {

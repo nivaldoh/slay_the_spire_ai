@@ -19,8 +19,8 @@ DIAGRAM.tabs.push({
     "Models write one graph per member before the battle; during it no model is asked, and the members take turns, each graph moving at most one step per view it gets.",
   "summary":
     "gap-initial-02, 1 Nov: graphs written by Haiku 5.5 before the battle; lost at 618.2 s by engine result; one battle, no strength claim.",
-  "commit": "ad43a37",
-  "reviewed": "2026-11-01",
+  "commit": "601d249",
+  "reviewed": "2026-11-14",
   "example": "graph",
   "facts": {
     "graph_ops": [
@@ -87,13 +87,13 @@ DIAGRAM.tabs.push({
       "status": {
         "text":
           "agreed offline check: WH3 initial GaP, whose canned author and revision cases passed at d6dfe92, and the initiation check at 4f0c3fc; neither establishes learning or live effects",
-        "refs": ["docs/agreed-checks.md:72-82", "docs/agreed-checks.md:18-33"]
+        "refs": ["docs/agreed-checks.md:170-180", "docs/agreed-checks.md:116-131"]
       },
       "refs": [
         "src/twwarhammer3/battle/graph_author.py:1",
-        "src/twwarhammer3/__main__.py:186-203",
-        "src/twwarhammer3/battle/graph_author.py:327-333",
-        "src/twwarhammer3/battle/graph_author.py:344-360",
+        "src/twwarhammer3/__main__.py:212-229",
+        "src/twwarhammer3/battle/graph_author.py:329-335",
+        "src/twwarhammer3/battle/graph_author.py:346-362",
         "runs/twwarhammer3/gap-20261101/initial-02/manifest.json"
       ]
     },
@@ -110,8 +110,8 @@ DIAGRAM.tabs.push({
       "note": "Applies one request per tick and writes the state.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1368"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2103-2107",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2172"
       ]
     }
   ],
@@ -122,7 +122,7 @@ DIAGRAM.tabs.push({
       "to": "cavalry.start",
       "label": "writes the cavalry graph",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/graph_author.py:344-360"]
+      "refs": ["src/twwarhammer3/battle/graph_author.py:346-362"]
     },
     {
       "id": "g.author>line.acquire",
@@ -130,7 +130,7 @@ DIAGRAM.tabs.push({
       "to": "line.acquire",
       "label": "writes the line graph",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/graph_author.py:344-360"]
+      "refs": ["src/twwarhammer3/battle/graph_author.py:346-362"]
     },
     {
       "id": "cavalry.charge>g.battle",
@@ -139,8 +139,8 @@ DIAGRAM.tabs.push({
       "label": "charge orders",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/battle/skill_contracts.py:131-140",
-        "src/twwarhammer3/battle/team.py:335-344"
+        "src/twwarhammer3/battle/skill_contracts.py:133-144",
+        "src/twwarhammer3/battle/team.py:371-380"
       ]
     },
     {
@@ -150,8 +150,8 @@ DIAGRAM.tabs.push({
       "label": "attack orders",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/battle/skill_contracts.py:131-140",
-        "src/twwarhammer3/battle/team.py:335-344"
+        "src/twwarhammer3/battle/skill_contracts.py:133-144",
+        "src/twwarhammer3/battle/team.py:371-380"
       ]
     }
   ],
@@ -180,8 +180,8 @@ DIAGRAM.tabs.push({
             "key": "start"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph_author.py:327-333",
-            "src/twwarhammer3/battle/graph_author.py:344-360"
+            "src/twwarhammer3/battle/graph_author.py:329-335",
+            "src/twwarhammer3/battle/graph_author.py:346-362"
           ]
         },
         {
@@ -201,7 +201,7 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/graph.py:21-23",
             "src/twwarhammer3/battle/graph.py:206-225",
-            "src/twwarhammer3/battle/team.py:312-344"
+            "src/twwarhammer3/battle/team.py:348-380"
           ],
           "rests": [
             {
@@ -231,8 +231,8 @@ DIAGRAM.tabs.push({
             "key": "attack"
           },
           "refs": [
-            "src/twwarhammer3/battle/controllers.py:40-41",
-            "src/twwarhammer3/battle/skill_contracts.py:119-124"
+            "src/twwarhammer3/battle/controllers.py:51-52",
+            "src/twwarhammer3/battle/skill_contracts.py:121-126"
           ]
         },
         {
@@ -257,7 +257,7 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/graph.py:203-205",
             "src/twwarhammer3/battle/graph_author.py:33",
-            "src/twwarhammer3/battle/team.py:312-344"
+            "src/twwarhammer3/battle/team.py:348-380"
           ],
           "rests": [
             {
@@ -312,7 +312,7 @@ DIAGRAM.tabs.push({
             "example": "graph",
             "key": "melee"
           },
-          "refs": ["src/twwarhammer3/battle/skill_contracts.py:119-124"]
+          "refs": ["src/twwarhammer3/battle/skill_contracts.py:121-126"]
         },
         {
           "caption":
@@ -362,7 +362,7 @@ DIAGRAM.tabs.push({
             "example": "graph",
             "key": "witness"
           },
-          "refs": ["src/twwarhammer3/battle/skill_contracts.py:119-124"]
+          "refs": ["src/twwarhammer3/battle/skill_contracts.py:121-126"]
         }
       ]
     },

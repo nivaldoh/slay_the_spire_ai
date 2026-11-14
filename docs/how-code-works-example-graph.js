@@ -24,7 +24,10 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/battle/controllers.py",
    "src/twwarhammer3/battle/graph.py",
    "src/twwarhammer3/battle/graph_author.py",
-   "src/twwarhammer3/battle/graph_view_assets/view.js"
+   "src/twwarhammer3/battle/graph_view_assets/view.js",
+   "src/twwarhammer3/battle/skill_contracts.py",
+   "src/twwarhammer3/battle/team.py",
+   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
   ],
   "graph": {
    "elements": [

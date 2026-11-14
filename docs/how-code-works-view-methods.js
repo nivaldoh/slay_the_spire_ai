@@ -32,18 +32,18 @@ DIAGRAM.tabs.push({
     "Basic asks a model at every decision while the battle runs; in this GaP battle models are asked only before and between battles and code plays the graphs (GaP's optional target hints, unused here, ask during a battle).",
   "summary":
     "Two recorded battles on the same scenario, 20 Oct (basic) and 1 Nov (GaP), over the first 30 s after deployment; one battle each.",
-  "commit": "ad43a37",
-  "reviewed": "2026-11-01",
+  "commit": "601d249",
+  "reviewed": "2026-11-14",
   "example": ["methods-basic", "methods-gap"],
   "facts": {
     "model_policies": ["commander", "llm", "llm_rules", "team_llm_rules"],
     "scripted_policies": ["attack_nearest", "hold", "rush_nearest"],
     "versions": {
-      "llm": "v22",
-      "llm_rules": "v22",
+      "llm": "v23",
+      "llm_rules": "v23",
       "commander": "v8",
       "skills": "v1.2",
-      "team_llm_rules": "v22+t2"
+      "team_llm_rules": "v23+t2"
     }
   },
   "size": [1000, 0],
@@ -66,28 +66,28 @@ DIAGRAM.tabs.push({
       "status": {
         "text":
           "built, component tests only: the WH3 UI request and session checks passed at 6291377; no agreed check of the decision cycle; strength unverified",
-        "refs": ["docs/agreed-checks.md:116-119"]
+        "refs": ["docs/agreed-checks.md:231-234"]
       },
       "rests": [
         {
           "file": "docs/twwarhammer3/controllers.md",
-          "line": 53,
+          "line": 55,
           "name": "Scored model arm"
         },
         {
           "file": "src/twwarhammer3/battle/play.py",
-          "line": 501,
+          "line": 614,
           "name": "Delay"
         }
       ],
       "refs": [
-        "src/twwarhammer3/battle/controllers.py:35-50",
-        "src/twwarhammer3/battle/llm.py:59-82",
-        "src/twwarhammer3/battle/llm.py:464-478",
-        "src/twwarhammer3/battle/play.py:1-17",
-        "src/twwarhammer3/battle/controllers.py:40",
-        "src/twwarhammer3/battle/controllers.py:31-32",
-        "docs/twwarhammer3/controllers.md:69-70"
+        "src/twwarhammer3/battle/controllers.py:46-61",
+        "src/twwarhammer3/battle/llm.py:64-87",
+        "src/twwarhammer3/battle/llm.py:589-603",
+        "src/twwarhammer3/battle/play.py:1-19",
+        "src/twwarhammer3/battle/controllers.py:51",
+        "src/twwarhammer3/battle/controllers.py:60-61",
+        "docs/twwarhammer3/controllers.md:71-72"
       ]
     },
     "gap": {
@@ -107,13 +107,13 @@ DIAGRAM.tabs.push({
         "text":
           "agreed live check: no-model live effects 3/3 at d12be58; target hints at 87518f9, one probe; agreed offline checks: the graph-view check at b8f8cb7, the initiation check at 4f0c3fc. 5 GaP battles on this scenario, all lost; two sent no orders before the 1205 s limit, because their written graphs waited for contact. Strength unverified. The melee check reads a unit's target and melee flag, not whom it fights",
         "refs": [
-          "docs/agreed-checks.md:72-92",
-          "docs/agreed-checks.md:34-58",
-          "docs/agreed-checks.md:59-71",
-          "docs/agreed-checks.md:18-33",
+          "docs/agreed-checks.md:170-190",
+          "docs/agreed-checks.md:132-156",
+          "docs/agreed-checks.md:157-169",
+          "docs/agreed-checks.md:116-131",
           "docs/twwarhammer3/results.csv:645-649",
-          "docs/twwarhammer3/log.md:110-123",
-          "src/twwarhammer3/battle/skill_contracts.py:119-122"
+          "docs/twwarhammer3/log.md:2250-2263",
+          "src/twwarhammer3/battle/skill_contracts.py:121-124"
         ]
       },
       "rests": [
@@ -129,18 +129,18 @@ DIAGRAM.tabs.push({
         },
         {
           "file": "src/twwarhammer3/battle/play.py",
-          "line": 501,
+          "line": 614,
           "name": "Delay"
         }
       ],
       "refs": [
-        "src/twwarhammer3/battle/controllers.py:35-50",
+        "src/twwarhammer3/battle/controllers.py:46-61",
         "src/twwarhammer3/battle/graph.py:21-23",
-        "src/twwarhammer3/battle/graph_author.py:327-333",
-        "src/twwarhammer3/battle/graph_author.py:344-360",
-        "src/twwarhammer3/battle/graph_author.py:175-179",
+        "src/twwarhammer3/battle/graph_author.py:329-335",
+        "src/twwarhammer3/battle/graph_author.py:346-362",
+        "src/twwarhammer3/battle/graph_author.py:177-181",
         "src/twwarhammer3/battle/skill_contracts.py:17-22",
-        "src/twwarhammer3/battle/skill_contracts.py:100-124",
+        "src/twwarhammer3/battle/skill_contracts.py:100-126",
         "src/twwarhammer3/battle/graph_goals.py:24-31"
       ]
     }
@@ -171,13 +171,13 @@ DIAGRAM.tabs.push({
             "key": "r1"
           },
           "refs": [
-            "src/twwarhammer3/battle/llm.py:59-82",
-            "src/twwarhammer3/battle/play.py:499-507"
+            "src/twwarhammer3/battle/llm.py:64-87",
+            "src/twwarhammer3/battle/play.py:612-620"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/battle/play.py",
-              "line": 501,
+              "line": 614,
               "name": "Delay"
             }
           ]
@@ -196,13 +196,13 @@ DIAGRAM.tabs.push({
             "key": "r1"
           },
           "refs": [
-            "src/twwarhammer3/battle/play.py:1-17",
-            "src/twwarhammer3/battle/play.py:499-507"
+            "src/twwarhammer3/battle/play.py:1-19",
+            "src/twwarhammer3/battle/play.py:612-620"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/battle/play.py",
-              "line": 501,
+              "line": 614,
               "name": "Delay"
             }
           ]
@@ -214,7 +214,7 @@ DIAGRAM.tabs.push({
             "example": "methods-basic",
             "key": "r2"
           },
-          "refs": ["src/twwarhammer3/battle/llm.py:464-469"]
+          "refs": ["src/twwarhammer3/battle/llm.py:589-594"]
         },
         {
           "rows": ["gap.model"],
@@ -225,8 +225,8 @@ DIAGRAM.tabs.push({
             "key": "task"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph_author.py:327-333",
-            "src/twwarhammer3/battle/graph_author.py:344-360",
+            "src/twwarhammer3/battle/graph_author.py:329-335",
+            "src/twwarhammer3/battle/graph_author.py:346-362",
             "runs/twwarhammer3/gap-20261101/initial-02/manifest.json"
           ]
         },
@@ -241,7 +241,7 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/graph.py:21-23",
             "src/twwarhammer3/battle/graph.py:172-174",
-            "src/twwarhammer3/battle/team.py:312-344"
+            "src/twwarhammer3/battle/team.py:348-380"
           ],
           "rests": [
             {
@@ -266,7 +266,7 @@ DIAGRAM.tabs.push({
           },
           "refs": [
             "src/twwarhammer3/battle/skill_contracts.py:17-22",
-            "src/twwarhammer3/battle/skill_contracts.py:136-140"
+            "src/twwarhammer3/battle/skill_contracts.py:140-144"
           ],
           "rests": [
             {
@@ -285,7 +285,7 @@ DIAGRAM.tabs.push({
             "key": "revision"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph_author.py:175-179",
+            "src/twwarhammer3/battle/graph_author.py:177-181",
             "runs/twwarhammer3/gap-20261101/revised-01/manifest.json"
           ]
         }

@@ -271,8 +271,12 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   Cannae development witnesses on public state
 - `src/twwarhammer3/battle/camp.py`: `CampStrike` and its controls for the camp attack land battle
   (emp-chd-camp-v1), on public state
+- `src/twwarhammer3/battle/camp_readings.py`: that battle's evaluator readings of finished
+  battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
   two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state
+- `src/twwarhammer3/battle/lines_readings.py`: that defence's evaluator readings of finished
+  battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
   (version 3) that holds and releases enemy groups, kept apart from the public battle state
 - `src/twwarhammer3/battle/wall_defence.py`: `WallWitness` and its controls for the walled siege

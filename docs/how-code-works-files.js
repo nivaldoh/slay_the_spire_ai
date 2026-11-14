@@ -232,9 +232,63 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/camp.py",
+   "text": "`CampStrike` and its controls for the camp attack land battle (emp-chd-camp-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/camp_readings.py",
+   "text": "that battle's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/lines.py",
+   "text": "`LinesWitness`, `LinesByMen` and `LinesCentral` for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/lines_readings.py",
+   "text": "that defence's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/reserve.py",
-   "text": "battle B's private reserve draw, kept apart from the public battle state",
+   "text": "battle B's private reserve draw, and the waves profile (version 3) that holds and releases enemy groups, kept apart from the public battle state",
    "box": "map.setup",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/wall_defence.py",
+   "text": "`WallWitness` and its controls for the walled siege defence (cth-emp-siege-a-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/wall_readings.py",
+   "text": "that siege's evaluator readings of finished battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/escalade.py",
+   "text": "`Escalade` and its controls for the siege attack (ksl-emp-siege-a-v1), on public state with the siege orders",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/escalade_readings.py",
+   "text": "that siege's evaluator readings of finished battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/evidence_rules.py",
+   "text": "evidence rules the evaluation battles share: contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture holders, groups from the private first reading, units by type key, accepted trace orders",
+   "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -245,19 +299,31 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/local_command.py",
-   "text": "C's local sensing and signal/courier router",
+   "text": "C's local sensing and signal/courier router; the version 2 text mode, which checks every sender and recipient pair against the arm's links, and its muted form, which accepts texts and delivers none",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/local_team.py",
-   "text": "C's regiment groups, model interface and free probe",
+   "text": "C's regiment groups, model interface and free probes; version 2's peer, relay and overview arms, the muted controls (peer or overview to their members, nothing delivered) and the unlinked one (no links, no messages), the commander and its stage-1 probes",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/local_scripts.py",
+   "text": "scripted C v2 witnesses (peer, relay and overview) and foils (fixed schedule, central concentration, `ThinkingRush`) for the communication-structure stage 2; each sleeps a model-like think time per decision",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/replay_schedule.py",
+   "text": "`ReplaySchedule`, the fixed-schedule foil that replays a won episode's accepted orders by battle time on a fresh launch",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/configured.py",
-   "text": "JSON controller composition",
+   "text": "JSON controller composition; a version 2 star arm's `local_team` node takes the commander, whose model leaf gets its own prompt",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -382,6 +448,12 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/exact_stats.py",
+   "text": "exact small-sample statistics for win rates: two-sided Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/report_html.py",
    "text": "the offline HTML report",
    "box": "map.reports",
@@ -438,6 +510,30 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "configs/twwarhammer3/cannae_shared_plan.md",
    "text": "battle C's shared prebattle plan",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/cannae_shared_plan_v2.md",
+   "text": "the shared plan of C's version 2 arms, without the channel paragraphs",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/local_captain_prompt.md",
+   "text": "the captain prompt of C's version 2 arms",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/local_commander_prompt.md",
+   "text": "the commander prompt of C's relay and overview arms",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "configs/twwarhammer3/local_topology_rules.json",
+   "text": "the rules section each version 2 arm adds for captains and the commander (muted uses peer's, muted_overview overview's)",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
