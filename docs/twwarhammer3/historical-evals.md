@@ -357,7 +357,7 @@ battle by battle let a label mean different things per battle; comparing labels 
 |---|---|
 | Game | Total War: WARHAMMER III on Steam on Windows, driven from WSL ([AGENTS.md](../../AGENTS.md#architecture)) |
 | Patch and build | 9.0.5, Steam build 26403568, pinned in `engine/runtime.py`; another build warns and is recorded but never blocks |
-| Mod pack | The pack the checkout builds from `src/twwarhammer3/mod/`; its hash is `engine/worker.pack_sha256()`, and each job's `manifest.json` records it under `deployment.pack`. Its Lua changed at `f3fec92` |
+| Mod pack | The pack the checkout builds from `src/twwarhammer3/mod/`; its hash is `engine/runtime.pack_sha256()`, and each job's `manifest.json` records it under `deployment.pack`. Its Lua changed at `f3fec92` |
 | Haengju content | `wh_main` (the Empire divisions), `wh3_main` (the Grand Cathay garrison) |
 | Belgrade content | `wh_main` (Empire knights, Reiksguard, General, Warrior Priest), `wh_dlc04` (Flagellants, Free Company), `wh3_dlc23` (every Chaos Dwarf unit) |
 | Alesia content | `wh_main` (the Norsca Marauders and Marauder Horsemen), `wh_dlc08` (the other Norsca units; the faction is `wh_dlc08_nor_norsca`), `wh3_main` (the Kislev army) |

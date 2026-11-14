@@ -82,6 +82,8 @@ from twwarhammer3.protocol import (
     validate_orders,
 )
 
+# policy_call and is_forfeit, and their JUDGEMENT markers Operator errors and Forfeit split, are
+# in protocol.py; cannae.py and lines.py still cite them under play.py.
 SCORED = {"won", "lost", "draw"}
 ENDED = SCORED | {"truncated"}  # ended without a failure, which a cleanup failure replaces
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",

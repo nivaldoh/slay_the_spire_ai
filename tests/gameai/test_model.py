@@ -629,7 +629,7 @@ def test_a_model_needs_a_positive_integer_of_transport_attempts(tmp_path, attemp
 
 
 # An error body can stall or reset like any read. Its status line has already arrived, so the
-# message keeps "HTTP <code>" (play.policy_call reads the 401 and 402 prefixes) and the attempt
+# error keeps its status (protocol.account_stop reads 401 and 402 from it) and the attempt
 # keeps the 5xx and 408 charging rule; earlier attempts' charges are kept.
 @pytest.mark.parametrize(("code", "uncertain"), [(502, 2), (401, 1)])
 def test_an_unreadable_error_body_keeps_the_status_and_the_billed_attempts(
@@ -650,6 +650,7 @@ def test_an_unreadable_error_body_keeps_the_status_and_the_billed_attempts(
         api.post("key", {}, attempts=2)
     assert str(error.value) == f"HTTP {code}: <error body unreadable: TimeoutError>"
     assert error.value.uncertain_attempts == uncertain and not outcomes
+    assert error.value.status == code
 
 
 # urllib raises URLError only while connecting and sending (Python 3.13

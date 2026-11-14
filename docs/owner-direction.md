@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
+  Let's improve our codebase." Answers: which controller files the cleanup may edit, since
+  `controllers.card()` hashes each policy's source file into its card identity: "Team files only
+  (Recommended)" (team.py, commander.py and graph_goals.py, no behaviour change; scripted,
+  calibration, llm, skills, local_team and the witness modules wait for a version bump); one
+  rule for trace readers' truncated or invalid lines: "Leave as is (Recommended)"; fixture-only
+  edits to tests the agreed check `pytest -ra tests/twwarhammer3` names: "Yes, fixtures only
+  (Recommended)". Branch `code-quality-20261114`.
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.

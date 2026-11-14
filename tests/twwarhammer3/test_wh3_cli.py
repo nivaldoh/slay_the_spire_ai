@@ -280,3 +280,16 @@ def test_digest_and_report_still_take_an_existing_job_and_plan(tmp_path, monkeyp
     monkeypatch.setattr(sys, "argv", ["wh3", "report", str(job), "--benchmark-plan", str(plan),
                                       "--output", str(tmp_path / "out")])
     assert main() == 0 and seen == [([job], {"benchmark_plans": [plan]})]
+
+
+@pytest.mark.parametrize("command", ["export", "report"])
+def test_a_jobs_file_with_an_empty_path_is_refused(tmp_path, monkeypatch, capsys, command):
+    """Path("") is the current folder, which neither command may read as a job. Wrong version:
+    read_paths accepting an empty string."""
+    selection = tmp_path / "jobs.json"
+    selection.write_text('[""]')
+    monkeypatch.setattr(sys, "argv", ["wh3", command, "--jobs-file", str(selection),
+                                      "--output", str(tmp_path / "out")])
+    with pytest.raises(SystemExit) as error:
+        main()
+    assert error.value.code == 2 and "a JSON list of paths" in capsys.readouterr().err

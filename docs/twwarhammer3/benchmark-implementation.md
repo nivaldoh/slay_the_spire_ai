@@ -300,7 +300,7 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 18. **How should non-wins and failures count?** A draw as zero, a half point, or its own category? The controller-failure rule is agreed ([outcome table](benchmark.md#outcome-and-score)); decide the rest: provider outage, exhausted credits, wall-time or budget cap, unknown failure and voluntary surrender. Which count against the model as served, which get a replacement battle, and which stay unresolved? Can a failed battle keep partial health or morale credit? The engine timer and the controller's wall-time limit are different endings.
    Answered in part on 2026-11-13: a provider's quota or credit refusal stops the job like HTTP
-   401/402 and is never the model's forfeit ("Stop like 401/402 (Recommended)"; `play.py`
+   401/402 and is never the model's forfeit ("Stop like 401/402 (Recommended)"; `protocol.py`
    ACCOUNT_LIMITS). How readers count such battles stays open with the rest.
 
    Evidence (2026-10-30, not an answer; 642 register episodes): 623 engine results, 195 won, 428 lost, no
