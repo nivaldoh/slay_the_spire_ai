@@ -3,8 +3,6 @@
 Updated 2026-11-14. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`; controller files other than team, commander and graph_goals untouched (owner). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)).
-
 Historical-battle construction holds, 2026-11-14 (Claude, 03:18-04:45; games closed): Haengju 1a and Izmail stage 1, three `hold` launches, $0 ([log](twwarhammer3/log.md#2026-11-14-first-haengju-and-izmail-construction-holds)). Haengju's gate hit points fell to 0 with D1's Spearmen at it, so Gate stop ended its stage 1; Izmail ended at the timer twice, found `can_climb` missing and tower owners read from the wrong side (fix parked on `tower-owner-20261114`). Also: five code-page views refreshed. Next: item 15's new choices. Evidence: `runs/haengju-20261114/`.
 
 Refusal sweeps, 2026-11-13 (Claude, overnight then from 10:28): tests now catch 55 of 59 refusal removals that the tests of nineteen WH3 files missed; tests, twelve plants and one sweep-tool fix; offline, $0. The Cannae and Alesia witnesses' 11 refusals now end the battle instead of counting as forfeits (owner's answer, 2026-11-13). Evidence: `runs/overnight-20261113/`, `runs/sweeps-20261113b/`.
@@ -13,11 +11,7 @@ Battle review, 2026-11-12 (Codex): b55 fixes deployment handover failures and si
 
 Feedback and Alesia construction, 2026-11-12 (Codex): saved-input feedback probe and one case-a hold completed; independent recounts done, report selection updated. The feedback candidate remains unadopted. The hold missed the proposed first-rout-in-heavy-sector clause; actual army charge is unread. Both games closed. Evidence: `runs/comm-feedback-20261112/`. Next: decisions 14 and 15; no new game planned.
 
-Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts
-and report update finished. All six battles lost; no ranking.
-Belgrade's Flagellants and Free Company report unowned in the lobby; no battle or
-roster change. Both games closed; recorded spend $6.45 of $30. Evidence:
-`runs/benchmark-progress-20261111/`. Next: endpoint/check agreement and Belgrade access.
+Benchmark progress, 2026-11-11 (Codex): exploratory P/R/O pilot, independent recounts and report update finished. All six battles lost; no ranking. Belgrade's Flagellants and Free Company report unowned in the lobby; no battle or roster change. Both games closed; recorded spend $6.45 of $30. Evidence: `runs/benchmark-progress-20261111/`. Next: endpoint/check agreement and Belgrade access.
 
 Unmerged-work cleanup, 2026-11-11: selected tests, Spire rule policy/environment/replay and experimental Alesia contacts are merged. Fourteen original local branches and three remote branches were removed. The owner kept `wh3-human-opponent` and its worktree; experimental training is archived at `archive/spire-local-rl-20261111`, with results retained and three reproduced defects documented. No cleanup choice remains pending. No games or training started. Evidence: `runs/unmerged-cleanup-20261110/`.
 

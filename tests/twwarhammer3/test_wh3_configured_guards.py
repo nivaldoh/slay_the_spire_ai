@@ -76,3 +76,20 @@ def test_supported_direct_member_interfaces_still_load_without_models(local_decl
     raw, load = local_declaration
     raw["members"]["centre"] = {"type": kind}
     assert load(raw)["members"]["centre"]["controller"] == {"type": kind}
+
+
+@pytest.mark.parametrize("leaf,error", [
+    pytest.param("llm_rules@gpt-6-luna/ultra", ValueError, id="effort-the-provider-lacks"),
+    pytest.param("twwarhammer3.battle.scripted:NoSuchPolicy", AttributeError,
+                 id="class-that-does-not-exist"),
+])
+def test_a_team_leaf_the_job_cannot_play_is_refused_at_load(tmp_path, leaf, error):
+    """configured.load checks each leaf as play checks a policy name, before anything launches.
+    Wrong version: the leaf check skipped, so the composition loads and fails only later."""
+    spec = {"type": "team", "members": {
+        "rest": {"unit_types": None, "controller": {"type": "hold"}},
+        "leaf": {"unit_types": ["wh_main_emp_cav_empire_knights"], "controller": {"type": leaf}}}}
+    path = tmp_path / "team.json"
+    path.write_text(json.dumps(spec))
+    with pytest.raises(error):
+        configured.load(path, {"provider": "openai"})

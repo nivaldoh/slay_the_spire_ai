@@ -4405,3 +4405,12 @@ old = 'or 400 <= status < 500 and any('
 new = 'or any('
 tests = ["tests/twwarhammer3/test_wh3_play.py::test_rate_limits_and_other_errors_stay_the_models_forfeit"]
 source = "2026-11-14 code-quality: account_stop reads APIError.status and stop"
+
+[[plant]]
+id = "configured-skips-its-leaf-check"
+guards = "configured.load refuses a leaf the job cannot play (provider effort, missing class) before launching"
+file = "src/twwarhammer3/battle/configured.py"
+old = 'controllers.check_policy(kind, config)'
+new = 'pass'
+tests = ["tests/twwarhammer3/test_wh3_configured_guards.py::test_a_team_leaf_the_job_cannot_play_is_refused_at_load"]
+source = "2026-11-14 code-quality review: skipping the leaf check passed every WH3 test"

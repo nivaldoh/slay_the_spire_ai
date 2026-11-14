@@ -19,7 +19,7 @@ DIAGRAM.tabs.push({
     "Models write one graph per member before the battle; during it no model is asked, and the members take turns, each graph moving at most one step per view it gets.",
   "summary":
     "gap-initial-02, 1 Nov: graphs written by Haiku 5.5 before the battle; lost at 618.2 s by engine result; one battle, no strength claim.",
-  "commit": "601d249",
+  "commit": "c37fad8",
   "reviewed": "2026-11-14",
   "example": "graph",
   "facts": {
@@ -140,7 +140,7 @@ DIAGRAM.tabs.push({
       "status": "built, component tests only",
       "refs": [
         "src/twwarhammer3/battle/skill_contracts.py:133-144",
-        "src/twwarhammer3/battle/team.py:371-380"
+        "src/twwarhammer3/battle/team.py:365-374"
       ]
     },
     {
@@ -151,7 +151,7 @@ DIAGRAM.tabs.push({
       "status": "built, component tests only",
       "refs": [
         "src/twwarhammer3/battle/skill_contracts.py:133-144",
-        "src/twwarhammer3/battle/team.py:371-380"
+        "src/twwarhammer3/battle/team.py:365-374"
       ]
     }
   ],
@@ -201,7 +201,7 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/graph.py:21-23",
             "src/twwarhammer3/battle/graph.py:206-225",
-            "src/twwarhammer3/battle/team.py:348-380"
+            "src/twwarhammer3/battle/team.py:342-374"
           ],
           "rests": [
             {
@@ -231,7 +231,7 @@ DIAGRAM.tabs.push({
             "key": "attack"
           },
           "refs": [
-            "src/twwarhammer3/battle/controllers.py:51-52",
+            "src/twwarhammer3/battle/controllers.py:59-60",
             "src/twwarhammer3/battle/skill_contracts.py:121-126"
           ]
         },
@@ -257,7 +257,7 @@ DIAGRAM.tabs.push({
           "refs": [
             "src/twwarhammer3/battle/graph.py:203-205",
             "src/twwarhammer3/battle/graph_author.py:33",
-            "src/twwarhammer3/battle/team.py:348-380"
+            "src/twwarhammer3/battle/team.py:342-374"
           ],
           "rests": [
             {
