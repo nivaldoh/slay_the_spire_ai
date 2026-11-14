@@ -13,10 +13,9 @@ from twwarhammer3.battle import benchmark, controllers, graph, graph_goals, loca
 from twwarhammer3.battle.setup import scenarios
 
 
-def load(path, config):
-    """Resolve and validate data without credentials, budgets, models or game access."""
-    path = Path(path).resolve()
-    artifact = None
+def read_spec(path: Path) -> tuple[dict, dict | None, Path]:
+    """The controller spec at ``path``, the graph-author artifact it came from (None for a
+    plain file) and the controller file that relative graph paths start from."""
     manifest = path / "manifest.json" if path.is_dir() else path.parent / "manifest.json"
     if path.is_dir() and not manifest.is_file():
         raise ValueError("controller artifact needs manifest.json")
@@ -27,11 +26,13 @@ def load(path, config):
         if (path.is_dir() or metadata.get("artifact_type") == graph_author.ARTIFACT_TYPE
                 or str(metadata.get("version", "")).startswith(f"{graph_author.ARTIFACT_TYPE}-")):
             spec, artifact = graph_author.load_artifact(manifest.parent)
-            path = manifest.parent / "controller.json"
-        else:
-            spec = json.loads(path.read_text())
-    else:
-        spec = json.loads(path.read_text())
+            return spec, artifact, manifest.parent / "controller.json"
+    return json.loads(path.read_text()), None, path
+
+
+def load(path, config):
+    """Resolve and validate data without credentials, budgets, models or game access."""
+    spec, artifact, path = read_spec(Path(path).resolve())
     leaves, goal_models = set(), set()
 
     def prepare(node):
@@ -39,85 +40,14 @@ def load(path, config):
             raise ValueError("controller needs a type")
         kind = node["type"]
         if kind == "local_team":
-            arm = local_team.declaration(scenarios().get(config.get("scenario"), {}))
-            if set(node) != {"type", "members"} or not isinstance(node["members"], dict):
-                raise ValueError("local_team needs only its five members")
-            if set(node["members"]) != local_team.member_names(arm):
-                raise ValueError("local_team needs the five declared command groups"
-                                 + (" and the commander" if local_team.TOPOLOGIES.get(arm)
-                                    == "star" else ""))
-            members = {}
-            for name, member in node["members"].items():
-                child = prepare(member)
-                if child["type"] in {"team", "local_team", "graph", "graph_llm"}:
-                    raise ValueError("local_team members must be direct local controllers")
-                base = controllers.policy_parts(child["type"], config)[0]
-                if base in controllers.MODEL_POLICIES and base not in {"llm", "llm_rules"}:
-                    raise ValueError("local_team model members use llm or llm_rules")
-                members[name] = {"controller": child}
-            return {"type": kind, "members": members}
+            return _local_team(node, config, prepare)
         if kind in ("graph", "graph_llm"):
-            allowed = {"type", "graph"}
+            result = _graph(node, path, config)
             if kind == "graph_llm":
-                allowed |= {"model", "effort", "task", "max_requests"}
-            if set(node) - allowed or not {"type", "graph"} <= set(node):
-                raise ValueError("graph controller needs type and graph")
-            value = node["graph"]
-            if isinstance(value, str):
-                value = json.loads((path.parent / value).read_text())
-            validator = graph_goals.validate_graph if kind == "graph_llm" else graph.validate
-            result = {"type": kind, "graph": validator(value)}
-            if kind == "graph_llm":
-                provider = config.get("provider", "openai")
-                model = node.get("model", config.get("model")
-                                 or next(iter(get_provider(provider).prices)))
-                effort = node.get("effort", config.get("effort") or "low")
-                if not isinstance(model, str) or not isinstance(effort, str):
-                    raise ValueError("goal model and effort must be text")
-                validate(provider, model, effort)
-                limit = node.get("max_requests")
-                if limit is not None and (type(limit) is not int or limit <= 0):
-                    raise ValueError("max_requests must be positive or null")
-                if not isinstance(node.get("task", ""), str):
-                    raise ValueError("goal task must be text")
-                result.update(model=model, effort=effort, task=node.get("task", ""),
-                              max_requests=limit)
-                goal_models.add((model, effort))
+                goal_models.add((result["model"], result["effort"]))
             return result
         if kind == "team":
-            if set(node) - {"type", "members", "army_owner", "max_age_ms", "optional"}:
-                raise ValueError("unknown team settings")
-            members = node.get("members")
-            if not isinstance(members, dict) or not members or (
-                    len(members) != 2 and node.get("optional") is not True):
-                raise ValueError("configured team needs exactly two members")
-            result = {"type": kind, "members": {}, "army_owner": node.get("army_owner"),
-                      "max_age_ms": node.get("max_age_ms", graph.MAX_AGE_MS),
-                      "optional": node.get("optional", False) is True}
-            age = result["max_age_ms"]
-            if age is not None and (type(age) is not int or age <= 0):
-                raise ValueError("max_age_ms must be positive or null")
-            kinds, rests = set(), 0
-            for name, member in members.items():
-                if not isinstance(member, dict) or set(member) != {"unit_types", "controller"}:
-                    raise ValueError("member needs unit_types and controller")
-                unit_types = member["unit_types"]
-                if unit_types is None:
-                    rests += 1
-                elif (not isinstance(unit_types, list) or not unit_types
-                      or any(not isinstance(t, str) or not t for t in unit_types)
-                      or len(set(unit_types)) != len(unit_types) or kinds.intersection(unit_types)):
-                    raise ValueError("members need distinct unit_types")
-                else:
-                    kinds.update(unit_types)
-                controller = member["controller"]
-                if isinstance(controller, dict) and controller.get("type") == "team":
-                    raise ValueError("nested teams are not supported")
-                result["members"][name] = {"unit_types": unit_types,
-                                            "controller": prepare(controller)}
-            if rests > 1 or result["army_owner"] not in (None, *members):
-                raise ValueError("invalid army owner or multiple rest members")
-            return result
+            return _team(node, prepare)
         if kind == "configured" or "," in kind or set(node) != {"type"}:
             raise ValueError("leaf controller needs only a built-in name or module:Class type")
         # All direct model leaves share one normal factory preparation and ledger.
@@ -128,6 +58,91 @@ def load(path, config):
     frozen = prepare(spec)
     config["controller_spec"] = deepcopy(frozen)
     return frozen, leaves, goal_models, artifact
+
+
+def _local_team(node, config, prepare):
+    arm = local_team.declaration(scenarios().get(config.get("scenario"), {}))
+    if set(node) != {"type", "members"} or not isinstance(node["members"], dict):
+        raise ValueError("local_team needs only its five members")
+    if set(node["members"]) != local_team.member_names(arm):
+        raise ValueError("local_team needs the five declared command groups"
+                         + (" and the commander" if local_team.TOPOLOGIES.get(arm)
+                            == "star" else ""))
+    members = {}
+    for name, member in node["members"].items():
+        child = prepare(member)
+        if child["type"] in {"team", "local_team", "graph", "graph_llm"}:
+            raise ValueError("local_team members must be direct local controllers")
+        base = controllers.policy_parts(child["type"], config)[0]
+        if base in controllers.MODEL_POLICIES and base not in {"llm", "llm_rules"}:
+            raise ValueError("local_team model members use llm or llm_rules")
+        members[name] = {"controller": child}
+    return {"type": "local_team", "members": members}
+
+
+def _graph(node, path, config):
+    kind = node["type"]
+    allowed = {"type", "graph"}
+    if kind == "graph_llm":
+        allowed |= {"model", "effort", "task", "max_requests"}
+    if set(node) - allowed or not {"type", "graph"} <= set(node):
+        raise ValueError("graph controller needs type and graph")
+    value = node["graph"]
+    if isinstance(value, str):
+        value = json.loads((path.parent / value).read_text())
+    validator = graph_goals.validate_graph if kind == "graph_llm" else graph.validate
+    result = {"type": kind, "graph": validator(value)}
+    if kind == "graph_llm":
+        provider = config.get("provider", "openai")
+        model = node.get("model", config.get("model")
+                         or next(iter(get_provider(provider).prices)))
+        effort = node.get("effort", config.get("effort") or "low")
+        if not isinstance(model, str) or not isinstance(effort, str):
+            raise ValueError("goal model and effort must be text")
+        validate(provider, model, effort)
+        limit = node.get("max_requests")
+        if limit is not None and (type(limit) is not int or limit <= 0):
+            raise ValueError("max_requests must be positive or null")
+        if not isinstance(node.get("task", ""), str):
+            raise ValueError("goal task must be text")
+        result.update(model=model, effort=effort, task=node.get("task", ""),
+                      max_requests=limit)
+    return result
+
+
+def _team(node, prepare):
+    if set(node) - {"type", "members", "army_owner", "max_age_ms", "optional"}:
+        raise ValueError("unknown team settings")
+    members = node.get("members")
+    if not isinstance(members, dict) or not members or (
+            len(members) != 2 and node.get("optional") is not True):
+        raise ValueError("configured team needs exactly two members")
+    result = {"type": "team", "members": {}, "army_owner": node.get("army_owner"),
+              "max_age_ms": node.get("max_age_ms", graph.MAX_AGE_MS),
+              "optional": node.get("optional", False) is True}
+    age = result["max_age_ms"]
+    if age is not None and (type(age) is not int or age <= 0):
+        raise ValueError("max_age_ms must be positive or null")
+    kinds, rests = set(), 0
+    for name, member in members.items():
+        if not isinstance(member, dict) or set(member) != {"unit_types", "controller"}:
+            raise ValueError("member needs unit_types and controller")
+        unit_types = member["unit_types"]
+        if unit_types is None:
+            rests += 1
+        elif (not isinstance(unit_types, list) or not unit_types
+              or any(not isinstance(t, str) or not t for t in unit_types)
+              or len(set(unit_types)) != len(unit_types) or kinds.intersection(unit_types)):
+            raise ValueError("members need distinct unit_types")
+        else:
+            kinds.update(unit_types)
+        controller = member["controller"]
+        if isinstance(controller, dict) and controller.get("type") == "team":
+            raise ValueError("nested teams are not supported")
+        result["members"][name] = {"unit_types": unit_types, "controller": prepare(controller)}
+    if rests > 1 or result["army_owner"] not in (None, *members):
+        raise ValueError("invalid army owner or multiple rest members")
+    return result
 
 
 def factory(path, config, *, ledger=None):
