@@ -10,7 +10,7 @@ from copy import deepcopy
 
 from twwarhammer3.battle.llm import ARRIVED_M
 from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.scripted import distance, forget_refused
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 
 # JUDGEMENT: Cannae witness development rules — Codex, 2026-11-05: centre engages at
@@ -230,9 +230,7 @@ class Envelop:
         return orders
 
     def acknowledge(self, ack, latency):
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)
+        forget_refused(self.sent, ack)
 
     def metadata(self):
         return deepcopy({"type": "cannae_envelop", "version": 2, "groups": self.groups,

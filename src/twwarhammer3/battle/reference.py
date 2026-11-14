@@ -7,7 +7,7 @@ readings rise when an army really does concentrate; it is not a model of good pl
 
 from statistics import mean
 
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.scripted import distance, forget_refused
 from twwarhammer3.battle.skills import CHARGERS, OUT, SHOOTERS
 from twwarhammer3.protocol import friendly_units, visible_enemies
 
@@ -74,9 +74,7 @@ class Concentrate:
         return orders
 
     def acknowledge(self, ack, latency):
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)
+        forget_refused(self.sent, ack)
 
     def metadata(self):
         return {"type": "concentrate", "target": self.target, "gathering": self.gathering}

@@ -12,7 +12,8 @@ import math
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle.support_timing import OUT, TYPES, able, identities
+from twwarhammer3.battle.local_command import OUT, able
+from twwarhammer3.battle.support_timing import TYPES, identities
 from twwarhammer3.protocol import HIDDEN_KEYS, ProtocolError
 
 

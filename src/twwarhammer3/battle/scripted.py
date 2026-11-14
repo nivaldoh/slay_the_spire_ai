@@ -48,9 +48,7 @@ class AttackNearest:
         return orders
 
     def acknowledge(self, ack: dict, latency: dict) -> None:
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.targets.pop(result.get("unit"), None)
+        forget_refused(self.targets, ack)
 
     def metadata(self) -> dict:
         return {"type": "attack_nearest"}
@@ -74,6 +72,25 @@ def distance(a: dict, b: dict) -> float:
     if None in (a.get("x"), a.get("z"), b.get("x"), b.get("z")):
         return math.inf
     return math.hypot(a["x"] - b["x"], a["z"] - b["z"])
+
+
+def nearest(unit: dict, others) -> dict | None:
+    """The one of ``others`` nearest ``unit``; ties go to the smaller x, then z, never to id or
+    list order."""
+    return min(others, key=lambda other: (distance(unit, other), other["x"], other["z"]),
+               default=None)
+
+
+def find(units, uid) -> dict | None:
+    """The unit of ``units`` whose id is ``uid``, or None."""
+    return next((unit for unit in units if unit["id"] == uid), None)
+
+
+def forget_refused(sent: dict, ack: dict) -> None:
+    """Drop from ``sent`` each unit whose order the engine refused, so it is sent again."""
+    for result in ack.get("results", []):
+        if not result.get("ok"):
+            sent.pop(result.get("unit"), None)
 
 
 POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "rush_nearest": RushNearest}

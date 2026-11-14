@@ -48,7 +48,7 @@ from copy import deepcopy
 
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.scripted import distance, find, nearest
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 
 LORD = "wh3_main_cth_cha_lord_magistrate_0"
@@ -96,11 +96,6 @@ CUE_NEAR_M = 150  # decision 1's cue: a visible enemy this close to the wall lin
 CUE_FAR_M, CUE_FAR_UNITS = 300, 10  # while this many roster units were never seen this close
 
 RULES = frozenset({"build", "fire", "reserve", "fallback"})
-
-
-def _nearest(unit, enemies):
-    """The enemy nearest ``unit``; ties go to the smaller x, then z, never to id or list order."""
-    return min(enemies, key=lambda e: (distance(unit, e), e["x"], e["z"]), default=None)
 
 
 def _segment_distance(x, z, a, b):
@@ -205,9 +200,6 @@ class WallWitness:
         return self._send(unit, {"unit": unit["id"], "type": "move", "x": spot["x"],
                                  "z": spot["z"], "run": RUN, "queue": False})
 
-    def _kept(self, identity, enemies):
-        return next((e for e in enemies if e["id"] == self.targets.get(identity)), None)
-
     def _builds(self, mode):
         if "build" not in self.rules:
             return []
@@ -270,8 +262,8 @@ class WallWitness:
             if unit is None or not able(unit):
                 continue
             if breaching:
-                orders += self._attack(unit, self._kept(identity, breaching)
-                                       or _nearest(unit, breaching))
+                orders += self._attack(unit, find(breaching, self.targets.get(identity))
+                                       or nearest(unit, breaching))
             elif not inside:
                 orders += self._move(unit, self.points[RESERVE_POINT])
         return orders
@@ -300,7 +292,7 @@ class WallWitness:
             unit = units.get(identity)
             if unit is None or not able(unit):
                 continue
-            target = self._kept(identity, near) or _nearest(unit, near)
+            target = find(near, self.targets.get(identity)) or nearest(unit, near)
             orders += self._attack(unit, target) if target else self._move(unit, spot)
         return orders
 

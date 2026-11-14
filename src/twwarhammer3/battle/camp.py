@@ -26,7 +26,7 @@ from copy import deepcopy
 
 from twwarhammer3.battle.evidence_rules import in_melee
 from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.scripted import distance, find, forget_refused, nearest
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 
 # JUDGEMENT: Camp groups — Claude, 2026-11-08 (camp design): groups by emp-chd-camp-v1's type keys,
@@ -60,11 +60,6 @@ FIXED_CUE_MS = None  # T_fixed: the median cue time of stage 3's launches, set b
 # JUDGEMENT: Camp target rules — Claude, 2026-11-08: units attack visible able enemies only, keeping
 # a target until it is dead, routing, shattered or unseen (the design says so for mounted units).
 # Levies taking routing or nearer enemies change both arms' play; every camp arm rests on it.
-
-
-def _nearest(unit, enemies):
-    """The enemy nearest ``unit``; ties go to the smaller x, then z, never to id or list order."""
-    return min(enemies, key=lambda e: (distance(unit, e), e["x"], e["z"]), default=None)
 
 
 class CampStrike:
@@ -144,23 +139,20 @@ class CampStrike:
         return self._send(unit, {"unit": unit["id"], "type": "attack", "target": target["id"],
                                  "mode": mode, "run": run, "queue": False})
 
-    def _kept(self, identity, enemies):
-        return next((e for e in enemies if e["id"] == self.targets.get(identity)), None)
-
     def _mounted(self, unit, enemies, engaged):
-        current = self._kept(unit["id"], enemies)
+        current = find(enemies, self.targets.get(unit["id"]))
         first, spots = self._first(enemies, engaged)
         if current is not None and current.get("type") in self.first_keys:
             return self._attack(unit, current)
         if first:
-            return self._attack(unit, _nearest(unit, first))
+            return self._attack(unit, nearest(unit, first))
         if spots:
-            spot = _nearest(unit, spots)
+            spot = nearest(unit, spots)
             self.targets.pop(unit["id"], None)
             return self._send(unit, {"unit": unit["id"], "type": "move", "x": spot["x"],
                                      "z": spot["z"], "run": True, "queue": False})
         fighting = [e for e in enemies if e["id"] in engaged]
-        return self._attack(unit, current or _nearest(unit, fighting or enemies))
+        return self._attack(unit, current or nearest(unit, fighting or enemies))
 
     def decide(self, observation):
         self.now = observation["time_ms"]
@@ -192,8 +184,8 @@ class CampStrike:
         for identity in self.roles["levies"]:
             unit = units.get(identity)
             if unit is not None and able(unit):
-                orders += self._attack(unit, self._kept(identity, enemies)
-                                       or _nearest(unit, enemies))
+                orders += self._attack(unit, find(enemies, self.targets.get(identity))
+                                       or nearest(unit, enemies))
         if self.start_ms is not None:
             for identity in self.roles["mounted"]:
                 unit = units.get(identity)
@@ -202,9 +194,7 @@ class CampStrike:
         return orders
 
     def acknowledge(self, ack, latency):
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)
+        forget_refused(self.sent, ack)
 
     def metadata(self):
         return deepcopy({"type": self.arm, "version": 1, "roles": self.roles,

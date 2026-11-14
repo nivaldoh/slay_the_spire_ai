@@ -74,7 +74,7 @@ from copy import deepcopy
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.replay_schedule import ReplaySchedule
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.scripted import distance, forget_refused, nearest
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES, PolicyFailure, friendly_units, visible_enemies
 
 BOYAR = "wh3_main_ksl_cha_boyar_0"
@@ -125,11 +125,6 @@ SHOOT_M = 120  # Shoot only fires from this far south of its target
 CONCENTRATE_POINTS = {"west": "c5", "east": "c4", "centre": "c5"}
 RETRY_MS = 10000  # an unchanged move or attack is resent after this long once it lapsed
 ARRIVED_M = 15  # a unit idle farther than this from its move's point has dropped the move
-
-
-def _nearest(unit, others):
-    """The one of ``others`` nearest ``unit``; ties go to the smaller x, then z, never to id."""
-    return min(others, key=lambda o: (distance(unit, o), o["x"], o["z"]), default=None)
 
 
 def bearing(start, end):
@@ -284,13 +279,13 @@ class Escalade:
         """The enemy this unit attacks: the one it already attacks while still able and visible,
         else the nearest."""
         kept = next((e for e in enemies if e["id"] == self.kept.get(unit["id"])), None)
-        return kept or _nearest(unit, enemies)
+        return kept or nearest(unit, enemies)
 
     # Cues.
     def _breached(self, mode):
         """The public gate nearest g1 is breached, or the Gatehouse point is ours."""
         gates = [g for g in mode.get("gates") or [] if g.get("x") is not None]
-        gate = _nearest(self.pieces[GATE], gates)
+        gate = nearest(self.pieces[GATE], gates)
         point = next((p for p in mode.get("capture_points") or [] if p.get("id") == GATEHOUSE), {})
         return bool(gate and gate_breached(gate)) or holds(point, "us")
 
@@ -439,9 +434,7 @@ class Escalade:
         return self._unit(unit, job, group, enemies, mode, entered)
 
     def acknowledge(self, ack, latency):
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)
+        forget_refused(self.sent, ack)
 
     def metadata(self):
         return deepcopy({"type": self.arm, "version": 1, "groups": self.groups, "jobs": self.jobs,
@@ -727,7 +720,7 @@ def door_view(observation, breached=False):
     if gate is None or gate_breached(gate):
         return observation
     if not breached:
-        door = _nearest(gate, [g for g in mode.get("gates") or [] if g.get("x") is not None])
+        door = nearest(gate, [g for g in mode.get("gates") or [] if g.get("x") is not None])
         if not door or not gate_breached(door):
             return observation
     fallen = [{**p, "hp": 0} if p is gate else p for p in pieces]

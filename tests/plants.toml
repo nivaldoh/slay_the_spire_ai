@@ -4211,9 +4211,7 @@ file = "src/twwarhammer3/battle/local_scripts.py"
 guards = "a rejected scripted order is retried before the ordinary idle refresh"
 tests = ["tests/twwarhammer3/team/test_wh3_local_script_recovery.py"]
 old = '''    def acknowledge(self, ack, latency):
-        for result in ack.get("results", []):
-            if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)'''
+        forget_refused(self.sent, ack)'''
 new = '''    def acknowledge(self, ack, latency):
         pass'''
 
@@ -4414,3 +4412,16 @@ old = 'controllers.check_policy(kind, config)'
 new = 'pass'
 tests = ["tests/twwarhammer3/test_wh3_configured_guards.py::test_a_team_leaf_the_job_cannot_play_is_refused_at_load"]
 source = "2026-11-14 code-quality review: skipping the leaf check passed every WH3 test"
+
+[[plant]]
+id = "forget-refused-forgets-accepted-orders"
+guards = "Witnesses resend only the orders the engine refused, not the ones it accepted"
+file = "src/twwarhammer3/battle/scripted.py"
+old = '''    for result in ack.get("results", []):
+        if not result.get("ok"):
+            sent.pop(result.get("unit"), None)'''
+new = '''    for result in ack.get("results", []):
+        if result.get("ok"):
+            sent.pop(result.get("unit"), None)'''
+tests = ["tests/twwarhammer3/team/test_wh3_local_script_recovery.py"]
+source = "2026-11-14 code-quality: the witnesses' copied acknowledge became scripted.forget_refused"

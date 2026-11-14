@@ -12,6 +12,7 @@ import math
 from pathlib import Path
 
 from gameai.provenance import committed_revision, source_fingerprints
+from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.protocol import ProtocolError
@@ -23,7 +24,6 @@ TYPES = {"infantry": "wh_main_emp_inf_swordsmen", "cavalry": "wh_main_emp_cav_em
 ARMS = ("direct", "opening", "scheduled", "contact", "delayed", "none")
 # Rests on JUDGEMENT docs/twwarhammer3/support-timing.md Diagnostic design.
 SCHEDULE_MS, DELAY_MS, LEFT_M, BEHIND_M, REPEATS = 30000, 12000, 80, 60, 3
-OUT = {"routing", "shattered", "leaving", "not_deployed", "deploying"}
 
 
 def identities(observation):
@@ -38,11 +38,6 @@ def identities(observation):
     if len(set(result.values())) != 3:
         raise ProtocolError("support timing: duplicate unit IDs")
     return result
-
-
-def able(unit):
-    return (unit.get("men", 0) > 0 and not unit.get("error")
-            and not OUT.intersection(unit.get("state", [])))
 
 
 def attack(unit, target, queued=False):

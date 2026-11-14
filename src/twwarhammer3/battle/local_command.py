@@ -6,8 +6,8 @@ These are trusted adapters, not a sandbox for arbitrary Python/tool submissions.
 """
 
 from copy import deepcopy
-from math import hypot
 
+from twwarhammer3.battle.scripted import distance
 from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
 from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS
 from twwarhammer3.protocol import TeamHarnessError
@@ -36,12 +36,6 @@ OUT = {"routing", "shattered", "leaving", "not_deployed", "deploying"}
 def able(unit):
     return (unit.get("men", 0) > 0 and not unit.get("error")
             and not OUT.intersection(unit.get("state", [])))
-
-
-def distance(a, b):
-    if any(row.get(key) is None for row in (a, b) for key in ("x", "z")):
-        return float("inf")
-    return hypot(a["x"] - b["x"], a["z"] - b["z"])
 
 
 def bind(placements, friendly):
