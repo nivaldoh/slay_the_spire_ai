@@ -68,7 +68,7 @@ first waits 3 s on a stop event that cleanup can wake.
   own times: `think_s` from the worker, `roundtrip_s` from input delivery, `delay_ms` as
   engine `applied_ms` minus the member's source time (for a queued order, `applied_ms` is
   queue submission), and `transport_overage` when an age limit is set and reached.
-- **Failure and cleanup.** Member calls go through `play.policy_call`, so a failure follows
+- **Failure and cleanup.** Member calls go through `protocol.policy_call`, so a failure follows
   the single controller's rule: no valid reply or a provider error is a forfeit (a `team`
   `failed` event) and the member is asked again; a key, credit or budget stop ends the
   episode as `budget_exhausted`; any other exception ends it as a `PolicyFailure` that keeps

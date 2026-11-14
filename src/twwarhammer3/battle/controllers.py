@@ -56,7 +56,7 @@ class Controller(Protocol):
 
     decide returns ordinary orders for this view; acknowledge receives only this
     decision's feedback. Neither method writes the transport. metadata is JSON data.
-    A fresh instance owns each episode. Exceptions follow play.policy_call's taxonomy;
+    A fresh instance owns each episode. Exceptions follow protocol.policy_call's taxonomy;
     acceptance is delivery evidence, never a gameplay effect. Optional close stops new
     work; drain_events/drain_exchanges expose audit records. A team may call decide in
     a worker, but never overlaps it with this instance's feedback. An optional

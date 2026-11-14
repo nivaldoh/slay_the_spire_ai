@@ -18,6 +18,7 @@ from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle import graph
 from twwarhammer3.battle import skill_contracts as catalog
 from twwarhammer3.battle.llm import invalid_reply
+from twwarhammer3.protocol import is_forfeit, policy_call
 
 VERSION = "wh3-graph-goals-v1"
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/graph_goal_prompt.md"
@@ -153,8 +154,6 @@ class GraphGoals:
     def _collect(self, view, *, closing=False):
         if self.pending is None or not self.pending[1].done():
             return
-        from twwarhammer3.battle.play import is_forfeit, policy_call
-
         request, future = self.pending
         self.pending = None
         scope_error = self._scope_error(request, view)

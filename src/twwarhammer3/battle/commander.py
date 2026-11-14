@@ -37,7 +37,7 @@ from twwarhammer3.battle.llm import (
     strengths,
 )
 from twwarhammer3.battle.skills import SKILLS, Skills
-from twwarhammer3.protocol import friendly_units
+from twwarhammer3.protocol import account_stop, friendly_units
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/commander_prompt.md"
 INVALID_RETRIES = 1  # only a reply off the schema is invalid; the plan is checked on arrival
@@ -244,8 +244,6 @@ class CommanderPolicy:
         """Wait for the call still in flight. A budget stop or account-limit refusal from it is
         raised, as a team member's is, so play ends the battle as budget_exhausted (owner,
         2026-11-13: "Fix now (Recommended)"); any other failure after the battle is ignored."""
-        from twwarhammer3.battle.play import account_stop  # play imports this module
-
         self.pool.shutdown(wait=True)
         if self.pending is None:
             return

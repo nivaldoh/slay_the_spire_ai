@@ -9,7 +9,8 @@ from copy import deepcopy
 from math import hypot
 
 from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
-from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS, TeamHarnessError
+from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS
+from twwarhammer3.protocol import TeamHarnessError
 
 # JUDGEMENT: Local command development profile — Codex, 2026-11-05: local view 160 m,
 # signal 220 m/2 s/5 s cooldown; courier 20 m/s + 2 s dispatch, two slots, 120 s lifetime,

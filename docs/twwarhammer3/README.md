@@ -212,7 +212,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   benchmark (mirror and suite plans, reports, authoring);
   graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker,
   compare-peers (native multiplayer)
-- `src/twwarhammer3/protocol.py`: order types and validation, the error taxonomy;
+- `src/twwarhammer3/protocol.py`: order types and validation, the error taxonomy and
+  `policy_call`, which sorts a controller's exceptions into it;
   observations stay dicts; it changes freely (Spire's protocol.py is byte-stable)
 
 `src/twwarhammer3/engine/`, the game runtime:

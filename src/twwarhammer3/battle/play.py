@@ -29,7 +29,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
-from gameai.llm import APIError
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle import benchmark, local_team, reserve
 from twwarhammer3.battle.capture import (
@@ -64,7 +63,7 @@ from twwarhammer3.battle.setup import (
     validate_declaration,
 )
 from twwarhammer3.battle.stats import record
-from twwarhammer3.battle.team import TeamHarnessError, TeamPolicy
+from twwarhammer3.battle.team import TeamPolicy
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
@@ -75,6 +74,9 @@ from twwarhammer3.protocol import (
     MailboxTimeout,
     PolicyFailure,
     ProtocolError,
+    TeamHarnessError,
+    is_forfeit,
+    policy_call,
     refused,
     scenario_key,
     validate_orders,
@@ -418,38 +420,6 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
     return result
 
 
-# JUDGEMENT?: Account-limit markers — Claude, 2026-11-13, under the owner's "Stop like 401/402":
-# these markers in an HTTP 4xx body's first 500 characters; another list moves battles between
-# a forfeit and a stop. rests on JUDGEMENT src/twwarhammer3/battle/play.py Operator errors.
-# The list counts own and workspace spend limits and OpenRouter's key limit as stops and leaves
-# Anthropic's ramp_limit_exceeded a forfeit; an OpenRouter 429 passing on an upstream
-# insufficient_quota body would also stop (unverified).
-# Markers of a provider refusing because the account's quota, credit or spend limit is used up,
-# as each documents them (read 2026-11-13): OpenAI's 429 codes credit_balance_exhausted,
-# organization/project spend limit and organization usage limit, whose error type can still be
-# insufficient_quota (developers.openai.com/api/docs/guides/error-codes); OpenRouter's 403
-# limit_source openrouter_key_limit (openrouter.ai/docs/api-reference/errors); Anthropic's
-# tier spend cap, a 429 with error_code
-# enforced_spend_limit_reached, its own and workspace spend limits, 400s whose message starts
-# "You have reached your specified [workspace] API usage limits"
-# (platform.claude.com/docs/en/api/rate-limits), and its low credit balance message. Ordinary
-# rate limits, including Anthropic's ramp_limit_exceeded, stay transient and then a forfeit.
-ACCOUNT_LIMITS = ("insufficient_quota", "credit_balance_exhausted",
-                  "organization_spend_limit_exceeded", "project_spend_limit_exceeded",
-                  "organization_usage_limit_exceeded",
-                  "openrouter_key_limit", "enforced_spend_limit_reached",
-                  "You have reached your specified API usage limits",
-                  "You have reached your specified workspace API usage limits",
-                  "credit balance is too low")
-
-
-def account_stop(error: str) -> bool:
-    """An APIError text that is the operator's to fix: a bad key, no credit, an account limit,
-    or a ledger safety stop. Only an HTTP 4xx body can carry an account-limit marker."""
-    return (error.startswith(("HTTP 401", "HTTP 402")) or error.endswith("and stopped")
-            or error.startswith("HTTP 4") and any(mark in error for mark in ACCOUNT_LIMITS))
-
-
 def interrupt_copy(result: dict, key: str) -> None:
     """A Ctrl-C during a final copy: the record is still written, as interrupted (owner,
     2026-11-13: "interrupted, readers skip it (Recommended)"). Benchmark readers skip a trial
@@ -459,36 +429,6 @@ def interrupt_copy(result: dict, key: str) -> None:
     result.setdefault("interrupted_copy", key)
     if result["status"] in ENDED:
         result.update(status="interrupted", error=f"{key} copy: interrupted")
-
-
-def policy_call(policy, method: str, *args):
-    try:
-        return getattr(policy, method)(*args)
-    except (PolicyFailure, BudgetExhausted, TeamHarnessError):
-        raise
-    except Exception as exc:
-        message = f"{method}: {type(exc).__name__}: {exc}"
-        # JUDGEMENT: Operator errors — assistant, b35 (2026-10-18; "merged on the owner's word"
-        # per the log, no owner-direction entry): HTTP 401/402 and a ledger stop end the battle
-        # unscored, other API errors are the model's forfeit. Interview question 18 still asks.
-        # The account's key or credit, or a ledger safety stop: the operator's, no forfeit.
-        # Owner, 2026-11-13: "Stop like 401/402 (Recommended)" for a provider's quota or credit
-        # refusal too (ACCOUNT_LIMITS).
-        if isinstance(exc, APIError) and account_stop(str(exc)):
-            raise BudgetExhausted(message) from exc
-        failure = {"method": method, "error_type": type(exc).__name__}
-        if getattr(exc, "attempts", None) is not None:  # an APIError's billed attempts
-            failure["attempts"] = exc.attempts
-        raise PolicyFailure(message, failure=failure) from exc
-
-
-# JUDGEMENT?: Forfeit split — assistant, b35 (2026-10-18; "merged on the owner's word" per the
-# log): an invalid reply or provider error costs one decision; any other controller exception
-# ends the battle. The owner agreed how each case counts (b47), perhaps not which errors fall where.
-def is_forfeit(failure: PolicyFailure) -> bool:
-    """No valid reply or a provider error: no orders, and the next state asks again. Any
-    other cause is an exception in the controller's own code and ends the episode."""
-    return failure.__cause__ is None or isinstance(failure.__cause__, APIError)
 
 
 def track_objectives(result: dict, observation: dict) -> None:

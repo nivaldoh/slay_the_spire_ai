@@ -34,7 +34,9 @@ from twwarhammer3.battle import llm
 from twwarhammer3.protocol import (
     IllegalActionError,
     PolicyFailure,
-    ProtocolError,
+    TeamHarnessError,
+    is_forfeit,
+    policy_call,
     refused,
     validate_orders,
 )
@@ -66,10 +68,6 @@ TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same
              " order only Your units; Ally abilities may target allied units. You see allied units'"
              " condition, state and visible targets, not the teammate's orders, feedback or"
              " notes.")
-
-
-class TeamHarnessError(ProtocolError):
-    """A partition or dispatcher fault, distinct from a member's bad decision."""
 
 
 def project(observation, owned, *, army=False):
@@ -263,8 +261,6 @@ class TeamPolicy:
             self.army_owner = next(iter(self.members), None)
 
     def _work(self, member, observation):
-        from twwarhammer3.battle.play import policy_call  # play imports this module
-
         started = self.clock()
         orders = policy_call(member.policy, "decide", observation)
         behavior = member.policy.metadata()
@@ -274,8 +270,6 @@ class TeamPolicy:
     def _collect(self, name, member):
         """Take a finished call. A forfeit (no valid reply, a provider error) clears it, so
         the member is asked again; a budget stop or any other failure is raised."""
-        from twwarhammer3.battle.play import is_forfeit  # play imports this module
-
         try:
             member.ready = member.future.result()
         except Exception as exc:

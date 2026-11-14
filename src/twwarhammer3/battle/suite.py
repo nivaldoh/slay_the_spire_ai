@@ -25,9 +25,9 @@ from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle import graph_author, report_html, setup
 from twwarhammer3.battle import report as trials
 from twwarhammer3.battle.benchmark import EFFORT, LAUNCH_ARGS, MODEL, SUITE, collect
-from twwarhammer3.battle.play import account_stop
 from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
+from twwarhammer3.protocol import account_stop
 
 # JUDGEMENT: Suite arms — Claude, 2026-11-04, overnight goal: the methods the code has today,
 # frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; a script

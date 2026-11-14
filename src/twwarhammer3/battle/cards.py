@@ -75,7 +75,7 @@ def served(episode_dir: Path) -> tuple:
     return tuple(sorted(name for name in names if name))
 
 
-# Which failures forfeit rests on JUDGEMENT src/twwarhammer3/battle/play.py Operator errors and
+# Which failures forfeit rests on JUDGEMENT src/twwarhammer3/protocol.py Operator errors and
 # Forfeit split; a truncation's forfeit on JUDGEMENT src/twwarhammer3/battle/play.py Wall cap.
 def outcome(episode: dict) -> str:
     """won, lost, forfeit (a loss) or excluded (rerun). The battle never waits: a controller
@@ -101,7 +101,7 @@ def outcome(episode: dict) -> str:
 BENCHMARK_OUTCOME_VERSION = 1
 
 
-# Which failures end a battle rests on JUDGEMENT src/twwarhammer3/battle/play.py Operator errors
+# Which failures end a battle rests on JUDGEMENT src/twwarhammer3/protocol.py Operator errors
 # and Forfeit split; a truncation on JUDGEMENT src/twwarhammer3/battle/play.py Wall cap.
 # JUDGEMENT: Benchmark-outcome rows — Claude, 2026-10-31: statuses map to benchmark.md's outcome
 # rows of that date; provider, budget, wall-cap and unknown-cause stops stay unresolved. Another
