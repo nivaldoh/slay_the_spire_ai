@@ -137,7 +137,7 @@ stock of firepower across threats that arrive one after another?**
 | Duration and horizon | Four divisions reaching the wall at an estimated 100, 270, 445 and 570 s of a 1,200 s timer | One main engagement |
 | Resources | Finite ammunition (172 shots and rockets across the five missile units by database values), 6,000 supplies for towers and about 9 more per second, no resupply | No missiles, supplies or spells |
 | Information demand | Held divisions stand 449-559 m from the public wall line, and whether they are visible there is unread (stage 1); the release times are not told, and damaging a waiting division brings it on | No enemy arrives later |
-| Disturbance and recovery | Breaches by ladder only: version 1 has no ram, no siege tower and no attacker that can damage the gate (every Empire unit key in it reads `can_siege` false), so the gate can pass to the attackers only with the Gatehouse point `c2` (unverified live); loss of the outer line; fallback to the Key Building | A wing routs |
+| Disturbance and recovery | Breaches by ladder only: version 1 has no ram, no siege tower and no attacker that can damage the gate (every Empire unit key in it reads `can_siege` false; the [first launch](#first-construction-battle-2026-11-14) saw the gate fall to hp 0 anyway), so the gate can pass to the attackers only with the Gatehouse point `c2` (unverified live); loss of the outer line; fallback to the Key Building | A wing routs |
 | Objective | Hold until the timer, a defender's win no recorded siege has reached, or rout every division; tickets fall once the Key Building is lost | Rout the enemy, or hold until the timer |
 
 The overlap with `chd-reserve-grn-siege` is large, and the design states it. That family has the
@@ -196,9 +196,10 @@ checkpoint siege check's runs of 2026-11-03 (`siege-905-20261103`) read the pinn
 database values on this page were read on 2026-11-08 and 2026-11-09, after Steam's 2026-11-03
 update; the reads did not record the build. Two older-build facts carry weight here. Check 5
 re-reads the first, the ticket onset, in every stage 1-5 battle on the pinned build, stages 1a-1c
-first. The second, the gate at hp 0 with `destroyed` false, cannot be re-read in version 1, which
-has no attacker that can damage the gate; only the optional stage 1e, with its ram, could read it
-here, and until then the Breach rule rests on the 9.0.3 and 9.0.4 readings.
+first. The second, the gate at hp 0 with `destroyed` false, was expected to need the optional
+stage 1e's ram, because no version 1 attacker reads `can_siege`; the [first launch](#first-construction-battle-2026-11-14) read it on the pinned
+build anyway, with the gate's hit points falling to 0 while D1's Spearmen stood at it. Whether
+units then pass the gate is still unread.
 
 The other modes fit worse. The unfortified settlement has no tickets, and its objective text, as
 the design read it in the Osterwald traces, counts any surviving unit at the timer as a win, so
@@ -218,7 +219,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Public task | Win the battle; every engine win counts, the defender's timer win at 1,200 s included. The public observation and orders, `build` included, unpaused at 1x, with one briefing sentence; `llm` also reads its prompt's How to fight advice ([public briefing](#public-briefing)) |
 | Concrete setup | [Settings](#settings), [rosters](#rosters), [the map](#the-map) and [divisions released in turn](#divisions-released-in-turn). Patch 9.0.5, Steam build 26403568 (the pin); Grand Cathay (`wh3_main_cth_`) and Empire (`wh_main_emp_`) unit keys, whose owning packs are unverified. `cth-emp-siege-a-v1` is `cth-emp-siege-a-all-v1` plus `reserve`, `name` and `brief` |
 | Decision opportunity | [D1](#decisions-the-battle-could-test): the fire cue, two fire settings, and D3's first approach at an estimated 445 s |
-| Mechanic reference | [How the siege mode fits](#how-the-siege-mode-fits), from the game's help text and 9.0.3-9.0.4 traces; ammunition, ranges and costs by database values; no version 1 attacker can damage the gate; whether a gate at hp 0 lets units through is unread |
+| Mechanic reference | [How the siege mode fits](#how-the-siege-mode-fits), from the game's help text and 9.0.3-9.0.4 traces; ammunition, ranges and costs by database values; no version 1 attacker reads `can_siege`, though the gate fell to hp 0 in the [first launch](#first-construction-battle-2026-11-14); whether a gate at hp 0 lets units through is unread |
 | Winnability evidence | None yet: the owner's demonstration (check 10) and the frozen witness gate (check 9) |
 | Controls and predictions | [Witness, ablations and controls](#witness-ablations-and-controls-as-built) and the predictions in [decisions](#decisions-the-battle-could-test) |
 | Measurements | [Measurements](#measurements) |
@@ -549,7 +550,8 @@ make likely, can reverse it; the cue then does not occur.
 
 **D3, fallback (exploratory).** When `c2` is enemy-held, withdrawing every unit to the Key
 Building and fighting on at the wall are both feasible. The rule also falls back at a gate reading
-hp 0 or below, which version 1 cannot produce: no attacker in it can damage the gate.
+hp 0 or below, which the design expected version 1 not to produce; in the [first launch](#first-construction-battle-2026-11-14) the gate
+read hp 0 at 628.9 s.
 Withdrawal should keep more units not routing when D4 first approaches, and keep `c1` defender-held
 so that no ticket falls. If `KeepOnly` wins as often from the first decision, the outer line is
 unnecessary and the reading narrows to keeping units alive. If `c2` stays defender-held until D4
@@ -691,7 +693,7 @@ of one shows that an effect is possible; showing that it is reliable takes more 
 | # | Claim | Evidence | Count and rule | Must fail on |
 |---|---|---|---|---|
 | 0 | Cards recruit | The set's lobby-only readback: the scenario's lobby steps without the Start click, then `setup.army_checks` (the step file that stops before Start is not written) | All 14 unit keys recruit with their counts under `wh3_main_cth_cathay_mp` and `wh_main_emp_empire`; the attacker's equipment list reads size 0 | A scenario copy with one key swapped |
-| 1 | Constructed | Lobby readback and the private first reading, every launch | Map, mode, engine type, role, difficulty, modifier, scale, timer, funds, both rosters by multiplicity, equipment size 0 in the lobby and none in the battle's first reading (pieces added later go unseen); every staged unit within 25 m of its point and bearing within 5 degrees after the constant offset stage 1 measures (Cannae's row 1 found 2.8 degrees); the garrison within 25 m of the frozen engine start; the public gate reads hp 100 at every observation, since no version 1 attacker can damage it (a fall stops the stage, marker below the table) | A swapped unit; a leftover ram in the lobby (built: `test_wh3_setup.py` runs the steps against a lobby that already holds one); a division staged 100 m off; a changed garrison start; a gate that falls |
+| 1 | Constructed | Lobby readback and the private first reading, every launch | Map, mode, engine type, role, difficulty, modifier, scale, timer, funds, both rosters by multiplicity, equipment size 0 in the lobby and none in the battle's first reading (pieces added later go unseen); every staged unit within 25 m of its point and bearing within 5 degrees after the constant offset stage 1 measures (Cannae's row 1 found 2.8 degrees); the garrison within 25 m of the frozen engine start; the public gate reads hp 100 at every observation, since no version 1 attacker can damage it (a fall stops the stage, marker below the table; the [first launch](#first-construction-battle-2026-11-14) contradicted the premise and stopped the stage) | A swapped unit; a leftover ram in the lobby (built: `test_wh3_setup.py` runs the steps against a lobby that already holds one); a division staged 100 m off; a changed garrison start; a gate that falls |
 | 2 | Held and released | The mod's evidence at every observation (built: `reserve.check_waves`) and the private record | Every waves launch: the evidence check passes; each held unit stays within 15 m of its placement until its release; each group is released within one tick (250 ms) of its time unless the reason is damage; each released division moves at least 20 m within 15 s, and one of its units comes within 150 m of the wall line within 300 s; no damage release in any `hold` or `HoldBuild` launch, and each damage release reported with `release_distances`. The position parts need a private-record reader, not built. Exact error rate (`exact_stats.gate_pass(3, 3, 0.7)`): three `hold` launches pass a 30%-per-launch damage release rate 0.34 of the time | Built and caught: a release one tick early, one group's damage releasing every group, an unreadable getter read as no damage, a destroyed unit released, slots bound by roster index. Built and caught offline (`test_wh3_waves.py`): a group never released, read as a group still held at or after its `release_ms`; a damage release that names no damaged unit. To build: plants on recorded replays, a release 60 s early, a damage release inserted into a `hold` battle |
 | 3 | Information boundary | Built: the rendered prompt and `play.public` view from the Helmgart fixture's first observation, and the job check in `play` and the recorder. To repeat on the scenario's own first observation after stage 1 | No withheld word, profile key, release time in seconds or milliseconds, group or staging label in any controller input; `reserve_briefing` is the agreed sentence; inputs unchanged when only `evaluation`, `setup`, `native` or `final` change | Built and caught: `briefing()` returning the profile; a job named after the history; a witness that reads `evaluation` |
 | 4 | Orders reach effects | Stage 2 probes, with trace and video | 3 of 3 each within the probe launches: fire at will off stops ammunition falling for 30 s with a target in range; an attack on an enemy inside the wall gives the melee flag within 20 s; a build reads `built`, with supplies down by its cost within 2 s, and finishes at the stage 1 time within 5 s; a move from the wall ends within 25 m of `c1`; one held division shot on purpose is released within 2 s while the others stay held, and the probe reads whether a held unit about 60 m behind a unit under artillery fire is flagged under fire or loses men. Repeats in one battle are not independent, so this shows an effect can happen and says little about how often | An accepted order whose unit never changes state; an `on_wall` reader returning a constant |
@@ -715,9 +717,10 @@ The start check's 25 m and its comparison with every hold rest on JUDGEMENT?
 src/twwarhammer3/battle/manual_demo.py Demo start limit and Every hold a reference. It has not run
 live: whether the garrison's engine start repeats within 25 m is unknown until stage 1.
 
-No version 1 attacker can damage the gate, so a fall would mean an engine source the design did
-not plan for. The same rule catches a lobby that failed to remove the attacker's siege equipment,
-which the 2026-11-10 all-at-once lobby readback completed; no battle has read the equipment yet.
+The design held that no version 1 attacker could damage the gate, so a fall would mean an engine
+source it did not plan for. The [first launch](#first-construction-battle-2026-11-14) found one: the gate's hit points fell to 0 while D1's
+Spearmen stood at it, and this rule stopped the stage. The same rule catches a lobby that failed to
+remove the attacker's siege equipment; that launch's first private frame listed none.
 
 Check 5's recorded basis, recounted on 2026-11-09 from the two episodes of
 `bench-b12-siege-baselines-20261016` (episode 0 `attack_nearest`, episode 1 `hold`; 9.0.4, Chaos
@@ -874,7 +877,7 @@ checking method were not agreed, so no gameplay or benchmark verification follow
 | S-ammo fails | 1b | Decision 1 is dropped, or one fewer archer unit as a new version |
 | `KeepOnly` wins | 3a | The fallback reading narrows to keeping units alive |
 | Ladders put several divisions on the walls at once | 1-3 | Decision 2's reversal case; reported |
-| A gate at hp 0 still keeps units out, or another flag says more | Parked | Version 1 cannot produce it, since no attacker can damage the gate; the probe waits for a variant with a ram or a `can_siege` unit, and the fallback cue rests on hp 0 or below until then (JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Breach rule) |
+| A gate at hp 0 still keeps units out, or another flag says more | Parked | The design expected version 1 not to produce it (the [first launch](#first-construction-battle-2026-11-14) did, at 628.9 s, without reading whether units pass); the probe waits for a variant with a ram or a `can_siege` unit, and the fallback cue rests on hp 0 or below until then (JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Breach rule) |
 | The public gate falls in a version 1 launch | 1-5 | The stage stops (marker Gate stop): an engine source the design did not plan for, or siege equipment the lobby failed to remove |
 | Fire at D1, or at routed attackers fleeing through the staging area, flags or kills men in a held division nobody aimed at, so it comes on early | 1-3 | Read each damage release's distance to D1 and its loss (stage 1), and the probe in check 4. If such collateral releases appear, propose moving D1 about 100 m north as a new version, which keeps shots at D1 farther from held units whether they flag or kill; propose dropping the under-fire flag from the release only if the probe shows flags without losses on held units nobody targeted. Both are the owner's (JUDGEMENT Division schedule, JUDGEMENT Placement) |
 | Attack orders cannot reach attackers on the wall or ladders | 2 | The reserve meets them where they come down into the fort, by move orders, and the breach reading then concerns those moves |
