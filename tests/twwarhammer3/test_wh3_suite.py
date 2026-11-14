@@ -582,7 +582,7 @@ def test_a_suite_plan_keeps_a_start_before_time_with_an_offset(tmp_path, monkeyp
 
 def authoring_send(failures):
     """A provider that raises each of ``failures`` in turn, then writes one good set of graphs."""
-    from gameai.llm import APIError
+    from wh3_fixtures import api_error
 
     end = {"version": graph.VERSION, "entry": "owned", "nodes": {
         "owned": {"op": "owned", "inputs": {}, "next": {"succeeded": "pick", "empty": "owned"}},
@@ -594,7 +594,7 @@ def authoring_send(failures):
 
     def send(body):
         if failures:
-            raise APIError(failures.pop(0))
+            raise api_error(failures.pop(0))
         return {"id": "canned", "status": "completed",
                 "usage": {"input_tokens": 100, "output_tokens": 100},
                 "output": [{"type": "message", "content": [

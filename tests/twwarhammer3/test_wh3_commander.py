@@ -3,10 +3,9 @@ import threading
 from concurrent.futures import wait
 
 import pytest
-from wh3_fixtures import USAGE, observation
+from wh3_fixtures import USAGE, api_error, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.llm import APIError
 from twwarhammer3.battle.commander import CommanderPolicy
 from twwarhammer3.protocol import PolicyFailure
 
@@ -237,9 +236,9 @@ def raising(error):
 
 @pytest.mark.parametrize("error,stops", [
     (BudgetExhausted("cap"), True),
-    (APIError('HTTP 429: {"error": {"type": "insufficient_quota", "code": "insufficient_quota"}}'),
+    (api_error('HTTP 429: {"error": {"type": "insufficient_quota", "code": "insufficient_quota"}}'),
      True),
-    (APIError("HTTP 500: upstream fault"), False),
+    (api_error("HTTP 500: upstream fault"), False),
 ], ids=["budget", "account-limit", "provider-fault"])
 def test_close_raises_a_stop_from_the_last_call_and_ignores_other_failures(tmp_path, error,
                                                                            stops):
@@ -263,8 +262,8 @@ def test_a_stop_in_the_last_call_ends_the_battle_as_budget_exhausted(tmp_path):
 
     from twwarhammer3.battle import play
 
-    error = APIError('HTTP 429: {"type":"error","error":{"type":"rate_limit_error","message":'
-                     '"spend cap","details":{"error_code":"enforced_spend_limit_reached"}}}')
+    error = api_error('HTTP 429: {"type":"error","error":{"type":"rate_limit_error","message":'
+                      '"spend cap","details":{"error_code":"enforced_spend_limit_reached"}}}')
 
     def make():
         return CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1.0),

@@ -6,7 +6,7 @@ import json
 from contextlib import nullcontext
 
 import pytest
-from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation, observation
+from wh3_fixtures import CONFIG, FakeMailbox, api_error, bridge_observation, observation
 
 import twwarhammer3.battle.manual_demo as manual_demo
 from gameai.ledger import BudgetExhausted
@@ -584,8 +584,8 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
 
 
 @pytest.mark.parametrize("stop", [
-    BudgetExhausted("cap"), APIError("HTTP 402: no credits"), APIError("HTTP 401: bad key"),
-    APIError("Reported cost exceeded reservation; charged actual cost and stopped")])
+    BudgetExhausted("cap"), api_error("HTTP 402: no credits"), api_error("HTTP 401: bad key"),
+    api_error("Reported cost exceeded reservation; charged actual cost and stopped")])
 def test_budget_exhaustion_stops_the_job(tmp_path, harness, stop):
     class Broke(Hold):
         def decide(self, observation):
@@ -1229,7 +1229,7 @@ STILL_FORFEITS = {
 def _raising(text):
     class Raises(Hold):
         def decide(self, observation):
-            raise APIError(text)
+            raise api_error(text)
     return Raises()
 
 
@@ -1251,7 +1251,7 @@ def test_rate_limits_and_other_errors_stay_the_models_forfeit(name):
 def test_an_account_limit_refusal_stops_the_job_unscored(tmp_path, harness):
     class Capped(Hold):
         def decide(self, observation):
-            raise APIError(ACCOUNT_STOPS["anthropic-spend-cap"])
+            raise api_error(ACCOUNT_STOPS["anthropic-spend-cap"])
 
     harness.append(FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000),
                                 bridge_observation(0, 0, battle="b2")]))

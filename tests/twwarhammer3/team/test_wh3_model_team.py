@@ -13,7 +13,7 @@ from threading import Event
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from wh3_fixtures import CONFIG, USAGE, FakeMailbox, FakeSend, opening
+from wh3_fixtures import CONFIG, USAGE, FakeMailbox, FakeSend, api_error, opening
 from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 
 from gameai.ledger import BudgetExhausted, Ledger
@@ -87,8 +87,8 @@ def test_grouped_members_order_their_own_units_and_only_the_owner_the_army():
 
 @pytest.mark.parametrize("error,status", [
     (PolicyFailure("No valid reply after declared retries"), "won"),
-    (APIError("HTTP 503: busy"), "won"),
-    (APIError("HTTP 402: no credits"), "budget_exhausted"),
+    (api_error("HTTP 503: busy"), "won"),
+    (api_error("HTTP 402: no credits"), "budget_exhausted"),
     (BudgetExhausted("cap"), "budget_exhausted"),
     (ValueError("member bug"), "policy_failure"),
 ])
@@ -136,7 +136,7 @@ class Failing(Script):
 
 @pytest.mark.parametrize("error,status,events", [
     (BudgetExhausted("cap"), "budget_exhausted", ["failed", "discarded"]),
-    (APIError("HTTP 402: no credits"), "budget_exhausted", ["failed", "discarded"]),
+    (api_error("HTTP 402: no credits"), "budget_exhausted", ["failed", "discarded"]),
     (APIError("team closed; request not sent"), "won", ["discarded"]),  # cut short, no forfeit
     (ValueError("member bug"), "policy_failure", ["failed", "discarded"]),
 ])

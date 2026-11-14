@@ -5,6 +5,7 @@ from collections import deque
 from contextlib import nullcontext
 from types import SimpleNamespace
 
+from gameai.llm import APIError
 from twwarhammer3.battle import controllers, play, setup
 from twwarhammer3.engine import runtime
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
@@ -355,3 +356,11 @@ def opening() -> dict:
             {"id": "e4", "type": "wh_main_dwf_inf_quarrellers_0", "dead": True},
         ],
     }
+
+
+def api_error(message: str) -> APIError:
+    """The APIError gameai.llm raises with ``message``: post's "HTTP <code>: <body>" refusals
+    carry their status, and Model's "... and stopped" safety stops carry stop."""
+    match = re.match(r"HTTP (\d{3}):", message)
+    return APIError(message, status=int(match[1]) if match else None,
+                    stop=message.endswith("and stopped"))
