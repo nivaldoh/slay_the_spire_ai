@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
+  game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
+  `runs/haengju-20261114/brief.md`.
 - 2026-11-13 (four more choices from the 2026-11-08 audit), answers: checkpoint Lua with a
   non-ASCII character, which the agent would cut short: "Refuse non-ASCII Lua (Recommended)"
   (checkpoint.py refuses it; agent unchanged); suite scenarios without a page question:
