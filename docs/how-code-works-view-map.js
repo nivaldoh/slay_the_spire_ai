@@ -425,7 +425,7 @@ DIAGRAM.tabs.push({
     },
     {
       "id": "map.provider",
-      "commit": "601d249",
+      "commit": "108b3e6",
       "label": "Model providers",
       "code": "OpenAI · OpenRouter · Anthropic",
       "kind": "outside service",
@@ -437,7 +437,7 @@ DIAGRAM.tabs.push({
       "state": "runs today",
       "note": "Outside services, paid per call. Each has its own ledger and cap.",
       "status": "outside our code: the provider APIs (src/gameai/providers.py:92)",
-      "refs": ["src/gameai/providers.py:92", "docs/twwarhammer3/README.md:454-460"]
+      "refs": ["src/gameai/providers.py:92", "docs/twwarhammer3/README.md:458-464"]
     }
   ],
   "wires": [
