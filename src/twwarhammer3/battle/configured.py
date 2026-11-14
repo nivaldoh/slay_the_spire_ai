@@ -121,8 +121,7 @@ def load(path, config):
         if kind == "configured" or "," in kind or set(node) != {"type"}:
             raise ValueError("leaf controller needs only a built-in name or module:Class type")
         # All direct model leaves share one normal factory preparation and ledger.
-        controllers.rotation({**config, "policy": kind, "episodes": None,
-                              "delay_seconds": "0", "rotation_seed": 0})
+        controllers.check_policy(kind, config)
         leaves.add(kind)
         return {"type": kind}
 

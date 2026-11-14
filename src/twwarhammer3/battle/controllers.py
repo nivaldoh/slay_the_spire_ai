@@ -85,6 +85,25 @@ def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
     return base, model or config.get("model"), effort or config.get("effort")
 
 
+def check_policy(name: str, config: dict) -> None:
+    """Refuse, before anything launches, a policy name the job cannot play: a model or effort
+    its provider does not offer, ``configured`` without a controller file, or a class that
+    does not import."""
+    base, model, effort = policy_parts(name, config)
+    provider = config.get("provider", "openai")
+    get_provider(provider)
+    if base in MODEL_POLICIES:
+        # An explicit empty suffix must not fall back to job defaults.
+        model = None if name.endswith("@") else model
+        effort = None if name.endswith("/") else effort
+        validate(provider, model, effort)
+    if base == "configured":
+        if not config.get("controller_config"):
+            raise ValueError("configured policy requires --controller-config")
+    elif base not in BUILTINS and base not in MODEL_POLICIES:
+        controller_class(name)
+
+
 def rotation(config: dict) -> list[dict]:
     names = config["policy"].split(",")
     delays = [float(value) for value in str(config.get("delay_seconds", "0")).split(",")]
@@ -92,19 +111,8 @@ def rotation(config: dict) -> list[dict]:
         raise ValueError("delay seconds must be finite and nonnegative")
     # Two names are one controller when their base, model and effort match.
     identity = {name: policy_parts(name, config) for name in names}
-    provider = config.get("provider", "openai")
-    get_provider(provider)
-    for name, (base, model, effort) in identity.items():
-        if base in MODEL_POLICIES:
-            # An explicit empty suffix must not fall back to job defaults.
-            model = None if name.endswith("@") else model
-            effort = None if name.endswith("/") else effort
-            validate(provider, model, effort)
-        if base == "configured":
-            if not config.get("controller_config"):
-                raise ValueError("configured policy requires --controller-config")
-        elif base not in BUILTINS and base not in MODEL_POLICIES:
-            controller_class(name)  # fail before launching on an invalid import
+    for name in names:
+        check_policy(name, config)
     trials = [{"policy": name, "delay_ms": round(delay * 1000)}
               for name in names for delay in delays]
     if len({(identity[t["policy"]], t["delay_ms"]) for t in trials}) != len(trials):
