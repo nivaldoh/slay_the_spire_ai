@@ -233,3 +233,23 @@ def test_following_the_agent_stops_on_its_faults(tmp_path, monkeypatch, events, 
     log.write_text("".join(json.dumps(event) + "\n" for event in [*events, {"event": "done"}]))
     if error is not RuntimeError:  # an agent that exits after logging done has finished
         assert checkpoint.wait(log, Agent(True), 2000) == {"event": "done"}
+
+
+@pytest.mark.parametrize("hook", [
+    {"lua_at": [{"tick": 5, "label": "orders", "lua": "-- move — now\nreturn 1"}]},
+    {"readings": {"every": 100, "lua": "return 'Königsplatz'"}},
+], ids=["lua_at", "readings"])
+def test_non_ascii_lua_is_refused_before_anything_is_written(offline, hook):
+    """The agent would cut such a chunk short (owner, 2026-11-13: "Refuse non-ASCII Lua
+    (Recommended)"). Wrong version: the plan launches and the battle runs a truncated chunk."""
+    tmp_path, _, _ = offline
+    with pytest.raises(ValueError, match="non-ASCII character"):
+        launch({**SOURCE, **hook}, tmp_path / "run")
+    assert not (tmp_path / "run").exists()
+
+
+def test_ascii_lua_still_reaches_the_launch(offline):
+    tmp_path, _, _ = offline
+    with pytest.raises(LaunchAttempted):
+        launch({**SOURCE, "lua_at": [{"tick": 5, "label": "orders", "lua": "return 1"}],
+                "readings": {"every": 100, "lua": "return '{}'"}}, tmp_path / "run")

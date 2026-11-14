@@ -29,6 +29,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: Four more audit choices
+
+The owner answered four 2026-11-08 audit choices with the recommended option (owner-direction.md).
+- Checkpoint Lua: `checkpoint.launched` refuses a plan whose `lua_at` or `readings` Lua has a
+  non-ASCII character, before writing anything; the agent would cut such a chunk short, and
+  changing the agent would refuse every saved record. Today's plan Lua is all ASCII. 3 cases; the
+  2 refusal cases fail without the check.
+
 ## 2026-11-13: The report's opening sentence counts only scenarios a model played
 
 2026-11-08 audit finding-per-model-counts-zero. `report.js` dropped zero counts but still said

@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-13 (four more choices from the 2026-11-08 audit), answers: checkpoint Lua with a
+  non-ASCII character, which the agent would cut short: "Refuse non-ASCII Lua (Recommended)"
+  (checkpoint.py refuses it; agent unchanged); suite scenarios without a page question:
+  "A row for every scenario (Recommended)"; repeats of one pair on the suite page: "First battle
+  everywhere (Recommended)"; BQ4 (authoring stops on one provider error) and P4 (watch's spend
+  misses uncertain charges): "Fix both now (Recommended)".
 - 2026-11-13 (three choices from the 2026-11-08 audit), answers: the suite's refused share:
   "Engine only, validation beside (Recommended)"; the commander dropping a stop from its last
   call: "Fix now (Recommended)"; team pages' view age counting the dispatcher's empty polls:

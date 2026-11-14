@@ -132,10 +132,25 @@ def run_in_game(plan: dict, output: Path, replay_sha256: str | None) -> dict:
 LIMITS = {"game_timeout_s": CONFIG["run_timeout"], "agent_seconds": 560}
 
 
+def ascii_lua(plan: dict) -> None:
+    """Refuse a plan whose Lua has a non-ASCII character. The agent hands luaL_loadbuffer the
+    chunk's UTF-16 length (checkpoint_agent.js, evaluate), so such a chunk would be cut short;
+    changing the agent would refuse every saved record (2026-11-08 audit; owner, 2026-11-13:
+    "Refuse non-ASCII Lua (Recommended)")."""
+    chunks = [(item.get("label", "lua_at"), item["lua"]) for item in plan.get("lua_at", [])]
+    if plan.get("readings"):
+        chunks.append(("readings", plan["readings"]["lua"]))
+    for label, lua in chunks:
+        if not lua.isascii():
+            raise ValueError(f"checkpoint Lua {label!r} has a non-ASCII character; the agent"
+                             " would cut the chunk short")
+
+
 @contextlib.contextmanager
 def launched(plan: dict, output: Path, replay_sha256: str | None, config: dict, limits: dict):
     """Launch the game with the agent, start the battle; yields (manifest, native, agent,
     mailbox). The manifest is written when the game has closed, also after an error."""
+    ascii_lua(plan)
     restore = plan.get("checkpoint")
     for item in plan.get("save_at", []):
         if (runtime.user_dir() / "replays" / (item["name"] + ".replay")).exists():
