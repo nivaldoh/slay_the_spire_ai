@@ -256,6 +256,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/manual_demo.py",
         "src/twwarhammer3/battle/wall_defence.py",
         "src/twwarhammer3/battle/escalade.py",
+        "src/twwarhammer3/battle/evidence_rules.py",
         "src/twwarhammer3/battle/camp.py",
         "src/twwarhammer3/battle/lines.py",
         "src/twwarhammer3/battle/local_scripts.py",

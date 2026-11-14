@@ -288,7 +288,7 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/evidence_rules.py",
    "text": "evidence rules the evaluation battles share: contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture holders, groups from the private first reading, units by type key, accepted trace orders",
-   "box": "map.reports",
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {

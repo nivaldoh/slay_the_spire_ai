@@ -86,7 +86,7 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/llm.py:589-603",
         "src/twwarhammer3/battle/play.py:1-19",
         "src/twwarhammer3/battle/controllers.py:51",
-        "src/twwarhammer3/battle/controllers.py:60-61",
+        "src/twwarhammer3/battle/controllers.py:42-43",
         "docs/twwarhammer3/controllers.md:71-72"
       ]
     },

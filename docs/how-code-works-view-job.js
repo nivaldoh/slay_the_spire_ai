@@ -51,7 +51,7 @@ DIAGRAM.tabs.push({
       "h": 60,
       "note": "The real game, started by the play job and stopped when the job ends.",
       "status":
-        "outside our code: the game, owned by OwnedGame (src/twwarhammer3/battle/play.py:197)",
+        "outside our code: the game, owned by OwnedGame (src/twwarhammer3/battle/play.py:244)",
       "refs": ["src/twwarhammer3/battle/play.py:244", "src/gameai/windows.py"]
     },
     {

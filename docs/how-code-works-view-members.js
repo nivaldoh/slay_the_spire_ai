@@ -89,7 +89,7 @@ DIAGRAM.tabs.push({
       "h": 56,
       "note": "The only mailbox writer: one request at a time, whoever's batch it carries.",
       "status":
-        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:208); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "src/twwarhammer3/battle/play.py:818-819",
         "src/twwarhammer3/battle/play.py:890",
@@ -110,7 +110,7 @@ DIAGRAM.tabs.push({
       "note":
         "Splits the units by declared type or class, runs each member's call on its own thread, and sends the oldest finished batch; no member waits for the other.",
       "status":
-        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:208); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "src/twwarhammer3/battle/team.py:140-141",
         "src/twwarhammer3/battle/team.py:156-157",
@@ -131,7 +131,7 @@ DIAGRAM.tabs.push({
       "h": 52,
       "note": "In the probe: one 20 m move, at once.",
       "status":
-        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:208); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "docs/twwarhammer3/log.md:2837-2839",
         "src/twwarhammer3/battle/team.py:519-535",
@@ -150,7 +150,7 @@ DIAGRAM.tabs.push({
       "h": 52,
       "note": "In the probe: waits 3 s, then one move.",
       "status":
-        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:48); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
+        "agreed live check: WH3 scripted two-member team (docs/agreed-checks.md:208); its live part passed 4/4 at 96bb137 and 3/4 at 1cc4582 (log.md)",
       "refs": [
         "docs/twwarhammer3/log.md:2837-2839",
         "src/twwarhammer3/battle/team.py:519-535",
