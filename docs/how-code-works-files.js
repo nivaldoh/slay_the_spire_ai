@@ -11,7 +11,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/protocol.py",
-   "text": "order types and validation, the error taxonomy; observations stay dicts; it changes freely (Spire's protocol.py is byte-stable)",
+   "text": "order types and validation, the error taxonomy and `policy_call`, which sorts a controller's exceptions into it; observations stay dicts; it changes freely (Spire's protocol.py is byte-stable)",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -695,7 +695,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "scripts/diagram_files.py",
-   "text": "the page's file lists, from these lists and the map's boxes",
+   "text": "the page's file lists, from these lists and the map's boxes, and the view flags check.py reports",
    "box": "map.factory",
    "list": "docs/twwarhammer3/README.md"
   },
