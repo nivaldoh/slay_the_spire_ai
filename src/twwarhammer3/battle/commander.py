@@ -250,5 +250,5 @@ class CommanderPolicy:
         error = self.pending.exception()
         if isinstance(error, BudgetExhausted):
             raise error
-        if isinstance(error, APIError) and account_stop(str(error)):
+        if isinstance(error, APIError) and account_stop(error):
             raise BudgetExhausted(f"commander's last call: {error}") from error

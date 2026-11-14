@@ -4387,3 +4387,21 @@ old = "if state.retries * POLL_MS < step.timeout_ms then"
 new = "if state.retries * POLL_MS <= step.timeout_ms then"
 tests = ["tests/twwarhammer3/test_wh3_ui_requests.py::test_frontend_never_clicks_a_component_still_invisible_at_its_timeout"]
 source = "2026-11-13 overnight refusal sweeps: independent review round 4"
+
+[[plant]]
+id = "account-stop-ignores-ledger-stops"
+guards = "A ledger safety stop (charged and stopped) ends the job as budget_exhausted, not a forfeit"
+file = "src/twwarhammer3/protocol.py"
+old = 'return (error.stop or status in (401, 402)'
+new = 'return (status in (401, 402)'
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_budget_exhaustion_stops_the_job"]
+source = "2026-11-14 code-quality: account_stop reads APIError.status and stop"
+
+[[plant]]
+id = "account-stop-reads-markers-on-any-status"
+guards = "Only an HTTP 4xx body can carry an account-limit marker; a 5xx naming one stays a forfeit"
+file = "src/twwarhammer3/protocol.py"
+old = 'or 400 <= status < 500 and any('
+new = 'or any('
+tests = ["tests/twwarhammer3/test_wh3_play.py::test_rate_limits_and_other_errors_stay_the_models_forfeit"]
+source = "2026-11-14 code-quality: account_stop reads APIError.status and stop"

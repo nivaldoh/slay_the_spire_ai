@@ -102,7 +102,7 @@ def author(directory, scenario_names, ledger, *, send=None):
                     directory / name / f"attempt-{attempt}", ledger, model=MODEL, effort=EFFORT,
                     provider="anthropic", send=send)
             except (InvalidReply, ValueError, APIError) as exc:
-                if isinstance(exc, APIError) and account_stop(str(exc)):
+                if isinstance(exc, APIError) and account_stop(exc):
                     raise BudgetExhausted(f"authoring {name}: {exc}") from exc
                 totals[name] = {"status": "failed", "tries": attempt, "error": str(exc)}
                 continue

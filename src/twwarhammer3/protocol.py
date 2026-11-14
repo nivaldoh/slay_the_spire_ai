@@ -75,11 +75,12 @@ ACCOUNT_LIMITS = ("insufficient_quota", "credit_balance_exhausted",
                   "credit balance is too low")
 
 
-def account_stop(error: str) -> bool:
-    """An APIError text that is the operator's to fix: a bad key, no credit, an account limit,
+def account_stop(error: APIError) -> bool:
+    """An API error that is the operator's to fix: a bad key, no credit, an account limit,
     or a ledger safety stop. Only an HTTP 4xx body can carry an account-limit marker."""
-    return (error.startswith(("HTTP 401", "HTTP 402")) or error.endswith("and stopped")
-            or error.startswith("HTTP 4") and any(mark in error for mark in ACCOUNT_LIMITS))
+    status = error.status or 0
+    return (error.stop or status in (401, 402)
+            or 400 <= status < 500 and any(mark in str(error) for mark in ACCOUNT_LIMITS))
 
 
 def policy_call(policy, method: str, *args):
@@ -95,7 +96,7 @@ def policy_call(policy, method: str, *args):
         # The account's key or credit, or a ledger safety stop: the operator's, no forfeit.
         # Owner, 2026-11-13: "Stop like 401/402 (Recommended)" for a provider's quota or credit
         # refusal too (ACCOUNT_LIMITS).
-        if isinstance(exc, APIError) and account_stop(str(exc)):
+        if isinstance(exc, APIError) and account_stop(exc):
             raise BudgetExhausted(message) from exc
         failure = {"method": method, "error_type": type(exc).__name__}
         if getattr(exc, "attempts", None) is not None:  # an APIError's billed attempts
