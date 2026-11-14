@@ -41,10 +41,10 @@ class Envelop:
         self.enemy_wings = {}
         self.now = 0
 
-    # Every refusal here carries a cause, which ends the episode (play.is_forfeit): a bare
+    # Every refusal here carries a cause, which ends the episode (protocol.is_forfeit): a bare
     # PolicyFailure is a forfeit, and the army would stand on its last orders and could win at
     # the timer (owner, 2026-11-13: "End the battle"; as Evade and Escalade do). Rests on
-    # JUDGEMENT? play.py Forfeit split, which reads a bare PolicyFailure as a forfeit.
+    # JUDGEMENT? protocol.py Forfeit split, which reads a bare PolicyFailure as a forfeit.
     def _bind(self, units):
         expected = ((SWORDS, 4), (GREATSWORDS, 2), (KNIGHTS, 3))
         if any(u.get("x") is None or u.get("z") is None for u in units.values()):

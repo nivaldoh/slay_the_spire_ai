@@ -7,7 +7,7 @@ from pathlib import Path
 from threading import Event
 
 from gameai.ledger import Ledger
-from gameai.llm import APIError, Model, api_key, post
+from gameai.llm import Model, api_key, post
 from gameai.providers import get_provider, routing, validate
 from twwarhammer3.battle import benchmark, controllers, graph, graph_goals, local_team, team
 from twwarhammer3.battle.setup import scenarios
@@ -219,14 +219,7 @@ def factory(path, config, *, ledger=None):
             raise ValueError("nested teams are not supported")
         api = getattr(policy, "api", None)
         if stop is not None and api is not None:
-            send = api.send
-
-            def guarded(body):
-                if stop.is_set():
-                    raise APIError("team closed; request not sent")
-                return send(body)
-
-            api.send = guarded
+            api.send = team.stop_guarded(api.send, stop)
         return policy
 
     def make():

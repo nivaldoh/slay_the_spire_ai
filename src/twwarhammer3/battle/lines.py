@@ -118,10 +118,10 @@ class LinesWitness(SmallDiagnostic):
         self.lancers = {"phase": "wait", "target": None, "contact_s": None, "since_s": None,
                         "retreat": None, "threat": None, "charges": 0}
 
-    # Every refusal here carries a cause, which ends the episode (play.is_forfeit): a bare
+    # Every refusal here carries a cause, which ends the episode (protocol.is_forfeit): a bare
     # PolicyFailure is a forfeit, and the army would stand on its last orders and could win at
     # the timer (owner, 2026-11-13: "End the battle"; as Evade and Escalade do). Rests on
-    # JUDGEMENT? play.py Forfeit split, which reads a bare PolicyFailure as a forfeit.
+    # JUDGEMENT? protocol.py Forfeit split, which reads a bare PolicyFailure as a forfeit.
     def _bind(self, units):
         if Counter(u.get("type") for u in units) != ARMY or any(
                 u.get("x") is None or u.get("z") is None for u in units):

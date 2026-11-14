@@ -18,6 +18,7 @@ from copy import deepcopy
 from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle.benchmark import BATTLE_USD, CALL_LIMIT, READ_TIMEOUT_S, SUITE, VERSION
 from twwarhammer3.battle.evidence_rules import gate_breached
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import (
@@ -390,13 +391,13 @@ def render_mode(mode: dict | None, siege_orders: bool = False,
         head += "; if time runs out, " + {"us": "you win", "none": "it is a draw"}.get(
             winner, f"{winner} wins")
     lines = [head + "."]
-    if mode.get("benchmark") == "mirror-v1":
+    if mode.get("benchmark") == VERSION:
         lines.append("Benchmark: engine win > draw > loss (timer endings count). Within the same "
                      "outcome, preserve your five original units: mean final health-bar fraction, "
                      "equal weights, multiplied by 1 normally, .8 wavering, .5 routing, "
                      "0 shattered, dead or departed. Only the strongest penalty applies; "
                      "rallied units use their current state. The battle runs unpaused at 1x.")
-    if mode.get("benchmark") == "suite-v1":
+    if mode.get("benchmark") == SUITE:
         lines.append("Benchmark: engine win > draw > loss (timer endings count). Within the same "
                      "outcome two things count: how much of your original army you keep (mean "
                      "final health-bar fraction per unit, equal weights, multiplied by 1 normally, "
@@ -419,12 +420,16 @@ def render_mode(mode: dict | None, siege_orders: bool = False,
         # Without a goal (a siege defender's tickets) the income figure does not apply.
         goal = mode.get("tickets_goal")
         since = (tickets or {}) if mode.get("fortifications") is not None else {}
-        lines.append(f"Tickets{f' ({goal} wins)' if goal else ''}: " + ", ".join(
-            f"{_side(row['side'])} {row['tickets']}"
-            + (f" ({row.get('per_s', 0):+d}/s)" if goal else "")
-            + (f" ({row['tickets'] - since[row['side']]:+g} since your last turn)"
-               if since.get(row["side"], row["tickets"]) != row["tickets"] else "")
-            for row in mode["tickets"]) + ".")
+        counts = []
+        for row in mode["tickets"]:
+            count = f"{_side(row['side'])} {row['tickets']}"
+            if goal:
+                count += f" ({row.get('per_s', 0):+d}/s)"
+            before = since.get(row["side"], row["tickets"])
+            if before != row["tickets"]:
+                count += f" ({row['tickets'] - before:+g} since your last turn)"
+            counts.append(count)
+        lines.append(f"Tickets{f' ({goal} wins)' if goal else ''}: {', '.join(counts)}.")
     if mode.get("capture_points"):
         lines.append("Capture points (units standing on a point capture it):")
         for point in mode["capture_points"]:
@@ -748,14 +753,12 @@ class LLMPolicy:
         self.tickets: dict = {}
         self._metadata = {}
         if benchmark:
-            from twwarhammer3.battle import benchmark as profile
-
-            self.card = {"benchmark": getattr(ledger, "version", profile.VERSION),
+            self.card = {"benchmark": getattr(ledger, "version", VERSION),
                          "transport_attempts": 1,
                          "failed_resends": 0, "invalid_retries": 0, "salvage": False,
-                         "read_timeout_s": profile.READ_TIMEOUT_S,
-                         "max_calls": getattr(ledger, "call_limit", profile.CALL_LIMIT),
-                         "battle_usd": getattr(ledger, "battle_usd", profile.BATTLE_USD),
+                         "read_timeout_s": READ_TIMEOUT_S,
+                         "max_calls": getattr(ledger, "call_limit", CALL_LIMIT),
+                         "battle_usd": getattr(ledger, "battle_usd", BATTLE_USD),
                          "max_output_tokens": MAX_OUTPUT_TOKENS}
 
     def decide(self, observation: dict) -> list[dict]:
@@ -780,6 +783,7 @@ class LLMPolicy:
         checked = observation if siege else without_siege_orders(observation)
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
                                self.latency, self.ack, self.before, shown, siege, self.tickets)
+        prompt += self.prompt_suffix(observation)
         self.before = strengths(observation)
         self.tickets = {row.get("side"): row.get("tickets") for row in mode.get("tickets") or []}
         self._metadata = metadata = {
@@ -809,6 +813,10 @@ class LLMPolicy:
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason'][:REASON_LIMIT]})")
         metadata["reason"] = reply["reason"]
         return reply["orders"]
+
+    def prompt_suffix(self, observation: dict) -> str:
+        """Text after the state in every prompt; a team member adds its teammate's units."""
+        return ""
 
     def acknowledge(self, ack: dict, latency: dict) -> None:
         self.ack, self.latency = ack, latency

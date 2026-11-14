@@ -17,7 +17,6 @@ the battle ended (a single controller's call that straddles the end keeps the re
 ``ModelTeam`` (the policy ``team_llm_rules``) has two model members sharing the job's ledger;
 ``ClassTeam`` (the same policy on a suite scenario) has up to three, split by class, for any army.
 """
-import hashlib
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait
 from copy import deepcopy
@@ -423,6 +422,16 @@ class TeamPolicy:
                                 failure=getattr(failures[0], "failure", None)) from failures[0]
 
 
+def stop_guarded(send, stop):
+    """``send`` that refuses once ``stop`` is set: no new call or reply retry after a team's
+    cleanup starts."""
+    def guarded(body):
+        if stop.is_set():
+            raise APIError("team closed; request not sent")
+        return send(body)
+    return guarded
+
+
 def condition(unit):
     """An allied unit's ammunition, fatigue and leadership, worded as for one's own units."""
     parts = [f"ammo {unit['ammo']}/{unit['ammo0']}"] if unit.get("ammo0") else []
@@ -447,22 +456,8 @@ class TeamLLM(llm.LLMPolicy):
 
     section_of = staticmethod(lambda view: team_section(view))
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.section = ""
-        ask = self.api.ask
-        # Per instance, so every attempt (retries too) sends exactly the recorded prompt.
-        self.api.ask = lambda prompt, *rest: ask(prompt + self.section, *rest)
-
-    def decide(self, observation):
-        self.section = self.section_of(observation)
-        return super().decide(observation)
-
-    def metadata(self):
-        metadata = dict(super().metadata())
-        metadata["prompt"] += self.section
-        metadata["prompt_sha256"] = hashlib.sha256(metadata["prompt"].encode()).hexdigest()
-        return metadata
+    def prompt_suffix(self, observation):
+        return self.section_of(observation)
 
 
 class ClassTeamLLM(TeamLLM):
@@ -489,12 +484,7 @@ class ModelTeam(TeamPolicy):
     def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
                  benchmark=False, **options):
         stop = Event()
-
-        def guarded(body):  # no new call or reply retry once cleanup starts
-            if stop.is_set():
-                raise APIError("team closed; request not sent")
-            return send(body)
-
+        guarded = stop_guarded(send, stop)
         super().__init__({name: (kinds, self.member(model, effort, ledger, send=guarded,
                                                     provider=provider, benchmark=benchmark,
                                                     system_prompt=system_prompt))

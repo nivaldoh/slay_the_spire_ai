@@ -15,6 +15,10 @@ Both games:
   (Recommended)". Branch `code-quality-20261114`. Then, on the branch's five retargeted plants
   and three path-only JUDGEMENT edits (rests-on now names protocol.py): "Approve all
   (Recommended)"; on landing it with this morning's 7 unpushed commits: "Merge and push all".
+  Asked again after the first landing: the controller-file findings (3 identical copies only,
+  5, 7, 8, llm.py's ticket line, cannae.py/lines.py comments, the Lua apply_order): "Everything
+  now" (new source and pack hashes from that revision); the check.py and benchmark.py splits:
+  "Do both now"; landing that round: "Merge and push".
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.
