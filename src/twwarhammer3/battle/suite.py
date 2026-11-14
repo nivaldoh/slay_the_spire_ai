@@ -16,6 +16,7 @@ import math
 import random
 import statistics
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 from gameai.llm import InvalidReply
@@ -136,6 +137,15 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
     for arm in arm_names:
         if arm not in ARMS:
             raise ValueError(f"unknown arm {arm}")
+    if start_before:
+        # The queue compares it with an aware UTC clock (2026-11-08 audit BQ2).
+        try:
+            moment = datetime.fromisoformat(start_before)
+        except ValueError:
+            moment = None
+        if moment is None or moment.tzinfo is None:
+            raise ValueError("start_before needs an ISO time with a UTC offset, such as"
+                             " 2026-11-09T07:00+00:00")
     rng = random.Random(seed)
     jobs = []
     pairs = [(scenario, arm) for scenario in scenario_names for arm in arm_names]

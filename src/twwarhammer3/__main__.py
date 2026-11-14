@@ -530,6 +530,8 @@ def main() -> int:
     if args.command == "digest":
         from twwarhammer3.battle.digest import decision_at, digest, units_digest
 
+        if not args.path.is_dir():
+            parser.error(f"no job or episode directory at {args.path}")
         if args.units:
             print(units_digest(args.path))
         elif args.at is None:
@@ -620,6 +622,12 @@ def main() -> int:
             jobs.extend(Path(path) for path in listed)
         if not jobs and not args.benchmark_plan:
             parser.error("report needs JOB directories, --jobs-file or --benchmark-plan")
+        for job in jobs:
+            if not Path(job).is_dir():
+                parser.error(f"no job or episode directory at {job}")
+        for plan in args.benchmark_plan:
+            if not plan.is_file():
+                parser.error(f"no benchmark plan at {plan}")
         data = (collect(jobs, benchmark_plans=args.benchmark_plan)
                 if args.benchmark_plan else collect(jobs))
         text = render(data)

@@ -247,3 +247,36 @@ def test_compare_peers_prints_the_summary_and_reports_a_refusal_as_a_usage_error
         main()
     assert stopped.value.code == 2
     assert "more than one battle id" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("command", [["digest"], ["report", "--output", "out"]])
+def test_a_mistyped_job_path_is_a_one_line_error(tmp_path, monkeypatch, capsys, command):
+    """2026-11-08 audit U11. Wrong version: a FileNotFoundError traceback on manifest.json."""
+    missing = tmp_path / "nosuchjob"
+    argv = [command[0], str(missing), *command[1:]]
+    monkeypatch.setattr(sys, "argv", ["wh3", *argv])
+    with pytest.raises(SystemExit) as error:
+        main()
+    assert error.value.code == 2
+    captured = capsys.readouterr()
+    assert f"no job or episode directory at {missing}" in captured.err
+    assert "Traceback" not in captured.err and not (tmp_path / "out.html").exists()
+
+
+def test_digest_and_report_still_take_an_existing_job_and_plan(tmp_path, monkeypatch, capsys):
+    """The missing-path checks must not refuse real inputs (2026-11-13 review). Wrong versions:
+    digest or report wanting a file, or --benchmark-plan wanting a directory."""
+    from twwarhammer3.battle import digest, report_html
+    job, plan = tmp_path / "job", tmp_path / "plan.json"
+    job.mkdir()
+    plan.write_text("{}")
+    monkeypatch.setattr(digest, "digest", lambda path: f"digest of {path.name}")
+    monkeypatch.setattr(sys, "argv", ["wh3", "digest", str(job)])
+    assert main() == 0 and "digest of job" in capsys.readouterr().out
+    seen = []
+    monkeypatch.setattr(report, "collect", lambda jobs, **kw: seen.append((jobs, kw)) or {})
+    monkeypatch.setattr(report, "render", lambda data: "rendered")
+    monkeypatch.setattr(report_html, "write", lambda path, data: None)
+    monkeypatch.setattr(sys, "argv", ["wh3", "report", str(job), "--benchmark-plan", str(plan),
+                                      "--output", str(tmp_path / "out")])
+    assert main() == 0 and seen == [([job], {"benchmark_plans": [plan]})]

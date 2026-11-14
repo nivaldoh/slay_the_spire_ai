@@ -29,6 +29,17 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: Two small fixes from the 2026-11-08 audit
+
+- BQ2: `suite.make_plan` refuses a `--start-before` time without a UTC offset. Before, the plan kept
+  it and the queue failed with a TypeError before its first job. `wh3_queue.py` is unchanged (its
+  stop logic), so a hand-written plan with such a time still fails there.
+- U11: `twwarhammer3 digest`, `twwarhammer3 report` and `spire digest` give a one-line error for a
+  missing job, episode or run directory (and `report` for a missing plan) instead of a traceback.
+- 8 new cases: the 5 refusal cases fail on the old code; 3 check that a valid time and real
+  directories and plans are still accepted (review round 10 found that wanting a file instead of
+  a directory passed every test). Offline only; nothing changes during a battle.
+
 ## 2026-11-13: Team pages' view age follows members' replies only
 
 The owner answered: "Count member replies only (Recommended)". On team pages the view-age band

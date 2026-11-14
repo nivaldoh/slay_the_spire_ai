@@ -97,3 +97,25 @@ def test_play_refuses_a_model_or_effort_its_provider_lacks_before_any_job(
             "--output", str(tmp_path / "job"))
     assert error.value.code == 2 and message in capsys.readouterr().err
     assert not (tmp_path / "job").exists()
+
+
+def test_digest_of_a_mistyped_run_path_is_a_one_line_error(tmp_path, monkeypatch, capsys):
+    """2026-11-08 audit U11. Wrong version: a FileNotFoundError traceback."""
+    missing = tmp_path / "nosuchrun"
+    monkeypatch.setattr(sys, "argv", ["spire", "digest", str(missing)])
+    with pytest.raises(SystemExit) as error:
+        main()
+    assert error.value.code == 2
+    captured = capsys.readouterr()
+    assert f"no job or run directory at {missing}" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_digest_still_reads_an_existing_run_directory(tmp_path, monkeypatch):
+    """The missing-path check must not refuse a real directory (2026-11-13 review)."""
+    from spire.fullrun import digest
+    run, calls = tmp_path / "job/run-0000", []
+    run.mkdir(parents=True)
+    monkeypatch.setattr(digest, "main", lambda *args: calls.append(args))
+    monkeypatch.setattr(sys, "argv", ["spire", "digest", str(run)])
+    assert main() == 0 and calls[0][0] == run

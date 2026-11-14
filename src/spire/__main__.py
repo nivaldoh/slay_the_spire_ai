@@ -285,6 +285,8 @@ def main() -> int:
     if args.command == "digest":
         from spire.fullrun.digest import main as run_digest
 
+        if not args.path.is_dir():
+            parser.error(f"no job or run directory at {args.path}")
         run_digest(args.path, args.floor, args.picks)
         return 0
     if args.command == "watch":

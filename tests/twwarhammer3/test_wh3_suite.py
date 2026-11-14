@@ -555,3 +555,20 @@ def test_the_refused_share_counts_engine_refusals_and_validation_stands_beside(
     battle = {**row("a", "single", "won"), **measured, "status": "won"}
     arm = suite.summarize([battle])["arms"]["single"]
     assert arm["refused_share"] == 0.1 and arm["validation_refused"] == 3
+
+
+@pytest.mark.parametrize("value", ["2026-11-09T07:00", "tomorrow"])
+def test_a_suite_plan_needs_a_start_before_time_with_an_offset(tmp_path, value):
+    """2026-11-08 audit BQ2. Wrong version: the plan keeps a time with no offset, and the queue
+    then fails with a TypeError comparing it with an aware clock before its first job."""
+    with pytest.raises(ValueError, match="start_before needs an ISO time with a UTC offset"):
+        suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["hold"], 1, 5, seed=1,
+                        start_before=value)
+    assert not (tmp_path / "p.json").exists()
+
+
+def test_a_suite_plan_keeps_a_start_before_time_with_an_offset(tmp_path, monkeypatch):
+    monkeypatch.setattr(suite.subprocess, "check_output", lambda *a, **k: "abc\n")
+    plan = suite.make_plan(tmp_path / "p.json", ["coord-relief"], ["hold"], 1, 5, seed=1,
+                           start_before="2026-11-09T07:00+00:00")
+    assert plan["start_before"] == "2026-11-09T07:00+00:00"
