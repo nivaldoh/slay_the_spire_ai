@@ -890,6 +890,68 @@ Through stage 3b that is about 25-27 launches and 8.3-11.3 hours of game time be
 step or round. The design's stage 4 had 30 launches with `CavalryEarly` as a third arm; with D2
 descriptive the round has two arms.
 
+Stage 1 ran on 2026-11-14 ([readings](#first-stage-1-launches-2026-11-14)); stage 2's climb
+go/no-go cannot pass until the missing `can_climb` reading below is understood.
+
+## First stage 1 launches (2026-11-14)
+
+In the owner's 2026-11-14 away window, stage 1 ran as planned: two `hold` launches of
+`ksl-emp-siege-a-v1` at source `070ff54`, harness b55, build 26403568. Both ended in a native loss
+at the timer, `ended_by` `time_limit` at 1,205.2 s, with the defender's tickets at 1,000. They are
+the first siege battles in the register to reach their timer, and the ending read as the risk table
+assumed. All logged observations read 1x and the game closed normally. No model was called. These
+are construction readings, with no readiness verdict.
+
+These parts read as designed in both launches:
+- Rosters, roles and equipment: our 13 units and the garrison's 12 match the declaration, with role
+  attacker and timeout winner enemy; one `ksl_battering_ram`, crewed by the Armoured Kossars f2.
+  At 5.3 s, 11 of the 12 enemies were visible.
+- The fort lists: `siege_assault` read ok with the engine's lists of 1 gate, 36 towers and 35 wall
+  pieces (the wall list holds the gate), and the public list carried the gate once and 34 wall
+  pieces at the first and last observation. The 36 towers sit at 12 centres: the 8 buildable tower
+  slots with 4 entries each and the 4 Fort Towers, each 7.9 m from its capture point c3-c6.
+- Cost: `sample_cpu_ms` had a median of about 1.0 ms and a maximum of 5.0 ms over 1,202 frames per
+  launch.
+
+These parts did not, each with what rests on it:
+- `can_climb` never appeared. The mod reads `can_climb_walls`, which CA's documentation lists as
+  returning a boolean, and leaves the field absent when the getter fails or answers another type.
+  No own unit record in either launch carried it, while `on_wall` and `can_siege` were present
+  (`can_siege` false for all 13 units, the Little Grom included). In today's code that means
+  `llm.offers_siege_orders` is false, so `llm`/`llm_rules` v23 would not offer the siege orders
+  here; validation refuses a wall `besiege` and every `attack_building` from our units; and the
+  witness never picks a ladder. Only a `besiege` of the gate or of a tower remains. Why the
+  getter fails is unread; a branch probe that logs its error in one battle would tell. Enemy
+  units on the wall did read `on_wall` true, so `is_on_top_of_wall` works.
+- Tower owners read from the wrong side. Whenever the defender held a Fort Tower's point, its tower
+  read owner "us", and "none" when nobody held it (in launch 1, c6's tower turned "us" when the
+  defender took c6 at 470.3 s). The mod compares `alliance_owner_id` with the one-based
+  `bm:local_alliance()`, while the capture holders count alliances from 0. A fix waits on branch
+  `tower-owner-20261114`, parked because it changes what a model reads ("held by us"). The list
+  also carries the defender's unbuilt tower slots: in launch 1 three slots not yet built were
+  already listed with hp 100, so neither hp nor owner tells a built tower from an empty slot.
+- The gate's centre: the fortification gate g1 reads (-2,-19.1), about 30 m from the `mode.gates`
+  Gatehouse position (-32,-16) that check 2 expects it near. The recorded ram stop (-2,-30) is
+  10.9 m from g1, so check 3(b) as written would pass that ram; the Gate anchor marker's concern
+  assumed g1 at (-32,-16).
+- Engine starts do not repeat. Matching each unit to the nearest unit of its type in the other
+  launch, every unit moved more than 40 m, up to 224 m (ours) and 441 m (the garrison's), and the
+  ram started near (12.6,-229) once and (-210.8,-229) once. The garrison also began on different
+  Fort Tower points: c4 and c5 in launch 1, c6 alone in launch 2. Check 1's 25 m repeat and the manual demonstration's `same start` label cannot hold on
+  engine starts; the risk table's response is to author the start with `deployment`, which
+  Haengju's 2026-11-14 launch showed placing units within 3.5 m in a siege.
+- Standing still costs the attacker men. Our army ended with 526 and 193 of its 763 men; in launch 2 the ram's
+  crew routed at 757.1 s, after which the uncrewed ram left the public vehicle list (the private
+  record kept it). The garrison listed 5 structures, then 8, in launch 1 and 8 from the start in
+  launch 2.
+
+The choices these raise are the owner's (review queue item 15). Card, analysis script, native
+records and the independent recount: `runs/haengju-20261114/` (`card-izmail.md`,
+`analyze_attack.py`, `attack-hold-1`, `attack-hold-2`, `review/izmail-recount.md`). The first
+plan named the jobs after the battle and `play` refused it before launching anything, because the
+name is a withheld word. The card and checking method were not agreed, so no gameplay or benchmark
+verification follows.
+
 ## Risks
 
 | Risk | Stage that shows it | Response |

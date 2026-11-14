@@ -1,9 +1,9 @@
 # Project state
 
-Updated 2026-11-13. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
+Updated 2026-11-14. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-Historical-battle construction holds, 2026-11-14 (Claude, from 03:18): Haengju 1a played (lost at 928 s); D1 Spearmen broke the gate, so JUDGEMENT? Gate stop ends Haengju's stage 1 there. Next Izmail stage 1, two `hold` launches, $0, game cutoff 08:00 local. Claims the WH3 game; brief `runs/haengju-20261114/brief.md`.
+Historical-battle construction holds, 2026-11-14 (Claude, 03:18-04:45; games closed): Haengju 1a and Izmail stage 1, three `hold` launches, $0 ([log](twwarhammer3/log.md#2026-11-14-first-haengju-and-izmail-construction-holds)). Haengju's gate hit points fell to 0 with D1's Spearmen at it, so Gate stop ended its stage 1; Izmail ended at the timer twice, found `can_climb` missing and tower owners read from the wrong side (fix parked on `tower-owner-20261114`). Also: five code-page views refreshed. Next: item 15's new choices. Evidence: `runs/haengju-20261114/`.
 
 Refusal sweeps, 2026-11-13 (Claude, overnight then from 10:28): tests now catch 55 of 59 refusal removals that the tests of nineteen WH3 files missed; tests, twelve plants and one sweep-tool fix; offline, $0. The Cannae and Alesia witnesses' 11 refusals now end the battle instead of counting as forfeits (owner's answer, 2026-11-13). Evidence: `runs/overnight-20261113/`, `runs/sweeps-20261113b/`.
 
@@ -24,7 +24,7 @@ Agent context loading, 2026-11-09 (Codex): [shared startup routes and personal-m
 
 Spire local-model training, 2026-11-07, owner's repeated goal; nothing runs and the game is closed. Code archived as `archive/spire-local-rl-20261111`, handoff `runs/spire-rl-20261107/handoff.md`, decisions first. A second pick (learned fights with a human-taught run adapter) beat the 2026-11-06 best adapter (+2.80, interval +0.92 to +4.67) and the warm start on 60 fresh test seeds, one revision ([log](spire/fullrun/log.md#2026-11-07-evening-learned-fights-with-a-human-taught-run-adapter-beat-yesterdays-best-on-fresh-test-seeds)). **Owner: `STSUnlockProgress` is still the wiped copy; `runs/local-rl-20261106/handoff.md` has the restore commands.**
 
-WH3 historical evaluations beyond Cannae, harness b54: one Alesia case-a hold played; all unverified ([overview](twwarhammer3/historical-evals.md)). Alesia, Haengju and Izmail retain their 2026-11-10 lobby readbacks. On 11-11 Belgrade's Flagellants and Free Company both reported unowned and unrecruitable despite sufficient funds; no complete army readback. Haengju, Belgrade, Alesia and Izmail have declarations, witnesses, controls and pages; Malta remains unbuilt. The owner approved models using siege orders: `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No siege battle has run on v23. Next: Belgrade access or an owner roster choice, and decision 15's Alesia premise before further construction trials.
+WH3 historical evaluations beyond Cannae, harness b54: one Alesia case-a hold, one Haengju stage 1a hold and two Izmail stage 1 holds played; all unverified ([overview](twwarhammer3/historical-evals.md)). Alesia, Haengju and Izmail retain their 2026-11-10 lobby readbacks. On 11-11 Belgrade's Flagellants and Free Company both reported unowned and unrecruitable despite sufficient funds; no complete army readback. Haengju, Belgrade, Alesia and Izmail have declarations, witnesses, controls and pages; Malta remains unbuilt. The owner approved models using siege orders: `llm`/`llm_rules` v23 offers them in Izmail; the commander and team members read the fort as facts without the orders, and `local_team` members do not see it. No siege battle has run on v23. Next: Belgrade access or an owner roster choice, and decision 15's Alesia premise before further construction trials.
 
 WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-06); contribution priority and scope remain open, no experiment scheduled.
 
@@ -105,7 +105,7 @@ Numbers are unchanged; open the relevant item before acting.
 12. **Factory:** unrelated test/process approvals, tally suggestions and formal-map candidates remain open (review queue). The old cleanup, xdist and battle-time drafts were removed during the owner-directed cleanup.
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
-15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), and the Alesia first-rout premise before more construction battles.
+15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), the Alesia first-rout premise, and from 2026-11-14 Haengju v1's park or version 2 and Izmail's tower-owner fix, `can_climb` probe and authored starts.
 
 ## Runtime and ownership
 
@@ -115,6 +115,7 @@ Numbers are unchanged; open the relevant item before acting.
 - Also authorized: game windows, local GPU work, commits and pushes to public `main`, and paid API use within each ledger's cap. One game controller at a time across both games (each game's lock and process check cover only that game); one GPU job at a time.
 
 ## Branches
+- `tower-owner-20261114` (`d6b4d76`, worktree `../slay_the_spire_ai-tower-owner-20261114`): siege tower owners read with the capture points' 0-based side; parked for the owner (review queue item 15).
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): owner explicitly kept both on 2026-11-11. Still parked; resume at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps) when requested.
 - Archived training: pushed tag `archive/spire-local-rl-20261111` (`5a227e5`); results stay recorded. Generic collector/trainer defects: `runs/unmerged-cleanup-20261110/review/rl/report.md`.
 - Other archived drafts are tags (`git tag --list 'archive/*'`); deleted drafts from this cleanup are recoverable from its local `unmerged-before.bundle`.

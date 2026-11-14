@@ -853,3 +853,6 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-11-11,pilot-peer-02,episode-0000,emp-envelopment-c-mid-peer-v3,configured,claude-haiku-5-5,low,,54c3c79,realtime,1.0,0.0,lost,461,0.39,0.67,814,11,2.75,0.9846,classic,,,,,0.0,0.672,0.0,engine_result,anthropic,dcea16e551ab,
 2026-11-11,pilot-relay-02,episode-0000,emp-envelopment-c-mid-relay-v3,configured,claude-haiku-5-5,low,,54c3c79,realtime,1.0,0.0,lost,354,0.41,0.74,763,12,2.73,0.9731,classic,,,,,0.0,0.732,0.0,engine_result,anthropic,0ce27475f256,
 2026-11-12,construction-01,episode-0000,ksl-nor-lines-a-v1,hold,,,,6cff227,realtime,1.0,0.0,lost,338,0.25,0.43,1098,0,0.3,0,classic,,,,,0.0,0.413,0.0,engine_result,,,
+2026-11-14,hold-1a,episode-0000,cth-emp-siege-a-v1,hold,,,,601d249,realtime,1.0,0.0,lost,928,0.56,0.52,2979,0,0.31,0,siege,0.882190445238869,13430,1.0,,0.0,0.478,0.0,engine_result,,,waves
+2026-11-14,attack-hold-1,episode-0000,ksl-emp-siege-a-v1,hold,,,,070ff54,realtime,1.0,0.0,lost,1205,0.69,1.0,3892,0,0.31,0,siege,0.0,,0.0,,0.689,1.0,0.0,time_limit,,,
+2026-11-14,attack-hold-2,episode-0000,ksl-emp-siege-a-v1,hold,,,,070ff54,realtime,1.0,0.0,lost,1205,0.25,0.98,3847,0,0.31,0,siege,0.0,,0.0,,0.253,0.981,0.0,time_limit,,,

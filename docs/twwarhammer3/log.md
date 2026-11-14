@@ -29,6 +29,32 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-14: First Haengju and Izmail construction holds
+
+Claude, in the owner's away window (goal in owner-direction.md; brief, cards, analysis scripts,
+raw jobs and reviews in `runs/haengju-20261114/`). Three `hold` launches on build 26403568, $0.
+- Haengju stage 1a (`hold-1a`, `601d249`): lost at 928.0 s once the garrison had routed.
+  Teleporting the divisions (within 3.5 m), the hold (no held unit moved over 1.2 m) and the
+  releases at 150.1, 300.1 and 450.1 s worked. The gate's hit points fell to 0 by 629 s while
+  D1's Spearmen stood at it with the melee flag on; no field names the damage source. The
+  design held no version 1 attacker could do this, so JUDGEMENT? Gate stop ended stage 1.
+  Check 6's premise read 67% of shots left at D3's approach (bar 25%); live `ammo` counts shots
+  per man, so the rockets are 4% of the total, not about half. [Page](haengju-eval.md#first-construction-battle-2026-11-14).
+- Izmail stage 1 (`attack-hold-1`, `attack-hold-2`, `070ff54`): both lost at the timer
+  (`time_limit`, 1,205.2 s), the register's first sieges to reach it. `can_climb` never reached
+  our units, so v23 would offer no siege orders there and validation refuses every wall
+  besiege; tower owners read "us" for the defender's towers (fix parked on
+  `tower-owner-20261114`); g1's centre is (-2,-19.1), not (-32,-16); engine starts moved 40-441 m
+  between launches. [Page](escalade-eval.md#first-stage-1-launches-2026-11-14).
+- My first Izmail plan named its jobs after the battle; `play` refused the withheld word before
+  launching. The jobs ran under neutral names.
+- Code page: five flagged views refreshed by a fresh agent, reviewed (5 findings, all fixed) and
+  merged; `check.py` flags 0 of 6 views at `8463d04`. 94 of the plan's 100 calls.
+- Independent recounts (`review/recount-1a.md`, `review/izmail-recount.md`) confirmed the page
+  numbers after the corrections they asked for. Unverified: no agreed check covers these
+  readings; one or two launches each; `on_wall` not compared with video; why `can_climb_walls`
+  answers nothing.
+
 ## 2026-11-13: Four more audit choices
 
 The owner answered four 2026-11-08 audit choices with the recommended option (owner-direction.md).
@@ -2508,7 +2534,7 @@ visuals for those too."
 | `team_llm_rules` | v23+t2 (2026-11-09; t2 2026-10-27): `llm_rules` per member plus the teammate's units and condition; a siege attack's fort as facts, without the siege orders | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` plus v2 communication arms | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py`, `local_scripts.py` | [Communication mechanics recheck](#2026-11-10-communication-mechanics-recheck-and-an-intermediate-force-candidate); [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
-| Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | None played; built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54) |
+| Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | Built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54); reserve v3 waves played once in [Haengju 1a](#2026-11-14-first-haengju-and-izmail-construction-holds); the witnesses and controls are unplayed |
 | benchmark harness | b55 (2026-11-12: [deployment handover failures and siege replay](#2026-11-12-battle-review-deployment-handover-and-siege-replay-b55)); b54 (2026-11-09: private all-unit record, reserve v3 divisions in turn, siege-attack interface and siege_equipment, [entry](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54)); b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |

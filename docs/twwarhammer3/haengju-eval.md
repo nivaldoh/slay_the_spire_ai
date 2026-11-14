@@ -655,7 +655,7 @@ descriptive until a check ties it to a decision, and a missing value stays unkno
 | The gate, Gatehouse and fallback times | `wall_readings.gate_timeline`: the first observation with a public gate at hp 0 or below, the first with `c2` enemy-held, and the arm's fallback time and reason from its metadata in the trace's last decision row; read beside each division's first sighting and first approach |
 | Each division's men lost before contact | `wall_readings.division_missile_losses`: in the private record, the men each division lost before any of its units reads melee with men left or `on_wall` (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Missile losses and JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Contact rule); it does not tell missile losses from other causes |
 | First sighting of each division | `wall_readings.first_sightings`: the first observation whose public `enemy` list holds one of its units, never the private record, which also lists units nobody can see |
-| Missile ammunition at each division's first approach | `wall_readings.approach_ammunition`: at the first observation in which a visible unit of the division is 150 m or nearer the wall line or inside it, the summed `ammo` and `ammo0` of the friendly units that carry ammunition (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Approach distance). The sum weights each unit by its own count, so the rockets' 84 make up about half of the 172 total by database values; spent shots do not prove hits. D1's reading also counts the shots fired before D1 first comes within 150 m (its `ammo0` minus its `ammo`), so no other reader is built for them |
+| Missile ammunition at each division's first approach | `wall_readings.approach_ammunition`: at the first observation in which a visible unit of the division is 150 m or nearer the wall line or inside it, the summed `ammo` and `ammo0` of the friendly units that carry ammunition (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Approach distance). The sum weights each unit by its own count. By database values the rockets' 84 made up about half of a 172 total, but the live `ammo` counts shots across a unit's men: in the first launch the rockets' 252 were about 4% of 5,774 ([reading](#first-construction-battle-2026-11-14)). Spent shots do not prove hits. D1's reading also counts the shots fired before D1 first comes within 150 m (its `ammo0` minus its `ammo`), so no other reader is built for them |
 | Breach time | `wall_readings.breach`: the first private-record frame in which an enemy reads `on_wall` true, or, once stage 1 has frozen the private wall polygon from the terrain grid and `on_wall` readings, whose centre is inside it in two frames in a row (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Breach reading). `is_on_top_of_wall` has never been read live, and a centre alone can jump between squads |
 | Reserve response | `wall_readings.reserve_response`: ms from the breach until the engine applied the first accepted attack by the Lord or a Jade Warriors unit, and until the first frame with one of them flagged in melee with men left (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Reserve response and JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Contact rule). Checked only on a hand-built trace |
 | Holder times of `c1`, `c2` and `c7`; ticket onset | `wall_readings.enemy_held` and `ticket_onset`, with holders and tickets as `evidence_rules` reads them: a holder of None is neither side's, and tickets are the defender's row. Tested against the `hold` baseline times above |
@@ -785,6 +785,9 @@ times the launch count.
 
 Through stage 3c that is about 24-29 launches and 8-12 hours of game time before any ladder step.
 
+Stage 1a ran once on 2026-11-14, and the gate's fall in it stopped stage 1 under the Gate stop
+marker below; 1b-1e have not run ([the reading](#first-construction-battle-2026-11-14)).
+
 JUDGEMENT: Eagle Gate screen — Claude, 2026-11-08 (siege defence design): one hold launch on
 battle_preset_wh2_main_minor_settlement_fortress_gates, kept only under the rule below, frozen
 first. A looser rule may pick a map whose shape staggers the divisions; the map choice rests on it.
@@ -800,6 +803,61 @@ hold x3, HoldBuild, KeepOnly, WallWitness x2. Other knobs or reruns change the f
 A ladder step can remove the premise: one more Greatswords or releases 30 s apart change S-ammo
 and the arrival spacing, so check 6 and check 7's waves part are re-read at every step, beside
 the floors.
+
+## First construction battle (2026-11-14)
+
+In the owner's 2026-11-14 away window, stage 1a ran once: `hold` on `cth-emp-siege-a-v1`, source
+`601d249`, harness b55, build 26403568 and pack `67b98db4…`. The native result was lost at 928.0 s,
+ended by the engine with about 277 s left on the timer, once every garrison unit had routed (nine
+routed, the rocket battery destroyed). All 767 logged observations read 1x, and the game closed
+normally. No model was called. This is one construction reading, with no readiness verdict.
+
+These parts behaved as designed in this launch:
+- Rosters: both first private readings match the declared multiplicities (18 and 10 units), and
+  the first private frame lists no siege equipment and no vehicle.
+- Teleporting in a siege: the 18 staged enemy units stood at most 3.5 m from their points, with
+  bearings at most 2.8 degrees off, the offset Cannae's row 1 found.
+- The hold: the three held groups were released by time at 150.1, 300.1 and 450.1 s, with no
+  damage release. Before its release no held unit moved more than 1.2 m from its first private
+  position (this window's own reading; the planned check 2 reader is still unbuilt). Each released
+  division first had a unit within 150 m of the wall line 112-118 s after its release in the
+  private record. In the logged observations the four divisions first approached in order at
+  88.6, 266.8, 412.3 and 568.3 s, at least 145 s apart, which is check 7's waves part for one
+  launch.
+- Visibility: all four divisions were in the public enemy list from the first observation at
+  5.2 s, so the risk that held divisions stay unseen did not arise.
+- Cost: the private record's `sample_cpu_ms` had a median of 1.0 ms and a maximum of 5.0 ms over
+  925 frames.
+
+These parts did not:
+- The gate. The design assumed that no version 1 attacker could damage it, because every Empire
+  key read `can_siege` false in the 2026-11-09 database read (build not recorded). In this launch
+  the Gatehouse lost hit points steadily: in the private record from 147.1 s, raw 9,000 to 0 at
+  629.2 s; in the observations, public hp first below 100 at 147.4 s and 0 at 628.9 s;
+  `destroyed` read false throughout. No field names the damage source. Until 418 s, when the raw
+  hp read 3,864, the only enemy within 45 m of the gate's recorded position was the D1 Spearmen
+  e2, standing on the Gatehouse point `c2` with the engine's melee flag on from 2.1 s before the
+  first drop. Izmail's launches on this map read the gate building's centre 3.4 m from `c2`, and
+  the recorded ram and Trolls that broke this door stood at the same spot. Our cannon
+  and rocket shots show no link to the drops. Whether units can pass a gate at hp 0 is still
+  unread, and `c2` was never enemy-held. Under JUDGEMENT? Gate stop the stage stops here, and
+  stages 1b-1e did not run.
+- Check 6's premise in this launch: at D3's first approach (412.3 s) the garrison still held
+  3,866 of its 5,774 shots (67%), against the proposed bar of at most 25%. The live `ammo` counts shots across
+  a unit's men: the two Peasant Archer units start with 1,980 each and the rocket battery with
+  252, about 4% of the total, not about half as the Measurements table estimated from database
+  values.
+- The ending rules had little to read. The defender's tickets stayed at 1,000 because `c1` and
+  `c2` were never enemy-held (`c7` fell at 531.1 s), so check 5's ticket rule was not exercised
+  and the timer win is still unobserved. The first enemy read `on_wall` at 190.0 s (D1's
+  Swordsmen e5), the battle's first live `is_on_top_of_wall` reading, not compared with video.
+  The first garrison unit to rout was a Peasant Archer unit, at 431.2 s.
+
+Whether to keep a gate that the attackers can wear down without equipment, change the attacker
+roster or map, or change the Gate stop rule is the owner's choice (review queue item 15). The launch selection rests on
+JUDGEMENT? `runs/haengju-20261114/card-1a.md` Construction launch selection. Card, analysis
+script, native records and the independent recount: `runs/haengju-20261114/`. The card and
+checking method were not agreed, so no gameplay or benchmark verification follows.
 
 ## Risks that would change the design
 

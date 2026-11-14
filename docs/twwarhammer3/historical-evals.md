@@ -445,6 +445,24 @@ army purchase charge remains unavailable. See the [full reading and limits](line
 No other new battle ran, and no gate, scenario change or comparison was adopted. Evidence:
 `runs/comm-feedback-20261112/`. Further construction waits on the premise review.
 
+### First Haengju reading, 2026-11-14
+
+One Haengju stage 1a `hold` launch ended in a native loss at 928.0 s, once every garrison unit had
+routed. Teleporting the divisions, the hold and the three timed releases worked as designed in
+this launch. The gate's hit points fell to 0 while D1's Spearmen stood at it, which the design
+held no version 1 attacker could cause, so JUDGEMENT? Gate stop ended Haengju's stage 1 after
+this launch. See the [full reading and
+limits](haengju-eval.md#first-construction-battle-2026-11-14). Evidence: `runs/haengju-20261114/`.
+
+### First Izmail readings, 2026-11-14
+
+Izmail's two stage 1 `hold` launches both ended at the 1,200 s timer with the defender winning
+(`time_limit`), which ER4 below proposed to read first and Haengju's win, Izmail's loss and Malta's
+return rest on. They also found that `can_climb` never reaches our units, so no wall `besiege` can
+be ordered, that tower owners read from the wrong side, and that the engine's starts do not repeat
+between launches (up to 224 m for ours, 441 m for the garrison's). See the [readings and limits](escalade-eval.md#first-stage-1-launches-2026-11-14).
+Evidence: `runs/haengju-20261114/`.
+
 ### Estimated battle windows
 
 The times below use one estimate, 20-25 min, for a launch that runs to its 1,200 s timer, as the
