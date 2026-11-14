@@ -522,20 +522,37 @@
       }
       out.push(". ");
     }
-    const counts = data.scenarios
-      .filter((item) => !matched.some((m) => m.item === item))
-      .flatMap((item) =>
+    // Battles per model in each other scenario where a model played; a page model that did not
+    // play there counts 0. Scenarios without a model battle (scripted controls) are counted apart
+    // (2026-11-08 audit finding-per-model-counts-zero).
+    const unmatched = data.scenarios.filter((item) => !matched.some((m) => m.item === item));
+    const played = unmatched
+      .map((item) =>
         models.map((family) =>
           item.rows.filter((r) => r.family === family).reduce((k, r) => k + r.battles.length, 0),
         ),
       )
-      .filter(Boolean);
-    if (counts.length) {
-      const [low, high] = [Math.min(...counts), Math.max(...counts)];
-      const others = n - matched.length;
+      .filter((counts) => counts.some(Boolean));
+    const none = unmatched.length - played.length;
+    if (!played.length && none)
       out.push(
-        `${matched.length ? `The other ${number(others)}` : others === 1 ? "The" : `All ${number(others)}`} scenario${others === 1 ? " has" : "s have"} ${low === high ? low : `${low}–${high}`} battle${high === 1 ? "" : "s"} per model so far. `,
+        `${matched.length ? "The other" : "The"} ${none === 1 ? "scenario has" : `${number(none)} scenarios have`} no model battles. `,
       );
+    if (played.length) {
+      const counts = played.flat();
+      const [low, high] = [Math.min(...counts), Math.max(...counts)];
+      const others = played.length;
+      const range = `${low === high ? low : `${low}–${high}`} battle${high === 1 ? "" : "s"} per model so far`;
+      if (!none)
+        out.push(
+          `${matched.length ? "The other" : others === 1 ? "The" : "All"} ${others === 1 ? "scenario has" : `${number(others)} scenarios have`} ${range}. `,
+        );
+      else {
+        const some = `${number(others)} of the ${matched.length ? "other " : ""}${number(unmatched.length)} scenarios`;
+        out.push(
+          `${some[0].toUpperCase()}${some.slice(1)} ${others === 1 ? "has" : "have"} ${range}; ${none === 1 ? "one has" : `${number(none)} have`} no model battles. `,
+        );
+      }
     }
     const ages = (kind) => {
       const values = [

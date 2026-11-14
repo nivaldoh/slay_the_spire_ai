@@ -378,7 +378,8 @@ effort is defined once, under Figure 1.
   0, 0, 1 and 0", a later model's wins alone when its scenarios and battle counts match the
   first's, else named; scenarios nobody won close it: "Neither won any swarm defence or
   Kislev survival battle", with `noun` in the notes naming one battle); how many battles
-  per model the other scenarios have; how old the models' and the rules' views were when
+  per model the other scenarios a model played have (a page model absent there counts 0),
+  and how many have no model battle (scripted controls); how old the models' and the rules' views were when
   their orders landed; and that prompts were developed on these scenarios (in-sample),
   said only here.
 - **The battle**: a short declarative heading (`heading` in the notes), then the replay

@@ -29,6 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-13: The report's opening sentence counts only scenarios a model played
+
+2026-11-08 audit finding-per-model-counts-zero. `report.js` dropped zero counts but still said
+"All N scenarios have a–b battles per model", so scenarios with no model battle (scripted
+controls) were included. It now counts the scenarios where a model played, keeps a page model's 0
+there, and names the rest. The rebuilt 11-08 page
+(`runs/twwarhammer3/reports/comm-structure-20261108-r2.html`) said "All six scenarios have 1–2
+battles per model so far"; two of the six have Scripted battles only. It now says "Four of the six
+scenarios have 1–2 battles per model so far; two have no model battles", which matches its data.
+The demo and pair pages' sentences are unchanged (headless Chromium, before and after). Five
+copies of the demo page with edited data (review round 11's) read true in each branch, for example
+"The other scenario has 0–2 battles per model so far" and "The other two scenarios have no model
+battles". No test runs report.js; these renders are evidence only. reports.md says so.
+
 ## 2026-11-13: Two small fixes from the 2026-11-08 audit
 
 - BQ2: `suite.make_plan` refuses a `--start-before` time without a UTC offset. Before, the plan kept
