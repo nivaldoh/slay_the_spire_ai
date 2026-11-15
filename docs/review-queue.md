@@ -52,7 +52,7 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
 
 ## Completed work and handoffs
 
-Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`; controller files other than team, commander and graph_goals untouched (owner). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
+Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 was used on the planned $0 windows of 2026-11-05 ([log](twwarhammer3/log.md#2026-11-05-window-1-centresupport-5-of-8-no-shortcut-won)); that each met the plan's row was not checked.
 CI runs `check.py` on each push to `main` and each pull request (results: `gh run list`).

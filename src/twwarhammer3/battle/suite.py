@@ -1,7 +1,7 @@
 """The coordination suite: frozen control methods over many battles, read along dimensions.
 
 A plan fixes every scenario/arm battle before any runs and each gets one row, played or not
-(SWE-bench's swebench/harness/reporting.py, as in benchmark.py). No dimension is folded into
+(SWE-bench's swebench/harness/reporting.py, as in benchmark_plans.py). No dimension is folded into
 another: outcome, what was kept and taken, cost, speed, reliability and coordination stay
 apart, so a method can lead on one and trail on another.
 

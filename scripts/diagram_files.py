@@ -68,7 +68,6 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
         data = show(commit, path)
         return None if data is None else data.decode("utf-8", "replace")
 
-
     def literal(path: str, name: str, values: bool = False) -> list | None:
         # A constant's keys or items, by ast; with `values`, a dict's "key=value" items.
         for node in ast.parse(text(rev, path) or "").body:
