@@ -14,8 +14,9 @@ For the current battle and its evaluation, see the
 | [SMACv2](benchmark-references/smacv2.md) | Designed maps and distributions; generated armies and starts | Team combat win rate | Tactical variation and whether a policy actually needs feedback |
 | [RoCoBench](benchmark-references/rocobench.md) | Tabletop tasks with different capabilities, observations and action dependencies | Task success, steps and replanning | Robot coordination parallels to both WH3 team setups |
 | [MultiAgentBench](benchmark-references/multiagentbench.md) | Domain tasks with agent roles and communication structures | Task scores, milestones and judged coordination | LLM team organisation, communication and outcome/process separation |
+| [Terminal-Bench](benchmark-references/terminal-bench.md) | Contributed terminal tasks, one folder each, reviewed against a rubric | Share of trials whose grader passes | How a benchmark repository organises tasks, their checks, versions and result records |
 
-Source inspection: 2026-11-01; MultiAgentBench added 2026-11-02; RoCoBench added 2026-11-04. This is research, not a reproduction of their results or a
+Source inspection: 2026-11-01; MultiAgentBench added 2026-11-02; RoCoBench added 2026-11-04; Terminal-Bench added 2026-11-15. This is research, not a reproduction of their results or a
 verification of WH3. The [definition](benchmark.md) and [owner interview](benchmark-implementation.md#owner-interview-one-land-battle)
 still govern the choices awaiting the owner. No scenario, score or check is adopted here.
 

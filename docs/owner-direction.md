@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-15 (Terminal-Bench structure comparison), goal verbatim: "Read
+  https://github.com/harbor-framework/terminal-bench/tree/main and add it to our list of
+  reference repositories for AI benchmarks. Then, compare its high-level structure in the
+  codebase to ours, and see if it gives us any good ideas on how we could improve the structure
+  of our code (to decrease the odds of errors, to improve organization, to simplify, to cut
+  bloat, to reduce overengineering, etc). Write a detailed, concrete report with your findings
+  and conclusions." Applied: [profile](twwarhammer3/benchmark-references/terminal-bench.md)
+  and report `runs/terminal-bench-review-20261115/report.md`; no code changed.
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

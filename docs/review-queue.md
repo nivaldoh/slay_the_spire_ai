@@ -52,6 +52,15 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
 
 ## Completed work and handoffs
 
+Terminal-Bench structure comparison, 2026-11-15 (Claude, owner's goal): a new
+[reference profile](twwarhammer3/benchmark-references/terminal-bench.md) and a report,
+`runs/terminal-bench-review-20261115/report.md`, with eight ranked proposals. Read only: no code
+changed, nothing run from the clone, $0. The proposals are unadopted and unverified. Each of
+three needs one answer from you: the rule for `unresolved` outcomes (F2), the list of scenario
+statuses (F4), and which benchmark generations are over (F3). A second agent's recheck of the
+first draft confirmed 89 quotes and counts and found 28 to correct (`quote-check.md` beside
+it); the corrections are applied, and the corrected text has had no second reader.
+
 Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 was used on the planned $0 windows of 2026-11-05 ([log](twwarhammer3/log.md#2026-11-05-window-1-centresupport-5-of-8-no-shortcut-won)); that each met the plan's row was not checked.

@@ -549,9 +549,14 @@ task-construction methods, evaluation semantics and pinned implementation entry 
   and separate task/coordination measures; complements SMACv2 for our split-army comparison.
   [Profile](twwarhammer3/benchmark-references/multiagentbench.md) includes pinned code,
   WH3 connections and limits of its scheduling, judge scores and disabled graph metrics.
+- [Terminal-Bench](https://github.com/harbor-framework/terminal-bench) (read 2026-11-15 at
+  `cba65cd`): one folder per task with the instruction, reference solution and grader apart;
+  a version level that says whether earlier results are replayed, re-read or kept;
+  deliberately failing fixtures for most checks. [Profile](twwarhammer3/benchmark-references/terminal-bench.md). Its
+  runner, [Harbor](https://github.com/harbor-framework/harbor), was listed, not read.
 
-Source inspection dated 2026-11-01; MultiAgentBench added 2026-11-02. Exact revisions and
-primary papers are in the profiles.
+Source inspection dated 2026-11-01; MultiAgentBench added 2026-11-02; Terminal-Bench added
+2026-11-15. Exact revisions and primary papers are in the profiles.
 No external benchmark results reproduced or WH3 verification established by these sources.
 
 ## GaP graph controllers for WH3 (2026-10-31)
