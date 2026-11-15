@@ -76,7 +76,8 @@ proposal marked `JUDGEMENT?`: under it a refactor that changes no behaviour woul
 results poolable, while `report` splits on it, the HTML report too outside its presentation
 files, and `stats` pools one harness version across commits. (6) A witness's file hash no longer covers the values now in its
 `*_facts.py`, so `stats` could pool two jobs of one witness that differ only there (marked
-`JUDGEMENT?` Witness hash in `controllers.py`; no row is affected today). (7) Four markers
+`JUDGEMENT?` Witness hash in `controllers.py`; no row is affected today; asked on 2026-11-15
+you answered "Decide later"). (7) Four markers
 (Camp groups, Camp thresholds, Lines witness rules, Wall witness thresholds) stay in the
 witness files while 12 of the values they name are in the facts files; a plain line above each
 says so, and whether the markers should move is yours.

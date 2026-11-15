@@ -48,6 +48,13 @@ Both games:
   the scenario file". Built on branch `tb-plan-rest-20261115`
   ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)). The F6
   table is a proposal marked `JUDGEMENT?`; choosing to have it written did not approve its rows.
+  Asked how that branch should land (seven commits with this record, head `b5381d6` when
+  asked; the question listed 11 path-only edits to JUDGEMENT lines, comment or loader-call
+  lines in 7 agreed-check test files and 2 new `JUDGEMENT?` markers): "Merge and push
+  (Recommended)". Asked what a controller's source hash should cover now that a witness's
+  shared values are in its `*_facts.py` (hash the facts file too, leave it with the marker, or
+  decide later): "Decide later". The marker Witness hash in `controllers.py` and the
+  review-queue question stay open; nothing is built on either reading.
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

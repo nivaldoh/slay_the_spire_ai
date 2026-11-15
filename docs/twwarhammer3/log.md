@@ -44,7 +44,8 @@ scripts and two reviews: `runs/terminal-bench-review-20261115/impl/`.
 - A witness's own file hash no longer covers the moved values. `report` and the HTML report
   still split on a change to them; `stats` would pool two jobs of one witness and one `-vN-`
   name that differ only there. No row is affected today (0 of the 138 rows naming these modules
-  carry a configuration). Marked `JUDGEMENT?` Witness hash in `controllers.py`.
+  carry a configuration). Marked `JUDGEMENT?` Witness hash in `controllers.py`; the owner, asked:
+  "Decide later".
 - Scenario files (`a61164f`): `scenarios.json` became eleven files under
   `configs/twwarhammer3/scenarios/`, each entry's text unchanged. `setup.entries()` reads the
   directory's own files in name order and refuses a name or field written twice.
@@ -57,15 +58,14 @@ scripts and two reviews: `runs/terminal-bench-review-20261115/impl/`.
   resolved entry, and 21 findings, addressed in the last two commits: wrong versions the rule
   test passed, sentences stronger than the code (the table's reader column among them), and 12
   sentences on five pages that still called these battles unplayed, unread or without a lobby
-  readback. A plain line above four
+  readback (two more of the kind in `historical-evals.md` are corrected in `b5381d6`). A plain line above four
   markers says which of their values moved; the markers are unedited, and whether they move is
   the owner's.
 - Wrong in earlier commit messages: `1821b30` says the readings import "no module that defines
   a controller", that no test using the moved names is edited and that two references follow
   (one comment line of `test_wh3_escalade.py` is, as a third); `a61164f` says 13 marker lines
   on four pages.
-- Plants: 10 added (493); `check.py --plants` caught 491 of 491 at `54bbdbe`, before the last
-  two. Later jobs start a new HTML test setup (source files changed).
+- Plants: 10 added (493); `check.py --plants` caught 493 of 493 at `a6c751c`. Later jobs start a new HTML test setup (source files changed).
 - Unverified: no live run. No job has loaded a scenario from the directory or run a witness
   since these commits.
 
