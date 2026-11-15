@@ -132,13 +132,17 @@ clear disadvantage was the rampart and the ditch, and the numbers are contested.
 siege in which the player attacks a native AI garrison on Helmgart: Kislev with one ram against an
 Empire garrison. The engine produces the problem without a script: a continuous wall with one gate,
 ladders for infantry, cavalry that cannot climb, and an objective text that makes the defender the
-winner at the timer, which no siege has been seen to reach. The minor settlement has no walls, and
+winner at the timer, which no siege had been seen to reach until the two Izmail `hold` launches of
+2026-11-14 did. The minor settlement has no walls, and
 in three recorded launches the engine placed its defenders 650-750 m from the Key Building; a team
 of wing captains waits until the single-controller battle is understood. In the one earlier siege
 the player attacked, a smoke run stopped by hand at 730 s, our units stayed idle outside the wall
 ([battle types](battle-types.md#the-player-attacking-a-siege)). The siege-attack interface built at
 `f3fec92` for scenarios that opt in with `siege_assault` (the fortification list, `on_wall`, and the
-`besiege` and `attack_building` orders) has never run in a game.
+`besiege` and `attack_building` orders) has run in a game only in those two launches, which sent no
+order: the fort lists and `on_wall` read as designed and `can_climb` never appeared
+([reading](escalade-eval.md#first-stage-1-launches-2026-11-14)). The two orders have never been
+sent in a game.
 
 Its one claim is D1, spread or concentrate. `Escalade` sends three groups over three wall sectors at
 once, and `Concentrate` moves the two outer groups onto the wall pieces nearest `c5` and `c4` in the
