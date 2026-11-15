@@ -211,7 +211,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | One development version, split `development`, no reserved variant ([variation](#variation)); this page and the code are public |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted`; no battle played |
+| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15); no battle played |
 
 The settings:
 

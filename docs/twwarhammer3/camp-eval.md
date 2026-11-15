@@ -172,7 +172,7 @@ The declaration is `emp-chd-camp-v1` in
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | One development version, and two candidate second versions for owner question 1 ([candidate second versions](#candidate-second-versions)); Z2 unbuilt; a held-out map proposed ([variation](#variation)) |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Source `e918091`; the `private_record` opt-in and the `withheld` list were added after `f3fec92`, whose Lua change gives every later launch a new pack hash and a separate card setup identity; the readers in `camp_readings.py` and the two candidate second versions were added on 2026-11-09. `prototype_not_admitted`, split `development`; no battle played |
+| Release record | Source `e918091`; the `private_record` opt-in and the `withheld` list were added after `f3fec92`, whose Lua change gives every later launch a new pack hash and a separate card setup identity; the readers in `camp_readings.py` and the two candidate second versions were added on 2026-11-09. `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15), split `development`; no battle played |
 
 The settings:
 

@@ -440,7 +440,8 @@ including an accepted order the game then blocks.
 For the new Land Battle benchmark, use the engine winner, timer endings included, with
 the [outcome and failure table](benchmark.md#outcome-and-score). Align the new scenario's
 delivered objective and every benchmark reader before collecting scored trials.
-The following describes the existing contact-card code and its proposed refactoring.
+The following describes the contact-card code as it was until its deletion on 2026-11-15, and
+the refactoring then proposed.
 
 Each card names its success rule, which reads only the engine result, how the battle ended
 and declared task facts; the prompt states it

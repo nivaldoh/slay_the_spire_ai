@@ -203,15 +203,30 @@ def test_a_schedule_is_refused_under_another_scenario_declaration_or_from_a_batt
         build(episode)
 
 
-def test_a_new_status_word_does_not_orphan_a_recorded_win_but_any_other_field_does(tmp_path):
-    """Owner, 2026-11-15: "Leave status out (Recommended)". Wrong version: status is hashed, so
-    the status words written that day refuse every win recorded before them."""
-    schedule = build(record(tmp_path))  # recorded under SCENARIO, which states no status
+def test_a_new_status_word_does_not_orphan_a_recorded_win(tmp_path):
+    """Owner, 2026-11-15: "Leave status out (Recommended)". The win is recorded under the old
+    word, as every win saved before that day was, and replayed under the new one. Wrong versions:
+    the check hashes status; build still hashes it while the check leaves it out."""
+    episode = record(tmp_path)
+    manifest = episode.parent / "manifest.json"
+    recorded = json.loads(manifest.read_text())
+    recorded["scenario"] = {**SCENARIO, "status": "prototype_not_admitted"}
+    manifest.write_text(json.dumps(recorded))
+    schedule = build(episode)
     ReplaySchedule(schedule, scenario={**SCENARIO, "status": "candidate"})
-    assert declaration_digest({**SCENARIO, "status": "prototype_not_admitted"}) == (
-        declaration_digest({**SCENARIO, "status": "candidate"}))
+    ReplaySchedule(schedule, scenario=SCENARIO)  # and under an entry that states none
+
+
+@pytest.mark.parametrize("field, value", [("split", "held_out"), ("scenario_version", 9),
+                                          ("brief", "another brief"), ("family", "another")])
+def test_a_schedule_is_refused_when_any_field_but_status_differs(tmp_path, field, value):
+    """The marked rule "Replay identity": the whole declaration hashes alike, less only the
+    status the owner took out. Wrong version: the hash leaves out the HTML report's whole list
+    (brief, status and family), or the version."""
+    schedule = build(record(tmp_path))
+    assert declaration_digest({**SCENARIO, field: value}) != declaration_digest(SCENARIO)
     with pytest.raises(ValueError, match="another scenario"):
-        ReplaySchedule(schedule, scenario={**SCENARIO, "split": "held_out"})
+        ReplaySchedule(schedule, scenario={**SCENARIO, field: value})
 
 
 def schedule_of(*batches):

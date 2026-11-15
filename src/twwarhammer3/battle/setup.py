@@ -77,10 +77,12 @@ entry, and what reads them:
   ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is
   held_out.
 - ``status``, ``split`` and ``scenario_version`` describe one entry's review state and are
-  never taken from ``base`` (``OWN``; owner, 2026-11-15): each entry writes its own. A declared
-  entry (one with ``expect``) has a ``status`` from ``STATUSES``: ``current`` (part of a
+  never taken from ``base`` (``OWN``; owner, 2026-11-15): each entry writes its own status and
+  split, and its own version if it has one. A declared entry (one with ``expect``) has a
+  ``status`` from ``STATUSES``: ``current`` (part of a
   benchmark definition in force), ``candidate`` (under development or waiting for review),
-  ``held_out`` (reserved from tuning; its ``split`` is held_out too) or ``retired`` (of a
+  ``held_out`` (reserved from tuning; that its ``split`` is held_out too rests on JUDGEMENT?
+  tests/twwarhammer3/test_wh3_scenario_status.py Held-out tie) or ``retired`` (of a
   superseded design and still in the file, usually because a test, a live check or another
   entry's ``base`` names it). An entry without ``expect`` is a harness scenario and has no status.
 - ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``,

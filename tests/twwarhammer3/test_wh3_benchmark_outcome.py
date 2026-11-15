@@ -1,4 +1,4 @@
-"""benchmark.benchmark_outcome (version 1) on episodes that play.play_episode writes against a
+"""benchmark.benchmark_outcome (version 2) on episodes that play.play_episode writes against a
 fake mailbox, one per row of benchmark.md's outcome table. Until 2026-11-15 each case also
 checked the tactic cards' own outcome rule, deleted with their module (owner: "Delete all of
 it"; tag wh3-legacy-20261115)."""
@@ -114,28 +114,65 @@ def test_each_ending_play_writes_gets_its_row(tmp_path, case, make, mailbox, cha
     assert benchmark.benchmark_outcome(result) == expected
 
 
-@pytest.mark.parametrize("case, make, mailbox, change, scenario, expected", CASES,
-                         ids=[case[0] for case in CASES])
-def test_only_an_engine_label_counts_in_a_win_rate(tmp_path, case, make, mailbox, change,
-                                                   scenario, expected):
-    """benchmark.md, Outcome and score: an attempt has an outcome only when the engine ended it;
-    the owner on the unresolved rows, 2026-11-15: "Unresolved battles can be kept out of the
-    counts". Wrong version: evaluate reads a forfeit or an unresolved stop as a loss."""
+def _played(tmp_path, make, mailbox, change, scenario):
     loaded = setup.load_scenario({"scenario": scenario}) if scenario else None
     play.play_episode(tmp_path / "e", {**CONFIG, **change}, make, mailbox(), not_battle=None,
                       scenario=loaded)
-    result = json.loads((tmp_path / "e/result.json").read_text())
+    return json.loads((tmp_path / "e/result.json").read_text())
+
+
+SETTLED = [case for case in CASES if case[5] in ("won", "lost", "draw", "unresolved")]
+UNSETTLED = [case for case in CASES if case not in SETTLED]
+
+
+@pytest.mark.parametrize("case, make, mailbox, change, scenario, expected", SETTLED,
+                         ids=[case[0] for case in SETTLED])
+def test_an_engine_ending_counts_and_an_unresolved_stop_does_not(tmp_path, case, make, mailbox,
+                                                                 change, scenario, expected):
+    """benchmark.md, Outcome and score: the engine's won, lost or draw is the outcome; the owner
+    on the unresolved rows, 2026-11-15: "Unresolved battles can be kept out of the counts".
+    Wrong version: evaluate reads an unresolved stop as a loss."""
+    result = _played(tmp_path, make, mailbox, change, scenario)
     counted = expected if expected in ("won", "lost", "draw") else None
     assert benchmark.evaluate(result)["outcome"] == counted
 
 
-def test_a_trial_stopped_during_its_final_copying_is_an_operator_stop_whatever_the_engine_said():
-    """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". Wrong version: the label
-    keeps the engine's win while evaluate skips the trial, so the two disagree."""
-    result = {"status": "interrupted", "battle": "b", "engine_ending": {"result": "won"},
-              "interrupted_copy": "imagery"}
-    assert benchmark.benchmark_outcome(result) == "operator_stop"
-    assert benchmark.benchmark_outcome({**result, "interrupted_copy": None}) == "won"
+@pytest.mark.parametrize("case, make, mailbox, change, scenario, expected", UNSETTLED,
+                         ids=[case[0] for case in UNSETTLED])
+def test_the_other_labels_have_no_outcome_as_before(tmp_path, case, make, mailbox, change,
+                                                    scenario, expected):
+    """Not a rule the owner has settled. A forfeit, a controller that cannot be built, a setup
+    or game failure and a battle that never started had no outcome in evaluate before
+    2026-11-15 and have none now. benchmark.md calls a forfeit "not a win" and leaves its
+    denominator open; if the owner counts it as a non-win, this test changes with that rule."""
+    assert benchmark.evaluate(_played(tmp_path, make, mailbox, change, scenario))["outcome"] is None
+
+
+def test_an_operator_stop_in_mid_battle_has_no_outcome():
+    """benchmark.md, Outcome and score: an operator stop is "shown separately". Wrong version:
+    evaluate reads it as a loss."""
+    stopped = {"status": "interrupted", "battle": "b"}
+    assert benchmark.benchmark_outcome(stopped) == "operator_stop"
+    assert benchmark.evaluate(stopped)["outcome"] is None
+
+
+def test_a_trial_the_engine_ended_but_whose_final_copying_was_stopped_is_an_operator_stop():
+    """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". Wrong versions: the label
+    keeps the engine's win while evaluate skips the trial; the rule applies only under status
+    `interrupted`, so a late controller error with a cut copy still counts as the engine's win;
+    the rule also relabels a forfeit, which benchmark.md says stays "labelled forfeit"."""
+    stopped = {"status": "interrupted", "battle": "b", "engine_ending": {"result": "won"},
+               "interrupted_copy": "imagery"}
+    assert benchmark.benchmark_outcome(stopped) == "operator_stop"
+    assert benchmark.benchmark_outcome({**stopped, "interrupted_copy": None}) == "won"
+    # As play writes it when the controller fails after the ending and the copy is then cut.
+    late = {"status": "policy_failure", "error": "acknowledge: ValueError: late bug",
+            "battle": "b", "engine_ending": {"result": "won"}, "interrupted_copy": "recording"}
+    assert benchmark.benchmark_outcome(late) == "operator_stop"
+    assert benchmark.evaluate(late)["outcome"] is None
+    forfeit = {"status": "policy_failure", "error": "decide: ValueError: controller bug",
+               "battle": "b", "interrupted_copy": "recording"}
+    assert benchmark.benchmark_outcome(forfeit) == "forfeit"
 
 
 class _StoppedLate(Hold):

@@ -323,12 +323,12 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/benchmark_jobs.json"
       ],
       "status": "built, component tests only",
-      "commit": "dc74673",
+      "commit": "fd37495",
       "refs": [
         "src/twwarhammer3/battle/stats.py:1-3",
         "src/twwarhammer3/battle/report.py:1",
         "docs/twwarhammer3/results.csv",
-        "src/twwarhammer3/battle/benchmark.py:1-4",
+        "src/twwarhammer3/battle/benchmark.py:1-5",
         "src/twwarhammer3/battle/benchmark_plans.py:1-6",
         "src/twwarhammer3/battle/suite.py:1-11"
       ]

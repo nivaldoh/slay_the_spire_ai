@@ -140,7 +140,8 @@ def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:
 # Shaped like SWE-bench's run report (swebench/harness/reporting.py, make_run_report). It came
 # from cards.py on 2026-11-15, when the tactic cards and their own outcome rule were deleted
 # (tag wh3-legacy-20261115). A changed rule gets a new version. Version 2 (2026-11-15): a trial
-# stopped during its final copying is an operator stop, and evaluate takes its outcome from
+# the engine ended but whose final copying was stopped is an operator stop, where version 1
+# kept the engine's result; every other label is version 1's. evaluate takes its outcome from
 # this label, so the label and the counted outcome cannot disagree.
 BENCHMARK_OUTCOME_VERSION = 2
 
@@ -161,8 +162,9 @@ def benchmark_outcome(result: dict | None) -> str:
     if result is None or result.get("status") in (None, "missing_result"):
         return "never_started"
     # Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". A Ctrl-C during the final
-    # copying may have cut the copies, so the trial is an operator stop whatever the engine said.
-    if result.get("interrupted_copy"):
+    # copying may have cut the copies, so a trial the engine ended is an operator stop instead of
+    # its result. A trial with no engine result keeps its own label (a forfeit stays a forfeit).
+    if result.get("interrupted_copy") and recorded_outcome(result):
         return "operator_stop"
     status, error = result["status"], str(result.get("error"))
     ending = (result.get("engine_ending") or {}).get("result")

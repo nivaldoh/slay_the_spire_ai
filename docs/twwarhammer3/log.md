@@ -44,24 +44,28 @@ game. Cards, lists and scripts: `runs/terminal-bench-review-20261115/impl/`.
   choice (`PriorityStrike`) and the parked team-structures plan (`LineTeam`) still name three,
   so they were restored from the tag.
 - Outcome (`4419ebe`): `benchmark.evaluate` takes its outcome from `benchmark_outcome` (moved
-  from `cards.py`; version 2 labels a copy-interrupted trial `operator_stop`). Unresolved,
-  forfeit and the other non-engine labels are in no rate. Recount of 1,881 saved episode
-  results: `evaluate` differs from the tag's on 0.
+  from `cards.py`). Version 2 labels a trial the engine ended but whose final copying was
+  stopped `operator_stop`; every other label is version 1's. Only won, lost and draw have an
+  outcome, as before: unresolved by the owner's answer, the other labels unchanged and still
+  open. Recount of 1,881 saved episode results: `evaluate` differs from the tag's on 0.
 - Statuses (`2f2e82a`): 94 declared entries write their own status (1 `current`, 63 `candidate`,
-  30 `retired`), split and version; `base` no longer hands those down. Every entry resolves as
+  30 `retired`) and split, and 81 their own version; `base` no longer hands those down. Every entry resolves as
   before except its status word. `ReplaySchedule` hashes a declaration without `status`.
 - Source hashes change for calibration, benchmark, setup, replay_schedule and `__main__`, so a
   new launch of a kept diagnostic will not pool with its October rows. No kept scenario's
   battle fields change; the Lua and the pack are untouched.
-- Plants: 14 removed with their code, 10 retargeted, 12 added (each caught by hand); 475 now.
+- Plants: 14 removed with their code, 10 retargeted, 18 added (each caught by hand); 481 now.
   Eight of the new ones guard the base class's order bookkeeping, which only tests of deleted
   subclasses had covered.
-- Checks: `check.py` passed before each commit (4110, 4128 and 4131 passed, 70 skipped, in the
-  worktree). A reviewer read each change against its card; its findings and what was done
-  about them are in `impl/review-A.md` and `impl/review-BC.md`.
+- Checks: `check.py` passed before each commit (70 skipped each time, in the worktree). Two
+  reviewers read the changes against their cards (`impl/review-A.md`, `impl/review-BC.md`):
+  no changed behaviour in kept code and no changed saved number; 8 and 9 findings, on test
+  cover, stale sentences and one unstated relabel (a forfeit with a cut copy, now a forfeit
+  again), fixed in the two following commits.
 - Not changed, for the owner: outside the two profiles the text `report` still shows a timer
   win as `time_limit` and `stats` tallies raw statuses; whether a forfeit counts as a non-win
-  in a denominator.
+  in a denominator; no reader prints the unresolved count as its own figure; the held-out tie
+  between status and split is marked `JUDGEMENT?`.
 - Unverified: no live run. A schedule saved to disk before `2f2e82a`, if one exists, carries a
   hash that included status and must be rebuilt from its episode.
 

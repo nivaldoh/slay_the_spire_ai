@@ -262,7 +262,8 @@ with one row per planned battle.
   skip one stopped during its final copying, as it has no outcome (`recorded_engine_outcome`
   keeps the engine's), and count one stopped during controller close by its engine ending
   (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"). Since 2026-11-15
-  `benchmark.benchmark_outcome` (v2) labels such a trial `operator_stop` too.
+  `benchmark.benchmark_outcome` (v2) labels a trial the engine ended but whose final copying
+  was stopped `operator_stop`; one stopped during controller close keeps its engine label.
 - **A queue after its current job**: create `my-plan-stop` beside the plan; the running job
   plays its remaining episodes and the plan ends `stopped`.
 - **A queue now**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in
