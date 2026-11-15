@@ -5,7 +5,7 @@ Object.assign(DIAGRAM_FILES, {
  "files": [
   {
    "path": "src/twwarhammer3/__main__.py",
-   "text": "CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest, watch, card, stats, report, export, spend (jobs and offline evidence); benchmark (mirror and suite plans, reports, authoring); graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker, compare-peers (native multiplayer)",
+   "text": "CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest, watch, stats, report, export, spend (jobs and offline evidence); benchmark (mirror and suite plans, reports, authoring); graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker, compare-peers (native multiplayer)",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -143,7 +143,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/benchmark.py",
-   "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition",
+   "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition; the outcome label of an episode",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -407,13 +407,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/calibration.py",
-   "text": "disclosed scenario diagnostics",
-   "box": "map.setup",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/battle/cards.py",
-   "text": "tactic cards: foils, witness, admission rule, board and verdict; backs `card`",
+   "text": "the small diagnostics' base class and geometry helpers, and `CornerHold`; lines.py is built on them",
    "box": "map.setup",
    "list": "docs/twwarhammer3/README.md"
   },

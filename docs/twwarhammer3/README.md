@@ -208,7 +208,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 
 `src/twwarhammer3/`, Total War: WARHAMMER III custom battles:
 - `src/twwarhammer3/__main__.py`: CLI: doctor, pack, launch, menu (runtime and UI probes);
-  play, digest, watch, card, stats, report, export, spend (jobs and offline evidence);
+  play, digest, watch, stats, report, export, spend (jobs and offline evidence);
   benchmark (mirror and suite plans, reports, authoring);
   graph-author, graph-view (graph controllers); rl (checkpoint RL); coordinator, worker,
   compare-peers (native multiplayer)
@@ -253,7 +253,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 `src/twwarhammer3/battle/`, jobs and controllers:
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
 - `src/twwarhammer3/battle/benchmark.py`: the mirror profile: limits, one-call transport, battle
-  budget and the first-ending condition
+  budget and the first-ending condition; the outcome label of an episode
 - `src/twwarhammer3/battle/benchmark_plans.py`: frozen benchmark plans and every planned attempt
   read back
 - `src/twwarhammer3/battle/suite.py`: the coordination suite: arms, plans, measures and comparison
@@ -325,9 +325,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/audit.py`: checkpoint RL: branch audits
 - `src/twwarhammer3/battle/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
 - `src/twwarhammer3/battle/confirm.py`: checkpoint RL: the closed loop
-- `src/twwarhammer3/battle/calibration.py`: disclosed scenario diagnostics
-- `src/twwarhammer3/battle/cards.py`: tactic cards: foils, witness, admission rule, board and
-  verdict; backs `card`
+- `src/twwarhammer3/battle/calibration.py`: the small diagnostics' base class and geometry
+  helpers, and `CornerHold`; lines.py is built on them
 - `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
 - `src/twwarhammer3/battle/export.py`: offline model decisions, exchanges and provenance
 - `src/twwarhammer3/battle/digest.py`: trace summaries
@@ -435,7 +434,6 @@ uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decisi
 uv run python -m twwarhammer3 digest JOB[/episode-NNNN] --units  # unit fates and refusals
 uv run python -m twwarhammer3 graph-view JOB [JOB ...] --output runs/twwarhammer3/reports/graphs.html
 uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
-uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # board; add paths for a verdict
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
 uv run python -m twwarhammer3 export JOB [JOB ...] --output runs/twwarhammer3/exports/NAME
 uv run python -m twwarhammer3 spend                       # OpenAI; --provider for the others

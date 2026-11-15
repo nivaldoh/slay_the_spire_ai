@@ -1,5 +1,10 @@
 # Small focused candidates, second batch (draft, 2026-10-17)
 
+**Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
+all of it"). `battle/cards.py`, the `card` command, 23 diagnostics of `battle/calibration.py`
+and 47 scenario entries named on this page are gone from the repository; the tag
+`wh3-legacy-20261115` has them, and their jobs, register rows and log entries remain.
+
 Owner direction: mostly small battles that each test one or two skills, as difficult as
 they can be while staying demonstrably winnable, diverse in armies and mechanics, each
 answering a distinct question ([scenario mix](benchmark-implementation.md#owner-goals)).

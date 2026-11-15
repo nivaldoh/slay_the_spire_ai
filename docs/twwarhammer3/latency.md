@@ -83,7 +83,7 @@ paths remain unverified in the game. Compare failed decisions and terminal forfe
 - **Closed-loop round**: 10 launches per model-mode on the 1.1 card under the rule above, with
   pinned backends; at that n only gaps of about 0.6 in win rate are detectable (two-sided; about 0.5 one-sided).
 - Report order issue age as p50/p90, achieved decision gaps and pending/failed calls.
-  `cards.py`'s `info age` is median issue age plus half the mean decision gap: a proxy,
+  The deleted card board's `info age` was median issue age plus half the mean decision gap: a proxy,
   not a measured time average, effective reaction delay or execution age. Unequal gaps
   matter, empty batches need not change standing orders, and a queued attack executes
   after issuance. Do not collapse these into one deadline or compare controllers only

@@ -283,9 +283,9 @@ Evidence and commands: `runs/team-initial-20261102/`; `recount_v2.py team single
 with its challenged flaws. The report also distinguishes local validation refusals from
 engine acknowledgements and assigns no engine age to local refusals.
 
-1. The card board retains its existing display limitation. On `main` since
-   `56d3937`: the card board leaves team episodes off (JUDGEMENT Team rows in `cards.py`) and
-   each member's record in `result.json` says `running_at_close`.
+1. The card board retained its display limitation until it was deleted on 2026-11-15 (tag
+   `wh3-legacy-20261115`): from `56d3937` it left team episodes off. Each member's record in
+   `result.json` says `running_at_close`.
 
 This comparison rests on JUDGEMENT `docs/twwarhammer3/multi-agent-implementation.md`
 `team.py` PARTITION, ARMY_OWNER, target filter, ModelTeam max_age_ms and CLOSE_WAIT_S above.

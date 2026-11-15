@@ -117,7 +117,6 @@ DIAGRAM.tabs.push({
       "files": [
         "src/twwarhammer3/battle/setup.py",
         "src/twwarhammer3/battle/calibration.py",
-        "src/twwarhammer3/battle/cards.py",
         "src/twwarhammer3/battle/reserve.py",
         "configs/twwarhammer3/scenarios.json",
         "configs/twwarhammer3/custom_battle.json"

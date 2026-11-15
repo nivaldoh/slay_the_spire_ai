@@ -1,5 +1,10 @@
 # The Empire set
 
+**Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
+all of it"). `battle/cards.py`, the `card` command, 23 diagnostics of `battle/calibration.py`
+and 47 scenario entries named on this page are gone from the repository; the tag
+`wh3-legacy-20261115` has them, and their jobs, register rows and log entries remain.
+
 **Historical studies:** the 2026-10-23 [Land Battle plan](benchmark.md) uses small mixed
 armies and the engine winner, timer endings included. The contact-only scores, floor-win
 rejections and team-card decisions below retain their historical meaning; they do not

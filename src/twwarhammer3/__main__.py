@@ -246,11 +246,6 @@ def build_parser() -> argparse.ArgumentParser:
     watch.add_argument("--stall-minutes", type=float, default=STALL_S / 60,
                        help="with --next: report a stall after this long without new evidence")
 
-    card = commands.add_parser(
-        "card", help="A tactic card's board; with jobs or plan directories, its verdict")
-    card.add_argument("name", help="card name, e.g. chariot")
-    card.add_argument("paths", nargs="*", type=Path, metavar="JOB_OR_PLAN_DIR")
-
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
 
@@ -590,15 +585,6 @@ def run_watch(args, parser) -> int:
     return 0
 
 
-def run_card(args, parser) -> int:
-    from twwarhammer3.battle.cards import CARDS, board
-
-    if args.name not in CARDS:
-        parser.error(f"unknown card {args.name!r}; cards: {', '.join(sorted(CARDS))}")
-    print(board(args.name, args.paths or None))
-    return 0
-
-
 def run_stats(args, parser) -> int:
     from twwarhammer3.battle.stats import summary
 
@@ -695,7 +681,7 @@ COMMANDS = {"benchmark": run_benchmark, "export": run_export, "rl": run_rl,
             "doctor": run_doctor, "coordinator": run_coordinator, "worker": run_worker,
             "pack": run_pack, "launch": run_launch, "menu": run_menu,
             "graph-author": run_graph_author, "play": run_play, "digest": run_digest,
-            "watch": run_watch, "card": run_card, "stats": run_stats,
+            "watch": run_watch, "stats": run_stats,
             "compare-peers": run_compare_peers, "report": run_report,
             "graph-view": run_graph_view, "spend": run_spend}
 

@@ -382,12 +382,6 @@
    "ai_stats_modifier": "1.1"
   }
  },
- "dwf-sla-herald-heldout-wastes": {
-  "base": "dwf-sla-herald",
-  "name": "dwf-sla-herald-heldout-wastes",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "split": "held_out"
- },
  "brt-cavalry-emp-pikes": {
   "battle_type": "classic",
   "attacker": "enemy",
@@ -453,12 +447,6 @@
    "ai_stats_modifier": "1.1"
   }
  },
- "brt-cavalry-emp-pikes-heldout-wastes": {
-  "base": "brt-cavalry-emp-pikes",
-  "name": "brt-cavalry-emp-pikes-heldout-wastes",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04"
- },
  "tze-caster-skv-screen": {
   "battle_type": "classic",
   "attacker": "enemy",
@@ -516,19 +504,6 @@
   ],
   "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
  },
- "tze-caster-skv-screen-hard": {
-  "base": "tze-caster-skv-screen",
-  "name": "tze-caster-skv-screen-hard",
-  "expect": {
-   "ai_stats_modifier": "1.1"
-  }
- },
- "tze-caster-skv-screen-heldout-wastes": {
-  "base": "tze-caster-skv-screen",
-  "name": "tze-caster-skv-screen-heldout-wastes",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04"
- },
  "brt-cavalry-emp-pegasus": {
   "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pegasus",
@@ -540,19 +515,6 @@
   "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
   "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
  },
- "brt-cavalry-emp-pegasus-hard": {
-  "base": "brt-cavalry-emp-pegasus",
-  "name": "brt-cavalry-emp-pegasus-hard",
-  "expect": {
-   "ai_stats_modifier": "1.1"
-  }
- },
- "brt-cavalry-emp-pegasus-heldout-wastes": {
-  "base": "brt-cavalry-emp-pegasus",
-  "name": "brt-cavalry-emp-pegasus-heldout-wastes",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04"
- },
  "brt-cavalry-emp-assault": {
   "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-assault",
@@ -563,19 +525,6 @@
   "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
   "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
  },
- "brt-cavalry-emp-assault-hard": {
-  "base": "brt-cavalry-emp-assault",
-  "name": "brt-cavalry-emp-assault-hard",
-  "expect": {
-   "ai_stats_modifier": "1.1"
-  }
- },
- "brt-cavalry-emp-assault-heldout-wastes": {
-  "base": "brt-cavalry-emp-assault",
-  "name": "brt-cavalry-emp-assault-heldout-wastes",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04"
- },
  "tze-caster-skv-assault": {
   "base": "tze-caster-skv-screen",
   "name": "tze-caster-skv-assault",
@@ -585,19 +534,6 @@
   },
   "brief": "Kairos and four escorts must assault a ten-unit Skaven army with expendable bodies, a warpfire team and a plagueclaw catapult. Spell selection, finite Winds of Magic, barrier recovery, flight and escort survival compete. The player loses at the 1200-second timer, so indefinite passive survival cannot meet the objective. These are design hypotheses, not prescribed tactics.",
   "calibration_change": "Separate attacker-role candidate preserving the five-versus-ten defender roster, default spellbook, funds and corresponding maps/modifiers. Sol demonstrated a ground cast, then chose defender timeout preservation in the development pilot. No gameplay result or performance ranking is inferred from that observation; this variant requires separate live setup and viability checks."
- },
- "tze-caster-skv-assault-hard": {
-  "base": "tze-caster-skv-assault",
-  "name": "tze-caster-skv-assault-hard",
-  "expect": {
-   "ai_stats_modifier": "1.1"
-  }
- },
- "tze-caster-skv-assault-heldout-wastes": {
-  "base": "tze-caster-skv-assault",
-  "name": "tze-caster-skv-assault-heldout-wastes",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04"
  },
  "skv-swarm-dwf-line": {
   "battle_type": "classic",
@@ -669,74 +605,6 @@
   ],
   "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Warlord, a Warlock Engineer (the only caster), warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the engineer and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Screened 2026-10-15: the lobby takes both rosters at 12000 and the AI holds its line.",
   "calibration_change": "The first screen (bench-b10-screen-skv-swarm-20261015) stopped in the lobby: it offered no wh2_main_skv_cha_grey_seer_ruin_0 card. The Warlord, whose card worked in tze-caster-skv-screen, leads instead; the Warlock Engineer is the caster."
- },
- "dwf-line-skv-swarm": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 12000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true
-  },
-  "status": "prototype_not_admitted",
-  "name": "dwf-line-skv-swarm",
-  "family": "survive a Skaven swarm",
-  "player": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_ironbreakers",
-    "wh_main_dwf_inf_ironbreakers",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_irondrakes_0",
-    "wh_main_dwf_inf_thunderers_0",
-    "wh_main_dwf_art_organ_gun"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_cha_plague_priest_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_stormvermin_0",
-    "wh2_main_skv_inf_stormvermin_0",
-    "wh2_main_skv_inf_plague_monks",
-    "wh2_main_skv_inf_plague_monks",
-    "wh2_main_skv_inf_skavenslave_slingers_0",
-    "wh2_main_skv_inf_skavenslave_slingers_0",
-    "wh2_main_skv_art_warp_lightning_cannon",
-    "wh2_main_skv_mon_rat_ogres"
-   ]
-  },
-  "protected": [
-   "wh_main_dwf_inf_irondrakes_0",
-   "wh_main_dwf_art_organ_gun"
-  ],
-  "content": [
-   "wh_main",
-   "wh2_main"
-  ],
-  "brief": "Seven Dwarf units must hold against twenty attacking Skaven units; the defender wins if it survives the 1200-second timer. Irondrakes and an Organ Gun are the only crowd-clearing anchors, with limited ammunition. Shaping the approach, anchoring the flanks, spending ammunition on the right targets and avoiding encirclement compete; spreading out to fight everywhere is the naive risk. Evasion should be harder than in the compact defender pilots, a hypothesis to verify. Screened 2026-10-15: the lobby takes both rosters at 12000 and the AI attacks."
  },
   "chd-reserve-grn-siege": {
     "name": "chd-reserve-grn-siege",
@@ -848,60 +716,6 @@
       "realism": false,
       "player_defends": true,
       "timer_enabled": false
-    }
-  },
-  "sla-detachments-dwf-conquest": {
-    "name": "sla-detachments-dwf-conquest",
-    "family": "central objective contest",
-    "scenario_version": 1,
-    "brief": "Contest the central ticket-generating point or raid supporting shooters. Reference evidence: its single point cannot test distributed objective control.",
-    "split": "development",
-    "status": "reference_not_core",
-    "battle_type": "conquest",
-    "map": "battle_preset_wh_mp_alpine_ridge_conquest",
-    "attacker": "player",
-    "player": {
-      "subculture": "wh3_main_sc_sla_slaanesh",
-      "faction": "wh3_main_sla_slaanesh",
-      "units": [
-        "wh3_dlc20_chs_cha_chaos_lord_msla",
-        "wh3_main_sla_inf_marauders_0",
-        "wh3_main_sla_inf_marauders_0",
-        "wh3_main_sla_inf_marauders_0",
-        "wh3_main_sla_inf_daemonette_0",
-        "wh3_main_sla_inf_daemonette_0",
-        "wh3_main_sla_cav_hellstriders_0",
-        "wh3_main_sla_cav_hellstriders_0",
-        "wh3_main_sla_cav_seekers_of_slaanesh_0",
-        "wh3_main_sla_inf_chaos_furies_0"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_dwf_dwarfs",
-      "faction": "wh_main_dwf_dwarfs",
-      "units": [
-        "wh_main_dwf_cha_lord_0",
-        "wh_main_dwf_inf_longbeards",
-        "wh_main_dwf_inf_longbeards",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_dwarf_warrior_0",
-        "wh_main_dwf_inf_dwarf_warrior_0",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_art_cannon"
-      ]
-    },
-    "expect": {
-      "battle_type": "conquest",
-      "difficulty": "ai_level_very_hard",
-      "funds": "funds_custom",
-      "funds_amount": 14000,
-      "time_limit_s": 1200,
-      "ai_stats_modifier": 1.1,
-      "unit_scale": 0.75,
-      "realism": false,
-      "player_defends": false
     }
   },
   "emp-battery-wef-evacuation": {
@@ -1113,130 +927,6 @@
       ]
     }
   },
-  "chd-reserve-grn-siege-flankers": {
-    "base": "chd-reserve-grn-siege",
-    "name": "chd-reserve-grn-siege-flankers",
-    "brief": "The siege defence with four fast Greenskin units added: two units of Orc Boar Boyz and two of Goblin Wolf Riders. They can reach the gun positions sooner and by other routes than the infantry, so the one mobile reserve has competing calls on it. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6.1-sol won all three anchor battles at 538-587 s with 58-78% of its strength left. One factor changes, enemy mobility: the attacker's first cavalry, 1900 of cost (9725 to 11625, about 20% more), 20 units. Funds, map, timer, modifier and the defender's roster are unchanged.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_cha_orc_warboss_0",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_cav_orc_boar_boyz",
-        "wh_main_grn_cav_orc_boar_boyz",
-        "wh_main_grn_cav_goblin_wolf_riders_0",
-        "wh_main_grn_cav_goblin_wolf_riders_0"
-      ]
-    }
-  },
-  "skv-swarm-dwf-line-gyrocopters": {
-    "base": "skv-swarm-dwf-line",
-    "name": "skv-swarm-dwf-line-gyrocopters",
-    "brief": "Swarm command with two Dwarf Gyrocopters added. Flying units can reach the weapon teams, the Warp Lightning Cannon and the Warlock Engineer behind the slave screen, so the screen alone no longer protects the scarce damage. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6.1-sol won all three anchor battles at 449-497 s with 50-52% of its strength left. One factor changes, a threat the screen cannot block: two wh_main_dwf_veh_gyrocopter_0, 1600 of cost (8200 to 9800, about 20% more), 11 units. Funds, map, timer, modifier and the Skaven roster are unchanged.",
-    "enemy": {
-      "units": [
-        "wh_main_dwf_cha_lord_0",
-        "wh_main_dwf_inf_hammerers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_longbeards",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_irondrakes_0",
-        "wh_main_dwf_art_organ_gun",
-        "wh_main_dwf_veh_gyrocopter_0",
-        "wh_main_dwf_veh_gyrocopter_0"
-      ]
-    }
-  },
-  "chd-reserve-grn-siege-flankers-2": {
-    "base": "chd-reserve-grn-siege-flankers",
-    "name": "chd-reserve-grn-siege-flankers-2",
-    "brief": "The siege defence with two fast Greenskin units added: one unit of Orc Boar Boyz and one of Goblin Wolf Riders. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, step back (2026-10-16): the four-unit flanker step lost with gpt-6.1-sol (629 s) and Kimi K3 (659 s). Half the dose of the same factor: one Boar Boyz and one Wolf Riders unit, 950 of cost over the anchor (9725 to 10675, about 10% more), 18 units. Everything else is unchanged.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_cha_orc_warboss_0",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_cav_orc_boar_boyz",
-        "wh_main_grn_cav_goblin_wolf_riders_0"
-      ]
-    }
-  },
-  "tze-caster-skv-assault-cannon-2": {
-    "base": "tze-caster-skv-assault-cannon",
-    "name": "tze-caster-skv-assault-cannon-2",
-    "brief": "The caster assault with two Warp Lightning Cannons added. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, second step (2026-10-16): gpt-6.1-sol won the one-cannon step at 577 s with 25% of its strength left, after attacking the cannon with every unit. The same factor doubles: two wh2_main_skv_art_warp_lightning_cannon, 1900 of cost over the anchor (3775 to 5675, within the 8000 cap), 12 units. Everything else is unchanged.",
-    "enemy": {
-      "units": [
-        "wh2_main_skv_cha_warlord_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_warpfire_thrower",
-        "wh2_main_skv_art_plagueclaw_catapult",
-        "wh2_main_skv_art_warp_lightning_cannon",
-        "wh2_main_skv_art_warp_lightning_cannon"
-      ]
-    }
-  },
-  "skv-swarm-dwf-line-gyrocopters-4": {
-    "base": "skv-swarm-dwf-line-gyrocopters",
-    "name": "skv-swarm-dwf-line-gyrocopters-4",
-    "brief": "Swarm command with four Dwarf Gyrocopters added. Flying units can reach the weapon teams, the Warp Lightning Cannon and the Warlock Engineer behind the slave screen, and two slinger units are the main answer to them. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, second step (2026-10-16): gpt-6.1-sol won the two-Gyrocopter step at 535 s with 42% of its strength left (anchor wins: 449-497 s, 50-52%). The same factor doubles: four wh_main_dwf_veh_gyrocopter_0, 3200 of cost over the anchor (8200 to 11400, within the 12000 cap), 13 units. Everything else is unchanged.",
-    "enemy": {
-      "units": [
-        "wh_main_dwf_cha_lord_0",
-        "wh_main_dwf_inf_hammerers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_longbeards",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_irondrakes_0",
-        "wh_main_dwf_art_organ_gun",
-        "wh_main_dwf_veh_gyrocopter_0",
-        "wh_main_dwf_veh_gyrocopter_0",
-        "wh_main_dwf_veh_gyrocopter_0",
-        "wh_main_dwf_veh_gyrocopter_0"
-      ]
-    }
-  },
   "ksl-raiders-emp-halberds": {
     "name": "ksl-raiders-emp-halberds",
     "family": "cavalry against anti-large, two-unit form",
@@ -1282,276 +972,6 @@
     ],
     "calibration_change": "Small focused candidate S1 (owner's example, 2026-10-16; calibration/micro-scenarios-draft-20261016.md). Defined only: lordless setup, 1100 custom funds and the AI's one-unit behaviour are unverified, and a scripted floor and a disclosed feint-and-flank diagnostic come before any model battle."
   },
-  "tze-caster-skv-assault-cannon": {
-    "base": "tze-caster-skv-assault",
-    "name": "tze-caster-skv-assault-cannon",
-    "brief": "The caster assault with a Warp Lightning Cannon added: a long-range gun whose heavy, armour-piercing shots can reach a flying caster. Where Kairos casts from, when he flies and whether the escorts go after the gun now compete with the spell windows. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6-sol and gpt-6.1-sol won all three anchor battles each, and GLM-5.3 won one of two. One factor changes, pressure on the caster: wh2_main_skv_art_warp_lightning_cannon (projectile range 430 m, may target airborne units, 260 armour-piercing damage), 950 of cost (3775 to 4725), 11 units. Funds, map, timer, modifier and Kairos's army are unchanged. The first choice, Warplock Jezzails, stopped in the lobby: its DLC card did not recruit (bench-b13-v1b-caster-jezzails-skirmish-20261016).",
-    "enemy": {
-      "units": [
-        "wh2_main_skv_cha_warlord_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_warpfire_thrower",
-        "wh2_main_skv_art_plagueclaw_catapult",
-        "wh2_main_skv_art_warp_lightning_cannon"
-      ]
-    }
-  },
-  "ksl-archers-dwf-slayers": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "ksl-archers-dwf-slayers",
-    "family": "ammunition and kiting",
-    "brief": "Two Horse Archer units attack one unbreakable Slayer unit. Finite ammunition, firing angles and safe distance compete with a possible melee finish. A development candidate; its intended play remains unverified.",
-    "player": {
-      "units": [
-        "wh3_main_ksl_cav_horse_archers_0",
-        "wh3_main_ksl_cav_horse_archers_0"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_dwf_dwarfs",
-      "faction": "wh_main_dwf_dwarfs",
-      "units": [
-        "wh_main_dwf_inf_slayers"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1200
-    },
-    "calibration_change": "S2, small-scenario tranche: hold floor, then disclosed CrossKite at 0 and 5 s observation age. No model battle before review."
-  },
-  "emp-helblaster-brt-raiders": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "emp-helblaster-brt-raiders",
-    "family": "protect a fragile gun",
-    "brief": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen and Men-at-arms. Gun targeting and escort placement must preserve firing time. A development candidate; its intended play remains unverified.",
-    "attacker": "enemy",
-    "player": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "units": [
-        "wh_main_emp_art_helblaster_volley_gun",
-        "wh_main_emp_inf_halberdiers"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_brt_bretonnia",
-      "faction": "wh_main_brt_bretonnia",
-      "units": [
-        "wh_main_brt_cav_mounted_yeomen_0",
-        "wh_main_brt_cav_mounted_yeomen_0",
-        "wh_main_brt_inf_men_at_arms"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1600,
-      "player_defends": true
-    },
-    "protected": [
-      "wh_main_emp_art_helblaster_volley_gun"
-    ],
-    "calibration_change": "S4, small-scenario tranche: hold floor, then disclosed Bodyguard at 0 and 5 s observation age. No model battle before review."
-  },
-  "emp-helblaster-brt-raiders-2": {
-    "base": "emp-helblaster-brt-raiders",
-    "name": "emp-helblaster-brt-raiders-2",
-    "brief": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen and two Men-at-arms units. The escort cannot beat both infantry units alone; the volley gun must survive the riders to shoot the infantry in the open.",
-    "enemy": {
-      "units": [
-        "wh_main_brt_cav_mounted_yeomen_0",
-        "wh_main_brt_cav_mounted_yeomen_0",
-        "wh_main_brt_inf_men_at_arms",
-        "wh_main_brt_inf_men_at_arms"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1900
-    },
-    "calibration_change": "S4 second step (2026-10-17). Bodyguard won 4 of 4 at 5 s observation age and 1 of 4 fresh on the original, but every battle lost the gun by 97-141 s after 37-42 rounds: the escort's melee won, so the named skill did not bind. Add a second Men-at-arms unit (database cost 450; enemy 1700, player 1550) so the gun's survival should decide the battle; funds 1900. Hold floor first; Bodyguard at 0/5 s after a floor loss."
-  },
-  "chd-reserve-grn-siege-flankers-3": {
-    "base": "chd-reserve-grn-siege-flankers-2",
-    "name": "chd-reserve-grn-siege-flankers-3",
-    "brief": "Three added cavalry units: one Boar Boyz and two Wolf Riders. Intermediate pressure between the won two-unit addition and the four-unit addition without a win.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_cha_orc_warboss_0",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_orc_big_uns",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_black_orcs",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_inf_orc_arrer_boyz",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_cav_orc_boar_boyz",
-        "wh_main_grn_cav_goblin_wolf_riders_0",
-        "wh_main_grn_cav_goblin_wolf_riders_0"
-      ]
-    },
-    "calibration_change": "V2 (2026-10-17): Three added cavalry units: one Boar Boyz and two Wolf Riders. Intermediate pressure between the won two-unit addition and the four-unit addition without a win. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
-  },
-  "skv-swarm-dwf-line-slayers": {
-    "base": "skv-swarm-dwf-line",
-    "name": "skv-swarm-dwf-line-slayers",
-    "brief": "Two added unbreakable anti-large Slayer units threaten the Doomwheel and Rat Ogres. Screen allocation and weapon targeting may preserve their useful time. Enemy cost 8200 to 10000, eleven units; a new factor after Gyrocopters did not bind.",
-    "enemy": {
-      "units": [
-        "wh_main_dwf_cha_lord_0",
-        "wh_main_dwf_inf_hammerers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_ironbreakers",
-        "wh_main_dwf_inf_longbeards",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_thunderers_0",
-        "wh_main_dwf_inf_irondrakes_0",
-        "wh_main_dwf_art_organ_gun",
-        "wh_main_dwf_inf_slayers",
-        "wh_main_dwf_inf_slayers"
-      ]
-    },
-    "calibration_change": "V2 (2026-10-17): Two added unbreakable anti-large Slayer units threaten the Doomwheel and Rat Ogres. Screen allocation and weapon targeting may preserve their useful time. Enemy cost 8200 to 10000, eleven units; a new factor after Gyrocopters did not bind. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
-  },
-  "tze-caster-skv-assault-cannon-3": {
-    "base": "tze-caster-skv-assault-cannon-2",
-    "name": "tze-caster-skv-assault-cannon-3",
-    "brief": "Three added Warp Lightning Cannons pressure the caster from long range. Enemy cost 5675 to 6625, thirteen units. GLM lost the two-cannon step; this is a bounded transfer check, not a ceiling estimate.",
-    "enemy": {
-      "units": [
-        "wh2_main_skv_cha_warlord_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrats_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_clanrat_spearmen_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_warpfire_thrower",
-        "wh2_main_skv_art_plagueclaw_catapult",
-        "wh2_main_skv_art_warp_lightning_cannon",
-        "wh2_main_skv_art_warp_lightning_cannon",
-        "wh2_main_skv_art_warp_lightning_cannon"
-      ]
-    },
-    "calibration_change": "V2 (2026-10-17): Three added Warp Lightning Cannons pressure the caster from long range. Enemy cost 5675 to 6625, thirteen units. GLM lost the two-cannon step; this is a bounded transfer check, not a ceiling estimate. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
-  },
-  "brt-archers-dwf-slayers": {
-    "base": "ksl-archers-dwf-slayers",
-    "name": "brt-archers-dwf-slayers",
-    "brief": "Two Mounted Yeomen Archer units attack one unbreakable Slayer unit. Compared with Horse Archers, these cheaper riders have weaker missiles and melee performance. Finite ammunition and safe firing angles must support a possible melee finish.",
-    "player": {
-      "subculture": "wh_main_sc_brt_bretonnia",
-      "faction": "wh_main_brt_bretonnia",
-      "units": [
-        "wh_main_brt_cav_mounted_yeomen_1",
-        "wh_main_brt_cav_mounted_yeomen_1"
-      ]
-    },
-    "calibration_change": "S2 first harder step (2026-10-17). The original Horse Archer floor won at 352 s with 81% of its men; one unit exhausted its arrows and the other retained 241. Change only the player roster to the draft's cheaper Mounted Yeomen Archers (500 each instead of 600). Enemy, map, timer, modifier and 1200 funds remain unchanged. Scripted floor first; diagnostic at 0/5 s age only after a floor loss."
-  },
-  "brt-archers-dwf-slayers-hard": {
-    "base": "brt-archers-dwf-slayers",
-    "name": "brt-archers-dwf-slayers-hard",
-    "expect": {
-      "ai_stats_modifier": "1.1"
-    },
-    "calibration_change": "S2 second harder step (2026-10-17). The Mounted Yeomen Archer floor won narrowly (bench-b17-s2y-floor-20261017: 326 s, the Slayers left with one man; one archer unit was caught in melee and destroyed with 346 arrows left, the other spent all 810). Raise only the AI stats modifier to 1.1; armies, map, timer and 1200 funds are unchanged. Scripted floor first; CrossKite at 0/5 s observation age only after a floor loss."
-  },
-  "brt-archers-dwf-slayers-decoy": {
-    "base": "brt-archers-dwf-slayers",
-    "name": "brt-archers-dwf-slayers-decoy",
-    "brief": "Two Mounted Yeomen Archer units attack one unbreakable Slayer unit escorted by one shielded Dwarf Warriors unit. Arrows spent on the armoured, shielded decoy are lost to the Slayers; which unit to shoot, from where, and when to finish in melee decide whether the ammunition lasts.",
-    "enemy": {
-      "units": [
-        "wh_main_dwf_inf_slayers",
-        "wh_main_dwf_inf_dwarf_warrior_0"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1500
-    },
-    "calibration_change": "S2 third step (2026-10-17, the draft's named decoy). The Mounted Yeomen floor won at modifier 1.0 (326 s) and again at 1.1 (bench-b18-s2-hard-floor-20261017: 330 s, 88 of 90 riders left): the engine's skirmish mode does the kiting, so stat steps do not bind. From the 1.0 step, add one Dwarf Warriors unit (draft cost 450; 55% shield, armour 85); funds 1500 so both rosters recruit. Floor first; CrossKite, now preferring the Slayers, at 0/5 s only after a floor loss. The decoy may make the battle unwinnable once arrows run out."
-  },
-  "emp-handgunners-dwf-warriors": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "emp-handgunners-dwf-warriors",
-    "family": "lines of fire",
-    "brief": "One Empire Spearmen unit and two Handgunner units attack two shielded Dwarf Warrior units, with no lords. Handguns fire low and cannot shoot over friends, and dwarf shields block frontal shots; the spearmen lose a long melee. Where the guns stand once the lines meet competes with firing from behind the line. Hypotheses, not a prescribed solution; winnability is not yet shown.",
-    "player": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "units": [
-        "wh_main_emp_inf_spearmen_1",
-        "wh_main_emp_inf_handgunners",
-        "wh_main_emp_inf_handgunners"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_dwf_dwarfs",
-      "faction": "wh_main_dwf_dwarfs",
-      "units": [
-        "wh_main_dwf_inf_dwarf_warrior_0",
-        "wh_main_dwf_inf_dwarf_warrior_0"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1600
-    },
-    "calibration_change": "Small focused candidate S3 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1550 (350 + 2 x 600), enemy 900. Defined only: lordless setup, 1600 custom funds and the cards are unverified. Scripted attack_nearest floor, then the disclosed Crossfire diagnostic at 0 and 5 s observation age, before any model battle."
-  },
-  "emp-handgunners-dwf-warriors-3": {
-    "base": "emp-handgunners-dwf-warriors",
-    "name": "emp-handgunners-dwf-warriors-3",
-    "brief": "One Empire Spearmen unit and two Handgunner units attack three shielded Dwarf Warrior units, with no lords. The spearmen cannot hold for long, the dwarf shields block frontal shots, and low-trajectory guns cannot shoot over friends; where the guns stand and whom they shoot decide the fight.",
-    "enemy": {
-      "units": [
-        "wh_main_dwf_inf_dwarf_warrior_0",
-        "wh_main_dwf_inf_dwarf_warrior_0",
-        "wh_main_dwf_inf_dwarf_warrior_0"
-      ]
-    },
-    "calibration_change": "S3 second step (2026-10-17, the draft's first named ladder step). The attack-nearest floor won the two-unit version (bench-b18-s3-floor-20261017: 433 s; the spearmen routed at 201 s, the guns kept firing and both dwarf units routed). Add a third Dwarf Warriors unit (draft cost 450, enemy 1350); funds 1600 and everything else unchanged. Floor first; Crossfire at 0/5 s only after a floor loss."
-  },
-  "emp-wizard-emp-swordsmen": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "emp-wizard-emp-swordsmen",
-    "family": "spell timing with scarce magic",
-    "brief": "A Bright Wizard and one Spearmen unit attack two Empire Swordsmen units, with no lords. Fire spells can win a two-to-one infantry fight but also burn the wizard's own line, and the opening magic pool is small. When, where and on whom to spend it competes with casting at first sight. Hypotheses, not a prescribed solution; winnability is not yet shown.",
-    "player": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "units": [
-        "wh_main_emp_cha_wizard_fire_0",
-        "wh_main_emp_inf_spearmen_1"
-      ]
-    },
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen"
-      ]
-    },
-    "expect": {
-      "funds_amount": 3000
-    },
-    "protected": [
-      "wh_main_emp_cha_wizard_fire_0"
-    ],
-    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 800. The lobby refused 1200 as well (bench-b20-s5-floors-20261017; the player's own slot blocked readiness), so funds 3000."
-  },
   "emp-knights-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-knights-emp-swordsmen",
@@ -1576,18 +996,6 @@
       "funds_amount": 1250
     },
     "calibration_change": "Small focused candidate S6 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1225 (375 + 850), enemy 1125. Empire mirror as in emp5-emp5. Overlaps S1 (rear charges); keep both only if their screens show different failure modes. Scripted attack_nearest floor, then the disclosed HammerAnvil diagnostic at 0 and 5 s observation age, before any model battle."
-  },
-  "emp-knights-emp-swordsmen-2": {
-    "base": "emp-knights-emp-swordsmen",
-    "name": "emp-knights-emp-swordsmen-2",
-    "brief": "One Swordsmen unit and one Empire Knights unit attack two Empire Swordsmen units, with no lords. The infantry can hold one unit for a while but not both; the knights hit hard from behind but suffer in a prolonged melee. Pinning, rear charges, pulling out and moving on after a rout compete with a frontal charge. Hypotheses, not a prescribed solution; winnability is not yet shown.",
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen"
-      ]
-    },
-    "calibration_change": "S6 step down (2026-10-17, delegated while the owner was away). Against three Swordsmen the attack-nearest floor lost (bench-b20-s6-floor-20261017: 490 s, the knights routed with 7 of 45 left) and HammerAnvil lost all four battles; on b23, with no refused moves (bench-b23-s6-hammer-r2-20261017: 493 s and the 1205 s timer), the pinning Swordsmen routed at 308 s and 277 s and the enemy kept 51% and 73% of its men. One enemy Swordsmen unit fewer (database 375; enemy 750, player 1225); funds 1250 and everything else unchanged. Attack-nearest floor first, since it may now win; HammerAnvil at 0/5 s only after a floor loss."
   },
   "emp-pitched-grn-20": {
     "name": "emp-pitched-grn-20",
@@ -1803,42 +1211,6 @@
     },
     "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 1500."
   },
-  "dwf-longbeards-emp-swordsmen-6": {
-    "base": "dwf-longbeards-emp-swordsmen",
-    "name": "dwf-longbeards-emp-swordsmen-6",
-    "brief": "Two Dwarf Longbeard units defend against six Empire Swordsmen units, with no lords. Enough enemies to wrap both flanks: backing into a corner or against blocked ground limits how many can reach the Dwarfs at once.",
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen"
-      ]
-    },
-    "expect": {
-      "funds_amount": 2500
-    },
-    "calibration_change": "S7 second step (2026-10-17). The hold floor won the four-unit version easily (bench-b20-s7-floor-20261017: 469 s, Longbeards 69 and 70 of 75, all Swordsmen routed), the draft's stated risk. Six Swordsmen (database 375 each, 2250) so an envelopment is possible; funds 2500. Hold floor first; CornerHold at 0/5 s after a floor loss."
-  },
-  "dwf-longbeards-emp-greatswords-2": {
-    "base": "dwf-longbeards-emp-swordsmen",
-    "name": "dwf-longbeards-emp-greatswords-2",
-    "brief": "Two Dwarf Longbeard units, with no lord, defend against two Empire Greatswords units and two Swordsmen units. The Greatswords' armour-piercing blades cut through the dwarf armour that turns ordinary swords, and all four units are faster and can wrap the dwarfs' flanks and rear in the open; the observation carries the map bounds and restricted terrain cells but no elevation. Where to stand before contact, and which face meets the Greatswords, compete with holding where deployed. Hypotheses, not a prescribed solution; winnability is not yet shown.",
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_greatswords",
-        "wh_main_emp_inf_greatswords",
-        "wh_main_emp_inf_swordsmen",
-        "wh_main_emp_inf_swordsmen"
-      ]
-    },
-    "expect": {
-      "funds_amount": 2750
-    },
-    "calibration_change": "S7 third step (2026-10-17, delegated while the owner was away). The hold floor won against four Swordsmen (bench-b20-s7-floor-20261017: 469 s, Longbeards 69 and 70 of 75) and against six (bench-b23-s7-floor-6-20261017: 612 s, Longbeards 58 and 39 of 75): numbers alone do not bind. Database stats: Swordsmen blades deal 21 base + 7 armour-piercing damage against Longbeard armour 100. From the four-unit version, two Swordsmen become Greatswords (database 850 each; 10 base + 25 armour-piercing, +14 against infantry, plate armour 95, leadership 75; custom-battle card for wh_main_emp_empire). Four attackers keep the envelopment. Enemy 2450 (2 x 850 + 2 x 375), near the six-Swordsmen step's 2250 that the floor won with the Longbeards worn down; player 1400; funds 2750. Four Greatswords (3400) are the next step if the floor wins. Hold floor first; CornerHold at 0/5 s only after a floor loss."
-  },
   "dwf-thunderers-grn-trolls": {
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-thunderers-grn-trolls",
@@ -1871,18 +1243,6 @@
       "wh_main"
     ],
     "calibration_change": "Small focused candidate S8 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1850 (2 x 700 + 450), enemy 2250 (3 x 750); funds 2500 for headroom. Defined only: lordless Dwarf/Greenskin recruitment and the Trolls' regeneration in battle are unverified. Floor hold first."
-  },
-  "dwf-thunderers-grn-trolls-2": {
-    "base": "dwf-thunderers-grn-trolls",
-    "name": "dwf-thunderers-grn-trolls-2",
-    "brief": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against two regenerating Troll units, with no lords. Spread fire heals back; which troll unit the guns shoot, and who takes the first contact in front of them, decide whether a troll unit breaks before the clubs reach the guns.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_mon_trolls",
-        "wh_main_grn_mon_trolls"
-      ]
-    },
-    "calibration_change": "S8 step down (2026-10-17, delegated while the owner was away). Against three Trolls the hold floor lost at 136 s (bench-b20-s8-floor-20261017) and FocusFire lost both battles at 147 s and 149 s (bench-b22-s8-focus-20261017): no Troll died after 66-120 rounds per gun unit, and every Dwarf unit routed. One Troll unit fewer (database 750; enemy 1500, player 1850); funds 2500 and everything else unchanged. Hold floor first, since it may now win; FocusFire at 0/5 s only after a floor loss."
   },
   "grn-giant-ksl-streltsi": {
     "base": "ksl-raiders-emp-halberds",
@@ -1961,22 +1321,6 @@
     ],
     "calibration_change": "Small focused candidate S10 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 975 (3 x 325), enemy 1350 (2 x 675); funds 1500. Defined only: lordless Skaven/Slaanesh recruitment is unverified. Floors hold and attack_nearest first."
   },
-  "skv-spears-sla-hellstriders-3": {
-    "base": "skv-spears-sla-hellstriders",
-    "name": "skv-spears-sla-hellstriders-3",
-    "brief": "Three Clanrat Spearmen units defend against three Hellstrider units, with no lords. Enough riders to charge every face of the block at once; facing, bracing and counter-charges decide whether the rats hold.",
-    "enemy": {
-      "units": [
-        "wh3_main_sla_cav_hellstriders_0",
-        "wh3_main_sla_cav_hellstriders_0",
-        "wh3_main_sla_cav_hellstriders_0"
-      ]
-    },
-    "expect": {
-      "funds_amount": 2250
-    },
-    "calibration_change": "S10 second step (2026-10-17). The hold floor won the two-rider version at 207 s (bench-b20-s10-floor-20261017): the AI charged braced fronts head-on, the draft's trivial risk, and both Hellstrider units routed (the draft read immune_to_psychology as never routing; live state says otherwise). One more Hellstriders unit (database 675, enemy 2025); funds 2250. Hold floor first; a diagnostic only after a floor loss (BraceFacing was removed unplayed)."
-  },
   "dwf-cannon-grn-lobbers": {
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-cannon-grn-lobbers",
@@ -2011,19 +1355,6 @@
     ],
     "calibration_change": "Small focused candidate S11 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md), the lowest-confidence item of the batch. Database costs: player 1250 (800 + 450), enemy 1750 (2 x 550 + 2 x 325); funds 1950. Defined only: lordless recruitment and the AI's use of defending artillery are unverified. Floor attack_nearest first."
   },
-  "dwf-cannon-grn-lobbers-1": {
-    "base": "dwf-cannon-grn-lobbers",
-    "name": "dwf-cannon-grn-lobbers-1",
-    "brief": "One Dwarf Cannon and one Dwarf Warriors unit attack one Goblin Rock Lobber screened by two Goblin Spearmen units, with no lords. Marching under the lobber's fire is costly; silencing it first takes the cannon's limited rounds and time, while the two large goblin blocks still outnumber the Warriors.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_art_goblin_rock_lobber",
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_goblin_spearmen"
-      ]
-    },
-    "calibration_change": "S11 step down (2026-10-17, delegated while the owner was away). Against two Rock Lobbers neither target order won: the attack-nearest floor routed the Goblin Spearmen but the intact lobbers broke the Warriors and the cannon crew (bench-b20-s11-floor-20261017: lost at 509 s), and CounterBattery silenced the lobbers (one routed, then both) but the lone Warriors and the cannon then lost to the two 120-man Goblin Spearmen blocks (bench-b23-s11-counter-20261017: lost at 346 s and 564 s). One Rock Lobber fewer (database 550; enemy 1200, player 1250); funds 1950 and everything else unchanged. Attack-nearest floor first, since it may now win; CounterBattery at 0/5 s only after a floor loss."
-  },
   "emp-handgunners-grn-bigguns": {
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-handgunners-grn-bigguns",
@@ -2056,81 +1387,6 @@
     ],
     "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft rifle-lane-past-the-screen, revised: the critic found a blocked lane cut fire to about 40% in the S3 floor, not to zero."
   },
-  "tze-screamers-skv-cannon": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "tze-screamers-skv-cannon",
-    "family": "tactic card: flyers on the priority target",
-    "brief": "Tzeentch Forsaken and two Screamers units attack two Skaven Stormvermin units guarding a Warp Lightning Cannon, with no lords. The halberd-armed Stormvermin are the nearest enemies and fight large units well; the cannon shells the ground unit from behind them. Flying past the screen onto the cannon competes with fighting what is closest. Hypotheses, not a prescribed solution.",
-    "attacker": "player",
-    "player": {
-      "subculture": "wh3_main_sc_tze_tzeentch",
-      "faction": "wh3_main_tze_tzeentch",
-      "lord": false,
-      "units": [
-        "wh3_main_tze_inf_forsaken_0",
-        "wh3_main_tze_mon_screamers_0",
-        "wh3_main_tze_mon_screamers_0"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh2_main_sc_skv_skaven",
-      "faction": "wh2_main_skv_skaven",
-      "lord": false,
-      "units": [
-        "wh2_main_skv_inf_stormvermin_0",
-        "wh2_main_skv_inf_stormvermin_0",
-        "wh2_main_skv_art_warp_lightning_cannon"
-      ]
-    },
-    "expect": {
-      "funds_amount": 5000
-    },
-    "protected": [],
-    "content": [
-      "wh2_main",
-      "wh3_main"
-    ],
-    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft flyers-kill-the-seer, revised per its critic: a fragile decisive target (artillery) instead of a 3,700 HP Grey Seer, a stronger screen, and a ground unit listed first so the commander flag is not on a flyer."
-  },
-  "skv-ogres-slaves-emp-halberds": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "skv-ogres-slaves-emp-halberds",
-    "family": "tactic card: sacrifice expendable units",
-    "brief": "One Rat Ogres unit and two Skavenslaves units receive an attack by two Empire Halberdiers units and one Handgunners unit, with no lords. The ogres are the only real damage and the halberds counter large units; the slaves are cheap. Whether the slaves are spent to hold the halberds while the ogres strike elsewhere competes with fighting together. Hypotheses, not a prescribed solution.",
-    "attacker": "enemy",
-    "player": {
-      "subculture": "wh2_main_sc_skv_skaven",
-      "faction": "wh2_main_skv_skaven",
-      "lord": false,
-      "units": [
-        "wh2_main_skv_mon_rat_ogres",
-        "wh2_main_skv_inf_skavenslaves_0",
-        "wh2_main_skv_inf_skavenslaves_0"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "lord": false,
-      "units": [
-        "wh_main_emp_inf_halberdiers",
-        "wh_main_emp_inf_halberdiers",
-        "wh_main_emp_inf_handgunners"
-      ]
-    },
-    "expect": {
-      "funds_amount": 3500,
-      "player_defends": true
-    },
-    "protected": [
-      "wh2_main_skv_mon_rat_ogres"
-    ],
-    "content": [
-      "wh_main",
-      "wh2_main"
-    ],
-    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft slaves-take-the-halberds, revised per its critic: ogres listed first (commander flag off the chaff), two halberd units and the player defending so the anti-large threat reaches the ogres. Live b28 (bench-b28-slaves-floor-attack-20261018): the commander flag still went to a Skavenslaves unit (f1), so spending that unit risks the army's commander; the ogres read class infantry."
-  },
   "grn-chariot-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
     "name": "grn-chariot-emp-swordsmen",
@@ -2160,44 +1416,6 @@
     "protected": [],
     "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft chariot-cycle-charge; its critic expects the grinding floors may win (armour 80), so floors come first."
   },
-  "grn-giant-emp-halberds-handgunners": {
-    "base": "ksl-raiders-emp-halberds",
-    "name": "grn-giant-emp-halberds-handgunners",
-    "family": "tactic card: monster target choice",
-    "brief": "One Giant attacks one Empire Halberdiers unit and one Handgunners unit, with no lords. The halberds counter large units and the handguns pierce armour; reaching the guns past the halberds competes with fighting the nearest. Hypotheses, not a prescribed solution.",
-    "attacker": "player",
-    "player": {
-      "subculture": "wh_main_sc_grn_greenskins",
-      "faction": "wh_main_grn_greenskins",
-      "lord": false,
-      "units": [
-        "wh_main_grn_mon_giant"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "lord": false,
-      "units": [
-        "wh_main_emp_inf_halberdiers",
-        "wh_main_emp_inf_handgunners"
-      ]
-    },
-    "expect": {
-      "funds_amount": 2500
-    },
-    "protected": [],
-    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft giant-shooter-first, revised per its critic: Halberdiers plus Handgunners near S9's cost parity instead of Spearmen plus Crossbowmen. MonsterTarget is the witness unchanged."
-  },
-  "emp-wizard-emp-swordsmen-hard": {
-    "base": "emp-wizard-emp-swordsmen",
-    "name": "emp-wizard-emp-swordsmen-hard",
-    "brief": "S5 with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership for the AI's two Swordsmen units). A Bright Wizard and one Spearmen unit attack, with no lords; the opening magic pool is small and fire spells also burn the wizard's own line. Hypotheses, not a prescribed solution.",
-    "expect": {
-      "ai_stats_modifier": "1.1"
-    },
-    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): at modifier 1.0 the FireballSpam foil (Fireball at the nearest enemy whenever ready) won at 560 s with 5 s age (bench-b28-s5-fireballspam-5s-l1-20261018), as did SpellWindow (479 and 534 s), so spell choice did not bind. One factor: the AI modifier 1.1, read back in the lobby before. Run FireballSpam first; the card survives only if it loses while SpellWindow wins; otherwise drop S5 as a duplicate of the caster family."
-  },
   "emp-handgunners-grn-savage-orcs": {
     "base": "emp-handgunners-grn-bigguns",
     "name": "emp-handgunners-grn-savage-orcs",
@@ -2208,62 +1426,6 @@
       ]
     },
     "calibration_change": "Tactic-card step down (2026-10-18 night, delegated): against Big 'Uns the attack-nearest foil lost at 221 s with the Spearmen routed after 33 s of melee and 193 of 1,496 rounds fired (bench-b28-rifle-floor-attack-20261018), too short for any lane to matter. One factor: Savage Orcs instead of Big 'Uns (the critic's ladder: Savage Orcs, then Big 'Uns, then modifier 1.1). Foils first, then FlankLane at 5 s."
-  },
-  "tze-screamers-skv-cannon-1": {
-    "base": "tze-screamers-skv-cannon",
-    "name": "tze-screamers-skv-cannon-1",
-    "brief": "The flyer card with one screen unit: Tzeentch Forsaken and two Screamers units attack one Skaven Stormvermin unit guarding a Warp Lightning Cannon, with no lords. The halberd-armed Stormvermin are the nearest enemy and fight large units well; the cannon shells the ground unit from behind them. Hypotheses, not a prescribed solution.",
-    "enemy": {
-      "units": [
-        "wh2_main_skv_inf_stormvermin_0",
-        "wh2_main_skv_art_warp_lightning_cannon"
-      ]
-    },
-    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Stormvermin units, PriorityStrike routed the cannon crew at 100.7 s but then lost both Screamers units to the screen and the battle at 300 s (bench-b29-flyers-priority-5s-l1-20261018), while both foils lost (253 s, 144 s): killing the target was necessary but not sufficient. One factor: one Stormvermin unit instead of two, so the cannon decides. Foils first again, since a smaller screen may let attack-nearest win."
-  },
-  "skv-ogres-slaves-emp-halberds-1": {
-    "scoring": "contact",
-    "base": "skv-ogres-slaves-emp-halberds",
-    "name": "skv-ogres-slaves-emp-halberds-1",
-    "brief": "The expendables card with one halberd unit: one Rat Ogres unit and two Skavenslaves units receive an attack by one Empire Halberdiers unit and one Handgunners unit, with no lords. The ogres are the only real damage and the halberds counter large units; the slaves are cheap. Hypotheses, not a prescribed solution.",
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_halberdiers",
-        "wh_main_emp_inf_handgunners"
-      ]
-    },
-    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Halberdiers units, SlaveTarpit pinned both with the slaves at about 90 s and the ogres routed the Handgunners by 160 s, but the slaves broke after 34-55 s and the lone ogres then routed against two halberd units (bench-b29-slaves-tarpit-5s-l1-20261018, lost 235 s), while the attack-nearest foil also lost (244 s): the tactic was necessary but not sufficient. One factor: one Halberdiers unit instead of two. Foils first again."
-  },
-  "emp-handgunners-grn-savage-orcs-hard": {
-    "scoring": "contact",
-    "base": "emp-handgunners-grn-savage-orcs",
-    "name": "emp-handgunners-grn-savage-orcs-hard",
-    "brief": "The riflemen card against Savage Orcs with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership). One Handgunners unit and one shielded Spearmen unit receive the attack, with no lords. Hypotheses, not a prescribed solution.",
-    "expect": {
-      "ai_stats_modifier": "1.1"
-    },
-    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): between Big 'Uns (attack-nearest lost 221 s, hold 337 s; the Spearmen broke within 38 s) and Savage Orcs (attack-nearest won 227 s, bench-b29-rifle-orcs-floor-attack-20261018). One factor: the AI modifier 1.1, the finest knob read back so far. Foils first."
-  },
-  "grn-giant-emp-spearmen-handgunners": {
-    "base": "grn-giant-emp-halberds-handgunners",
-    "name": "grn-giant-emp-spearmen-handgunners",
-    "brief": "The giant card one step easier: one Giant attacks one Empire Spearmen unit and one Handgunners unit, with no lords. Spearmen still counter large units, more weakly than halberds; the handguns pierce armour. Hypotheses, not a prescribed solution.",
-    "enemy": {
-      "units": [
-        "wh_main_emp_inf_spearmen_0",
-        "wh_main_emp_inf_handgunners"
-      ]
-    },
-    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with Halberdiers, MonsterTarget routed the Handgunners at 171 s and then lost to the Halberdiers (bench-b29-giant-target-5s-l1-20261018, 327 s), while attack-nearest also lost (289 s): necessary, not sufficient. One factor: Spearmen (spearmen_0) instead of Halberdiers. Foils first."
-  },
-  "grn-chariot-emp-swordsmen-hard": {
-    "base": "grn-chariot-emp-swordsmen",
-    "name": "grn-chariot-emp-swordsmen-hard",
-    "brief": "The chariot card with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership for the two Empire Swordsmen units). One Orc Boar Chariot unit attacks, with no lords; charging, pulling out and charging again competes with staying in. Hypotheses, not a prescribed solution.",
-    "expect": {
-      "ai_stats_modifier": "1.1"
-    },
-    "calibration_change": "Tactic-card step (2026-10-18, delegated): at modifier 1.0 rush-nearest lost at 154 s and then won at 157 s without cycling (bench-b30-chariot-floor-rush-l2-20261018), so the card leaked while CycleCharge won 4 of 4 at 5 s. One factor: the AI modifier 1.1. Foils first, then the witness."
   },
   "emp-line-grn-raid": {
     "name": "emp-line-grn-raid",
@@ -2371,66 +1533,6 @@
       "wh3_main"
     ],
     "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The riflemen card's roster (player 950) against a fast and a slow threat instead of one Savage Orcs unit: a two-unit version of the team question. Enemy Wolf Riders 300, Orc Boyz cost unread; funds 2,500 as the riflemen card. Floors hold and attack_nearest first."
-  },
-  "emp-knights-grn-arrers-spears": {
-    "name": "emp-knights-grn-arrers-spears",
-    "family": "cavalry target choice",
-    "scenario_version": 1,
-    "brief": "One Empire Knights unit attacks one Orc Arrer Boyz unit and one Goblin Spearmen unit, with no lords. The archers hurt the knights at range and are easy to ride down; the spear wall is bad ground for horses. Which unit to charge first, from where, and whether to pull out and charge again are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
-    "split": "development",
-    "status": "prototype_not_admitted",
-    "battle_type": "classic",
-    "attacker": "player",
-    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-    "player": {
-      "subculture": "wh_main_sc_emp_empire",
-      "faction": "wh_main_emp_empire",
-      "lord": false,
-      "units": [
-        "wh_main_emp_cav_empire_knights"
-      ]
-    },
-    "enemy": {
-      "subculture": "wh_main_sc_grn_greenskins",
-      "faction": "wh_main_grn_greenskins",
-      "lord": false,
-      "units": [
-        "wh_main_grn_inf_goblin_spearmen",
-        "wh_main_grn_inf_orc_arrer_boyz"
-      ]
-    },
-    "expect": {
-      "battle_type": "land_normal",
-      "difficulty": "ai_level_very_hard",
-      "funds": "funds_custom",
-      "funds_amount": 1500,
-      "time_limit_s": 1200,
-      "ai_stats_modifier": "1.0",
-      "unit_scale": 0.75,
-      "realism": false,
-      "player_defends": false
-    },
-    "protected": [],
-    "content": [
-      "wh_main",
-      "wh3_main"
-    ],
-    "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The Empire cavalry counterpart of the giant card: one unit choosing its target past an anti-large screen. Knights 850; Goblin Spearmen 325, Arrer Boyz cost unread; funds 1,500. Floors attack_nearest and rush_nearest first; a floor win means the screen steps up (Orc Boyz or modifier 1.1)."
-  },
-  "emp-knights-grn-arrers-boyz": {
-    "base": "emp-knights-grn-arrers-spears",
-    "name": "emp-knights-grn-arrers-boyz",
-    "brief": "The knights target-choice battle one step harder: one Empire Knights unit attacks one Orc Arrer Boyz unit and one Orc Boyz unit, with no lords. The Boyz beat the knights in a long melee; the archers hurt them at range and are easy to ride down. Which unit to charge first, from where, and whether to pull out and charge again are the decisions. Hypotheses, not a prescribed solution.",
-    "enemy": {
-      "units": [
-        "wh_main_grn_inf_orc_boyz",
-        "wh_main_grn_inf_orc_arrer_boyz"
-      ]
-    },
-    "expect": {
-      "funds_amount": 1800
-    },
-    "calibration_change": "Empire set step (2026-10-20 night, delegated): against Goblin Spearmen the attack-nearest floor won by contact at 371 s (bench-b43-knights-grn-floor-attack-20261020: the goblins routed at 294 s with 1 of 120 left, 29 of 45 knights alive), so the screen was no screen. One factor: Orc Boyz in place of the goblins (cost unread; funds 1,800). Floors first."
   },
   "emp-line-grn-raid-xp5": {
     "scoring": "contact",

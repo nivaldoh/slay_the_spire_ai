@@ -1121,33 +1121,6 @@ source = "2026-10-31 review extension: the passing node cannot hide the failed n
 # the benchmark-outcome scorer v1 (cards.benchmark_outcome); runs/overnight-20261031/b1/.
 
 [[plant]]
-id = "cards-timer-win-counts-as-won"
-guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/cards.py"
-old = "    if status == \"won\" and episode.get(\"ended_by\") != \"time_limit\":"
-new = "    if status == \"won\":"
-tests = ["tests/twwarhammer3/test_wh3_cards.py"]
-source = "2026-10-31 run, B1 outcome readers"
-
-[[plant]]
-id = "cards-truncation-not-forfeit"
-guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/cards.py"
-old = "    if (status in (\"policy_failure\", \"truncated\") and episode.get(\"battle\")"
-new = "    if (status == \"policy_failure\" and episode.get(\"battle\")"
-tests = ["tests/twwarhammer3/test_wh3_cards.py"]
-source = "2026-10-31 run, B1 outcome readers"
-
-[[plant]]
-id = "cards-forfeit-without-a-battle"
-guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/cards.py"
-old = "    if (status in (\"policy_failure\", \"truncated\") and episode.get(\"battle\")\n            and \"APIError"
-new = "    if (status in (\"policy_failure\", \"truncated\")\n            and \"APIError"
-tests = ["tests/twwarhammer3/test_wh3_cards.py"]
-source = "2026-10-31 run, B1 outcome readers"
-
-[[plant]]
 id = "report-label-ignores-the-timer"
 guards = "WH3 outcome readers keep their historical rules"
 file = "src/twwarhammer3/battle/report.py"
@@ -1231,7 +1204,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-ignores-the-kept-ending"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if ending in (\"won\", \"lost\", \"draw\"):\n        return ending\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1240,7 +1213,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-timer-win-lost"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if status in (\"won\", \"lost\", \"draw\"):\n        return status\n"
 new = "    if status in (\"won\", \"lost\", \"draw\"):\n        return \"lost\" if result.get(\"ended_by\") == \"time_limit\" else status\n"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1249,7 +1222,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-construction-unresolved"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if status == \"policy_failure\" and error.startswith(\"controller construction:\"):"
 new = "    if False:"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1258,7 +1231,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-wall-cap-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if status == \"interrupted\":\n        return \"operator_stop\""
 new = "    if status == \"truncated\" and result.get(\"battle\"):\n        return \"forfeit\"\n    if status == \"interrupted\":\n        return \"operator_stop\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1267,7 +1240,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-silence-proven"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if status == \"unsupported_or_invalid\":"
 new = "    if status in (\"unsupported_or_invalid\", \"infrastructure_failure\"):"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1276,7 +1249,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-provider-failure-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if (status == \"policy_failure\" and \"APIError\" not in error"
 new = "    if (status == \"policy_failure\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1285,7 +1258,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-no-battle-unresolved"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if not result.get(\"battle\"):\n        return \"never_started\"\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1294,7 +1267,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-stop-before-the-ending"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n"
 new = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n    if status == \"interrupted\":\n        return \"operator_stop\"\n"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1303,7 +1276,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-wall-cap-cleanup-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "\n            and result.get(\"reason\") != \"episode_timeout\"):"
 new = "):"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1312,7 +1285,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-team-fault-not-built"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/cards.py"
+file = "src/twwarhammer3/battle/benchmark.py"
 old = "    if status == \"unsupported_or_invalid\":\n        return \"setup_or_game_failure\""
 new = "    if status == \"unsupported_or_invalid\":\n        return \"not_built\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1429,15 +1402,6 @@ tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_na
 source = "2026-10-31 run, B2 multiplayer seams"
 
 # 2026-10-31 run, B3: team episodes off the card board; a call running at cleanup recorded.
-
-[[plant]]
-id = "board-takes-team-rows"
-guards = "team records: the card board and calls cut off at cleanup"
-file = "src/twwarhammer3/battle/cards.py"
-old = "            if \"members\" in (control.get(\"disclosure\") or {}):\n                if teams is not None:"
-new = "            if False:\n                if teams is not None:"
-tests = ["tests/twwarhammer3/test_wh3_cards.py"]
-source = "2026-10-31 run, B3 team records"
 
 [[plant]]
 id = "running-at-close-never-set"
@@ -1601,15 +1565,6 @@ file = "src/twwarhammer3/battle/capture.py"
 old = "write_json(episode / \"stills.json\", shots)"
 new = "write_json(episode / \"stills.json\", [s for s in shots if s.get(\"status\") != \"capture_failed\"])"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_copy_keeps_failures_and_checks_battle_identity"]
-source = "2026-10-31 nonvacuous-assertion test audit"
-
-[[plant]]
-id = "coordinated-rush-never-updates-follow-posts"
-guards = "Both waiting mobile units receive follow moves after observed screen progress"
-file = "src/twwarhammer3/battle/calibration.py"
-old = "        if waiting and enemies:\n"
-new = "        if waiting and enemies and not self.posts:\n"
-tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_mobile_units_follow_actual_screen_progress_then_release_on_contact"]
 source = "2026-10-31 nonvacuous-assertion test audit"
 
 [[plant]]
@@ -1894,24 +1849,6 @@ tests = ["tests/twwarhammer3/test_wh3_worker.py::test_a_move_before_the_first_ob
 source = "2026-10-31 native worker observation prerequisite oracle"
 
 [[plant]]
-id = "feint-withdrawal-dropped"
-guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
-file = "src/twwarhammer3/battle/calibration.py"
-old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
-new = "            return []\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
-tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
-source = "2026-10-31 FeintFlank withdrawal identity oracle"
-
-[[plant]]
-id = "feint-withdrawal-one-rider"
-guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
-file = "src/twwarhammer3/battle/calibration.py"
-old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
-new = "            return [order for unit in units[:1]\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
-tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
-source = "2026-10-31 FeintFlank withdrawal identity oracle"
-
-[[plant]]
 id = "passive-request-foreign-observation-job-accepted"
 guards = "Capture backend waits for matching job and battle identity and a ready shot"
 file = "src/twwarhammer3/battle/capture.py"
@@ -1946,24 +1883,6 @@ old = "                    if (not NAME.fullmatch(trigger) or key in seen\n     
 new = "                    if not NAME.fullmatch(trigger) or key in seen:"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
 source = "2026-10-31 passive request identity and readiness oracle"
-
-[[plant]]
-id = "pin-withdrawal-all-orders-to-pin"
-guards = "PinThenRear withdrawal orders address both eligible riders"
-file = "src/twwarhammer3/battle/calibration.py"
-old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
-new = "            return [order for unit in units\n                    for order in self.move(pin, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
-tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
-source = "2026-10-31 PinThenRear withdrawal identity oracle"
-
-[[plant]]
-id = "pin-withdrawal-all-orders-to-hammer"
-guards = "PinThenRear withdrawal orders address both eligible riders"
-file = "src/twwarhammer3/battle/calibration.py"
-old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
-new = "            return [order for unit in units\n                    for order in self.move(hammer, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
-tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
-source = "2026-10-31 PinThenRear withdrawal identity oracle"
 
 [[plant]]
 id = "passive-path-unsafe-battle-component-accepted"
@@ -2601,15 +2520,6 @@ tests = ["tests/twwarhammer3/test_wh3_digest.py::test_a_decision_line_shows_each
 source = "2026-11-02 cleanup, WH3 mutants batch"
 
 [[plant]]
-id = "cards-counts-no-cycle-losses"
-guards = "The card board's no-cycle wins column counts only wins whose replay shows zero cycles"
-file = "src/twwarhammer3/battle/cards.py"
-old = 'bare = sum(row["outcome"] == "won" and row["cycles"] == 0'
-new = 'bare = sum(row["outcome"] != "won" and row["cycles"] == 0'
-tests = ["tests/twwarhammer3/test_wh3_cards.py::test_no_cycle_wins_count_only_wins_whose_replay_shows_zero_cycles"]
-source = "2026-11-02 cleanup, WH3 mutants batch"
-
-[[plant]]
 id = "ledger-refuses-free-reservation"
 guards = "A $0 reservation (a model priced at zero) is accepted, charged and released"
 file = "src/gameai/ledger.py"
@@ -2706,42 +2616,6 @@ file = "src/twwarhammer3/battle/play.py"
 old = '    write_json(output / "environment.json", environment)'
 new = "    pass"
 tests = ["tests/twwarhammer3/test_wh3_play.py::test_a_job_writes_the_diagnostics_it_collected_to_environment_json"]
-source = "2026-11-02 reader-survivors mutation sample"
-
-[[plant]]
-id = "cards-cycles-skip-second-to-last-engagement"
-guards = "A pull-out in any engagement but the last, the second-to-last included, is a cycle"
-file = "src/twwarhammer3/battle/cards.py"
-old = "engagements(frames, unit)[:-1]"
-new = "engagements(frames, unit)[:-2]"
-tests = ["tests/twwarhammer3/test_wh3_cards.py::test_a_pull_out_in_the_second_to_last_engagement_counts_as_one_cycle"]
-source = "2026-11-02 reader-survivors mutation sample"
-
-[[plant]]
-id = "cards-witness-cell-at-wrong-age"
-guards = "The verdict judges the witness launches recorded at 5 s added age and no interval"
-file = "src/twwarhammer3/battle/cards.py"
-old = '"witnesses": {(WITNESS, 5000, 0): 4}'
-new = '"witnesses": {(WITNESS, 2000, 0): 4}'
-tests = ["tests/twwarhammer3/test_wh3_cards.py::test_the_verdict_counts_the_witness_launches_at_5_s_age_and_no_interval"]
-source = "2026-11-02 reader-survivors mutation sample"
-
-[[plant]]
-id = "cards-merges-decision-intervals"
-guards = "Launches at different decision intervals land in separate board cells"
-file = "src/twwarhammer3/battle/cards.py"
-old = 'config.get("interval_ms") or 0'
-new = 'config.get("interval_ms") and 0'
-tests = ["tests/twwarhammer3/test_wh3_cards.py::test_launches_at_another_decision_interval_form_their_own_board_cell"]
-source = "2026-11-02 reader-survivors mutation sample"
-
-[[plant]]
-id = "cards-p90-one-rank-low"
-guards = "The board's age p90 of 20 delays lies between the 18th and 19th smallest (any common definition), not the 17th"
-file = "src/twwarhammer3/battle/cards.py"
-old = "delays[-(-9 * len(delays) // 10) - 1]"
-new = "delays[-(-9 * len(delays) // 11) - 1]"
-tests = ["tests/twwarhammer3/test_wh3_cards.py::test_the_age_p90_of_twenty_delays_is_not_their_seventeenth_smallest"]
 source = "2026-11-02 reader-survivors mutation sample"
 
 [[plant]]

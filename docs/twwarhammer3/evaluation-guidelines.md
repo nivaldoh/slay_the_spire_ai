@@ -80,7 +80,7 @@ controller; [README](README.md#terms) defines labels such as `v21`
 | rematch | A later episode of a launch; it restarts the launch's instance, so it is not an independent battle |
 | trial, slot | One controller playing one episode; its position in the launch (slot 0 is the fresh start) |
 | arm, cell | One condition in a comparison; one card, controller, added age and decision interval |
-| board, reader | The table `twwarhammer3 card` prints, one row per cell; code that reads saved job files and prints counts (`card`, `report`, the HTML report, `stats`) |
+| board, reader | The table `twwarhammer3 card` printed, one row per cell (the command was deleted on 2026-11-15; tag `wh3-legacy-20261115`); code that reads saved job files and prints counts (`report`, the HTML report, `stats`) |
 | round, gate, c1 | Launches planned together to screen or admit a card; a pass/fail admission test ("foils lose 10 of 10"); c1 is the chariot card's confirmation round (`calibration/c1`, harness b34 and b36), not the older cavalry design C1 |
 | stage | A job's purpose (proposed; not the scenario's `split`): `explore`; `confirm` (an admission round or planned comparison); `final` (frozen controllers on held-out variants or a released suite); `drift` (scripted reruns after a change). Confirm and final jobs are evaluation evidence |
 | engine result, card result | `won`/`lost`/`draw` and how the battle ended; the card's success rule applied to it |
@@ -106,7 +106,7 @@ Depends on: the army check (agreed; passed at `e32b1b5`); cycles v1 (unverified)
 v2 (open)."
 
 - *Check:* proposed (small): `scripts/wh3_queue.py` refuses a confirm or final plan
-  without `claim`, `contrast`, `cards` and `depends_on`; `card` and `report` print them
+  without `claim`, `contrast`, `cards` and `depends_on`; `report` prints them
   once manifests record the plan ([4.3](#43-freeze-the-whole-study-in-one-plan-file)).
   Manual: the owner reads the claim first.
 
@@ -327,7 +327,7 @@ ranking.
 
 ### 4.1 Count launches, not rematches
 
-Count one episode per controller per launch, the first, as `card` does; another rule (a
+Count one episode per controller per launch, the first, as `card` did; another rule (a
 fixed number of rematches, averaged) must be declared. Never count rematches, decisions or
 model calls as extra battles, or pick which repeat counts after seeing results. Rematches
 may pair different controllers (the default, pending [decision
@@ -765,7 +765,7 @@ to a second place, log the location and hash, and recount once from the copy.
 
 - *Why:* a recount is the only exact outside check, `runs/` has no off-machine copy, and
   today a missing replay changes the verdict.
-- *Check:* proposed (small): `card` and `report` accept an index and hash what they read, as
+- *Check:* proposed (small): `report` accepts an index and hashes what it reads, as
   `export.py` already does; a test that deleting one replay makes the recount fail.
 
 ### 9.2 Version the scorer, correct in the open, and keep releases frozen

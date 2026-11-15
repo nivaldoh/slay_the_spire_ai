@@ -6,7 +6,7 @@ import json
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-from twwarhammer3.battle import cards, play
+from twwarhammer3.battle import benchmark, play
 from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.protocol import PolicyFailure
 
@@ -30,4 +30,4 @@ def test_a_wall_cap_during_the_observation_wait_is_an_episode_timeout(tmp_path, 
     result = json.loads((tmp_path / "e/result.json").read_text())
     assert (result["status"], result["error"], result.get("reason")) == (
         status, error, "episode_timeout")
-    assert (cards.benchmark_outcome(result), cards.outcome(result)) == ("unresolved", "forfeit")
+    assert benchmark.benchmark_outcome(result) == "unresolved"

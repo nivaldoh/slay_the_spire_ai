@@ -123,7 +123,7 @@ target in range. If S3 does not show that, the measure or the reasoning is wrong
 ## 5 Code needed on top of team.py
 
 In build order, on a new branch from `main`. New scripts go in a new file, not
-`calibration.py`, whose hash identifies `LineTeam` on the card board. Each check is proposed, not agreed.
+`calibration.py`, whose hash identified `LineTeam` on the card board (both deleted on 2026-11-15; tag `wh3-legacy-20261115`). Each check is proposed, not agreed.
 
 1. **The team foil and the card's shortcut** as scripts in that new file: role scripts that
    never read each other, and `LineTeam` with the Knights held back. Check: each plays on

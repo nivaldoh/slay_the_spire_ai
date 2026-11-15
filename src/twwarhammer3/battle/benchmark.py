@@ -1,6 +1,7 @@
 """The initial mirror benchmark's profile: limits, the one-call transport, the per-battle
 budget and the first-ending condition. Plans and their reading are in benchmark_plans.py.
-Historical cards retain their own evaluator; this module only reads the versioned profile.
+The tactic cards had their own evaluator until it was deleted on 2026-11-15; this module reads
+the versioned profile and labels an episode's outcome.
 """
 
 import math
@@ -133,6 +134,50 @@ def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:
         row.update(factor=factor, contribution=hp * factor)
     return {"condition": None if missing else 100 * sum(r["contribution"] for r in rows) / len(ids),
             "units": rows, "unavailable": missing}
+
+
+# One label per episode from its evidence, with errors and missing runs kept apart from losses.
+# Shaped like SWE-bench's run report (swebench/harness/reporting.py, make_run_report). It came
+# from cards.py on 2026-11-15, when the tactic cards and their own outcome rule were deleted
+# (tag wh3-legacy-20261115). A changed rule gets a new version.
+BENCHMARK_OUTCOME_VERSION = 1
+
+
+# Which failures end a battle rests on JUDGEMENT src/twwarhammer3/protocol.py Operator errors
+# and Forfeit split; a truncation on JUDGEMENT src/twwarhammer3/battle/play.py Wall cap.
+# JUDGEMENT: Benchmark-outcome rows — Claude, 2026-10-31: statuses map to benchmark.md's outcome
+# rows of that date; provider, budget, wall-cap and unknown-cause stops stay unresolved. Another
+# mapping moves episodes into or out of the denominator of any reader adopting version 1.
+def benchmark_outcome(result: dict | None) -> str:
+    """won, lost or draw as the engine ended it (timer endings included; a later error or stop
+    keeps it); forfeit (the controller's own code failed for good in the battle); not_built;
+    operator_stop or setup_or_game_failure (shown separately); never_started (no result, or no
+    battle began); or unresolved (provider, key, credit, budget and wall-cap stops, a silent or
+    restarted game, an exception in our own code: rules still to settle)."""
+    if result is None or result.get("status") in (None, "missing_result"):
+        return "never_started"
+    status, error = result["status"], str(result.get("error"))
+    ending = (result.get("engine_ending") or {}).get("result")
+    if ending in ("won", "lost", "draw"):
+        return ending
+    if status in ("won", "lost", "draw"):
+        return status
+    if status == "interrupted":
+        return "operator_stop"
+    # A protocol refusal names its cause (a failed setup check, a paused or slowed battle, a
+    # failed custom ending); so does a team's partition or dispatcher fault (TeamHarnessError).
+    if status == "unsupported_or_invalid":
+        return "setup_or_game_failure"
+    if status == "policy_failure" and error.startswith("controller construction:"):
+        return "not_built"
+    if not result.get("battle"):
+        return "never_started"
+    # A provider error (an APIError; HTTP 401 and 402 were policy failures before b35) and a
+    # wall cap, even one a failed cleanup followed, are still to settle.
+    if (status == "policy_failure" and "APIError" not in error
+            and result.get("reason") != "episode_timeout"):
+        return "forfeit"
+    return "unresolved"
 
 
 def recorded_outcome(result: dict | None) -> str | None:

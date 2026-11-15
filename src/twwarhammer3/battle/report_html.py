@@ -36,7 +36,7 @@ MAX_STILL_BYTES = 256 * 1024
 # JUDGEMENT?: Test setup — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): changes to these
 # files never make a new test setup; any other source change does. Another list changes Figure
 # 1's controlled comparison, the finding's per-setup groups and where the † appears.
-# Files left out of the harness (offline export.py, cards.py and gameai/sft.py still count);
+# Files left out of the harness (offline export.py and gameai/sft.py still count);
 # the scenario declaration is compared itself.
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",

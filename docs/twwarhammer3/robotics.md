@@ -220,9 +220,9 @@ dataset. A learned executor needs a data and serving route before this becomes a
 Offline imitation accuracy can reject a bad candidate cheaply, but it cannot establish
 closed-loop wins. Do not optimize the number of cycles as if it were the objective: repeated
 ineffective disengagements could increase that count while losing the battle.
-The current [`cycles` metric](../../src/twwarhammer3/battle/cards.py) associates accepted
-move acknowledgements with melee spans; it does not check the achieved separation. It is
-therefore not an independent oracle for successful withdrawal.
+The tactic cards' `cycles` metric (`battle/cards.py`, deleted on 2026-11-15; tag
+`wh3-legacy-20261115`) associated accepted move acknowledgements with melee spans; it did not check
+the achieved separation. It was therefore not an independent oracle for successful withdrawal.
 
 ## 5 Test adaptation to a changing army
 

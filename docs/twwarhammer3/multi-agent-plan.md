@@ -412,7 +412,7 @@ one before it:
    build slots, or refuse such battles in this mode; refuse custom objectives at first.
 3. A `play` option for the human seat: the switch, no autostart (the owner presses Start),
    no `--show` or stills, the side-swapped setup check, and register rows labelled with the
-   human opponent and kept out of `stats`, `card` and `report`.
+   human opponent and kept out of `stats` and `report`.
 4. The owner's first battles against scripted controllers: they command every unit, a
    battle they win reads `lost`, and a unit hidden in woods stays out of the controllers'
    observation. Then model controllers through OpenRouter.

@@ -46,7 +46,8 @@ marking them for the owner's review; the rule for agents is in
 - `src/twwarhammer3/battle/cards.py`, the chariot card's gate sizes: `JUDGEMENT`. An
   assistant chose 10 foil launches and 4 of the witness's first 5 on 2026-10-18 (b33/b34);
   decision 3 in [tactic-cards.md](twwarhammer3/tactic-cards.md) proposes other sizes; code
-  and tests present the rule as settled.
+  and tests presented the rule as settled. (The file was deleted on 2026-11-15 with the
+  owner's "Delete all of it"; tag `wh3-legacy-20261115` has it.)
 - `src/gameai/llm.py`, `READ_TIMEOUT_S`: `JUDGEMENT?`. The raise from 60 s to 600 s was
   the assistant's response to the owner's 16k output cap. It sets each read wait;
   `post` has no total deadline, and retries affect controller waiting and billing.

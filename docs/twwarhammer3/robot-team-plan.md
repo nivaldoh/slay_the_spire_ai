@@ -214,7 +214,8 @@ interaction budget exist.
 
 ## The earlier Skaven candidate
 
-`skv-ogres-slaves-emp-halberds-1` has one Rat Ogres unit and two Skavenslaves against
+`skv-ogres-slaves-emp-halberds-1` (its scenario entry was deleted on 2026-11-15; tag
+`wh3-legacy-20261115`) has one Rat Ogres unit and two Skavenslaves against
 Halberdiers and Handgunners. Its proposed handover is simple: one slave unit holds the
 halberds while the ogres reach the guns, then the reserve replaces the routing screen.
 It remains deferred in favor of Empire data.

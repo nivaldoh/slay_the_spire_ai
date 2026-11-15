@@ -1,5 +1,10 @@
 # WH3 tactic cards
 
+**Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
+all of it"). `battle/cards.py`, the `card` command, 23 diagnostics of `battle/calibration.py`
+and 47 scenario entries named on this page are gone from the repository; the tag
+`wh3-legacy-20261115` has them, and their jobs, register rows and log entries remain.
+
 **Historical scope, 2026-10-23:** the new [Land Battle benchmark](benchmark.md) uses
 engine outcomes, including timer wins, and starts with small mixed armies. The card gates,
 contact-only scores and tactic signatures below retain their original meaning for their
