@@ -55,6 +55,14 @@ Both games:
   shared values are in its `*_facts.py` (hash the facts file too, leave it with the marker, or
   decide later): "Decide later". The marker Witness hash in `controllers.py` and the
   review-queue question stay open; nothing is built on either reading.
+  After it landed at `5696274`, three more questions, each with a recommended option. Which
+  rule the change-levels table in `benchmark.md` should state (the readers' rules stand, the
+  table as proposed, or later): "Decide later". Where the four markers whose values partly
+  moved to the facts files should be (leave them, move them to the facts files, or later):
+  "Decide later". What to do about the two wrong sentences in the commit messages of `1821b30`
+  and `a61164f` (leave them with the log's record, or add git notes): "Leave them
+  (Recommended)". So the table stays a proposal marked `JUDGEMENT?`, the four markers stay in
+  the witness files with their pointer lines, and history is not rewritten.
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

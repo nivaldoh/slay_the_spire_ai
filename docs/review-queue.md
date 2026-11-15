@@ -80,7 +80,8 @@ files, and `stats` pools one harness version across commits. (6) A witness's fil
 you answered "Decide later"). (7) Four markers
 (Camp groups, Camp thresholds, Lines witness rules, Wall witness thresholds) stay in the
 witness files while 12 of the values they name are in the facts files; a plain line above each
-says so, and whether the markers should move is yours.
+says so, and whether the markers should move is yours. Asked about (5) and (7) on 2026-11-15
+you answered "Decide later" to both, so all three stay open and nothing is built on them.
 
 Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 
