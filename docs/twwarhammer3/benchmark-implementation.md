@@ -214,7 +214,7 @@ this bounded pilot establishes feasibility only and stops on a setup/measurement
 
 The pilot rests on JUDGEMENT `benchmark.md` Starter settings and Role coverage, and on Pilot size above. Its exact commands and time cap come after those choices and after the checks are agreed. Phases 2 and 4 need no model calls. A paid study needs its own ledger budget; the old chariot and Empire estimates don't authorize one.
 
-Build on what exists: the mod and mailbox, the play loop, the reports and the outside-controller boundary. Before new jobs, remove the contact-only objective from the new scenario and its prompt, and make every benchmark view use the new evaluator. Today's `scoring: contact`, `cards.outcome` and report denominators don't implement the definition ([current code](#what-the-current-code-reports)). Don't rewrite old scenario evidence or rescore old cards. No general reward framework, new controller architecture or exhaustive event detector is needed.
+Build on what exists: the mod and mailbox, the play loop, the reports and the outside-controller boundary. Before new jobs, remove the contact-only objective from the new scenario and its prompt, and make every benchmark view use the new evaluator. Today's `scoring: contact` and report denominators don't implement the definition (`cards.outcome`, which did not either, was deleted on 2026-11-15) ([current code](#what-the-current-code-reports)). Don't rewrite old scenario evidence or rescore old cards. No general reward framework, new controller architecture or exhaustive event detector is needed.
 
 ## Owner interview: one Land Battle
 

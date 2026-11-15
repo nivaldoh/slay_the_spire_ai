@@ -1270,7 +1270,8 @@ For `.github/workflows/check.yml` (2026-10-29):
 - [SWE-bench run report](https://github.com/SWE-bench/SWE-bench/blob/02e7a74ffd0b/swebench/harness/reporting.py)
   (`make_run_report`, `schema_version` 2). Each instance gets one label from its evidence:
   resolved, unresolved, error, empty patch or incomplete; failure-cause tags are added without
-  changing the denominator. The model for `cards.benchmark_outcome` (2026-10-31). *Read.*
+  changing the denominator. The model for `benchmark.benchmark_outcome` (2026-10-31; in
+  `cards.py` until 2026-11-15). *Read.*
 - [NeurIPS paper checklist](https://neurips.cc/public/guides/PaperChecklist): claims match their
   scope; error bars say what varies and how they were computed; failed experiments count in
   compute. *Checked.*

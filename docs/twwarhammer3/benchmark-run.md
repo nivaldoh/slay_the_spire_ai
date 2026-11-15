@@ -13,9 +13,10 @@ recording and arithmetic checked at `b1136e8`) and the exploratory
 [coordination suite](#the-coordination-suite) (`suite-v1`). Strength and winnability remain
 unverified. The rest of the definition is still a plan: no reader applies the whole
 [outcome table](benchmark.md#outcome-and-score). `benchmark report` scores from the engine
-ending (`benchmark.evaluate`), so a timer win counts as a win there, while
-`cards.benchmark_outcome`, which maps every row, has no caller; the tactic cards still score
-a timer win as a loss, the four scenarios declared `"scoring": "contact"` keep prompts that
+ending (`benchmark.evaluate`), so a timer win counts as a win there. Since 2026-11-15
+`evaluate` takes that outcome from `benchmark.benchmark_outcome`, which labels every row, and
+the tactic cards, which scored a timer win as a loss, are deleted. The two scenarios still
+declared `"scoring": "contact"` (two more went with the 2026-11-15 deletion) keep prompts that
 count only routing or destroying every enemy before the timer, and no next scenario is
 selected. The other commands below describe existing capabilities.
 
@@ -259,8 +260,8 @@ with one row per planned battle.
   (through `benchmark.evaluate`: the plan table, stats, the report's trial groups, export)
   skip one stopped during its final copying, as it has no outcome (`recorded_engine_outcome`
   keeps the engine's), and count one stopped during controller close by its engine ending
-  (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"). The unadopted
-  `cards.benchmark_outcome` v1 still reads the engine ending.
+  (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"). Since 2026-11-15
+  `benchmark.benchmark_outcome` (v2) labels such a trial `operator_stop` too.
 - **A queue after its current job**: create `my-plan-stop` beside the plan; the running job
   plays its remaining episodes and the plan ends `stopped`.
 - **A queue now**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in

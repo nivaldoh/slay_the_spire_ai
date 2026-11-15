@@ -52,11 +52,12 @@ offline probes per model-mode; all post hoc:
 
 ## Scoring: the battle never waits
 
-Since b35, controller failures and truncations that end an in-battle episode count as losses
-(forfeits) in `cards.outcome`; game/setup failures, interrupts and operator stops are excluded.
+From b35 until the tactic cards were deleted (2026-11-15; tag `wh3-legacy-20261115`), controller
+failures and truncations that ended an in-battle episode counted as losses (forfeits) in
+`cards.outcome`; game/setup failures, interrupts and operator stops were excluded.
 Recoverable provider or invalid-reply failures in `_drive` instead log a `forfeit` event,
 send no new orders and request again. That event alone does not force a terminal loss:
-`cards.outcome` scores the final episode status. Invalid order batches are recorded and sent
+`cards.outcome` scored the final episode status. Invalid order batches are recorded and sent
 as no orders. Earlier engine actions continue while no replacement is issued. Since b35
 only the game or the harness can truncate; none has in 80 chariot episodes, so the
 [second pass](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)

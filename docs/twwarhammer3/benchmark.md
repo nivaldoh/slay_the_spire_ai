@@ -242,12 +242,12 @@ Under the proposed Primary summary, the score is the number of wins divided by t
 | An error after the engine reported the ending | The engine result counts; the error is reported as a reliability failure | Agreed 2026-10-21 |
 | A decision fails and play continues | The final engine result counts; the lost time, invalid orders and cost stay on record | Agreed 2026-10-21 |
 | A proven setup or game failure, or an operator stop | Shown separately; whether it is excluded or replaced follows the plan fixed before the run | Proposed |
-| Unknown cause, unsettled cap, or no ending | Shown as unresolved; settle the rule before counting it as a loss or excluding it | Proposed |
+| Unknown cause, unsettled cap, or no ending | Shown as unresolved and kept out of the counts: in neither the numerator nor the denominator of a win rate | Owner, 2026-11-15: "Unresolved battles can be kept out of the counts" |
 | A planned battle that never started | Shown with its reason; no outcome | Agreed 2026-10-21 |
 
-Still to settle before a run: provider, key and credit failures; budget stops; and what to do when the wall-clock cap hits with no engine result. That cap is not the engine's timer. What the code does today is in the [failure audit](evaluation-guidelines.md#52-freeze-how-every-trial-is-scored). Never drop failed battles to improve the rate.
+Provider, key and credit failures, budget stops and a wall-clock cap that hits with no engine result are the unresolved cases; since 2026-11-15 they are kept out of the counts and their number is reported. That cap is not the engine's timer. One function gives each episode its label (`benchmark.benchmark_outcome`), and `benchmark.evaluate` counts an attempt only under an engine label; the readers of the two profiles all use it. What other readers do is in the [failure audit](evaluation-guidelines.md#52-freeze-how-every-trial-is-scored). Never drop failed battles to improve the rate.
 
-Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
+Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty, and the number of unresolved battles left out of it beside it. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
 
 ## Measurements
 

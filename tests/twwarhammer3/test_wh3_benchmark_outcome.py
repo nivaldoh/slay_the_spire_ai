@@ -114,6 +114,30 @@ def test_each_ending_play_writes_gets_its_row(tmp_path, case, make, mailbox, cha
     assert benchmark.benchmark_outcome(result) == expected
 
 
+@pytest.mark.parametrize("case, make, mailbox, change, scenario, expected", CASES,
+                         ids=[case[0] for case in CASES])
+def test_only_an_engine_label_counts_in_a_win_rate(tmp_path, case, make, mailbox, change,
+                                                   scenario, expected):
+    """benchmark.md, Outcome and score: an attempt has an outcome only when the engine ended it;
+    the owner on the unresolved rows, 2026-11-15: "Unresolved battles can be kept out of the
+    counts". Wrong version: evaluate reads a forfeit or an unresolved stop as a loss."""
+    loaded = setup.load_scenario({"scenario": scenario}) if scenario else None
+    play.play_episode(tmp_path / "e", {**CONFIG, **change}, make, mailbox(), not_battle=None,
+                      scenario=loaded)
+    result = json.loads((tmp_path / "e/result.json").read_text())
+    counted = expected if expected in ("won", "lost", "draw") else None
+    assert benchmark.evaluate(result)["outcome"] == counted
+
+
+def test_a_trial_stopped_during_its_final_copying_is_an_operator_stop_whatever_the_engine_said():
+    """Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". Wrong version: the label
+    keeps the engine's win while evaluate skips the trial, so the two disagree."""
+    result = {"status": "interrupted", "battle": "b", "engine_ending": {"result": "won"},
+              "interrupted_copy": "imagery"}
+    assert benchmark.benchmark_outcome(result) == "operator_stop"
+    assert benchmark.benchmark_outcome({**result, "interrupted_copy": None}) == "won"
+
+
 class _StoppedLate(Hold):
     def decide(self, observation):
         return [{"unit": "f1", "type": "halt"}]

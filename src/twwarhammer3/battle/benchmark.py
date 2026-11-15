@@ -139,8 +139,10 @@ def condition(ids: list[str], units: list[dict], size: int | None = 5) -> dict:
 # One label per episode from its evidence, with errors and missing runs kept apart from losses.
 # Shaped like SWE-bench's run report (swebench/harness/reporting.py, make_run_report). It came
 # from cards.py on 2026-11-15, when the tactic cards and their own outcome rule were deleted
-# (tag wh3-legacy-20261115). A changed rule gets a new version.
-BENCHMARK_OUTCOME_VERSION = 1
+# (tag wh3-legacy-20261115). A changed rule gets a new version. Version 2 (2026-11-15): a trial
+# stopped during its final copying is an operator stop, and evaluate takes its outcome from
+# this label, so the label and the counted outcome cannot disagree.
+BENCHMARK_OUTCOME_VERSION = 2
 
 
 # Which failures end a battle rests on JUDGEMENT src/twwarhammer3/protocol.py Operator errors
@@ -153,9 +155,15 @@ def benchmark_outcome(result: dict | None) -> str:
     keeps it); forfeit (the controller's own code failed for good in the battle); not_built;
     operator_stop or setup_or_game_failure (shown separately); never_started (no result, or no
     battle began); or unresolved (provider, key, credit, budget and wall-cap stops, a silent or
-    restarted game, an exception in our own code: rules still to settle)."""
+    restarted game, an exception in our own code). Only won, lost and draw count in a win rate
+    (evaluate); the owner on unresolved, 2026-11-15: "Unresolved battles can be kept out of the
+    counts"."""
     if result is None or result.get("status") in (None, "missing_result"):
         return "never_started"
+    # Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". A Ctrl-C during the final
+    # copying may have cut the copies, so the trial is an operator stop whatever the engine said.
+    if result.get("interrupted_copy"):
+        return "operator_stop"
     status, error = result["status"], str(result.get("error"))
     ending = (result.get("engine_ending") or {}).get("result")
     if ending in ("won", "lost", "draw"):
@@ -190,11 +198,13 @@ def recorded_outcome(result: dict | None) -> str | None:
 
 
 def evaluate(result: dict | None) -> dict:
-    """Only engine-completed attempts have a rank; errors never invent a loss. Every benchmark
-    reader skips a trial stopped by Ctrl-C during its final copying, whose copies may be cut
-    (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"): it has no outcome."""
+    """Only an attempt that benchmark_outcome labels won, lost or draw has an outcome and a
+    rank; errors never invent a loss. Every other label (forfeit, not_built, operator_stop,
+    setup_or_game_failure, never_started, unresolved) is in neither the numerator nor the
+    denominator of a win rate. Every benchmark reader takes the outcome from here."""
     result = result or {}
-    outcome = None if result.get("interrupted_copy") else recorded_outcome(result)
+    label = benchmark_outcome(result)
+    outcome = label if label in OUTCOMES else None
     measured = result.get("benchmark") or {}
     version = SUITE if measured.get("version") == SUITE else VERSION
     scored = {"condition": None, "units": [], "unavailable": ["no first-ending measurement"]}

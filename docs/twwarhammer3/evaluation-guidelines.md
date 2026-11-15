@@ -440,13 +440,15 @@ and declared task facts; the prompt states it
 ([2.2](#22-tell-the-controller-everything-the-scorer-checks)). Each card declares how
 draws and timer endings count (a timer ending may be the success on a point-holding card).
 Every reader printing a success rate calls one function or labels its number a diagnostic.
-Today four readers use four rules: `cards.outcome` (timer wins and forfeits are losses;
-the primary rate), `report` (timer wins are not wins; forfeits are dropped), the HTML
-report (timer wins are wins; forfeits are dropped) and `stats` (raw counts, no rate).
+Until 2026-11-15 four readers used four rules: `cards.outcome` (timer wins and forfeits
+were losses; the primary rate; deleted with the tactic cards, tag `wh3-legacy-20261115`), `report`
+(timer wins are not wins; forfeits are dropped), the HTML report (timer wins are wins;
+forfeits are dropped) and `stats` (raw counts, no rate). The last three remain for scenarios
+outside the two benchmark profiles, whose readers all count through `benchmark.evaluate`.
 
-- *Check:* proposed (medium): a `success` field per card and one `card_result()` in
-  `cards.py`, whose value `report` writes into the page data and `results.csv` stores for
-  `stats`. A fixture job (contact win, timer win, draw, forfeit, construction failure,
+- *Check:* proposed (medium): a `success` field per card and one result function (since
+  2026-11-15 the label is `benchmark.benchmark_outcome`), whose value `report` writes into the
+  page data and `results.csv` stores for `stats`. A fixture job (contact win, timer win, draw, forfeit, construction failure,
   rematch) gives one count in the board, the report and `stats`.
 
 ### 5.2 Freeze how every trial is scored
