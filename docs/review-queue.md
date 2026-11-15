@@ -52,20 +52,18 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
 
 ## Completed work and handoffs
 
-Terminal-Bench structure comparison, 2026-11-15 (Claude, owner's goal): a new
-[reference profile](twwarhammer3/benchmark-references/terminal-bench.md) and a report,
-`runs/terminal-bench-review-20261115/report.md`, with eight ranked proposals. Read only: no code
-changed, nothing run from the clone, $0. The proposals are unverified. You answered its three
-questions on 2026-11-15 ([owner direction](owner-direction.md)): unresolved episodes stay out
-of the counts (F2), the four statuses current, held out, candidate and retired (F4), and the
-superseded designs' files are deleted (F3). Nothing is implemented; the report's plan section
-has the steps. What comes back to you first: the deletion list (files, scenario entries,
-plants and JUDGEMENT lines) for a yes, then a status for each remaining entry, then the
-treatment of the outcome labels your answer did not cover. Still waiting for a go-ahead: F1
-(readings stop importing from witnesses), F6 (the replay, re-read, keep table), F8 (page
-headers). A second agent's recheck of the
-first draft confirmed 89 quotes and counts and found 28 to correct (`quote-check.md` beside
-it); the corrections are applied, and the corrected text has had no second reader.
+Terminal-Bench structure comparison, 2026-11-15 (Claude, owner's goals): a
+[reference profile](twwarhammer3/benchmark-references/terminal-bench.md), a report
+(`runs/terminal-bench-review-20261115/report.md`) and, at "Implement the plan", three changes
+built offline at $0 ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario);
+your answers in [owner direction](owner-direction.md)): the superseded October designs are
+deleted (tag `wh3-legacy-20261115` has them), the benchmark readers count through one outcome
+label with unresolved kept out, and each declared scenario writes its own status. Unverified:
+no live run. Two questions it leaves for you: outside the two profiles the text `report` still
+shows a timer win as `time_limit` and `stats` tallies raw statuses; and whether a forfeit
+counts as a non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)).
+Still waiting for a go-ahead from the report: F1 (readings stop importing from witnesses), F6
+(the replay, re-read, keep table), F8 (page headers).
 
 Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 

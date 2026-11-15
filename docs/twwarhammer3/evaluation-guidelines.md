@@ -7,6 +7,11 @@ Section 2's tactic-card admission rules, contact-only examples and chariot thres
 below apply to the historical card studies, not the new Land Battle benchmark. General
 rules about information, provenance, failures and uncertainty remain relevant proposals.
 
+**Card board deleted, 2026-11-15.** `battle/cards.py` and the `card` command are gone (owner:
+"Delete all of it"; tag `wh3-legacy-20261115` has them). A check below that names the board,
+`cards.battles`, `verdict()` or `card NAME` describes that code as it was at the tag, and a
+proposal that builds on it would first need it restored or rebuilt.
+
 For the owner's 2026-11-04 replies, use [scenario-guidelines.md](scenario-guidelines.md):
 two scenarios developed sequentially and tentative owner-manual winnability evidence with
 owner-only pause. Automated controllers remain at unpaused 1x. [Judge research](tactic-judges.md)
@@ -124,9 +129,9 @@ hash, request settings, routing pin (the provider a request is pinned to) and se
 model. Rows with different keys stay apart; a merge needs a written reason logged with the
 result and never crosses game builds.
 
-- *Why:* labels drift from content, and a pooled mix cannot be undone. Today the board
-  misses harness code and the executable hash (a `skills.py` change keeps the commander's
-  identity), `report` splits by whole commit, and `stats` by the job name's `-vN-` version
+- *Why:* labels drift from content, and a pooled mix cannot be undone. The board, until
+  its deletion, missed harness code and the executable hash (a `skills.py` change kept the
+  commander's identity); `report` splits by whole commit, and `stats` by the job name's `-vN-` version
   or, when the name has none (most `bench-*` jobs), by commit.
 - *Check:* proposed (medium): `condition_key()` and `controller_identity()` written into
   `results.csv` and used by every reader; a test that editing `report.py` or another
@@ -205,7 +210,7 @@ and witness v2 won 4 of 5 at both 5 s/5 s and 8 s/8 s (b40 round). Label a card
 playing through the game's interface sees more than the observation: a demonstration, not
 a witness.
 
-- *Check:* exists: the board keys witness cells by age and interval, prints each row's age
+- *Check:* exists only at the tag (deleted 2026-11-15): the board keys witness cells by age and interval, prints each row's age
   p50/p90 and info age (median order age plus half the mean decision gap), and sorts by it.
   Proposed (small): a decision-gap column.
 
@@ -269,7 +274,7 @@ how often they err (the chance of the wrong verdict for a controller with that t
 Rows assume independent launches; c1's two foils shared launches, so their joint pass
 chance is not the product of their rows, and each played some rematches.
 
-- *Check:* exists: `verdict()` judges the witness on its first launches in start order.
+- *Check:* exists only at the tag (deleted 2026-11-15): `verdict()` judges the witness on its first launches in start order.
   Proposed (small): `gate_pass()` from exact binomial sums, printed by `verdict()`;
   `card NAME --round R` reads the round's declared directories and is the only way to print
   a verdict, while plain `card NAME` stays the all-jobs view, labelled exploratory.
@@ -338,7 +343,7 @@ may pair different controllers (the default, pending [decision
   0.0 m), and identical order timing has replayed long stretches exactly (3 of 6
   episodes of one skills job matched to 530 s; a Bodyguard pair matched through the
   gun's rout at 97 s, then diverged).
-- *Check:* exists: `cards.battles` keeps one row per resolved job directory, controller and
+- *Check:* exists only at the tag (deleted 2026-11-15): `cards.battles` keeps one row per resolved job directory, controller and
   added age. The board now prints controller/age rows separately from launches (c1 has
   30 rows from 20 launches). This fixes a label, not the sampling rule.
 
@@ -384,7 +389,8 @@ scorer, run the foils and witness in a small drift job (scripts only, no API cos
 new model comparisons; what counts as passing is an owner decision. A model reference cell
 can catch large provider drift, never prove its absence.
 
-- *Check:* exists: build warnings in `doctor`; stars on cells with mixed builds. Proposed
+- *Check:* exists: build warnings in `doctor`. The stars on cells with mixed builds were the
+  deleted card board's. Proposed
   (small): the shared key (c1 pools b34 and b36 jobs today); "unconfirmed on build X" until
   a drift job passes.
 
@@ -415,7 +421,7 @@ tokens and call time by slot.
 
 - *Check:* exists: failed lobby, army and battle readbacks end the job (the plan stops
   unless `keep_going`). A changed rematch start stops the plan only after its job ends,
-  geometry flags never stop it, and the board still counts flagged rematches (which compare
+  geometry flags never stop it, and the card board (deleted 2026-11-15) counted flagged rematches (which compare
   only enemies visible at first). Proposed (small): slot tables.
 
 ### 4.7 Check order effects live
@@ -450,15 +456,17 @@ outside the two benchmark profiles, whose readers all count through `benchmark.e
 - *Check:* proposed (medium): a `success` field per card and one result function (since
   2026-11-15 the label is `benchmark.benchmark_outcome`), whose value `report` writes into the
   page data and `results.csv` stores for `stats`. A fixture job (contact win, timer win, draw, forfeit, construction failure,
-  rematch) gives one count in the board, the report and `stats`.
+  rematch) gives one count in the report and `stats`.
 
 ### 5.2 Freeze how every trial is scored
 
 An observed engine result is stored once and never overwritten. Every trial without one
 gets a single rule from a frozen table, applied alike to every arm. A slow or crashing
 controller is not an infrastructure exclusion, and an unknown cause stays unknown until
-investigated with controller names hidden. "Today" means current code and
-[tactic-cards.md](tactic-cards.md#score).
+investigated with controller names hidden. "Today" meant the code of 2026-10-23 and
+[tactic-cards.md](tactic-cards.md#score): the column describes the card rule, deleted on
+2026-11-15. What the benchmark readers count now is in
+[benchmark.md](benchmark.md#outcome-and-score).
 
 | Event | Counts as today | Proposed or open |
 |---|---|---|
@@ -489,7 +497,7 @@ scored, print the range from all-lost to all-won (8 wins, 10 losses, 2 not yet s
 8/20 to 10/20). Never drop a failed trial's partner to keep pairs: when failures decide
 which pairs survive, the rest are easier.
 
-- *Check:* exists: the board lists a plan's jobs that never started. Proposed (small):
+- *Check:* exists only at the tag (deleted 2026-11-15): the board lists a plan's jobs that never started. Proposed (small):
   `battles()` reports unreadable manifests instead of skipping them and counts per arm the
   trials a stopped job never played; a fixture with a corrupt manifest and a stopped
   rotation shows both.
@@ -753,7 +761,7 @@ mark unagreed checks **unverified**. Example: "GLM-5.3 low, v20: won 1 of 10 (Wi
 added age with a 2 s interval and 3 of 4 at 3 s and 3 s, the cells nearest GLM's median
 order age of 2.1 s (unverified)."
 
-- *Check:* exists: the board lists foils first, with Wilson intervals. Proposed (small):
+- *Check:* exists only at the tag (deleted 2026-11-15): the board lists foils first, with Wilson intervals. Proposed (small):
   mark a model cell whose setup differs from its reference rows; print fresh-start counts.
 
 ## 9. Recount, release and maintain

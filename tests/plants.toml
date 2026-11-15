@@ -1118,7 +1118,8 @@ tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_tes
 source = "2026-10-31 review extension: the passing node cannot hide the failed node"
 
 # 2026-10-31 run, B1: each WH3 reader's outcome rule (historical: no number changes) and
-# the benchmark-outcome scorer v1 (cards.benchmark_outcome); runs/overnight-20261031/b1/.
+# the benchmark-outcome scorer (benchmark.benchmark_outcome; in cards.py until 2026-11-15);
+# runs/overnight-20261031/b1/.
 
 [[plant]]
 id = "report-label-ignores-the-timer"
@@ -4345,3 +4346,75 @@ old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items()})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_new_status_word_does_not_orphan_a_recorded_win_but_any_other_field_does"]
 source = "2026-11-15 scenario statuses: owner, \"Leave status out (Recommended)\""
+
+[[plant]]
+id = "diagnostic-never-resends-an-unchanged-order"
+guards = "A small diagnostic sends an unchanged order again once three seconds passed and its unit is idle"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'if same and (self.now - when < 3 or "idle" not in unit.get("state", [])):'
+new = 'if same:'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_an_unchanged_order_waits_three_seconds_and_for_an_idle_unit_before_it_goes_again"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "diagnostic-resends-to-a-busy-unit"
+guards = "A small diagnostic does not repeat an unchanged order to a unit still carrying it out"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'if same and (self.now - when < 3 or "idle" not in unit.get("state", [])):'
+new = 'if same and self.now - when < 3:'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_an_unchanged_order_waits_three_seconds_and_for_an_idle_unit_before_it_goes_again"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "diagnostic-keeps-a-refused-order-on-record"
+guards = "A refused order is forgotten, so the same order goes again at once"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'order = self.sent.pop(result.get("unit"), ({},))[0]'
+new = 'order = self.sent.get(result.get("unit"), ({},))[0]'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_refused_order_is_forgotten_and_an_accepted_one_is_kept"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "diagnostic-forgets-an-accepted-order"
+guards = "An accepted order stays on record and is not sent again within three seconds"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'if not result.get("ok"):'
+new = 'if True:'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_refused_order_is_forgotten_and_an_accepted_one_is_kept"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "diagnostic-forgets-an-unreachable-spot"
+guards = "A move refused as unreachable is remembered and the next open spot is ordered"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'self.unreachable.append({"x": order["x"], "z": order["z"]})'
+new = 'pass'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_move_refused_as_unreachable_is_remembered_and_the_next_open_spot_is_taken"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "keep-drops-the-committed-target"
+guards = "_keep holds the committed target while it is listed"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or min('
+new = 'return min('
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_keep_holds_the_committed_target_while_it_is_listed_and_otherwise_takes_the_nearest"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "keep-falls-back-to-the-farthest"
+guards = "_keep takes the nearest enemy when the committed target is gone"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or min('
+new = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or max('
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_keep_holds_the_committed_target_while_it_is_listed_and_otherwise_takes_the_nearest"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"
+
+[[plant]]
+id = "offset-puts-across-on-the-other-side"
+guards = "_offset puts a positive across to the left of the direction"
+file = "src/twwarhammer3/battle/calibration.py"
+old = '"z": origin["z"] + dz * forward + dx * across}'
+new = '"z": origin["z"] + dz * forward - dx * across}'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_offset_goes_forward_along_the_direction_and_across_to_its_left"]
+source = "2026-11-15 legacy deletion review: base-class bookkeeping had been covered only by tests of deleted subclasses"

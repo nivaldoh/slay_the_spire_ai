@@ -41,7 +41,7 @@ def test_the_suite_admits_its_own_controllers_and_still_refuses_others():
     benchmark.validate_config(suite_scenario, {**FROZEN, "policy": "llm"})
     with pytest.raises(ValueError, match="requires one fresh launch/battle"):
         benchmark.validate_config(suite_scenario, {
-            **FROZEN, "policy": "twwarhammer3.battle.calibration:SnapHitAndRun"})
+            **FROZEN, "policy": "twwarhammer3.battle.calibration:CornerHold"})
 
 
 def test_an_unknown_benchmark_version_is_refused_rather_than_read_as_the_mirror():

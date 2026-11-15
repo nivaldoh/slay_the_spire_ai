@@ -22,8 +22,9 @@ marking them for the owner's review; the rule for agents is in
 - Files that carry no marker: JSON configs (no comments); prompt files (model input, compared
   exactly by the prompt tests); the policy modules `scripted.py`, `calibration.py`, `llm.py`,
   `commander.py`, `team.py` and `skills.py` (`controllers.card()` hashes the policy's source
-  file into `source_sha256`, which the card board pools on); the Lua mod (the pack hash is
-  part of every card cell's setup identity); `spire/protocol.py` and `spire/policies.py`
+  file into `source_sha256`, which `stats` and the HTML report read to keep controllers apart,
+  as the card board did until its deletion on 2026-11-15); the Lua mod (the pack hash is
+  part of every job's setup identity); `spire/protocol.py` and `spire/policies.py`
   (byte-stable).
 - List: `git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'`; add `-F "JUDGEMENT?"`
   for the uncertain ones, or a branch name for unmerged drafts.

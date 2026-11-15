@@ -116,7 +116,7 @@ def test_the_summary_keeps_draws_providers_and_unrecorded_delays_apart(tmp_path)
 
 def test_a_timer_ending_keeps_the_engine_status_and_says_how_it_ended(tmp_path):
     # The register stores the engine's status; readers that score timer wins otherwise read
-    # ended_by (cards.outcome, report.collect).
+    # ended_by (report.collect; cards.outcome did until its deletion on 2026-11-15).
     job = tmp_path / "bench-b25-20261017"
     (job / "episode-0000").mkdir(parents=True)
     (job / "manifest.json").write_text(json.dumps({

@@ -27,6 +27,19 @@ Both games:
   the deletion covers tracked code, tests and scenario entries, with its exact list shown to
   the owner first, and leaves `runs/` evidence, register rows, the log and history pages.
   Nothing implemented; the plan is the report's "Plan after the owner's decisions".
+  Then, the same day, goal verbatim: "Implement the plan". Answers to its three questions:
+  on the deletion list (`runs/terminal-bench-review-20261115/impl/deletion-list.md`: cards.py
+  and the `card` command, 23 of calibration.py's 25 classes, their tests, 14 plants, 8
+  JUDGEMENT lines in cards.py and 47 of 165 scenario entries): "Delete all of it
+  (Recommended)"; on whether ReplaySchedule's identity hash should leave `status` out, since a
+  new status word would otherwise refuse every win recorded before it: "Leave status out
+  (Recommended)"; on the status of each of the 118 remaining entries (`impl/status-mapping.md`:
+  the mirror current, 63 under development candidate, 30 kept October entries retired, none
+  held out, the 24 harness entries without `expect` no status): "Approve this mapping
+  (Recommended)". Built on branch `tb-plan-impl-20261115`; three of the 23 classes on the
+  approved list (PriorityStrike, LineTeam, LineTeamReserve) were kept after a review found
+  current pages still name them, which the list had not said
+  ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)).
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

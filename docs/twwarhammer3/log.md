@@ -29,6 +29,42 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-15: October designs deleted, one outcome label, a status on each scenario
+
+Claude, at the owner's goal "Implement the plan" (the Terminal-Bench comparison's plan,
+`runs/terminal-bench-review-20261115/report.md`); answers in owner-direction.md ("Delete all of
+it", "Leave status out", "Approve this mapping"). Branch `tb-plan-impl-20261115`, offline, $0, no
+game. Cards, lists and scripts: `runs/terminal-bench-review-20261115/impl/`.
+- Deleted (`db90a31`; tag `wh3-legacy-20261115` has them): `battle/cards.py` and the `card`
+  command, 20 of `battle/calibration.py`'s 25 classes, 47 of 165 scenario entries (285 register
+  rows stay), `test_wh3_cards.py` and the tests of the 20 classes. 30 October entries stay,
+  status `retired`. `calibration.py` keeps `SmallDiagnostic`, `CornerHold`, `PriorityStrike`,
+  `LineTeam`, `LineTeamReserve` and seven helpers, node for node; `lines.py` is not edited.
+  The first commit deleted 23 classes; its review found the air relief's marked witness
+  choice (`PriorityStrike`) and the parked team-structures plan (`LineTeam`) still name three,
+  so they were restored from the tag.
+- Outcome (`4419ebe`): `benchmark.evaluate` takes its outcome from `benchmark_outcome` (moved
+  from `cards.py`; version 2 labels a copy-interrupted trial `operator_stop`). Unresolved,
+  forfeit and the other non-engine labels are in no rate. Recount of 1,881 saved episode
+  results: `evaluate` differs from the tag's on 0.
+- Statuses (`2f2e82a`): 94 declared entries write their own status (1 `current`, 63 `candidate`,
+  30 `retired`), split and version; `base` no longer hands those down. Every entry resolves as
+  before except its status word. `ReplaySchedule` hashes a declaration without `status`.
+- Source hashes change for calibration, benchmark, setup, replay_schedule and `__main__`, so a
+  new launch of a kept diagnostic will not pool with its October rows. No kept scenario's
+  battle fields change; the Lua and the pack are untouched.
+- Plants: 14 removed with their code, 10 retargeted, 12 added (each caught by hand); 475 now.
+  Eight of the new ones guard the base class's order bookkeeping, which only tests of deleted
+  subclasses had covered.
+- Checks: `check.py` passed before each commit (4110, 4128 and 4131 passed, 70 skipped, in the
+  worktree). A reviewer read each change against its card; its findings and what was done
+  about them are in `impl/review-A.md` and `impl/review-BC.md`.
+- Not changed, for the owner: outside the two profiles the text `report` still shows a timer
+  win as `time_limit` and `stats` tallies raw statuses; whether a forfeit counts as a non-win
+  in a denominator.
+- Unverified: no live run. A schedule saved to disk before `2f2e82a`, if one exists, carries a
+  hash that included status and must be rebuilt from its episode.
+
 ## 2026-11-14: Controller-file cleanup, Lua included, and two splits
 
 Claude, second and third rounds of the same goal; answers in owner-direction.md ("Everything now",

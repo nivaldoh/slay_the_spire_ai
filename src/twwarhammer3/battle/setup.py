@@ -81,8 +81,8 @@ entry, and what reads them:
   entry (one with ``expect``) has a ``status`` from ``STATUSES``: ``current`` (part of a
   benchmark definition in force), ``candidate`` (under development or waiting for review),
   ``held_out`` (reserved from tuning; its ``split`` is held_out too) or ``retired`` (of a
-  superseded design, kept only because a test, a live check or another entry's ``base`` names
-  it). An entry without ``expect`` is a harness scenario and has no status.
+  superseded design and still in the file, usually because a test, a live check or another
+  entry's ``base`` names it). An entry without ``expect`` is a harness scenario and has no status.
 - ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``,
   ``scenario_version``: provenance; ``scenario_version`` also shows in a benchmark scenario's
   report title, and the rest reaches reports through the manifest's scenario.

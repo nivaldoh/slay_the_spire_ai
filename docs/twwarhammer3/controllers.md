@@ -466,9 +466,9 @@ found later and not made yet, since a prompt change is a new version (9-10):
     sight)" also covers a routing target.
 
 Text-only fixes held back for the same reason: a policy class's docstring is recorded as
-its description, and any edit to its file changes the `source_sha256` that the card board
-keys a controller on, so a later launch would no longer pool with recorded ones (a mixed
-cell fails the verdict). The 2026-10-21 checks found four such texts in `scripted.py` (for
+its description, and any edit to its file changes the `source_sha256` that `stats` and the
+HTML report key a controller on (as the card board did until its deletion on 2026-11-15), so a
+later launch would no longer pool with recorded ones. The 2026-10-21 checks found four such texts in `scripted.py` (for
 example, `hold` leaves missile units on their default skirmish, so they run away without
 orders), three in `skills.py`, a comment in `commander.py` (`floor-findings.txt`,
 `core-findings.txt`) and the witness texts in
