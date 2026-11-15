@@ -25,6 +25,9 @@ Both games:
   three no-op methods; play must keep probing optional methods for external controllers): "Skip
   it (Recommended)"; the witnesses' differing `_send` resend rules and `inside`: "Leave as is
   (Recommended)"; LLMPolicy's `benchmark=True` option: "Keep the option (Recommended)".
+  Asked about the rest of findings 4, 5 and 10 and the review's lower-priority items: "Let's
+  wrap this up for now. Low-priority suggestions can be discared" (read as: leave the rest of
+  4, 5 and 10 as they are; drop the lower-priority items).
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.
