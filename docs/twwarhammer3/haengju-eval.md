@@ -238,7 +238,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | The waves arm, the all-at-once arm and the Eagle Gate screen `cth-emp-siege-a-all-gates-v1`, all split `development`; no held-out or reserved variant; this page and the code are public |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [development stages](#development-stages) |
-| Release record | Lua and pack hash from `f3fec92`; the Eagle Gate screen declared at `050020e`; the readings and tests revised on 2026-11-09; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15); no battle played |
+| Release record | Lua and pack hash from `f3fec92`; the Eagle Gate screen declared at `050020e`; the readings and tests revised on 2026-11-09; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15); no battle had been played then, and one `hold` battle has been since ([2026-11-14](#first-construction-battle-2026-11-14)) |
 
 JUDGEMENT: Situation and fidelity — Claude, 2026-11-08: Haengju as a siege defence against
 divisions released in turn. A literal hill fort, an all-at-once assault or another battle

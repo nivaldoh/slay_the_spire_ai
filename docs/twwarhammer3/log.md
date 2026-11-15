@@ -29,6 +29,45 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-15: Readings off the witness modules, scenario files by family, change levels, page headers
+
+Claude, the rest of the Terminal-Bench plan, after the owner chose all four items
+(owner-direction.md). Branch `tb-plan-rest-20261115`, offline, $0, no game. Cards, comparison
+scripts and the review: `runs/terminal-bench-review-20261115/impl/` (`card-F1.md`,
+`card-split.md`, `card-F6-F8.md`, `review-R3.md`).
+- Readings (`1821b30`): the values a witness and its readings share moved, unchanged, to
+  `camp_facts.py`, `lines_facts.py`, `wall_facts.py` and `escalade_facts.py`, and three helpers
+  from `calibration.py` to `unit_geometry.py`. No `*_readings.py` module loads `camp`, `lines`,
+  `wall_defence`, `escalade` or `calibration` any more, directly or through another module, and
+  a repo rule test keeps it so. They still load `scripted.py` and, through one constant,
+  `skills.py` and `llm.py`. `compare_F1.py`: 14 of 14; seven module attributes that only the new
+  modules use are no longer given by the old ones.
+- A witness's own file hash no longer covers the moved values. `report` and the HTML report
+  still split on a change to them; `stats` would pool two jobs of one witness and one `-vN-`
+  name that differ only there. No row is affected today (0 of the 138 rows naming these modules
+  carry a configuration). Marked `JUDGEMENT?` Witness hash in `controllers.py`.
+- Scenario files (`a61164f`): `scenarios.json` became eleven files under
+  `configs/twwarhammer3/scenarios/`, each entry's text unchanged. `setup.entries()` reads the
+  directory's own files in name order and refuses a name or field written twice.
+  `compare_split.py`: 4 of 4 (118 entries written and resolved as from the old file). This
+  commit edits 9 marker lines on three evaluation pages and 3 marker continuation lines, the
+  path only.
+- Change levels (`4a59e0a`): [a table](benchmark.md#which-change-invalidates-which-results) of
+  three levels (replay, re-read, keep) with what each reader does today, marked `JUDGEMENT?`;
+  nothing reads it. Page headers: the same six rows at the top of the five evaluation pages.
+- Review (`review-R3.md`): no changed order and no changed resolved entry; 15 findings on
+  checks a wrong version passed, sentences stronger than the code, and stale sentences. The
+  last commit of the branch addresses them: the rule test follows every import form, four
+  sentences that called played battles unplayed are corrected, the table's reader column is
+  rewritten, and a plain line above four markers says which of their values moved (the markers
+  are unedited; whether they should move is the owner's).
+- Wrong in earlier commit messages: `1821b30` says the readings import "no module that defines
+  a controller"; `a61164f` says 13 marker lines on four pages.
+- Plants: 8 added (491); `check.py --plants` caught 486 of 486 at `4a59e0a`, before the last
+  five. Later jobs start a new HTML test setup (source files changed).
+- Unverified: no live run. No job has loaded a scenario from the directory or run a witness
+  since these commits.
+
 ## 2026-11-15: October designs deleted, one outcome label, a status on each scenario
 
 Claude, at the owner's goal "Implement the plan" (`runs/terminal-bench-review-20261115/report.md`);
@@ -2618,7 +2657,7 @@ visuals for those too."
 | `team_llm_rules` | v23+t2 (2026-11-09; t2 2026-10-27): `llm_rules` per member plus the teammate's units and condition; a siege attack's fort as facts, without the siege orders | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Agreed direct-model smoke passed one case at `c1ad84d`; initial team/single comparison both lost, no strength claim |
 | graph controllers | `wh3-graph-v1`, `wh3-skills-v1`, author v2 (2026-11-01) | `battle/graph.py`, `skill_contracts.py`, `configured.py`, `graph_author.py` | [Initial delivery](#2026-11-01-complete-the-initial-gap-author-battle-revision-smoke): 91 component cases; 3/3 live effect probes; authored and revised whole battles both lost. No strength/learning claim |
 | Cannae development adapters | A `Envelop`; B reserve v1/v2 and briefing v1; C `local-command-v1` plus v2 communication arms | `battle/cannae.py`, `reserve.py`, `local_command.py`, `local_team.py`, `local_scripts.py` | [Communication mechanics recheck](#2026-11-10-communication-mechanics-recheck-and-an-intermediate-force-candidate); [B passive control](#2026-11-05-passive-hold-won-every-b-v2-development-case); [interfaces](#2026-11-05-cannae-witness-and-model-information-interfaces). Unverified candidates outside existing suites |
-| Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py`, `reserve.py`, `replay_schedule.py` | Built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54); reserve v3 waves played once in [Haengju 1a](#2026-11-14-first-haengju-and-izmail-construction-holds); the witnesses and controls are unplayed |
+| Historical siege evaluation scripts | `camp`, `lines`, `wall_defence`, `escalade` witnesses and controls; reserve v3 waves; `ReplaySchedule` | `battle/camp.py`, `lines.py`, `wall_defence.py`, `escalade.py` (shared values in `camp_facts.py`, `lines_facts.py`, `wall_facts.py`, `escalade_facts.py` since 2026-11-15), `reserve.py`, `replay_schedule.py` | Built offline in [b54](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54); reserve v3 waves played once in [Haengju 1a](#2026-11-14-first-haengju-and-izmail-construction-holds); the witnesses and controls are unplayed |
 | benchmark harness | b55 (2026-11-12: [deployment handover failures and siege replay](#2026-11-12-battle-review-deployment-handover-and-siege-replay-b55)); b54 (2026-11-09: private all-unit record, reserve v3 divisions in turn, siege-attack interface and siege_equipment, [entry](#2026-11-09-historical-siege-evaluations-built-offline-harness-b54)); b53 (2026-11-05: a team poll that wrote rows keeps its global frame; private bearing and ordered width at deployment; `manual_demo record --scenario`; `Evade`); b52 (2026-10-31: observations carry the engine's game speed, `battle:current_battle_speed()`; team members' records say `running_at_close`; the card board leaves team episodes off; `cards.benchmark_outcome` v1 beside `cards.outcome`, unused); b51 (2026-10-29: 1x measured by the Windows clock from observation write times, in `result.json` and `digest`); b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |

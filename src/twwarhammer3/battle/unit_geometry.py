@@ -1,6 +1,7 @@
 """Three helpers on public unit records that witnesses and readings both use: the units still in
-the fight, a direction and a centre. They were in calibration.py until 2026-11-15; a readings
-module may import this module and no module that defines a controller.
+the fight, a direction and a centre. They were in calibration.py until 2026-11-15. A readings
+module may import this module and never a witness module (tests/test_repo_rules.py). OUT comes
+from skills.py, so a reading that uses ``_active`` still loads that controller file and llm.py.
 """
 
 import math

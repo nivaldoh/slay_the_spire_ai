@@ -49,6 +49,8 @@ def test_entries_come_from_every_file_of_the_directory_and_a_base_may_be_in_anot
     (tmp_path / "b.json").write_text(json.dumps({"child": {"base": "parent", "map": "n"}}))
     (tmp_path / "a.json").write_text(json.dumps({"parent": {"map": "m", "expect": {"funds": 1}}}))
     (tmp_path / "notes.txt").write_text("not a scenario file")
+    (tmp_path / "deeper").mkdir()  # only the directory's own files are read
+    (tmp_path / "deeper" / "c.json").write_text(json.dumps({"nested": {"map": "o"}}))
     monkeypatch.setattr(setup, "SCENARIOS_PATH", tmp_path)
     assert list(setup.entries()) == ["parent", "child"]  # files in name order
     assert setup.scenarios()["child"] == {"map": "n", "expect": {"funds": 1}}
@@ -60,4 +62,15 @@ def test_a_name_written_in_two_files_is_refused(monkeypatch, tmp_path):
     (tmp_path / "b.json").write_text(json.dumps({"twice": {"map": "n"}}))
     monkeypatch.setattr(setup, "SCENARIOS_PATH", tmp_path)
     with pytest.raises(ValueError, match="twice is declared twice"):
+        setup.entries()
+
+
+def test_a_name_or_field_written_twice_in_one_file_is_refused(monkeypatch, tmp_path):
+    """Wrong version: json.loads alone, which keeps the last of two members with one name."""
+    monkeypatch.setattr(setup, "SCENARIOS_PATH", tmp_path)
+    (tmp_path / "a.json").write_text('{"twice": {"map": "m"}, "twice": {"map": "n"}}')
+    with pytest.raises(ValueError, match="a.json writes twice twice"):
+        setup.entries()
+    (tmp_path / "a.json").write_text('{"one": {"status": "current", "status": "retired"}}')
+    with pytest.raises(ValueError, match="a.json writes status twice"):
         setup.entries()

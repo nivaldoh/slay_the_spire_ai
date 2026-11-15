@@ -38,6 +38,9 @@ from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.scripted import distance, find, forget_refused, nearest
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 
+# Since 2026-11-15 the four groups (MOUNTED, LEVIES, COVER, GUNS) are in camp_facts.py, which the
+# readings import too. The marker below still covers them.
+
 # JUDGEMENT: Camp groups — Claude, 2026-11-08 (camp design): groups by emp-chd-camp-v1's type keys,
 # ATTACK's modes; the design sets no run for the Free Company, no mode for the mounted group. Groups
 # by class, or the Free Company at a run, change both arms' play; every camp arm rests on it.
@@ -46,6 +49,9 @@ ATTACK = {"wh_main_emp_cha_warrior_priest_0": ("melee", True),
           "wh_dlc04_emp_inf_flagellants_0": ("melee", True),
           "wh_dlc04_emp_inf_free_company_militia_0": ("auto", False),
           **dict.fromkeys(MOUNTED, ("auto", True))}
+
+# Since 2026-11-15 CUE_M, CUE_HOLD_MS and FALLBACK_MS are in camp_facts.py. The marker below
+# still covers them.
 
 # JUDGEMENT: Camp thresholds — Claude, 2026-11-08 (camp design cue rule): the cue is one cover unit
 # in melee within 30 m of a levy for 10 s; fallback 180 s; retry 10 s; unseen gun dropped at 15 m;

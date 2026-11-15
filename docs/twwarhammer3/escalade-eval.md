@@ -11,7 +11,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 | Witness | `Escalade` in [battle/escalade.py](../../src/twwarhammer3/battle/escalade.py), the three-sector assault, with seven controls; `Concentrate` is the other arm. A version 2 is built beside it and no plan uses it. |
 | Outcome | The engine's result. The controller attacks; the defender wins when the 1,200 s timer runs out. Every engine win counts. |
 | Status | `ksl-emp-siege-a-v1` (version 1) in [`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json): status `candidate`, split `development`. Two battles played, both under `hold`, both lost at the timer ([first stage 1 launches](#first-stage-1-launches-2026-11-14)). |
-| Changes | 2026-11-08 built offline at `f3fec92`. 2026-11-09 this page written and the readers revised; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`. 2026-11-10 lobby readback completed 157 steps. 2026-11-14 two stage 1 `hold` launches. 2026-11-15 the front line and its inside test moved to `escalade_facts.py`. |
+| Changes | 2026-11-08 designed. 2026-11-09 built offline at `f3fec92`, this page written and the readers revised; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`. 2026-11-10 lobby readback completed 157 steps. 2026-11-14 two stage 1 `hold` launches. 2026-11-15 the front line and its inside test moved to `escalade_facts.py`. |
 
 Development candidate, 2026-11-08 (Claude); this page was written on 2026-11-09. **Built offline
 at `f3fec92`; two `hold` battles have been played since (2026-11-14, below), and everything on
@@ -60,13 +60,13 @@ design, that review and the build records are `runs/siege-evals-20261108/final-i
 from earlier battles comes from single recorded battles with other armies, and the history guides
 the design and is no evidence about the engine.
 
-The recorded runs this page cites ran on builds older than the pin, patch 9.0.5, Steam build
+The recorded runs this page cites from before 2026-11-14 ran on builds older than the pin, patch 9.0.5, Steam build
 26403568 ([pins](integration.md#pins)), whose patch includes battle balance changes. By each job's
 `environment.json`, the runs of 2026-10-13 and 2026-10-14 (the siege-attack, siege and settlement
 smokes, `smoke-random-siege-skills-20261014-0511` and `attack-emp-mirror-20261013`) ran on 9.0.3,
 Steam build 25823491, and the `bench-b12-*`, `bench-b13-*`, `bench-b18-*` and
 `bench-b23-l1-setup-20261017` jobs on 9.0.4, Steam build 25961564. Only the 2026-11-03 checkpoint
-battles (`siege-905-20261103`) ran on the pin. A stage 1 reading on 9.0.5 replaces the older one
+battles (`siege-905-20261103`) and the two stage 1 launches of 2026-11-14 ran on the pin. A stage 1 reading on 9.0.5 replaces the older one
 it repeats.
 
 ## The historical battle
@@ -224,7 +224,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | One development version, split `development`, no reserved variant ([variation](#variation)); this page and the code are public |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15); no battle played |
+| Release record | Built at `f3fec92`; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`; the readers and this page revised on 2026-11-09; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15); no battle had been played then, and two `hold` battles have been since ([2026-11-14](#first-stage-1-launches-2026-11-14)) |
 
 The settings:
 

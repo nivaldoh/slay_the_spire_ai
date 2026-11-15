@@ -127,6 +127,21 @@ def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
         {**definition, "source": "r2"}, None)
 
 
+def test_a_changed_or_new_scenario_file_leaves_the_harness_alone():
+    """The declaration is compared itself, so another entry's edit in a family file (since
+    2026-11-15 configs/twwarhammer3/scenarios/) must not start a new test setup. Wrong version:
+    the directory left out of PRESENTATION."""
+    code = {"src/twwarhammer3/battle/llm.py": "a", "configs/twwarhammer3/scenarios/camp.json": "a",
+            "configs/twwarhammer3/scenarios.json": "a"}
+    definition = {"source": "r1", "scenario": {"name": "s", "map": "m"}}
+    base = report_html.harness(definition, {"provenance": {"source_files": code}})
+    assert base == report_html.harness(definition, {"provenance": {"source_files": {
+        "src/twwarhammer3/battle/llm.py": "a", "configs/twwarhammer3/scenarios/camp.json": "b",
+        "configs/twwarhammer3/scenarios/new_family.json": "a"}}})
+    assert base != report_html.harness({**definition, "scenario": {"name": "s", "map": "n"}},
+                                       {"provenance": {"source_files": code}})
+
+
 def test_a_row_keeps_battles_from_several_harnesses_and_counts_them(tmp_path):
     jobs = [configured_job(tmp_path, "a"), configured_job(tmp_path, "b", source_revision="r2")]
     data = report_html.display_data(report.collect(jobs))

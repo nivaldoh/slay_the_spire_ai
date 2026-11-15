@@ -15,8 +15,7 @@ the per-job results:
 
 All use the 5-unit Khorne army of `kho5-dwf5` for the player and its Dwarf army for the
 enemy, at AI very hard. The free-for-all adds the Empire army and a second Khorne army.
-Entries in [`configs/twwarhammer3/scenarios/harness.json`](../../configs/twwarhammer3/scenarios/harness.json),
-except where a table names one that now lives in `scenarios/retired.json`:
+Entries in [`configs/twwarhammer3/scenarios/harness.json`](../../configs/twwarhammer3/scenarios/harness.json):
 
 | Battle type (lobby key) | Scenario | Map | Player | Engine type |
 |---|---|---|---|---|

@@ -23,10 +23,9 @@ from wh3_fixtures import bridge_observation
 from twwarhammer3.battle import camp, play, setup
 from twwarhammer3.protocol import HIDDEN_KEYS
 
-# The three entries in configs/twwarhammer3/scenarios/ (camp.json, lines.json) cannot carry a
-# comment, so their
-# markers are on the battles' pages (docs/judgement.md). The design pages they copy from are
-# untracked (runs/siege-evals-20261108/final-belgrade.md and final-alesia.md).
+# The five entries in configs/twwarhammer3/scenarios/ (camp.json, lines.json) cannot carry a
+# comment, so their markers are on the battles' pages (docs/judgement.md). The design pages they
+# copy from are untracked (runs/siege-evals-20261108/final-belgrade.md and final-alesia.md).
 # Camp construction profile and Authored widths (which also covers the Boyar's width in
 # ksl-nor-lines-a-v1) are marked on docs/twwarhammer3/camp-eval.md, as are Camp lordless roster and
 # Camp equidistant lord, the two candidate answers to that page's owner question 1.

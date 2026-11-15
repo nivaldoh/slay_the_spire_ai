@@ -129,7 +129,7 @@ DIAGRAM.tabs.push({
       "note":
         "Turns the scenario into the menu steps that build this custom battle, and checks the result.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/setup.py:1-3", "src/twwarhammer3/battle/play.py:138"]
+      "refs": ["src/twwarhammer3/battle/setup.py:1", "src/twwarhammer3/battle/play.py:138"]
     },
     {
       "id": "job.play",

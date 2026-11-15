@@ -378,20 +378,23 @@ Here it means the declared conditions are checked and differences are reported. 
 
 ### Which change invalidates which results
 
-JUDGEMENT?: Change levels — Claude, 2026-11-15 (owner: "F6: replay / re-read / keep table"): the three
-levels below, after Terminal-Bench's task versions. Moving a change to another row, or keeping the
-readers' stricter rule, changes which results may be pooled; nothing reads this table yet.
+JUDGEMENT?: Change levels — Claude, 2026-11-15 (owner: "F6: replay / re-read / keep table"): the
+three levels below, after Terminal-Bench's task versions. Moving a change to another row, or keeping
+the readers' rules, changes which results may be pooled; nothing reads this table yet.
 
 | Level | Kinds of change (proposed) | Earlier results (proposed) | What the readers do today |
 |---|---|---|---|
-| Replay | The observation or order contract (a new track); a scenario's battle fields; a prompt or a controller's behaviour (a new controller version); the mod's behaviour; the engine build | New battles are needed. Battles from before and after are never pooled | Tracks are never pooled. `report` starts a new group and the HTML report a new test setup, by source, scenario and game build. `stats` keeps harness versions (or commits) and an outside controller's source hash apart, and would pool builds |
-| Re-read | A readings module, the outcome label, statistics, report code | The saved battles are read again and the log says so. No battle is replayed | The HTML report leaves its own files, the replay, `digest`, `watch` and `stats` out of its test setup, so those changes keep its groups. A change to a readings module, the outcome label or the statistics still starts a new test setup there, and `report` splits by whole commit |
-| Keep | Comments and documents; a refactor that changes no behaviour; a scenario's `status`, `brief` or `family` | Results stand and may be pooled | Stricter than this row. Any source commit splits `report`'s groups, and outside the files above it starts a new HTML test setup; a comment in a policy file changes that controller's source hash. The HTML report does leave `status`, `brief` and `family` out of its scenario comparison, and the replay check leaves `status` out |
+| Replay | The observation or order contract (a new track); a scenario's battle fields; a prompt or a controller's behaviour (a new controller version); the mod's behaviour; the engine build | New battles are needed. Battles from before and after are never pooled | `report` starts a new group for another track, game build, scenario declaration or source commit. The HTML report starts a new test setup for another track or build, a changed battle field or a changed source file outside its presentation files. `stats` keeps harness versions apart (commits, for a job named without one) and an outside controller's source hash; it has no track or build column and would pool both |
+| Re-read | A readings module, the outcome label, statistics, report code | The saved battles are read again and the log says so. No battle is replayed | The HTML report leaves `report.py` (which holds the intervals and paired statistics the reports print), its own files, the replay, `digest`, `watch` and `stats` out of its test setup, so a change there keeps its groups. A change to a readings module, the outcome label in `benchmark.py`, `exact_stats.py` or `suite.py` still starts a new test setup there. `report` splits by commit |
+| Keep | Comments and documents; a refactor that changes no behaviour; a scenario's `status`, `brief` or `family` | Results stand and may be pooled | `report` splits on every commit, a documents-only one included, because a job records the checkout's HEAD. The HTML report starts a new test setup for any change to a job's source files outside its presentation files, a comment included; documents are not among those files. It leaves `status`, `brief` and `family` out of its scenario comparison, and the replay check leaves `status` out. A comment in a policy file changes that controller's source hash. `stats` pools the rows of one harness version across commits |
 
-The Keep row and the readers disagree. Under the table a refactor that changes no behaviour would
-keep earlier results poolable; the readers split on any source change, which is the safer rule
-when nobody has shown that behaviour is unchanged. Until the owner decides, the readers' rule
-holds, and a change at the Replay or Re-read level says which it is in its log entry.
+The Keep row and the readers disagree in both directions. Under the table a refactor that changes
+no behaviour would keep earlier results poolable; `report` and the HTML report split on it, which
+is the safer rule when nobody has shown that behaviour is unchanged. `stats` is looser than the
+table: it pools the rows of one harness version whatever their commit, track or build (10 of its
+561 groups hold rows from more than one source commit, 41 rows, on 2026-11-15). Until the owner
+decides, the readers stay as they are, and a change at the Replay or Re-read level says which it is
+in its log entry.
 
 ## Terms
 

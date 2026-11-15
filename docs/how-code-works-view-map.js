@@ -123,7 +123,7 @@ DIAGRAM.tabs.push({
       ],
       "status": "agreed live check: WH3 saved armies and experience (docs/agreed-checks.md:221)",
       "refs": [
-        "src/twwarhammer3/battle/setup.py:1-3",
+        "src/twwarhammer3/battle/setup.py:1",
         "configs/twwarhammer3/scenarios/",
         "docs/agreed-checks.md:221-230"
       ]
@@ -468,7 +468,7 @@ DIAGRAM.tabs.push({
           "A job that starts the game runs the scenario's lobby steps once; its later battles restart the same battle. A job with --attach joins the battle already running."
       },
       "refs": [
-        "src/twwarhammer3/battle/setup.py:1-3",
+        "src/twwarhammer3/battle/setup.py:1",
         "src/twwarhammer3/battle/play.py:1-5",
         "src/twwarhammer3/battle/play.py:219-233",
         "src/twwarhammer3/battle/play.py:248"

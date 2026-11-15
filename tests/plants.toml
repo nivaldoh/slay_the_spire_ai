@@ -4497,8 +4497,26 @@ guards = "A readings module imports its battle's facts, never the witness module
 file = "src/twwarhammer3/battle/camp_readings.py"
 old = 'from twwarhammer3.battle.camp_facts import ('
 new = 'from twwarhammer3.battle.camp import ('
-tests = ["tests/test_repo_rules.py::test_wh3_readings_import_no_controller_module"]
+tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: owner, \"F1: readings off witnesses (Recommended)\""
+
+[[plant]]
+id = "camp-readings-import-the-witness-relatively"
+guards = "The readings rule follows a relative import"
+file = "src/twwarhammer3/battle/camp_readings.py"
+old = 'from twwarhammer3.battle.camp_facts import ('
+new = 'from .camp import ('
+tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
+source = "2026-11-15 readings off witnesses: review R3, F1-1"
+
+[[plant]]
+id = "lines-facts-import-a-witness-module"
+guards = "A facts module imports nothing from the battle package, so readings reach no witness through it"
+file = "src/twwarhammer3/battle/lines_facts.py"
+old = 'LINE = (KOSSARS, ARMOURED, STRELTSI)'
+new = 'from twwarhammer3.battle.calibration import NEIGHBOURS; LINE = (KOSSARS, ARMOURED, STRELTSI)'
+tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
+source = "2026-11-15 readings off witnesses: review R3, F1-1"
 
 [[plant]]
 id = "scenario-loader-reads-only-the-first-file"
@@ -4517,3 +4535,30 @@ old = '            if name in written:'
 new = '            if False:'
 tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_a_name_written_in_two_files_is_refused"]
 source = "2026-11-15 scenario file split: owner, \"Split the scenario file\""
+
+[[plant]]
+id = "scenario-loader-keeps-the-last-of-two-members-in-one-file"
+guards = "A scenario name or a field written twice in one file is refused"
+file = "src/twwarhammer3/battle/setup.py"
+old = 'json.loads(path.read_text(), object_pairs_hook=once).items()'
+new = 'json.loads(path.read_text()).items()'
+tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_a_name_or_field_written_twice_in_one_file_is_refused"]
+source = "2026-11-15 scenario file split: review R3, S-4"
+
+[[plant]]
+id = "scenario-loader-reads-sub-directories"
+guards = "Only the scenarios directory's own files are read"
+file = "src/twwarhammer3/battle/setup.py"
+old = 'paths = sorted(SCENARIOS_PATH.glob("*.json")) if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]'
+new = 'paths = sorted(SCENARIOS_PATH.rglob("*.json")) if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]'
+tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_entries_come_from_every_file_of_the_directory_and_a_base_may_be_in_another"]
+source = "2026-11-15 scenario file split: review R3, S-5"
+
+[[plant]]
+id = "html-report-new-setup-for-any-scenario-file-edit"
+guards = "A changed or new family scenario file does not start a new HTML test setup"
+file = "src/twwarhammer3/battle/report_html.py"
+old = '"configs/twwarhammer3/scenarios/")'
+new = '"configs/twwarhammer3/scenarios-not-this/")'
+tests = ["tests/twwarhammer3/test_wh3_report_html.py::test_a_changed_or_new_scenario_file_leaves_the_harness_alone"]
+source = "2026-11-15 scenario file split: review R3, S-2"

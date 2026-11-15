@@ -55,10 +55,10 @@ and SPACING_M or more from every spot placed before.
 Every arm reads only what play.public passes: its own units (``on_wall``, ``can_climb``,
 ``can_siege``), the visible enemies and ``mode`` (capture points, gates, fortifications and
 vehicles), never ``evaluation``, ``setup``, ``native``, ``final`` or the job. The front line is
-the southernmost fortification centre in each FRONT_COLUMN_M column (``front_line``), which
-nothing has checked against the fort. Unplayed: no game has run these scripts, so nothing here
-shows what their orders achieve; the siege orders' effects (climbing, the ram, the gun's damage)
-are unread until stage 2.
+the southernmost fortification centre in each FRONT_COLUMN_M column (``front_line``, both in
+escalade_facts.py), which nothing has checked against the fort. Unplayed: no game has run these
+scripts, so nothing here shows what their orders achieve; the siege orders' effects (climbing,
+the ram, the gun's damage) are unread until stage 2.
 
 Code reference: SMAC smac/env/starcraft2/starcraft2.py get_agent_action_heuristic keeps a target
 until it is unavailable, as camp.py and wall_defence.py do.

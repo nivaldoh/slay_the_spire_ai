@@ -152,13 +152,21 @@ SIEGE_CLEAR_LIMIT = 12
 
 
 def entries() -> dict:
-    """Every entry as it is written: the ``*.json`` files of the scenarios directory in name
-    order, or one file. An entry may name a ``base`` in another file. A name written twice is
-    refused, since the second would silently replace the first."""
+    """Every entry as it is written: the ``*.json`` files of the scenarios directory itself, in
+    name order, or one file. An entry may name a ``base`` in another file. A name written twice,
+    in two files or in one, is refused, and so is a field written twice in an entry, since the
+    second would silently replace the first."""
     paths = sorted(SCENARIOS_PATH.glob("*.json")) if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]
     written = {}
     for path in paths:
-        for name, entry in json.loads(path.read_text()).items():
+        def once(pairs: list, path=path) -> dict:  # json.loads alone keeps the last of two
+            keys = [key for key, _ in pairs]
+            twice = sorted({key for key in keys if keys.count(key) > 1})
+            if twice:
+                raise ValueError(f"{path.name} writes {', '.join(twice)} twice in one object")
+            return dict(pairs)
+
+        for name, entry in json.loads(path.read_text(), object_pairs_hook=once).items():
             if name in written:
                 raise ValueError(f"scenario {name} is declared twice (again in {path.name})")
             written[name] = entry

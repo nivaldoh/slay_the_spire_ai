@@ -153,6 +153,9 @@ def card(name: str, policy, config: dict) -> dict:
         "model" if base in MODEL_POLICIES else "scripted" if base in BUILTINS else "external",
         "version": VERSIONS.get(base),
         "class": f"{type(policy).__module__}:{type(policy).__qualname__}",
+        # JUDGEMENT?: Witness hash — Claude, 2026-11-15: the hash stays the class's own file, so the
+        # values a witness shares with its readings (*_facts.py since that day) fall outside it.
+        # Hashing them too would split stats rows when one changes; stats.configuration rests on it.
         "source_file": path, "source_sha256": sha256(Path(path)) if path else None,
         "model": model, "effort": effort,
         "timing": getattr(policy, "timing", "asynchronous" if base == "commander" else "blocking"),

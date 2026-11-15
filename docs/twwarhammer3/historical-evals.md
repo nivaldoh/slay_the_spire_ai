@@ -1,7 +1,7 @@
 # Evaluation battles adapted from history
 
-Overview, written 2026-11-09 (Claude). **The first Alesia hold ran on 2026-11-12; the other
-three new battles remain unplayed. Everything on this page remains unverified** under the
+Overview, written 2026-11-09 (Claude). **The first Alesia hold ran on 2026-11-12 and the first Haengju and Izmail holds on
+2026-11-14; the camp battle remains unplayed. Everything on this page remains unverified** under the
 [hard rule](../../AGENTS.md#verification-hard-rule). On 2026-11-08 the owner asked that good battle
 ideas be implemented with an evaluation method that is "good (in a concrete, legitimate way)". The
 owner's answers that day said to try building the five sieges the question listed (Haengju, Malta

@@ -163,7 +163,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Measurements | [Measurements](#measurements) |
 | Variation and exposure | Two mirror cases, a and b, both development; no held-out variant. The terrain under the two slots differs, so the mirror is not assumed equivalent |
 | Validation plan | [Proposed deciding checks](#proposed-deciding-checks) and [live stages](#live-stages) |
-| Release record | Source `e918091`, which did not change the Lua or the pack hash; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15), split `development`; no battle played. The `private_record` opt-in and the `withheld` list were added after `f3fec92`. The Lua changed at `f3fec92` (the evaluator-only record, divisions in turn and the siege-attack interface), so every launch from `f3fec92` on, this battle's included, carries the new pack hash and a separate setup identity on the card board, which was deleted on 2026-11-15 |
+| Release record | Source `e918091`, which did not change the Lua or the pack hash; `prototype_not_admitted` (the status word then; `candidate` since 2026-11-15), split `development`; no battle had been played then, and one `hold` battle has been since ([2026-11-12](#first-construction-battle-2026-11-12)). The `private_record` opt-in and the `withheld` list were added after `f3fec92`. The Lua changed at `f3fec92` (the evaluator-only record, divisions in turn and the siege-attack interface), so every launch from `f3fec92` on, this battle's included, carries the new pack hash and a separate setup identity on the card board, which was deleted on 2026-11-15 |
 
 ### Settings
 

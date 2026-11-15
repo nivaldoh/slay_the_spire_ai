@@ -42,6 +42,12 @@ Both games:
   the three (Recommended)". Asked about landing the six commits (head `d1742a3`): "Merge and
   push (Recommended)", with the tag `wh3-legacy-20261115`
   ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)).
+  Asked which of the plan's remaining items to build now (one question, several answers
+  allowed), the owner chose all four: "F1: readings off witnesses (Recommended)", "F6: replay /
+  re-read / keep table (Recommended)", "F8: evaluation page headers (Recommended)" and "Split
+  the scenario file". Built on branch `tb-plan-rest-20261115`
+  ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)). The F6
+  table is a proposal marked `JUDGEMENT?`; choosing to have it written did not approve its rows.
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

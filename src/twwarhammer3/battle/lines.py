@@ -63,6 +63,9 @@ from twwarhammer3.protocol import PolicyFailure, visible_enemies
 ARMY = Counter({KOSSARS: 3, ARMOURED: 3, STRELTSI: 2, GUARD: 1, BOYAR: 1, LANCERS: 2})
 LINE_BEHAVIOURS = {"defend": True, "fire_at_will": True, "skirmish": False}
 
+# Since 2026-11-15 the trigger's AHEAD_M and TRIGGER_UNITS are in lines_facts.py. The marker
+# below still covers them.
+
 # JUDGEMENT: Lines witness rules — Claude, 2026-11-08 (final-alesia.md Witness rules 1-5): the
 # values below. Other leashes, trigger, hysteresis or Lancer values change what W, M and C win;
 # the W against M contrast and the witness gate rest on them.

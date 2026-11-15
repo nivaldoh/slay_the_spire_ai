@@ -66,9 +66,20 @@ timer win as `time_limit` and `stats` tallies raw statuses. (2) Whether a forfei
 non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)). (3) No
 reader prints the unresolved count as its own figure, which the option you answered had
 mentioned. (4) Status `held_out` is tied to split `held_out` by a rule marked `JUDGEMENT?`.
-Still waiting for a
-go-ahead from the report: F1 (readings stop importing from witnesses), F6 (the replay,
-re-read, keep table), F8 (page headers).
+The rest of the plan, which you chose on 2026-11-15 (F1, F6, F8 and the scenario file split),
+is built offline at $0 ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)):
+readings no longer load the witness modules, the scenario file is eleven family files, the
+benchmark page has a proposed table of change levels and the five evaluation pages have the
+same short header. Unverified: no live run. Three more questions it leaves for you. (5) The
+[change-levels table](twwarhammer3/benchmark.md#which-change-invalidates-which-results) is a
+proposal marked `JUDGEMENT?`: under it a refactor that changes no behaviour would keep earlier
+results poolable, while `report` and the HTML report split on it and `stats` pools one harness
+version across commits. (6) A witness's file hash no longer covers the values now in its
+`*_facts.py`, so `stats` could pool two jobs of one witness that differ only there (marked
+`JUDGEMENT?` Witness hash in `controllers.py`; no row is affected today). (7) Four markers
+(Camp groups, Camp thresholds, Lines witness rules, Wall witness thresholds) stay in the
+witness files while 12 of the values they name are in the facts files; a plain line above each
+says so, and whether the markers should move is yours.
 
 Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 

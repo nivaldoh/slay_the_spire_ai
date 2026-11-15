@@ -16,10 +16,11 @@ design (runs/siege-evals-20261108/final-haengju.md, Witness):
    The fallback is kept to the end; the reserve rule stops then. Version 1 has no attacker that
    can damage the gate: all seven Empire unit keys read can_siege false and siege_equipment is
    {}, so gate_breached cannot occur there and the fallback cue reduces to c2 enemy-held.
-The wall line runs through WALL_ENDS and the public capture points WALL_POINTS; "inside" is
-INSIDE_M or more north (higher z) of it. The controls are the witness with rules removed or
-moved, one class each: ``HoldBuild`` (build only), ``KeepOnly`` (build, and the fallback from
-the first decision), ``WFire``, ``WReserve`` and ``WNoFallback`` (one rule removed each).
+The wall line runs through wall_facts.py's WALL_ENDS and the public capture points WALL_POINTS;
+"inside" is its INSIDE_M or more north (higher z) of it. The controls are the witness with rules
+removed or moved, one class each: ``HoldBuild`` (build only), ``KeepOnly`` (build, and the
+fallback from the first decision), ``WFire``, ``WReserve`` and ``WNoFallback`` (one rule removed
+each).
 
 Every arm reads only what play.public passes: its own units, the visible enemies, the public
 ``enemy_roster`` (for one cue) and ``mode`` (capture points, gates, slots and supplies), never
@@ -65,6 +66,9 @@ POINT_KEYS = {"c1": "major_key_building_leadership", "c2": "capture_point_gate_o
               "c3": "capture_point_tower_only", "c4": "capture_point_tower_only",
               "c5": "capture_point_tower_only", "c6": "capture_point_tower_only",
               "c7": "minor_point_supplies"}
+
+# Since 2026-11-15 WALL_ENDS, WALL_POINTS and INSIDE_M are in wall_facts.py. The marker below
+# still covers them.
 
 # JUDGEMENT: Wall witness thresholds — Claude, 2026-11-08 (siege defence design, Witness): the
 # values below. Other distances, breach count, points or a fallback that ends change what the
