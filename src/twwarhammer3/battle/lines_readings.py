@@ -16,9 +16,9 @@ documented in lines-eval.md, First construction battle (2026-11-12).
 
 import math
 
-from twwarhammer3.battle.calibration import _active, _centre, _direction
 from twwarhammer3.battle.evidence_rules import group_ids, ids_by_type
-from twwarhammer3.battle.lines import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
+from twwarhammer3.battle.lines_facts import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
+from twwarhammer3.battle.unit_geometry import _active, _centre, _direction
 from twwarhammer3.protocol import ProtocolError, visible_enemies
 
 HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_berserkers_0",

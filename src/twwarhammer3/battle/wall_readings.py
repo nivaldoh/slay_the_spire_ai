@@ -7,7 +7,7 @@ its trace (trace.jsonl's decisions, acks and reserve rows) and the private recor
 reaches a controller. Capture holders and tickets follow evidence_rules (a holder of None is
 neither side's; tickets are the defender's row). Divisions are lists of enemy ids fixed at the
 first observation (evidence_rules.group_ids). The wall line is the public one the witness uses
-(wall_defence.wall_line); the breach polygon is a private one, frozen from stage 1's terrain grid
+(wall_facts.wall_line); the breach polygon is a private one, frozen from stage 1's terrain grid
 and on_wall readings, and until then absent.
 """
 
@@ -20,7 +20,7 @@ from twwarhammer3.battle.evidence_rules import (
     in_melee,
 )
 from twwarhammer3.battle.scripted import distance
-from twwarhammer3.battle.wall_defence import RESERVE, inside, wall_distance
+from twwarhammer3.battle.wall_facts import RESERVE, inside, wall_distance
 
 # JUDGEMENT?: Approach distance — Claude, 2026-11-08 (design, decision 1 and Measurements): a
 # division approaches when one of its visible units is 150 m or nearer the wall line or inside it.
@@ -141,7 +141,7 @@ def breach(frames, polygon=None):
 def reserve_response(trace, frames, breached):
     """Ms from a breach (``breach``'s reading) to the reserve's answer: ``attack_ms`` until the
     engine applied (the ack's ``applied_ms``) the first accepted attack order of a reserve unit,
-    the Lord or a Jade Warriors unit by type (wall_defence.RESERVE), and ``melee_ms`` until the
+    the Lord or a Jade Warriors unit by type (wall_facts.RESERVE), and ``melee_ms`` until the
     first frame in which one of them is in melee (evidence_rules.in_melee: the flag, with men
     left). Both count from the breach on; None for an answer that never came, and None with no
     breach. ``trace`` holds the episode's trace.jsonl rows (its "decision" and "ack" rows);

@@ -5,14 +5,22 @@ They read a finished battle's records: public views (the trace's logged "observa
 1 Hz replay frames), its trace (trace.jsonl's "decision" and "ack" rows) and the private record
 (``private.jsonl``, fields in capture.copy_private_record), which lists every unit of both sides
 once per engine second, hidden enemies included. Nothing here runs during a battle or reaches a
-controller. Units are chosen by type key with camp.py's groups, never by class. A field the
+controller. Units are chosen by type key with camp_facts.py's groups, never by class. A field the
 record lacks is unknown: lord_before_guns lists such a unit as unknown, and the other readers
 leave it out. The pattern is wall_readings.py's.
 """
 
 from math import inf
 
-from twwarhammer3.battle.camp import COVER, CUE_HOLD_MS, CUE_M, FALLBACK_MS, GUNS, LEVIES, MOUNTED
+from twwarhammer3.battle.camp_facts import (
+    COVER,
+    CUE_HOLD_MS,
+    CUE_M,
+    FALLBACK_MS,
+    GUNS,
+    LEVIES,
+    MOUNTED,
+)
 from twwarhammer3.battle.evidence_rules import accepted_orders, in_melee
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES
@@ -85,10 +93,10 @@ def lord_before_guns(frames):
 # its last accepted movement order's, a queued attack's from its batch, measured to the nearest live
 # levy; a queued attack read after its move gives fewer rows. The 60 m drop proposal rests on it.
 def kept_cover_distance(trace, frames):
-    """For each mounted unit (camp.MOUNTED, from the first private-record frame) whose current
-    accepted attack target is a cover unit (camp.COVER) with men left, one row per private-record
+    """For each mounted unit (MOUNTED, from the first private-record frame) whose current
+    accepted attack target is a cover unit (COVER) with men left, one row per private-record
     frame: [{"time_ms", "target", "m"}], ``m`` the target's centre distance to the nearest levy
-    unit (camp.LEVIES) with men left, to 0.1 m, or None with no such levy placed. The current
+    unit (LEVIES) with men left, to 0.1 m, or None with no such levy placed. The current
     target is that of the unit's last accepted movement order (move, attack, halt or a siege
     order) the engine applied at or before the frame: an attack's target, none for the others.
     A queued attack after a move counts from its batch's applied time, as ``branch`` reads it,
@@ -151,7 +159,7 @@ def melee_fire_seconds(observations, frames):
 
 def cover_melee_seconds(frames):
     """How many engine seconds of the private record hold a cover unit with men left that reads
-    ``melee`` within camp.CUE_M of a levy unit with men left (the cue's test, hidden cover
+    ``melee`` within CUE_M of a levy unit with men left (the cue's test, hidden cover
     included): the levy-cover melee that the stage 1 fire-into-melee rule needs 60 s of."""
     seconds = set()
     for frame in frames:
@@ -165,9 +173,9 @@ def cover_melee_seconds(frames):
 
 
 def cue_ms(observations):
-    """The battle ms of camp.py's cue in these public observations, or None: one cover unit
-    flagged in melee with men left (evidence_rules.in_melee) and within camp.CUE_M of a levy unit
-    with men left, in observations spanning camp.CUE_HOLD_MS, each cover unit with its own streak
+    """The battle ms of the cue (camp_facts.py) in these public observations, or None: one cover
+    unit flagged in melee with men left (evidence_rules.in_melee) and within CUE_M of a levy unit
+    with men left, in observations spanning CUE_HOLD_MS, each cover unit with its own streak
     that ends at the first observation without that state. Levies are found by type at each
     observation, as CampStrike binds them by type."""
     streaks = {}
@@ -189,10 +197,10 @@ def cue_ms(observations):
 # decision times label some launches otherwise; a model's branch shares rest on it.
 def branch(trace, observations):
     """Which D1 branch any controller took, a model included: "guns" or "cover" by the type of
-    the first war machine or cover unit that a mounted unit's (camp.MOUNTED) accepted attack
+    the first war machine or cover unit that a mounted unit's (MOUNTED) accepted attack
     targets, applied at or after the start, and "neither" when no such attack came. The start is
-    the cue camp.py's rule finds in these public observations (``cue_ms``), or 180 s
-    (camp.FALLBACK_MS) without a cue by then. Attacks on other enemies, the Overseer included,
+    the cue the witness's rule finds in these public observations (``cue_ms``), or 180 s
+    (FALLBACK_MS) without a cue by then. Attacks on other enemies, the Overseer included,
     are passed over. ``observations`` are the trace's logged views or 1 Hz replay frames; views
     sparser or denser than the controller's can find an earlier or later cue than it saw."""
     cue = cue_ms(observations)

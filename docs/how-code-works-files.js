@@ -244,6 +244,12 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/camp_facts.py",
+   "text": "what that battle's witness and readings both use: the unit groups by type key and the cue rule",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/camp_readings.py",
    "text": "that battle's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
    "box": "map.reports",
@@ -252,6 +258,12 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/battle/lines.py",
    "text": "`LinesWitness`, `LinesByMen` and `LinesCentral` for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/lines_facts.py",
+   "text": "what that defence's witness and readings both use: the unit type keys and the relief trigger",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -274,6 +286,12 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/wall_facts.py",
+   "text": "what that siege's witness and readings both use: the reserve's type keys and the public wall line with its distance and inside tests",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/wall_readings.py",
    "text": "that siege's evaluator readings of finished battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases",
    "box": "map.reports",
@@ -286,9 +304,21 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/escalade_facts.py",
+   "text": "what that siege's witness and readings both use: the fort's front line and what counts as inside it",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/battle/escalade_readings.py",
    "text": "that siege's evaluator readings of finished battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point",
    "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/unit_geometry.py",
+   "text": "three helpers on public unit records that witnesses and readings share: the units still in the fight, a direction and a centre",
+   "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {

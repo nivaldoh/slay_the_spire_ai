@@ -71,6 +71,7 @@ import math
 from collections import Counter
 from copy import deepcopy
 
+from twwarhammer3.battle.escalade_facts import front_line, inside
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.replay_schedule import ReplaySchedule
@@ -111,11 +112,6 @@ INSIDE_UNITS = 6  # phase 4 starts once this many of our units are inside the fr
 # (1,160 m via both). Alternative ((c7,), (c1,)); phase 3 and phase 4 with no enemy seen rest on it.
 VICTORY_TIERS = (("c7",), ("c8", "c9"), ("c1",))  # phase 3's order of victory points
 RUN = True  # besiege, attack and phase 3 at a run; staging at a walk
-# JUDGEMENT?: Front line — Claude, 2026-11-08: the southernmost fortification centre in each 40 m
-# column of x, a unit 10 m north of it inside. No battle has read the pieces; phase 3, phase 4
-# and the entry-route reading rest on it, and the fort's real pieces may need another rule.
-FRONT_COLUMN_M = 40
-INSIDE_M = 10
 # JUDGEMENT: Control parameters — Claude, 2026-11-08 (design, Controls): Cavalry early's 50 m, Shoot
 # only's 120 m and Concentrate's recess pieces (nearest c5 and c4). Other values or one piece
 # change what the controls test; D1's and D2's contrasts and the shortcut screen rest on them.
@@ -130,26 +126,6 @@ ARRIVED_M = 15  # a unit idle farther than this from its move's point has droppe
 def bearing(start, end):
     """Degrees from ``start`` to ``end``: 0 north (+z), 90 east (+x)."""
     return round(math.degrees(math.atan2(end["x"] - start["x"], end["z"] - start["z"])) % 360)
-
-
-def front_line(fortifications):
-    """The front of the fort, west to east: the southernmost fortification centre in each
-    FRONT_COLUMN_M column of x (gates, wall pieces and towers alike)."""
-    columns = {}
-    for piece in fortifications:
-        column = math.floor(piece["x"] / FRONT_COLUMN_M)
-        if column not in columns or piece["z"] < columns[column][1]:
-            columns[column] = (piece["x"], piece["z"])
-    return [columns[column] for column in sorted(columns)]
-
-
-def inside(line, unit):
-    """INSIDE_M or more north of ``line`` at the unit's x (its ends held flat beyond it)."""
-    x = min(max(unit["x"], line[0][0]), line[-1][0])
-    for (ax, az), (bx, bz) in zip(line, line[1:]):
-        if ax <= x <= bx and bx > ax:
-            return unit["z"] >= az + (bz - az) * (x - ax) / (bx - ax) + INSIDE_M
-    return unit["z"] >= line[0][1] + INSIDE_M  # a single column, or x on a vertical step
 
 
 def groups(friendly, crew):

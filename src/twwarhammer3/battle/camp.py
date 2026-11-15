@@ -24,6 +24,15 @@ until it is unavailable, as cannae.py does.
 from collections import Counter
 from copy import deepcopy
 
+from twwarhammer3.battle.camp_facts import (
+    COVER,
+    CUE_HOLD_MS,
+    CUE_M,
+    FALLBACK_MS,
+    GUNS,
+    LEVIES,
+    MOUNTED,
+)
 from twwarhammer3.battle.evidence_rules import in_melee
 from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.scripted import distance, find, forget_refused, nearest
@@ -32,12 +41,6 @@ from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 # JUDGEMENT: Camp groups — Claude, 2026-11-08 (camp design): groups by emp-chd-camp-v1's type keys,
 # ATTACK's modes; the design sets no run for the Free Company, no mode for the mounted group. Groups
 # by class, or the Free Company at a run, change both arms' play; every camp arm rests on it.
-MOUNTED = {"wh_main_emp_cha_general_1": 1, "wh_main_emp_cav_empire_knights": 2,
-           "wh_main_emp_cav_reiksguard": 1}
-LEVIES = {"wh_main_emp_cha_warrior_priest_0": 1, "wh_dlc04_emp_inf_flagellants_0": 3,
-          "wh_dlc04_emp_inf_free_company_militia_0": 2}
-COVER = {"wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears", "wh3_dlc23_chd_cav_bull_centaurs_axe"}
-GUNS = {"wh3_dlc23_chd_veh_magma_cannon", "wh3_dlc23_chd_veh_deathshrieker_rocket_launcher"}
 # Attack mode and run setting of each friendly type.
 ATTACK = {"wh_main_emp_cha_warrior_priest_0": ("melee", True),
           "wh_dlc04_emp_inf_flagellants_0": ("melee", True),
@@ -47,9 +50,6 @@ ATTACK = {"wh_main_emp_cha_warrior_priest_0": ("melee", True),
 # JUDGEMENT: Camp thresholds — Claude, 2026-11-08 (camp design cue rule): the cue is one cover unit
 # in melee within 30 m of a levy for 10 s; fallback 180 s; retry 10 s; unseen gun dropped at 15 m;
 # no T_fixed yet. Other values or one streak for all cover change when arms split; D1 rests on them.
-CUE_M = 30
-CUE_HOLD_MS = 10000
-FALLBACK_MS = 180000
 RETRY_MS = 10000
 LOST_M = 15
 FIXED_CUE_MS = None  # T_fixed: the median cue time of stage 3's launches, set before stage 5

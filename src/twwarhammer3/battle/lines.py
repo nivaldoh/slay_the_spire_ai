@@ -46,17 +46,21 @@ from twwarhammer3.battle.calibration import (
     _offset,
 )
 from twwarhammer3.battle.evidence_rules import ids_by_type, in_melee
+from twwarhammer3.battle.lines_facts import (
+    AHEAD_M,
+    ARMOURED,
+    BOYAR,
+    GUARD,
+    KOSSARS,
+    LANCERS,
+    LINE,
+    STRELTSI,
+    TRIGGER_UNITS,
+)
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import PolicyFailure, visible_enemies
 
-KOSSARS = "wh3_main_ksl_inf_kossars_1"
-ARMOURED = "wh3_main_ksl_inf_armoured_kossars_0"
-STRELTSI = "wh3_main_ksl_inf_streltsi_0"
-GUARD = "wh3_main_ksl_inf_tzar_guard_0"
-BOYAR = "wh3_main_ksl_cha_boyar_0"
-LANCERS = "wh3_main_ksl_cav_winged_lancers_0"
 ARMY = Counter({KOSSARS: 3, ARMOURED: 3, STRELTSI: 2, GUARD: 1, BOYAR: 1, LANCERS: 2})
-LINE = (KOSSARS, ARMOURED, STRELTSI)
 LINE_BEHAVIOURS = {"defend": True, "fire_at_will": True, "skirmish": False}
 
 # JUDGEMENT: Lines witness rules — Claude, 2026-11-08 (final-alesia.md Witness rules 1-5): the
@@ -64,8 +68,6 @@ LINE_BEHAVIOURS = {"defend": True, "fire_at_will": True, "skirmish": False}
 # the W against M contrast and the witness gate rest on them.
 LEASH_M = 40  # a regiment attacks only enemies this close to its post
 RETURN_M = 15  # and goes back to its post when farther from it than this
-AHEAD_M = 60  # an enemy first seen this far ahead of the outer line is a relief unit
-TRIGGER_UNITS = 6  # W and M choose a side once this many enemies stand that far ahead
 SWITCH = 1.3  # and switch only when the other side scores this many times as much
 RESERVE_BEHIND_M = 30  # the Tzar Guard's post behind the chosen sector's centre
 BOYAR_BEHIND_M = 15  # the Boyar's post behind the Tzar Guard's

@@ -12,7 +12,7 @@ from the private record's ``melee``), never the distance between centres: in the
 attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all, the closest
 10.1 m apart, and none carried the flag. A gate is breached at public hp 0 or less
 (evidence_rules.gate_breached). The front line and ``inside`` are the witness's
-(escalade.front_line, rests on JUDGEMENT? escalade.py Front line).
+(escalade_facts.front_line, rests on JUDGEMENT? escalade_facts.py Front line).
 """
 
 # The battle's page is docs/twwarhammer3/escalade-eval.md. Its proposed check 7 counts D1 as
@@ -21,7 +21,7 @@ attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all,
 # JUDGEMENT docs/twwarhammer3/escalade-eval.md Escalade deciding checks and Escalade claim).
 from math import floor
 
-from twwarhammer3.battle.escalade import inside
+from twwarhammer3.battle.escalade_facts import inside
 from twwarhammer3.battle.evidence_rules import accepted_orders, gate_breached, holds
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES

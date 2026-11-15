@@ -359,7 +359,7 @@ def test_a_unit_inside_the_front_line_or_on_the_wall_goes_to_c7_even_while_neutr
     assert [(o["x"], o["z"]) for o in batches[2] if o["unit"] == "f3"] == [(-1, 155)]
     # A fort read as g1 and one wall piece, both in the 40 m column floor(x / 40) = -1, has a
     # front line of one point, w1 (-10, -20); f2 20 m north of it is inside as well (the
-    # column rule rests on JUDGEMENT? escalade.py Front line).
+    # column rule rests on JUDGEMENT? escalade_facts.py Front line).
     narrow = first_observation()
     narrow["mode"]["fortifications"] = [
         {"id": "g1", "kind": "gate", "x": -32, "z": -16, "hp": 100},

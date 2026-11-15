@@ -4490,3 +4490,12 @@ old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items() if key not in ("status", "expect")})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
 source = "2026-11-15 scenario statuses, second review: a field the fixture lacks was never varied"
+
+[[plant]]
+id = "camp-readings-import-the-witness-again"
+guards = "A readings module imports its battle's facts, never the witness module"
+file = "src/twwarhammer3/battle/camp_readings.py"
+old = 'from twwarhammer3.battle.camp_facts import ('
+new = 'from twwarhammer3.battle.camp import ('
+tests = ["tests/test_repo_rules.py::test_wh3_readings_import_no_controller_module"]
+source = "2026-11-15 readings off witnesses: owner, \"F1: readings off witnesses (Recommended)\""

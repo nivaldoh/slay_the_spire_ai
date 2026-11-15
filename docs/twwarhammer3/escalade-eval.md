@@ -535,7 +535,7 @@ job. The witness plays these rules:
 5. **Phase 3.** A unit with `on_wall` true, or inside the front line, runs to the first victory
    point we do not hold, in the order c7, the nearer of c8 and c9, then c1. The front line is the
    southernmost fortification centre in each 40 m column of x, and inside means 10 m or more north
-   of it (rests on JUDGEMENT? src/twwarhammer3/battle/escalade.py Front line). The order matters
+   of it (rests on JUDGEMENT? src/twwarhammer3/battle/escalade_facts.py Front line). The order matters
    only in phase 3 and in phase 4 with no visible enemy, since phase 4 sends every unit at the
    nearest visible enemy. On the recorded ticket rule (check 3(f)) holding c7, c8 or c9 drained
    nothing until c1 fell; c7 lies on the way from the gate to c1, and c8 and c9 are a detour

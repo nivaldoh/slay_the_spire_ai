@@ -49,10 +49,9 @@ from copy import deepcopy
 from twwarhammer3.battle.evidence_rules import gate_breached, holds
 from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.scripted import distance, find, nearest
+from twwarhammer3.battle.wall_facts import JADE, LORD, RESERVE, inside, wall_distance, wall_line
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 
-LORD = "wh3_main_cth_cha_lord_magistrate_0"
-JADE = "wh3_main_cth_inf_jade_warriors_0"
 SPEARMEN = "wh3_main_cth_inf_peasant_spearmen_1"
 ARCHERS = "wh3_main_cth_inf_peasant_archers_0"
 CROSSBOWS = "wh3_main_cth_inf_jade_warrior_crossbowmen_0"
@@ -60,7 +59,6 @@ ROCKETS = "wh3_main_cth_art_fire_rain_rocket_battery_0"
 CANNON = "wh3_main_cth_art_grand_cannon_0"
 ARMY = Counter({LORD: 1, JADE: 2, SPEARMEN: 2, ARCHERS: 2, CROSSBOWS: 1, ROCKETS: 1, CANNON: 1})
 MISSILE = (ARCHERS, CROSSBOWS, ROCKETS, CANNON)
-RESERVE = (LORD, JADE)
 # Helmgart's capture points by id, with the key each must carry (recorded first observation of
 # bench-b12-siege-baselines-20261016/episode-0001); another map is refused.
 POINT_KEYS = {"c1": "major_key_building_leadership", "c2": "capture_point_gate_only",
@@ -71,9 +69,6 @@ POINT_KEYS = {"c1": "major_key_building_leadership", "c2": "capture_point_gate_o
 # JUDGEMENT: Wall witness thresholds — Claude, 2026-11-08 (siege defence design, Witness): the
 # values below. Other distances, breach count, points or a fallback that ends change what the
 # witness and its ablations win; the fire, reserve and fallback contrasts and the gate rest on them.
-WALL_ENDS = ((-384, -81), (384, -81))  # the line's ends, at the side walls' z
-WALL_POINTS = ("c6", "c5", "c2", "c4", "c3")  # in x order, west to east
-INSIDE_M = 10  # an enemy this far or more north of the wall line is inside
 # The fire rule holds every shot, the long ones included (rockets to 400 m, the cannon to 450 m),
 # until an able enemy is within FIRE_M of the line or inside it; from then on the engine picks
 # targets at any range. So a WallWitness-over-WFire pass alone cannot separate saving ammunition
@@ -96,33 +91,6 @@ CUE_NEAR_M = 150  # decision 1's cue: a visible enemy this close to the wall lin
 CUE_FAR_M, CUE_FAR_UNITS = 300, 10  # while this many roster units were never seen this close
 
 RULES = frozenset({"build", "fire", "reserve", "fallback"})
-
-
-def _segment_distance(x, z, a, b):
-    (ax, az), (bx, bz) = a, b
-    dx, dz = bx - ax, bz - az
-    share = max(0.0, min(1.0, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)))
-    return math.hypot(x - ax - share * dx, z - az - share * dz)
-
-
-def wall_line(points):
-    """The public wall line, west to east: WALL_ENDS around WALL_POINTS ({id: {"x", "z"}})."""
-    return [WALL_ENDS[0], *((points[name]["x"], points[name]["z"]) for name in WALL_POINTS),
-            WALL_ENDS[1]]
-
-
-def wall_distance(line, unit):
-    """Metres from ``unit`` to the nearest point of ``line``."""
-    return min(_segment_distance(unit["x"], unit["z"], a, b) for a, b in zip(line, line[1:]))
-
-
-def inside(line, unit):
-    """INSIDE_M or more north of ``line`` at the unit's x (its ends held flat beyond it)."""
-    x = min(max(unit["x"], line[0][0]), line[-1][0])
-    for (ax, az), (bx, bz) in zip(line, line[1:]):
-        if ax <= x <= bx:
-            return unit["z"] >= az + (bz - az) * (x - ax) / (bx - ax) + INSIDE_M
-    return False
 
 
 class WallWitness:

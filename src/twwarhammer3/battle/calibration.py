@@ -13,22 +13,12 @@ plan builds on. Select one by dotted class name, e.g.
 import math
 
 from twwarhammer3.battle.scripted import Hold, distance
-from twwarhammer3.battle.skills import OUT, SHOOTERS
+from twwarhammer3.battle.skills import SHOOTERS
+from twwarhammer3.battle.unit_geometry import _active, _centre, _direction
 from twwarhammer3.protocol import friendly_units, visible_enemies
 
 # Steps to the eight neighbouring terrain cells.
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
-
-
-def _active(units) -> list[dict]:
-    return [unit for unit in units if unit.get("men") and unit.get("x") is not None
-            and unit.get("z") is not None and not OUT.intersection(unit.get("state", []))]
-
-
-def _direction(origin: dict, target: dict) -> tuple[float, float]:
-    dx, dz = target["x"] - origin["x"], target["z"] - origin["z"]
-    length = math.hypot(dx, dz)
-    return (dx / length, dz / length) if length else (0, 1)
 
 
 def _offset(origin: dict, direction: tuple, forward: float, across: float = 0) -> dict:
@@ -203,10 +193,6 @@ class CornerHold(SmallDiagnostic):
 
 def _fraction(unit: dict) -> float:
     return unit["men"] / unit["men0"] if unit.get("men0") else 1
-
-
-def _centre(units: list[dict]) -> dict:
-    return {axis: sum(unit[axis] for unit in units) / len(units) for axis in ("x", "z")}
 
 
 class PriorityStrike(SmallDiagnostic):

@@ -4,9 +4,14 @@
 - No run evidence, game, save or weights file, and no API or private key is tracked, or waits
   untracked to be committed (Experiment and Artifact Rules).
 - AGENTS.md stays a short map: at most 200 lines (docs/workflow.md, keeping the process working).
+- A WH3 `*_readings.py` module, which reads finished battles for the evaluator, imports no
+  module that defines a controller: only the shared rule and helper modules and a battle's
+  `*_facts.py` (owner, 2026-11-15, "F1: readings off witnesses"), so editing a witness
+  cannot change how a battle is read.
 
-The first two rules also run on a planted violation, so a rule that can no longer fail shows up
-here. JUDGEMENT markers are only listed (scripts/check.py): only the owner changes them.
+The first two rules and the last also run on a planted violation, so a rule that can no longer
+fail shows up here. JUDGEMENT markers are only listed (scripts/check.py): only the owner
+changes them.
 Followed: transformers' `make check-repository-consistency` (utils/check_repo.py), repository
 rules as plain checks beside the tests.
 """
@@ -29,6 +34,10 @@ KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
                  rb"|(?<![\w-])sk-(?=[\w-]*[0-9])(?=[\w-]*[A-Z])[\w-]{32,}"
                  rb"|-----BEGIN [A-Z ]*PRIVATE KEY-----")
 AGENTS_MD_LINES = 200
+# The twwarhammer3.battle modules a readings module may import besides a *_facts module: the
+# evidence rules and the helpers every witness and reading shares. None defines a controller
+# that an evaluation battle's readings describe.
+READINGS_MAY_IMPORT = ("evidence_rules", "scripted", "unit_geometry")
 
 
 def game_imports(package: Path) -> list[str]:
@@ -44,6 +53,27 @@ def game_imports(package: Path) -> list[str]:
             found += [f"{path.relative_to(package.parent)}:{node.lineno} imports {name}: "
                       "gameai never imports a game package"
                       for name in names if name.split(".")[0] in GAMES]
+    return found
+
+
+def readings_imports(battle: Path) -> list[str]:
+    found = []
+    for path in sorted(battle.glob("*_readings.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.level == 0:
+                module = node.module or ""
+                names = ([f"{module}.{alias.name}" for alias in node.names]
+                         if module == "twwarhammer3.battle" else [module])
+            else:
+                continue
+            for name in names:
+                parts = name.split(".")
+                if parts[:2] == ["twwarhammer3", "battle"] and len(parts) > 2 and not (
+                        parts[2] in READINGS_MAY_IMPORT or parts[2].endswith("_facts")):
+                    found.append(f"{path.name}:{node.lineno} imports {name}: a readings module "
+                                 "imports no module that defines a controller")
     return found
 
 
@@ -80,6 +110,31 @@ def test_a_planted_game_import_is_caught(tmp_path):
     assert game_imports(package) == [
         "gameai/planted.py:2 imports twwarhammer3: gameai never imports a game package",
         "gameai/planted.py:3 imports spire.policies: gameai never imports a game package"]
+
+
+def test_wh3_readings_import_no_controller_module():
+    assert readings_imports(ROOT / "src" / "twwarhammer3" / "battle") == []
+
+
+def test_a_planted_witness_import_in_a_readings_module_is_caught(tmp_path):
+    (tmp_path / "clean_readings.py").write_text(
+        '"""Mentions twwarhammer3.battle.camp only in text."""\n'
+        "from math import inf\n"
+        "from twwarhammer3.battle.camp_facts import CUE_M\n"
+        "from twwarhammer3.battle.evidence_rules import in_melee\n"
+        "from twwarhammer3.battle.scripted import distance\n"
+        "from twwarhammer3.battle.unit_geometry import _centre\n"
+        "from twwarhammer3.protocol import visible_enemies\n")
+    (tmp_path / "planted_readings.py").write_text(
+        "from twwarhammer3.battle.camp import CUE_M\n"
+        "from twwarhammer3.battle import lines\n"
+        "import twwarhammer3.battle.calibration\n")
+    (tmp_path / "camp.py").write_text("from twwarhammer3.battle.calibration import CornerHold\n")
+    rule = "a readings module imports no module that defines a controller"
+    assert readings_imports(tmp_path) == [
+        f"planted_readings.py:1 imports twwarhammer3.battle.camp: {rule}",
+        f"planted_readings.py:2 imports twwarhammer3.battle.lines: {rule}",
+        f"planted_readings.py:3 imports twwarhammer3.battle.calibration: {rule}"]
 
 
 def test_no_run_game_or_key_file_can_be_committed():

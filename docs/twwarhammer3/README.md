@@ -275,22 +275,32 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   Cannae development witnesses on public state
 - `src/twwarhammer3/battle/camp.py`: `CampStrike` and its controls for the camp attack land battle
   (emp-chd-camp-v1), on public state
+- `src/twwarhammer3/battle/camp_facts.py`: what that battle's witness and readings both use:
+  the unit groups by type key and the cue rule
 - `src/twwarhammer3/battle/camp_readings.py`: that battle's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
   two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state
+- `src/twwarhammer3/battle/lines_facts.py`: what that defence's witness and readings both use:
+  the unit type keys and the relief trigger
 - `src/twwarhammer3/battle/lines_readings.py`: that defence's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
   (version 3) that holds and releases enemy groups, kept apart from the public battle state
 - `src/twwarhammer3/battle/wall_defence.py`: `WallWitness` and its controls for the walled siege
   defence (cth-emp-siege-a-v1), on public state
+- `src/twwarhammer3/battle/wall_facts.py`: what that siege's witness and readings both use: the
+  reserve's type keys and the public wall line with its distance and inside tests
 - `src/twwarhammer3/battle/wall_readings.py`: that siege's evaluator readings of finished
   battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases
 - `src/twwarhammer3/battle/escalade.py`: `Escalade` and its controls for the siege attack
   (ksl-emp-siege-a-v1), on public state with the siege orders
+- `src/twwarhammer3/battle/escalade_facts.py`: what that siege's witness and readings both use:
+  the fort's front line and what counts as inside it
 - `src/twwarhammer3/battle/escalade_readings.py`: that siege's evaluator readings of finished
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
+- `src/twwarhammer3/battle/unit_geometry.py`: three helpers on public unit records that witnesses
+  and readings share: the units still in the fight, a direction and a centre
 - `src/twwarhammer3/battle/evidence_rules.py`: evidence rules the evaluation battles share:
   contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture
   holders, groups from the private first reading, units by type key, accepted trace orders
