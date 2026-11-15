@@ -49,9 +49,10 @@ Claude, second and third rounds of the same goal; answers in owner-direction.md 
   replay_schedule's `digest`.
 - Code page: four views re-pinned to the changed lines (graph, members, methods, map); the check
   flags 0 of 6. A citation refresh, not a full-view review.
-- Checks: `check.py` passed before each commit (4170 passed, 70 skipped in the worktree);
-  plants retargeted (23) and added (4, all caught). A fresh reviewer and a full plant replay
-  ran before merging (handoff).
+- Checks: `check.py` passed before each commit (4170 passed, 70 skipped in the worktree). Plants:
+  23 retargeted, 2 added (both caught); `check.py --plants` caught all 477 at `dfac80a`. A fresh
+  reviewer ran old and new code side by side: controllers, the Lua, the CLI and `diagram_flags`
+  all matched. It found 3 record items, fixed in `dc74673`.
 - Unverified: no live run; the Lua change rests on the Lua tests' simulated game APIs.
 
 ## 2026-11-14: Code-quality cleanup without behaviour change
