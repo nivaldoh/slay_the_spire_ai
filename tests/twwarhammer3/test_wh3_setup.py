@@ -108,7 +108,7 @@ def test_variants_differ_from_their_base_only_where_declared():
 def test_a_step_named_after_its_base_keeps_the_base_family_as_its_split_group():
     # Final review: the S9 Trolls step declared its own family, which split S9's jobs into
     # two export groups (docs/posttraining.md: a group must not leak across splits).
-    entries = json.loads(setup.SCENARIOS_PATH.read_text())
+    entries = setup.entries()
     scenarios = setup.scenarios()
     steps = [(name, entry["base"]) for name, entry in entries.items()
              if entry.get("base") and name.startswith(entry["base"] + "-")]

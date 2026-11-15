@@ -12,7 +12,6 @@ setup.validate_deployment to compare by-type placements with setup.battle_units 
 General), a change to setup.py outside this file.
 """
 
-import json
 import math
 import unicodedata
 from collections import Counter
@@ -24,7 +23,8 @@ from wh3_fixtures import bridge_observation
 from twwarhammer3.battle import camp, play, setup
 from twwarhammer3.protocol import HIDDEN_KEYS
 
-# The three entries in configs/twwarhammer3/scenarios.json cannot carry a comment, so their
+# The three entries in configs/twwarhammer3/scenarios/ (camp.json, lines.json) cannot carry a
+# comment, so their
 # markers are on the battles' pages (docs/judgement.md). The design pages they copy from are
 # untracked (runs/siege-evals-20261108/final-belgrade.md and final-alesia.md).
 # Camp construction profile and Authored widths (which also covers the Boyar's width in
@@ -127,7 +127,7 @@ def test_no_declaration_text_names_the_history_or_reaches_a_controller(name):
     record. Wrong versions: 'belgrade' or 'alesia' in a name or brief; a benchmark tag or
     briefing that carries them."""
     scenario = setup.scenarios()[name]
-    entry = json.loads(setup.SCENARIOS_PATH.read_text())[name]
+    entry = setup.entries()[name]
     texts = [name, *(text for value in (entry, scenario)
                      for text in strings({k: v for k, v in value.items() if k != "withheld"}))]
     assert sorted({word for text in texts for word in WITHHELD if word in folded(text)}) == []

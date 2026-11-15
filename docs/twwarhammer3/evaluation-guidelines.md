@@ -193,7 +193,7 @@ silent, so an `llm` against `llm_rules` gap on the chariot card also measures th
 
 - *Check:* proposed (small): each card lists `told` and `withheld` phrases; a test renders
   the card's opening prompt from a first observation recorded at its live start (the
-  `Battle:` line comes from the game, not `scenarios.json`) and fails on a missing or
+  `Battle:` line comes from the game, not the scenario files) and fails on a missing or
   leaked phrase.
 
 ### 2.3 Show the card can be won, at a named timing

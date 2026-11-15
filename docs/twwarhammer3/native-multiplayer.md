@@ -420,7 +420,7 @@ cost. Check implementations rest on this proposal until the owner agrees the fix
 | Movement witness | Keep armies separated during the comparison window; record deployed raw positions and move the test unit from `(x, z)` to `(x - 30 m, z)`, then test the other client at `(x + 30 m, z)` in world coordinates; confirm clear reachable destinations and leave same-type partners idle |
 | Ending | After the motion/comparison interval, finish through ordinary native play or the declared timer; preserve the engine result, never force a result for convenience |
 
-The roster keys are already used in `configs/twwarhammer3/scenarios.json`; the map key is
+The roster keys are already used in `configs/twwarhammer3/scenarios/`; the map key is
 in `configs/twwarhammer3/custom_battle.json`. Multiplayer availability/legal roster must
 still be confirmed. If a value is unavailable, record it and revise the proposed fixture
 before implementing its check; do not silently substitute content. Record deployment

@@ -112,7 +112,7 @@ Changes:
    set map, add the AI slot and its army, set the host's own army, wait for the second
    player, ready, start) and `join_steps(side)` (set the joiner's own slot army, ready).
    Each slot's army steps move out of `scenario_steps` into one shared function; a test
-   checks `scenario_steps` output is unchanged for every entry of `scenarios.json`.
+   checks `scenario_steps` output is unchanged for every entry of `configs/twwarhammer3/scenarios/`.
 4. `lobby_ids(text)` reads the host's newest `mp_log.txt` and returns the last lobby id
    that has a ghost line (the lobby before battle start), with its ghost id.
 5. Join on the second client, tried in this order in the paid session (the first that

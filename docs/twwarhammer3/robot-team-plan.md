@@ -42,7 +42,7 @@ unavailable. WH3 alone establishes results about this game and interface.
 
 The current candidate is `emp-line-grn-raid-xp5`, the rank-5 variation of
 `emp-line-grn-raid`, on Taurox; adopting rank 5 remains an owner decision.
-Both are already declared in [scenarios.json](../../configs/twwarhammer3/scenarios.json).
+Both are already declared in [`scenarios/retired.json`](../../configs/twwarhammer3/scenarios/retired.json).
 Both sides are lordless; the player defends and the battle runs unpaused at 1x.
 Keep declared settings fixed within a comparison.
 

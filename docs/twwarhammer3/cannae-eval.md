@@ -189,7 +189,7 @@ placement and movement code provides a plausible route, with important checks st
 
 | Existing component | What can be reused | Work or limitation specific to this proposal |
 |---|---|---|
-| [`configs/twwarhammer3/scenarios.json`](../../configs/twwarhammer3/scenarios.json), [`battle/setup.py`](../../src/twwarhammer3/battle/setup.py) | Fixed rosters/settings and `deployment` entries by type, position, bearing and width | Add one development declaration only when selected; resolve all inheritance and map duplicate types to observed identities |
+| [`scenarios/cannae.json`](../../configs/twwarhammer3/scenarios/cannae.json), [`battle/setup.py`](../../src/twwarhammer3/battle/setup.py) | Fixed rosters/settings and `deployment` entries by type, position, bearing and width | Add one development declaration only when selected; resolve all inheritance and map duplicate types to observed identities |
 | [`twwarhammer3_battle.lua`](../../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua) | Temporarily place both armies, then release enemy units to native AI | Check the actual shape after release. Existing x/z acceptance has a 25 m tolerance; `setup_checks.deployment_formation` records bearing and ordered width with no pass rule and does not establish achieved facing/width |
 | [`protocol.py`](../../src/twwarhammer3/protocol.py) and the Lua order handler | Move, attack, halt, formation facing/width and queued movement/attack | Withdrawal is ordinary movement, not an atomic feigned-retreat action; routing/shattered units cannot be ordered. Check disengagement and routes with these regiments |
 | [`battle/play.py`](../../src/twwarhammer3/battle/play.py), [`scripts/wh3_queue.py`](../../scripts/wh3_queue.py) | Job manifests, public input boundary, fresh launches, ledger caps, traces and raw outcomes | Freeze the chosen study before comparison; no executable plan or launch is created by this document |
@@ -218,7 +218,7 @@ the existing scenario/queue/report structure rather than a parallel benchmark fr
 
 The owner requested implementation of A, B and C during an approximately ten-hour away
 window. A's first development declaration is `emp-envelopment-a-v1` in
-[`scenarios.json`](../../configs/twwarhammer3/scenarios.json). It uses the proposed nine
+[`scenarios/cannae.json`](../../configs/twwarhammer3/scenarios/cannae.json). It uses the proposed nine
 friendly and ten enemy regiments, native AI and ordinary engine outcomes. B's reserve
 adapter and C's local views/channels are implemented as development profiles. None has an
 agreed readiness check; these remain unverified candidates outside existing suites.

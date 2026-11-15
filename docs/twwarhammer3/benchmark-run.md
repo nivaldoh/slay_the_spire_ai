@@ -50,7 +50,8 @@ explicit AI modifier, and reads them back; difficulty is no longer a manual setu
 
 ## Declaring a scenario
 
-Add an entry to `configs/twwarhammer3/scenarios.json`. The `setup.py` module docstring
+Add an entry to its family's file in `configs/twwarhammer3/scenarios/`, or a new file for a new
+family; a name may be written once across the files. The `setup.py` module docstring
 lists every field and what reads it; `expect` makes the entry a benchmark, which must pin
 the map, both factions and explicit rosters (lord first). Keep `name` equal to the key.
 A variant copies its base and overrides what differs; dicts merge, other values replace:

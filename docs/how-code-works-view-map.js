@@ -102,7 +102,7 @@ DIAGRAM.tabs.push({
       "id": "map.setup",
       "commit": "601d249",
       "label": "Scenarios and setup",
-      "code": "battle/setup.py · scenarios.json",
+      "code": "battle/setup.py · scenarios/",
       "kind": "process",
       "where": "WSL Python",
       "x": 30,
@@ -118,13 +118,13 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/battle/setup.py",
         "src/twwarhammer3/battle/calibration.py",
         "src/twwarhammer3/battle/reserve.py",
-        "configs/twwarhammer3/scenarios.json",
+        "configs/twwarhammer3/scenarios/",
         "configs/twwarhammer3/custom_battle.json"
       ],
       "status": "agreed live check: WH3 saved armies and experience (docs/agreed-checks.md:221)",
       "refs": [
         "src/twwarhammer3/battle/setup.py:1-3",
-        "configs/twwarhammer3/scenarios.json",
+        "configs/twwarhammer3/scenarios/",
         "docs/agreed-checks.md:221-230"
       ]
     },

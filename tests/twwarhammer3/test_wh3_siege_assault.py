@@ -27,8 +27,9 @@ from gameai.ledger import Ledger
 from twwarhammer3.battle import commander, configured, controllers, escalade, llm, play, setup, team
 from twwarhammer3.protocol import IllegalActionError, ProtocolError, validate_orders
 
-# Marker lines for ksl-emp-siege-a-v1's values in configs/twwarhammer3/scenarios.json, which
-# cannot carry a comment (docs/judgement.md).
+# Marker lines for ksl-emp-siege-a-v1's values in
+# configs/twwarhammer3/scenarios/siege_attack.json, which cannot carry a comment
+# (docs/judgement.md).
 # JUDGEMENT: Siege attack construction profile — Claude, 2026-11-08 (siege-attack design, Settings
 # and Rosters): ksl-emp-siege-a-v1 map, rosters, expect, rank 0 and engine starts. Other forces,
 # timer or placement change the difficulty; every reading of the battle and its gate rest on it.

@@ -180,7 +180,7 @@ through it, and every order enters through it.
   the Lua `visible_to_player` and `enemy_observation` show enemies only while visible and not
   hidden, the starting roster public, in exact numbers. Interview questions 19 and 26 ask.
 - **Setup.** `battle/setup.py` turns a `--scenario` entry of
-  `configs/twwarhammer3/scenarios.json` into custom battle menu steps (no desktop input);
+  `configs/twwarhammer3/scenarios/` into custom battle menu steps (no desktop input);
   its docstring is the scenario field reference. `random` entries draw a map and each
   side's race from `configs/twwarhammer3/custom_battle.json` with `--seed` and
   autogenerate the armies. An entry with `expect` is a declared benchmark scenario: the
@@ -369,7 +369,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/graph_goal_prompt.md`: the graph target-preference prompt
 - `configs/twwarhammer3/graphs/`: graph controller files
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files
-- `configs/twwarhammer3/scenarios.json`: declared scenarios
+- `configs/twwarhammer3/scenarios/`: declared scenarios, one JSON file per family
 - `configs/twwarhammer3/custom_battle.json`: random draws
 - `configs/twwarhammer3/report_notes.json`: the report's scenario, unit and highlight text
 - `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read

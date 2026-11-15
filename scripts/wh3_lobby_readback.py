@@ -96,7 +96,7 @@ def main(argv=None) -> int:
             for name, text in READBACK.items()),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("scenarios", nargs="*", default=list(READBACK),
-                        help="scenarios.json names (default: the list below)")
+                        help="scenario entry names (default: the list below)")
     parser.add_argument("--output", type=Path, help="a new directory (default: runs/twwarhammer3/"
                         "lobby-readback-<time>)")
     args = parser.parse_args(argv)

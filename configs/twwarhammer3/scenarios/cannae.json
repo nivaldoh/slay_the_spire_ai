@@ -1,0 +1,1339 @@
+{
+ "emp-envelopment-a-v1": {
+  "name": "emp-envelopment-a-v1",
+  "scenario_version": 1,
+  "family": "envelopment",
+  "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
+  "split": "development",
+  "status": "candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "behaviour_defaults": true,
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+    "subculture": "wh_main_sc_emp_empire",
+    "faction": "wh_main_emp_empire",
+    "lord": false,
+    "units": [
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_inf_greatswords",
+      "wh_main_emp_cav_empire_knights",
+      "wh_main_emp_cav_empire_knights",
+      "wh_main_emp_cav_empire_knights"
+    ],
+    "experience": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0
+    }
+  },
+  "enemy": {
+    "subculture": "wh_main_sc_emp_empire",
+    "faction": "wh_main_emp_empire",
+    "lord": false,
+    "units": [
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_inf_swordsmen",
+      "wh_main_emp_cav_empire_knights",
+      "wh_main_emp_cav_empire_knights"
+    ],
+    "experience": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0
+    }
+  },
+  "deployment": {
+    "friendly": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -175,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -225,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -275,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -325,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -125,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -375,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -100,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -425,
+        "bearing": 90,
+        "width": 30
+      }
+    ],
+    "enemy": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -325,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -325,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -95,
+        "bearing": 270,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -415,
+        "bearing": 270,
+        "width": 30
+      }
+    ]
+  },
+  "expect": {
+    "battle_type": "land_normal",
+    "difficulty": "ai_level_normal",
+    "funds": "funds_custom",
+    "funds_amount": 20000,
+    "time_limit_s": 1200,
+    "ai_stats_modifier": 1.0,
+    "unit_scale": 0.75,
+    "realism": false,
+    "player_defends": true
+  }
+},
+ "emp-envelopment-b-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-b-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "family": "reserve_adaptation",
+  "deployment": {
+    "friendly": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -175,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -225,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 80,
+        "z": -275,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 60,
+        "z": -325,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -125,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_greatswords",
+        "x": 0,
+        "z": -375,
+        "bearing": 90,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -100,
+        "z": -85,
+        "bearing": 90,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": -45,
+        "z": -425,
+        "bearing": 90,
+        "width": 30
+      }
+    ],
+    "enemy": [
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 245,
+        "z": -325,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -175,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 290,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 355,
+        "z": -225,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_inf_swordsmen",
+        "x": 355,
+        "z": -275,
+        "bearing": 270,
+        "width": 40
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -95,
+        "bearing": 270,
+        "width": 30
+      },
+      {
+        "type": "wh_main_emp_cav_empire_knights",
+        "x": 260,
+        "z": -415,
+        "bearing": 270,
+        "width": 30
+      }
+    ]
+  },
+  "reserve": {
+    "version": 1,
+    "slots": [
+      7,
+      8
+    ]
+  }
+},
+ "emp-envelopment-c-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "bounded"
+  }
+},
+ "emp-envelopment-c-silent-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-silent-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "silent"
+  }
+},
+ "emp-envelopment-c-fast-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-fast-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "fast"
+  }
+},
+ "emp-envelopment-c-global-v1": {
+  "base": "emp-envelopment-a-v1",
+  "name": "emp-envelopment-c-global-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "family": "limited_command",
+  "communication": {
+    "version": 1,
+    "arm": "global"
+  }
+},
+ "emp-envelopment-b-v2": {
+  "base": "emp-envelopment-b-v1",
+  "name": "emp-envelopment-b-v2",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+  "reserve": {
+    "version": 2,
+    "slots": [
+      7,
+      8
+    ]
+  }
+},
+ "emp-envelopment-b-announced-v2": {
+  "base": "emp-envelopment-b-v2",
+  "name": "emp-envelopment-b-announced-v2",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+  "reserve_information": "announced"
+},
+ "emp-envelopment-b-v3": {
+  "status": "candidate",
+  "split": "development",
+   "base": "emp-envelopment-b-v2",
+   "name": "emp-envelopment-b-v3",
+   "scenario_version": 3,
+   "enemy": {
+     "units": [
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_cav_empire_knights",
+       "wh_main_emp_cav_empire_knights"
+     ]
+   },
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 355,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 355,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -95,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -415,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Owner-selected front-line pressure screen, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords. Keep B v2 mechanics and all other physical settings. A separate unverified development candidate, outside existing suites; every legal engine win counts."
+ },
+ "emp-envelopment-a-v2": {
+  "status": "candidate",
+  "split": "development",
+   "base": "emp-envelopment-a-v1",
+   "name": "emp-envelopment-a-v2",
+   "scenario_version": 2,
+   "enemy": {
+     "units": [
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_cav_empire_knights",
+       "wh_main_emp_cav_empire_knights"
+     ]
+   },
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -95,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -415,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Owner-selected harder force, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords, as in emp-envelopment-b-v3, keeping A's native AI and all of A's placements. A separate unverified development candidate, outside existing suites; every legal engine win counts."
+ },
+ "emp-envelopment-c-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "bounded"
+   }
+ },
+ "emp-envelopment-c-silent-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-silent-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-envelopment-c-fast-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-fast-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "fast"
+   }
+ },
+ "emp-envelopment-c-global-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-global-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "global"
+   }
+ },
+ "emp-envelopment-c-peer-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-peer-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-envelopment-c-relay-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-relay-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "relay"
+   }
+ },
+ "emp-envelopment-c-overview-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-overview-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "overview"
+   }
+ },
+ "emp-envelopment-c-muted-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-muted-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-envelopment-c-muted-overview-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-muted-overview-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted_overview"
+   }
+ },
+ "emp-envelopment-c-unlinked-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-unlinked-v2",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "unlinked"
+   }
+ },
+ "emp-envelopment-c-mid-v3": {
+  "status": "candidate",
+  "split": "development",
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-envelopment-c-mid-v3",
+   "scenario_version": 3,
+   "family": "limited_command",
+   "enemy": {
+     "units": [
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_greatswords",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_inf_swordsmen",
+       "wh_main_emp_cav_empire_knights",
+       "wh_main_emp_cav_empire_knights"
+     ]
+   },
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -95,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 260,
+         "z": -415,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Development only. Rests on JUDGEMENT docs/twwarhammer3/communication-structure.md Intermediate C force: replace the two outer front enemy Greatswords with Swordsmen; preserve every placement and other setting. No model-based calibration or benchmark admission."
+ },
+ "emp-envelopment-c-mid-peer-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-peer-v3",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-envelopment-c-mid-relay-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-relay-v3",
+   "communication": {
+     "version": 2,
+     "arm": "relay"
+   }
+ },
+ "emp-envelopment-c-mid-overview-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-overview-v3",
+   "communication": {
+     "version": 2,
+     "arm": "overview"
+   }
+ },
+ "emp-envelopment-c-mid-muted-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-muted-v3",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-envelopment-c-mid-muted-overview-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-muted-overview-v3",
+   "communication": {
+     "version": 2,
+     "arm": "muted_overview"
+   }
+ },
+ "emp-envelopment-c-mid-silent-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
+   "base": "emp-envelopment-c-mid-v3",
+   "name": "emp-envelopment-c-mid-silent-v3",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-south-v1": {
+  "status": "candidate",
+  "split": "development",
+   "base": "emp-envelopment-a-v2",
+   "name": "emp-wing-horse-south-v1",
+   "scenario_version": 1,
+   "brief": "C v2's armies and native AI. Both enemy Knights start together on one wing, drawn per launch; the friendly Knights wings start 380 m apart. Win the battle; every legal engine win counts.",
+   "deployment": {
+     "friendly": [
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 60,
+         "z": -175,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 80,
+         "z": -225,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 80,
+         "z": -275,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 60,
+         "z": -325,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 0,
+         "z": -125,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 0,
+         "z": -375,
+         "bearing": 90,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 65,
+         "z": -60,
+         "bearing": 90,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 5,
+         "z": -60,
+         "bearing": 90,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 65,
+         "z": -440,
+         "bearing": 90,
+         "width": 30
+       }
+     ],
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 250,
+         "z": -455,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 310,
+         "z": -455,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): A v2 forces; friendly Knights wings moved forward to (65,-60)/(5,-60) and (65,-440); both enemy Knights moved to one wing."
+ },
+ "emp-wing-horse-north-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-north-v1",
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 250,
+         "z": -45,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 310,
+         "z": -45,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights on the north wing instead."
+ },
+ "emp-wing-horse-south-far-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-far-v1",
+   "deployment": {
+     "enemy": [
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_greatswords",
+         "x": 245,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -175,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -225,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -275,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_inf_swordsmen",
+         "x": 290,
+         "z": -325,
+         "bearing": 270,
+         "width": 40
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 420,
+         "z": -470,
+         "bearing": 270,
+         "width": 30
+       },
+       {
+         "type": "wh_main_emp_cav_empire_knights",
+         "x": 480,
+         "z": -470,
+         "bearing": 270,
+         "width": 30
+       }
+     ]
+   },
+   "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights 170 m further east, so they reach the south wing later."
+ },
+ "emp-wing-horse-south-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-south-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-south-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-v1",
+   "name": "emp-wing-horse-south-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-wing-horse-north-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-north-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-north-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-north-v1",
+   "name": "emp-wing-horse-north-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ },
+ "emp-wing-horse-south-far-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-silent-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 1,
+     "arm": "silent"
+   }
+ },
+ "emp-wing-horse-south-far-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-peer-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "peer"
+   }
+ },
+ "emp-wing-horse-south-far-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+   "base": "emp-wing-horse-south-far-v1",
+   "name": "emp-wing-horse-south-far-muted-v1",
+   "family": "limited_command",
+   "communication": {
+     "version": 2,
+     "arm": "muted"
+   }
+ }
+}

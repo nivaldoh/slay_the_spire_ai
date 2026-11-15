@@ -666,7 +666,7 @@ the wings. Here both enemy Knights start on one friendly cavalry wing, 380 m fro
 which cannot see that fight. Does the other wing learn of the threat in time to help, and does a
 peer message carry the fact faster or more reliably than a relayed one?
 
-**The battles** (`configs/twwarhammer3/scenarios.json`). Each is A v2's armies, map and settings
+**The battles** (`configs/twwarhammer3/scenarios/cannae.json`). Each is A v2's armies, map and settings
 with the friendly Knights moved: the decisive pair to (65,-60) and (5,-60), the containing
 regiment to (65,-440). Only the start of the two enemy Knights differs between the three:
 
@@ -723,7 +723,7 @@ round, with its purpose recorded before it ran, to give both arms two launches p
 
 JUDGEMENT: Wing horse draw — Claude, 2026-11-08: which wing (and near or far) the enemy Knights
 start on is chosen per launch, a hidden fact C otherwise excludes. A fixed side lets a team prepare
-for it with no message; every `emp-wing-horse-*-v1` entry in `scenarios.json` rests on it.
+for it with no message; every `emp-wing-horse-*-v1` entry in `scenarios/cannae.json` rests on it.
 
 JUDGEMENT: Wing horse geometry — Claude, 2026-11-08: friendly Knights wings 380 m apart, at
 (65,-60)/(5,-60) and (65,-440). Closer wings see each other's fight; the cue and the deadline rest

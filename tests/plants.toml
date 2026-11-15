@@ -4499,3 +4499,21 @@ old = 'from twwarhammer3.battle.camp_facts import ('
 new = 'from twwarhammer3.battle.camp import ('
 tests = ["tests/test_repo_rules.py::test_wh3_readings_import_no_controller_module"]
 source = "2026-11-15 readings off witnesses: owner, \"F1: readings off witnesses (Recommended)\""
+
+[[plant]]
+id = "scenario-loader-reads-only-the-first-file"
+guards = "Entries come from every file of the scenarios directory"
+file = "src/twwarhammer3/battle/setup.py"
+old = 'paths = sorted(SCENARIOS_PATH.glob("*.json")) if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]'
+new = 'paths = sorted(SCENARIOS_PATH.glob("*.json"))[:1] if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]'
+tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_entries_come_from_every_file_of_the_directory_and_a_base_may_be_in_another"]
+source = "2026-11-15 scenario file split: owner, \"Split the scenario file\""
+
+[[plant]]
+id = "scenario-loader-lets-a-second-file-replace-an-entry"
+guards = "A scenario name written in two files is refused"
+file = "src/twwarhammer3/battle/setup.py"
+old = '            if name in written:'
+new = '            if False:'
+tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_a_name_written_in_two_files_is_refused"]
+source = "2026-11-15 scenario file split: owner, \"Split the scenario file\""

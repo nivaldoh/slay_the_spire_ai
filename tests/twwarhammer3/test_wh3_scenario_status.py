@@ -7,11 +7,13 @@ owner approved, so only the rule is checked here.
 """
 import json
 
+import pytest
+
 from twwarhammer3.battle import setup
 
 
 def test_every_declared_entry_writes_its_own_status_and_no_harness_entry_has_one():
-    written = json.loads(setup.SCENARIOS_PATH.read_text())
+    written = setup.entries()
     for name, entry in setup.scenarios().items():
         if "expect" in entry:  # a declared benchmark scenario (benchmark.md, Scenarios)
             assert written[name].get("status") in setup.STATUSES, name
@@ -38,3 +40,24 @@ def test_an_entry_takes_its_battle_from_its_base_and_never_its_review_state(monk
     assert resolved["grandchild"] == {"map": "m", "expect": {"funds": 1, "timer": 2},
                                       "status": "candidate"}
     assert resolved["parent"]["status"] == "current"
+
+
+def test_entries_come_from_every_file_of_the_directory_and_a_base_may_be_in_another(
+        monkeypatch, tmp_path):
+    """Owner, 2026-11-15: "Split the scenario file". Wrong version: only the first file is
+    read, or a base in another file is not found."""
+    (tmp_path / "b.json").write_text(json.dumps({"child": {"base": "parent", "map": "n"}}))
+    (tmp_path / "a.json").write_text(json.dumps({"parent": {"map": "m", "expect": {"funds": 1}}}))
+    (tmp_path / "notes.txt").write_text("not a scenario file")
+    monkeypatch.setattr(setup, "SCENARIOS_PATH", tmp_path)
+    assert list(setup.entries()) == ["parent", "child"]  # files in name order
+    assert setup.scenarios()["child"] == {"map": "n", "expect": {"funds": 1}}
+
+
+def test_a_name_written_in_two_files_is_refused(monkeypatch, tmp_path):
+    """Wrong version: the later file's entry silently replaces the earlier one."""
+    (tmp_path / "a.json").write_text(json.dumps({"twice": {"map": "m"}}))
+    (tmp_path / "b.json").write_text(json.dumps({"twice": {"map": "n"}}))
+    monkeypatch.setattr(setup, "SCENARIOS_PATH", tmp_path)
+    with pytest.raises(ValueError, match="twice is declared twice"):
+        setup.entries()

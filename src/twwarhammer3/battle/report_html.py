@@ -41,7 +41,8 @@ MAX_STILL_BYTES = 256 * 1024
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
-                "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json")
+                "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json",
+                "configs/twwarhammer3/scenarios/")
 # Battle C v2's arms (a scenario's `communication`, version 2), named by who may message whom
 # (docs/twwarhammer3/communication-structure.md, The arms).
 PROBES = {"TextProbeMember", "ProbeCommander", "ProbeMember", "SlowProbeMember"}

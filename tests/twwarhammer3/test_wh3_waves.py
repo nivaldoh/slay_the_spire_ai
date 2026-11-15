@@ -26,8 +26,9 @@ from wh3_lua import load_battle
 from twwarhammer3.battle import llm, play, reserve, setup
 from twwarhammer3.protocol import ProtocolError
 
-# Marker lines and pointers for values of the three entries in configs/twwarhammer3/scenarios.json,
-# which cannot carry a comment (docs/judgement.md). The design they copy from is untracked
+# Marker lines and pointers for values of the three entries in
+# configs/twwarhammer3/scenarios/siege_defence.json, which cannot carry a comment
+# (docs/judgement.md). The design they copy from is untracked
 # (final-haengju.md).
 # cth-emp-siege-a-all-v1's player, enemy, map and expect (very hard, 1.0, 0.75, 1,200 s, 20,000
 # funds) rest on JUDGEMENT docs/twwarhammer3/haengju-eval.md Construction profile.

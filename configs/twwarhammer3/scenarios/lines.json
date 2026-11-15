@@ -1,0 +1,399 @@
+{
+ "ksl-nor-lines-a-v1": {
+  "name": "ksl-nor-lines-a-v1",
+  "scenario_version": 1,
+  "family": "two-front defence",
+  "brief": "A Kislev army holds two lines back to back against a lordless Norsca army. The defender wins when the timer runs out; every engine win counts.",
+  "split": "development",
+  "status": "candidate",
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "behaviour_defaults": true,
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh3_main_sc_ksl_kislev",
+   "faction": "wh3_main_ksl_kislev",
+   "lord": true,
+   "units": [
+    "wh3_main_ksl_cha_boyar_0",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_kossars_1",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_armoured_kossars_0",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_inf_streltsi_0",
+    "wh3_main_ksl_inf_tzar_guard_0",
+    "wh3_main_ksl_cav_winged_lancers_0",
+    "wh3_main_ksl_cav_winged_lancers_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0
+   }
+  },
+  "enemy": {
+   "subculture": "wh_dlc08_sc_nor_norsca",
+   "faction": "wh_dlc08_nor_norsca",
+   "lord": false,
+   "units": [
+    "wh_main_nor_inf_chaos_marauders_0",
+    "wh_main_nor_inf_chaos_marauders_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_spearman_0",
+    "wh_dlc08_nor_inf_marauder_hunters_0",
+    "wh_main_nor_cav_marauder_horsemen_0",
+    "wh_dlc08_nor_inf_marauder_champions_0",
+    "wh_dlc08_nor_inf_marauder_champions_0",
+    "wh_dlc08_nor_inf_marauder_berserkers_0",
+    "wh_dlc08_nor_mon_fimir_0"
+   ],
+   "experience": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0
+   }
+  },
+  "deployment": {
+   "friendly": [
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 70,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 130,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 190,
+     "z": -165,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cha_boyar_0",
+     "x": 130,
+     "z": -215,
+     "bearing": 180,
+     "width": 20
+    },
+    {
+     "type": "wh3_main_ksl_inf_tzar_guard_0",
+     "x": 130,
+     "z": -230,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cav_winged_lancers_0",
+     "x": 85,
+     "z": -245,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_cav_winged_lancers_0",
+     "x": 175,
+     "z": -245,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 10,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_streltsi_0",
+     "x": 60,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_kossars_1",
+     "x": 130,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_streltsi_0",
+     "x": 200,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh3_main_ksl_inf_armoured_kossars_0",
+     "x": 250,
+     "z": -295,
+     "bearing": 180,
+     "width": 40
+    }
+   ],
+   "enemy": [
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 62,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 107,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 153,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 198,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 5,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 55,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_berserkers_0",
+     "x": 5,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_mon_fimir_0",
+     "x": 55,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 205,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 255,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_hunters_0",
+     "x": 205,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_cav_marauder_horsemen_0",
+     "x": 255,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    }
+   ]
+  },
+  "private_record": true,
+  "withheld": [
+   "belgrade",
+   "nandorfehervar",
+   "hunyadi",
+   "szilagyi",
+   "capistran",
+   "mehmed",
+   "ottoman",
+   "crusade",
+   "janissar",
+   "sipahi",
+   "sultan",
+   "1456",
+   "hungar",
+   "turk",
+   "alesia",
+   "caesar",
+   "vercingetorix",
+   "vercassivellaunus",
+   "labienus",
+   "reginus",
+   "rebilus",
+   "sedulius",
+   "gallic",
+   "gaul",
+   "roman",
+   "vallation",
+   "circumvallation",
+   "contravallation"
+  ],
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 14000,
+   "time_limit_s": 1200,
+   "ai_stats_modifier": 1.0,
+   "unit_scale": 0.75,
+   "realism": false,
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "content": [
+   "wh_main",
+   "wh_dlc08",
+   "wh3_main"
+  ],
+  "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 two-front defence design in runs/siege-evals-20261108, case a; its rosters, map, placements and settings are a provisional construction profile the owner has not reviewed. Rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines mode, Lines forces, Lines enemy lord, Lines settings, Lines layout, Lines briefing, Reserve facing and Norsca banner, and on JUDGEMENT docs/twwarhammer3/camp-eval.md Authored widths. The town-side group (2 x Chaos Marauders, 2 x Marauder Spearmen) starts north of the inner line, the heavy relief group (2 x Marauder Champions, Berserkers, Fimir) in the west slot and the light one (2 x Marauder Spearmen, Hunters, Horsemen) in the east slot; ksl-nor-lines-b-v1 mirrors every enemy placement about x = 130. Database costs and table men (main_units_tables, read 2026-11-08 with scripts/wh3_db.py): player 9,000 and 951 (Boyar 700, 3 x Kossars 500, 3 x Armoured Kossars 700, 2 x Streltsi 850, Tzar Guard 1,000, 2 x Winged Lancers 1,000); enemy 7,550 and 1,186 (town side 1,650 and 480, light 2,000 and 390, heavy 3,900 and 316). At large scale (x 0.75, unread in battle) about 713 against 890 men. No lobby has read this roster back. No played scenario has recruited the Tzar Guard or Winged Lancers, and none has recruited a Norsca card by key; the faction wh_dlc08_nor_norsca is the banner the game chose for an autogenerated Norsca army (skills-v1.1-random-a-20261013), not yet picked from the lobby list. Bearing 180 for the Boyar, Tzar Guard and Lancers and the Boyar's 20 m width are not in the design. Unverified: no game was launched."
+ },
+ "ksl-nor-lines-b-v1": {
+  "base": "ksl-nor-lines-a-v1",
+  "name": "ksl-nor-lines-b-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
+  "calibration_change": "Case b of the 2026-11-08 two-front defence design (Claude, 2026-11-08): every enemy placement of ksl-nor-lines-a-v1 mirrored about x = 130 (x to 260 - x, bearing to (360 - bearing) % 360), so the heavy relief group starts in the east slot and the light one in the west. Rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines layout. Everything else is case a's, including its unverified card readbacks. Unverified: no game was launched.",
+  "deployment": {
+   "enemy": [
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 198,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 153,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_inf_chaos_marauders_0",
+     "x": 107,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 62,
+     "z": -45,
+     "bearing": 180,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 255,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_champions_0",
+     "x": 205,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_berserkers_0",
+     "x": 255,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_mon_fimir_0",
+     "x": 205,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 55,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_spearman_0",
+     "x": 5,
+     "z": -445,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_dlc08_nor_inf_marauder_hunters_0",
+     "x": 55,
+     "z": -480,
+     "bearing": 0,
+     "width": 40
+    },
+    {
+     "type": "wh_main_nor_cav_marauder_horsemen_0",
+     "x": 5,
+     "z": -480,
+     "bearing": 0,
+     "width": 30
+    }
+   ]
+  }
+ }
+}

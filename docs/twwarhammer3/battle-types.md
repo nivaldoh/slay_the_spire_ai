@@ -15,7 +15,8 @@ the per-job results:
 
 All use the 5-unit Khorne army of `kho5-dwf5` for the player and its Dwarf army for the
 enemy, at AI very hard. The free-for-all adds the Empire army and a second Khorne army.
-Entries in [`configs/twwarhammer3/scenarios.json`](../../configs/twwarhammer3/scenarios.json):
+Entries in [`configs/twwarhammer3/scenarios/harness.json`](../../configs/twwarhammer3/scenarios/harness.json),
+except where a table names one that now lives in `scenarios/retired.json`:
 
 | Battle type (lobby key) | Scenario | Map | Player | Engine type |
 |---|---|---|---|---|
@@ -144,7 +145,7 @@ lacks: gate attacks (`attack_building`), siege equipment from the lobby
 
 ## Random draws per type
 
-`scenarios.json` has nine random entries:
+`scenarios/harness.json` has nine random entries:
 - `random-conquest`, `random-domination`, `random-ffa`;
 - `random-ambush`, `random-chokepoint`, `random-underground`;
 - `random-settlement`, `random-siege`, `random-survival`.
@@ -205,7 +206,7 @@ b12 replaces repeated Khorne/Dwarf rosters as the source of new coverage with
 Chaos Dwarf territorial defence, Kislev reinforcement budgeting and an Empire battery
 evacuation under Skaven ambush (the Wood Elf recruitment cards were inactive). The Slaanesh Conquest screen is reference evidence: its
 single central point cannot test the planned distributed-control question. The exact declarations
-are in `configs/twwarhammer3/scenarios.json`; the
+are in `configs/twwarhammer3/scenarios/` (those still kept, in `retired.json`); the
 [design audit](benchmark.md#scenario-design) separates questions from map/faction variants.
 Live evidence and remaining limitations are in the
 [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).

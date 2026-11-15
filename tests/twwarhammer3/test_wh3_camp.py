@@ -2,7 +2,7 @@
 
 Every unit record comes from the battle Lua's own unit_record (loaded by name, engine reads
 stubbed, encoded by the mod's JSON codec), and every unit starts at its declared placement in
-scenarios.json. Offline only: this shows which orders the scripts give, not what they do in a
+scenarios/camp.json. Offline only: this shows which orders the scripts give, not what they do in a
 game.
 """
 

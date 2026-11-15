@@ -1,7 +1,7 @@
 """Custom battle setup from a scenario: loading, lobby steps and the benchmark checks.
 
-Setup data never enters policy inputs. The fields of a configs/twwarhammer3/scenarios.json
-entry, and what reads them:
+Setup data never enters policy inputs. The entries are in configs/twwarhammer3/scenarios/, one
+file per family (``entries``). The fields of an entry, and what reads them:
 
 - ``base``: another entry this one copies. Dicts merge key by key; lists and other values
   replace (``scenarios``).
@@ -101,7 +101,9 @@ from collections import Counter
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.protocol import ProtocolError
 
-SCENARIOS_PATH = REPO_ROOT / "configs/twwarhammer3/scenarios.json"
+# One JSON file per family since 2026-11-15 (owner: "Split the scenario file"); it was the single
+# file configs/twwarhammer3/scenarios.json, which entries() still reads when given one.
+SCENARIOS_PATH = REPO_ROOT / "configs/twwarhammer3/scenarios"
 # Owner, 2026-11-15: "Your four suggested scenario statuses are fine." and, on which entry gets
 # which, "Approve this mapping (Recommended)". The values and OWN are explained in the docstring.
 STATUSES = ("current", "held_out", "candidate", "retired")
@@ -149,20 +151,34 @@ SIEGE_EQUIPMENT_CAPS = {f"{race}_{piece}": cap for race in SIEGE_RACES
 SIEGE_CLEAR_LIMIT = 12
 
 
+def entries() -> dict:
+    """Every entry as it is written: the ``*.json`` files of the scenarios directory in name
+    order, or one file. An entry may name a ``base`` in another file. A name written twice is
+    refused, since the second would silently replace the first."""
+    paths = sorted(SCENARIOS_PATH.glob("*.json")) if SCENARIOS_PATH.is_dir() else [SCENARIOS_PATH]
+    written = {}
+    for path in paths:
+        for name, entry in json.loads(path.read_text()).items():
+            if name in written:
+                raise ValueError(f"scenario {name} is declared twice (again in {path.name})")
+            written[name] = entry
+    return written
+
+
 def scenarios() -> dict:
-    """Every entry of scenarios.json, with its ``base`` chain resolved. An entry takes its
-    battle from its base, never its review state (``OWN``)."""
-    entries = json.loads(SCENARIOS_PATH.read_text())
+    """Every entry, with its ``base`` chain resolved. An entry takes its battle from its base,
+    never its review state (``OWN``)."""
+    written = entries()
 
     def resolve(name: str) -> dict:
-        entry = dict(entries[name])
+        entry = dict(written[name])
         base = entry.pop("base", None)
         if not base:
             return entry
         inherited = {key: value for key, value in resolve(base).items() if key not in OWN}
         return merge(inherited, entry)
 
-    return {name: resolve(name) for name in entries}
+    return {name: resolve(name) for name in written}
 
 
 def merge(base: dict, override: dict) -> dict:

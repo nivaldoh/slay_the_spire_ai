@@ -16,7 +16,7 @@ prevent it. Fresh launches are separate trajectories, not matched counterfactual
 
 The owner's selected directions are manoeuvre timing, an Empire mirror, unrestricted
 legal tactics, and timing affecting outcome or army condition. The current entry is
-`configs/twwarhammer3/scenarios.json` → `emp-support-timing-v2`; v1 retains the failed pilot setup. Public task: win and preserve
+`configs/twwarhammer3/scenarios/support_timing.json` → `emp-support-timing-v2`; v1 retains the failed pilot setup. Public task: win and preserve
 the army where possible; engine timer wins count. The entry selects no benchmark scorer,
 controller restriction, reserved split or ranking formula. The completed Opening control
 won two fresh battles; this is demonstrated scripted winnability on the tested setup,

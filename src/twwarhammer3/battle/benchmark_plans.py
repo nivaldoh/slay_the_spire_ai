@@ -86,7 +86,8 @@ def collect(plan_path: Path) -> dict:
     expected_profile = plan.get("scenario")
     if expected_profile is None and plan["benchmark"] == VERSION:
         # Earlier initial plans named only the source. Read that frozen profile rather
-        # than silently judging an old attempt against today's changed settings.
+        # than silently judging an old attempt against today's changed settings. Those
+        # revisions all predate the 2026-11-15 split of that file into scenarios/.
         source = subprocess.check_output([
             "git", "show", f"{plan['source_revision']}:configs/twwarhammer3/scenarios.json"],
             cwd=REPO_ROOT, text=True)

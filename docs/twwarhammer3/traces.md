@@ -71,7 +71,7 @@ controllers), so its group is `<scenario>/seed-<seed>`, or the job directory nam
 seed was recorded. `split` is `held_out` only for a scenario declared
 `"split": "held_out"`. Held-out variants inherit their family from development
 scenarios, so the split, not the group, keeps them out of training. Variants that share a
-`base` but declare no family get one group each; declare a family in `scenarios.json` to
+`base` but declare no family get one group each; declare a family in the entry's scenario file to
 keep them together. `labels` count batches and refusals over the row's `execution`, which
 for commander includes later executor ticks; `battle_type` is `classic` unless the
 scenario declares another, as in `stats`.

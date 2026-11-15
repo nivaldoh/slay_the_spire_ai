@@ -151,12 +151,12 @@ instead; which decision this battle measures rests on it.
 
 ## Battle specification
 
-JUDGEMENT: Camp construction profile — Claude, 2026-11-08 (camp design): scenarios.json
+JUDGEMENT: Camp construction profile — Claude, 2026-11-08 (camp design): scenarios/camp.json
 emp-chd-camp-v1 player, enemy, map, deployment points and bearings, and expect. Other forces,
 timer or rank change the difficulty; every reading of the battle rests on it.
 
 The declaration is `emp-chd-camp-v1` in
-[`scenarios.json`](../../configs/twwarhammer3/scenarios.json), `scenario_version` 1, split
+[`scenarios/camp.json`](../../configs/twwarhammer3/scenarios/camp.json), `scenario_version` 1, split
 `development`, status `candidate` (`prototype_not_admitted` until 2026-11-15). In the fields of
 [the scenario specification](scenario-guidelines.md#the-scenario-specification):
 
@@ -249,7 +249,7 @@ the 21 points (the design counted eight, a miscount). The terrain grid from `coo
 x -80..240, z -16..208. The design's text puts every placement in a clear cell, and its table marks
 six of the unchecked points (the Infernal Guard and the mounted group) as clear cells.
 
-JUDGEMENT: Authored widths — Claude, 2026-11-08: scenarios.json deployment widths of
+JUDGEMENT: Authored widths — Claude, 2026-11-08: scenarios/camp.json deployment widths of
 emp-chd-camp-v1 (40 m regiments, 20 m characters and guns, 30 m Bull Centaurs) and the Boyar's
 20 m in ksl-nor-lines-a-v1; the designs give none. Other frontages change contact timing.
 
@@ -300,7 +300,7 @@ them for this page:
 [Question 1](#decisions-for-owner-review) asks whether the camp keeps its lord. It needs an answer
 before the three stage 1 holds, so that construction is read only once. Two answers are built
 beside `emp-chd-camp-v1`, which stays the default and is unchanged. Each is a full declaration in
-`scenarios.json` with `scenario_version` 2 that differs from v1 only in the Overseer, its name and
+`scenarios/camp.json` with `scenario_version` 2 that differs from v1 only in the Overseer, its name and
 its `calibration_change` note; `test_wh3_land_eval_declarations.py` checks that, and
 `test_wh3_camp.py` shows that `CampStrike` and `CampSupport` give v1's orders on each one's
 placements in its cue battle. `camp.py` needs no change, because the friendly roster and the gun
@@ -339,11 +339,11 @@ What each option leaves open:
   checked point.
 
 JUDGEMENT: Camp lordless roster — Claude, 2026-11-09 (owner question 1 (a), built, not chosen):
-scenarios.json emp-chd-camp-lordless-v2 enemy: v1 less the Overseer, nothing added, v1's order.
+scenarios/camp.json emp-chd-camp-lordless-v2 enemy: v1 less the Overseer, nothing added, v1's order.
 A third Cutthroats or another first card changes its strength and commander; v2 (a) rests on it.
 
 JUDGEMENT: Camp equidistant lord — Claude, 2026-11-09 (owner question 1 (b), built, not chosen):
-scenarios.json emp-chd-camp-equidistant-v2 Overseer (58,-445): gun, cover start equal within 10 m.
+scenarios/camp.json emp-chd-camp-equidistant-v2 Overseer (58,-445): gun, cover start equal within 10 m.
 Another point, or distance to the levies' fight, changes who fights near him; v2 (b) rests on it.
 
 Stage 1 and every later stage run on the version the owner picks, and the others stay unlaunched.

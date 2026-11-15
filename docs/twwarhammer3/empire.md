@@ -34,7 +34,7 @@ no check is agreed, and every rate rests on the launch count beside it.
 
 ## The set
 
-Scenarios with Empire on the player's side, from `configs/twwarhammer3/scenarios.json`
+Scenarios with Empire on the player's side, from `configs/twwarhammer3/scenarios.json` (since 2026-11-15 the files of `scenarios/`)
 (player defends unless marked attacks; very hard AI, modifier 1.0 unless marked; 0.75
 scale; 1200 s timer unless marked). Results per controller: `twwarhammer3 stats`, whose
 Won column counts the line floor's timer stalemate as a win (`review.py` in the plan

@@ -79,7 +79,7 @@ frozen method on each battle and reports them side by side. It is a proposal in 
 choice below is marked in the code that holds it, and the owner decides what stays.
 Code: [`suite.py`](../../src/twwarhammer3/battle/suite.py). Commands: [runbook](benchmark-run.md#the-coordination-suite).
 
-**Battles.** Each scenario in `scenarios.json` with `"benchmark": "suite-v1"` poses one problem,
+**Battles.** Each scenario in `scenarios/suite.json` (they carry `"benchmark": "suite-v1"`) poses one problem,
 named in its `tests` field. Six use authored starting positions, which the setup check reads back
 in the first observation: these are the battles one general cannot fight from one place.
 Six keep native starts, from battles where earlier evidence showed room between weak and strong
@@ -343,7 +343,7 @@ Added age changes how old the observations are, not how long the model thinks. `
 
 ## Scenarios
 
-A scenario is an entry in `configs/twwarhammer3/scenarios.json`; the `setup.py` docstring lists every field and the code that reads it. Since 2026-11-15 each declared entry writes its own `status` (`current`, `candidate`, `held_out` or `retired`) and `split`, and its own `scenario_version` if it has one (13 of the 94 have none); an entry takes its battle from its `base` and never those three (owner: "Your four suggested scenario statuses are fine."). Today the mirror is `current`, 63 entries are `candidate`, 30 are `retired` and none is `held_out`. A job's manifest records the resolved entry (after `base` inheritance), and the job's source fingerprint versions the file.
+A scenario is an entry in one of the family files of `configs/twwarhammer3/scenarios/` (one file, `scenarios.json`, until 2026-11-15); the `setup.py` docstring lists every field and the code that reads it. Since 2026-11-15 each declared entry writes its own `status` (`current`, `candidate`, `held_out` or `retired`) and `split`, and its own `scenario_version` if it has one (13 of the 94 have none); an entry takes its battle from its `base` and never those three (owner: "Your four suggested scenario statuses are fine."). Today the mirror is `current`, 63 entries are `candidate`, 30 are `retired` and none is `held_out`. A job's manifest records the resolved entry (after `base` inheritance), and the job's source fingerprint versions the file.
 
 An entry with `expect` is a declared benchmark scenario; that alone doesn't mean it was admitted or verified. `validate_declaration` requires a pinned map, pinned factions, explicit rosters and every required `expect` key. Timed modes need a timer of 1200, 2400 or 3600 s and an episode cap at least 120 s above it; survival and domination without a timer need `time_limit_s: null` and `timer_enabled: false`. Reinforcement pools must be explicit. Declared scenarios refuse `--attach`. A declaration error stops play before the job directory exists.
 
@@ -380,7 +380,7 @@ Here it means the declared conditions are checked and differences are reported. 
 
 | Term | Meaning |
 |---|---|
-| scenario | An entry in `configs/twwarhammer3/scenarios.json`. `expect` declares its benchmark setup; it doesn't mean the scenario was admitted or verified |
+| scenario | An entry in a file of `configs/twwarhammer3/scenarios/`. `expect` declares its benchmark setup; it doesn't mean the scenario was admitted or verified |
 | variant | A scenario with one declared change (AI modifier, map, role), as its own entry; `split` is `development` or `held_out` |
 | instance | The battle one launch builds; rematches restart it, and their starts are compared |
 | trial | One controller playing an instance once (an episode) |

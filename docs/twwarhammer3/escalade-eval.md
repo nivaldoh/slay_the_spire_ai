@@ -9,7 +9,7 @@ The owner's earlier direction was "Build now, game when I say"
 ([owner direction](../owner-direction.md)). The battle adapts
 the Russian assault on the Ottoman fortress of Izmail in December 1790 as a WH3 siege in which the
 controller attacks a walled fort held by a native AI garrison. It is built from the declaration
-`ksl-emp-siege-a-v1` in [scenarios.json](../../configs/twwarhammer3/scenarios.json), the
+`ksl-emp-siege-a-v1` in [`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json), the
 siege-attack interface behind that declaration's `siege_assault` opt-in, the witness `Escalade`
 and its controls in [battle/escalade.py](../../src/twwarhammer3/battle/escalade.py), the readings
 in [battle/escalade_readings.py](../../src/twwarhammer3/battle/escalade_readings.py) and the
@@ -190,7 +190,7 @@ disadvantage, changes the battle; every reading on this page rests on it.
 ## Battle specification
 
 The declaration is `ksl-emp-siege-a-v1` in
-[`scenarios.json`](../../configs/twwarhammer3/scenarios.json), `scenario_version` 1, family
+[`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json), `scenario_version` 1, family
 `siege attack`, split `development`, status `candidate` (`prototype_not_admitted` until 2026-11-15). Its values rest on JUDGEMENT
 tests/twwarhammer3/test_wh3_siege_assault.py Siege attack construction profile (map, rosters,
 `expect`, rank 0 and the engine's starts) and Siege attack equipment (one ksl ram, no tower). The

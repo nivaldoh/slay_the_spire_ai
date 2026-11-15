@@ -586,8 +586,8 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "configs/twwarhammer3/scenarios.json",
-   "text": "declared scenarios",
+   "path": "configs/twwarhammer3/scenarios/",
+   "text": "declared scenarios, one JSON file per family",
    "box": "map.setup",
    "list": "docs/twwarhammer3/README.md"
   },

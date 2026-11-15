@@ -14,7 +14,7 @@ This page adapts the defence of Haengju fortress in Korea on 14 March 1593 as a 
 the controller defends a walled fort with a small Grand Cathay garrison while a larger Empire army
 comes at it in divisions released in turn. The declarations are `cth-emp-siege-a-v1` (divisions in
 turn) and `cth-emp-siege-a-all-v1` (the same armies all at once) in
-[scenarios.json](../../configs/twwarhammer3/scenarios.json). The hold and release are reserve
+[`scenarios/siege_defence.json`](../../configs/twwarhammer3/scenarios/siege_defence.json). The hold and release are reserve
 profile version 3 in [battle/reserve.py](../../src/twwarhammer3/battle/reserve.py) and the battle
 Lua, the witness and its controls are in
 [battle/wall_defence.py](../../src/twwarhammer3/battle/wall_defence.py), the readings are in
@@ -252,7 +252,7 @@ The Empire attacker reuses a siege setup that the [checkpoint siege
 check](checkpoints.md#siege-check) already exercised on this map. Its Handgunners stand in for the
 Japanese musketeers.
 
-JUDGEMENT: Construction profile — Claude, 2026-11-08: scenarios.json cth-emp-siege-a-all-v1
+JUDGEMENT: Construction profile — Claude, 2026-11-08: scenarios/siege_defence.json cth-emp-siege-a-all-v1
 rosters, map, expect and siege_equipment {} (no ram or tower) as a development start. Other
 forces, map, timer or equipment change difficulty and breaches; every balance reading rests on it.
 

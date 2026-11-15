@@ -188,7 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
     play.add_argument("--delay-seconds", default="0",
                       help="minimum buffered snapshot ages in seconds, e.g. 0,6,10")
     play.add_argument("--scenario", required=True,
-                      help="a battle in configs/twwarhammer3/scenarios.json; random entries"
+                      help="a battle in configs/twwarhammer3/scenarios/; random entries"
                       " draw a map and every race, and autogenerate the armies")
     play.add_argument("--seed", type=int, default=None, help="the draw of a random scenario")
     play.add_argument("--reserve-seed", type=int, default=None,

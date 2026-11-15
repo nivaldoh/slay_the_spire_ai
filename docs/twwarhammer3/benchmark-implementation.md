@@ -99,7 +99,7 @@ the first development battle rests on this profile, whose advantage is unverifie
   cap recruitment, not army strength. Use the existing automatic deployment and record
   the realised start; matching settings do not promise identical starts across launches.
 - Owner follow-up, 2026-11-02: "Allow and record enemy AI toggles". For
-  `scenarios.json` `emp-mirror-cavalry-v1` scenario_version2, set fire-at-will on for our
+  `scenarios.json` (now `scenarios/mirror.json`) `emp-mirror-cavalry-v1` scenario_version2, set fire-at-will on for our
   ranged units, skirmish and guard off for our army; record both armies' supported toggles.
   The original both-armies-off proposal failed three setup pilots and is superseded by
   this owner choice. Leave enemy control with the built-in AI. Check lobby/initial state before
