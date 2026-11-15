@@ -21,6 +21,10 @@ Both games:
   "Do both now"; landing that round: "Merge and push". For the controller-file round: "Merge
   and push (Recommended)"; its 22 diagram plants (file field now scripts/diagram_files.py) and
   local-v2-witness-rejection-not-retried (on forget_refused): "Approve all (Recommended)".
+  Then, on what the agent had left by its own choice: finding 7, a controller base class (only
+  three no-op methods; play must keep probing optional methods for external controllers): "Skip
+  it (Recommended)"; the witnesses' differing `_send` resend rules and `inside`: "Leave as is
+  (Recommended)"; LLMPolicy's `benchmark=True` option: "Keep the option (Recommended)".
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.
