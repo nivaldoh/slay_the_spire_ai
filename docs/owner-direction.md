@@ -13,6 +13,20 @@ Both games:
   bloat, to reduce overengineering, etc). Write a detailed, concrete report with your findings
   and conclusions." Applied: [profile](twwarhammer3/benchmark-references/terminal-bench.md)
   and report `runs/terminal-bench-review-20261115/report.md`; no code changed.
+  Answers the same day to the report's three questions, verbatim: "Let's update the plan with
+  my decisions as follows, without implementing anything yet: 1. Unresolved battles can be
+  kept out of the counts 2. Your four suggested scenario statuses are fine. 3. We can delete
+  the "legacy" files." The questions as put: how to count `unresolved` episodes (recommended:
+  out of the win-rate denominator, their count printed beside every rate); the list of
+  scenario statuses (recommended: current, held out, candidate, retired, written on each entry
+  rather than inherited); and which benchmark designs are over (recommended: delete the
+  October tactic cards and small scenarios at a tagged commit, with no legacy directory, after
+  splitting out what the lines witness still uses). Read as (Claude's reading, for each
+  change's card to confirm): the count of unresolved episodes stays visible beside each rate;
+  the other outcome labels are not covered; statuses are no longer inherited through `base`;
+  the deletion covers tracked code, tests and scenario entries, with its exact list shown to
+  the owner first, and leaves `runs/` evidence, register rows, the log and history pages.
+  Nothing implemented; the plan is the report's "Plan after the owner's decisions".
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since
   `controllers.card()` hashes each policy's source file into its card identity: "Team files only

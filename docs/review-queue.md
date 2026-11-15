@@ -55,9 +55,15 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
 Terminal-Bench structure comparison, 2026-11-15 (Claude, owner's goal): a new
 [reference profile](twwarhammer3/benchmark-references/terminal-bench.md) and a report,
 `runs/terminal-bench-review-20261115/report.md`, with eight ranked proposals. Read only: no code
-changed, nothing run from the clone, $0. The proposals are unadopted and unverified. Each of
-three needs one answer from you: the rule for `unresolved` outcomes (F2), the list of scenario
-statuses (F4), and which benchmark generations are over (F3). A second agent's recheck of the
+changed, nothing run from the clone, $0. The proposals are unverified. You answered its three
+questions on 2026-11-15 ([owner direction](owner-direction.md)): unresolved episodes stay out
+of the counts (F2), the four statuses current, held out, candidate and retired (F4), and the
+superseded designs' files are deleted (F3). Nothing is implemented; the report's plan section
+has the steps. What comes back to you first: the deletion list (files, scenario entries,
+plants and JUDGEMENT lines) for a yes, then a status for each remaining entry, then the
+treatment of the outcome labels your answer did not cover. Still waiting for a go-ahead: F1
+(readings stop importing from witnesses), F6 (the replay, re-read, keep table), F8 (page
+headers). A second agent's recheck of the
 first draft confirmed 89 quotes and counts and found 28 to correct (`quote-check.md` beside
 it); the corrections are applied, and the corrected text has had no second reader.
 
