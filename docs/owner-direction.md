@@ -38,7 +38,9 @@ Both games:
   held out, the 24 harness entries without `expect` no status): "Approve this mapping
   (Recommended)". Built on branch `tb-plan-impl-20261115`; three of the 23 classes on the
   approved list (PriorityStrike, LineTeam, LineTeamReserve) were kept after a review found
-  current pages still name them, which the list had not said
+  current pages still name them, which the list had not said. Asked about those three: "Keep
+  the three (Recommended)". Asked about landing the six commits (head `d1742a3`): "Merge and
+  push (Recommended)", with the tag `wh3-legacy-20261115`
   ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)).
 - 2026-11-14 (code-quality review), goal verbatim: "Review and address the issues identified.
   Let's improve our codebase." Answers: which controller files the cleanup may edit, since

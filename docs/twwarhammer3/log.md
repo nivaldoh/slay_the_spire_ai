@@ -58,8 +58,8 @@ lists, scripts and reviews: `runs/terminal-bench-review-20261115/impl/`.
   one relabel are addressed in the later commits, except those listed next.
 - Left as found: marker lines and plant guards that still mention the card code or "version 1"
   (the owner's to change); `docs/thesis/` (untracked) still names `card`.
-- For the owner: whether the three kept classes stay; the text `report`'s timer rule and
-  `stats`' raw tallies outside the two profiles; whether a forfeit is a non-win in a
+- The owner kept the three classes ("Keep the three (Recommended)"). Still for the owner: the
+  text `report`'s timer rule and `stats`' raw tallies outside the two profiles; whether a forfeit is a non-win in a
   denominator; no reader prints the unresolved count; the `JUDGEMENT?` held-out tie.
 - Unverified: no live run. A schedule saved to disk before `2f2e82a`, if one exists, carries a
   hash that included status and must be rebuilt from its episode.
