@@ -376,6 +376,23 @@ Other battle types remain later questions: giving up ground and committing reser
 
 Here it means the declared conditions are checked and differences are reported. Starting fingerprints are compared, which doesn't prove identical internal state. The records must let someone else recount the results; a rerun by someone else is a separate check. Identical replays, identical battles across launches, seeded engine randomness and restoring a battle midway aren't available.
 
+### Which change invalidates which results
+
+JUDGEMENT?: Change levels — Claude, 2026-11-15 (owner: "F6: replay / re-read / keep table"): the three
+levels below, after Terminal-Bench's task versions. Moving a change to another row, or keeping the
+readers' stricter rule, changes which results may be pooled; nothing reads this table yet.
+
+| Level | Kinds of change (proposed) | Earlier results (proposed) | What the readers do today |
+|---|---|---|---|
+| Replay | The observation or order contract (a new track); a scenario's battle fields; a prompt or a controller's behaviour (a new controller version); the mod's behaviour; the engine build | New battles are needed. Battles from before and after are never pooled | Tracks are never pooled. `report` starts a new group and the HTML report a new test setup, by source, scenario and game build. `stats` keeps harness versions (or commits) and an outside controller's source hash apart, and would pool builds |
+| Re-read | A readings module, the outcome label, statistics, report code | The saved battles are read again and the log says so. No battle is replayed | The HTML report leaves its own files, the replay, `digest`, `watch` and `stats` out of its test setup, so those changes keep its groups. A change to a readings module, the outcome label or the statistics still starts a new test setup there, and `report` splits by whole commit |
+| Keep | Comments and documents; a refactor that changes no behaviour; a scenario's `status`, `brief` or `family` | Results stand and may be pooled | Stricter than this row. Any source commit splits `report`'s groups, and outside the files above it starts a new HTML test setup; a comment in a policy file changes that controller's source hash. The HTML report does leave `status`, `brief` and `family` out of its scenario comparison, and the replay check leaves `status` out |
+
+The Keep row and the readers disagree. Under the table a refactor that changes no behaviour would
+keep earlier results poolable; the readers split on any source change, which is the safer rule
+when nobody has shown that behaviour is unchanged. Until the owner decides, the readers' rule
+holds, and a change at the Replay or Re-read level says which it is in its log entry.
+
 ## Terms
 
 | Term | Meaning |

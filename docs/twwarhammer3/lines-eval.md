@@ -1,5 +1,18 @@
 # Alesia inspired two-front defence plan
 
+**At a glance** (added 2026-11-15, owner: "F8: evaluation page headers"). Each row is a short form of
+a section below; where they differ, the section holds. Everything is unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule).
+
+| | |
+|---|---|
+| Tests | One decision ([P1, the main effort](#decisions)): with both relief groups in view, should the reserve (Tzar Guard and Boyar) and the Lancers go to the heavy group's side or the light group's? |
+| Why it is hard | The heavy side has to be read from public state while two lines are attacked back to back, and the two cases put it on opposite sides. The prediction shrinks or reverses if the light group alone can break its sector, if the AI moves the heavy group across, or if the contacts are staggered. |
+| Witness | `LinesWitness` in [battle/lines.py](../../src/twwarhammer3/battle/lines.py): every unit keeps a 40 m leash to its post; once 6 enemies stand more than 60 m ahead of the outer line it scores both sides, posts the reserve behind the higher side's sector and sends the Lancers into a rear charge when 2 relief units there are in melee. |
+| Outcome | The engine's result. The controller defends and wins when the 1,200 s timer runs out. Every engine win counts. |
+| Status | `ksl-nor-lines-a-v1` and `ksl-nor-lines-b-v1` (version 1) in [`scenarios/lines.json`](../../configs/twwarhammer3/scenarios/lines.json): status `candidate`, split `development`. One battle played: case a under `hold`, lost at 338 s ([first construction battle](#first-construction-battle-2026-11-12)). |
+| Changes | 2026-11-08 built at `e918091`. 2026-11-09 three more classes built as options for owner question 4. 2026-11-10 lobby readback passed case a's rosters. 2026-11-12 first case-a hold. 2026-11-15 the values the readings share with the witness moved to `lines_facts.py`. |
+
 Development candidate, 2026-11-08 (Claude). **Built at `e918091`; the first case-a hold ran on
 2026-11-12. Everything on this page remains unverified under the hard rule.** The 2026-11-10 lobby-only readback passed
 case a's exact 12/12 rosters and ranks; case b generates identical lobby steps and was not

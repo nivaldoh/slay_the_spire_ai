@@ -1,5 +1,18 @@
 # Camp attack evaluation after Belgrade, 1456
 
+**At a glance** (added 2026-11-15, owner: "F8: evaluation page headers"). Each row is a short form of
+a section below; where they differ, the section holds. Everything is unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule).
+
+| | |
+|---|---|
+| Tests | One decision ([D1, guns or cover](#the-decision)): once a cover unit has fought within 30 m of a levy for 10 s, should the mounted group attack the war machines first or the cover units fighting the levies? |
+| Why it is hard | Guns first is predicted to win more often only while the guns still fire into the levies' fight. A late cue (the guns have spent most of their shots) may reverse it, and so may the unbuilt variant in which heavy infantry stands beside a gun on the knights' approach. |
+| Witness | `CampStrike` in [battle/camp.py](../../src/twwarhammer3/battle/camp.py): the levies attack from the first decision; at the cue, or at 180 s without one, the mounted group attacks visible war machines first. `CampSupport` is the other arm (cover units first). |
+| Outcome | The engine's result. The controller attacks; the defender wins when the 1,200 s timer runs out. Every engine win counts. |
+| Status | `emp-chd-camp-v1` (version 1) and two candidate second versions, `-lordless-v2` and `-equidistant-v2`, in [`scenarios/camp.json`](../../configs/twwarhammer3/scenarios/camp.json): status `candidate`, split `development`. No battle played. |
+| Changes | 2026-11-08 built offline at `e918091`. 2026-11-09 readings and the two second versions added. 2026-11-10 a lobby-only attempt stopped at step 48, when the engine refused the Flagellants. 2026-11-15 the values the readings share with the witness moved to `camp_facts.py`. |
+
 Development candidate, 2026-11-08 (Claude). **No battle has been played, and everything is
 unverified.** The 2026-11-10 lobby-only attempt stopped at step 48 when the engine refused
 `wh_dlc04_emp_inf_flagellants_0`, after five successful recruit commands; no complete army

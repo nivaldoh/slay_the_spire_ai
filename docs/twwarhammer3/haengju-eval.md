@@ -1,8 +1,21 @@
 # Haengju inspired siege evaluation plan
 
+**At a glance** (added 2026-11-15, owner: "F8: evaluation page headers"). Each row is a short form of
+a section below; where they differ, the section holds. Everything is unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule).
+
+| | |
+|---|---|
+| Tests | One decision ([D1, fire across divisions](#decisions-the-battle-could-test)): should the five missile units fire at will from the start, or hold fire until an enemy is within 60 m of the wall line, so that ammunition lasts for the later divisions? |
+| Why it is hard | The attackers come in four divisions released in turn, and the controller is told only that divisions may attack at different times. The claim holds only if ammunition runs short under `hold` (check 6: at most 25% left at the third division's approach); the one launch so far read about 67% left. |
+| Witness | `WallWitness` in [battle/wall_defence.py](../../src/twwarhammer3/battle/wall_defence.py): build, fire, reserve and fallback rules. It holds fire to 60 m, keeps the Lord and the Jade Warriors as a reserve against enemies inside the wall, and falls back to the keep when the gatehouse is taken or a gate is breached. `WFire` is the other arm. |
+| Outcome | The engine's result. The controller defends and wins when the 1,200 s timer runs out. Every engine win counts. |
+| Status | `cth-emp-siege-a-v1` (divisions in turn), `cth-emp-siege-a-all-v1` (all at once) and `cth-emp-siege-a-all-gates-v1` (a map screen), version 1, in [`scenarios/siege_defence.json`](../../configs/twwarhammer3/scenarios/siege_defence.json): status `candidate`, split `development`. One battle played: `cth-emp-siege-a-v1` under `hold`, lost at 928 s ([first construction battle](#first-construction-battle-2026-11-14)). |
+| Changes | 2026-11-08 written as a plan. 2026-11-09 built offline at `f3fec92` and revised; the Eagle Gate screen declared at `050020e`. 2026-11-10 lobby readback passed. 2026-11-14 first `hold` launch. 2026-11-15 the values the readings share with the witness moved to `wall_facts.py`. |
+
 Development candidate (Claude). Written on 2026-11-08 as a plan, brought in line with the offline
 build on 2026-11-09 and revised after that day's second look at the set. **Built offline at
-`f3fec92`; no battle has been played, and everything on this page is unverified.** The 2026-11-10
+`f3fec92`; one `hold` battle has been played since (2026-11-14, below), and everything on this page is unverified.** The 2026-11-10
 lobby-only readback passed the all-at-once declaration's 10/18 rosters, ranks and empty attacker
 equipment list; the divisions declaration generates identical lobby steps and was not sent
 separately ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)). On

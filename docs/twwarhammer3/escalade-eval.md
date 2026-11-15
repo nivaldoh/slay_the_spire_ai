@@ -1,8 +1,21 @@
 # Siege attack evaluation after Izmail, 1790
 
+**At a glance** (added 2026-11-15, owner: "F8: evaluation page headers"). Each row is a short form of
+a section below; where they differ, the section holds. Everything is unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule).
+
+| | |
+|---|---|
+| Tests | One decision ([D1, spread or concentrate](#the-decision)): assault three wall sectors at once, or put the two wings on the wall pieces beside the gate as well? |
+| Why it is hard | Spreading is predicted to win more often only if the garrison moves units along the wall toward an assaulted sector. If the defenders hold their posts, or the concentrated assault gets over the wall first, the prediction may disappear or reverse. |
+| Witness | `Escalade` in [battle/escalade.py](../../src/twwarhammer3/battle/escalade.py), the three-sector assault, with seven controls; `Concentrate` is the other arm. A version 2 is built beside it and no plan uses it. |
+| Outcome | The engine's result. The controller attacks; the defender wins when the 1,200 s timer runs out. Every engine win counts. |
+| Status | `ksl-emp-siege-a-v1` (version 1) in [`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json): status `candidate`, split `development`. Two battles played, both under `hold`, both lost at the timer ([first stage 1 launches](#first-stage-1-launches-2026-11-14)). |
+| Changes | 2026-11-08 built offline at `f3fec92`. 2026-11-09 this page written and the readers revised; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`. 2026-11-10 lobby readback completed 157 steps. 2026-11-14 two stage 1 `hold` launches. 2026-11-15 the front line and its inside test moved to `escalade_facts.py`. |
+
 Development candidate, 2026-11-08 (Claude); this page was written on 2026-11-09. **Built offline
-at `f3fec92`; no battle has been played, and everything on this page is
-unverified.** The 2026-11-10 lobby-only readback completed 157 steps: exact 13/12 rosters and
+at `f3fec92`; two `hold` battles have been played since (2026-11-14, below), and everything on
+this page is unverified.** The 2026-11-10 lobby-only readback completed 157 steps: exact 13/12 rosters and
 ranks, one player `ksl_battering_ram` and no tower
 ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)). No battle stage is scheduled.
 The owner's earlier direction was "Build now, game when I say"

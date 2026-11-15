@@ -1,5 +1,18 @@
 # Cannae inspired evaluation plan
 
+**At a glance** (added 2026-11-15, owner: "F8: evaluation page headers"). Each row is a short form of
+a section below; where they differ, the section holds. Everything is unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule).
+
+| | |
+|---|---|
+| Tests | Three evaluations: A, a recognizable Cannae envelopment; B, reserve commitments that change and need fresh decisions; C, agents sharing one army under limited communication ([decisions](#decisions-the-battle-could-test)). |
+| Why it is hard | The same units have competing uses. The centre must hold while the cavalry wins a wing and then reaches the main fight, and the reserves choose between finishing the envelopment and preventing a collapse elsewhere. |
+| Witness | `Envelop`, `WingSupport` and `CentreSupport` in [battle/cannae.py](../../src/twwarhammer3/battle/cannae.py), scripted development witnesses on public state. Battle C's arms are in [communication-structure.md](communication-structure.md). |
+| Outcome | The engine's result; timer wins count. The brief is "Win the battle and preserve the army where possible." |
+| Status | 39 entries (`emp-envelopment-*` and `emp-wing-horse-*`) in [`scenarios/cannae.json`](../../configs/twwarhammer3/scenarios/cannae.json), all status `candidate`, split `development`. 27 of them have been played: 112 register rows from 2026-11-05 to 2026-11-11, 40 won, 71 lost and 1 infrastructure failure, counting every controller. No battle is scheduled. |
+| Changes | 2026-11-05 drafted; windows 1 and 2 played ([results](#window-2-results-2026-11-05)). 2026-11-08 to 2026-11-11 the communication arms of C (versions 2 and 3) were added and piloted, recorded on the communication-structure page. |
+
 Draft, 2026-11-05. **Candidates under construction; live evidence remains unverified.** [Where each candidate stands and the proposed deciding checks](#proposed-deciding-checks-2026-11-05). This proposes
 three separate evaluations following the owner's directions:
 **A, a recognizable Cannae pattern**, and **B, changing reserve commitments intended to
