@@ -6,6 +6,196 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Frontier benchmark survey (2026-11-15)
+
+Chris Barber asked 56 people in AI which benchmarks they would trust most to show that an LLM
+is at the frontier, and posted the results on X on 2026-11-15; the full list is at
+[frontierlist.com/top-benchmarks](https://frontierlist.com/top-benchmarks). The number after
+each name is its net vote count (a few benchmarks got negative votes). Voters could not pick a
+benchmark their company worked on, an index or a human-voted board. The author discloses small
+investments in seven companies on the list and did not vote. The most common comment was that people do
+not really trust benchmarks at all. The owner asked for the list as a source of best practices
+and ideas.
+
+Each line comes from the linked page as fetched on 2026-11-15: its title, description or first
+screen of text. Marked lines differ: *abstract* means only the arXiv abstract was read;
+*secondary* means a search summary of other sites; *not read* means the page was blocked or
+empty without JavaScript. Nothing was run or reproduced, and no method here is adopted. Votes
+are opinions and do not show that a benchmark is sound: Epoch AI's partial
+[review of Terminal-Bench 4.0.0](https://epoch.ai/benchmarks/terminal-bench-4/review)
+(2026-09-04) rated the top-voted benchmark "Flawed", with publicly noted scoring defects in 30
+of its 66 tasks (19 false positives, 11 false negatives).
+
+Leads for our work, none adopted:
+- Reviewing a benchmark: Epoch AI's [benchmark reviews](https://epoch.ai/data/benchmark-reviews-documentation)
+  rate outside benchmarks Verified, Flawed or Not enough information against a published
+  rubric. Terminal-Bench 4.0 removed as saturated the tasks that every model class of the latest
+  generation solved 5 times out of 5 (2 of its 8 removals), and raised its major version because
+  its fixes require re-running trials; our
+  [Terminal-Bench profile](twwarhammer3/benchmark-references/terminal-bench.md) covers its
+  repository.
+- Repeated trials: FrontierSWE runs 5 trials per task and reports the mean with the worst and
+  best of the 5.
+- Long agent runs in a simulation: Vending-Bench 2 (a business over a simulated year) and
+  ARC-AGI-3 (novel environments the agent must learn by interacting with them).
+- Judges: TASTE scores models by agreement with experienced researchers and reports what raised
+  agreement among the researchers themselves; see also the
+  [tactic-judge research](#tactic-judge-research-2026-11-04).
+- Scoring rules: Harvey LAB passes a task only when every rubric criterion passes; WeirdML
+  takes 80% of its score from the area under a model's best-so-far curve over tokens and 20%
+  from its final value; METR turns success rates into a task length.
+
+Benchmarks:
+- [Terminal-Bench 4](https://www.tbench.ai/) (25): agents doing hard tasks in a terminal; the
+  page now shows 4.1. Version 4.0 [removed 8 tasks and fixed 19](https://www.tbench.ai/news/terminal-bench-4-0),
+  set a flat 8-hour agent timeout and required earlier trials to be re-run.
+- [Terminal-Bench Science](https://www.terminal-bench-science.ai/) (20): agents on research
+  workflows across scientific domains. *Secondary:* 70 tasks written by practising scientists in
+  five domains, with an 8-hour agent phase.
+- [FrontierCode](https://cognition.com/blog/frontier-code) (13, Cognition): would the maintainer
+  merge the PR? Grades correctness, test quality, scope discipline, style and codebase standards
+  with unit tests, rubrics and other verifiers; tasks by 20+ open-source maintainers.
+- [FrontierSWE](https://www.frontierswe.com/) (10): 34 software engineering tasks at the edge of
+  human ability; 5 trials per task with a 20-hour budget, reported as the mean and worst-best range.
+- [Humanity's Last Exam](https://lastexam.ai/) (8, Center for AI Safety and Scale AI): 2,500
+  expert-written questions, final since 2025-04; HLE-Rolling is a dynamic fork, and HLE-Diamond
+  (2026-09) is for when models reach the original set's noise ceiling.
+- [Vending-Bench 2](https://andonlabs.com/evals/vending-bench-2) (7, Andon Labs): a model runs a
+  simulated vending machine business for a year and is scored on its final bank balance.
+- [AutomationBench](https://zapier.com/benchmarks) (5, Zapier): end-to-end workflows across real
+  tools and business areas, graded deterministically.
+- [DeepSWE](https://deepswe.datacurve.ai/) (5, Datacurve): original, long software engineering tasks.
+- [PostTrainBench](https://posttrainbench.com/) (5): an agent gets four small base LLMs, one H100
+  GPU and 10 hours to post-train them.
+- [AA-Briefcase](https://artificialanalysis.ai/evaluations/aa-briefcase) (4, Artificial
+  Analysis): private; long business workflows that end in spreadsheets, presentations and memos.
+- [Agents' Last Exam](https://agents-last-exam.org/) (4): long professional workflows with
+  verifiable outcomes in finance, robotics, bioinformatics, media and other fields.
+- [FrontierCS 2](https://frontier-cs.org/) (4): 48 open-ended computer science R&D tasks from
+  published papers; the code released with each paper is the bar to beat.
+- [OSWorld 2](https://osworld-v2.xlang.ai/) (4, XLANG Lab, HKU): 108 long computer-use workflows
+  (median about 1.6 human hours), scored by completion within 500 steps plus a partial score.
+- [ARC-AGI-3](https://arcprize.org/arc-agi/3) (3, ARC Prize): interactive reasoning; agents must
+  learn novel environments that people can also play.
+- [FrontierMath](https://epoch.ai/frontiermath) (3, Epoch AI): very hard math problems, including
+  open research problems.
+- [Harvey LAB](https://www.harvey.ai/blog/introducing-harveys-legal-agent-benchmark) (3, Harvey):
+  open source; 1,200+ legal agent tasks in 24 practice areas, each passed only when all of its
+  expert-written criteria pass (75,000+ criteria in all).
+- [ProgramBench](https://programbench.com/) (3): whether models can rebuild programs from scratch.
+- [SWE-sweep](https://swesweep.com/) (3): find and fix as many bugs as possible in a real
+  repository, with no hint of their kind or location.
+- [GDPx](https://newsletter.semianalysis.com/p/gdpx-measuring-frontier-model-capabilities) (2,
+  SemiAnalysis): tasks in RSI, hardware and chip design, cyber, bio, finance, legal, quant
+  trading, software engineering, materials science and alignment; built with 14 data partners
+  and released the day before the survey.
+- [BrowseComp](https://arxiv.org/abs/2504.12516) (2, OpenAI, 2025): 1,266 questions that need
+  persistent browsing for hard-to-find facts, with short answers checked against references.
+  *Abstract* (the [OpenAI page](https://openai.com/index/browsecomp/) returned 403).
+- [Chartography](https://surgehq.ai/blog/chartography) (2, Surge AI): professional charts
+  (Kaplan-Meier curves, candlesticks, contour maps, Bode plots), written and graded by experts.
+- [CursorBench](https://cursor.com/blog/cursorbench) (2, Cursor): internal tasks from real Cursor
+  sessions of Cursor's engineers, updated continually (now 3.1), used beside online measures.
+- [ExploitBench](https://exploitbench.ai/) (2): agents write exploits for the V8 JavaScript
+  engine; 16 capabilities measured per run, graded over several rounds with shuffled layouts.
+- [GDP.pdf](https://surgehq.ai/benchmarks/gdp-pdf) (2, Surge AI): multimodal reasoning over real
+  expert prompts and PDFs.
+- [GDPval-AA](https://artificialanalysis.ai/evaluations/gdpval-aa) (2, Artificial Analysis):
+  OpenAI's GDPval tasks from 44 occupations in 9 industries, run as an agent with shell and web
+  access; Elo ratings from blind pairwise comparisons.
+- [4DCodeBench](https://arxiv.org/abs/2610.03715) (1): rebuild dynamic scenes from video as
+  executable graphics programs, including deformation, fluid flow and fracture. *Abstract.*
+- [AA-LCR](https://artificialanalysis.ai/articles/announcing-aa-lcr) (1, Artificial Analysis,
+  2025-08): reasoning across several long documents, about 100k tokens of input.
+- [AA-Omniscience](https://artificialanalysis.ai/articles/aa-omniscience-knowledge-hallucination-benchmark)
+  (1, Artificial Analysis): knowledge and hallucination across more than 40 topics.
+- [APEX-Agents](https://www.mercor.com/apex/apex-agents-leaderboard/) (1, Mercor): long,
+  multi-tool professional services tasks.
+- [ArXivLean](https://matharena.ai/arxivlean/) (1, MathArena, 2026-04): Lean proofs of research
+  theorems from recent arXiv papers; the strongest model proved 17.1%.
+- [ArXivMath](https://matharena.ai/arxivmath/) (1, MathArena, 2026-02): a public, dynamic set of
+  final-answer research problems taken from recent arXiv papers.
+- [AutoResearchExam](https://benchmarks.bespokelabs.ai/autoresearchexam/) (1, Bespoke Labs):
+  improve and generalise on open-ended ML research tasks.
+- [BioBench](https://benchmarks.bio/) (1, LatchBio): benchmarks on real biological data analysis,
+  from single-cell RNA-seq to biosecurity.
+- [Conceptual Reasoning Index](https://conceptualreasoning.ai/) (1): reasoning about
+  hard-to-verify topics such as AI alignment and collective action problems.
+- [CritBench](https://arxiv.org/abs/2604.06019) (1): 81 cybersecurity tasks in IEC 61850 digital
+  substation (operational technology) environments. *Abstract.*
+- [CritPt](https://critpt.com/) (1, [paper](https://arxiv.org/abs/2509.26574)): 71 research-level
+  physics challenges written by 50+ physicists, split into 190 checkpoint tasks with
+  machine-checkable answers. *Secondary.*
+- [CWE-bench v2](https://cwe-bench.com/) (1, Collinear AI): 100 open audit-and-patch tasks across
+  91 CWEs and a held-out set of 150.
+- [DAYJOB: Tax](https://surgehq.ai/blog/dayjob-tax) (1, Surge AI): 50 tax environments with messy
+  records that call for professional judgement.
+- [DeepRSI](https://www.deeprsi.com/) (1): long tasks derived from real ML research.
+- [FrontierML](https://www.frontierml.org/) (1): long ML work where the agent has to spend money.
+- [FrontierScience](https://arxiv.org/abs/2601.21165) (1, OpenAI, 2025-12): an Olympiad set of 100
+  short-answer questions and a Research set of 60 PhD-level subtasks graded on 10-point rubrics.
+  *Secondary* (the [OpenAI page](https://openai.com/index/frontierscience/) returned 403).
+- [HealthBench](https://arxiv.org/abs/2505.08775) (1, OpenAI, 2025): 5,000 multi-turn health
+  conversations graded with rubrics written by 262 physicians. *Abstract* (the
+  [OpenAI page](https://openai.com/index/healthbench/) returned 403).
+- [HorizonMath](https://ewang26.github.io/HorizonMath/) (1): 113 mostly unsolved problems in
+  eight areas of mathematics, checked automatically.
+- [Humanity's Sixth Sense](https://labs.scale.com/blog/introducing-humanitys-sixth-sense) (1,
+  Scale Labs, 2026-10): intuitive visual reasoning about social dynamics, space, physical cause
+  and effect, and intent.
+- [LiveBench 2.0](https://livebench.ai/) (1): long, contamination-free work tasks (decks, research
+  reports, bug fixes, apps) graded on what the model hands back.
+- [MazeBench](https://mazebench.com/) (1): visual spatial reasoning with ice-maze puzzles in a 3D
+  open world. *Not read* beyond the title and description.
+- [MemHarmBench](https://arxiv.org/abs/2611.01700) (1): prompt injections kept in an agent's
+  memory that cause harm in later sessions, to users, workspace owners or outsiders. *Abstract.*
+- [METR time horizons](https://metr.org/time-horizons/) (1, METR): the task length, in human
+  expert time, at which an agent succeeds 50% or 80% of the time; not updated since 2026-09-08.
+- [MLS-Bench](https://arxiv.org/abs/2605.08678) (1): 140 tasks in 12 domains; improve one part of
+  an ML system and show that the gain holds across settings and scales. *Abstract.*
+- [MobileWorld](https://arxiv.org/abs/2512.19432) (1): 201 phone tasks across 20 apps, with long
+  cross-app workflows, vague user instructions and MCP tools. *Abstract.*
+- [OfficeQA Pro](https://arxiv.org/abs/2603.08655) (1): 133 questions over 89,000 pages of U.S.
+  Treasury Bulletins. *Abstract.*
+- [Realm Warren](https://www.micro1.ai/benchmark/warren) (1, micro1): legal reasoning scored with
+  IRAC rubrics. The link now opens micro1's LegalReasonBench; that the two are the same
+  benchmark is a search summary's inference. *Secondary.*
+- [RSI Bench](https://rsi-benchmark.com/) (1): "Tasks, graded solver runs, and agent traces".
+  *Not read* (the page needs JavaScript).
+- [SAFE-Teen](https://www.vals.ai/benchmarks/mental-health) (1, Vals AI): how chatbots respond
+  when teens raise mental-health and safety concerns, in 106 clinician-written scenarios.
+- [SEC-bench Pro](https://sec-bench.github.io/) (1): long software security tasks.
+- [SimpleBench](https://simple-bench.com/) (1): 200+ multiple-choice questions on spatio-temporal
+  reasoning, social intelligence and trick questions; nine non-specialist people averaged
+  83.7%, above every model tested.
+- [SRE-bench](https://www.vals.ai/benchmarks/srebench) (1, Vals AI): reverse engineering
+  software binaries without source code.
+- [Sudo L7](https://surgehq.ai/blog/sudo-l7) (1, Surge AI): whether coding agents show
+  staff-level engineering judgement beyond correct code.
+- [SWE-Bench Pro](https://labs.scale.com/papers/swe-bench-pro) (1, Scale Labs): whether coding
+  agents solve long software engineering tasks reliably.
+- [SWE-Marathon v1.1](https://www.swe-marathon.org/) (1): 20 multi-hour software engineering
+  tasks with tighter verification, no internet access and GPU post-training.
+- [TASTE](https://alignment.anthropic.com/2026/taste/) (1, Anthropic, 2026-08): judging pairs of
+  AI safety research proposals, scored by agreement with experienced researchers (92 pairs, 77%
+  estimated human agreement).
+- [Terminal-Bench 2.1](https://www.tbench.ai/news/terminal-bench-2-1) (1): Terminal-Bench 2.0
+  with 28 tasks fixed.
+- [WeirdML v3](https://htihle.github.io/weirdml.html) (1): 11 hand-made tasks with unfamiliar data
+  where the model builds ML pipelines with little data, unstated goals or little feedback.
+
+Picked but outside the survey's rules (indexes, human-voted boards and suites):
+- [AA Intelligence Index](https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index)
+  (3): version 5.0.1 combines nine evaluations.
+- [LMArena](https://arena.ai/) (3): people vote between two models' answers. *Not read* (403;
+  this line is from prior knowledge).
+- [Epoch Capabilities Index](https://epoch.ai/eci) (2): many benchmarks combined into one
+  capability scale for comparing models over time.
+- [Vals RSI Index](https://www.vals.ai/benchmarks/rsi_index) (2): AI R&D tasks compared with
+  published human and model reference results.
+- [Mercor APEX](https://www.mercor.com/apex/) (1): productivity benchmarks for software
+  engineering, law, consulting, medicine and other fields.
+
 ## Historical siege evaluations (2026-11-08)
 
 For the [evaluation battles adapted from history](twwarhammer3/historical-evals.md): the pages

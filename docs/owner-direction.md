@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-15 (frontier benchmark survey), goal verbatim: "Read the series of tweets in
+  tmp/benchmark_tweets.md and add the benchmarks there to our list of research materials, which
+  we will use as additional references in the future for best practices, ideas, etc. After
+  you're done, delete the temp file with the tweets." Applied:
+  [references](references.md#frontier-benchmark-survey-2026-11-15); the temp file was deleted.
 - 2026-11-15 (Terminal-Bench structure comparison), goal verbatim: "Read
   https://github.com/harbor-framework/terminal-bench/tree/main and add it to our list of
   reference repositories for AI benchmarks. Then, compare its high-level structure in the
