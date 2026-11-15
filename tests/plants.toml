@@ -4327,3 +4327,21 @@ old = 'if result.get("interrupted_copy"):'
 new = 'if False:'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_a_trial_stopped_during_its_final_copying_is_an_operator_stop_whatever_the_engine_said", "tests/twwarhammer3/test_wh3_benchmark_guards.py::test_every_benchmark_reader_sees_no_outcome_for_a_copy_interrupted_trial"]
 source = "2026-11-15 one outcome function: owner, 2026-11-13, \"interrupted, readers skip it (Recommended)\""
+
+[[plant]]
+id = "scenario-base-hands-down-its-review-state"
+guards = "An entry takes its battle from its base and never its status, split or version"
+file = "src/twwarhammer3/battle/setup.py"
+old = 'for key, value in resolve(base).items() if key not in OWN}'
+new = 'for key, value in resolve(base).items()}'
+tests = ["tests/twwarhammer3/test_wh3_scenario_status.py::test_an_entry_takes_its_battle_from_its_base_and_never_its_review_state"]
+source = "2026-11-15 scenario statuses: owner, \"Approve this mapping (Recommended)\""
+
+[[plant]]
+id = "replay-identity-hashes-the-status-word"
+guards = "A new status word does not orphan a win recorded under another one"
+file = "src/twwarhammer3/battle/replay_schedule.py"
+old = 'for key, value in scenario.items() if key != "status"})'
+new = 'for key, value in scenario.items()})'
+tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_new_status_word_does_not_orphan_a_recorded_win_but_any_other_field_does"]
+source = "2026-11-15 scenario statuses: owner, \"Leave status out (Recommended)\""

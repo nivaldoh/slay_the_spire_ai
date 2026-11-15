@@ -72,7 +72,8 @@ print(len(setup.scenario_steps(s)), 'lobby steps')"
 uv run pytest tests/twwarhammer3/test_wh3_setup.py
 ```
 
-Commit the entry before playing it. Declare held-out variants (`split: held_out`) before
+Commit the entry before playing it. Declare held-out variants (`status` and `split` both
+`held_out`, written on the entry itself) before
 any tuning, and never use them to choose rosters, settings or controllers. The scenario
 rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). The new Land
 Battle [release route](benchmark-implementation.md#phases) replaces tactic-card

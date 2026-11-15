@@ -12,7 +12,13 @@ import pytest
 from wh3_fixtures import CONFIG, FakeMailbox
 
 from twwarhammer3.battle import play
-from twwarhammer3.battle.replay_schedule import ReplaySchedule, build, carried_out, digest
+from twwarhammer3.battle.replay_schedule import (
+    ReplaySchedule,
+    build,
+    carried_out,
+    declaration_digest,
+    digest,
+)
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, refused, validate_orders
 
 SWORDS, KNIGHTS = "wh_main_emp_inf_swordsmen", "wh_main_emp_cav_empire_knights"
@@ -195,6 +201,17 @@ def test_a_schedule_is_refused_under_another_scenario_declaration_or_from_a_batt
     (episode / "result.json").write_text(json.dumps({**result, "status": "lost"}))
     with pytest.raises(ValueError, match="won battle"):
         build(episode)
+
+
+def test_a_new_status_word_does_not_orphan_a_recorded_win_but_any_other_field_does(tmp_path):
+    """Owner, 2026-11-15: "Leave status out (Recommended)". Wrong version: status is hashed, so
+    the status words written that day refuse every win recorded before them."""
+    schedule = build(record(tmp_path))  # recorded under SCENARIO, which states no status
+    ReplaySchedule(schedule, scenario={**SCENARIO, "status": "candidate"})
+    assert declaration_digest({**SCENARIO, "status": "prototype_not_admitted"}) == (
+        declaration_digest({**SCENARIO, "status": "candidate"}))
+    with pytest.raises(ValueError, match="another scenario"):
+        ReplaySchedule(schedule, scenario={**SCENARIO, "split": "held_out"})
 
 
 def schedule_of(*batches):

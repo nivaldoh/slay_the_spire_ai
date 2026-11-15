@@ -49,7 +49,7 @@ def test_the_declaration_passes_plays_checks_and_names_no_history():
     config = {"episodes": 1, "start_timeout": 900, "episode_timeout": None, "run_timeout": None}
     setup.fill_timeouts(scenario, config)
     setup.validate_declaration(scenario, config)
-    assert (scenario["status"], scenario["split"]) == ("prototype_not_admitted", "development")
+    assert (scenario["status"], scenario["split"]) == ("candidate", "development")
     assert setup.expected_mode(scenario) == {"type": "settlement_standard", "role": "attacker"}
     assert sorted(setup.battle_units(scenario["player"])) == sorted(escalade.ARMY.elements())
     assert play.battle_session(scenario) == {"benchmark": "behaviour-defaults",

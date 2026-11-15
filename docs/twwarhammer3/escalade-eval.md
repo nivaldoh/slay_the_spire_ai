@@ -191,7 +191,7 @@ disadvantage, changes the battle; every reading on this page rests on it.
 
 The declaration is `ksl-emp-siege-a-v1` in
 [`scenarios.json`](../../configs/twwarhammer3/scenarios.json), `scenario_version` 1, family
-`siege attack`, split `development`, status `prototype_not_admitted`. Its values rest on JUDGEMENT
+`siege attack`, split `development`, status `candidate` (`prototype_not_admitted` until 2026-11-15). Its values rest on JUDGEMENT
 tests/twwarhammer3/test_wh3_siege_assault.py Siege attack construction profile (map, rosters,
 `expect`, rank 0 and the engine's starts) and Siege attack equipment (one ksl ram, no tower). The
 JSON file cannot carry a comment, so those markers sit in that test, which also checks the

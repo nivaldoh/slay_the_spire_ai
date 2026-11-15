@@ -6,7 +6,7 @@
   "family": "empire_mirror",
   "brief": "Win this Land Battle against the Empire army. Engine timer endings count. Preserve your army where possible.",
   "split": "development",
-  "status": "initial_unverified",
+  "status": "current",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -274,6 +274,7 @@
  },
  "dwf-sla-taurox": {
   "name": "dwf-sla-taurox",
+  "status": "retired",
   "family": "ranged protection",
   "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
   "substitutions": [
@@ -351,6 +352,8 @@
  "dwf-sla-herald": {
   "base": "dwf-sla-taurox",
   "name": "dwf-sla-herald",
+  "status": "retired",
+  "split": "development",
   "enemy": {
    "units": [
     "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
@@ -378,6 +381,8 @@
  "dwf-sla-herald-hard": {
   "base": "dwf-sla-herald",
   "name": "dwf-sla-herald-hard",
+  "status": "retired",
+  "split": "development",
   "expect": {
    "ai_stats_modifier": "1.1"
   }
@@ -399,7 +404,7 @@
    "player_defends": true
   },
   "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "status": "retired",
   "name": "brt-cavalry-emp-pikes",
   "family": "cavalry against anti-large",
   "player": {
@@ -443,6 +448,8 @@
  "brt-cavalry-emp-pikes-hard": {
   "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pikes-hard",
+  "status": "retired",
+  "split": "development",
   "expect": {
    "ai_stats_modifier": "1.1"
   }
@@ -464,7 +471,7 @@
    "player_defends": true
   },
   "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "status": "retired",
   "name": "tze-caster-skv-screen",
   "family": "caster-led force against rat screens",
   "player": {
@@ -507,6 +514,8 @@
  "brt-cavalry-emp-pegasus": {
   "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pegasus",
+  "status": "retired",
+  "split": "development",
   "enemy": {
    "mounts": {
     "0": "wh_main_emp_cha_general_2"
@@ -518,6 +527,8 @@
  "brt-cavalry-emp-assault": {
   "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-assault",
+  "status": "retired",
+  "split": "development",
   "attacker": "player",
   "expect": {
    "player_defends": false
@@ -528,6 +539,8 @@
  "tze-caster-skv-assault": {
   "base": "tze-caster-skv-screen",
   "name": "tze-caster-skv-assault",
+  "status": "retired",
+  "split": "development",
   "attacker": "player",
   "expect": {
    "player_defends": false
@@ -551,7 +564,7 @@
    "ai_stats_modifier": "1.0",
    "player_defends": false
   },
-  "status": "prototype_not_admitted",
+  "status": "retired",
   "name": "skv-swarm-dwf-line",
   "family": "command a Skaven swarm",
   "player": {
@@ -612,7 +625,7 @@
     "scenario_version": 1,
     "brief": "Trade outer territory for time while committing one mobile reserve and limited construction supplies.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "siege",
     "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
     "attacker": "enemy",
@@ -676,7 +689,7 @@
     "scenario_version": 1,
     "brief": "Buy immediate relief or preserve supplies for a more expensive reinforcement; sustain ammunition and fresh troops against native waves.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "survival",
     "map": "battle_preset_wh3_endless_survival_kho",
     "player": {
@@ -723,7 +736,7 @@
     "family": "asset evacuation",
     "scenario_version": 1,
     "split": "development",
-    "status": "unavailable_content",
+    "status": "retired",
     "brief": "Escort two batteries to a public extraction zone before a deadline while scouting concealed Wood Elf threats.",
     "battle_type": "ambush",
     "map": "battle_preset_wh3_main_brt_forest_01_09",
@@ -906,10 +919,11 @@
     }
   },
   "emp-battery-skv-evacuation": {
+  "split": "development",
     "base": "emp-battery-wef-evacuation",
     "name": "emp-battery-skv-evacuation",
     "scenario_version": 2,
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "brief": "Escort two batteries to a public extraction zone before a deadline while scouting stalking Skaven threats.",
     "enemy": {
       "subculture": "wh2_main_sc_skv_skaven",
@@ -933,7 +947,7 @@
     "scenario_version": 1,
     "brief": "Two units of Kislev Horse Raiders attack one unit of Empire Halberdiers, with no lords. Halberds resist cavalry charges from the front; the riders are three times as fast. Fixing the block with one unit while the other charges its flank or rear, then pulling out and repeating, competes with a frontal charge. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "classic",
     "attacker": "player",
     "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -973,6 +987,9 @@
     "calibration_change": "Small focused candidate S1 (owner's example, 2026-10-16; calibration/micro-scenarios-draft-20261016.md). Defined only: lordless setup, 1100 custom funds and the AI's one-unit behaviour are unverified, and a scripted floor and a disclosed feint-and-flank diagnostic come before any model battle."
   },
   "emp-knights-emp-swordsmen": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-knights-emp-swordsmen",
     "family": "hammer and anvil",
@@ -1003,7 +1020,7 @@
     "scenario_version": 1,
     "brief": "Twenty Empire units, with a General and a Bright Wizard, attack twenty Greenskin units of equal cost on an open map with a 40-minute timer. Halberds and spears against wolves and boars, guns behind their own line, a wizard beside friendly troops and two artillery pieces to protect are the small scenarios' problems at once; the AI can also call Waaagh army abilities. The question is whether those skills survive forty units, a long history and a high order volume. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "classic",
     "attacker": "player",
     "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -1086,7 +1103,7 @@
     "scenario_version": 2,
     "brief": "Twelve Kislev units in a four-way free-for-all against twelve AI Greenskin, twelve AI Dwarf and twelve AI Empire units, each army in its own alliance, with a 40-minute timer. The three AI armies also fight each other, so when to stay out, whom to engage and when to commit compete over a long horizon. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "free_for_all",
     "map": "battle_preset_wh2_mp_ffa_04",
     "player": {
@@ -1184,6 +1201,9 @@
     "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500. Raised again to 11000 after S5's 1200 refusal: characters may carry lobby markups. Version 2 (2026-10-17, after queue E1): the lobby refused the three-army version (bench-b23-l2-setup-20261017: \"Free-For-All requires 4 teams\"), so a fourth army joins as the last AI slot: twelve Empire units, a General with a Bright Wizard, every card recruited in L1's lobby (b23). The id keeps its b19 name. Database costs (scripts/wh3_db.py, main_units_tables multiplayer_cost): Kislev 7,350 (832 men), Greenskins 6,875 (918), Dwarfs 6,875 (973), Empire 6,875 (916); the b19 AI rosters were 6,875 each, not the drafted 7,100/7,450. Funds 15000 (was 11000), as in L1: lobbies that started put the character markups at most 4,625 for L1's General with a Bright Wizard, 4,650 for its Warboss with a Shaman, 600 for a Dwarf Lord (12,000 funds, 11,400 database), so every side keeps at least 3,475 above its proven bound; Kislev's Boyar with a Frost Maiden has no bound yet and 7,650 headroom."
   },
   "dwf-longbeards-emp-swordsmen": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-longbeards-emp-swordsmen",
     "family": "deny the envelopment",
@@ -1212,6 +1232,9 @@
     "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 1500."
   },
   "dwf-thunderers-grn-trolls": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-thunderers-grn-trolls",
     "family": "focus fire against regeneration",
@@ -1245,6 +1268,9 @@
     "calibration_change": "Small focused candidate S8 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1850 (2 x 700 + 450), enemy 2250 (3 x 750); funds 2500 for headroom. Defined only: lordless Dwarf/Greenskin recruitment and the Trolls' regeneration in battle are unverified. Floor hold first."
   },
   "grn-giant-ksl-streltsi": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "grn-giant-ksl-streltsi",
     "family": "a lone monster's target choice",
@@ -1274,6 +1300,9 @@
     "calibration_change": "Small focused candidate S9 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1400, enemy 1350 (500 + 850); funds 1600. Defined only: a one-unit lordless monster army is unverified. Floor attack_nearest first."
   },
   "grn-giant-ksl-streltsi-trolls": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "grn-giant-ksl-streltsi",
     "name": "grn-giant-ksl-streltsi-trolls",
     "brief": "A Greenskin Giant and one Troll unit attack a Kislev Kossar spear unit and a Streltsi rifle unit, with no lords. Both Greenskin units are large, and the spears are braced against large units; the riflemen are not, but they shoot armour-piercing rounds during the approach. Which unit each monster reaches first, together or apart, and by what route, decides the fight.",
@@ -1289,6 +1318,9 @@
     "calibration_change": "S9 rebalance (2026-10-17, delegated while the owner was away). With the Giant alone (1400 against 1350) neither target order won: the attack-nearest floor broke the Kossars first, then the untouched Streltsi shot the Giant until it routed (bench-b20-s9-floor-20261017: lost at 542 s); MonsterTarget went for the Streltsi first (68 to 17 and 38 men) but the Giant routed early and the Kossars never engaged (bench-b23-s9-monster-20261017: lost at 276 s and 242 s). One enemy unit fewer would leave no target to choose, so the player gets a second, smaller monster instead: one Troll unit (database 750, the cheapest base-game Greenskin monster card; a second Giant would double the army to 2800). Both player units are large, so the Kossars' bracing still applies to each, and one can now pin the spears while the other reaches the riflemen. Player 2150, enemy 1350; funds 2400. The report label drops 'lone'; the family, its split group, stays S9's. Attack-nearest floor first; MonsterTarget (which sends every unit to the same target by the same flank route) at 0/5 s only after a floor loss."
   },
   "skv-spears-sla-hellstriders": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "skv-spears-sla-hellstriders",
     "family": "receiving cavalry: facing and bracing",
@@ -1322,6 +1354,9 @@
     "calibration_change": "Small focused candidate S10 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 975 (3 x 325), enemy 1350 (2 x 675); funds 1500. Defined only: lordless Skaven/Slaanesh recruitment is unverified. Floors hold and attack_nearest first."
   },
   "dwf-cannon-grn-lobbers": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-cannon-grn-lobbers",
     "family": "counter-battery",
@@ -1356,6 +1391,9 @@
     "calibration_change": "Small focused candidate S11 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md), the lowest-confidence item of the batch. Database costs: player 1250 (800 + 450), enemy 1750 (2 x 550 + 2 x 325); funds 1950. Defined only: lordless recruitment and the AI's use of defending artillery are unverified. Floor attack_nearest first."
   },
   "emp-handgunners-grn-bigguns": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-handgunners-grn-bigguns",
     "family": "tactic card: riflemen line of fire",
@@ -1388,6 +1426,9 @@
     "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft rifle-lane-past-the-screen, revised: the critic found a blocked lane cut fire to about 40% in the S3 floor, not to zero."
   },
   "grn-chariot-emp-swordsmen": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "ksl-raiders-emp-halberds",
     "name": "grn-chariot-emp-swordsmen",
     "family": "tactic card: cycle charging",
@@ -1417,6 +1458,9 @@
     "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft chariot-cycle-charge; its critic expects the grinding floors may win (armour 80), so floors come first."
   },
   "emp-handgunners-grn-savage-orcs": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "base": "emp-handgunners-grn-bigguns",
     "name": "emp-handgunners-grn-savage-orcs",
     "brief": "The riflemen card one step easier: one Handgunners unit and one shielded Spearmen unit receive an attack by one Savage Orcs unit, with no lords. The orcs are faster than the guns; handguns fire low, so whether the gun keeps a lane past its own line decides how much damage it deals. Hypotheses, not a prescribed solution.",
@@ -1433,7 +1477,7 @@
     "scenario_version": 1,
     "brief": "Seven Empire units receive an attack by seven Greenskin units, with no lords: a line of Halberdiers, two Swordsmen and a Spearmen reserve, two Handgunner units behind it and one Empire Knights unit, against two Orc Boyz, Big 'Uns, Goblin Spearmen, Arrer Boyz, Goblin Wolf Riders and Boar Boyz. The team's jobs change as the battle goes: the riders go round the line for the guns, infantry units break and leave gaps, and the knights have a charge or two to spend. Who guards what, when the reserve fills a gap and when the knights commit are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "classic",
     "attacker": "enemy",
     "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -1492,7 +1536,7 @@
     "scenario_version": 1,
     "brief": "The riflemen pair against two different threats: one shielded Spearmen unit and one Handgunners unit receive an attack by one Goblin Wolf Riders unit and one Orc Boyz unit, with no lords. The riders are fast and reach the guns first; the Boyz are slower and stronger in a long melee. Which unit meets which threat, and when the guns change target, are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "retired",
     "battle_type": "classic",
     "attacker": "enemy",
     "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -1535,6 +1579,9 @@
     "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The riflemen card's roster (player 950) against a fast and a slow threat instead of one Savage Orcs unit: a two-unit version of the team question. Enemy Wolf Riders 300, Orc Boyz cost unread; funds 2,500 as the riflemen card. Floors hold and attack_nearest first."
   },
   "emp-line-grn-raid-xp5": {
+  "status": "retired",
+  "split": "development",
+  "scenario_version": 1,
     "scoring": "contact",
     "base": "emp-line-grn-raid",
     "name": "emp-line-grn-raid-xp5",
@@ -1561,7 +1608,7 @@
   "tests": "Fight two separate battles at once and decide where one reserve goes",
   "brief": "Two Empire groups stand 410 m apart, each facing its own Greenskin group 250 m south; one Knights unit waits between them. Neither group is known to win alone.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -1732,7 +1779,7 @@
   "tests": "Hold under attack while a distant column marches to the same fight",
   "brief": "A small garrison stands 130 m from a Greenskin force; a relief column starts 460 m away and cannot arrive before contact.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -1895,7 +1942,7 @@
   "tests": "Bring two separated groups into one fight at the same time",
   "brief": "Two Empire groups start 590 m apart with a Greenskin block between them and must attack before the timer; each alone is weaker than the block.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "player",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -2083,7 +2130,7 @@
   "tests": "Concentrate on one of three converging groups before they close",
   "brief": "An Empire force in the open is approached from the west, east and south by three separate Greenskin groups, each weaker than it and starting about 210 m away.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -2237,7 +2284,7 @@
   "tests": "Beat the near wave before the far wave arrives",
   "brief": "An Empire force faces a near Greenskin wave 270 m away; a second wave of equal size starts another 300 m behind it. Together they outnumber the Empire force.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -2408,7 +2455,7 @@
   "tests": "Protect guns from cavalry behind the line while the line is engaged",
   "brief": "An Empire line with two Great Cannons and Handgunners behind it faces Orcs to the south; Greenskin cavalry starts 300 m behind the guns.",
   "split": "development",
-  "status": "suite_candidate",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
@@ -2575,20 +2622,22 @@
  "coord-mirror": {
   "base": "emp-mirror-cavalry-v1",
   "name": "coord-mirror",
+  "scenario_version": 5,
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Use one cavalry advantage against a larger enemy with a gun; the owner's first battle",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  },
  "coord-line-raid": {
   "base": "emp-line-grn-raid-xp5",
   "name": "coord-line-raid",
+  "scenario_version": 1,
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Keep a line, guns and reserve doing their jobs while raiders go round the line",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  },
@@ -2598,7 +2647,7 @@
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Command twenty cheap units at once against a small strong line",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  },
@@ -2608,17 +2657,18 @@
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Use one caster's spells and scarce escorts in an assault",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  },
  "coord-siege": {
   "base": "chd-reserve-grn-siege",
   "name": "coord-siege",
+  "scenario_version": 1,
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Defend walls with one reserve and limited supplies against many attackers",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  },
@@ -2628,7 +2678,7 @@
   "benchmark": "suite-v1",
   "family": "coordination",
   "tests": "Assault spears and guns with cavalry only, choosing where and when to commit",
-  "status": "suite_candidate",
+  "status": "candidate",
   "split": "development",
   "scoring": null
  }
@@ -2639,7 +2689,7 @@
     "family": "infantry_support_timing",
     "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
     "split": "development",
-    "status": "candidate_unverified",
+    "status": "candidate",
     "battle_type": "classic",
     "attacker": "enemy",
     "behaviour_defaults": true,
@@ -2708,6 +2758,8 @@
     }
   },
   "emp-support-timing-v2": {
+  "status": "candidate",
+  "split": "development",
     "base": "emp-support-timing-v1",
     "name": "emp-support-timing-v2",
     "scenario_version": 2,
@@ -2745,7 +2797,7 @@
   "family": "envelopment",
   "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
   "split": "development",
-  "status": "candidate_unverified",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "behaviour_defaults": true,
@@ -2960,6 +3012,9 @@
  "emp-envelopment-b-v1": {
   "base": "emp-envelopment-a-v1",
   "name": "emp-envelopment-b-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "family": "reserve_adaptation",
   "deployment": {
     "friendly": [
@@ -3111,6 +3166,9 @@
  "emp-envelopment-c-v1": {
   "base": "emp-envelopment-a-v1",
   "name": "emp-envelopment-c-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "family": "limited_command",
   "communication": {
     "version": 1,
@@ -3120,6 +3178,9 @@
  "emp-envelopment-c-silent-v1": {
   "base": "emp-envelopment-a-v1",
   "name": "emp-envelopment-c-silent-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "family": "limited_command",
   "communication": {
     "version": 1,
@@ -3129,6 +3190,9 @@
  "emp-envelopment-c-fast-v1": {
   "base": "emp-envelopment-a-v1",
   "name": "emp-envelopment-c-fast-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "family": "limited_command",
   "communication": {
     "version": 1,
@@ -3138,6 +3202,9 @@
  "emp-envelopment-c-global-v1": {
   "base": "emp-envelopment-a-v1",
   "name": "emp-envelopment-c-global-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "family": "limited_command",
   "communication": {
     "version": 1,
@@ -3147,6 +3214,8 @@
  "emp-envelopment-b-v2": {
   "base": "emp-envelopment-b-v1",
   "name": "emp-envelopment-b-v2",
+  "status": "candidate",
+  "split": "development",
   "scenario_version": 2,
   "reserve": {
     "version": 2,
@@ -3159,9 +3228,14 @@
  "emp-envelopment-b-announced-v2": {
   "base": "emp-envelopment-b-v2",
   "name": "emp-envelopment-b-announced-v2",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
   "reserve_information": "announced"
 },
  "emp-envelopment-b-v3": {
+  "status": "candidate",
+  "split": "development",
    "base": "emp-envelopment-b-v2",
    "name": "emp-envelopment-b-v3",
    "scenario_version": 3,
@@ -3256,6 +3330,8 @@
    "calibration_change": "Owner-selected front-line pressure screen, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords. Keep B v2 mechanics and all other physical settings. A separate unverified development candidate, outside existing suites; every legal engine win counts."
  },
  "emp-envelopment-a-v2": {
+  "status": "candidate",
+  "split": "development",
    "base": "emp-envelopment-a-v1",
    "name": "emp-envelopment-a-v2",
    "scenario_version": 2,
@@ -3350,6 +3426,9 @@
    "calibration_change": "Owner-selected harder force, 2026-11-05: replace only the four front enemy Swordsmen with Greatswords, as in emp-envelopment-b-v3, keeping A's native AI and all of A's placements. A separate unverified development candidate, outside existing suites; every legal engine win counts."
  },
  "emp-envelopment-c-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-v2",
    "family": "limited_command",
@@ -3359,6 +3438,9 @@
    }
  },
  "emp-envelopment-c-silent-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-silent-v2",
    "family": "limited_command",
@@ -3368,6 +3450,9 @@
    }
  },
  "emp-envelopment-c-fast-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-fast-v2",
    "family": "limited_command",
@@ -3377,6 +3462,9 @@
    }
  },
  "emp-envelopment-c-global-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-global-v2",
    "family": "limited_command",
@@ -3386,6 +3474,9 @@
    }
  },
  "emp-envelopment-c-peer-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-peer-v2",
    "family": "limited_command",
@@ -3395,6 +3486,9 @@
    }
  },
  "emp-envelopment-c-relay-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-relay-v2",
    "family": "limited_command",
@@ -3404,6 +3498,9 @@
    }
  },
  "emp-envelopment-c-overview-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-overview-v2",
    "family": "limited_command",
@@ -3413,6 +3510,9 @@
    }
  },
  "emp-envelopment-c-muted-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-muted-v2",
    "family": "limited_command",
@@ -3422,6 +3522,9 @@
    }
  },
  "emp-envelopment-c-muted-overview-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-muted-overview-v2",
    "family": "limited_command",
@@ -3431,6 +3534,9 @@
    }
  },
  "emp-envelopment-c-unlinked-v2": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 2,
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-unlinked-v2",
    "family": "limited_command",
@@ -3440,6 +3546,8 @@
    }
  },
  "emp-envelopment-c-mid-v3": {
+  "status": "candidate",
+  "split": "development",
    "base": "emp-envelopment-a-v2",
    "name": "emp-envelopment-c-mid-v3",
    "scenario_version": 3,
@@ -3535,6 +3643,9 @@
    "calibration_change": "Development only. Rests on JUDGEMENT docs/twwarhammer3/communication-structure.md Intermediate C force: replace the two outer front enemy Greatswords with Swordsmen; preserve every placement and other setting. No model-based calibration or benchmark admission."
  },
  "emp-envelopment-c-mid-peer-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-peer-v3",
    "communication": {
@@ -3543,6 +3654,9 @@
    }
  },
  "emp-envelopment-c-mid-relay-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-relay-v3",
    "communication": {
@@ -3551,6 +3665,9 @@
    }
  },
  "emp-envelopment-c-mid-overview-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-overview-v3",
    "communication": {
@@ -3559,6 +3676,9 @@
    }
  },
  "emp-envelopment-c-mid-muted-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-muted-v3",
    "communication": {
@@ -3567,6 +3687,9 @@
    }
  },
  "emp-envelopment-c-mid-muted-overview-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-muted-overview-v3",
    "communication": {
@@ -3575,6 +3698,9 @@
    }
  },
  "emp-envelopment-c-mid-silent-v3": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 3,
    "base": "emp-envelopment-c-mid-v3",
    "name": "emp-envelopment-c-mid-silent-v3",
    "communication": {
@@ -3583,6 +3709,8 @@
    }
  },
  "emp-wing-horse-south-v1": {
+  "status": "candidate",
+  "split": "development",
    "base": "emp-envelopment-a-v2",
    "name": "emp-wing-horse-south-v1",
    "scenario_version": 1,
@@ -3729,6 +3857,9 @@
    "calibration_change": "Draft 2026-11-08 (unverified, not agreed): A v2 forces; friendly Knights wings moved forward to (65,-60)/(5,-60) and (65,-440); both enemy Knights moved to one wing."
  },
  "emp-wing-horse-north-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-v1",
    "name": "emp-wing-horse-north-v1",
    "deployment": {
@@ -3808,6 +3939,9 @@
    "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights on the north wing instead."
  },
  "emp-wing-horse-south-far-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-v1",
    "name": "emp-wing-horse-south-far-v1",
    "deployment": {
@@ -3887,6 +4021,9 @@
    "calibration_change": "Draft 2026-11-08 (unverified, not agreed): emp-wing-horse-south-v1 with both enemy Knights 170 m further east, so they reach the south wing later."
  },
  "emp-wing-horse-south-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-v1",
    "name": "emp-wing-horse-south-silent-v1",
    "family": "limited_command",
@@ -3896,6 +4033,9 @@
    }
  },
  "emp-wing-horse-south-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-v1",
    "name": "emp-wing-horse-south-peer-v1",
    "family": "limited_command",
@@ -3905,6 +4045,9 @@
    }
  },
  "emp-wing-horse-south-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-v1",
    "name": "emp-wing-horse-south-muted-v1",
    "family": "limited_command",
@@ -3914,6 +4057,9 @@
    }
  },
  "emp-wing-horse-north-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-north-v1",
    "name": "emp-wing-horse-north-silent-v1",
    "family": "limited_command",
@@ -3923,6 +4069,9 @@
    }
  },
  "emp-wing-horse-north-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-north-v1",
    "name": "emp-wing-horse-north-peer-v1",
    "family": "limited_command",
@@ -3932,6 +4081,9 @@
    }
  },
  "emp-wing-horse-north-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-north-v1",
    "name": "emp-wing-horse-north-muted-v1",
    "family": "limited_command",
@@ -3941,6 +4093,9 @@
    }
  },
  "emp-wing-horse-south-far-silent-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-far-v1",
    "name": "emp-wing-horse-south-far-silent-v1",
    "family": "limited_command",
@@ -3950,6 +4105,9 @@
    }
  },
  "emp-wing-horse-south-far-peer-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-far-v1",
    "name": "emp-wing-horse-south-far-peer-v1",
    "family": "limited_command",
@@ -3959,6 +4117,9 @@
    }
  },
  "emp-wing-horse-south-far-muted-v1": {
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
    "base": "emp-wing-horse-south-far-v1",
    "name": "emp-wing-horse-south-far-muted-v1",
    "family": "limited_command",
@@ -3973,7 +4134,7 @@
    "family": "flying reserve across separated ground fights",
    "brief": "Win the battle and preserve the army where possible. All legal tactics and engine timer wins count.",
    "split": "development",
-   "status": "candidate_unverified",
+   "status": "candidate",
    "battle_type": "classic",
    "attacker": "enemy",
    "behaviour_defaults": true,
@@ -4228,7 +4389,7 @@
   "family": "camp attack",
   "brief": "Empire levies and a mounted group attack a Chaos Dwarf camp held by three war machines and their guard. The defender wins when the timer runs out; every engine win counts.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "player",
   "behaviour_defaults": true,
@@ -4506,7 +4667,7 @@
   "family": "camp attack",
   "brief": "Empire levies and a mounted group attack a Chaos Dwarf camp held by three war machines and their guard. The defender wins when the timer runs out; every engine win counts.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "player",
   "behaviour_defaults": true,
@@ -4775,7 +4936,7 @@
   "family": "camp attack",
   "brief": "Empire levies and a mounted group attack a Chaos Dwarf camp held by three war machines and their guard. The defender wins when the timer runs out; every engine win counts.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "player",
   "behaviour_defaults": true,
@@ -5053,7 +5214,7 @@
   "family": "two-front defence",
   "brief": "A Kislev army holds two lines back to back against a lordless Norsca army. The defender wins when the timer runs out; every engine win counts.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "classic",
   "attacker": "enemy",
   "behaviour_defaults": true,
@@ -5351,6 +5512,9 @@
  "ksl-nor-lines-b-v1": {
   "base": "ksl-nor-lines-a-v1",
   "name": "ksl-nor-lines-b-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "calibration_change": "Case b of the 2026-11-08 two-front defence design (Claude, 2026-11-08): every enemy placement of ksl-nor-lines-a-v1 mirrored about x = 130 (x to 260 - x, bearing to (360 - bearing) % 360), so the heavy relief group starts in the east slot and the light one in the west. Rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines layout. Everything else is case a's, including its unverified card readbacks. Unverified: no game was launched.",
   "deployment": {
    "enemy": [
@@ -5448,7 +5612,7 @@
   "brief": "A Grand Cathay garrison holds a walled fort against an Empire army drawn up in four divisions that all attack from the start. The defender wins when the timer runs out; every engine win counts.",
   "calibration_change": "Development start (Claude, 2026-11-08) from the 2026-11-08 siege defence design in runs/siege-evals-20261108 (Settings, Rosters, Map and placements, Scripted divisions), with the set review's corrections in portfolio.md there; a provisional construction profile the owner has not reviewed. cth-emp-siege-a-v1 inherits this entry and adds the version 3 waves reserve. The marked choices behind these values are on this battle's evaluation page in docs/twwarhammer3 (the README's second evaluation battle) and in tests/twwarhammer3/test_wh3_waves.py; this text names neither the page's file nor the history, because the declaration avoids its own withheld words. Database costs (main_units_tables multiplayer_cost, read 2026-11-08 with scripts/wh3_db.py): garrison 5,550 (Lord Magistrate 400, 2 x Jade Warriors 525, 2 x Peasant Spearmen 350, 2 x Peasant Archers 400, Jade Warrior Crossbowmen 600, Fire Rain Rocket Battery 1,100, Grand Cannon 900); attacker 9,550, 1.72 times the garrison's, by enemy deployment slots 1-4 1,275, 5-8 1,950, 9-13 3,400 and 14-18 2,925. Men at large scale (num_men x 0.75, single entities as 1, unread in battle): garrison 734.5, attacker 1,463.5. units_custom_battle_permissions_tables lists the seven Cathay cards only under wh3_main_cth_cathay_mp; no lobby has read either roster back. The engine places the garrison. The 18 enemy placements stand on clear cells of a recorded Helmgart terrain grid, and by the set review's reading no earlier battle teleported units in a siege. siege_equipment {} clears the attacker's lobby list, and check_battle compares the battle's own equipment reading with it. Without behaviour_defaults the engine's own toggles stay. Unverified: no game was launched.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "siege",
   "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
   "attacker": "enemy",
@@ -5698,6 +5862,9 @@
  "cth-emp-siege-a-v1": {
   "base": "cth-emp-siege-a-all-v1",
   "name": "cth-emp-siege-a-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "brief": "A Grand Cathay garrison holds a walled fort against an Empire army drawn up in four divisions; a script documented on the battle's page holds three and releases them at 150, 300 and 450 s, or a division at once when one of its units loses men or comes under missile fire; the controller is told only that divisions may attack at different times. The defender wins when the timer runs out; every engine win counts.",
   "reserve": {
    "version": 3,
@@ -5759,6 +5926,9 @@
  "cth-emp-siege-a-all-gates-v1": {
   "base": "cth-emp-siege-a-all-v1",
   "name": "cth-emp-siege-a-all-gates-v1",
+  "status": "candidate",
+  "split": "development",
+  "scenario_version": 1,
   "brief": "A map screen run with hold only: a Grand Cathay garrison holds a walled fort on the Eagle Gate map against the base's 18-unit Empire army, placed by the engine and attacking from the start. The defender wins when the timer runs out; every engine win counts.",
   "calibration_change": "Map screen (Claude, 2026-11-09) for the screening launch of the 2026-11-08 siege defence design in runs/siege-evals-20261108 (Map and placements, Infrastructure): cth-emp-siege-a-all-v1 on battle_preset_wh2_main_minor_settlement_fortress_gates (Eagle Gate, in the siege map list of custom_battle.json from the 2026-10-14 battle type probe), with deployment null, so the engine places both armies. The base's 18 enemy placements stand on cells of a recorded Helmgart terrain grid and are not carried over, and the waves reserve binds those placements, so this entry has no reserve. Everything else is the base's: rosters, settings, siege_equipment {}, private_record and withheld. It is meant for one hold launch whose readings decide, by a rule fixed beforehand, whether this map replaces Helmgart; it is not an arm of any contrast. The marked choices behind it are on this battle's evaluation page in docs/twwarhammer3 and in tests/twwarhammer3/test_wh3_waves.py. Nothing on this map has been read: its terrain, capture points, starting positions and engine battle type are unread. Unverified: no game was launched.",
   "map": "battle_preset_wh2_main_minor_settlement_fortress_gates",
@@ -5770,7 +5940,7 @@
   "family": "siege attack",
   "brief": "A Kislev army attacks an Empire garrison in a walled fort, with one battering ram and no siege tower. The defender wins when the timer runs out; every engine win counts.",
   "split": "development",
-  "status": "prototype_not_admitted",
+  "status": "candidate",
   "battle_type": "siege",
   "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
   "attacker": "player",

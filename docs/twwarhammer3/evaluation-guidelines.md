@@ -306,9 +306,10 @@ and never used for a change. It is not secret: the repository is public and its 
 read every file.
 
 - *Check:* proposed (small): `play` refuses a model policy on a `held_out` scenario unless
-  the stage is confirm or final, and prints earlier model rounds on it; `setup.scenarios()`
-  stops inheriting `split` and `status` through `base` (today the admitted chariot card
-  resolves to `prototype_not_admitted`).
+  the stage is confirm or final, and prints earlier model rounds on it. Done on 2026-11-15:
+  `setup.scenarios()` no longer inherits `split`, `status` or `scenario_version` through
+  `base` (`setup.OWN`; until then the admitted chariot card resolved to
+  `prototype_not_admitted`).
 
 ### 3.3 Record who tuned on what
 

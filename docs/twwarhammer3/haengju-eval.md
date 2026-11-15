@@ -260,7 +260,7 @@ forces, map, timer or equipment change difficulty and breaches; every balance re
 
 | Field | Setting at `f3fec92` |
 |---|---|
-| Declarations | `cth-emp-siege-a-all-v1` is the base; `cth-emp-siege-a-v1` is the base plus `reserve`, a new `name` and `brief`, and a declaration test checks that they differ in nothing else. Both: `scenario_version` 1, family `siege defence`, split `development`, status `prototype_not_admitted` |
+| Declarations | `cth-emp-siege-a-all-v1` is the base; `cth-emp-siege-a-v1` is the base plus `reserve`, a new `name` and `brief`, and a declaration test checks that they differ in nothing else. Both: `scenario_version` 1, family `siege defence`, split `development`, status `candidate` (`prototype_not_admitted` until 2026-11-15); since that day each entry writes these itself |
 | Mode and role | `battle_type` `siege`, `expect.battle_type` `settlement_standard`; `attacker` `enemy`, `expect.player_defends` true; native AI attacker; the defender wins at the timer |
 | Map | Helmgart, `battle_preset_wh2_dlc13_minor_settlement_empire_fort` ([battle types](battle-types.md#the-scenarios)), described below |
 | Factions | Defender `wh3_main_sc_cth_cathay` / `wh3_main_cth_cathay_mp`; attacker `wh_main_sc_emp_empire` / `wh_main_emp_empire`; both with a lord. `units_custom_battle_permissions_tables` lists the seven Cathay cards only under `wh3_main_cth_cathay_mp` (read for the build on 2026-11-08), so this plan's earlier example `wh3_main_cth_the_western_provinces` would need it as `recruitment_faction`; this rests on JUDGEMENT tests/twwarhammer3/test_wh3_waves.py Cathay lobby faction. No recorded battle has Cathay units |

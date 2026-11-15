@@ -47,7 +47,7 @@ from wh3_ablation import run
 from wh3_fixtures import CONFIG, FakeMailbox
 
 from twwarhammer3.battle import escalade, llm, play, reference, reserve, wall_defence
-from twwarhammer3.battle.replay_schedule import PLACE, VERSION, digest
+from twwarhammer3.battle.replay_schedule import PLACE, VERSION, declaration_digest
 from twwarhammer3.battle.scripted import AttackNearest, RushNearest
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.battle.skills import Skills
@@ -261,7 +261,7 @@ def witness_schedule():
             batches.append({"time_ms": observation["time_ms"], "request": f"r{request}",
                             "orders": entries})
     start = {unit["id"]: {key: unit[key] for key in PLACE} for unit in observations[0]["friendly"]}
-    return {"version": VERSION, "scenario_sha256": digest(SCENARIOS[ATTACK]),
+    return {"version": VERSION, "scenario_sha256": declaration_digest(SCENARIOS[ATTACK]),
             "source": {"job": "escalade-witness"}, "start": start, "batches": batches}
 
 

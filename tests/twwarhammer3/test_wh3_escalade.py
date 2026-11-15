@@ -18,7 +18,7 @@ from wh3_ablation import assert_ablation, run
 from wh3_siege_attack import FORTIFICATIONS, SCENARIO, first_observation, later
 
 from twwarhammer3.battle import escalade, play
-from twwarhammer3.battle.replay_schedule import digest
+from twwarhammer3.battle.replay_schedule import declaration_digest
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 
@@ -276,7 +276,8 @@ def test_the_controls_play_their_own_rule():
 
 def test_the_replay_keeps_its_fortification_targets_and_drops_unlisted_ones():
     start = first_observation()
-    schedule = {"version": 1, "scenario_sha256": digest(SCENARIO), "source": {"job": "w"},
+    schedule = {"version": 1, "scenario_sha256": declaration_digest(SCENARIO),
+                "source": {"job": "w"},
                 "start": {unit["id"]: {key: unit[key] for key in ("type", "x", "z")}
                           for unit in start["friendly"]},
                 "batches": [{"time_ms": 100000, "request": "r9", "orders": [

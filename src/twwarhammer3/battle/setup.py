@@ -76,9 +76,16 @@ entry, and what reads them:
   shows only scenarios with started trials; its reader text is in report_notes.json);
   ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is
   held_out.
+- ``status``, ``split`` and ``scenario_version`` describe one entry's review state and are
+  never taken from ``base`` (``OWN``; owner, 2026-11-15): each entry writes its own. A declared
+  entry (one with ``expect``) has a ``status`` from ``STATUSES``: ``current`` (part of a
+  benchmark definition in force), ``candidate`` (under development or waiting for review),
+  ``held_out`` (reserved from tuning; its ``split`` is held_out too) or ``retired`` (of a
+  superseded design, kept only because a test, a live check or another entry's ``base`` names
+  it). An entry without ``expect`` is a harness scenario and has no status.
 - ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``,
-  ``scenario_version``: provenance that no code reads; it reaches reports through the
-  manifest's scenario.
+  ``scenario_version``: provenance; ``scenario_version`` also shows in a benchmark scenario's
+  report title, and the rest reaches reports through the manifest's scenario.
 """
 
 import hashlib
@@ -93,6 +100,10 @@ from gameai.provenance import REPO_ROOT
 from twwarhammer3.protocol import ProtocolError
 
 SCENARIOS_PATH = REPO_ROOT / "configs/twwarhammer3/scenarios.json"
+# Owner, 2026-11-15: "Your four suggested scenario statuses are fine." and, on which entry gets
+# which, "Approve this mapping (Recommended)". The values and OWN are explained in the docstring.
+STATUSES = ("current", "held_out", "candidate", "retired")
+OWN = ("status", "split", "scenario_version")
 CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
 # Lobby expressions that guard menu steps ("when") and read or change settings.
 LOBBY = "CustomBattleLobbyContext."
@@ -137,13 +148,17 @@ SIEGE_CLEAR_LIMIT = 12
 
 
 def scenarios() -> dict:
-    """Every entry of scenarios.json, with its ``base`` chain resolved."""
+    """Every entry of scenarios.json, with its ``base`` chain resolved. An entry takes its
+    battle from its base, never its review state (``OWN``)."""
     entries = json.loads(SCENARIOS_PATH.read_text())
 
     def resolve(name: str) -> dict:
         entry = dict(entries[name])
         base = entry.pop("base", None)
-        return merge(resolve(base), entry) if base else entry
+        if not base:
+            return entry
+        inherited = {key: value for key, value in resolve(base).items() if key not in OWN}
+        return merge(inherited, entry)
 
     return {name: resolve(name) for name in entries}
 

@@ -157,7 +157,7 @@ timer or rank change the difficulty; every reading of the battle rests on it.
 
 The declaration is `emp-chd-camp-v1` in
 [`scenarios.json`](../../configs/twwarhammer3/scenarios.json), `scenario_version` 1, split
-`development`, status `prototype_not_admitted`. In the fields of
+`development`, status `candidate` (`prototype_not_admitted` until 2026-11-15). In the fields of
 [the scenario specification](scenario-guidelines.md#the-scenario-specification):
 
 | Field | This battle |

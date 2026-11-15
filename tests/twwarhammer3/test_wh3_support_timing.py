@@ -41,7 +41,7 @@ def test_roster_settings_and_development_scope_match_owner_plan():
                            "funds": "funds_custom", "funds_amount": 2000, "time_limit_s": 1200,
                            "ai_stats_modifier": 1.0, "unit_scale": .75, "realism": False,
                            "player_defends": True}
-    assert s["split"] == "development" and s["status"] == "candidate_unverified"
+    assert s["split"] == "development" and s["status"] == "candidate"
     assert "benchmark" not in s and "scoring" not in s and s["behaviour_defaults"] is True
     assert [(u["x"], u["z"], u["bearing"], u["width"])
             for u in s["deployment"]["friendly"]] == [(0, 0, 180, 40), (-100, 60, 180, 30)]

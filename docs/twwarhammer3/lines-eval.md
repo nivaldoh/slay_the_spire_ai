@@ -174,7 +174,7 @@ funds 14,000). Another difficulty, timer or funds changes how hard the battle is
 | Content | `wh_main`, `wh_dlc08`, `wh3_main` |
 | Scripted elements | None: no `reserve`, `custom`, `scoring` or `benchmark` key |
 | Evaluator-only record | `private_record: true` in both cases: once per engine second the mod writes every unit of both sides, hidden enemies included, to a file no controller reads ([measurements](#measurements)) |
-| Status | `prototype_not_admitted`, split `development`; no reserved set and no agreed check |
+| Status | `candidate` (`prototype_not_admitted` until the status words changed on 2026-11-15), split `development`; no reserved set and no agreed check |
 
 ### Rosters
 

@@ -343,7 +343,7 @@ Added age changes how old the observations are, not how long the model thinks. `
 
 ## Scenarios
 
-A scenario is an entry in `configs/twwarhammer3/scenarios.json`; the `setup.py` docstring lists every field and the code that reads it. A job's manifest records the resolved entry (after `base` inheritance), and the job's source fingerprint versions the file.
+A scenario is an entry in `configs/twwarhammer3/scenarios.json`; the `setup.py` docstring lists every field and the code that reads it. Since 2026-11-15 each declared entry writes its own `status` (`current`, `candidate`, `held_out` or `retired`), `split` and `scenario_version`; an entry takes its battle from its `base` and never those three (owner: "Your four suggested scenario statuses are fine."). Today the mirror is `current`, 63 entries are `candidate`, 30 are `retired` and none is `held_out`. A job's manifest records the resolved entry (after `base` inheritance), and the job's source fingerprint versions the file.
 
 An entry with `expect` is a declared benchmark scenario; that alone doesn't mean it was admitted or verified. `validate_declaration` requires a pinned map, pinned factions, explicit rosters and every required `expect` key. Timed modes need a timer of 1200, 2400 or 3600 s and an episode cap at least 120 s above it; survival and domination without a timer need `time_limit_s: null` and `timer_enabled: false`. Reinforcement pools must be explicit. Declared scenarios refuse `--attach`. A declaration error stops play before the job directory exists.
 
@@ -356,7 +356,7 @@ Each rematch's starting state (positions, bearings, strength, ammunition, barrie
 Rules:
 - **Always pin the map**: the lobby keeps the last one used.
 - **Freeze random draws before use**: copy the rosters, pin each faction and record substitutions (`frozen_from`, `substitutions`).
-- **Held out means a different variant, not more launches.** More launches of a tuned scenario are more development battles. Held-out entries (`-heldout-wastes`, another map) stay out of tuning.
+- **Held out means a different variant, not more launches.** More launches of a tuned scenario are more development battles. Held-out entries (status and split `held_out`) stay out of tuning; the six `-heldout-wastes` entries of the superseded families were deleted on 2026-11-15, so none exists now.
 - **Measures about a group of units use declared unit keys** (`protected`), never the observed `class`.
 - **Check content on the installation that will run it**: a unit card visible in the lobby doesn't prove the unit can be recruited.
 

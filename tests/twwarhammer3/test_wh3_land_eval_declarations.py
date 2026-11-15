@@ -97,7 +97,7 @@ def test_each_declaration_passes_plays_checks_with_explicit_rosters(name):
     config = dict(PLAY_CONFIG)
     setup.fill_timeouts(scenario, config)
     setup.validate_declaration(scenario, config)
-    assert (scenario["status"], scenario["split"]) == ("prototype_not_admitted", "development")
+    assert (scenario["status"], scenario["split"]) == ("candidate", "development")
     assert scenario["behaviour_defaults"] is True
     defends = scenario["attacker"] == "enemy"
     assert scenario["expect"]["player_defends"] is defends

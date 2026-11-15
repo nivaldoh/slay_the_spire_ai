@@ -37,6 +37,13 @@ def digest(value) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def declaration_digest(scenario: dict) -> str:
+    """A scenario declaration's identity for a replay: every field but ``status``. Owner,
+    2026-11-15: "Leave status out (Recommended)": ``status`` is review state, which the HTML
+    report's grouping already leaves out, so a new status word does not orphan earlier wins."""
+    return digest({key: value for key, value in scenario.items() if key != "status"})
+
+
 def build(episode) -> dict:
     """The engine-accepted orders of one recorded won episode, in batches at their applied
     battle time, with each own unit's first position and each enemy target's last public one."""
@@ -73,7 +80,7 @@ def build(episode) -> dict:
     if start is None:
         raise ValueError(f"{episode}: no observation with own units")
     return {"version": VERSION, "scenario": manifest.get("config", {}).get("scenario"),
-            "scenario_sha256": digest(manifest["scenario"]),
+            "scenario_sha256": declaration_digest(manifest["scenario"]),
             "source": {"job": episode.parent.name, "episode": episode.name,
                        "policy": result.get("policy"), "delay_ms": result["delay_ms"],
                        "interval_ms": manifest["config"]["interval_ms"],
@@ -131,7 +138,8 @@ class ReplaySchedule:
         # JUDGEMENT?: Replay identity — Claude, 2026-11-08: the whole resolved scenario declaration
         # must hash alike; cards compare map, armies, expect, attacker, battle type. Another key
         # admits other schedules; which launches may run this foil rests on it.
-        if schedule["scenario_sha256"] != digest(scenario):
+        # Owner, 2026-11-15: "Leave status out (Recommended)" (declaration_digest).
+        if schedule["scenario_sha256"] != declaration_digest(scenario):
             raise ValueError("the schedule was recorded under another scenario declaration")
         self.schedule = schedule
         self.card = {"schedule_sha256": digest(schedule), "source": schedule["source"],
