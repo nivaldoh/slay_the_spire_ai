@@ -202,7 +202,7 @@ The settings:
 | Evaluator-only record | `private_record: true`: once per engine second the mod writes every unit of both sides, hidden enemies and enemy ammunition included, to a file no controller reads ([measurements](#measurements)) |
 | Public task | Win the battle; any engine win counts, and the timer ending is a loss for the attacker |
 | Input and control | The current public observation and orders; automated play unpaused at 1x |
-| Exposure and status | Development candidate; no reserved variant, no lobby readback, no agreed check |
+| Exposure and status | Development candidate; no reserved variant, no completed lobby readback (the 2026-11-10 attempt stopped at step 48), no agreed check |
 
 JUDGEMENT: Camp loadouts — Claude, 2026-11-08: war-machine upgrades at the lobby defaults, to be
 read back. Clearing them weakens the guns and needs a new lobby step; the guns' strength rests

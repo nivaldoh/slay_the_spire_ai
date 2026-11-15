@@ -21,10 +21,10 @@ history guides its design and is no evidence about the engine; the sources are i
 | Battle | Page | WH3 mode and role | Scenarios | The one claim | State |
 |---|---|---|---|---|---|
 | Cannae, 216 BCE | [cannae-eval.md](cannae-eval.md) | Land; the player defends | `emp-envelopment-*` | None by a powered contrast | Built and played since 2026-11-05 (windows 1 and 2: 22 launches) |
-| Haengju, 1593 | [haengju-eval.md](haengju-eval.md) | Siege; the player defends against divisions released in turn | `cth-emp-siege-a-v1`, `cth-emp-siege-a-all-v1`, the map screen `cth-emp-siege-a-all-gates-v1` | Fire across divisions | Built offline at `f3fec92` |
+| Haengju, 1593 | [haengju-eval.md](haengju-eval.md) | Siege; the player defends against divisions released in turn | `cth-emp-siege-a-v1`, `cth-emp-siege-a-all-v1`, the map screen `cth-emp-siege-a-all-gates-v1` | Fire across divisions | Built offline at `f3fec92`; one `hold` launch on 2026-11-14 ([reading](haengju-eval.md#first-construction-battle-2026-11-14)) |
 | Belgrade, 1456 | [camp-eval.md](camp-eval.md) | Land; the player attacks a camp | `emp-chd-camp-v1` | Guns or cover | Built offline at `e918091` |
 | Alesia, 52 BCE | [lines-eval.md](lines-eval.md) | Land; the player defends two lines back to back | `ksl-nor-lines-a-v1`, `-b-v1` | The main effort | One case-a hold at `6cff227`; first-rout premise not met ([reading](lines-eval.md#first-construction-battle-2026-11-12)) |
-| Izmail, 1790 | [escalade-eval.md](escalade-eval.md) | Siege; the player attacks | `ksl-emp-siege-a-v1` | Spread or concentrate | Built offline at `f3fec92` |
+| Izmail, 1790 | [escalade-eval.md](escalade-eval.md) | Siege; the player attacks | `ksl-emp-siege-a-v1` | Spread or concentrate | Built offline at `f3fec92`; two `hold` launches on 2026-11-14 ([reading](escalade-eval.md#first-stage-1-launches-2026-11-14)) |
 
 Several decision families appear in more than one design and in older battles. The review counted
 each family once and gave its claim to one battle. Reserve allocation between fronts or at a breach

@@ -4519,6 +4519,24 @@ tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R3, F1-1"
 
 [[plant]]
+id = "battle-package-file-imports-a-witness"
+guards = "The readings rule reads the package files that run before a readings module"
+file = "src/twwarhammer3/battle/__init__.py"
+old = 'its commander; the play loop, digests, the live watcher and the results register."""'
+new = 'its commander; the play loop, digests, the live watcher and the results register."""; from twwarhammer3.battle import camp'
+tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
+source = "2026-11-15 readings off witnesses: review R4-2"
+
+[[plant]]
+id = "protocol-imports-a-witness-in-a-function"
+guards = "The readings rule follows a module outside the battle package, imports inside functions included"
+file = "src/twwarhammer3/protocol.py"
+old = '    from twwarhammer3.battle.evidence_rules import gate_breached  # it imports this module'
+new = '    from twwarhammer3.battle.camp import GUNS; from twwarhammer3.battle.evidence_rules import gate_breached'
+tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
+source = "2026-11-15 readings off witnesses: review R4-2"
+
+[[plant]]
 id = "scenario-loader-reads-only-the-first-file"
 guards = "Entries come from every file of the scenarios directory"
 file = "src/twwarhammer3/battle/setup.py"

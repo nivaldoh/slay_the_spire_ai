@@ -4,13 +4,15 @@
 - No run evidence, game, save or weights file, and no API or private key is tracked, or waits
   untracked to be committed (Experiment and Artifact Rules).
 - AGENTS.md stays a short map: at most 200 lines (docs/workflow.md, keeping the process working).
-- A WH3 `*_readings.py` module, which reads finished battles for the evaluator, loads no module
-  that holds an evaluation battle's witness or controls (owner, 2026-11-15, "F1: readings off
-  witnesses"), so editing a witness file cannot change how a battle is read. From
-  `twwarhammer3.battle` it imports only three shared helper modules and a battle's `*_facts.py`,
-  and those reach only the four modules READINGS_MAY_LOAD adds. Three of the listed modules
-  define other controllers (`scripted.py`: hold and the rushes; `skills.py` and `llm.py`, reached
-  for one constant), and the rule does not keep readings away from those.
+- A WH3 `*_readings.py` module, which reads finished battles for the evaluator, loads none of
+  the modules written as an evaluation battle's witness and controls (`camp.py`, `lines.py`,
+  `wall_defence.py`, `escalade.py`) nor `calibration.py` (owner, 2026-11-15, "F1: readings off
+  witnesses"), so editing one of those files cannot change how a battle is read. The test keeps
+  it so by allowlist: from the game package a readings module imports only `protocol.py`, three
+  shared helper modules and a battle's `*_facts.py`, and those reach only the four modules
+  READINGS_MAY_LOAD adds. The rule does not keep readings away from every controller: the
+  battles also use `scripted.py`'s hold and rushes as controls, and `skills.py` and `llm.py` are
+  reached for one constant.
 
 The first two rules and the last also run on a planted violation, so a rule that can no longer
 fail shows up here. JUDGEMENT markers are only listed (scripts/check.py): only the owner
@@ -37,15 +39,18 @@ KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
                  rb"|(?<![\w-])sk-(?=[\w-]*[0-9])(?=[\w-]*[A-Z])[\w-]{32,}"
                  rb"|-----BEGIN [A-Z ]*PRIVATE KEY-----")
 AGENTS_MD_LINES = 200
-# The twwarhammer3.battle modules a readings module may import besides a *_facts module: the
-# evidence rules and the helpers witnesses and readings share. READINGS_MAY_LOAD adds what those
-# import in turn today (evidence_rules: setup; unit_geometry: skills for OUT, which imports llm,
-# which imports benchmark), so that a new path to a witness module fails the test. A *_facts
-# module imports nothing from the package.
-READINGS_MAY_IMPORT = ("evidence_rules", "scripted", "unit_geometry")
-READINGS_MAY_LOAD = (*READINGS_MAY_IMPORT, "setup", "skills", "llm", "benchmark")
+# The modules of the game package, named from its root, that a readings module may import besides
+# a battle's *_facts module: the protocol, the evidence rules and the helpers witnesses and
+# readings share. READINGS_MAY_LOAD adds what those import in turn today (evidence_rules: setup;
+# unit_geometry: skills for OUT, which imports llm, which imports benchmark), so that a new import
+# statement leading anywhere else in the package fails the test. A *_facts module and the two
+# package files import nothing from the package. Not followed: an import made by a call inside a
+# helper module, exec and the like, and the tests' own fixtures, which do use the witness modules.
+READINGS_MAY_IMPORT = ("protocol", "battle.evidence_rules", "battle.scripted",
+                       "battle.unit_geometry")
+READINGS_MAY_LOAD = (*READINGS_MAY_IMPORT, "battle.setup", "battle.skills", "battle.llm",
+                     "battle.benchmark")
 READINGS_RULE = "a readings module loads no witness module"
-BATTLE = ["twwarhammer3", "battle"]
 
 
 def game_imports(package: Path) -> list[str]:
@@ -64,11 +69,21 @@ def game_imports(package: Path) -> list[str]:
     return found
 
 
-def battle_imports(path: Path) -> list[tuple[int, str]]:
-    """(line, module) for each twwarhammer3.battle module a file of that package imports, in
-    every import statement's form, relative ones included. The module is "the package" where
-    only twwarhammer3 or twwarhammer3.battle is named, since a module is then reached as an
-    attribute, and "by a call" for importlib or __import__."""
+def game_module(root: Path, name: str) -> Path | None:
+    """The file of a module of the game package at `root`, named from it ("" is the package)."""
+    base = root.joinpath(*filter(None, name.split(".")))
+    return next((path for path in (base.with_suffix(".py"), base / "__init__.py")
+                 if path.is_file()), None)
+
+
+def module_imports(root: Path, name: str) -> list[tuple[int, str]]:
+    """(line, module) for each module of the game package that module `name` imports, in every
+    import statement's form, relative ones included. The module is named from the package root.
+    It is "a package" where only the package or a sub-package is named, since a module is then
+    reached as an attribute, and "by a call" for importlib or __import__."""
+    path = game_module(root, name)
+    package = name if path.name == "__init__.py" else name.rpartition(".")[0]
+    own = [root.name, *filter(None, package.split("."))]
     found = set()
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.Name) and node.id == "__import__":
@@ -76,7 +91,7 @@ def battle_imports(path: Path) -> list[tuple[int, str]]:
         if isinstance(node, ast.Import):
             targets = [alias.name for alias in node.names]
         elif isinstance(node, ast.ImportFrom):
-            base = BATTLE[:3 - node.level] if node.level else []
+            base = own[:len(own) + 1 - node.level] if node.level else []
             module = ".".join([*base, *([node.module] if node.module else [])])
             targets = [f"{module}.{alias.name}" for alias in node.names]
         else:
@@ -84,32 +99,39 @@ def battle_imports(path: Path) -> list[tuple[int, str]]:
         for parts in (target.split(".") for target in targets):
             if parts[0] == "importlib":
                 found.add((node.lineno, "by a call"))
-            elif parts in (BATTLE[:1], BATTLE):
-                found.add((node.lineno, "the package"))
-            elif parts[:2] == BATTLE:
-                found.add((node.lineno, parts[2]))
+            elif parts[0] == root.name:
+                parts = parts[1:]  # then the longest prefix that is a module's file
+                while parts and game_module(root, ".".join(parts)) is None:
+                    parts.pop()
+                file = game_module(root, ".".join(parts))
+                found.add((node.lineno, "a package" if file is None
+                           or file.name == "__init__.py" else ".".join(parts)))
     return sorted(found)
 
 
-def readings_loads(battle: Path) -> list[str]:
-    """What breaks the readings rule in a twwarhammer3.battle directory: each import, in a
-    readings module or in a module it reaches, of a module outside the lists above."""
+def readings_loads(root: Path) -> list[str]:
+    """What breaks the readings rule in the game package at `root`: each import, in a readings
+    module, in a module it reaches or in a package file that runs before it, of a module outside
+    the lists above."""
     found = set()
-    for start in sorted(battle.glob("*_readings.py")):
-        seen, queue = {start.stem}, [start]
+    for start in sorted((root / "battle").glob("*_readings.py")):
+        first = f"battle.{start.stem}"
+        seen = {first, "", "battle"}
+        queue = [name for name in (first, "", "battle") if game_module(root, name)]
         while queue:
-            path = queue.pop(0)
-            allowed = (READINGS_MAY_IMPORT if path == start else
-                       () if path.stem.endswith("_facts") else READINGS_MAY_LOAD)
-            for line, name in battle_imports(path):
-                if name == "by a call" and path != start and not path.stem.endswith("_facts"):
+            name = queue.pop(0)
+            allowed = (READINGS_MAY_IMPORT if name == first else
+                       () if name.endswith("_facts") or name in ("", "battle") else
+                       READINGS_MAY_LOAD)
+            for line, target in module_imports(root, name):
+                if target == "by a call" and allowed is READINGS_MAY_LOAD:
                     continue  # a shared helper's own importlib use is not followed
-                if name not in allowed and not (path == start and name.endswith("_facts")):
-                    found.add(f"{path.name}:{line} imports {name}, which {start.name} would "
-                              f"load: {READINGS_RULE}")
-                elif name not in seen and (battle / f"{name}.py").is_file():
-                    seen.add(name)
-                    queue.append(battle / f"{name}.py")
+                if target not in allowed and not (name == first and target.endswith("_facts")):
+                    found.add(f"{game_module(root, name).relative_to(root)}:{line} imports "
+                              f"{target}, which {start.name} would load: {READINGS_RULE}")
+                elif target not in seen:
+                    seen.add(target)
+                    queue.append(target)
     return sorted(found)
 
 
@@ -149,12 +171,17 @@ def test_a_planted_game_import_is_caught(tmp_path):
 
 
 def test_wh3_readings_load_no_witness_module():
-    assert readings_loads(ROOT / "src" / "twwarhammer3" / "battle") == []
+    assert readings_loads(ROOT / "src" / "twwarhammer3") == []
 
 
 def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_path):
+    root = tmp_path / "twwarhammer3"
     files = {
-        "clean_readings.py": (
+        "__init__.py": "",
+        # A package file runs before every readings module.
+        "battle/__init__.py": "from twwarhammer3.battle import wall_defence\n",
+        "protocol.py": "def late():\n    from twwarhammer3.battle.camp import GUNS\n",
+        "battle/clean_readings.py": (
             '"""Mentions twwarhammer3.battle.camp only in text."""\n'
             "from math import inf\n"
             "from twwarhammer3.battle.camp_facts import CUE_M\n"
@@ -162,7 +189,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             "from .scripted import distance\n"
             "from twwarhammer3.battle.unit_geometry import _centre\n"
             "from twwarhammer3.protocol import visible_enemies\n"),
-        "planted_readings.py": (
+        "battle/planted_readings.py": (
             "from twwarhammer3.battle.camp import CUE_M\n"
             "from twwarhammer3.battle import lines\n"
             "import twwarhammer3.battle.calibration\n"
@@ -175,29 +202,38 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             "def late():\n"
             "    return __import__('twwarhammer3.battle.camp')\n"
             "from twwarhammer3.battle.setup import scenarios\n"),
-        # Behind an allowed import: a facts module and a shared helper that import a witness.
-        "behind_readings.py": ("from twwarhammer3.battle.lines_facts import LINE\n"
-                               "from twwarhammer3.battle.unit_geometry import _active\n"),
-        "lines_facts.py": "from twwarhammer3.battle.scripted import distance\n",
-        "unit_geometry.py": ("from twwarhammer3.battle.skills import OUT\n"
-                             "from .calibration import NEIGHBOURS\n"),
-        "camp_facts.py": "CUE_M = 30\n", "evidence_rules.py": "", "scripted.py": "",
-        "skills.py": "import importlib\n", "calibration.py": "", "setup.py": "",
-        "camp.py": "from twwarhammer3.battle.calibration import CornerHold\n"}
+        # Behind allowed imports: a facts module, and a witness three imports away.
+        "battle/behind_readings.py": ("from twwarhammer3.battle.lines_facts import LINE\n"
+                                      "from twwarhammer3.battle.unit_geometry import _active\n"),
+        "battle/lines_facts.py": ("import importlib\n"
+                                  "from twwarhammer3.battle.scripted import distance\n"),
+        "battle/unit_geometry.py": "from twwarhammer3.battle.skills import OUT\n",
+        "battle/skills.py": "import importlib\nfrom .llm import LLMPolicy\n",  # a helper may
+        "battle/llm.py": "from twwarhammer3.battle.escalade import front_line\n",
+        "battle/evidence_rules.py": "import twwarhammer3.battle\n",
+        "battle/camp_facts.py": "CUE_M = 30\n", "battle/scripted.py": "", "battle/setup.py": "",
+        "battle/camp.py": "from twwarhammer3.battle.calibration import CornerHold\n",
+        "battle/lines.py": "", "battle/calibration.py": "", "battle/escalade.py": "",
+        "battle/wall_defence.py": ""}
     for name, text in files.items():
-        (tmp_path / name).write_text(text)
-    planted = [(1, "camp"), (2, "lines"), (3, "calibration"), (4, "escalade"),
-               (5, "wall_defence"), (6, "camp"), (7, "the package"), (8, "the package"),
-               (9, "by a call"), (11, "by a call"), (12, "setup")]
-    assert readings_loads(tmp_path) == sorted(
-        [f"planted_readings.py:{line} imports {name}, which planted_readings.py would load: "
-         f"{READINGS_RULE}" for line, name in planted]
-        + [f"lines_facts.py:1 imports scripted, which behind_readings.py would load: "
-           f"{READINGS_RULE}",
-           f"unit_geometry.py:2 imports calibration, which behind_readings.py would load: "
-           f"{READINGS_RULE}",
-           f"unit_geometry.py:2 imports calibration, which clean_readings.py would load: "
-           f"{READINGS_RULE}"])
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(text)
+    package = ("battle/__init__.py", 1, "battle.wall_defence")
+    behind = ("battle/llm.py", 1, "battle.escalade")
+    planted = {
+        "planted_readings.py": [package] + [("battle/planted_readings.py", line, name) for
+                                            line, name in (
+            (1, "battle.camp"), (2, "battle.lines"), (3, "battle.calibration"),
+            (4, "battle.escalade"), (5, "battle.wall_defence"), (6, "battle.camp"),
+            (7, "a package"), (8, "a package"), (9, "by a call"), (11, "by a call"),
+            (12, "battle.setup"))],
+        "clean_readings.py": [package, behind, ("protocol.py", 2, "battle.camp"),
+                              ("battle/evidence_rules.py", 1, "a package")],
+        "behind_readings.py": [package, behind, ("battle/lines_facts.py", 1, "by a call"),
+                               ("battle/lines_facts.py", 2, "battle.scripted")]}
+    assert readings_loads(root) == sorted(
+        f"{file}:{line} imports {name}, which {start} would load: {READINGS_RULE}"
+        for start, items in planted.items() for file, line, name in items)
 
 
 def test_no_run_game_or_key_file_can_be_committed():

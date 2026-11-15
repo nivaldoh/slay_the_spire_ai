@@ -60,7 +60,7 @@ design, that review and the build records are `runs/siege-evals-20261108/final-i
 from earlier battles comes from single recorded battles with other armies, and the history guides
 the design and is no evidence about the engine.
 
-The recorded runs this page cites from before 2026-11-14 ran on builds older than the pin, patch 9.0.5, Steam build
+The October runs this page cites ran on builds older than the pin, patch 9.0.5, Steam build
 26403568 ([pins](integration.md#pins)), whose patch includes battle balance changes. By each job's
 `environment.json`, the runs of 2026-10-13 and 2026-10-14 (the siege-attack, siege and settlement
 smokes, `smoke-random-siege-skills-20261014-0511` and `attack-emp-mirror-20261013`) ran on 9.0.3,
@@ -216,7 +216,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 |---|---|
 | Question and coverage | Whether an assault on three wall sectors at once beats one on the gate recess against a native garrison ([D1](#the-decision), the one claim); the Lancers' wait, the start timing, the reserve and suppression are descriptive or exploratory. Siege attack against native AI. Claims excluded: that the attacker was outnumbered, recognition of the battle, model ability |
 | Public task | Win the battle; every engine win counts, and the timer ending is a loss for the attacker. The public observation with the siege fields and the orders listed below, `besiege` and `attack_building` included, unpaused at 1x, with no added briefing; `llm` also reads its prompt's How to fight section ([public briefing](#public-briefing)) |
-| Concrete setup | The settings below, [rosters](#rosters) and [map and starts](#map-and-starts). No build has read this battle (the pin is 9.0.5, Steam build 26403568); Kislev and Empire unit keys and a ksl ram, which the lobby readback (check 0) checks |
+| Concrete setup | The settings below, [rosters](#rosters) and [map and starts](#map-and-starts). No build had read this battle when it was built (the pin is 9.0.5, Steam build 26403568); the two `hold` launches of 2026-11-14 ran on that build. Kislev and Empire unit keys and a ksl ram, which the lobby readback (check 0) checks |
 | Decision opportunity | [D1](#the-decision): from the start, with the fortification list and the wall's defenders in view; three sectors or the gate recess. The groups stage 150 m south of their targets and climb at phase 2, by 150 s at the latest |
 | Mechanic reference | [Why this WH3 game mode](#why-this-wh3-game-mode) and [the interface](#the-siege-attack-interface-as-built): CA's documentation, the recorded runs on 9.0.3 and 9.0.4, the 2026-11-03 checkpoint battles on 9.0.5, and database values read on 2026-11-09. Unread: the mod's siege orders, `is_on_top_of_wall`, a player climb against an active garrison, a siege timer win |
 | Winnability evidence | None yet: the owner's demonstration (check 8) and the frozen witness gate (check 6) |
@@ -243,7 +243,7 @@ The settings:
 | Script | None: the garrison is native AI from the first tick, with no hold, release, reserve or custom objective |
 | Public task | Win the battle; any engine win counts, and the timer ending is a loss for the attacker |
 | Input and control | The current public observation with the siege fields, and the orders `move`, `attack`, `halt`, `behaviour`, `ability`, `besiege` and `attack_building`; automated play unpaused at 1x |
-| Exposure and status | Development candidate; no reserved variant, no lobby readback, no agreed check |
+| Exposure and status | Development candidate; no reserved variant, no agreed check; the lobby readback completed on 2026-11-10 ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)) |
 
 ### Rosters
 
@@ -584,7 +584,7 @@ The values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Escalade thresh
 | `GateOnly` (`gate_only`) | C5, shortcut | No ladders: the infantry, its Streltsi holding their fire, and the Reserve wait 150 m south of g1; the crew besieges and the Grom attacks g1 in phase 2; once the gate is breached or c2 is ours, every unit but the Grom goes to the victory points |
 | `BesiegeNearest` (`besiege_nearest`) | C3, shortcut | Its own plan: from the first decision every climber besieges the wall piece nearest its start, the crew besieges g1 and the Grom attacks it, and the Lancers, the Boyar and any non-climber attack the visible enemy nearest them; a unit on the wall, inside the front line, or whose target fell attacks the visible enemy nearest it |
 | `EscaladeReplay` | C9, exploratory | `replay_schedule.ReplaySchedule` over a witness win; siege orders keep their fortification ids and are dropped when the target is not listed or reads 0% |
-| `hold`, `rush_nearest`, `attack_nearest` (`battle/scripted.py`) | C1 and C2, shortcuts | `hold` gives no orders; the other two run or attack at the nearest visible enemy. None has played a siege the player attacks |
+| `hold`, `rush_nearest`, `attack_nearest` (`battle/scripted.py`) | C1 and C2, shortcuts | `hold` gives no orders; the other two run or attack at the nearest visible enemy. `hold` played this battle twice on 2026-11-14 ([reading](#first-stage-1-launches-2026-11-14)); the other two have played no siege the player attacks |
 
 The controls' values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Control parameters; the
 replay rests on JUDGEMENT src/twwarhammer3/battle/replay_schedule.py Replay carried out, Replay

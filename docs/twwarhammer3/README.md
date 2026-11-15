@@ -31,11 +31,11 @@ their reasoning; **record** pages are history, and their entries stay as written
 | [cannae-eval.md](cannae-eval.md) | live | Cannae A/B/C: candidates, results, deciding checks; all unverified |
 | [cannae-comparison.md](cannae-comparison.md) | live | battles A and B: familiar tactic against adaptation |
 | [cannae-communication.md](cannae-communication.md) | live | battle C: one army under limited communication |
-| [historical-evals.md](historical-evals.md) | open | the evaluation battles adapted from history: what each claims, the shared method rules, the live order; nothing new launched |
-| [haengju-eval.md](haengju-eval.md) | open | second evaluation battle: a siege defence against divisions released in turn; built offline at `f3fec92`, nothing launched (decision 15) |
+| [historical-evals.md](historical-evals.md) | open | the evaluation battles adapted from history: what each claims, the shared method rules, the live order; first `hold` launches of three of them on 2026-11-12 and 2026-11-14 |
+| [haengju-eval.md](haengju-eval.md) | open | second evaluation battle: a siege defence against divisions released in turn; built offline at `f3fec92`; one `hold` launch, 2026-11-14 (decision 15) |
 | [camp-eval.md](camp-eval.md) | open | camp attack after Belgrade 1456: a Land battle the player attacks; built offline, nothing launched |
-| [lines-eval.md](lines-eval.md) | open | two-front defence after Alesia: a Land battle the player defends; built offline, nothing launched |
-| [escalade-eval.md](escalade-eval.md) | open | siege attack after Izmail 1790: a siege the player attacks; built offline, nothing launched |
+| [lines-eval.md](lines-eval.md) | open | two-front defence after Alesia: a Land battle the player defends; built offline; one `hold` launch, 2026-11-12 |
+| [escalade-eval.md](escalade-eval.md) | open | siege attack after Izmail 1790: a siege the player attacks; built offline; two `hold` launches, 2026-11-14 |
 | [communication-structure.md](communication-structure.md) | open | peer messages against a commander on battle C; stages 0-3 built and run 2026-11-08, the stage-2 gate failed (decision 14) |
 | [tactic-judges.md](tactic-judges.md) | open | LLM and VLM tactic annotation; nothing adopted |
 | [../thesis/](../thesis/proposal.md) | open | proposed master's thesis |

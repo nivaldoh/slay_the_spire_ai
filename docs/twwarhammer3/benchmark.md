@@ -389,8 +389,9 @@ the readers' rules, changes which results may be pooled; nothing reads this tabl
 | Keep | Comments and documents; a refactor that changes no behaviour; a scenario's `status`, `brief` or `family` | Results stand and may be pooled | `report` splits on every commit, a documents-only one included, because a job records the checkout's HEAD. The HTML report starts a new test setup for any change to a job's source files outside its presentation files, a comment included; documents are not among those files. It leaves `status`, `brief` and `family` out of its scenario comparison, and the replay check leaves `status` out. A comment in a policy file changes that controller's source hash. `stats` pools the rows of one harness version across commits |
 
 The Keep row and the readers disagree in both directions. Under the table a refactor that changes
-no behaviour would keep earlier results poolable; `report` and the HTML report split on it, which
-is the safer rule when nobody has shown that behaviour is unchanged. `stats` is looser than the
+no behaviour would keep earlier results poolable; `report` splits on it, and so does the HTML
+report outside its presentation files, which is the safer rule when nobody has shown that
+behaviour is unchanged. `stats` is looser than the
 table: it pools the rows of one harness version whatever their commit, track or build (10 of its
 561 groups hold rows from more than one source commit, 41 rows, on 2026-11-15). Until the owner
 decides, the readers stay as they are, and a change at the Replay or Re-read level says which it is

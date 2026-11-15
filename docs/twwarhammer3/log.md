@@ -33,15 +33,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 Claude, the rest of the Terminal-Bench plan, after the owner chose all four items
 (owner-direction.md). Branch `tb-plan-rest-20261115`, offline, $0, no game. Cards, comparison
-scripts and the review: `runs/terminal-bench-review-20261115/impl/` (`card-F1.md`,
-`card-split.md`, `card-F6-F8.md`, `review-R3.md`).
+scripts and two reviews: `runs/terminal-bench-review-20261115/impl/`.
 - Readings (`1821b30`): the values a witness and its readings share moved, unchanged, to
   `camp_facts.py`, `lines_facts.py`, `wall_facts.py` and `escalade_facts.py`, and three helpers
   from `calibration.py` to `unit_geometry.py`. No `*_readings.py` module loads `camp`, `lines`,
-  `wall_defence`, `escalade` or `calibration` any more, directly or through another module, and
-  a repo rule test keeps it so. They still load `scripted.py` and, through one constant,
-  `skills.py` and `llm.py`. `compare_F1.py`: 14 of 14; seven module attributes that only the new
-  modules use are no longer given by the old ones.
+  `wall_defence`, `escalade` or `calibration`, directly or through another module; a repo rule
+  test follows the game package's import statements from each readings module and fails on a
+  new path. Readings still load `scripted.py` and, for one constant, `skills.py` and `llm.py`.
+  `compare_F1.py`: 14 of 14; seven attributes only the new modules use left the old ones.
 - A witness's own file hash no longer covers the moved values. `report` and the HTML report
   still split on a change to them; `stats` would pool two jobs of one witness and one `-vN-`
   name that differ only there. No row is affected today (0 of the 138 rows naming these modules
@@ -49,22 +48,24 @@ scripts and the review: `runs/terminal-bench-review-20261115/impl/` (`card-F1.md
 - Scenario files (`a61164f`): `scenarios.json` became eleven files under
   `configs/twwarhammer3/scenarios/`, each entry's text unchanged. `setup.entries()` reads the
   directory's own files in name order and refuses a name or field written twice.
-  `compare_split.py`: 4 of 4 (118 entries written and resolved as from the old file). This
-  commit edits 9 marker lines on three evaluation pages and 3 marker continuation lines, the
-  path only.
+  `compare_split.py`: 4 of 4 (118 entries written and resolved as from the old file). 9 marker
+  lines on three evaluation pages and 3 marker continuation lines got the new path only.
 - Change levels (`4a59e0a`): [a table](benchmark.md#which-change-invalidates-which-results) of
-  three levels (replay, re-read, keep) with what each reader does today, marked `JUDGEMENT?`;
-  nothing reads it. Page headers: the same six rows at the top of the five evaluation pages.
-- Review (`review-R3.md`): no changed order and no changed resolved entry; 15 findings on
-  checks a wrong version passed, sentences stronger than the code, and stale sentences. The
-  last commit of the branch addresses them: the rule test follows every import form, four
-  sentences that called played battles unplayed are corrected, the table's reader column is
-  rewritten, and a plain line above four markers says which of their values moved (the markers
-  are unedited; whether they should move is the owner's).
+  three levels (replay, re-read, keep) with what each reader does today, marked `JUDGEMENT?`
+  (the marker's wording was corrected in `54bbdbe`); nothing reads it. Page headers: the same six rows at the top of the five evaluation pages.
+- Two reviews (`review-R3.md`, `review-R4.md`) found no changed controller order and no changed
+  resolved entry, and 21 findings, addressed in the last two commits: wrong versions the rule
+  test passed, sentences stronger than the code (the table's reader column among them), and 12
+  sentences on five pages that still called these battles unplayed, unread or without a lobby
+  readback. A plain line above four
+  markers says which of their values moved; the markers are unedited, and whether they move is
+  the owner's.
 - Wrong in earlier commit messages: `1821b30` says the readings import "no module that defines
-  a controller"; `a61164f` says 13 marker lines on four pages.
-- Plants: 8 added (491); `check.py --plants` caught 486 of 486 at `4a59e0a`, before the last
-  five. Later jobs start a new HTML test setup (source files changed).
+  a controller", that no test using the moved names is edited and that two references follow
+  (one comment line of `test_wh3_escalade.py` is, as a third); `a61164f` says 13 marker lines
+  on four pages.
+- Plants: 10 added (493); `check.py --plants` caught 491 of 491 at `54bbdbe`, before the last
+  two. Later jobs start a new HTML test setup (source files changed).
 - Unverified: no live run. No job has loaded a scenario from the directory or run a witness
   since these commits.
 

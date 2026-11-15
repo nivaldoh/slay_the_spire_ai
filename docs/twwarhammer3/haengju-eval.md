@@ -286,7 +286,7 @@ forces, map, timer or equipment change difficulty and breaches; every balance re
 | Withheld words | 19 historical names (`haengju`, `gwon`, `gyeong`, `konishi`, `hwacha` and others), which no controller input may hold (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_waves.py Withheld words) |
 | Public task | Win the battle; every engine win counts, including holding until the timer |
 | Input and control | The current public observation and orders, including `build`; automated play unpaused at 1x |
-| Exposure and status | Development candidate; no reserved variant, no lobby readback, no agreed check |
+| Exposure and status | Development candidate; no reserved variant, no agreed check; the lobby readback of the all-at-once declaration passed on 2026-11-10 ([readings](historical-evals.md#first-lobby-readbacks-2026-11-10)) |
 
 ### Rosters
 
