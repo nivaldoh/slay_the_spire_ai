@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-15 (ideas from the references), goals verbatim: "Read docs/references.md and identify
+  one good idea that we can take from one of our listed research materials to improve our
+  project. It could be in any sense: code practices, evaluation guidelines, benchmarking task
+  ideas, etc", then "Let's write down your suggestion and try to identify another one."
+  Applied: two proposals, neither adopted, a
+  [difficulty threshold as a score](twwarhammer3/benchmark-implementation.md#difficulty-threshold-as-a-score)
+  and [questions on judgement calls](workflow.md#questions-on-judgement-calls), listed as
+  [review-queue](review-queue.md#decisions) item 16. No game or paid call.
 - 2026-11-15 (frontier benchmark survey), goal verbatim: "Read the series of tweets in
   tmp/benchmark_tweets.md and add the benchmarks there to our list of research materials, which
   we will use as additional references in the future for best practices, ideas, etc. After

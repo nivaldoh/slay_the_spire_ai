@@ -574,3 +574,53 @@ as the initial benchmark used (`runs/benchmark-initial-20261102/handoff.md`); St
 attribution of a session's own edits, if separate checkouts do not end read-only sessions'
 extra checks; and a trial of independent offline tasks, with its cases and success criteria
 agreed first.
+
+### Questions on judgement calls
+
+Saved at the owner's request on 2026-11-15 ("Let's write down your suggestion and try to
+identify another one"); nothing here is adopted. The source is Anthropic's
+[How AI agents shape experts' judgment calls](https://www.anthropic.com/research/agents-judgment-calls)
+(2026-10-27), which the [question rule](#before-a-change-the-card) cites for its 86%.
+
+The study, read again on 2026-11-15 through a summarising fetch: 50 analysts worked with an
+agent whose lean on each of four two-option choices was set by a coin flip. They matched the
+lean 86% of the time, where about 50% was expected with no influence. In 38 cases an analyst
+stated a preference before seeing the lean; when the agent then disagreed they switched 60% of
+the time, against 6% when it agreed. 52% rated the final recommendation as more their own than
+the agent's. The post tests no remedy. It suggests that an agent make the best case for each
+option, or ask for the person's view before giving its own, on the decisions that matter most,
+and that deferral be measured in everyday work.
+
+Here the question rule puts the recommendation first and adds the best case for the other
+option, while [judgement.md](judgement.md#the-marker) keeps recommendations out of marker text.
+In the "Both games" records of [owner-direction.md](owner-direction.md) dated 2026-11-12 to
+2026-11-15, the four latest dates in the file, 33 of the 41 quoted answers to questions with
+options carry "(Recommended)". Of the other 8, three are "Decide later", two of them on
+questions the record says had a recommended option; one is an extra pick in a multi-select;
+and four do not record which option was recommended. Among the 33 are answers that set how a
+battle, a refusal or a repeat counts ("End the battle", "Relaunch once, then unplayed", "Stop
+like 401/402", "interrupted, readers skip it", "First battle everywhere", "Engine only,
+validation beside"). This is one reader's hand count (`runs/reference-ideas-20261115/`). The
+tag is not recorded the same way everywhere (`runs/code-quality-20261114/handoff.md` has
+"Approve all" without it), and the 41 leave out one numbered free-text answer of 2026-11-15
+to three questions, which followed all three recommendations. The count does not show that
+any answer was wrong, and a good recommendation should be taken. The study's analysts
+followed leans set by a coin flip at about the same rate, so a rate this high is what both a
+considered yes and deference would produce.
+
+JUDGEMENT: Ask first — Claude, 2026-11-15, proposes the two parts below. Keeping the
+recommendation first on every question, today's rule, costs the owner less time per question.
+Nothing rests on this proposal.
+
+1. For a question whose answer settles or removes a `JUDGEMENT` marker, the agent gives the
+   options without a recommended tag, in an order that does not signal one, with the best case
+   for each, and records the owner's answer before giving its own lean if asked. Every other
+   question (landing, cleanup, when to fix) keeps the recommendation first.
+2. Each handoff counts the owner's answers that matched a stated recommendation, beside the
+   counts in [Keeping the process working](#keeping-the-process-working).
+
+Limits: part 1 costs the owner more time per marker question, against the priority of less
+review work, which is why it covers marker questions only. The post tests neither part. Its
+analysts who stated a view first still switched 60% of the time once the agent disagreed, so
+recording the first answer may matter more than withholding the lean. It is one study of one
+task, with about an hour per analyst.

@@ -44,6 +44,8 @@ Leads for our work, none adopted:
 - Scoring rules: Harvey LAB passes a task only when every rubric criterion passes; WeirdML
   takes 80% of its score from the area under a model's best-so-far curve over tokens and 20%
   from its final value; METR turns success rates into a task length.
+- Written up on 2026-11-15 as a proposal, still unadopted: METR's threshold as a WH3 score, a
+  [difficulty ladder](twwarhammer3/benchmark-implementation.md#difficulty-threshold-as-a-score).
 
 Benchmarks:
 - [Terminal-Bench 4](https://www.tbench.ai/) (25): agents doing hard tasks in a terminal; the
@@ -151,6 +153,10 @@ Benchmarks:
   memory that cause harm in later sessions, to users, workspace owners or outsiders. *Abstract.*
 - [METR time horizons](https://metr.org/time-horizons/) (1, METR): the task length, in human
   expert time, at which an agent succeeds 50% or 80% of the time; not updated since 2026-09-08.
+  Read again 2026-11-15 through a summarising fetch: for each agent a logistic curve of success
+  against human task length, from 6 runs per task on over a hundred tasks; the paper is
+  [Kwa et al.](https://arxiv.org/abs/2503.14499) (abstract only) and the analysis code
+  [METR/eval-analysis-public](https://github.com/METR/eval-analysis-public) (not read).
 - [MLS-Bench](https://arxiv.org/abs/2605.08678) (1): 140 tasks in 12 domains; improve one part of
   an ML system and show that the gain holds across settings and scales. *Abstract.*
 - [MobileWorld](https://arxiv.org/abs/2512.19432) (1): 201 phone tasks across 20 apps, with long
@@ -1264,7 +1270,12 @@ Anthropic posts:
 - [Building a C compiler with parallel Claudes](https://www.anthropic.com/research/building-c-compiler),
   2026-02-05. The verifier must be nearly perfect; keep test output terse. *Checked.*
 - [How AI agents shape experts' judgment calls](https://www.anthropic.com/research/agents-judgment-calls),
-  2026-10-27. Analysts took the agent's lean 86% of the time. *Checked.*
+  2026-10-27. Analysts took the agent's lean 86% of the time. *Checked.* Read again 2026-11-15
+  through a summarising fetch: the lean was set by a coin flip for 50 analysts on four
+  two-option choices; in the 38 cases where an analyst stated a view first, they switched 60%
+  of the time when the agent then disagreed; it suggests the best case for each option, or
+  asking for the person's view first, on the decisions that matter most. Unadopted proposal:
+  [questions on judgement calls](workflow.md#questions-on-judgement-calls).
 - [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-claude),
   2026-03-23. Needs a way to know progress (a test oracle); progress file. *Read.*
 - [How we contain Claude](https://www.anthropic.com/research/how-we-contain-claude), 2026-05-25.

@@ -49,6 +49,8 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     integration or proposed gate adoption was claimed by that cleanup; its checks used synthetic records. Evidence:
     `runs/unmerged-cleanup-20261110/review/alesia/` and `runs/benchmark-window-20261110/alesia-readings/`.
 
+16. **Two ideas from the references (2026-11-15).** Written down at your request; neither is adopted, scheduled or verified, and both sections say what is yours to decide. (a) [Difficulty threshold as a score](twwarhammer3/benchmark-implementation.md#difficulty-threshold-as-a-score), after METR's time horizons: a scenario gets a ladder of steps fixed in advance, and a controller is scored by the step where it wins half its battles. In the register's rows since 2026-11-01 that ended in a win or a loss, the direct model controllers won 0 of 24. Choose whether to try it, on which setting and at what size; no battle was run. (b) [Questions on judgement calls](workflow.md#questions-on-judgement-calls), after Anthropic's judgment-calls study: a question that settles a `JUDGEMENT` marker would come without a recommended option, and handoffs would count the answers that matched a recommendation. Of the 41 recorded answers to questions with options from 2026-11-12 to 2026-11-15, 33 carry "(Recommended)" (one reader's hand count). Choose whether the question rule changes. Counts and scripts: `runs/reference-ideas-20261115/`.
+
 
 ## Completed work and handoffs
 

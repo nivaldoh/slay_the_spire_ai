@@ -104,6 +104,7 @@ Numbers are unchanged; open the relevant item before acting.
 13. **Cannae:** does a script win clear harder A; three WingSupport repeats; rows 1, 2 and 5 of the checks.
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), the Alesia first-rout premise, and from 2026-11-14 Haengju v1's park or version 2 and Izmail's tower-owner fix, `can_climb` probe and authored starts.
+16. **Reference ideas:** two unadopted proposals, a difficulty threshold as the score and questions on judgement calls without a recommended option, await a yes, change or no.
 
 ## Runtime and ownership
 
