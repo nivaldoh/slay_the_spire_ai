@@ -31,41 +31,36 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-11-15: October designs deleted, one outcome label, a status on each scenario
 
-Claude, at the owner's goal "Implement the plan" (the Terminal-Bench comparison's plan,
-`runs/terminal-bench-review-20261115/report.md`); answers in owner-direction.md ("Delete all of
-it", "Leave status out", "Approve this mapping"). Branch `tb-plan-impl-20261115`, offline, $0, no
-game. Cards, lists and scripts: `runs/terminal-bench-review-20261115/impl/`.
-- Deleted (`db90a31`; tag `wh3-legacy-20261115` has them): `battle/cards.py` and the `card`
-  command, 20 of `battle/calibration.py`'s 25 classes, 47 of 165 scenario entries (285 register
-  rows stay), `test_wh3_cards.py` and the tests of the 20 classes. 30 October entries stay,
-  status `retired`. `calibration.py` keeps `SmallDiagnostic`, `CornerHold`, `PriorityStrike`,
-  `LineTeam`, `LineTeamReserve` and seven helpers, node for node; `lines.py` is not edited.
-  The first commit deleted 23 classes; its review found the air relief's marked witness
-  choice (`PriorityStrike`) and the parked team-structures plan (`LineTeam`) still name three,
-  so they were restored from the tag.
-- Outcome (`4419ebe`): `benchmark.evaluate` takes its outcome from `benchmark_outcome` (moved
-  from `cards.py`). Version 2 labels a trial the engine ended but whose final copying was
-  stopped `operator_stop`; every other label is version 1's. Only won, lost and draw have an
-  outcome, as before: unresolved by the owner's answer, the other labels unchanged and still
-  open. Recount of 1,881 saved episode results: `evaluate` differs from the tag's on 0.
-- Statuses (`2f2e82a`): 94 declared entries write their own status (1 `current`, 63 `candidate`,
-  30 `retired`) and split, and 81 their own version; `base` no longer hands those down. Every entry resolves as
-  before except its status word. `ReplaySchedule` hashes a declaration without `status`.
-- Source hashes change for calibration, benchmark, setup, replay_schedule and `__main__`, so a
-  new launch of a kept diagnostic will not pool with its October rows. No kept scenario's
-  battle fields change; the Lua and the pack are untouched.
-- Plants: 14 removed with their code, 10 retargeted, 18 added (each caught by hand); 481 now.
-  Eight of the new ones guard the base class's order bookkeeping, which only tests of deleted
-  subclasses had covered.
-- Checks: `check.py` passed before each commit (70 skipped each time, in the worktree). Two
-  reviewers read the changes against their cards (`impl/review-A.md`, `impl/review-BC.md`):
-  no changed behaviour in kept code and no changed saved number; 8 and 9 findings, on test
-  cover, stale sentences and one unstated relabel (a forfeit with a cut copy, now a forfeit
-  again), fixed in the two following commits.
-- Not changed, for the owner: outside the two profiles the text `report` still shows a timer
-  win as `time_limit` and `stats` tallies raw statuses; whether a forfeit counts as a non-win
-  in a denominator; no reader prints the unresolved count as its own figure; the held-out tie
-  between status and split is marked `JUDGEMENT?`.
+Claude, at the owner's goal "Implement the plan" (`runs/terminal-bench-review-20261115/report.md`);
+answers in owner-direction.md. Branch `tb-plan-impl-20261115`, offline, $0, no game. Cards,
+lists, scripts and reviews: `runs/terminal-bench-review-20261115/impl/`.
+- Deleted (tag `wh3-legacy-20261115` has them): `battle/cards.py` and the `card` command, 20 of
+  `battle/calibration.py`'s 25 classes with their tests, and 47 of 165 scenario entries (their
+  285 register rows stay). Kept, node for node: `SmallDiagnostic`, `CornerHold` and seven
+  helpers, which `lines.py` uses unedited, and `PriorityStrike`, `LineTeam` and
+  `LineTeamReserve`, which the approved list had on it and current pages still name.
+- Outcome: `benchmark.evaluate` takes its outcome from `benchmark_outcome` (moved from
+  `cards.py`). Version 2 labels a trial the engine ended but whose final copying was stopped
+  `operator_stop`; every other label is version 1's. Only won, lost and draw have an outcome,
+  as before. Recount of 1,881 saved episode results: `evaluate` differs from the tag's on 0.
+- Statuses: 94 declared entries write their own status (1 `current`, 63 `candidate`, 30
+  `retired`) and split, and 81 their own version; `base` no longer hands those down. Every
+  entry resolves as before except its status word. `ReplaySchedule` hashes a declaration
+  without `status`.
+- Source hashes change for calibration, benchmark, setup, replay_schedule and `__main__` (and
+  one comment line of report_html), so a new launch of a kept diagnostic will not pool with
+  its October rows. No kept scenario's battle fields change; the Lua and pack are untouched.
+- Plants: 14 removed with their code, 10 retargeted, 20 added; `check.py --plants` caught 481
+  of 481 at `d299586`, before the last two were added.
+- Checks: `check.py` passed before each commit (70 skipped each time, in the worktree). Three
+  reviews (`impl/review-A.md`, `review-BC.md`, `review-R2.md`) found no changed behaviour in
+  kept code and no changed saved number; their 25 findings on test cover, stale sentences and
+  one relabel are addressed in the later commits, except those listed next.
+- Left as found: marker lines and plant guards that still mention the card code or "version 1"
+  (the owner's to change); `docs/thesis/` (untracked) still names `card`.
+- For the owner: whether the three kept classes stay; the text `report`'s timer rule and
+  `stats`' raw tallies outside the two profiles; whether a forfeit is a non-win in a
+  denominator; no reader prints the unresolved count; the `JUDGEMENT?` held-out tie.
 - Unverified: no live run. A schedule saved to disk before `2f2e82a`, if one exists, carries a
   hash that included status and must be rebuilt from its episode.
 

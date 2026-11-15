@@ -326,7 +326,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
 - `src/twwarhammer3/battle/confirm.py`: checkpoint RL: the closed loop
 - `src/twwarhammer3/battle/calibration.py`: the small diagnostics' base class and geometry
-  helpers, which lines.py is built on, and the five diagnostics current work still names
+  helpers, which lines.py is built on, and the four diagnostics current work still names
 - `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
 - `src/twwarhammer3/battle/export.py`: offline model decisions, exchanges and provenance
 - `src/twwarhammer3/battle/digest.py`: trace summaries

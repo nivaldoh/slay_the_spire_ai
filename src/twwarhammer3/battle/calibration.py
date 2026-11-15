@@ -1,4 +1,4 @@
-"""The base class and geometry helpers of the small public-state diagnostics, and the five
+"""The base class and geometry helpers of the small public-state diagnostics, and the four
 diagnostics still named by current work.
 
 Twenty other diagnostics of the October small scenarios and tactic cards were deleted on

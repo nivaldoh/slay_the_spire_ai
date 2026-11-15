@@ -17,9 +17,8 @@ def test_every_declared_entry_writes_its_own_status_and_no_harness_entry_has_one
             assert written[name].get("status") in setup.STATUSES, name
             assert "split" in written[name], name
             # JUDGEMENT?: Held-out tie — Claude, 2026-11-15: status held_out exactly when split is
-            # held_out, because export.py holds rows out by split. The owner's answers named the
-            # four statuses, not this tie, and scenario-guidelines.md calls split and status
-            # separate facts; letting them differ would let a held-out entry reach an export.
+            # held_out (export.py holds rows out by split). Letting them differ, as the scenario
+            # guidelines' "separate facts" allow, changes which entries exports hold out.
             assert (entry["status"] == "held_out") == (entry["split"] == "held_out"), name
         else:
             assert not any(key in entry for key in setup.OWN), name

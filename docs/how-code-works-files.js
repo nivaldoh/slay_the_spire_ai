@@ -407,7 +407,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "src/twwarhammer3/battle/calibration.py",
-   "text": "the small diagnostics' base class and geometry helpers, which lines.py is built on, and the five diagnostics current work still names",
+   "text": "the small diagnostics' base class and geometry helpers, which lines.py is built on, and the four diagnostics current work still names",
    "box": "map.setup",
    "list": "docs/twwarhammer3/README.md"
   },

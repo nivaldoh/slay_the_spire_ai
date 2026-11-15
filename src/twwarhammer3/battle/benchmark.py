@@ -153,12 +153,12 @@ BENCHMARK_OUTCOME_VERSION = 2
 # mapping moves episodes into or out of the denominator of any reader adopting version 1.
 def benchmark_outcome(result: dict | None) -> str:
     """won, lost or draw as the engine ended it (timer endings included; a later error or stop
-    keeps it); forfeit (the controller's own code failed for good in the battle); not_built;
-    operator_stop or setup_or_game_failure (shown separately); never_started (no result, or no
-    battle began); or unresolved (provider, key, credit, budget and wall-cap stops, a silent or
-    restarted game, an exception in our own code). Only won, lost and draw count in a win rate
-    (evaluate); the owner on unresolved, 2026-11-15: "Unresolved battles can be kept out of the
-    counts"."""
+    keeps it, unless the final copying was stopped: then operator_stop); forfeit (the
+    controller's own code failed for good in the battle); not_built; operator_stop or
+    setup_or_game_failure (shown separately); never_started (no result, or no battle began); or
+    unresolved (provider, key, credit, budget and wall-cap stops, a silent or restarted game, an
+    exception in our own code). Only won, lost and draw count in a win rate (evaluate); the
+    owner on unresolved, 2026-11-15: "Unresolved battles can be kept out of the counts"."""
     if result is None or result.get("status") in (None, "missing_result"):
         return "never_started"
     # Owner, 2026-11-13: "interrupted, readers skip it (Recommended)". A Ctrl-C during the final

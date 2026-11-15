@@ -1,4 +1,4 @@
-"""The base class's and the five kept diagnostics' commitments; game execution still needs the
+"""The base class's and the four kept diagnostics' commitments; game execution still needs the
 live checks.
 
 The tests of the 20 diagnostics deleted on 2026-11-15 went with them (owner: "Delete all of
@@ -226,6 +226,17 @@ def test_corner_hold_clamps_its_line_holds_and_fights_only_in_contact():
 
 def by_unit(orders, uid):
     return [order for order in orders if order["unit"] == uid]
+
+
+def test_priority_strike_flyers_take_the_enemy_with_the_lowest_men_fraction():
+    """Its recorded card: "with neither visible, the enemy with the lowest men fraction". Added
+    on 2026-11-15: the helper came back from the tag with only a deleted class's test covering
+    it. Wrong version: the fraction is inverted, so the flyers go for the fullest unit."""
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "screamers", 0, 0, can_fly=True)],
+           "enemy": [unit("e1", "clanrats", 0, 40), unit("e2", "clanrats", 0, 200, men=10)]}
+    orders = PriorityStrike().decide(obs)
+    validate_orders(orders, obs)
+    assert [(order["unit"], order["target"]) for order in orders] == [("f1", "e2")]
 
 
 def test_priority_strike_sends_flyers_past_the_screen_and_holds_the_ground_unit():

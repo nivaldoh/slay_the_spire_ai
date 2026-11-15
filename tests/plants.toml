@@ -4472,3 +4472,21 @@ old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items() if key not in ("status", "scenario_version")})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
 source = "2026-11-15 scenario statuses, review: only split had been varied"
+
+[[plant]]
+id = "priority-strike-inverts-the-men-fraction"
+guards = "With no artillery or lord in sight the flyers take the enemy with the lowest men fraction"
+file = "src/twwarhammer3/battle/calibration.py"
+old = 'return unit["men"] / unit["men0"] if unit.get("men0") else 1'
+new = 'return unit["men0"] / unit["men"] if unit.get("men0") else 1'
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_priority_strike_flyers_take_the_enemy_with_the_lowest_men_fraction"]
+source = "2026-11-15 legacy deletion, second review: the restored helper had lost its only test"
+
+[[plant]]
+id = "replay-identity-leaves-out-the-expected-settings"
+guards = "A schedule is refused when any declaration field but status differs"
+file = "src/twwarhammer3/battle/replay_schedule.py"
+old = 'for key, value in scenario.items() if key != "status"})'
+new = 'for key, value in scenario.items() if key not in ("status", "expect")})'
+tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
+source = "2026-11-15 scenario statuses, second review: a field the fixture lacks was never varied"

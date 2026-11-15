@@ -356,7 +356,7 @@ Each rematch's starting state (positions, bearings, strength, ammunition, barrie
 Rules:
 - **Always pin the map**: the lobby keeps the last one used.
 - **Freeze random draws before use**: copy the rosters, pin each faction and record substitutions (`frozen_from`, `substitutions`).
-- **Held out means a different variant, not more launches.** More launches of a tuned scenario are more development battles. Held-out entries (status and split `held_out`) stay out of tuning; the six `-heldout-wastes` entries of the superseded families were deleted on 2026-11-15, so none exists now.
+- **Held out means a different variant, not more launches.** More launches of a tuned scenario are more development battles. Held-out entries (status and split `held_out`; that the two go together rests on JUDGEMENT? `tests/twwarhammer3/test_wh3_scenario_status.py` Held-out tie) stay out of tuning; the six `-heldout-wastes` entries of the superseded families were deleted on 2026-11-15, so none exists now.
 - **Measures about a group of units use declared unit keys** (`protected`), never the observed `class`.
 - **Check content on the installation that will run it**: a unit card visible in the lobby doesn't prove the unit can be recruited.
 

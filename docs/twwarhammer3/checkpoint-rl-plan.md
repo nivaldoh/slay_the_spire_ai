@@ -428,7 +428,8 @@ source may run to the timer, about 23 minutes):
    "passed at `45fe7b0`; runtime changed since" (scripted team; its "unchanged since" is
    already stale after `4592a54`); whether to spend the siege check's 15 launches or the team
    check's four is the owner's decision. The mod and `play.py` change is logged as a harness
-   version, and tactic-card cells that span it are starred by the pack hash.
+   version, and tactic-card cells that spanned it were starred by the pack hash (the card board was
+   deleted on 2026-11-15).
 
 JUDGEMENT: stage1_check — Claude, 2026-10-25: these eleven launches and pass rules, versus
 the handoff's live checks; competes with checkpoint-rl.md `verification_plan`. What stages 2

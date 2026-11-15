@@ -59,11 +59,17 @@ built offline at $0 ([log](twwarhammer3/log.md#2026-11-15-october-designs-delete
 your answers in [owner direction](owner-direction.md)): the superseded October designs are
 deleted (tag `wh3-legacy-20261115` has them), the benchmark readers count through one outcome
 label with unresolved kept out, and each declared scenario writes its own status. Unverified:
-no live run. Two questions it leaves for you: outside the two profiles the text `report` still
-shows a timer win as `time_limit` and `stats` tallies raw statuses; and whether a forfeit
-counts as a non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)).
-Still waiting for a go-ahead from the report: F1 (readings stop importing from witnesses), F6
-(the replay, re-read, keep table), F8 (page headers).
+no live run. Five questions it leaves for you. (1) Three classes on the deletion list you
+approved were kept, because current pages still name them, which the list had not said:
+`PriorityStrike` (the air relief's marked witness choice) and `LineTeam` and `LineTeamReserve`
+(the parked team-structures plan); delete them or keep them? (2) Outside the two profiles the
+text `report` still shows a timer win as `time_limit` and `stats` tallies raw statuses. (3)
+Whether a forfeit counts as a non-win in a denominator
+([outcome table](twwarhammer3/benchmark.md#outcome-and-score)). (4) No reader prints the
+unresolved count as its own figure, which the option you answered had mentioned. (5) Status
+`held_out` is tied to split `held_out` by a rule marked `JUDGEMENT?`. Still waiting for a
+go-ahead from the report: F1 (readings stop importing from witnesses), F6 (the replay,
+re-read, keep table), F8 (page headers).
 
 Code-quality cleanup, 2026-11-14 (Claude, owner's goal): refactors without behaviour change, merged and pushed at `11c581e`, controller files other than team, commander and graph_goals untouched (owner); the later rounds that day also changed the other controller files and the Lua (owner: "Everything now") and split check.py and benchmark.py ([log](twwarhammer3/log.md#2026-11-14-controller-file-cleanup-lua-included-and-two-splits)). Offline, $0 ([log](twwarhammer3/log.md#2026-11-14-code-quality-cleanup-without-behaviour-change)); handoff `runs/code-quality-20261114/handoff.md`.
 

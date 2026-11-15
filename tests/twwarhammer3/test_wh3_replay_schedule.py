@@ -218,7 +218,8 @@ def test_a_new_status_word_does_not_orphan_a_recorded_win(tmp_path):
 
 
 @pytest.mark.parametrize("field, value", [("split", "held_out"), ("scenario_version", 9),
-                                          ("brief", "another brief"), ("family", "another")])
+                                          ("brief", "another brief"), ("family", "another"),
+                                          ("expect", {"time_limit_s": 1200})])
 def test_a_schedule_is_refused_when_any_field_but_status_differs(tmp_path, field, value):
     """The marked rule "Replay identity": the whole declaration hashes alike, less only the
     status the owner took out. Wrong version: the hash leaves out the HTML report's whole list
