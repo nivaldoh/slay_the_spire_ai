@@ -18,7 +18,9 @@ Both games:
   Asked again after the first landing: the controller-file findings (3 identical copies only,
   5, 7, 8, llm.py's ticket line, cannae.py/lines.py comments, the Lua apply_order): "Everything
   now" (new source and pack hashes from that revision); the check.py and benchmark.py splits:
-  "Do both now"; landing that round: "Merge and push".
+  "Do both now"; landing that round: "Merge and push". For the controller-file round: "Merge
+  and push (Recommended)"; its 22 diagram plants (file field now scripts/diagram_files.py) and
+  local-v2-witness-rejection-not-retried (on forget_refused): "Approve all (Recommended)".
 - 2026-11-14 (away window from 03:18), goal verbatim: "Make progress and improve the repo. Do live
   game runs as needed. $20 budget if needed. I won't be around to answer questions." Brief:
   `runs/haengju-20261114/brief.md`.
