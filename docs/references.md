@@ -6,6 +6,67 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Restructuring plan (2026-11-15)
+
+Sources read for [restructure-plan.md](restructure-plan.md), a proposal that is not implemented.
+The clones are in `runs/restructure-plan-20261115/refs/` and nothing in them was executed; the
+plan's own References section gives the cited lines and how much of each file was read.
+*Checked* here means a second agent opened the cited files at the commit named. No method below is
+adopted, and none shows that a layout improves an agent's results.
+
+- [Harbor](https://github.com/harbor-framework/harbor) at `ec6aeab`, the runner behind
+  Terminal-Bench. One class names the files of a trial folder (`src/harbor/models/trial/paths.py`)
+  and agents are registered under declared names (`src/harbor/agents/factory.py`). The hand-kept
+  directory tree in its `AGENTS.md` lists three folders that do not exist. *Checked.*
+- [Inspect AI](https://github.com/UKGovernmentBEIS/inspect_ai) at `59c1340` and
+  [Inspect Evals](https://github.com/UKGovernmentBEIS/inspect_evals) at `3034895`. A registry binds
+  a declared name to an object (`src/inspect_ai/_util/registry.py`), every tool reads a run's log
+  through one function (`src/inspect_ai/log/_file.py`), and each evaluation has a folder with the
+  same entries (`src/inspect_evals/gpqa/`). About 100 forwarding shims for moved names are still in
+  the package, which is the reason the plan keeps no old import path alive. *Checked.*
+- [SWE-bench](https://github.com/SWE-bench/SWE-bench) at `02e7a74`. Version 5.0.0 replaced its
+  central table of per-repository constants with one folder of fixed file names per task, and log
+  parsers are found by declared name with aliases (`swebench/harness/log_parsers/`). *Checked.*
+- [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) at `68c3f95`,
+  [PettingZoo](https://github.com/Farama-Foundation/PettingZoo) at `e767786` and
+  [SMAC](https://github.com/oxwhirl/smac) at `d6aab33`. Environment ids carry a version and resolve
+  through one table (`gymnasium/envs/registration.py`); one folder holds one environment
+  (`pettingzoo/classic/tictactoe/`); SMAC's interface file imports nothing
+  (`smac/env/multiagentenv.py`) and one method starts the game. *Checked.*
+- [CARLA Leaderboard](https://github.com/carla-simulator/leaderboard) at `cfecdc8`. An agent is
+  loaded by path behind one wrapper (`leaderboard/autoagents/agent_wrapper.py`), and its scoring
+  change from 2.0 to 2.1 touched one file. ScenarioRunner was read beside it. *Checked.*
+- [Transformers](https://github.com/huggingface/transformers) at `cf13eb9`: a tracked generated
+  file is compared with its generator (`utils/check_dummies.py`), the model for a Code map built
+  from docstrings. *Checked.*
+- [Import Linter](https://github.com/seddonym/import-linter) at `b2d4938`: contracts for layers,
+  forbidden imports and independent packages; an exception that matches nothing fails. The plan
+  proposes the same rules as plain tests and asks which the owner prefers. *Checked.*
+- graph-as-policy at `71549e1` and open-robot-skills at `752dfbd` (clones in
+  `runs/gap-plan-20261031/`, listed under [GaP](#gap-graph-controllers-for-wh3-2026-10-31)): a
+  generated reference checked for freshness, and a test that compares moved code with its old
+  version. *Checked.*
+- Parnas, [On the Criteria To Be Used in Decomposing Systems into Modules](https://www.win.tue.nl/~wstomv/edu/2ip30/references/criteria_for_modularization.pdf),
+  CACM 1972: a module hides one decision that may change. *Read.*
+- Martin, [Design Principles and Design Patterns](https://staff.cs.utu.fi/~jounsmed/doos_06/material/DesignPrinciplesAndPatterns.pdf),
+  2000, pages 17 to 24: no cycles between packages, and a cycle is broken by moving the shared part
+  out. *Read (those pages).*
+- Ousterhout, [CS 190 notes on modular design](https://web.stanford.edu/~ouster/cgi-bin/cs190-winter18/lecture.php?topic=modularDesign):
+  split a file by unrelated jobs and never by length. *Read.*
+- Fowler, [PresentationDomainDataLayering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html):
+  layers suit a small system, and a larger one gets top-level modules by domain with the layers
+  inside each. The plan's recommended package set is the other way round and says so. *Read.*
+- Gloaguen et al., [Evaluating AGENTS.md](https://arxiv.org/abs/2602.11988) (v3), and McMillan,
+  [Instruction Adherence in Coding Agent Configuration Files](https://arxiv.org/abs/2605.10039):
+  measurements of what instruction files do for coding agents. The first was read through a
+  summarising fetch. *Read.*
+- Read for the plan and not cited on its page: [MARBLE](https://github.com/ulab-uiuc/MARBLE),
+  [RoCo](https://github.com/MandiZhao/robot-collab), [SMACv2](https://github.com/oxwhirl/smacv2),
+  [CleanRL](https://github.com/vwxyzjn/cleanrl), Hugging Face datasets' test helpers, Metz's
+  [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction) and
+  Cockburn's [hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/). The
+  reports are `runs/restructure-plan-20261115/research/*.md`. *Read.*
+
 ## Frontier benchmark survey (2026-11-15)
 
 Chris Barber asked 56 people in AI which benchmarks they would trust most to show that an LLM

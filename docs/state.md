@@ -3,6 +3,8 @@
 Updated 2026-11-15. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+Restructuring plan, 2026-11-15/16 (Claude; no code changed, no game): [restructure-plan.md](restructure-plan.md) is a proposal with markers J1 to J36, written from eleven code maps, eight reference reports, four designs and two rounds of independent checks; unverified. Next: the owner's answers to J3, J5 and J4 ([review queue](review-queue.md#decisions) item 17). Evidence: `runs/restructure-plan-20261115/`.
+
 Terminal-Bench plan, 2026-11-15 (Claude): the superseded October designs are deleted except three classes current pages name (tag `wh3-legacy-20261115`), benchmark readers count through one outcome label and each declared scenario writes its own status; offline, $0, no live run ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)). The rest of that plan followed the same day: readings off the witness modules, the scenario file split by family, a proposed change-levels table and evaluation page headers ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)). Seven questions wait in the [review queue](review-queue.md#completed-work-and-handoffs).
 
 Historical-battle construction holds, 2026-11-14 (Claude, 03:18-04:45; games closed): Haengju 1a and Izmail stage 1, three `hold` launches, $0 ([log](twwarhammer3/log.md#2026-11-14-first-haengju-and-izmail-construction-holds)). Haengju's gate hit points fell to 0 with D1's Spearmen at it, so Gate stop ended its stage 1; Izmail ended at the timer twice, found `can_climb` missing and tower owners read from the wrong side (fix parked on `tower-owner-20261114`). Also: five code-page views refreshed. Next: item 15's new choices. Evidence: `runs/haengju-20261114/`.
@@ -32,13 +34,11 @@ WH3 [research focus](twwarhammer3/research-focus.md) saved for review (2026-11-0
 
 Overnight suite run ended 2026-11-04; owner on its page: ok for now, reviews later; no more battles for now. [Scenario guidelines](twwarhammer3/scenario-guidelines.md): plan only, no evaluations scheduled.
 
-GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md)), no snapshot, so a new VM session needs a fresh install and Steam login. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled).
-[Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status): two live PC+VM battles at `01647bd` on 11-03, unverified (one battle each, no agreed check). [Three-step work](twwarhammer3/mp-next-steps.md): offline parts built, PC test bed run ($0), paid VM session stopped. [Foundation](twwarhammer3/multiplayer-control-foundation.md#implementation-status): one client so far; two clients and full acceptance remain. [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
+GCP: no VM and no disk. Game disk deleted 2026-11-05 ([owner](owner-direction.md)), no snapshot, so a new VM session needs a fresh install and Steam login. Cloud spend of the $10: about $2.06 compute plus storage (unreconciled). [Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status): two live PC+VM battles at `01647bd` on 11-03, unverified (one battle each, no agreed check). [Three-step work](twwarhammer3/mp-next-steps.md): offline parts built, PC test bed run ($0), paid VM session stopped. [Foundation](twwarhammer3/multiplayer-control-foundation.md#implementation-status): one client so far; two clients and full acceptance remain. [VM team plan](twwarhammer3/vm-team-plan.md) decisions 1-4 still open.
 
 [Visual reports](twwarhammer3/reports.md): the [cooperation proposal](twwarhammer3/reports.md#cooperation-evidence-proposal) adopts no new score; reader feedback on the [suite report](twwarhammer3/reports.md#coordination-suite) remains open.
 
-Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`.
-Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): its fixes landed, the last 14 moving the report fingerprint ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB).
+Factory, repo upkeep of 2026-11-06: the owner ran both of its cleanup scripts (nine stale worktrees and 841 `runs/` paths removed); handoff `runs/repo-improve-20261106/handoff.md`. Repo upkeep and bug audit of 2026-11-08 (Claude; nothing runs): its fixes landed, the last 14 moving the report fingerprint ([log](twwarhammer3/log.md#2026-11-08-repository-upkeep-and-bug-audit)); handoff `runs/repo-improve-20261108/handoff.md`. The owner ran its cleanup scripts (159 `runs/` paths and 1,449 duplicate C: game logs, 4.2 GB).
 
 Completed work and handoffs: [review queue](review-queue.md#completed-work-and-handoffs); [test repairs](twwarhammer3/log.md#2026-11-09-test-faults-timing-and-duplicate-setup). Later planning: [workflow](workflow.md#session-context-improvements).
 
@@ -86,8 +86,7 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Owner decisions waiting
 
-Details and source links live in the [review queue](review-queue.md#decisions).
-Numbers are unchanged; open the relevant item before acting.
+Details and source links live in the [review queue](review-queue.md#decisions). Numbers are unchanged; open the relevant item before acting.
 
 1. **Benchmark:** mirror checked; suite `JUDGEMENT` choices (battles, calibration, arms, tie-break, check) await review.
 2. **Experiments/spending:** whether to confirm the first comparison, with which arms and budget; older screens deferred.
@@ -105,6 +104,7 @@ Numbers are unchanged; open the relevant item before acting.
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), the Alesia first-rout premise, and from 2026-11-14 Haengju v1's park or version 2 and Izmail's tower-owner fix, `can_climb` probe and authored starts.
 16. **Reference ideas:** two unadopted proposals, a difficulty threshold as the score and questions on judgement calls without a recommended option, await a yes, change or no.
+17. **Restructuring plan:** [restructure-plan.md](restructure-plan.md) waits for J3, J5 and J4 before any work; the other markers are asked phase by phase.
 
 ## Runtime and ownership
 

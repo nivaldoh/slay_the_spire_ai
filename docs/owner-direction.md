@@ -5,6 +5,21 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-15 (restructuring plan), goal verbatim: "You are the long-term owner of this codebase.
+  Without implementing anything yet, write a detailed, concrete plan to completely restructure
+  the code to make it better. We need to identify the architecture that will make it as readable,
+  maintainable, clean and organized as possible. Let's try to make it as easy as possible for you
+  to work with. Refer to best practices on code architecture. Use some of our collected "research
+  material" codebases as references on how to structure our code. Carefully explain what changes
+  and why." While the work ran: "Let's be open to any type of structure for now, without
+  restricting ourselves to previous decisions. Use JUDGEMENT calls in the document so I can decide
+  whether we will move forward with relevant changes or not." On 2026-11-16, after a usage limit
+  had stopped the page's checks: "Let's proceed with the goal". Applied: the proposal
+  [restructure-plan.md](restructure-plan.md), whose choices carry markers J1 to J36 and are listed
+  in its decisions table; [review-queue](review-queue.md#decisions) item 17. No code changed and
+  nothing is adopted. Earlier answers the page reopens ("Decide later" on the witness hash and the
+  change-levels table, "Leave as is" on trace readers, the 2026-11-15 report's "Do not move
+  existing battles") stand until the owner answers the matching marker.
 - 2026-11-15 (ideas from the references), goals verbatim: "Read docs/references.md and identify
   one good idea that we can take from one of our listed research materials to improve our
   project. It could be in any sense: code practices, evaluation guidelines, benchmarking task
