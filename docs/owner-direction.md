@@ -13,6 +13,8 @@ Both games:
   [difficulty threshold as a score](twwarhammer3/benchmark-implementation.md#difficulty-threshold-as-a-score)
   and [questions on judgement calls](workflow.md#questions-on-judgement-calls), listed as
   [review-queue](review-queue.md#decisions) item 16. No game or paid call.
+  Asked how the commit (`a03a804`, branch `reference-ideas-20261115`) should land: "Merge and
+  push (Recommended)".
 - 2026-11-15 (frontier benchmark survey), goal verbatim: "Read the series of tweets in
   tmp/benchmark_tweets.md and add the benchmarks there to our list of research materials, which
   we will use as additional references in the future for best practices, ideas, etc. After
