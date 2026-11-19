@@ -3,7 +3,7 @@
 Updated 2026-11-18. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
-The [long-term code structure](restructure-plan.md) proposes a whole-repository layout and seven steps. Most moves are in WH3. The owner reviews the destination and the first two steps before implementation ([item 17](review-queue.md#decisions)).
+The [long-term code structure](restructure-plan.md) is being implemented on the `restructure` branch. The owner authorized all seven steps and delegated overnight decisions ([item 17](review-queue.md#decisions)).
 
 Terminal-Bench plan, 2026-11-15 (Claude): the superseded October designs are deleted except three classes current pages name (tag `wh3-legacy-20261115`), benchmark readers count through one outcome label and each declared scenario writes its own status; offline, $0, no live run ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)). The rest of that plan followed the same day: readings off the witness modules, the scenario file split by family, a proposed change-levels table and evaluation page headers ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)). Seven questions wait in the [review queue](review-queue.md#completed-work-and-handoffs).
 
@@ -104,7 +104,7 @@ Details and source links live in the [review queue](review-queue.md#decisions). 
 14. **Communication structure:** all three structures chosen; existing forced-message rule retained as a provisional baseline. Communication necessity is one experiment type. Runs deferred by the owner; sample size, scoring and exact checks remain proposals ([answers](twwarhammer3/communication-structure.md#questions-for-the-owner)).
 15. **Historical siege evaluations:** the per-battle questions and set rules ([overview](twwarhammer3/historical-evals.md)), the Alesia first-rout premise, and from 2026-11-14 Haengju v1's park or version 2 and Izmail's tower-owner fix, `can_climb` probe and authored starts.
 16. **Reference ideas:** two unadopted proposals, a difficulty threshold as the score and questions on judgement calls without a recommended option, await a yes, change or no.
-17. **Restructuring plan.** [Owner decisions](restructure-plan.md#decisions-for-the-owner) cover the layout, migration and evidence. No implementation has started on main.
+17. **Restructuring plan.** [Owner decisions](restructure-plan.md#decisions-for-the-owner) cover the layout, migration and evidence. Work is underway in its own checkout.
 
 ## Runtime and ownership
 

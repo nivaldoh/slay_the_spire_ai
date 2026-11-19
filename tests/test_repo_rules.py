@@ -109,19 +109,29 @@ def module_imports(root: Path, name: str) -> list[tuple[int, str]]:
     return sorted(found)
 
 
-def readings_loads(root: Path) -> list[str]:
+def readings_loads(root: Path) -> dict[Path, list[str]]:
     """What breaks the readings rule in the game package at `root`: each import, in a readings
     module, in a module it reaches or in a package file that runs before it, of a module outside
     the lists above."""
-    found = set()
-    for start in sorted((root / "battle").glob("*_readings.py")):
-        first = f"battle.{start.stem}"
-        seen = {first, "", "battle"}
-        queue = [name for name in (first, "", "battle") if game_module(root, name)]
+    visited = {}
+    for start in sorted(root.rglob("*_readings.py")):
+        relative = start.relative_to(root)
+        first = ".".join(relative.with_suffix("").parts)
+        seen = set()
+        queue = [first]
+        found = set()
         while queue:
-            name = queue.pop(0)
+            name = queue.pop()
+            if name in seen:
+                continue
+            seen.add(name)
+            if name:
+                queue.append(name.rpartition(".")[0])  # Includes namespace package parents.
+            module = game_module(root, name)
+            if module is None:
+                continue
             allowed = (READINGS_MAY_IMPORT if name == first else
-                       () if name.endswith("_facts") or name in ("", "battle") else
+                       () if name.endswith("_facts") or module.name == "__init__.py" else
                        READINGS_MAY_LOAD)
             for line, target in module_imports(root, name):
                 if target == "by a call" and allowed is READINGS_MAY_LOAD:
@@ -129,10 +139,10 @@ def readings_loads(root: Path) -> list[str]:
                 if target not in allowed and not (name == first and target.endswith("_facts")):
                     found.add(f"{game_module(root, name).relative_to(root)}:{line} imports "
                               f"{target}, which {start.name} would load: {READINGS_RULE}")
-                elif target not in seen:
-                    seen.add(target)
+                else:
                     queue.append(target)
-    return sorted(found)
+        visited[relative] = sorted(found)
+    return visited
 
 
 def forbidden_files(root: Path, names: list[str]) -> list[str]:
@@ -171,7 +181,11 @@ def test_a_planted_game_import_is_caught(tmp_path):
 
 
 def test_wh3_readings_load_no_witness_module():
-    assert readings_loads(ROOT / "src" / "twwarhammer3") == []
+    root = ROOT / "src" / "twwarhammer3"
+    expected = {path.relative_to(root) for path in root.rglob("*_readings.py")}
+    assert {"camp_readings", "lines_readings", "wall_readings", "escalade_readings"} <= {
+        path.stem for path in expected}
+    assert readings_loads(root) == dict.fromkeys(expected, [])
 
 
 def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_path):
@@ -231,9 +245,35 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
                               ("battle/evidence_rules.py", 1, "a package")],
         "behind_readings.py": [package, behind, ("battle/lines_facts.py", 1, "by a call"),
                                ("battle/lines_facts.py", 2, "battle.scripted")]}
-    assert readings_loads(root) == sorted(
-        f"{file}:{line} imports {name}, which {start} would load: {READINGS_RULE}"
-        for start, items in planted.items() for file, line, name in items)
+    assert readings_loads(root) == {
+        Path("battle") / start: sorted(
+            f"{file}:{line} imports {name}, which {start} would load: {READINGS_RULE}"
+            for file, line, name in items)
+        for start, items in planted.items()}
+
+
+def test_moved_readings_check_their_package_and_allow_facts(tmp_path):
+    root = tmp_path / "twwarhammer3"
+    family = root / "moved"
+    family.mkdir(parents=True)
+    init = family / "__init__.py"
+    init.write_text("from . import witness\n")
+    (family / "witness.py").touch()
+    facts = root / "shared"
+    facts.mkdir()
+    (facts / "__init__.py").write_text("from twwarhammer3.moved import witness\n")
+    (facts / "inner").mkdir()  # A namespace package also executes the outer initializer.
+    (facts / "inner/camp_facts.py").touch()
+    (family / "camp_readings.py").write_text("from ..shared.inner.camp_facts import cue\n")
+    path = Path("moved/camp_readings.py")
+    assert readings_loads(root) == {path: [
+        f"moved/__init__.py:1 imports moved.witness, which camp_readings.py would load: "
+        f"{READINGS_RULE}",
+        f"shared/__init__.py:1 imports moved.witness, which camp_readings.py would load: "
+        f"{READINGS_RULE}"]}
+    (facts / "__init__.py").write_text("")
+    init.write_text("")
+    assert readings_loads(root) == {path: []}
 
 
 def test_no_run_game_or_key_file_can_be_committed():
