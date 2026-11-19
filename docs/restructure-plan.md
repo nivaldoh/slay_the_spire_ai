@@ -360,6 +360,9 @@ The record names the Git revision for each earlier proposal.
 - Checkpoints fingerprint the Spire process descriptor they consume. This scope is specific
   to checkpoint launches. Workers require an executing source deployment with each declared
   source root. The recorded hash includes paths, so a mixed-layout pair refuses to join.
+  Worker-operation tests share a two-second loopback lease. Their cancellation test checks
+  that the worker is live before closing the coordinator and reads its recorded reason for closure.
+  The link tests exercise the lease deadline separately.
 - Report notes ship with the packaged HTML. Report grouping recognizes presentation files in
   both layouts. Changes to the exporter continue to identify a different harness.
   Diagram examples keep each source name and digest from the battle revision. Maintained
@@ -367,8 +370,10 @@ The record names the Git revision for each earlier proposal.
 - The `rl` phases live under checkpoint. Battle owns the interactive launch and the mailbox
   waits for the menu request it sent. Report commands share the three-file writer.
   The Spire guide describes its full-run adapter and rule policies. The two games still
-  have their own execution loops.
-- The [WH3 log](twwarhammer3/log.md) records the counted results and limitations. The card,
+  have their own execution loops. A stopped Spire PPO job still requires its recorded
+  source scope. Changing only the diagram generator among its 242 files refused resume.
+  The matching checkpoint reopened with its model and deadline intact and its budget exhausted.
+- The [WH3 log](twwarhammer3/log.md#2026-11-19-wh3-package-restructure) records the counted results and limitations. The card,
   raw comparisons, command outputs and review findings are in
   `runs/restructure-implementation/`. Owner review covers the relocated checkers and plants.
   Existing live passes retain their original revisions.
