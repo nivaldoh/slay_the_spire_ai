@@ -342,6 +342,6 @@ def test_revision_feedback_keeps_only_each_members_own_dispatched_orders(tmp_pat
 def test_a_changed_routing_eligibility_rule_refuses_the_frozen_artifact(tmp_path, monkeypatch):
     author(tmp_path, Canned(replies()))
     graph_author.load_artifact(tmp_path / "artifact")
-    monkeypatch.setattr(graph_author.skills, "ROUTED", {"shattered"})
+    monkeypatch.setattr(graph_author.units, "ROUTED", {"shattered"})
     with pytest.raises(ValueError, match="different frozen"):
         graph_author.load_artifact(tmp_path / "artifact")

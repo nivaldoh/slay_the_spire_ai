@@ -4,6 +4,7 @@ import pytest
 
 from twwarhammer3.controllers import commander, llm
 from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 
 def test_rotation_pairs_all_controllers_and_delays_in_a_repeatable_order():
@@ -39,12 +40,12 @@ def test_importable_controller_and_fresh_instances(tmp_path, monkeypatch):
     record = controllers.card(name, a, {})
     assert len(record["source_sha256"]) == 64 and record["kind"] == "external"
     with pytest.raises(ValueError, match="must be a class"):
-        controllers.controller_class("twwarhammer3.controllers.scripted:distance")
+        controllers.controller_class("twwarhammer3.units:distance")
 
 
 def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_path, monkeypatch):
     monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
-    assert controllers.MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander",
+    assert MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander",
                                                     "team_llm_rules"})
     config = {"policy": "llm,llm_rules,commander,team_llm_rules", "model": "gpt-6-luna",
               "effort": "low", "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
@@ -80,7 +81,7 @@ JOB = {"model": "gpt-6-sol", "effort": "low"}  # the job's --model and --effort
      ("twwarhammer3.controllers.scripted:AttackNearest", None, None)),
 ])
 def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
-    assert controllers.policy_parts(name, JOB) == parts
+    assert policy_parts(name, JOB) == parts
 
 
 @pytest.mark.parametrize("policy,error", [
@@ -159,8 +160,8 @@ def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_
     config = {"provider": "openrouter", "policy": ",".join(names), "effort": "low",
               "ledger": str(tmp_path / "router.jsonl"), "budget_usd": .25}
     (tmp_path / "router.jsonl").touch()
-    assert controllers.policy_parts(names[0], config) == ("llm_rules", "z-ai/glm-5.3", "low")
-    assert controllers.policy_parts(names[1], config) == ("llm_rules", "moonshotai/kimi-k3", "high")
+    assert policy_parts(names[0], config) == ("llm_rules", "z-ai/glm-5.3", "low")
+    assert policy_parts(names[1], config) == ("llm_rules", "moonshotai/kimi-k3", "high")
     assert len(controllers.rotation(config)) == 3
     selected = []
     monkeypatch.setattr(controllers, "api_key", lambda provider: selected.append(provider) or "key")

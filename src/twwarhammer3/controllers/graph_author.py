@@ -13,6 +13,7 @@ from pathlib import Path
 
 from gameai.llm import Model, api_key, check_fields, post
 from gameai.provenance import git, sha256, write_json
+from twwarhammer3 import units
 from twwarhammer3.controllers import configured, graph, graph_goals, graph_initiation, skills, team
 from twwarhammer3.controllers import skill_contracts as catalog
 from twwarhammer3.controllers.llm import MAX_OUTPUT_TOKENS
@@ -86,7 +87,7 @@ def frozen_library():
             # JUDGEMENT: Frozen routing rule — Codex, 2026-11-19. Pin the states once hashed
             # inside the tactics file. Hashing all of units.py would also refuse graphs on
             # edits to geometry used only by other policies and scenario readings.
-            "parameters": {"routed_states": sorted(skills.ROUTED), "arrival_m": catalog.ARRIVAL_M,
+            "parameters": {"routed_states": sorted(units.ROUTED), "arrival_m": catalog.ARRIVAL_M,
                            "timeout_ms": catalog.TIMEOUT_MS,
                            "retry_ms": catalog.REPEAT_MS, "hold_engage_m": skills.ENGAGE_M,
                            "max_visits": graph.MAX_VISITS, "max_age_ms": graph.MAX_AGE_MS},

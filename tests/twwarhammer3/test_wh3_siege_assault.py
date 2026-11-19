@@ -27,6 +27,7 @@ from gameai.ledger import Ledger
 from twwarhammer3.battle import play, setup
 from twwarhammer3.controllers import commander, configured, llm, team
 from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.order_text import describe_orders
 from twwarhammer3.protocol import IllegalActionError, ProtocolError, validate_orders
 from twwarhammer3.scenarios import escalade
 
@@ -565,7 +566,7 @@ def test_a_siege_attack_shows_the_fort_and_offers_the_siege_orders(tmp_path):
     for word in setup.scenarios()["ksl-emp-siege-a-v1"]["withheld"] + [
             "climbing", "hidden garrison", "staging pocket", "ladder"]:
         assert word not in lowered
-    assert llm.describe_orders(json.loads(CLIMB)["orders"]) == "f2 besiege w3 run"
+    assert describe_orders(json.loads(CLIMB)["orders"]) == "f2 besiege w3 run"
 
 
 def test_the_commander_and_team_members_see_the_fort_but_no_siege_order(tmp_path, monkeypatch):

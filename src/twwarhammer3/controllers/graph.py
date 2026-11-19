@@ -16,6 +16,7 @@ from gameai.provenance import sha256
 from twwarhammer3.controllers import skill_contracts as catalog
 from twwarhammer3.controllers import skills, team
 from twwarhammer3.protocol import IllegalActionError, PolicyFailure
+from twwarhammer3.units import distance
 
 VERSION = "wh3-graph-v1"
 # JUDGEMENT: G4 Graph limits — Codex, 2026-10-31, delegated baseline: one transition per
@@ -211,7 +212,7 @@ class GraphPolicy:
                 # JUDGEMENT: G4 Target choice — Codex, 2026-10-31: nearest eligible visible
                 # enemy, ties by ID; prioritizing lords or weak units changes the policy.
                 # Initial graph behavior rests on this delegated baseline.
-                target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units),
+                target = min(enemies, key=lambda e: (min(distance(u, e) for u in units),
                                                      e["id"]), default=None) if units else None
                 hint = self.target_preference(view) if self.target_preference else None
                 preferred = next((e for e in enemies if hint and e["id"] == hint["target"]), None)

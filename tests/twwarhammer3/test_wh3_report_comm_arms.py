@@ -11,6 +11,7 @@ from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.controllers import local_team
+from twwarhammer3.policy_names import MODEL_POLICIES
 from twwarhammer3.results import report_html
 
 JOB = {"model": "claude-haiku-5-5", "effort": "low", "provider": "anthropic"}
@@ -30,7 +31,7 @@ def commander(config: str, scenario: str) -> dict:
     for name, member in spec["members"].items():
         kind = member["type"]
         # A model member needs an API to build; its card reads only the class and the job.
-        policy = (object.__new__(local_team.LocalModel) if kind in controllers.MODEL_POLICIES
+        policy = (object.__new__(local_team.LocalModel) if kind in MODEL_POLICIES
                   else controllers.controller_class(kind)())
         members[name] = controllers.card(kind, policy, JOB)
     trial = {"policy": "configured", "delay_ms": 0,

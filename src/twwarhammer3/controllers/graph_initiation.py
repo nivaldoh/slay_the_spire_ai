@@ -10,8 +10,9 @@ from copy import deepcopy
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.controllers import graph, skills, team
+from twwarhammer3.controllers import graph, team
 from twwarhammer3.controllers import skill_contracts as catalog
+from twwarhammer3.units import distance
 
 VERSION = "wh3-graph-initiation-v1"
 
@@ -120,7 +121,7 @@ def check(spec, observation):
         units = [u for u in owned if u["id"] in value(node["inputs"]["units"])]
         enemies = [u for u in view["enemy"] if catalog.available(u)
                    and (node.get("mode") != "engaged" or "melee" in u.get("state", []))]
-        target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units), e["id"]),
+        target = min(enemies, key=lambda e: (min(distance(u, e) for u in units), e["id"]),
                      default=None) if units else None
         return target["id"] if target else None
 

@@ -5,6 +5,7 @@ from wh3_fixtures import FakeSend, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
 from twwarhammer3.controllers import llm
+from twwarhammer3.order_text import describe_orders
 from twwarhammer3.protocol import PolicyFailure
 
 SHAPES = {branch["properties"]["type"]["enum"][0]: set(branch["properties"])
@@ -398,7 +399,7 @@ def test_magic_pool_marks_pending_spend_across_different_spells():
 def test_an_ability_with_half_a_ground_point_is_described_without_crashing():
     order = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": 10.0,
              "z": None, "facing": None, "width": None}
-    assert llm.describe_orders([order]) == "f1 ability roar at self"
+    assert describe_orders([order]) == "f1 ability roar at self"
 
 
 def test_abilities_show_target_cost_and_readiness_and_army_abilities_their_unlocks():
@@ -522,7 +523,7 @@ def test_building_slots_show_options_progress_and_build_orders_are_described():
     assert "- s1 tower at (55, 192): empty, options tower_piercing_1 500" in text
     assert "- s2 tower at (-56, 192): building tower_piercing_1, 75 s left" in text
     assert "- s3 barricade at (0, 0): empty, options barricade_1 300 (cannot build now)" in text
-    assert llm.describe_orders([{"unit": "army", "type": "build", "slot": "s1",
+    assert describe_orders([{"unit": "army", "type": "build", "slot": "s1",
                                  "option": "tower_piercing_1"}]) == (
         "army build tower_piercing_1 on s1")
 
@@ -534,7 +535,7 @@ def test_the_reinforcement_pool_and_spawn_zones_are_listed():
                                             {"id": 9, "x": 0, "z": 246, "usable": False}]})
     assert "): wh3_main_kho_inf_chaos_warriors_1 900." in text
     assert "Your spawn zones: 14 at (320, 0), 9 at (0, 246) (refuses purchases now)." in text
-    assert llm.describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
+    assert describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
                                  "reinforcement": "wh3_main_kho_inf_chaos_warriors_1"}]) == (
         "army reinforce chaos_warriors_1 at zone 14")
 
@@ -547,7 +548,7 @@ def test_public_morale_warning_and_flight_control_are_rendered():
     text = llm.render_unit(unit, True)
     assert "leadership 30%; largest effect: You must attack by land!" in text
     assert "airborne" in text and "flight change available; cooldown 0 s" in text
-    assert llm.describe_orders([{"unit": "f1", "type": "flight", "flying": False}]) == "f1 land"
+    assert describe_orders([{"unit": "f1", "type": "flight", "flying": False}]) == "f1 land"
 
 
 def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():

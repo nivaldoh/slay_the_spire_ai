@@ -13,6 +13,7 @@ from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.controllers import graph, graph_goals, local_team, team
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 
 def read_spec(path: Path) -> tuple[dict, dict | None, Path]:
@@ -75,8 +76,8 @@ def _local_team(node, config, prepare):
         child = prepare(member)
         if child["type"] in {"team", "local_team", "graph", "graph_llm"}:
             raise ValueError("local_team members must be direct local controllers")
-        base = controllers.policy_parts(child["type"], config)[0]
-        if base in controllers.MODEL_POLICIES and base not in {"llm", "llm_rules"}:
+        base = policy_parts(child["type"], config)[0]
+        if base in MODEL_POLICIES and base not in {"llm", "llm_rules"}:
             raise ValueError("local_team model members use llm or llm_rules")
         members[name] = {"controller": child}
     return {"type": "local_team", "members": members}
@@ -150,7 +151,7 @@ def _team(node, prepare):
 def factory(path, config, *, ledger=None):
     frozen, leaves, goal_models, artifact = load(path, config)
     models = {name for name in leaves
-              if controllers.policy_parts(name, config)[0] in controllers.MODEL_POLICIES}
+              if policy_parts(name, config)[0] in MODEL_POLICIES}
     provider = config.get("provider", "openai")
     if models or goal_models:
         if config.get("budget_usd") is None:
@@ -161,7 +162,7 @@ def factory(path, config, *, ledger=None):
     makers = controllers.factories({**config, "policy": ",".join(sorted(leaves))},
                                    _ledger=ledger) if leaves else {}
     prompts = {
-        name: controllers.MODEL_PROMPTS[controllers.policy_parts(name, config)[0]].read_text()
+        name: controllers.MODEL_PROMPTS[policy_parts(name, config)[0]].read_text()
         for name in sorted(models)}
     arm = None
     if frozen["type"] == "local_team":

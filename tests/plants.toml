@@ -2938,8 +2938,8 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 id = "graph-initiation-targets-the-farthest-enemy"
 guards = "The initiation proof targets the enemy the runtime select_target picks: nearest any owned unit"
 file = "src/twwarhammer3/controllers/graph_initiation.py"
-old = 'target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units), e["id"]),'
-new = 'target = min(enemies, key=lambda e: (max(skills.distance(u, e) for u in units), e["id"]),'
+old = 'target = min(enemies, key=lambda e: (min(distance(u, e) for u in units), e["id"]),'
+new = 'target = min(enemies, key=lambda e: (max(distance(u, e) for u in units), e["id"]),'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py::test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units"]
 source = "2026-11-02 cleanup round 5 review"
 

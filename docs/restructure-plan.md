@@ -348,6 +348,10 @@ The record names the Git revision for each earlier proposal.
   Public units and order formatting live at the game root. The controller factory still owns
   current-provider checks and prompt choice. Existing external controllers that import the
   former paths need updated imports or their original checkout.
+- A plain external controller can be constructed through the public factory from an installed
+  wheel. Scenario declarations are read for a model's benchmark profile or a local team's
+  communicating scenario. The public policy-name, geometry and formatting helpers are imported
+  from the modules that define them.
 - The register, reports and exports retain the source and controller spellings supplied by
   the job. Display names recognize the historical classes. Active composition files contain
   their present paths and produce new hashes. A changed graph library refuses an old artifact.

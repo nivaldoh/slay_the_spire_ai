@@ -21,6 +21,7 @@ from twwarhammer3.controllers import llm
 from twwarhammer3.controllers import local_command as local
 from twwarhammer3.controllers.scripted import RushNearest
 from twwarhammer3.controllers.team import TeamHarnessError, TeamPolicy
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/local_command_prompt.md"
@@ -109,14 +110,14 @@ def validate_config(scenario, config):
     from twwarhammer3.controllers import factory as controllers
 
     for name in config["policy"].split(","):
-        base = controllers.policy_parts(name, config)[0]
+        base = policy_parts(name, config)[0]
         if base == "configured":
             from twwarhammer3.controllers.configured import load
 
             node = load(config["controller_config"], config)[0]
             if node["type"] == "local_team":
                 continue
-        elif base not in controllers.MODEL_POLICIES:
+        elif base not in MODEL_POLICIES:
             if issubclass(controllers.controller_class(name), LocalTeam):
                 continue
         raise ValueError("C requires a local_team composition or LocalTeam adapter")

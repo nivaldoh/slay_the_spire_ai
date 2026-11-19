@@ -10,6 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from math import hypot, isfinite
 
+from twwarhammer3 import units
 from twwarhammer3.controllers import skills
 from twwarhammer3.protocol import IllegalActionError, validate_orders
 
@@ -51,7 +52,7 @@ def valid_value(value, kind):
 
 def available(unit):
     return (unit.get("men", 0) > 0 and unit.get("x") is not None
-            and unit.get("z") is not None and not skills.ROUTED.intersection(unit.get("state", [])))
+            and unit.get("z") is not None and not units.ROUTED.intersection(unit.get("state", [])))
 
 
 def public_contact(view):
