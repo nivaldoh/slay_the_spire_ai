@@ -122,8 +122,13 @@ def source_sha256() -> str:
     """sha256 over scope.SOURCES' file hashes, keyed by POSIX path so WSL and Windows agree."""
     files = {Path(name).as_posix(): digest
              for name, digest in source_fingerprints(SOURCES).items()}
-    if not files:
-        raise ValueError("worker identity requires the deployed WH3 source tree")
+    # JUDGEMENT?: Worker deployment — Codex, 2026-11-19. Fingerprint the executing source
+    # tree. Supporting a wheel alone would require a different identity for its code and config.
+    if not Path(__file__).resolve().is_relative_to(REPO_ROOT / "src/twwarhammer3"):
+        raise ValueError("run the worker from the deployed WH3 source tree")
+    for source in SOURCES:
+        if source not in files and not any(path.startswith(source + "/") for path in files):
+            raise ValueError(f"deployed WH3 source tree is missing {source}")
     return hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
 
 

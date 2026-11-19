@@ -862,7 +862,15 @@ def test_commands_wait_for_the_mailbox_reset_of_an_owned_session(tmp_path, insta
     assert order[:2] == ["reset", "commands"]
 
 
-def test_a_worker_without_the_deployed_source_tree_cannot_claim_a_matching_build(monkeypatch):
-    monkeypatch.setattr(worker, "source_fingerprints", lambda paths: {})
+@pytest.mark.parametrize("files", [{}, {"pyproject.toml": "same in different wheels"}])
+def test_a_worker_without_the_deployed_source_tree_cannot_claim_a_matching_build(
+        monkeypatch, files):
+    monkeypatch.setattr(worker, "source_fingerprints", lambda paths: files)
     with pytest.raises(ValueError, match="deployed WH3 source tree"):
         worker.expected_manifest()
+
+
+def test_a_worker_fingerprints_the_source_tree_it_executes(tmp_path, monkeypatch):
+    monkeypatch.setattr(worker, "__file__", str(tmp_path / "site-packages/twwarhammer3/worker.py"))
+    with pytest.raises(ValueError, match="deployed WH3 source tree"):
+        worker.source_sha256()
