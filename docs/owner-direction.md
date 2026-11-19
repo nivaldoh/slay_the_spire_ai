@@ -5,11 +5,15 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
-- 2026-11-18 (restructuring review), the owner asked to check Claude Code's interrupted work,
-  probe the proposal with new reference codebases, and make a lean long-term structure concrete
-  enough for another model to implement under owner direction. The [review](restructure-review.md)
-  proposes cards and checks. The owner has not selected a restructure or a verification method.
-  The earlier instruction to merge the first proposal landed at `e453429`.
+- 2026-11-18 (long-term code structure), the owner asked for the full destination across the
+  repository, using earlier sessions and concrete examples from the collected research code.
+  Keep the design lean enough for agents to maintain, highlight judgement calls for later
+  review and clean up earlier plans. The [current proposal](restructure-plan.md) includes the
+  interrupted Claude Code work and supersedes the narrower review at `3378ce4`.
+- 2026-11-18 (earlier review), the owner asked to check Claude Code's interrupted proposal and
+  make it concrete enough for another model to implement under owner direction. The instruction
+  to merge the first proposal applied to `e453429`. No implementation or new verification
+  method has been approved.
 - 2026-11-15 (restructuring plan), goal verbatim: "You are the long-term owner of this codebase.
   Without implementing anything yet, write a detailed, concrete plan to completely restructure
   the code to make it better. We need to identify the architecture that will make it as readable,
@@ -19,9 +23,9 @@ Both games:
   and why." While the work ran: "Let's be open to any type of structure for now, without
   restricting ourselves to previous decisions. Use JUDGEMENT calls in the document so I can decide
   whether we will move forward with relevant changes or not." On 2026-11-16, after a usage limit
-  had stopped the page's checks: "Let's proceed with the goal". Applied: the proposal
-  [restructure-plan.md](restructure-plan.md), whose choices carry markers J1 to J36 and are listed
-  in its decisions table; [review-queue](review-queue.md#decisions) item 17. No code changed and
+  had stopped the page's checks: "Let's proceed with the goal". The first proposal is in Git at
+  `e453429:docs/restructure-plan.md`. Its [original decisions](restructure-decisions.md#first-proposal)
+  retain markers J1 to J36. See [review-queue](review-queue.md#decisions) item 17. No code changed and
   nothing is adopted. Earlier answers the page reopens ("Decide later" on the witness hash and the
   change-levels table, "Leave as is" on trace readers, the 2026-11-15 report's "Do not move
   existing battles") stand until the owner answers the matching marker.

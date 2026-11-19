@@ -6,21 +6,27 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
-## Restructuring review (2026-11-18)
+## Long-term code structure (2026-11-18)
 
 - MiniGrid v2.3.1 supplies separate registration arguments, including
   `id="MiniGrid-DoorKey-5x5-v0"` and `entry_point="minigrid.envs:DoorKeyEnv"`.
-  The [restructuring review](restructure-review.md) tests where that approach stops helping when
+  The [plan](restructure-plan.md#identity-old-records-and-external-code) tests what happens when
   an external WH3 controller imports a moved module. [MiniGrid registration source](https://github.com/Farama-Foundation/Minigrid/blob/v2.3.1/minigrid/__init__.py#L94-L106)
 - DeepMind Control 1.0.34 dispatches with `env = domain.SUITE[task_name](**task_kwargs)`.
   Its cartpole module keeps related tasks together. WH3 can use that locality for battle
   families while maintaining the independent evaluator boundary. [Suite loader](https://github.com/google-deepmind/dm_control/blob/1.0.34/dm_control/suite/__init__.py#L124-L137) · [Cartpole tasks](https://github.com/google-deepmind/dm_control/blob/1.0.34/dm_control/suite/cartpole.py)
 
+- CleanRL constructs its PPO agent, optimizer and rollout storage in the training script. This gives
+  the Spire learner a concrete example of keeping an algorithm readable in one place.
+  [CleanRL PPO](https://github.com/vwxyzjn/cleanrl/blob/fe8d8a03c41a7ef5b523e2e354bd01c363e786bb/cleanrl/ppo.py#L129-L187)
+- Sacred stores each source's filename, digest and Git commit. A WH3 job needs those distinctions
+  when a move changes a path. [Sacred source records](https://github.com/IDSIA/sacred/blob/86865b03d05e83da35ca582392ca31777db88d11/sacred/dependencies.py#L445-L470)
+
 ## Restructuring plan (2026-11-15)
 
-Sources read for [restructure-plan.md](restructure-plan.md), a proposal that is not implemented.
-The clones are in `runs/restructure-plan-20261115/refs/` and nothing in them was executed; the
-plan's own References section gives the cited lines and how much of each file was read.
+This is the source record for Claude's first proposal at `e453429:docs/restructure-plan.md`.
+Its References section gives the cited lines and reading limits. Local source clones are in
+`runs/restructure-plan-20261115/refs/` and `refs2/`.
 *Checked* here means a second agent opened the cited files at the commit named. No method below is
 adopted, and none shows that a layout improves an agent's results.
 
@@ -33,7 +39,7 @@ adopted, and none shows that a layout improves an agent's results.
   a declared name to an object (`src/inspect_ai/_util/registry.py`), every tool reads a run's log
   through one function (`src/inspect_ai/log/_file.py`), and each evaluation has a folder with the
   same entries (`src/inspect_evals/gpqa/`). About 100 forwarding shims for moved names are still in
-  the package, which is the reason the plan keeps no old import path alive. *Checked.*
+  the package, which informed the first proposal’s preference for dropping old import paths. *Checked.*
 - [SWE-bench](https://github.com/SWE-bench/SWE-bench) at `02e7a74`. Version 5.0.0 replaced its
   central table of per-repository constants with one folder of fixed file names per task, and log
   parsers are found by declared name with aliases (`swebench/harness/log_parsers/`). *Checked.*
@@ -50,8 +56,8 @@ adopted, and none shows that a layout improves an agent's results.
   file is compared with its generator (`utils/check_dummies.py`), the model for a Code map built
   from docstrings. *Checked.*
 - [Import Linter](https://github.com/seddonym/import-linter) at `b2d4938`: contracts for layers,
-  forbidden imports and independent packages; an exception that matches nothing fails. The plan
-  proposes the same rules as plain tests and asks which the owner prefers. *Checked.*
+  forbidden imports and independent packages; an exception that matches nothing fails. The first proposal
+  considered similar rules as plain tests. *Checked.*
 - graph-as-policy at `71549e1` and open-robot-skills at `752dfbd` (clones in
   `runs/gap-plan-20261031/`, listed under [GaP](#gap-graph-controllers-for-wh3-2026-10-31)): a
   generated reference checked for freshness, and a test that compares moved code with its old
@@ -65,7 +71,7 @@ adopted, and none shows that a layout improves an agent's results.
   split a file by unrelated jobs and never by length. *Read.*
 - Fowler, [PresentationDomainDataLayering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html):
   layers suit a small system, and a larger one gets top-level modules by domain with the layers
-  inside each. The plan's recommended package set is the other way round and says so. *Read.*
+  inside each. The first proposal discussed the tradeoff for its package set. *Read.*
 - Gloaguen et al., [Evaluating AGENTS.md](https://arxiv.org/abs/2602.11988) (v3), and McMillan,
   [Instruction Adherence in Coding Agent Configuration Files](https://arxiv.org/abs/2605.10039):
   measurements of what instruction files do for coding agents. The first was read through a
@@ -74,8 +80,7 @@ adopted, and none shows that a layout improves an agent's results.
   [RoCo](https://github.com/MandiZhao/robot-collab), [SMACv2](https://github.com/oxwhirl/smacv2),
   [CleanRL](https://github.com/vwxyzjn/cleanrl), Hugging Face datasets' test helpers, Metz's
   [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction) and
-  Cockburn's [hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/). The
-  reports are `runs/restructure-plan-20261115/research/*.md`. *Read.*
+  Cockburn's [hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/). Its reports are under `research/` in the archived planning run. *Read.*
 
 ## Frontier benchmark survey (2026-11-15)
 
