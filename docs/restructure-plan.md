@@ -6,10 +6,10 @@ and their definitions of a result visible in the code. A maintainer should be ab
 command from its arguments to the game or saved files it touches, and to the check that would
 catch a mistake there.
 
-This is the proposed destination for the whole repository. The first two implementation steps are
-useful on their own. The later steps describe how to finish the reorganization. None of these
-moves is approved or verified. The source baseline is `e453429`. The owner’s choices appear
-under [Decisions for the owner](#decisions-for-the-owner).
+The owner commissioned all seven steps on 2026-11-19 and delegated the implementation choices.
+The plan was drawn at `e453429`. The implementation started at `b5e2537`. The move list below
+names the original inputs. The [Code map](twwarhammer3/README.md#code-map) gives the current paths.
+See the [implementation notes](#implementation-notes) for decisions and their evidence.
 
 ### What came from Claude Code
 
@@ -269,12 +269,9 @@ loading and the Windows helper command line. Wherever shared code or source scop
 also exercise Spire’s recorded teacher and renderer lookups, dataset split and training resume.
 Retire temporary migration commands once the final paths work through these entry points.
 
-The checkpoint source scope deserves a separate fix if the owner wants one. Today the launch
-reads Spire's process-conflict settings and fingerprints WH3's `play.SOURCES`. Moving packages
-cannot add that dependency to provenance. Decide whether to fingerprint the actual Spire dependency
-for checkpoints or give the two consumers a shared process descriptor under `gameai`. Either
-choice needs a dirty-dependency refusal and a manifest assertion. Avoid generalizing the two game
-launch loops to solve this one problem.
+Checkpoint provenance landed separately in `a109946`. A checkpoint launch records the
+Spire runtime descriptor it reads when checking for conflicting game processes. A dirty edit
+to that descriptor stops the launch. Ordinary battles keep the WH3 scope.
 
 ## How to keep the structure useful
 
@@ -312,9 +309,7 @@ establish Windows cleanup, real-time play, a restore or a policy's strength.
 ## Decisions for the owner
 
 The full move list rests on JUDGEMENT `docs/restructure-plan.md` Destination. The sequence
-rests on JUDGEMENT `docs/restructure-plan.md` Migration units. The recommendation is to accept
-the destination in principle and start with steps 1 and 2.
-The other choices can wait for the card they affect. The existing decisions on witness hashing,
+rests on JUDGEMENT `docs/restructure-plan.md` Migration units. The owner requested the full destination and delegated the choices on 2026-11-19. The existing decisions on witness hashing,
 trace error handling, battle moves and pooling remain in force unless changed explicitly.
 
 JUDGEMENT: Destination — Codex, 2026-11-18, proposes the package and module homes in this plan.
@@ -346,6 +341,34 @@ checkpoint jobs and which dependencies their manifests identify.
 Earlier agents' open choices are preserved verbatim in the [decision record](restructure-decisions.md).
 The record names the Git revision for each earlier proposal.
 
+## Implementation notes
+
+- The package moves follow the table above. Checkpoint and multiplayer landed separately. Each
+  scenario family moved with its tests and callers. Package initializers contain docstrings.
+  Public units and order formatting live at the game root. The controller factory still owns
+  current-provider checks and prompt choice. Existing external controllers that import the
+  former paths need updated imports or their original checkout.
+- The register, reports and exports retain the source and controller spellings supplied by
+  the job. Display names recognize the historical classes. Active composition files contain
+  their present paths and produce new hashes. A changed graph library refuses an old artifact.
+  The routing states used by the skill catalog are part of that library's identity. See
+  `controllers/graph_author.py` and the existing witness-hash decision in `controllers/factory.py`.
+- Checkpoints fingerprint the Spire process descriptor they consume. This scope is specific
+  to checkpoint launches. Workers require an executing source deployment with each declared
+  source root. The recorded hash includes paths, so a mixed-layout pair refuses to join.
+- Report notes ship with the packaged HTML. Report grouping recognizes presentation files in
+  both layouts. Changes to the exporter continue to identify a different harness.
+  Diagram examples keep each source name and digest from the battle revision. Maintained
+  views link source at the revision printed on the view.
+- The `rl` phases live under checkpoint. Battle owns the interactive launch and the mailbox
+  waits for the menu request it sent. Report commands share the three-file writer.
+  The Spire guide describes its full-run adapter and rule policies. The two games still
+  have their own execution loops.
+- The [WH3 log](twwarhammer3/log.md) records the counted results and limitations. The card,
+  raw comparisons, command outputs and review findings are in
+  `runs/restructure-implementation/`. Owner review covers the relocated checkers and plants.
+  Existing live passes retain their original revisions.
+
 ## Implementation references
 
 - SMAC exposes both `get_obs_agent` and `get_state`. Use the same explicit distinction when
@@ -366,4 +389,4 @@ The record names the Git revision for each earlier proposal.
 
 The session probes, file inventory and earlier planning evidence are indexed in
 `runs/restructure-plan-20261115/handoff.md`. They document the baseline and selected rehearsals.
-The proposed combined destination has not been implemented or exercised in either game.
+Evidence for the implementation is indexed in `runs/restructure-implementation/`.

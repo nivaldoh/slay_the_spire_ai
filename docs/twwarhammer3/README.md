@@ -198,7 +198,7 @@ through it, and every order enters through it.
 
 Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup). One file per line since
 2026-11-01: a line starting `` - `path`: `` says what that file does, and a path ending in `/`
-covers the files below it. `scripts/diagram_files.py`: reads these lines into the "How the
+covers the files below it. `scripts/diagram_files.py` reads these lines into the "How the
 WH3 code works" page (`docs/how-code-works.html`), and `scripts/check.py` flags `src/` Python
 files missing here, except Slay the Spire's, which the page leaves out. The Spire list is in [docs/spire/AGENTS.md](../spire/AGENTS.md#layout).
 
@@ -206,7 +206,8 @@ JUDGEMENT?: One file per line, full paths (Claude Code, 2026-11-01): chosen so a
 the list exactly; the old grouped prose gave 36 of 49 files a description. The page's file
 lists and check.py's "missing from the Code map" flag rest on this format.
 
-`src/twwarhammer3/`, Total War: WARHAMMER III custom battles:
+`src/twwarhammer3/` contains public battle rules, policy names and job provenance.
+
 - `src/twwarhammer3/__main__.py`: CLI: doctor, pack, launch, menu (runtime and UI probes);
   play, digest, watch, stats, report, export, spend (jobs and offline evidence);
   benchmark (mirror and suite plans, reports, authoring);
@@ -215,8 +216,13 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/protocol.py`: order types and validation, the error taxonomy and
   `policy_call`, which sorts a controller's exceptions into it;
   observations stay dicts; it changes freely (Spire's protocol.py is byte-stable)
+- `src/twwarhammer3/units.py`: measures public unit distance, eligibility and melee contact.
+- `src/twwarhammer3/policy_names.py`: parses the policy, model and effort in a recorded name.
+- `src/twwarhammer3/scope.py`: defines the WH3 source scope and recording versions.
+- `src/twwarhammer3/order_text.py`: renders order, plan and army descriptions for prompts and jobs.
 
-`src/twwarhammer3/engine/`, the game runtime:
+`src/twwarhammer3/engine/` contains Windows process, game setup and mailbox.
+
 - `src/twwarhammer3/engine/runtime.py`: pins, pack build, mod list, launch; it and
   `src/gameai/windows.py` pick WSL or native Windows paths at import
 - `src/twwarhammer3/engine/startup.py`: the startup video skip
@@ -226,22 +232,10 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   reference
 - `src/twwarhammer3/engine/doctor.py`: the read-only launch check (`doctor`)
 - `src/twwarhammer3/engine/windows_capture.py`: passive stills, run by Windows Python
-- `src/twwarhammer3/checkpoint/checkpoint_agent.js`: the checkpoint Frida agent
-- `src/twwarhammer3/checkpoint/checkpoint_frida.py`: runs the checkpoint Frida agent in the
-  owned game (Windows side)
-- `src/twwarhammer3/multiplayer/link.py`: native multiplayer: the coordinator's link
-- `src/twwarhammer3/multiplayer/worker.py`: native multiplayer: per-client worker, typed lobby
-  operations, readiness and leave; contracts in its docstring and multiplayer-tools.md
-- `src/twwarhammer3/multiplayer/multiplayer_probe.py`: bounded Windows reference capture;
-  checks the actual process image and runs the passive multiplayer discovery agent
-- `src/twwarhammer3/multiplayer/multiplayer_probe.js`: passive deployment/command traces,
-  completed-tick checksums, raw unit witnesses, phases and outcome
-- `src/twwarhammer3/multiplayer/multiplayer_adapter.py`: Windows Frida helper and stdin requests
-  for direct deployment readiness, plus passive capture
-- `src/twwarhammer3/multiplayer/multiplayer_adapter.js`: fixed readiness sender on the game thread;
-  phase/layout guards and submission evidence; unverified
+- `src/twwarhammer3/engine/manual_capture.py`: passive Windows video and state journal for demonstrations
 
-`src/twwarhammer3/mod/`, Lua scripts packed into the game:
+The game loads Lua from `src/twwarhammer3/mod/` and the startup clip from `src/twwarhammer3/assets/`.
+
 - `src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua`: the battle script:
   publishes observations, applies orders
 - `src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua`: frontend menus
@@ -250,27 +244,52 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_imagery.lua`: the stills camera
 - `src/twwarhammer3/assets/`: the blank startup clip and its MIT license
 
-`src/twwarhammer3/battle/`, jobs and controllers:
+`src/twwarhammer3/battle/` contains live battle setup, execution and recording.
+
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
-- `src/twwarhammer3/benchmarks/profile.py`: the mirror profile: limits, one-call transport, battle
-  budget and the first-ending condition; the outcome label of an episode
-- `src/twwarhammer3/benchmarks/plans.py`: frozen benchmark plans and every planned attempt
-  read back
-- `src/twwarhammer3/benchmarks/suite.py`: the coordination suite: arms, plans, measures and comparison
-- `src/twwarhammer3/scenarios/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
-- `src/twwarhammer3/scenarios/support_evidence.py`: offline event brackets and proposed numerical contrast
 - `src/twwarhammer3/battle/manual_demo.py`: separate owner demonstration recorder and pause labels
-- `src/twwarhammer3/engine/manual_capture.py`: passive Windows video and state journal for demonstrations
-- `src/twwarhammer3/controllers/reference.py`: `Concentrate`, the suite's scripted coordinated reference
 - `src/twwarhammer3/battle/setup.py`: scenarios with `base` inheritance, lobby steps,
   benchmark checks; its docstring is the scenario field reference
-- `src/twwarhammer3/controllers/factory.py`: policy names, model prompts, rotation, outside
-  controllers
+- `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
+  (version 3) that holds and releases enemy groups, kept apart from the public battle state
+- `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
+
+`src/twwarhammer3/controllers/` contains reusable policies and graph tools.
+
+- `src/twwarhammer3/controllers/reference.py`: `Concentrate`, the suite's scripted coordinated reference
+- `src/twwarhammer3/controllers/factory.py`: selects prompts, validates providers and builds fresh controllers and policy cards
 - `src/twwarhammer3/controllers/llm.py`: direct API-model controller: llm, llm_rules
 - `src/twwarhammer3/controllers/commander.py`: asynchronous API model over skills
 - `src/twwarhammer3/controllers/skills.py`: per-unit skill executor, probe_abilities
 - `src/twwarhammer3/controllers/scripted.py`: hold, attack_nearest, rush_nearest
 - `src/twwarhammer3/controllers/evade.py`: `Evade`, a free control: every unit runs from visible enemies
+- `src/twwarhammer3/controllers/team.py`: independent members sharing one army and one mailbox
+- `src/twwarhammer3/controllers/local_command.py`: C's local sensing and signal/courier router; the
+  version 2 text mode, which checks every sender and recipient pair against the arm's links, and
+  its muted form, which accepts texts and delivers none
+- `src/twwarhammer3/controllers/local_team.py`: C's regiment groups, model interface and free probes;
+  version 2's peer, relay and overview arms, the muted controls (peer or overview to their
+  members, nothing delivered) and the unlinked one (no links, no messages), the commander and its
+  stage-1 probes
+- `src/twwarhammer3/controllers/replay_schedule.py`: `ReplaySchedule`, the fixed-schedule foil that
+  replays a won episode's accepted orders by battle time on a fresh launch
+- `src/twwarhammer3/controllers/configured.py`: JSON controller composition; a version 2 star arm's
+  `local_team` node takes the commander, whose model leaf gets its own prompt
+- `src/twwarhammer3/controllers/graph.py`: resumable graph nodes
+- `src/twwarhammer3/controllers/skill_contracts.py`: typed skills and public effect witnesses
+- `src/twwarhammer3/controllers/graph_goals.py`: background model target preferences over fixed
+  graphs
+- `src/twwarhammer3/controllers/graph_author.py`: offline multi-LLM authoring and whole-battle
+  revision
+- `src/twwarhammer3/controllers/graph_initiation.py`: temporary pre-contact attack-path check
+  for caller-declared initiators
+- `src/twwarhammer3/controllers/calibration.py`: the small diagnostics' base class and geometry
+  helpers, which lines.py is built on, and the four diagnostics current work still names
+
+`src/twwarhammer3/scenarios/` contains named witnesses, shared facts and independent readings.
+
+- `src/twwarhammer3/scenarios/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
+- `src/twwarhammer3/scenarios/support_evidence.py`: offline event brackets and proposed numerical contrast
 - `src/twwarhammer3/scenarios/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
   Cannae development witnesses on public state
 - `src/twwarhammer3/scenarios/camp.py`: `CampStrike` and its controls for the camp attack land battle
@@ -285,8 +304,6 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   the unit type keys and the relief trigger
 - `src/twwarhammer3/scenarios/lines_readings.py`: that defence's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
-- `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
-  (version 3) that holds and releases enemy groups, kept apart from the public battle state
 - `src/twwarhammer3/scenarios/wall_defence.py`: `WallWitness` and its controls for the walled siege
   defence (cth-emp-siege-a-v1), on public state
 - `src/twwarhammer3/scenarios/wall_facts.py`: what that siege's witness and readings both use: the
@@ -299,56 +316,62 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   the fort's front line and what counts as inside it
 - `src/twwarhammer3/scenarios/escalade_readings.py`: that siege's evaluator readings of finished
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
-- `src/twwarhammer3/units.py`: measures public unit distance, eligibility and melee contact.
-- `src/twwarhammer3/policy_names.py`: parses the policy, model and effort in a recorded name.
-- `src/twwarhammer3/scope.py`: defines the WH3 source scope and recording versions.
-- `src/twwarhammer3/order_text.py`: renders order, plan and army descriptions for prompts and jobs.
 - `src/twwarhammer3/scenarios/support_facts.py`: binds the three support timing regiment identities.
 - `src/twwarhammer3/scenarios/evidence_rules.py`: reads deployment groups, tickets and acknowledged orders.
-- `src/twwarhammer3/controllers/team.py`: independent members sharing one army and one mailbox
-- `src/twwarhammer3/controllers/local_command.py`: C's local sensing and signal/courier router; the
-  version 2 text mode, which checks every sender and recipient pair against the arm's links, and
-  its muted form, which accepts texts and delivers none
-- `src/twwarhammer3/controllers/local_team.py`: C's regiment groups, model interface and free probes;
-  version 2's peer, relay and overview arms, the muted controls (peer or overview to their
-  members, nothing delivered) and the unlinked one (no links, no messages), the commander and its
-  stage-1 probes
 - `src/twwarhammer3/scenarios/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
   and foils (fixed schedule, central concentration, `ThinkingRush`) for the
   communication-structure stage 2; each sleeps a model-like think time per decision
-- `src/twwarhammer3/controllers/replay_schedule.py`: `ReplaySchedule`, the fixed-schedule foil that
-  replays a won episode's accepted orders by battle time on a fresh launch
-- `src/twwarhammer3/controllers/configured.py`: JSON controller composition; a version 2 star arm's
-  `local_team` node takes the commander, whose model leaf gets its own prompt
-- `src/twwarhammer3/controllers/graph.py`: resumable graph nodes
-- `src/twwarhammer3/controllers/skill_contracts.py`: typed skills and public effect witnesses
-- `src/twwarhammer3/controllers/graph_goals.py`: background model target preferences over fixed
-  graphs
-- `src/twwarhammer3/controllers/graph_author.py`: offline multi-LLM authoring and whole-battle
-  revision
-- `src/twwarhammer3/controllers/graph_initiation.py`: temporary pre-contact attack-path check
-  for caller-declared initiators
+
+`src/twwarhammer3/benchmarks/` contains trial plans, scoring and statistics.
+
+- `src/twwarhammer3/benchmarks/profile.py`: the mirror profile: limits, one-call transport, battle
+  budget and the first-ending condition; the outcome label of an episode
+- `src/twwarhammer3/benchmarks/plans.py`: frozen benchmark plans and every planned attempt
+  read back
+- `src/twwarhammer3/benchmarks/suite.py`: the coordination suite: arms, plans, measures and comparison
+- `src/twwarhammer3/benchmarks/exact_stats.py`: exact small-sample statistics for win rates: two-sided
+  Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
+
+`src/twwarhammer3/results/` contains result recording, reports and exports.
+
 - `src/twwarhammer3/results/graph_view.py`: recorded graph/battle inspection
 - `src/twwarhammer3/results/graph_view_assets/`: the graph view's page, script and style
+- `src/twwarhammer3/results/export.py`: offline model decisions, exchanges and provenance
+- `src/twwarhammer3/results/digest.py`: trace summaries
+- `src/twwarhammer3/results/watch.py`: follow a job
+- `src/twwarhammer3/results/register.py`: results register
+- `src/twwarhammer3/results/report.py`: paired statistics and a mirror plan's report
+- `src/twwarhammer3/results/report_html.py`: the offline HTML report
+- `src/twwarhammer3/results/replay.py`: the report's replay: public recorded frames and events
+- `src/twwarhammer3/results/report_assets/`: the report's page, script, style and replay
+- `src/twwarhammer3/results/report_assets/report_notes.json`: the report's scenario, unit and highlight text
+
+`src/twwarhammer3/checkpoint/` contains capture, restore and checkpoint RL.
+
+- `src/twwarhammer3/checkpoint/checkpoint_agent.js`: the checkpoint Frida agent
+- `src/twwarhammer3/checkpoint/checkpoint_frida.py`: runs the checkpoint Frida agent in the
+  owned game (Windows side)
 - `src/twwarhammer3/checkpoint/checkpoint.py`: battle checkpoints: save, fast checked rebuild,
   live handover; the checkpoint-RL step run, library records and attempt statuses
 - `src/twwarhammer3/checkpoint/candidates.py`: checkpoint RL: the public candidate set
 - `src/twwarhammer3/checkpoint/audit.py`: checkpoint RL: branch audits
 - `src/twwarhammer3/checkpoint/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
 - `src/twwarhammer3/checkpoint/confirm.py`: checkpoint RL: the closed loop
-- `src/twwarhammer3/controllers/calibration.py`: the small diagnostics' base class and geometry
-  helpers, which lines.py is built on, and the four diagnostics current work still names
-- `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
-- `src/twwarhammer3/results/export.py`: offline model decisions, exchanges and provenance
-- `src/twwarhammer3/results/digest.py`: trace summaries
-- `src/twwarhammer3/results/watch.py`: follow a job
-- `src/twwarhammer3/results/register.py`: results register
-- `src/twwarhammer3/results/report.py`: paired statistics and a mirror plan's report
-- `src/twwarhammer3/benchmarks/exact_stats.py`: exact small-sample statistics for win rates: two-sided
-  Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
-- `src/twwarhammer3/results/report_html.py`: the offline HTML report
-- `src/twwarhammer3/results/replay.py`: the report's replay: public recorded frames and events
-- `src/twwarhammer3/results/report_assets/`: the report's page, script, style and replay
+- `src/twwarhammer3/checkpoint/command.py`: dispatches the checkpoint RL command and sequences its game and model phases
+
+`src/twwarhammer3/multiplayer/` contains native multiplayer coordination and peer comparison.
+
+- `src/twwarhammer3/multiplayer/link.py`: native multiplayer: the coordinator's link
+- `src/twwarhammer3/multiplayer/worker.py`: native multiplayer: per-client worker, typed lobby
+  operations, readiness and leave; contracts in its docstring and multiplayer-tools.md
+- `src/twwarhammer3/multiplayer/multiplayer_probe.py`: bounded Windows reference capture;
+  checks the actual process image and runs the passive multiplayer discovery agent
+- `src/twwarhammer3/multiplayer/multiplayer_probe.js`: passive deployment/command traces,
+  completed-tick checksums, raw unit witnesses, phases and outcome
+- `src/twwarhammer3/multiplayer/multiplayer_adapter.py`: Windows Frida helper and stdin requests
+  for direct deployment readiness, plus passive capture
+- `src/twwarhammer3/multiplayer/multiplayer_adapter.js`: fixed readiness sender on the game thread;
+  phase/layout guards and submission evidence; unverified
 - `src/twwarhammer3/multiplayer/peers.py`: native multiplayer: Lua-observation comparison and
   completed-tick/raw-witness comparison (`compare-peers --native`)
 
@@ -372,9 +395,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files
 - `configs/twwarhammer3/scenarios/`: declared scenarios, one JSON file per family
 - `configs/twwarhammer3/custom_battle.json`: random draws
-- `src/twwarhammer3/results/report_assets/report_notes.json`: the report's scenario, unit and highlight text
 - `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read
-- `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py`: reads
+- `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py` reads
 
 `src/gameai/`, game-neutral code both games import:
 - `src/gameai/llm.py`: model API calls for any game: transport, spend and the reply-retry loop
@@ -431,7 +453,7 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
     --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd USD \
     --rotation-seed N --output runs/twwarhammer3/battle/bench-bN-<purpose>-YYYYMMDD
 uv run python scripts/wh3_queue.py PLAN.json      # a frozen plan of play jobs, one at a time
-# Benchmark plans: `plan` writes a queue plan and plays nothing; `report`: reads its results
+# Benchmark plans: `plan` writes a queue plan and plays nothing; `report` reads its results
 uv run --locked python -m twwarhammer3 benchmark plan PLAN.json [--stage pilot|model]  # benchmark-initial.md
 uv run --locked python -m twwarhammer3 benchmark plan PLAN.json --stage suite \
     --scenarios A,B --arms rush,single  # benchmark-run.md

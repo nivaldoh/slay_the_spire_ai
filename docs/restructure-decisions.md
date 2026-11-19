@@ -7,6 +7,12 @@ To read each original proposal, use the Git command beside its group. The second
 on a local branch. Its Git objects and unfinished edits are backed up under
 `runs/restructure-plan-20261115/final/review/` on the evidence machine.
 
+The quotations retain their original paths. For current source, the “Witness hash” marker
+moved to `src/twwarhammer3/controllers/factory.py`, “Summary identity” to
+`src/twwarhammer3/results/register.py`, and “Test setup” to
+`src/twwarhammer3/results/report_html.py`. The marker checker lists the three quoted paths
+because they exist only at the revisions named below.
+
 ## First proposal
 
 `git show e453429:docs/restructure-plan.md`

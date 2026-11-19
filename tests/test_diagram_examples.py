@@ -1,6 +1,8 @@
-"""The private-text filter of scripts/diagram_examples.py, which guards the public code page."""
+"""Historical source identities and the private-text filter for the public code examples."""
 
+import hashlib
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -28,3 +30,25 @@ def test_private_text_is_refused(text):
     "llm_rules@z-ai/glm-5.3/low", "runs/twwarhammer3/battle"])
 def test_a_model_label_or_repository_path_is_not_private(text):
     assert not examples.PRIVATE.search(text)
+
+
+def test_a_moved_source_keeps_its_battle_name_hash_and_constant(tmp_path, monkeypatch):
+    def git(*args):
+        return subprocess.check_output(["git", "-c", "user.name=Test", "-c",
+                                        "user.email=test@invalid.test", *args],
+                                       cwd=tmp_path, text=True).strip()
+
+    git("init", "-q")
+    old, current = "src/old.py", "src/current.py"
+    code = b"TIMEOUT_MS = 4000\n"
+    (tmp_path / "src").mkdir()
+    (tmp_path / old).write_bytes(code)
+    git("add", old)
+    git("commit", "-qm", "Record the battle code")
+    battle = git("rev-parse", "HEAD")
+    git("mv", old, current)
+    git("commit", "-qm", "Move the source file")
+    monkeypatch.setattr(examples, "ROOT", tmp_path)
+    assert examples.cited_files("", battle, [current]) == ({old: hashlib.sha256(code).hexdigest()},
+                                                           [old])
+    assert examples.head_constant(current, "TIMEOUT_MS", battle) == 4000

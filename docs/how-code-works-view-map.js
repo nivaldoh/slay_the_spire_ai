@@ -366,13 +366,7 @@ DIAGRAM.tabs.push({
         "Saves a running battle at a tick, then replays its inputs to that tick before returning live control. The checkpoint-RL experiment built on it is paused.",
       "command": "uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output DIR",
       "files": [
-        "src/twwarhammer3/checkpoint/checkpoint.py",
-        "src/twwarhammer3/checkpoint/candidates.py",
-        "src/twwarhammer3/checkpoint/audit.py",
-        "src/twwarhammer3/checkpoint/rl.py",
-        "src/twwarhammer3/checkpoint/confirm.py",
-        "src/twwarhammer3/checkpoint/checkpoint_agent.js",
-        "src/twwarhammer3/checkpoint/checkpoint_frida.py",
+        "src/twwarhammer3/checkpoint/",
         "src/gameai/lm.py"
       ],
       "status":
@@ -402,9 +396,7 @@ DIAGRAM.tabs.push({
         "Each game client has a worker, joined by a coordinator. PC-hosted battles with a VM peer are recorded; full control remains unverified.",
       "command": "uv run python -m twwarhammer3 coordinator --match M --attempt A1 --clients A,B",
       "files": [
-        "src/twwarhammer3/multiplayer/link.py",
-        "src/twwarhammer3/multiplayer/worker.py",
-        "src/twwarhammer3/multiplayer/peers.py",
+        "src/twwarhammer3/multiplayer/",
         "scripts/wh3_gcp.py",
         "scripts/gcp/",
         "configs/twwarhammer3/gcp-regions.json"

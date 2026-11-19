@@ -15,8 +15,15 @@ live command is recorded as "(pytest part only)" and says nothing about the live
 read from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
 revisions written below are the earlier passes.
 
+The Cannae entries below retain the selectors used at their recorded revisions. For a new
+checkout, use `twwarhammer3.scenarios.cannae` for the Cannae policies and
+`twwarhammer3.controllers.evade:Evade` for Evade. Army, graph and team checkers now import
+their source scope from `twwarhammer3.scope`. The earlier checker digests and passes refer to
+the earlier revisions. The [implementation notes](restructure-plan.md#implementation-notes)
+record the replacement checks for owner review.
+
 - WH3 Cannae fixed rule on harder B (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"):
-  `emp-envelopment-b-v3` with `twwarhammer3.scenarios.cannae:CentreSupport`, `--reserve-seed` 4, 9, 38,
+  `emp-envelopment-b-v3` with `twwarhammer3.battle.cannae:CentreSupport`, `--reserve-seed` 4, 9, 38,
   18, 3, 0, 7 and 1 for the eight catalogue cases, one fresh launch per case, $0, unpaused at 1x, with
   600/1320/2000 s start, episode and job limits. All eight are reported, with no repeats, and a loss
   stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan. Two
@@ -35,7 +42,7 @@ revisions written below are the earlier passes.
 
 - WH3 Cannae shortcut challenges (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"): one launch each, $0,
   unpaused at 1x, 600/1320/2000 s limits: `emp-envelopment-a-v2` with Hold and with
-  `twwarhammer3.controllers.evade:Evade`, `emp-envelopment-b-v3` with `--reserve-seed` 1 and Evade,
+  `twwarhammer3.battle.evade:Evade`, `emp-envelopment-b-v3` with `--reserve-seed` 1 and Evade,
   `brt-air-relief-v1` with Evade, and `emp-envelopment-c-silent-v2` with
   `configs/twwarhammer3/controllers/cannae-local-rush.json`. Reported only, with no pass rule. A win is
   recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be

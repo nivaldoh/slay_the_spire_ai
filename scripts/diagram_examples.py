@@ -253,6 +253,20 @@ def git_blob(rev: str, path: str) -> bytes | None:
     return done.stdout if done.returncode == 0 else None
 
 
+@cache
+def recorded_path(commit: str, path: str) -> str:
+    """The path a current source file had at this example's battle revision."""
+    if git_blob(commit, path) is not None:
+        return path
+    moves = subprocess.check_output(
+        ["git", "log", "--follow", "--format=", "--name-status", "--diff-filter=R",
+         f"{commit}..HEAD", "--", path], cwd=ROOT, text=True)
+    for line in moves.splitlines():
+        if line:
+            _, path, _ = line.split("\t")
+    return path
+
+
 def payload(source: str) -> dict:
     body = "\n".join(line for line in source.splitlines()
                      if not line.startswith(("//", '"use strict"')))
@@ -314,7 +328,8 @@ def cited_files(story_path: str, commit: str, refs: list | None = None) -> tuple
     cited = sorted({ref.split(":")[0] for ref in (story_refs(story_path) if refs is None else refs)
                     if ref.startswith(("src/", "configs/", "scripts/"))})
     files, changed = {}, []
-    for path in cited:
+    for current in cited:
+        path = recorded_path(commit, current)
         then, now = git_blob(commit, path), git_blob("HEAD", path)
         files[path] = hashlib.sha256(then).hexdigest() if then is not None else "absent"
         if then is None or now is None or then != now:
@@ -540,6 +555,8 @@ def check_counts(name: str, stated: dict, found: dict) -> None:
 
 def head_constant(path: str, name: str, rev: str = "HEAD"):
     """A module-level literal, read by ast from the file at `rev`."""
+    if rev != "HEAD":
+        path = recorded_path(rev, path)
     for node in ast.parse(git_blob(rev, path) or b"").body:
         if isinstance(node, ast.Assign) and any(getattr(t, "id", None) == name
                                                 for t in node.targets):
@@ -1550,17 +1567,7 @@ def build(recipe: dict, runs: Path) -> dict:
     names = {entry["id"]: label(entry) for entry in data["roster"]}
     by_request = {d["request"].rsplit("-", 1)[-1]: d for d in data["decisions"]}
     commit = manifest["source_revision"]
-    story = payload((ROOT / recipe["story"]).read_text(encoding="utf-8"))
-    items = [story, *story["elements"], *story["wires"],
-             *(step for flow in story["flows"] for step in flow["steps"])]
-    cited = sorted({ref.split(":")[0] for item in items for ref in item.get("refs") or []
-                    if ref.startswith(("src/", "configs/", "scripts/"))})
-    files, changed = {}, []
-    for path in cited:
-        then, now = git_blob(commit, path), git_blob("HEAD", path)
-        files[path] = hashlib.sha256(then).hexdigest() if then is not None else "absent"
-        if then is None or now is None or then != now:
-            changed.append(path)
+    files, changed = cited_files(recipe["story"], commit)
     messages, frames = {}, {}
     plan = json.loads((runs / recipe["plan"]).read_text())
     entry = next(j for j in plan["jobs"] if j["output"] == recipe["job"])

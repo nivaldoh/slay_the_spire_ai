@@ -2,8 +2,8 @@
 
 *Owner direction, 2026-10-12. The Spire full-run track with `gpt-6-luna` continues. At some
 point the Spire work will also test an open-weight model that is served and trained remotely.
-This page records the proposed plan. Only a code skeleton exists
-([Code skeleton](#code-skeleton)). Facts were checked on 2026-10-12.*
+This page records the original proposal. The [implementation](#implementation) lists the working
+adapter and utilities. The original research dates to 2026-10-12.*
 
 **Question.** Does learning what actions do help an LLM become a better player, with less training
 and better generalization? The plan uses game-reward RL as the foundation and adds one experiment
@@ -131,16 +131,16 @@ histories can make tokens the deciding cost.
 - **Warm-start data:** successful trajectories from the heuristic or the open model itself avoid
   the terms question that Luna-derived data would raise ([approaches.md section 5](../approaches.md#5-distillation-from-frontier-models-cheap-labels-capped-by-the-teacher)).
 
-## Code skeleton
+## Implementation
 
-`src/spire/openweight/` (2026-10-12) sets the module layout; it trains and plays nothing yet.
-Unbuilt functions raise `NotImplementedError`, and `tests/openweight/` covers the parts that
-work.
+`src/spire/openweight/` shares the full-run game loop with the other Spire policies.
+The remote trainer and simulator remain proposals. The adapter and learning utilities have
+offline checks in `tests/openweight/`.
 
 | Stage | Module | State |
 |---|---|---|
 | A | `tasks`: curriculum `Stage`, `Split`, `Task`, `check_splits` (a seed in one split only) | Splits checked; declarations not designed |
-| A | `env`: a step interface (`reset`, `step`) with `RealGame` and `Simulator` backends | Interface only |
+| A | `env`: a step interface (`reset`, `step`) with `RealGame` and `Simulator` backends | `RealGame` adapts fresh full runs; simulator unimplemented |
 | B, C | `policy`: `SampledPolicy` with the `fullrun` policy interface, so `spire.fullrun.play` can run it | Placeholder prompt and reply |
 | B, E | `evaluate`: every arm on the same tasks, with a Wilson interval on the win rate | Interval only |
 | C | `rewards`: fights score win then HP, full runs score victory alone | Working; HP scale is a placeholder |
@@ -149,12 +149,12 @@ work.
 | D | `dynamics`: observable changes per action as ECHO targets | Target list only |
 | infrastructure | `remote`: Tinker session, prices, a separate `runs/tinker-spend.jsonl` ledger | Prices only; no SDK dependency |
 
-Gaps the skeleton makes visible:
+The remaining prerequisites concern starting positions and remote training.
 
-- `RealGame` has to invert `spire.fullrun.play.play_run`'s loop, which calls the policy, into
-  `reset`/`step` without changing the trace.
-- No scripted heuristic plays full-run decisions; `spire.policies` covers only the starter
-  first combat.
+`RealGame.reset` starts `spire.fullrun.play.play_run` on a worker thread. Its policy hands each
+decision to `step` and waits for a choice. `spire.fullrun.rules.RulePolicy` is the scripted
+full-run baseline. Its combat variant is `SimpleCombatPolicy`.
+
 - Fight and Act 1 tasks need a way to start mid-run: a recorded prefix on the real game, or
   a snapshot on the simulator.
 - The Tinker SDK needs its own extra in `pyproject.toml`, pinned, before the first call.

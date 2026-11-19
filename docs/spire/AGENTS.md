@@ -33,16 +33,18 @@ ending in `/` covers the files below it.
 
 `src/spire/fullrun/`, the full-run track:
 - `src/spire/fullrun/play.py`: complete-run loop for any policy
+- `src/spire/fullrun/rules.py`: rule policies for full-run decisions, including combat choices
+- `src/spire/fullrun/rule_data.py`: Ironclad card values and relic preferences for the rule policy
 - `src/spire/fullrun/llm.py`: prompt, memory and replies: the tuning surface
 - `src/spire/fullrun/digest.py`: trace summaries and mistake flags
 - `src/spire/fullrun/watch.py`: job events
 - `src/spire/fullrun/stats.py`: the results register
+- `src/spire/fullrun/replay.py`: replays recorded choices and checks decisions against the trace
 - `src/spire/fullrun/export.py`: offline model-request datasets
 
-`src/spire/openweight/`, the planned remote open-weight track (skeleton, mostly
-NotImplementedError):
+`src/spire/openweight/` contains the working full-run adapter, tasks and rewards, and the proposed remote trainer:
 - `src/spire/openweight/tasks.py`: tasks and seed splits
-- `src/spire/openweight/env.py`: env backends
+- `src/spire/openweight/env.py`: exposes full runs from `fullrun.play.play_run` through `reset` and `step`; the simulator is a proposal
 - `src/spire/openweight/policy.py`: Tinker policy
 - `src/spire/openweight/remote.py`: Tinker transport, prices and spend
 - `src/spire/openweight/rewards.py`: rewards

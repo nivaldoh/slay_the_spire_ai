@@ -6,6 +6,12 @@ designs come from a research summary the owner obtained from ChatGPT 6 Astra Pro
 (2026-10-13); its citations were checked where noted under
 [Sources](#sources-and-caveats).
 
+External Python controllers still use `package.module:Class`. Update imports from this repository
+to the paths in the [Code map](README.md#code-map). For example, `Concentrate` now lives in
+`twwarhammer3.controllers.reference` and `CentreSupport` in `twwarhammer3.scenarios.cannae`.
+To resume an original job at its pinned revision, use that revision's controller and declaration.
+A new declaration records the hash of its current class paths.
+
 ## The problem
 
 The direct controller (`--policy llm`) asks the model for raw orders and blocks on each

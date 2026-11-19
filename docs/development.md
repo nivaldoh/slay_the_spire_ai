@@ -20,6 +20,11 @@ runs/              Local evidence, ignored by Git; see runs/README.md
 .claude/ .codex/   the same hooks and reviewer for each tool, skills in .agents/ (workflow.md)
 ```
 
+WH3 keeps live setup and execution in `battle/`. Reusable policies belong in `controllers/`.
+A named battle’s witness, facts and independent evaluator belong in `scenarios/`. Trial design
+and scoring live in `benchmarks/`. Register, trace, export and report readers live in `results/`.
+Standalone Windows helpers stay beside the checkpoint or multiplayer code that deploys them.
+
 A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
 `tests/<game>/`. Move code into `gameai` when a second game would otherwise copy it, not
 before; the job modules (play, digest, watch, stats) stay per game. Test files share one
@@ -42,7 +47,8 @@ card, checkpoints, RL); [posttraining](posttraining.md); [tests](../tests/README
   game (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
   directory and refuses uncommitted changes in its source scope: `src/gameai/`,
   `src/twwarhammer3/`, `configs/twwarhammer3/`, `pyproject.toml`, `uv.lock` and `.python-version`
-  (`battle/play.py` `SOURCES`). `launch` checks no scope.
+  (`twwarhammer3.scope.SOURCES`). Checkpoint launches also fingerprint the Spire process
+  descriptor they read to prevent conflicting game processes. `launch` checks no scope.
   A play job stops before its next episode if a file in its scope changes: while one runs,
   merge nothing into its checkout that touches its scope (shared code counts for both games).
 - Never run two game controllers at once,

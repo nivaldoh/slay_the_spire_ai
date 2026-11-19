@@ -7,6 +7,11 @@ repository's hard rule. A command acknowledgement, native submission and peer ag
 are separate observations. `runs/wh3-mp-overnight-20261104/typed_run.py` is local experiment
 scratch, not a maintained runner; its typed lifecycle has no live pass past `status`.
 
+Deploy the source checkout on each peer and put its `src` on the Python path. The coordinator
+and worker compare the source and config files listed by `twwarhammer3.scope.SOURCES`.
+A wheel can run the offline readers. Multiplayer identity also requires the executing source
+tree, its configuration and its project files.
+
 ## Worker operations
 
 [worker.py](../../src/twwarhammer3/multiplayer/worker.py) documents process ownership, manifests,

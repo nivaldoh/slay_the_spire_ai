@@ -16,6 +16,30 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/units.py",
+   "text": "measures public unit distance, eligibility and melee contact.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/policy_names.py",
+   "text": "parses the policy, model and effort in a recorded name.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scope.py",
+   "text": "defines the WH3 source scope and recording versions.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/order_text.py",
+   "text": "renders order, plan and army descriptions for prompts and jobs.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/engine/runtime.py",
    "text": "pins, pack build, mod list, launch; it and `src/gameai/windows.py` pick WSL or native Windows paths at import",
    "box": "map.runtime",
@@ -52,50 +76,8 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/checkpoint/checkpoint_agent.js",
-   "text": "the checkpoint Frida agent",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/checkpoint_frida.py",
-   "text": "runs the checkpoint Frida agent in the owned game (Windows side)",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/link.py",
-   "text": "native multiplayer: the coordinator's link",
-   "box": "map.multiplayer",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/worker.py",
-   "text": "native multiplayer: per-client worker, typed lobby operations, readiness and leave; contracts in its docstring and multiplayer-tools.md",
-   "box": "map.multiplayer",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.py",
-   "text": "bounded Windows reference capture; checks the actual process image and runs the passive multiplayer discovery agent",
-   "box": "map.runtime",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.js",
-   "text": "passive deployment/command traces, completed-tick checksums, raw unit witnesses, phases and outcome",
-   "box": "map.runtime",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.py",
-   "text": "Windows Frida helper and stdin requests for direct deployment readiness, plus passive capture",
-   "box": "map.runtime",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.js",
-   "text": "fixed readiness sender on the game thread; phase/layout guards and submission evidence; unverified",
+   "path": "src/twwarhammer3/engine/manual_capture.py",
+   "text": "passive Windows video and state journal for demonstrations",
    "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -142,50 +124,8 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/benchmarks/profile.py",
-   "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition; the outcome label of an episode",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/benchmarks/plans.py",
-   "text": "frozen benchmark plans and every planned attempt read back",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/benchmarks/suite.py",
-   "text": "the coordination suite: arms, plans, measures and comparison",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/support_timing.py",
-   "text": "infantry/cavalry timing diagnostics and fresh-launch plan",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/support_evidence.py",
-   "text": "offline event brackets and proposed numerical contrast",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "src/twwarhammer3/battle/manual_demo.py",
    "text": "separate owner demonstration recorder and pause labels",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/engine/manual_capture.py",
-   "text": "passive Windows video and state journal for demonstrations",
-   "box": "map.runtime",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/controllers/reference.py",
-   "text": "`Concentrate`, the suite's scripted coordinated reference",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -196,8 +136,26 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/battle/reserve.py",
+   "text": "battle B's private reserve draw, and the waves profile (version 3) that holds and releases enemy groups, kept apart from the public battle state",
+   "box": "map.setup",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/battle/capture.py",
+   "text": "1 Hz replay recorder and stills",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/controllers/reference.py",
+   "text": "`Concentrate`, the suite's scripted coordinated reference",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/controllers/factory.py",
-   "text": "policy names, model prompts, rotation, outside controllers",
+   "text": "selects prompts, validates providers and builds fresh controllers and policy cards",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -232,126 +190,6 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/scenarios/cannae.py",
-   "text": "`Envelop`, `WingSupport`, `CentreSupport`: scripted Cannae development witnesses on public state",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/camp.py",
-   "text": "`CampStrike` and its controls for the camp attack land battle (emp-chd-camp-v1), on public state",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/camp_facts.py",
-   "text": "what that battle's witness and readings both use: the unit groups by type key and the cue rule",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/camp_readings.py",
-   "text": "that battle's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/lines.py",
-   "text": "`LinesWitness`, `LinesByMen` and `LinesCentral` for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/lines_facts.py",
-   "text": "what that defence's witness and readings both use: the unit type keys and the relief trigger",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/lines_readings.py",
-   "text": "that defence's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/battle/reserve.py",
-   "text": "battle B's private reserve draw, and the waves profile (version 3) that holds and releases enemy groups, kept apart from the public battle state",
-   "box": "map.setup",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/wall_defence.py",
-   "text": "`WallWitness` and its controls for the walled siege defence (cth-emp-siege-a-v1), on public state",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/wall_facts.py",
-   "text": "what that siege's witness and readings both use: the reserve's type keys and the public wall line with its distance and inside tests",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/wall_readings.py",
-   "text": "that siege's evaluator readings of finished battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/escalade.py",
-   "text": "`Escalade` and its controls for the siege attack (ksl-emp-siege-a-v1), on public state with the siege orders",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/escalade_facts.py",
-   "text": "what that siege's witness and readings both use: the fort's front line and what counts as inside it",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/escalade_readings.py",
-   "text": "that siege's evaluator readings of finished battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/units.py",
-   "text": "measures public unit distance, eligibility and melee contact.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/policy_names.py",
-   "text": "parses the policy, model and effort in a recorded name.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scope.py",
-   "text": "defines the WH3 source scope and recording versions.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/order_text.py",
-   "text": "renders order, plan and army descriptions for prompts and jobs.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/support_facts.py",
-   "text": "binds the three support timing regiment identities.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/evidence_rules.py",
-   "text": "reads deployment groups, tickets and acknowledged orders.",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "src/twwarhammer3/controllers/team.py",
    "text": "independent members sharing one army and one mailbox",
    "box": "map.play",
@@ -366,12 +204,6 @@ Object.assign(DIAGRAM_FILES, {
   {
    "path": "src/twwarhammer3/controllers/local_team.py",
    "text": "C's regiment groups, model interface and free probes; version 2's peer, relay and overview arms, the muted controls (peer or overview to their members, nothing delivered) and the unlinked one (no links, no messages), the commander and its stage-1 probes",
-   "box": "map.play",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/scenarios/local_scripts.py",
-   "text": "scripted C v2 witnesses (peer, relay and overview) and foils (fixed schedule, central concentration, `ThinkingRush`) for the communication-structure stage 2; each sleeps a model-like think time per decision",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -418,6 +250,144 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
+   "path": "src/twwarhammer3/controllers/calibration.py",
+   "text": "the small diagnostics' base class and geometry helpers, which lines.py is built on, and the four diagnostics current work still names",
+   "box": "map.setup",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/support_timing.py",
+   "text": "infantry/cavalry timing diagnostics and fresh-launch plan",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/support_evidence.py",
+   "text": "offline event brackets and proposed numerical contrast",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/cannae.py",
+   "text": "`Envelop`, `WingSupport`, `CentreSupport`: scripted Cannae development witnesses on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/camp.py",
+   "text": "`CampStrike` and its controls for the camp attack land battle (emp-chd-camp-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/camp_facts.py",
+   "text": "what that battle's witness and readings both use: the unit groups by type key and the cue rule",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/camp_readings.py",
+   "text": "that battle's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/lines.py",
+   "text": "`LinesWitness`, `LinesByMen` and `LinesCentral` for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/lines_facts.py",
+   "text": "what that defence's witness and readings both use: the unit type keys and the relief trigger",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/lines_readings.py",
+   "text": "that defence's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/wall_defence.py",
+   "text": "`WallWitness` and its controls for the walled siege defence (cth-emp-siege-a-v1), on public state",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/wall_facts.py",
+   "text": "what that siege's witness and readings both use: the reserve's type keys and the public wall line with its distance and inside tests",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/wall_readings.py",
+   "text": "that siege's evaluator readings of finished battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/escalade.py",
+   "text": "`Escalade` and its controls for the siege attack (ksl-emp-siege-a-v1), on public state with the siege orders",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/escalade_facts.py",
+   "text": "what that siege's witness and readings both use: the fort's front line and what counts as inside it",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/escalade_readings.py",
+   "text": "that siege's evaluator readings of finished battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/support_facts.py",
+   "text": "binds the three support timing regiment identities.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/evidence_rules.py",
+   "text": "reads deployment groups, tickets and acknowledged orders.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/local_scripts.py",
+   "text": "scripted C v2 witnesses (peer, relay and overview) and foils (fixed schedule, central concentration, `ThinkingRush`) for the communication-structure stage 2; each sleeps a model-like think time per decision",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/benchmarks/profile.py",
+   "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition; the outcome label of an episode",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/benchmarks/plans.py",
+   "text": "frozen benchmark plans and every planned attempt read back",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/benchmarks/suite.py",
+   "text": "the coordination suite: arms, plans, measures and comparison",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/benchmarks/exact_stats.py",
+   "text": "exact small-sample statistics for win rates: two-sided Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
    "path": "src/twwarhammer3/results/graph_view.py",
    "text": "recorded graph/battle inspection",
    "box": "map.graphs",
@@ -427,48 +397,6 @@ Object.assign(DIAGRAM_FILES, {
    "path": "src/twwarhammer3/results/graph_view_assets/",
    "text": "the graph view's page, script and style",
    "box": "map.graphs",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/checkpoint.py",
-   "text": "battle checkpoints: save, fast checked rebuild, live handover; the checkpoint-RL step run, library records and attempt statuses",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/candidates.py",
-   "text": "checkpoint RL: the public candidate set",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/audit.py",
-   "text": "checkpoint RL: branch audits",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/rl.py",
-   "text": "checkpoint RL: tasks, methods, evaluation (model side)",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/checkpoint/confirm.py",
-   "text": "checkpoint RL: the closed loop",
-   "box": "map.checkpoints",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/controllers/calibration.py",
-   "text": "the small diagnostics' base class and geometry helpers, which lines.py is built on, and the four diagnostics current work still names",
-   "box": "map.setup",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
-   "path": "src/twwarhammer3/battle/capture.py",
-   "text": "1 Hz replay recorder and stills",
-   "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -502,12 +430,6 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/benchmarks/exact_stats.py",
-   "text": "exact small-sample statistics for win rates: two-sided Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "src/twwarhammer3/results/report_html.py",
    "text": "the offline HTML report",
    "box": "map.reports",
@@ -523,6 +445,96 @@ Object.assign(DIAGRAM_FILES, {
    "path": "src/twwarhammer3/results/report_assets/",
    "text": "the report's page, script, style and replay",
    "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/results/report_assets/report_notes.json",
+   "text": "the report's scenario, unit and highlight text",
+   "box": "map.reports",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/checkpoint_agent.js",
+   "text": "the checkpoint Frida agent",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/checkpoint_frida.py",
+   "text": "runs the checkpoint Frida agent in the owned game (Windows side)",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/checkpoint.py",
+   "text": "battle checkpoints: save, fast checked rebuild, live handover; the checkpoint-RL step run, library records and attempt statuses",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/candidates.py",
+   "text": "checkpoint RL: the public candidate set",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/audit.py",
+   "text": "checkpoint RL: branch audits",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/rl.py",
+   "text": "checkpoint RL: tasks, methods, evaluation (model side)",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/confirm.py",
+   "text": "checkpoint RL: the closed loop",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/checkpoint/command.py",
+   "text": "dispatches the checkpoint RL command and sequences its game and model phases",
+   "box": "map.checkpoints",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/link.py",
+   "text": "native multiplayer: the coordinator's link",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/worker.py",
+   "text": "native multiplayer: per-client worker, typed lobby operations, readiness and leave; contracts in its docstring and multiplayer-tools.md",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.py",
+   "text": "bounded Windows reference capture; checks the actual process image and runs the passive multiplayer discovery agent",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.js",
+   "text": "passive deployment/command traces, completed-tick checksums, raw unit witnesses, phases and outcome",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.py",
+   "text": "Windows Frida helper and stdin requests for direct deployment readiness, plus passive capture",
+   "box": "map.multiplayer",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.js",
+   "text": "fixed readiness sender on the game thread; phase/layout guards and submission evidence; unverified",
+   "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },
   {
@@ -622,12 +634,6 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "configs/twwarhammer3/report_notes.json",
-   "text": "the report's scenario, unit and highlight text",
-   "box": "map.reports",
-   "list": "docs/twwarhammer3/README.md"
-  },
-  {
    "path": "configs/twwarhammer3/benchmark_jobs.json",
    "text": "the jobs the report and export read",
    "box": "map.reports",
@@ -635,7 +641,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "configs/twwarhammer3/gcp-regions.json",
-   "text": "the quoted region prices `scripts/wh3_gcp.py`: reads",
+   "text": "the quoted region prices `scripts/wh3_gcp.py` reads",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },
