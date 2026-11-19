@@ -15,7 +15,8 @@ from check_wh3_team import assess
 from wh3_fixtures import CONFIG, FakeMailbox
 from wh3_team_fixtures import Script, ack, make_team, move, state
 
-from twwarhammer3.battle import digest, play, team
+from twwarhammer3.battle import play, team
+from twwarhammer3.results import digest
 
 
 def test_partition_and_deep_public_inputs_use_types_not_positions():

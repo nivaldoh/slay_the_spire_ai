@@ -21,7 +21,7 @@ async function main() {
       String.raw`
 import sys
 from pathlib import Path
-from twwarhammer3.battle import graph_view
+from twwarhammer3.results import graph_view
 sys.path.insert(0, "tests/twwarhammer3/graph")
 from wh3_graph_goal_support import recording, write
 out = Path(sys.argv[1])

@@ -1,12 +1,12 @@
-"""The live job follower in twwarhammer3/battle/watch.py."""
+"""The live job follower in twwarhammer3/results/watch.py."""
 import json
 import os
 import time
 
 from wh3_fixtures import observation
 
-from twwarhammer3.battle import watch
-from twwarhammer3.battle.watch import Feed, check, follow, next_event
+from twwarhammer3.results import watch
+from twwarhammer3.results.watch import Feed, check, follow, next_event
 
 PROMPT = ("Battle notes:\n(none)\n\nDropped or rejected since your last plan:\n"
           "engine rejected f1 ability roar at self: unavailable_ability\n\nState: ...")
@@ -125,7 +125,7 @@ def test_next_returns_once_per_episode_stall_or_job_end(tmp_path, monkeypatch):
 
 def test_an_updated_game_build_is_announced_by_watch_and_digest(tmp_path):
     # Steam may update the game (owner, 2026-10-18): the job records it and the tools say so.
-    from twwarhammer3.battle.digest import job_digest
+    from twwarhammer3.results.digest import job_digest
 
     job = tmp_path / "job"
     episode = job / "episode-0000"

@@ -452,7 +452,7 @@ Full enemy leadership would help. Until we can read it, it stays missing: never 
 
 ## What the current code reports
 
-This is what `battle/play.py` and `battle/report.py` do today, not the new score. The report and the card code (deleted on 2026-11-15) disagreed on timer wins and failed trials; the [audit](log.md#wh3-evaluations-and-tests-2026-10-23) lists the differences. Use the definition's [outcome table](benchmark.md#outcome-and-score) only after its evaluator is built and checked.
+This is what `battle/play.py` and `results/report.py` do today, not the new score. The report and the card code (deleted on 2026-11-15) disagreed on timer wins and failed trials; the [audit](log.md#wh3-evaluations-and-tests-2026-10-23) lists the differences. Use the definition's [outcome table](benchmark.md#outcome-and-score) only after its evaluator is built and checked.
 
 Trial statuses (`battle/play.py`):
 - `won`, `lost`, `draw`: the engine's result, the only gameplay outcomes. `ended_by` is `time_limit` when the countdown ran out (inferred from the last ticked deadline; see [integration.md](integration.md)). The report shows `time_limit` and keeps the engine result, so a defender's timer win isn't hidden.
@@ -460,7 +460,7 @@ Trial statuses (`battle/play.py`):
 
 Every started trial goes into `result.json`, the manifest and the register. Any ending other than an engine result stops the job, leaving unplayed controllers unpaired. Show planned, started and scored counts per controller, with the reason each missing partner is missing, and don't discard a failure to balance pairs. Comparing only complete pairs keeps the battles both controllers finished, which can favour easier ones. If that blocks the planned comparison, stop it or freeze a new set with one controller per launch, interleaved over time; don't keep replacing only the incomplete pairs.
 
-`battle/report.py` groups evidence by resolved scenario, source revision, game build, track, recorder and imagery settings, observe/tick/interval, model and effort, and never pools groups. For each group it computes:
+`results/report.py` groups evidence by resolved scenario, source revision, game build, track, recorder and imagery settings, observe/tick/interval, model and effort, and never pools groups. For each group it computes:
 - outcomes per controller and added age: valid trials (engine results) over started ones, with the failures listed;
 - the non-timer win rate (non-timer wins over all valid trials) with a 95% Wilson interval, withheld when a controller has repeats within one launch;
 - the active-strength margin: own men neither routing nor shattered over own starting men, minus the same for the enemy, from hidden totals. Reinforcements and summons join the denominator, and unit value isn't weighted (the register's `own_left` and `enemy_left` count routing men as alive);

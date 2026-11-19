@@ -390,8 +390,8 @@ async function main() {
     // JUDGEMENT?: Route example — Codex, 2026-10-31: use the existing demo for this check.
     // Recorded coverage would need a pending waypoint; only command display is checked.
 
-    // Rests on JUDGEMENT? src/twwarhammer3/battle/report_assets/replay.js Recent routes.
-    // Rests on JUDGEMENT? src/twwarhammer3/battle/report_assets/replay.js Waypoint cutoff.
+    // Rests on JUDGEMENT? src/twwarhammer3/results/report_assets/replay.js Recent routes.
+    // Rests on JUDGEMENT? src/twwarhammer3/results/report_assets/replay.js Waypoint cutoff.
     async function checkPendingRoutes(replay) {
       const applied = replay.decisions.filter((d) => d.applied_ms != null);
       // Unselected units' recent routes start at the unit, through the waypoints still ahead.

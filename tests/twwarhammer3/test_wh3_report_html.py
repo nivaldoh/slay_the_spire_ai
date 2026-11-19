@@ -11,7 +11,8 @@ from make_wh3_report_demo import demo_report, pair_jobs
 from PIL import Image
 from wh3_fixtures import configured_job, embedded, make_job
 
-from twwarhammer3.battle import report, report_html, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.results import report, report_html
 
 
 @pytest.mark.parametrize("model,label", [("z-ai/glm-5.3", "GLM-5.3"),
@@ -107,7 +108,7 @@ def test_the_harness_changes_with_anything_that_shapes_play(tmp_path, field, val
 
 
 def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
-    code = {"src/twwarhammer3/battle/llm.py": "a", "src/twwarhammer3/battle/report.py": "a",
+    code = {"src/twwarhammer3/battle/llm.py": "a", "src/twwarhammer3/results/report.py": "a",
             "configs/twwarhammer3/report_notes.json": "a",
             "configs/twwarhammer3/benchmark_jobs.json": "a"}
     definition = {"source": "r1", "track": "t", "model": "m", "evaluator_version": 1,
@@ -117,7 +118,7 @@ def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
     assert base == report_html.harness(
         {**definition, "source": "r2", "model": "other", "evaluator_version": 2,
          "scenario": {"name": "s", "brief": "new", "status": "admitted"}},
-        {"provenance": {"source_files": {**code, "src/twwarhammer3/battle/report.py": "b",
+        {"provenance": {"source_files": {**code, "src/twwarhammer3/results/report.py": "b",
                                          "configs/twwarhammer3/report_notes.json": "b",
                                          "configs/twwarhammer3/benchmark_jobs.json": "b"}}})
     assert base != report_html.harness(definition, {"provenance": {"source_files": {
@@ -657,3 +658,16 @@ def test_armies_read_as_races_and_roles():
     other = {"player": {"faction": "wh9_main_xyz_new_people", "units": ["a", "b"]},
              "enemy": {"faction": "wh_main_dwf_dwarfs"}}
     assert report_html.armies(other)["line"] == "2 New People units against Dwarf army"
+
+
+def test_harness_ignores_presentation_files_at_both_layouts_and_tracks_exports():
+    definition = {"scenario": {"name": "siege"}}
+    for folder in ("battle", "results"):
+        src = f"src/twwarhammer3/{folder}/"
+
+        def identity(report_hash, exporter_hash):
+            files = {src + "report_html.py": report_hash, src + "export.py": exporter_hash}
+            return report_html.harness(definition, {"provenance": {"source_files": files}})
+
+        assert identity("before", "a") == identity("after", "a")
+        assert identity("before", "a") != identity("before", "b")

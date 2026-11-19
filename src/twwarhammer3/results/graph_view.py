@@ -1,6 +1,6 @@
 """Read-only graph execution views from recorded configuration and public trace rows.
 
-Uses the source references of battle/replay.py. Test design follows GaP's
+Uses the source references of results/replay.py. Test design follows GaP's
 tests/runtime/test_executor.py at 71549e1: materialized graphs with explicit paths,
 not snapshots of this collector's output. No donor code, game launch or model call.
 """
@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import graph, replay
+from twwarhammer3.battle import graph
+from twwarhammer3.results import replay
 
 ASSETS = Path(__file__).with_name("graph_view_assets")
 NODE_EVENTS = frozenset(("started", "transition", "cancelled", "closed", "exhausted"))

@@ -22,13 +22,14 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
-from twwarhammer3.battle import graph_author, report_html, setup
-from twwarhammer3.battle import report as trials
+from twwarhammer3.battle import graph_author, setup
 from twwarhammer3.battle.benchmark import EFFORT, LAUNCH_ARGS, MODEL, SUITE
 from twwarhammer3.battle.benchmark_plans import collect
-from twwarhammer3.battle.report import mean_interval, trial_metrics, wilson
 from twwarhammer3.battle.skills import SHOOTERS
 from twwarhammer3.protocol import account_stop
+from twwarhammer3.results import report as trials
+from twwarhammer3.results import report_html
+from twwarhammer3.results.report import mean_interval, trial_metrics, wilson
 
 # JUDGEMENT: Suite arms — Claude, 2026-11-04, overnight goal: the methods the code has today,
 # frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; a script

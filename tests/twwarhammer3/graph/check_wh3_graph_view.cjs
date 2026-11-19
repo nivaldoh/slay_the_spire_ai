@@ -43,7 +43,8 @@ async function checkPartialAndTerminal(page, out) {
       String.raw`
 import json, sys
 from pathlib import Path
-from twwarhammer3.battle import graph, graph_view
+from twwarhammer3.battle import graph
+from twwarhammer3.results import graph_view
 p=Path(sys.argv[1]); p.mkdir(parents=True, exist_ok=True)
 g={"version":graph.VERSION,"entry":"move","nodes":{
  "move":{"op":"move","inputs":{"units":["u","v"],"point":{"x":20,"z":0}},

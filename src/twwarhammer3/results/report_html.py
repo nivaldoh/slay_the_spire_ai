@@ -13,7 +13,7 @@ data and the collector's JSON, off the page, and their replays are not embedded.
 
 Each scenario has a featured trial: a curated selection, whose record the page states
 beside it, else the first model battle, else the first battle, by chronology. Reader-facing
-scenario and unit text comes from configs/twwarhammer3/report_notes.json. Recorded game
+scenario and unit text comes from report_assets/report_notes.json. Recorded game
 stills are embedded as WebP, which needs Pillow.
 """
 
@@ -26,12 +26,11 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import replay
 from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
+from twwarhammer3.results import replay
 
 ASSETS = Path(__file__).with_name("report_assets")
-NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
+NOTES_PATH = ASSETS / "report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
 # JUDGEMENT?: Test setup — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): changes to these
 # files never make a new test setup; any other source change does. Another list changes Figure
@@ -40,7 +39,10 @@ MAX_STILL_BYTES = 256 * 1024
 # the scenario declaration is compared itself.
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
-                "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
+                "src/twwarhammer3/battle/stats.py", "src/twwarhammer3/results/report",
+                "src/twwarhammer3/results/replay.py",
+                "src/twwarhammer3/results/digest.py", "src/twwarhammer3/results/watch.py",
+                "src/twwarhammer3/results/register.py", "configs/twwarhammer3/report_notes.json",
                 "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json",
                 "configs/twwarhammer3/scenarios/")
 # Battle C v2's arms (a scenario's `communication`, version 2), named by who may message whom

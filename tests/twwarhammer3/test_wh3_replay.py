@@ -7,7 +7,7 @@ from copy import deepcopy
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import replay, report, report_html
+from twwarhammer3.results import replay, report, report_html
 
 G1 = REPO_ROOT / "runs/twwarhammer3/battle/bench-g1-cavalry-ai10-01-20261014"
 

@@ -16,8 +16,9 @@ from wh3_lua import load_battle, runtime
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, post
-from twwarhammer3.battle import benchmark, benchmark_plans, llm, play, report, setup
+from twwarhammer3.battle import benchmark, benchmark_plans, llm, play, setup
 from twwarhammer3.protocol import PolicyFailure, ProtocolError
+from twwarhammer3.results import report
 
 
 def units():
@@ -258,7 +259,7 @@ def test_profile_is_explicit_and_rejects_missing_toggle_measurements():
 def test_legacy_report_uses_preserved_engine_endings_for_benchmark_denominators(tmp_path):
     from wh3_fixtures import make_job
 
-    from twwarhammer3.battle import report
+    from twwarhammer3.results import report
 
     job = make_job(tmp_path, "late", [("hold", .1, "won"), ("hold", .1, "policy_failure")])
     manifest_path = job / "manifest.json"

@@ -4,7 +4,8 @@ import json
 import pytest
 
 from gameai.llm import PRICES
-from twwarhammer3.battle import digest, stats
+from twwarhammer3.results import digest
+from twwarhammer3.results import register as stats
 
 
 @pytest.mark.parametrize("name,harness", [

@@ -21,7 +21,7 @@ import functools
 import math
 
 from twwarhammer3.battle import suite
-from twwarhammer3.battle.report import wilson
+from twwarhammer3.results.report import wilson
 
 # scipy.stats.fisher_exact (scipy/stats/_stats_py.py, 1.18.1) counts a table whose chance is
 # within this relative margin of the observed table's as no more likely than it.

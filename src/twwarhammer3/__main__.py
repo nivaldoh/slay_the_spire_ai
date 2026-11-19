@@ -11,9 +11,9 @@ from gameai.provenance import REPO_ROOT, write_json
 from gameai.providers import PROVIDERS, get_provider
 from twwarhammer3.battle.controllers import BUILTINS, check_allowance
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
-from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
-from twwarhammer3.battle.watch import STALL_S
 from twwarhammer3.policy_names import MODEL_POLICIES
+from twwarhammer3.results.register import JOBS_ROOT, RESULTS_PATH
+from twwarhammer3.results.watch import STALL_S
 
 # One spend file, and so one budget, per provider (Spire keeps its own). Not in battle/llm.py:
 # that file's hash is the llm policy's card identity.
@@ -349,7 +349,7 @@ def run_benchmark(args, parser) -> int:
 
                 data = suite.report([args.plan, *args.also], output)
             else:
-                from twwarhammer3.battle import report
+                from twwarhammer3.results import report
 
                 data = report.plan_report(args.plan, output)
     except (ValueError, OSError, APIError, BudgetExhausted) as exc:
@@ -359,7 +359,7 @@ def run_benchmark(args, parser) -> int:
 
 
 def run_export(args, parser) -> int:
-    from twwarhammer3.battle.export import export_traces
+    from twwarhammer3.results.export import export_traces
 
     try:
         paths = list(args.paths)
@@ -550,7 +550,7 @@ def run_play(args, parser) -> int:
 
 
 def run_digest(args, parser) -> int:
-    from twwarhammer3.battle.digest import decision_at, digest, units_digest
+    from twwarhammer3.results.digest import decision_at, digest, units_digest
 
     if not args.path.is_dir():
         parser.error(f"no job or episode directory at {args.path}")
@@ -566,8 +566,8 @@ def run_digest(args, parser) -> int:
 
 
 def run_watch(args, parser) -> int:
-    from twwarhammer3.battle.watch import follow, next_event
     from twwarhammer3.engine.runtime import BRIDGE_DIR
+    from twwarhammer3.results.watch import follow, next_event
 
     if args.next:  # the job directory may not exist yet beside a starting play
         if args.path is None or args.path.name.startswith("episode-"):
@@ -587,7 +587,7 @@ def run_watch(args, parser) -> int:
 
 
 def run_stats(args, parser) -> int:
-    from twwarhammer3.battle.stats import summary
+    from twwarhammer3.results.register import summary
 
     print(summary(args.results))
     return 0
@@ -626,8 +626,8 @@ def run_compare_peers(args, parser) -> int:
 
 
 def run_report(args, parser) -> int:
-    from twwarhammer3.battle.report import collect, render
-    from twwarhammer3.battle.report_html import write
+    from twwarhammer3.results.report import collect, render
+    from twwarhammer3.results.report_html import write
 
     jobs = list(args.jobs)
     if args.jobs_file:
@@ -656,7 +656,7 @@ def run_report(args, parser) -> int:
 
 
 def run_graph_view(args, parser) -> int:
-    from twwarhammer3.battle import graph_view
+    from twwarhammer3.results import graph_view
 
     try:
         output = graph_view.write(args.paths, args.output)

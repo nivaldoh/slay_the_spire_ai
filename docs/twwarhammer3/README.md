@@ -328,8 +328,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   revision
 - `src/twwarhammer3/battle/graph_initiation.py`: temporary pre-contact attack-path check
   for caller-declared initiators
-- `src/twwarhammer3/battle/graph_view.py`: recorded graph/battle inspection
-- `src/twwarhammer3/battle/graph_view_assets/`: the graph view's page, script and style
+- `src/twwarhammer3/results/graph_view.py`: recorded graph/battle inspection
+- `src/twwarhammer3/results/graph_view_assets/`: the graph view's page, script and style
 - `src/twwarhammer3/checkpoint/checkpoint.py`: battle checkpoints: save, fast checked rebuild,
   live handover; the checkpoint-RL step run, library records and attempt statuses
 - `src/twwarhammer3/checkpoint/candidates.py`: checkpoint RL: the public candidate set
@@ -339,16 +339,16 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/calibration.py`: the small diagnostics' base class and geometry
   helpers, which lines.py is built on, and the four diagnostics current work still names
 - `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills
-- `src/twwarhammer3/battle/export.py`: offline model decisions, exchanges and provenance
-- `src/twwarhammer3/battle/digest.py`: trace summaries
-- `src/twwarhammer3/battle/watch.py`: follow a job
-- `src/twwarhammer3/battle/stats.py`: results register
-- `src/twwarhammer3/battle/report.py`: paired statistics and a mirror plan's report
+- `src/twwarhammer3/results/export.py`: offline model decisions, exchanges and provenance
+- `src/twwarhammer3/results/digest.py`: trace summaries
+- `src/twwarhammer3/results/watch.py`: follow a job
+- `src/twwarhammer3/results/register.py`: results register
+- `src/twwarhammer3/results/report.py`: paired statistics and a mirror plan's report
 - `src/twwarhammer3/battle/exact_stats.py`: exact small-sample statistics for win rates: two-sided
   Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
-- `src/twwarhammer3/battle/report_html.py`: the offline HTML report
-- `src/twwarhammer3/battle/replay.py`: the report's replay: public recorded frames and events
-- `src/twwarhammer3/battle/report_assets/`: the report's page, script, style and replay
+- `src/twwarhammer3/results/report_html.py`: the offline HTML report
+- `src/twwarhammer3/results/replay.py`: the report's replay: public recorded frames and events
+- `src/twwarhammer3/results/report_assets/`: the report's page, script, style and replay
 - `src/twwarhammer3/multiplayer/peers.py`: native multiplayer: Lua-observation comparison and
   completed-tick/raw-witness comparison (`compare-peers --native`)
 
@@ -372,7 +372,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/controllers/`: battle C's `configured` controller files
 - `configs/twwarhammer3/scenarios/`: declared scenarios, one JSON file per family
 - `configs/twwarhammer3/custom_battle.json`: random draws
-- `configs/twwarhammer3/report_notes.json`: the report's scenario, unit and highlight text
+- `src/twwarhammer3/results/report_assets/report_notes.json`: the report's scenario, unit and highlight text
 - `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read
 - `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py`: reads
 

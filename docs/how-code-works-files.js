@@ -418,13 +418,13 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph_view.py",
+   "path": "src/twwarhammer3/results/graph_view.py",
    "text": "recorded graph/battle inspection",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph_view_assets/",
+   "path": "src/twwarhammer3/results/graph_view_assets/",
    "text": "the graph view's page, script and style",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
@@ -472,31 +472,31 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/export.py",
+   "path": "src/twwarhammer3/results/export.py",
    "text": "offline model decisions, exchanges and provenance",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/digest.py",
+   "path": "src/twwarhammer3/results/digest.py",
    "text": "trace summaries",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/watch.py",
+   "path": "src/twwarhammer3/results/watch.py",
    "text": "follow a job",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/stats.py",
+   "path": "src/twwarhammer3/results/register.py",
    "text": "results register",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/report.py",
+   "path": "src/twwarhammer3/results/report.py",
    "text": "paired statistics and a mirror plan's report",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
@@ -508,19 +508,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/report_html.py",
+   "path": "src/twwarhammer3/results/report_html.py",
    "text": "the offline HTML report",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/replay.py",
+   "path": "src/twwarhammer3/results/replay.py",
    "text": "the report's replay: public recorded frames and events",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/report_assets/",
+   "path": "src/twwarhammer3/results/report_assets/",
    "text": "the report's page, script, style and replay",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"

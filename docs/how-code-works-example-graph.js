@@ -14,7 +14,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/battle/controllers.py": "18c85b117d28d5d695618b5c14b1e8ced3ce6b9ba2193e33355c7c31b3ca9932",
    "src/twwarhammer3/battle/graph.py": "ad1f533a8095f956e3c8fd0e0f3a5b73455cf570d9a35383dadb5853ad69d2c4",
    "src/twwarhammer3/battle/graph_author.py": "fc67d23ddf58188080f058252f50ca6753b1ade469f7d8d2c00d07a5c6f00d79",
-   "src/twwarhammer3/battle/graph_view_assets/view.js": "absent",
+   "src/twwarhammer3/results/graph_view_assets/view.js": "absent",
    "src/twwarhammer3/battle/skill_contracts.py": "7f721e2d29203ad0125dcc8e4b739a69314499b52c1770d98f2df97b7fdb933c",
    "src/twwarhammer3/battle/team.py": "195e0e305ef38d45235c9f81d56fcb389ebcac0617d01e254b73b02172e15adf",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua": "a6c5d1191357c53a02af82535b0dc61e401d281cf68a9a55bee428b0d36a7f46"
@@ -24,7 +24,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/twwarhammer3/battle/controllers.py",
    "src/twwarhammer3/battle/graph.py",
    "src/twwarhammer3/battle/graph_author.py",
-   "src/twwarhammer3/battle/graph_view_assets/view.js",
+   "src/twwarhammer3/results/graph_view_assets/view.js",
    "src/twwarhammer3/battle/skill_contracts.py",
    "src/twwarhammer3/battle/team.py",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
@@ -48,7 +48,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -69,7 +69,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -91,7 +91,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -112,7 +112,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20",
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
       "src/twwarhammer3/battle/skill_contracts.py:17-22",
       "src/twwarhammer3/battle/skill_contracts.py:103-105"
      ]
@@ -135,7 +135,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -157,7 +157,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -178,7 +178,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20"
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20"
      ]
     },
     {
@@ -200,7 +200,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
       ]
      },
      "refs": [
-      "src/twwarhammer3/battle/graph_view_assets/view.js:5-20",
+      "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
       "src/twwarhammer3/battle/skill_contracts.py:17-22",
       "src/twwarhammer3/battle/skill_contracts.py:103-105"
      ]
@@ -378,7 +378,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
     "text": "Hidden: the line's Observe melee contact step (wait), which never ran; and 9 exits never taken in this battle (5 empty, 2 cancelled, 1 yes, 1 no). graph-view draws the whole graph."
    },
    "refs": [
-    "src/twwarhammer3/battle/graph_view_assets/view.js:88-99"
+    "src/twwarhammer3/results/graph_view_assets/view.js:88-99"
    ]
   },
   "messages": {

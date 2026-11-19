@@ -333,7 +333,7 @@ a different execution boundary and is not the cheap first experiment.
 | [skills.py](../../src/twwarhammer3/battle/skills.py) | A fixed state machine or bounded rule runner can own assignments and phase memory here or in one focused sibling module. Keep existing tactical rules distinct from shared command bookkeeping |
 | [commander.py](../../src/twwarhammer3/battle/commander.py) | Reuse the one-request-in-flight pattern; add only the assignment fields and adoption semantics the chosen comparison needs. Keep prompt/schema changes versioned |
 | [play.py](../../src/twwarhammer3/battle/play.py) and [protocol.py](../../src/twwarhammer3/protocol.py) | Preserve public-state filtering, validation, acknowledgement and game ownership. Controllers return orders through this path; they do not read bridge files or send commands themselves |
-| [export.py](../../src/twwarhammer3/battle/export.py) | A micro-training dataset needs new row semantics. Today's exporter includes built-in model requests, excludes external/scripted policies, and does not export every executor step |
+| [export.py](../../src/twwarhammer3/results/export.py) | A micro-training dataset needs new row semantics. Today's exporter includes built-in model requests, excludes external/scripted policies, and does not export every executor step |
 
 The scheduler places a real bound on reactivity: `decide` runs after the outstanding batch
 is acknowledged and the configured interval has elapsed. A fast Python function does not

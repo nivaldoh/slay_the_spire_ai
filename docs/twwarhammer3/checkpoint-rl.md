@@ -209,7 +209,7 @@ valuable evidence, but are not automatically suitable RL inputs:
 
 - [`play._drive`](../../src/twwarhammer3/battle/play.py) retains a model exchange even
   when the battle ends during the call and its reply is never sent.
-  [`export._decisions`](../../src/twwarhammer3/battle/export.py) preserves such exchanges;
+  [`export._decisions`](../../src/twwarhammer3/results/export.py) preserves such exchanges;
   [`gameai.sft.target`](../../src/gameai/sft.py) accepts completed replies without requiring
   execution. Winner-filtered text is therefore not proof of an action that caused a win.
 - `play` retains `engine_ending` across late failures, but the current exporter derives

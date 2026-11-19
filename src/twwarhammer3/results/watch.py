@@ -27,7 +27,6 @@ import json
 import time
 from pathlib import Path
 
-from twwarhammer3.battle.digest import build_warning, episode_digest
 from twwarhammer3.order_text import (
     REPORT_HEADER,
     describe_orders,
@@ -35,6 +34,7 @@ from twwarhammer3.order_text import (
     short_type,
     strength,
 )
+from twwarhammer3.results.digest import build_warning, episode_digest
 
 STATUS_S = 30
 STALL_S = 120

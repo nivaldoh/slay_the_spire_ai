@@ -10,7 +10,8 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import graph, graph_view
+from twwarhammer3.battle import graph
+from twwarhammer3.results import graph_view
 
 
 def recorded(tmp_path):

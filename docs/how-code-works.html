@@ -619,7 +619,7 @@ const DIAGRAM = {
             FAC_PLAY + ":149-161",
             FAC_PLAY + ":274",
             FAC_PLAY + ":351",
-            "src/twwarhammer3/battle/stats.py:17-18",
+            "src/twwarhammer3/results/register.py:17-18",
             "AGENTS.md:165-166",
           ],
           note: "runs/twwarhammer3/battle/<job>: manifest.json and each episode's trace.jsonl and result.json. Each episode also appends a row to the tracked docs/twwarhammer3/results.csv, so the checkout changes while a job runs.",
@@ -1501,7 +1501,7 @@ const DIAGRAM = {
                 FAC_PLAY + ":149-161",
                 FAC_PLAY + ":274",
                 FAC_PLAY + ":351",
-                "src/twwarhammer3/battle/stats.py:17",
+                "src/twwarhammer3/results/register.py:17",
               ],
             },
             {
@@ -4804,7 +4804,7 @@ body.sources-off #panel .badge.changed {
      and 434 (Apache-2.0).
    - one short caption per step: The Secret Lives of Data (thesecretlivesofdata.com/raft, MIT).
    - the svg() helper, the time slider and the requestAnimationFrame loop:
-     src/twwarhammer3/battle/report_assets/replay.js in this repo. */
+     src/twwarhammer3/results/report_assets/replay.js in this repo. */
 const $ = (id) => document.getElementById(id);
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
@@ -7007,7 +7007,7 @@ const FROZEN = ["multiplayer", "factory"];
 // It replaces the "No GaP view" marker, a change the owner's words of 2026-11-01 allow: "Find a
 // good way to represent different army control methods that we will implement. For now we have
 // the basic one, and then GaP. We need clean visuals for those too." Codex's graph-view
-// (src/twwarhammer3/battle/graph_view.py) stays the full replay of a recorded battle.
+// (src/twwarhammer3/results/graph_view.py) stays the full replay of a recorded battle.
 const TAB_ORDER = NAV.flatMap((group) => group.items);
 const order = (tab) => (TAB_ORDER.includes(tab.id) ? TAB_ORDER.indexOf(tab.id) : TAB_ORDER.length);
 DIAGRAM.tabs.sort((a, b) => order(a) - order(b));

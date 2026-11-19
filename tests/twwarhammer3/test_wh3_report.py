@@ -1,10 +1,10 @@
-"""The paired benchmark collector and its text rendering in twwarhammer3/battle/report.py."""
+"""The paired benchmark collector and its text rendering in twwarhammer3/results/report.py."""
 import json
 
 import pytest
 from wh3_fixtures import make_job
 
-from twwarhammer3.battle import report
+from twwarhammer3.results import report
 
 
 def test_common_measures_keep_raw_totals_unknown_regiments_and_net_resurrection():
@@ -263,7 +263,7 @@ def test_failed_trials_stay_out_of_means_and_pairs_and_cadence_splits_groups(tmp
 
 def test_the_win_rate_counts_engine_endings_only_and_a_timer_win_is_not_one_of_its_wins(
         tmp_path):
-    # The historical rule (rests on JUDGEMENT? battle/report.py Report denominator): a forfeit
+    # The historical rule (rests on JUDGEMENT? results/report.py Report denominator): a forfeit
     # or a truncation is out of the denominator; a timer win is in it, as a non-win.
     job = make_job(tmp_path, "rate", [("hold", .1, "won"), ("hold", -.1, "lost"),
                                       ("hold", 0, "policy_failure"), ("hold", 0, "truncated"),

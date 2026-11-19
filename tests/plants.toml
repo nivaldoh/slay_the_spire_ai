@@ -467,7 +467,7 @@ source = "2026-10-29 evening, b51 and its reviews"
 [[plant]]
 id = "b51-stretches-not-flagged"
 guards = "WH3 1x by the Windows clock (harness b51)"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = "*(result.get(\"windows_clock_range\") or [])]"
 new = "]"
 tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -476,7 +476,7 @@ source = "2026-10-29 evening, b51 and its reviews"
 [[plant]]
 id = "b51-no-job-warning"
 guards = "WH3 1x by the Windows clock (harness b51)"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = "if \"windows_clock_ratio\" in result and not ran_at_1x(result):"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -485,7 +485,7 @@ source = "2026-10-29 evening, b51 and its reviews"
 [[plant]]
 id = "b51-band-reversed"
 guards = "WH3 1x by the Windows clock (harness b51)"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = "return all(ONE_X[0] <= value <= ONE_X[1] for value in values)"
 new = "return any(ONE_X[0] <= value <= ONE_X[1] for value in values)"
 tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -503,7 +503,7 @@ source = "2026-10-29 evening, b51 and its reviews"
 [[plant]]
 id = "b51-band-edges-exclusive-review"
 guards = "WH3 1x by the Windows clock (harness b51)"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = "return all(ONE_X[0] <= value <= ONE_X[1] for value in values)"
 new = "return all(ONE_X[0] < value < ONE_X[1] for value in values)"
 tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -1124,7 +1124,7 @@ source = "2026-10-31 review extension: the passing node cannot hide the failed n
 [[plant]]
 id = "report-label-ignores-the-timer"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "            outcome = \"time_limit\" if result.get(\"ended_by\") == \"time_limit\" else result[\"status\"]"
 new = "            outcome = result[\"status\"]"
 tests = ["tests/twwarhammer3/test_wh3_report.py"]
@@ -1133,7 +1133,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "report-valid-includes-failures"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "                \"valid\": result[\"status\"] in OUTCOMES,"
 new = "                \"valid\": result[\"status\"] != \"interrupted\","
 tests = ["tests/twwarhammer3/test_wh3_report.py"]
@@ -1142,7 +1142,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "report-engine-outcome-from-the-label"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "                \"engine_outcome\": result[\"status\"] if result[\"status\"] in OUTCOMES else None,"
 new = "                \"engine_outcome\": outcome if outcome in OUTCOMES else None,"
 tests = ["tests/twwarhammer3/test_wh3_report.py"]
@@ -1151,7 +1151,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "report-win-rate-over-every-trial"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "\"win_rate\": outcomes[\"won\"] / valid if valid else None,"
 new = "\"win_rate\": outcomes[\"won\"] / len(items) if items else None,"
 tests = ["tests/twwarhammer3/test_wh3_report.py"]
@@ -1160,7 +1160,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "html-keeps-failed-trials"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/report_html.py"
+file = "src/twwarhammer3/results/report_html.py"
 old = "        keys = [key for key in every if trials[key][\"valid\"]"
 new = "        keys = [key for key in every if True"
 tests = ["tests/twwarhammer3/test_wh3_report_html.py"]
@@ -1169,7 +1169,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "stats-timer-ending-recorded-lost"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = "        \"outcome\": result[\"status\"],"
 new = "        \"outcome\": \"lost\" if result.get(\"ended_by\") == \"time_limit\" else result[\"status\"],"
 tests = ["tests/twwarhammer3/test_wh3_stats.py"]
@@ -1178,7 +1178,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "stats-draws-counted-as-losses"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = "str(outcomes.count(\"won\")), str(outcomes.count(\"lost\")),\n            str(outcomes.count(\"draw\")),"
 new = "str(outcomes.count(\"won\")), str(outcomes.count(\"lost\") + outcomes.count(\"draw\")),\n            str(0),"
 tests = ["tests/twwarhammer3/test_wh3_stats.py"]
@@ -1187,7 +1187,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "digest-episode-line-shows-the-card-rule"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = "f\"{episode.name}: {result['status']} at"
 new = "f\"{episode.name}: {'lost' if result.get('ended_by') == 'time_limit' else result['status']} at"
 tests = ["tests/twwarhammer3/test_wh3_digest.py"]
@@ -1196,7 +1196,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "export-gameplay-outcome-keeps-failures"
 guards = "WH3 outcome readers keep their historical rules"
-file = "src/twwarhammer3/battle/export.py"
+file = "src/twwarhammer3/results/export.py"
 old = "\"gameplay_outcome\": result.get(\"status\") if result.get(\"status\") in OUTCOMES"
 new = "\"gameplay_outcome\": result.get(\"status\") if result.get(\"status\")"
 tests = ["tests/twwarhammer3/test_wh3_export.py"]
@@ -2414,7 +2414,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "replay-repeats-first-contact"
 guards = "state_events reports the first melee contact once"
-file = "src/twwarhammer3/battle/replay.py"
+file = "src/twwarhammer3/results/replay.py"
 old = "                    contact = True"
 new = "                    contact = False"
 tests = ["tests/twwarhammer3/test_wh3_replay.py"]
@@ -2423,7 +2423,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "replay-onset-counts-the-applied-frame"
 guards = "A queued attack's onset skips the frame taken at applied_ms (replay.onset)"
-file = "src/twwarhammer3/battle/replay.py"
+file = "src/twwarhammer3/results/replay.py"
 old = 'if applied < frame["time_ms"] <= end'
 new = 'if applied <= frame["time_ms"] <= end'
 tests = ["tests/twwarhammer3/test_wh3_replay.py"]
@@ -2432,7 +2432,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "replay-roster-ignores-protected-types"
 guards = "replay.build marks the scenario's protected types in the roster (rout key events)"
-file = "src/twwarhammer3/battle/replay.py"
+file = "src/twwarhammer3/results/replay.py"
 old = '"protected": unit.get("type") in protected}'
 new = '"protected": False}'
 tests = ["tests/twwarhammer3/test_wh3_replay.py"]
@@ -2441,7 +2441,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "export-retry-ignores-recorded-hash"
 guards = "Retry prompts are rebuilt only from the llm.py whose hash the job recorded"
-file = "src/twwarhammer3/battle/export.py"
+file = "src/twwarhammer3/results/export.py"
 old = "if source.returncode or hashlib.sha256(source.stdout).hexdigest() != source_hash:"
 new = "if source.returncode:"
 tests = ["tests/twwarhammer3/test_wh3_export.py"]
@@ -2459,7 +2459,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "stats-row-drops-delays"
 guards = "The register's delay_s is the mean of the episode's delays_ms in seconds"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = 'delays = result.get("delays_ms") or []'
 new = "delays = []"
 tests = ["tests/twwarhammer3/test_wh3_stats.py"]
@@ -2477,7 +2477,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "digest-shows-engine-no-ops"
 guards = "The digest leaves out quiet engine no-op team feedback and shows local refusals"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = 'or record["source"] != "engine":'
 new = 'or record["source"] == "engine":'
 tests = ["tests/twwarhammer3/test_wh3_digest.py"]
@@ -2505,7 +2505,7 @@ source = "2026-11-02 cleanup, WH3 mutants batch"
 [[plant]]
 id = "stats-row-interval-in-ms"
 guards = "The register's interval_s is the decision interval in seconds"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = '"interval_s": config.get("interval_ms", 0) / 1000,'
 new = '"interval_s": config.get("interval_ms", 0),'
 tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_row_writes_the_date_short_source_and_seconds_columns_at_the_registers_precision"]
@@ -2514,7 +2514,7 @@ source = "2026-11-02 cleanup, WH3 mutants batch"
 [[plant]]
 id = "digest-drops-tickets"
 guards = "Digest decision lines show each side's tickets and the goal"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = '    if mode.get("tickets"):'
 new = "    if False:"
 tests = ["tests/twwarhammer3/test_wh3_digest.py::test_a_decision_line_shows_each_sides_tickets_and_the_goal"]
@@ -2604,7 +2604,7 @@ source = "2026-11-02 cleanup integration review"
 [[plant]]
 id = "replay-longest-reply-is-the-last"
 guards = "The longest model reply caption names the slowest of several calls"
-file = "src/twwarhammer3/battle/replay.py"
+file = "src/twwarhammer3/results/replay.py"
 old = '        longest = max(timed, key=lambda d: d["latency"]["think_s"])'
 new = "        longest = timed[-1]"
 tests = ["tests/twwarhammer3/test_wh3_replay.py::test_the_longest_model_reply_is_the_slowest_of_several_calls"]
@@ -2622,7 +2622,7 @@ source = "2026-11-02 reader-survivors mutation sample"
 [[plant]]
 id = "digest-shows-the-wrong-order-beside-a-result"
 guards = "An engine result with 1-based index i is shown beside the decision's i-th order"
-file = "src/twwarhammer3/battle/digest.py"
+file = "src/twwarhammer3/results/digest.py"
 old = 'record["orders"][index - 1]'
 new = 'record["orders"][index - 2]'
 tests = ["tests/twwarhammer3/test_wh3_digest.py::test_the_engine_verdict_on_the_second_order_names_the_second_order"]
@@ -2874,7 +2874,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-view-member-inputs-become-frames"
 guards = "Viewer frames come only from observation and result rows, not member input copies"
-file = "src/twwarhammer3/battle/graph_view.py"
+file = "src/twwarhammer3/results/graph_view.py"
 old = 'if kind in ("observation", "result") and isinstance(record.get("observation"), dict):'
 new = 'if kind in ("observation", "result") or isinstance(record.get("observation"), dict):'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
@@ -2883,7 +2883,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-view-order-free-decision-is-dispatch"
 guards = "A decision without orders is not an order dispatch in the viewer"
-file = "src/twwarhammer3/battle/graph_view.py"
+file = "src/twwarhammer3/results/graph_view.py"
 old = 'elif kind == "decision" and record.get("orders"):'
 new = 'elif kind == "decision" or record.get("orders"):'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
@@ -2892,7 +2892,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-view-reads-unregistered-acks"
 guards = "Acks of requests no graph member dispatched are skipped, not refused"
-file = "src/twwarhammer3/battle/graph_view.py"
+file = "src/twwarhammer3/results/graph_view.py"
 old = 'elif kind == "ack" and record.get("request") in requests:'
 new = 'elif kind == "ack" or record.get("request") in requests:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_view.py"]
@@ -3027,7 +3027,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "wilson-lower-bound-always-zero"
 guards = "The reported win interval is the Wilson score interval, lower bound included"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "return [max(0, centre - radius), min(1, centre + radius)]"
 new = "return [min(0, centre - radius), min(1, centre + radius)]"
 tests = ["tests/twwarhammer3/test_wh3_report.py::test_the_win_interval_is_the_wilson_score_interval"]
@@ -3036,7 +3036,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "report-ignores-engine-refused-orders"
 guards = "Each order the engine refused counts in the report's rejections under its error"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = 'for order in event["ack"].get("results") or []:'
 new = 'for order in event["ack"].get("results") and []:'
 tests = ["tests/twwarhammer3/test_wh3_report.py::test_report_counts_each_order_the_engine_refused_by_its_error"]
@@ -3045,7 +3045,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "report-counts-accepted-orders-as-refused"
 guards = "Only ack results with ok false count as engine refusals"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = 'if not order.get("ok"):'
 new = 'if order.get("ok"):'
 tests = ["tests/twwarhammer3/test_wh3_report.py::test_report_counts_each_order_the_engine_refused_by_its_error"]
@@ -3090,7 +3090,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "register-blank-cost-for-scripted-rows"
 guards = "A scripted episode's register row records usd 0, as the committed scripted rows do"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = '"usd": round((result.get("llm") or {}).get("usd", 0), 4),'
 new = '"usd": round(result["llm"]["usd"], 4) if result.get("llm") else "",'
 tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_scripted_row_records_no_cost_and_the_registers_units"]
@@ -3099,7 +3099,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "register-added-age-in-milliseconds"
 guards = "The register's added_age_s is the episode's delay_ms in seconds"
-file = "src/twwarhammer3/battle/stats.py"
+file = "src/twwarhammer3/results/register.py"
 old = '"added_age_s": result.get("delay_ms", 0) / 1000,'
 new = '"added_age_s": result.get("delay_ms", 0),'
 tests = ["tests/twwarhammer3/test_wh3_stats.py::test_a_scripted_row_records_no_cost_and_the_registers_units"]
@@ -3127,7 +3127,7 @@ source = "2026-11-02: CI failed at 8211df9 on a link to an untracked page while 
 [[plant]]
 id = "team-ages-from-the-dispatcher"
 guards = "report reads team member records"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "    team = \"members\" in ((result.get(\"card\") or {}).get(\"disclosure\") or {})"
 new = "    team = False"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
@@ -3136,7 +3136,7 @@ source = "2026-10-31 run, B3 team records"
 [[plant]]
 id = "exchanges-keyed-by-id-only"
 guards = "report reads team member records"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "                    exchanges[event.get(\"member\"), event[\"id\"]] = event.get(\"attempts\") or []"
 new = "                    exchanges[None, event[\"id\"]] = event.get(\"attempts\") or []"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
@@ -3145,7 +3145,7 @@ source = "2026-10-31 run, B3 team records"
 [[plant]]
 id = "export-excludes-teams-again"
 guards = "export reads team member records"
-file = "src/twwarhammer3/battle/export.py"
+file = "src/twwarhammer3/results/export.py"
 old = "    trace = episode / \"trace.jsonl\"\n    files[str(trace)] = sha256(trace)"
 new = "    if base == \"team_llm_rules\":\n        inventory[\"excluded\"] = \"a model team, not exported yet\"\n        return [], inventory\n    trace = episode / \"trace.jsonl\"\n    files[str(trace)] = sha256(trace)"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
@@ -3154,7 +3154,7 @@ source = "2026-10-31 run, B3 team export"
 [[plant]]
 id = "export-matches-exchanges-across-members"
 guards = "export reads team member records"
-file = "src/twwarhammer3/battle/export.py"
+file = "src/twwarhammer3/results/export.py"
 old = "        mine = [r for r in records if r[\"member\"] == member]"
 new = "        mine = records"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
@@ -3163,7 +3163,7 @@ source = "2026-10-31 run, B3 team export"
 [[plant]]
 id = "report-member-metadata-loses-exchange-identity"
 guards = "An ID-less member reply is counted once when decision metadata repeats its exchange"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = 'attempts.extend({**attempt, "member": meta.get("member")} for attempt'
 new = 'attempts.extend({**attempt, "member": None} for attempt'
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_an_idless_failed_reply_once_when_metadata_repeats_its_exchange"]
@@ -3172,7 +3172,7 @@ source = "2026-11-02 initial one-army team integration review"
 [[plant]]
 id = "report-local-feedback-treated-as-engine-ack"
 guards = "Locally refused team batches have no engine age and count as validation once"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = 'and event.get("source") == "local"):'
 new = 'and event.get("source") == "never_local"):'
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py::test_report_counts_a_local_team_refusal_without_inventing_an_engine_age"]
@@ -3879,7 +3879,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "replay-team-age-from-the-dispatch-poll"
 guards = "A team member's order age and basis frame run from its own source state (behavior source_ms), not the dispatcher's poll"
-file = "src/twwarhammer3/battle/replay.py"
+file = "src/twwarhammer3/results/replay.py"
 old = '        seen_ms = decision.get("source_ms", decision["time_ms"])'
 new = '        seen_ms = decision["time_ms"]'
 tests = ["tests/twwarhammer3/test_wh3_replay.py"]
@@ -3888,7 +3888,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "report-unpaired-counts-launches-without-either-controller"
 guards = "A pair's unpaired launches are those where one of its two controllers played without its partner"
-file = "src/twwarhammer3/battle/report.py"
+file = "src/twwarhammer3/results/report.py"
 old = "            \"unpaired_instances\": sorted({t[\"instance\"] for t in trials\n                                          if t[\"controller\"] in (a, b)} - differences.keys())}"
 new = "            \"unpaired_instances\": sorted(set(t[\"instance\"] for t in trials)\n                                         - differences.keys())}"
 tests = ["tests/twwarhammer3/test_wh3_report.py"]
@@ -3915,7 +3915,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "suite-page-arm-without-method"
 guards = "Every suite arm has a page method, so its battles get a tile, a name and owner tags"
-file = "configs/twwarhammer3/report_notes.json"
+file = "src/twwarhammer3/results/report_assets/report_notes.json"
 old = '''
       "rush": {
         "name": "Charge nearest",
@@ -3931,7 +3931,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "suite-page-opens-a-scenario-with-no-battle"
 guards = "The suite page starts on the first scenario with a finished battle"
-file = "src/twwarhammer3/battle/report_assets/suite.js"
+file = "src/twwarhammer3/results/report_assets/suite.js"
 old = "    return choose(pictures.find((name) => suite.pictures[name].battles.length) || pictures[0]);"
 new = "    return choose(pictures[0]);"
 tests = ["tests/twwarhammer3/test_wh3_suite_page.py"]
@@ -4575,7 +4575,7 @@ source = "2026-11-15 scenario file split: review R3, S-5"
 [[plant]]
 id = "html-report-new-setup-for-any-scenario-file-edit"
 guards = "A changed or new family scenario file does not start a new HTML test setup"
-file = "src/twwarhammer3/battle/report_html.py"
+file = "src/twwarhammer3/results/report_html.py"
 old = '"configs/twwarhammer3/scenarios/")'
 new = '"configs/twwarhammer3/scenarios-not-this/")'
 tests = ["tests/twwarhammer3/test_wh3_report_html.py::test_a_changed_or_new_scenario_file_leaves_the_harness_alone"]

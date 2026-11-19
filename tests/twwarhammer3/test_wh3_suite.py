@@ -434,7 +434,9 @@ def test_a_split_armys_owners_come_from_its_own_partition_record(tmp_path):
 
 
 def test_the_page_names_every_arm_and_every_controller_and_every_played_scenario():
-    notes = json.loads((REPO_ROOT / "configs/twwarhammer3/report_notes.json").read_text())
+    from twwarhammer3.results.report_html import NOTES_PATH
+
+    notes = json.loads(NOTES_PATH.read_text())
     page = notes["suite"]
     assert set(page["order"]) == set(page["methods"]) <= set(suite.ARMS)
     named = set(page["controllers"])
@@ -466,7 +468,7 @@ def test_a_picture_lists_played_battles_and_names_scenarios_without_a_question(t
 
 
 def test_a_composed_method_on_a_benchmark_battle_is_compared_and_elsewhere_stays_a_probe():
-    from twwarhammer3.battle.report_html import commander
+    from twwarhammer3.results.report_html import commander
 
     trial = {"policy": "configured", "card": {"kind": "composed"}, "delay_ms": 0}
     benchmarked = {"scenario": {"benchmark": benchmark.SUITE}, "model": "m"}

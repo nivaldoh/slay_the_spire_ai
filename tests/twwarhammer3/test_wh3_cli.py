@@ -9,10 +9,11 @@ from wh3_fixtures import configured_job, embedded, make_job
 
 import twwarhammer3.__main__ as cli
 from twwarhammer3.__main__ import add_session_arguments, main
-from twwarhammer3.battle import play, report
+from twwarhammer3.battle import play
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.scripted import Hold
-from twwarhammer3.battle.stats import RESULTS_PATH
+from twwarhammer3.results import report
+from twwarhammer3.results.register import RESULTS_PATH
 
 
 @pytest.mark.parametrize("battle,outcome,status", [
@@ -266,7 +267,7 @@ def test_a_mistyped_job_path_is_a_one_line_error(tmp_path, monkeypatch, capsys, 
 def test_digest_and_report_still_take_an_existing_job_and_plan(tmp_path, monkeypatch, capsys):
     """The missing-path checks must not refuse real inputs (2026-11-13 review). Wrong versions:
     digest or report wanting a file, or --benchmark-plan wanting a directory."""
-    from twwarhammer3.battle import digest, report_html
+    from twwarhammer3.results import digest, report_html
     job, plan = tmp_path / "job", tmp_path / "plan.json"
     job.mkdir()
     plan.write_text("{}")

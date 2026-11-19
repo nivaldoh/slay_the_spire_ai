@@ -10,7 +10,7 @@ from copy import deepcopy
 import pytest
 from wh3_fixtures import make_job
 
-from twwarhammer3.battle import report, report_html
+from twwarhammer3.results import report, report_html
 
 PREFIX = "twwarhammer3.battle.local_scripts:"
 

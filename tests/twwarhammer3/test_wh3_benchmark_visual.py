@@ -5,7 +5,8 @@ from copy import deepcopy
 
 from wh3_fixtures import configured_job, embedded
 
-from twwarhammer3.battle import benchmark, benchmark_plans, report, report_html
+from twwarhammer3.battle import benchmark, benchmark_plans
+from twwarhammer3.results import report, report_html
 
 
 def mirror_job(tmp_path, name, *, version=5, hp=.6, outcome="lost"):

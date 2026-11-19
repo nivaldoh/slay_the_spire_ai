@@ -172,7 +172,7 @@ DIAGRAM.tabs.push({
       "h": 52,
       "note": "Run by hand, offline: reads finished jobs and writes tables and an HTML page.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/report.py:1"]
+      "refs": ["src/twwarhammer3/results/report.py:1"]
     },
     {
       "id": "job.evidence",
@@ -201,7 +201,7 @@ DIAGRAM.tabs.push({
       "h": 52,
       "note": "One row per episode, committed with the log.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/stats.py:1-3", "src/twwarhammer3/battle/play.py:198"]
+      "refs": ["src/twwarhammer3/results/register.py:1-3", "src/twwarhammer3/battle/play.py:198"]
     },
     {
       "id": "job.provider",
@@ -346,7 +346,7 @@ DIAGRAM.tabs.push({
       "to": "job.report",
       "label": "read offline",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/report.py:1"]
+      "refs": ["src/twwarhammer3/results/report.py:1"]
     }
   ],
   "flows": [
@@ -461,7 +461,7 @@ DIAGRAM.tabs.push({
             "example": "job",
             "key": "row"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:198", "src/twwarhammer3/battle/stats.py:1-3"]
+          "refs": ["src/twwarhammer3/battle/play.py:198", "src/twwarhammer3/results/register.py:1-3"]
         },
         {
           "caption":
@@ -473,7 +473,7 @@ DIAGRAM.tabs.push({
             "key": "report"
           },
           "refs": [
-            "src/twwarhammer3/battle/report.py:1",
+            "src/twwarhammer3/results/report.py:1",
             "configs/twwarhammer3/benchmark_jobs.json"
           ]
         }

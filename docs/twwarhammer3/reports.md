@@ -6,6 +6,9 @@ the legacy enemy-broken score for these battles. Historical scenarios keep their
 scores and presentation. Broader [Land Battle report requirements](benchmark.md#measurements)
 remain separate from this first profile.
 
+JUDGEMENT: Report notes — Codex, 2026-11-19. Ship the reader text beside the HTML assets.
+Keeping it in repository config would require a second installed-resource lookup for wheel users.
+
 ## Main report and retained example
 
 The main entry point is `runs/twwarhammer3/reports/benchmark.html`: the earlier suite plus
@@ -164,9 +167,9 @@ numbered figures, latency on the map and beside each score, and bookkeeping in R
 and the JSON. The 2026-10-16 revision (the owner's report notes) shows only the core
 scenarios and their completed battles, opens on a visual index of them, gives each model
 one hue and replaces the plans maps with battle development. Statistics come from
-`battle/report.py` ([definitions](benchmark-implementation.md#what-the-current-code-reports)), the
-replay from `battle/replay.py`, the presentation from `battle/report_html.py` and
-`battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
+`results/report.py` ([definitions](benchmark-implementation.md#what-the-current-code-reports)), the
+replay from `results/replay.py`, the presentation from `results/report_html.py` and
+`results/report_assets/`, curated text from `src/twwarhammer3/results/report_assets/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).
 
 ## README visuals
@@ -529,7 +532,7 @@ positions update only when the controller observed the battle (about every N s).
 sample interval is the median spacing of those observations (at least `observe_ms`), so
 only unusually long gaps are flagged.
 
-## Curated notes: `configs/twwarhammer3/report_notes.json`
+## Curated notes: `src/twwarhammer3/results/report_assets/report_notes.json`
 
 Reader-facing text that is neither policy input nor recorded evidence. It is committed and
 inside `twwarhammer3 play`'s source scope: editing it stops a running job, so draft it in

@@ -6,7 +6,8 @@ import json
 import shutil
 import subprocess
 
-from twwarhammer3.battle import report_html, suite
+from twwarhammer3.battle import suite
+from twwarhammer3.results import report_html
 
 NOTES = json.loads(report_html.NOTES_PATH.read_text())
 SPLIT = {"team", "gap"}  # the arms that record a partition (suite.owners)

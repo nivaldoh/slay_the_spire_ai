@@ -13,10 +13,10 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from gameai.provenance import write_json
-from twwarhammer3.battle import report_html
 from twwarhammer3.battle.benchmark import VERSION, evaluate
 from twwarhammer3.battle.benchmark_plans import collect as collect_plan
-from twwarhammer3.battle.stats import active_left, configuration
+from twwarhammer3.results import report_html
+from twwarhammer3.results.register import active_left, configuration
 
 OUTCOMES = {"won", "lost", "draw"}
 T95 = (0, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262,
@@ -266,7 +266,7 @@ def controller_summary(controller: str, items: list[dict]) -> dict:
 
 def paired_margins(a: str, b: str, trials: list[dict], flagged: set) -> dict:
     """A minus B active-strength margin by launch, with and without the launches whose starts
-    were flagged; its statistics rest on JUDGEMENT src/twwarhammer3/battle/report.py Pair
+    were flagged; its statistics rest on JUDGEMENT src/twwarhammer3/results/report.py Pair
     statistics."""
     instances = defaultdict(lambda: defaultdict(list))
     for trial in trials:
@@ -347,7 +347,7 @@ def collect(jobs: list[Path], *, benchmark_plans: list[Path] | None = None) -> d
             delay = result.get("delay_ms", declared.get("delay_ms", 0))
             label = f"{policy} / +{delay / 1000:g}s"
             card = result.get("card") or {}
-            # Rests on JUDGEMENT? src/twwarhammer3/battle/stats.py Summary identity.
+            # Rests on JUDGEMENT? src/twwarhammer3/results/register.py Summary identity.
             if card.get("kind") in ("external", "composed"):
                 label += " / " + (configuration(result) or "unknown")
             # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent

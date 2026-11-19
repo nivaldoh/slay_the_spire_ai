@@ -6,7 +6,7 @@ standing exception to "run evidence stays out of Git", for small excerpts only.
 
     uv run --locked python scripts/diagram_examples.py job [--runs MAIN_CHECKOUT]
 
-It reads the main checkout's runs/ read-only through twwarhammer3.battle.replay.build(), as the
+It reads the main checkout's runs/ read-only through twwarhammer3.results.replay.build(), as the
 offline report does, and copies only listed fields: manifests, results, environment.json and
 game.log also hold home paths, a Windows username and a Steam ID. It refuses to write output that
 matches one of PRIVATE. What the model saw is the decision's basis frame (a trace observation),
@@ -25,7 +25,7 @@ data): `methods` writes the "Control methods" lanes, side cells and card numbers
 method plus "methods" (lanes and cards); `graph` writes the boxes and wires of the recorded graphs
 for "One graph battle"; `replay` writes that battle whole for its "Whole battle" flow (step runs,
 order batches, positions once a second). All read graph steps through
-twwarhammer3.battle.graph_view.collect_episode(), which checks every member_event against the
+twwarhammer3.results.graph_view.collect_episode(), which checks every member_event against the
 recorded graphs, and trace rows for each member's own view. methods and graph recompute every count
 in the recipe's `stated` and refuse to write when one differs; `stated` is meant to hold each
 record count the story states (its captions, labels, summary and notes, not its status lines). One
@@ -47,7 +47,7 @@ from functools import cache
 from math import hypot
 from pathlib import Path
 
-from twwarhammer3.battle import graph_view, replay
+from twwarhammer3.results import graph_view, replay
 
 ROOT = Path(__file__).resolve().parents[1]
 # The lookahead exempts one shape from the address pattern, a model label such as llm@gpt-5.4/low:
@@ -186,8 +186,8 @@ EXAMPLES = {
                  "src/twwarhammer3/battle/skill_contracts.py:119-122",
                  "src/twwarhammer3/battle/graph_author.py:21",
                  "src/twwarhammer3/battle/graph_author.py:30-40",
-                 "src/twwarhammer3/battle/graph_view_assets/view.js:5-20",
-                 "src/twwarhammer3/battle/graph_view_assets/view.js:88-99"],
+                 "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
+                 "src/twwarhammer3/results/graph_view_assets/view.js:88-99"],
         # The generated boxes' and exits' status, from the agreed check WH3 initial GaP (lines
         # 72-88 at 7e3892f and ad43a37): its live run at d12be58 witnessed contact and the
         # charge's melee; the other steps rest on its offline cases.
@@ -228,7 +228,7 @@ EXAMPLES["replay"] = {"kind": "replay", "of": "graph", "every_ms": 1000}
 CONTROLLERS = "src/twwarhammer3/battle/controllers.py"
 AUTHOR = "src/twwarhammer3/battle/graph_author.py"
 SKILLS = "src/twwarhammer3/battle/skill_contracts.py"
-VIEW_JS = "src/twwarhammer3/battle/graph_view_assets/view.js"  # graph-view's labels and order
+VIEW_JS = "src/twwarhammer3/results/graph_view_assets/view.js"  # graph-view's labels and order
 LABEL_REF, ORDER_REF = f"{VIEW_JS}:5-20", f"{VIEW_JS}:88-99"
 STEP_REF, LIMIT_REF = "src/twwarhammer3/battle/graph.py:21-23", f"{SKILLS}:17-22"
 DEADLINE_REF = f"{SKILLS}:103-105"  # a skill step fails at its deadline without its witness

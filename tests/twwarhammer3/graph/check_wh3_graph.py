@@ -14,7 +14,6 @@ from gameai.provenance import REPO_ROOT, committed_revision, sha256, source_fing
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
 from twwarhammer3.battle import configured, graph, play, setup, team
-from twwarhammer3.battle.digest import ONE_X
 from twwarhammer3.battle.skill_contracts import ARRIVAL_M
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
@@ -25,6 +24,7 @@ from twwarhammer3.engine.runtime import (
     prepare_runtime,
     running_pids,
 )
+from twwarhammer3.results.digest import ONE_X
 
 # JUDGEMENT: Probe bounds — Codex, 2026-11-01: 5 s settling, 60 m forward, 165 s move/control.
 # Owner approved 540 s contact on 2026-11-01 after the first cutoff. Other geometry/bounds

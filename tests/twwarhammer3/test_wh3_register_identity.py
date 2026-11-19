@@ -11,7 +11,9 @@ from pathlib import Path
 
 from wh3_fixtures import played_job, team_job
 
-from twwarhammer3.battle import cannae, report, setup, stats
+from twwarhammer3.battle import cannae, setup
+from twwarhammer3.results import register as stats
+from twwarhammer3.results import report
 
 WING_SUPPORT = "twwarhammer3.battle.cannae:WingSupport"
 

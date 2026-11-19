@@ -16,8 +16,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-from twwarhammer3.battle import replay, report, report_html
 from twwarhammer3.policy_names import policy_parts
+from twwarhammer3.results import replay, report, report_html
 
 SCENARIO = {
     "name": "synthetic-citadel-assault", "family": "Demo: citadel assault", "map": "demo-map",

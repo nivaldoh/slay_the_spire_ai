@@ -3,7 +3,7 @@ import json
 import pytest
 from wh3_fixtures import observation
 
-from twwarhammer3.battle.digest import decision_at, digest, units_digest
+from twwarhammer3.results.digest import decision_at, digest, units_digest
 
 ARMY = {"subculture": "wh3_main_sc_kho_khorne", "units": None}
 

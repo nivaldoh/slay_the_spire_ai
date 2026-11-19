@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from twwarhammer3.__main__ import main
-from twwarhammer3.battle import export
+from twwarhammer3.results import export
 
 SYSTEM = "Command well.\n\nKeep spacing. é\n"
 PROMPT = "Battle notes:\nnone\n\nTime 5 s.\n"

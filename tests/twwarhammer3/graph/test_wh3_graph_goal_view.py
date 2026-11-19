@@ -4,7 +4,7 @@
 import pytest
 from wh3_graph_goal_support import recording, write
 
-from twwarhammer3.battle import graph_view
+from twwarhammer3.results import graph_view
 
 
 def test_selection_matches_a_known_model_goal_and_its_recorded_scope(tmp_path):

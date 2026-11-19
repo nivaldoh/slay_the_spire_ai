@@ -15,7 +15,7 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from twwarhammer3.battle import stats
+from twwarhammer3.results import register as stats
 
 COLUMNS = ("version", "policy", "model", "effort", "harness", "mode", "age/interval s", "case",
            "launch", "outcome", "seconds", "invalid", "own men", "enemy men")
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("jobs", type=Path, nargs="+", metavar="JOB", help="a job directory")
     args = parser.parse_args(argv)
     rows = [row for job in args.jobs for row in cells(job)]
-    # Rests on JUDGEMENT? src/twwarhammer3/battle/stats.py Summary identity.
+    # Rests on JUDGEMENT? src/twwarhammer3/results/register.py Summary identity.
     # JUDGEMENT?: Cell tally — Claude, 2026-11-05: a cell keeps apart all a summary row does, the
     # revision too, so a repeat at a later commit is a new cell. By policy and case alone v2's Hold
     # wins pool with v3's Hold losses. Every wins-per-cell reading rests on this key.

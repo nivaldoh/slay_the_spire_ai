@@ -53,7 +53,6 @@ from twwarhammer3.battle.setup import (
     scenario_steps,
     validate_declaration,
 )
-from twwarhammer3.battle.stats import record
 from twwarhammer3.battle.team import TeamPolicy
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
@@ -74,6 +73,7 @@ from twwarhammer3.protocol import (
     scenario_key,
     validate_orders,
 )
+from twwarhammer3.results.register import record
 from twwarhammer3.scope import EVALUATOR_VERSION, SOURCES, TRACK
 
 SCORED = {"won", "lost", "draw"}

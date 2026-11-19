@@ -18,8 +18,9 @@ from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, Model, usage_cost
-from twwarhammer3.battle import controllers, digest, export, llm, play, report, team, watch
+from twwarhammer3.battle import controllers, llm, play, team
 from twwarhammer3.protocol import PolicyFailure, refused
+from twwarhammer3.results import digest, export, report, watch
 
 GUNS = "wh_main_emp_inf_handgunners"
 HORN = {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 0, "z": 0}
