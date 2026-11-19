@@ -31,7 +31,8 @@ from twwarhammer3.battle.candidates import (
     slot_to_candidate,
     training_orderings,
 )
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.scope import SOURCES
+from twwarhammer3.units import distance
 
 RENDERING_VERSION = 1
 EVALUATION_VERSION = 1
@@ -609,7 +610,7 @@ def refuse_beside_game() -> str:
 
     if runtime.running_pids():
         raise RuntimeError("WH3 is running: model phases never run beside the game")
-    return committed_revision("checkpoint RL", play.SOURCES)
+    return committed_revision("checkpoint RL", SOURCES)
 
 
 def batches(tasks: list[dict], batch_size: int, order_seed: int):

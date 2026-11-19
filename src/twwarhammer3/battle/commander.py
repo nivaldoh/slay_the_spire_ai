@@ -26,8 +26,6 @@ from twwarhammer3.battle.llm import (
     REASON_LIMIT,
     REINFORCE_SCHEMA,
     STRING_OR_NULL,
-    describe_dropped,
-    describe_orders,
     holds,
     invalid_reply,
     remember,
@@ -37,13 +35,19 @@ from twwarhammer3.battle.llm import (
     strengths,
 )
 from twwarhammer3.battle.skills import SKILLS, Skills
+from twwarhammer3.order_text import (
+    REPORT_HEADER,
+    describe_assignment,
+    describe_dropped,
+    describe_orders,
+    describe_plan,
+)
 from twwarhammer3.protocol import account_stop, friendly_units
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/commander_prompt.md"
 INVALID_RETRIES = 1  # only a reply off the schema is invalid; the plan is checked on arrival
 PLAN_HISTORY = 6
 REPORT_LENGTH = 8
-REPORT_HEADER = "Dropped or rejected since your last plan:\n"
 ABILITY_TYPES = ("ability", "build", "reinforce", "flight")  # the skills give the rest
 ASSIGNMENT_SCHEMA = {
     "type": "object",
@@ -74,19 +78,6 @@ def parse_plan(text: str) -> dict:
     for index, item in enumerate(reply["assignments"], 1):
         check_fields(item, fields, f"assignment {index}")
     return reply
-
-
-def describe_assignment(item: dict) -> str:
-    text = f"{item['unit']} {item['skill']}"
-    if item.get("target"):
-        text += f" {item['target']}"
-    if item.get("x") is not None and item.get("z") is not None:
-        text += f" ({item['x']:.0f}, {item['z']:.0f})"
-    return text
-
-
-def describe_plan(assignments: list[dict]) -> str:
-    return "; ".join(describe_assignment(item) for item in assignments) or "no changes"
 
 
 def render_assignments(skills: Skills, observation: dict) -> str:

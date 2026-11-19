@@ -13,7 +13,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.benchmark import evaluate
-from twwarhammer3.battle.controllers import policy_parts
+from twwarhammer3.policy_names import policy_parts
 
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"

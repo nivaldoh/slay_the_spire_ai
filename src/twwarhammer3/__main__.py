@@ -9,10 +9,11 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from gameai.providers import PROVIDERS, get_provider
-from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES, check_allowance
+from twwarhammer3.battle.controllers import BUILTINS, check_allowance
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
 from twwarhammer3.battle.watch import STALL_S
+from twwarhammer3.policy_names import MODEL_POLICIES
 
 # One spend file, and so one budget, per provider (Spire keeps its own). Not in battle/llm.py:
 # that file's hash is the llm policy's card identity.
@@ -325,7 +326,7 @@ def run_benchmark(args, parser) -> int:
             from gameai.ledger import Ledger
             from gameai.provenance import committed_revision
             from twwarhammer3.battle import suite
-            from twwarhammer3.battle.play import SOURCES
+            from twwarhammer3.scope import SOURCES
 
             committed_revision("attributable graph authoring", SOURCES)
             data = suite.author(args.plan, args.scenarios.split(","),
@@ -510,7 +511,7 @@ def run_graph_author(args, parser) -> int:
     from gameai.llm import APIError, InvalidReply
     from gameai.provenance import committed_revision
     from twwarhammer3.battle import graph_author
-    from twwarhammer3.battle.play import SOURCES
+    from twwarhammer3.scope import SOURCES
 
     try:
         committed_revision("attributable graph authoring", SOURCES)

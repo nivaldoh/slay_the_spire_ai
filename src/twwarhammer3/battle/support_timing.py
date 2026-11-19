@@ -12,32 +12,17 @@ import math
 from pathlib import Path
 
 from gameai.provenance import committed_revision, source_fingerprints
-from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.scenarios.support_facts import TYPES, identities
+from twwarhammer3.scope import SOURCES
+from twwarhammer3.units import able
 
 # Owner selected the translated revision after the v1 deployment failure (2026-11-04).
 SCENARIO = "emp-support-timing-v2"
-TYPES = {"infantry": "wh_main_emp_inf_swordsmen", "cavalry": "wh_main_emp_cav_empire_knights",
-         "enemy": "wh_main_emp_inf_greatswords"}
 ARMS = ("direct", "opening", "scheduled", "contact", "delayed", "none")
 # Rests on JUDGEMENT docs/twwarhammer3/support-timing.md Diagnostic design.
 SCHEDULE_MS, DELAY_MS, LEFT_M, BEHIND_M, REPEATS = 30000, 12000, 80, 60, 3
-
-
-def identities(observation):
-    """Bind by type, never recruitment order. Missing/duplicate identity is a defect."""
-    result = {}
-    for role, kind in TYPES.items():
-        side = "enemy_roster" if role == "enemy" else "friendly"
-        matches = [u for u in observation.get(side, []) if u.get("type") == kind]
-        if len(matches) != 1 or not matches[0].get("id"):
-            raise ProtocolError(f"support timing: ambiguous {role} identity")
-        result[role] = matches[0]["id"]
-    if len(set(result.values())) != 3:
-        raise ProtocolError("support timing: duplicate unit IDs")
-    return result
 
 
 def attack(unit, target, queued=False):

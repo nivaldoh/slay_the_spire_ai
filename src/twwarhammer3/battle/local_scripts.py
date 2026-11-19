@@ -23,8 +23,8 @@ from time import sleep
 # (the centre's 90 m and the 10 s retry), B support witness and Enemy wing labels.
 from twwarhammer3.battle.cannae import CLOSE_M, RETRY_MS
 from twwarhammer3.battle.llm import ARRIVED_M
-from twwarhammer3.battle.local_command import able, distance
 from twwarhammer3.battle.scripted import RushNearest, forget_refused
+from twwarhammer3.units import able, distance
 
 CAVALRY_GROUPS = ("decisive_cavalry", "containing_cavalry")
 # JUDGEMENT: Witness timing — Claude, 2026-11-08: captains sleep 2.0 s and commanders 3.0 s per

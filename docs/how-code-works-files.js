@@ -316,14 +316,38 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/unit_geometry.py",
-   "text": "three helpers on public unit records that witnesses and readings share: the units still in the fight, a direction and a centre",
+   "path": "src/twwarhammer3/units.py",
+   "text": "measures public unit distance, eligibility and melee contact.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/policy_names.py",
+   "text": "parses the policy, model and effort in a recorded name.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scope.py",
+   "text": "defines the WH3 source scope and recording versions.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/order_text.py",
+   "text": "renders order, plan and army descriptions for prompts and jobs.",
+   "box": "map.play",
+   "list": "docs/twwarhammer3/README.md"
+  },
+  {
+   "path": "src/twwarhammer3/scenarios/support_facts.py",
+   "text": "binds the three support timing regiment identities.",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
    "path": "src/twwarhammer3/battle/evidence_rules.py",
-   "text": "evidence rules the evaluation battles share: contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture holders, groups from the private first reading, units by type key, accepted trace orders",
+   "text": "reads deployment groups, tickets and acknowledged orders.",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
@@ -611,7 +635,7 @@ Object.assign(DIAGRAM_FILES, {
   },
   {
    "path": "configs/twwarhammer3/gcp-regions.json",
-   "text": "the quoted region prices `scripts/wh3_gcp.py` reads",
+   "text": "the quoted region prices `scripts/wh3_gcp.py`: reads",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },

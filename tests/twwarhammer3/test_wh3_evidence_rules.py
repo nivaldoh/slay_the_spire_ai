@@ -12,6 +12,7 @@ Sources, all under runs/twwarhammer3/battle/ or runs/coord-suite-20261104/:
 
 import pytest
 
+from twwarhammer3 import protocol, units
 from twwarhammer3.battle import evidence_rules as rules
 from twwarhammer3.protocol import ProtocolError
 
@@ -69,14 +70,14 @@ def test_contact_is_the_engines_melee_flag_never_centre_distance():
     # A distance rule fails one of these: at 1.7 m or more it puts an unflagged pair in contact,
     # under 41.8 m it misses the Helmgart fight at 246.4 s. The flag counts only on its own unit,
     # never on a neighbour (e3 and f6). The flag plus a distance under 167.7 m drops e5.
-    assert rules.in_melee(ATTACK_714) == set()
-    assert rules.in_melee(HELMGART_333) == {"e3"}
-    assert rules.in_melee(HELMGART_246) == {"f3", "e14"}
-    assert "e5" in rules.in_melee(HELMGART_704)
+    assert units.in_melee(ATTACK_714) == set()
+    assert units.in_melee(HELMGART_333) == {"e3"}
+    assert units.in_melee(HELMGART_246) == {"f3", "e14"}
+    assert "e5" in units.in_melee(HELMGART_704)
 
 
 def test_a_unit_with_no_men_left_is_not_in_contact_although_it_keeps_the_flag():
-    assert rules.in_melee(HELMGART_704) == {"f3", "e5"}
+    assert units.in_melee(HELMGART_704) == {"f3", "e5"}
 
 
 def gate(hp, x=-32, z=-16):
@@ -85,14 +86,14 @@ def gate(hp, x=-32, z=-16):
 
 def test_a_gate_is_breached_at_public_hp_zero_although_it_never_reads_destroyed():
     # HELMGART: hp 1 at 251.2 s, 0 at 258.4 s and at the result (708.7 s), destroyed false.
-    assert [rules.gate_breached(gate(hp)) for hp in (1, 0, 0)] == [False, True, True]
+    assert [protocol.gate_breached(gate(hp)) for hp in (1, 0, 0)] == [False, True, True]
     # GAEAN: four gates share the name; (503,-94) read hp 3 at 174.4 s and 0 from 179.5 s.
     gaean = [gate(100, -142, 454), gate(99, -142, 214), gate(0, 503, -94), gate(100, 263, -94)]
-    assert [(g["x"], g["z"]) for g in gaean if rules.gate_breached(g)] == [(503, -94)]
+    assert [(g["x"], g["z"]) for g in gaean if protocol.gate_breached(g)] == [(503, -94)]
     gaean[2]["hp"] = 3
-    assert not any(rules.gate_breached(g) for g in gaean)
+    assert not any(protocol.gate_breached(g) for g in gaean)
     # A gate whose maximum is unreadable has no hp, and it is not breached.
-    assert not rules.gate_breached({"name": "Gatehouse", "x": -32, "z": -16, "destroyed": False})
+    assert not protocol.gate_breached({"name": "Gatehouse", "x": -32, "z": -16, "destroyed": False})
 
 
 def tickets(role, side, count, per_s, score):
@@ -122,7 +123,7 @@ def test_a_neutral_capture_point_is_held_by_neither_side():
     key = points(["enemy", "enemy", None, None, "us", None, "enemy", "enemy", "enemy"])  # 699.1 s
 
     def held(state, side):
-        return [p["id"] for p in state if rules.holds(p, side)]
+        return [p["id"] for p in state if protocol.holds(p, side)]
     assert held(start, "enemy") == []
     assert held(start, "us") == ["c1", "c2", "c5", "c7", "c8", "c9"]
     assert held(gatehouse, "enemy") == ["c2"]
@@ -186,5 +187,5 @@ def test_units_are_selected_by_type_key_because_classes_mislead():
         ("wh3_dlc23_chd_inf_infernal_guard_fireglaives", "missile"),
         ("wh3_dlc23_chd_cav_bull_centaurs_axe", "infantry"),
         ("wh3_dlc23_chd_veh_magma_cannon", "missile_chariot")], 1)]
-    assert rules.ids_by_type(army, {"wh3_dlc23_chd_veh_magma_cannon"}) == ["f9"]
-    assert rules.ids_by_type(army, {"wh3_dlc23_chd_cav_bull_centaurs_axe"}) == ["f8"]
+    assert units.ids_by_type(army, {"wh3_dlc23_chd_veh_magma_cannon"}) == ["f9"]
+    assert units.ids_by_type(army, {"wh3_dlc23_chd_cav_bull_centaurs_axe"}) == ["f8"]

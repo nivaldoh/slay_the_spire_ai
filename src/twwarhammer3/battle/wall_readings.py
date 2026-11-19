@@ -11,16 +11,10 @@ first observation (evidence_rules.group_ids). The wall line is the public one th
 and on_wall readings, and until then absent.
 """
 
-from twwarhammer3.battle.evidence_rules import (
-    accepted_orders,
-    defender_tickets,
-    gate_breached,
-    holds,
-    ids_by_type,
-    in_melee,
-)
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.evidence_rules import accepted_orders, defender_tickets
 from twwarhammer3.battle.wall_facts import RESERVE, inside, wall_distance
+from twwarhammer3.protocol import gate_breached, holds
+from twwarhammer3.units import distance, ids_by_type, in_melee
 
 # JUDGEMENT?: Approach distance — Claude, 2026-11-08 (design, decision 1 and Measurements): a
 # division approaches when one of its visible units is 150 m or nearer the wall line or inside it.
@@ -41,7 +35,7 @@ def enemy_held(observations, points=("c1", "c2", "c7")):
 def gate_timeline(observations, trace):
     """The fallback's timing, to read beside each division's first approach (approach_ammunition's
     times) and first sighting: ``gate_ms``, the first observation with a public gate breached
-    (evidence_rules.gate_breached: hp 0 or below, whatever ``destroyed`` says); ``c2_ms``, the
+    (protocol.gate_breached: hp 0 or below, whatever ``destroyed`` says); ``c2_ms``, the
     first with the Gatehouse c2 enemy-held; and the arm's own ``fallback_ms`` (its metadata's
     ``triggers``) and ``fallback_reason``, from the last "decision" row of ``trace`` (trace.jsonl's
     rows), whose ``behavior`` play logs whenever it changes. Each is None when it never came; a
@@ -136,13 +130,13 @@ def breach(frames, polygon=None):
 
 
 # JUDGEMENT?: Reserve response — Claude, 2026-11-08 (design, Measurements): any accepted attack by a
-# reserve unit the engine applied at or after the breach, and evidence_rules.in_melee. Counting
+# reserve unit the engine applied at or after the breach, and units.in_melee. Counting
 # only attacks on the breaching unit, or decision times, moves both readings; reports rest on it.
 def reserve_response(trace, frames, breached):
     """Ms from a breach (``breach``'s reading) to the reserve's answer: ``attack_ms`` until the
     engine applied (the ack's ``applied_ms``) the first accepted attack order of a reserve unit,
     the Lord or a Jade Warriors unit by type (wall_facts.RESERVE), and ``melee_ms`` until the
-    first frame in which one of them is in melee (evidence_rules.in_melee: the flag, with men
+    first frame in which one of them is in melee (units.in_melee: the flag, with men
     left). Both count from the breach on; None for an answer that never came, and None with no
     breach. ``trace`` holds the episode's trace.jsonl rows (its "decision" and "ack" rows);
     ``frames`` are observations or 1 Hz replay frames, whose first with friendly units gives the
@@ -230,8 +224,8 @@ def release_distances(trace, frames, vanguard):
 def division_missile_losses(frames, divisions):
     """For each division ({name: [enemy ids]}), ``men_lost``: the men its units lost in the
     private-record frames (``frames``: private.jsonl's lines) before ``contact_ms``, the first
-    frame in which one of them reads ``melee`` with men left (evidence_rules.in_melee's rule, which
-    rests on JUDGEMENT evidence_rules Contact rule) or ``on_wall``; with no such frame
+    frame in which one of them reads ``melee`` with men left (units.in_melee's rule, which
+    rests on JUDGEMENT src/twwarhammer3/units.py Contact rule) or ``on_wall``; with no such frame
     (``contact_ms`` None), every frame counts. Each unit counts from its first ``men`` reading to
     its last one before contact. The reading does not tell missile losses from other causes."""
     result = {}

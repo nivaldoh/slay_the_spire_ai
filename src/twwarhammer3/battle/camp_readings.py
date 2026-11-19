@@ -21,9 +21,9 @@ from twwarhammer3.battle.camp_facts import (
     LEVIES,
     MOUNTED,
 )
-from twwarhammer3.battle.evidence_rules import accepted_orders, in_melee
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.battle.evidence_rules import accepted_orders
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES
+from twwarhammer3.units import distance, in_melee
 
 LORD = "wh3_dlc23_chd_cha_overseer"
 # The fields that tell whether a unit is down; a war machine also needs ammo to read silenced.
@@ -174,7 +174,7 @@ def cover_melee_seconds(frames):
 
 def cue_ms(observations):
     """The battle ms of the cue (camp_facts.py) in these public observations, or None: one cover
-    unit flagged in melee with men left (evidence_rules.in_melee) and within CUE_M of a levy unit
+    unit flagged in melee with men left (units.in_melee) and within CUE_M of a levy unit
     with men left, in observations spanning CUE_HOLD_MS, each cover unit with its own streak
     that ends at the first observation without that state. Levies are found by type at each
     observation, as CampStrike binds them by type."""

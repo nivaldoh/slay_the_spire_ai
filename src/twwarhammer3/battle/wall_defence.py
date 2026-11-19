@@ -11,7 +11,7 @@ design (runs/siege-evals-20261108/final-haengju.md, Witness):
    nearest enemy that has been inside the wall line for BREACH_DECISIONS decisions in a row, and
    go back to that point once no visible enemy is inside.
 4. fallback: once the Gatehouse capture point is enemy-held or a gate is breached
-   (evidence_rules.gate_breached: hp 0 or less, whatever ``destroyed`` says), every unit goes to
+   (protocol.gate_breached: hp 0 or less, whatever ``destroyed`` says), every unit goes to
    its spot near the Key Building KEEP_POINT and attacks visible enemies within KEEP_M of it.
    The fallback is kept to the end; the reserve rule stops then. Version 1 has no attacker that
    can damage the gate: all seven Empire unit keys read can_siege false and siege_equipment is
@@ -47,11 +47,15 @@ import math
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.evidence_rules import gate_breached, holds
-from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance, find, nearest
 from twwarhammer3.battle.wall_facts import JADE, LORD, RESERVE, inside, wall_distance, wall_line
-from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.protocol import (
+    PolicyFailure,
+    friendly_units,
+    gate_breached,
+    holds,
+    visible_enemies,
+)
+from twwarhammer3.units import able, distance, find, nearest
 
 SPEARMEN = "wh3_main_cth_inf_peasant_spearmen_1"
 ARCHERS = "wh3_main_cth_inf_peasant_archers_0"

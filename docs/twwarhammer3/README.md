@@ -198,7 +198,7 @@ through it, and every order enters through it.
 
 Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup). One file per line since
 2026-11-01: a line starting `` - `path`: `` says what that file does, and a path ending in `/`
-covers the files below it. `scripts/diagram_files.py` reads these lines into the "How the
+covers the files below it. `scripts/diagram_files.py`: reads these lines into the "How the
 WH3 code works" page (`docs/how-code-works.html`), and `scripts/check.py` flags `src/` Python
 files missing here, except Slay the Spire's, which the page leaves out. The Spire list is in [docs/spire/AGENTS.md](../spire/AGENTS.md#layout).
 
@@ -299,11 +299,12 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   the fort's front line and what counts as inside it
 - `src/twwarhammer3/battle/escalade_readings.py`: that siege's evaluator readings of finished
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
-- `src/twwarhammer3/battle/unit_geometry.py`: three helpers on public unit records that witnesses
-  and readings share: the units still in the fight, a direction and a centre
-- `src/twwarhammer3/battle/evidence_rules.py`: evidence rules the evaluation battles share:
-  contact by the engine melee flag, gate breach at hp 0 or less, defender tickets, capture
-  holders, groups from the private first reading, units by type key, accepted trace orders
+- `src/twwarhammer3/units.py`: measures public unit distance, eligibility and melee contact.
+- `src/twwarhammer3/policy_names.py`: parses the policy, model and effort in a recorded name.
+- `src/twwarhammer3/scope.py`: defines the WH3 source scope and recording versions.
+- `src/twwarhammer3/order_text.py`: renders order, plan and army descriptions for prompts and jobs.
+- `src/twwarhammer3/scenarios/support_facts.py`: binds the three support timing regiment identities.
+- `src/twwarhammer3/battle/evidence_rules.py`: reads deployment groups, tickets and acknowledged orders.
 - `src/twwarhammer3/battle/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/battle/local_command.py`: C's local sensing and signal/courier router; the
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and
@@ -373,7 +374,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `configs/twwarhammer3/custom_battle.json`: random draws
 - `configs/twwarhammer3/report_notes.json`: the report's scenario, unit and highlight text
 - `configs/twwarhammer3/benchmark_jobs.json`: the jobs the report and export read
-- `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py` reads
+- `configs/twwarhammer3/gcp-regions.json`: the quoted region prices `scripts/wh3_gcp.py`: reads
 
 `src/gameai/`, game-neutral code both games import:
 - `src/gameai/llm.py`: model API calls for any game: transport, spend and the reply-retry loop
@@ -430,7 +431,7 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
     --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd USD \
     --rotation-seed N --output runs/twwarhammer3/battle/bench-bN-<purpose>-YYYYMMDD
 uv run python scripts/wh3_queue.py PLAN.json      # a frozen plan of play jobs, one at a time
-# Benchmark plans: `plan` writes a queue plan and plays nothing; `report` reads its results
+# Benchmark plans: `plan` writes a queue plan and plays nothing; `report`: reads its results
 uv run --locked python -m twwarhammer3 benchmark plan PLAN.json [--stage pilot|model]  # benchmark-initial.md
 uv run --locked python -m twwarhammer3 benchmark plan PLAN.json --stage suite \
     --scenarios A,B --arms rush,single  # benchmark-run.md

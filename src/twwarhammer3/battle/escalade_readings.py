@@ -7,11 +7,11 @@ private record (``private.jsonl``, fields in capture.copy_private_record), which
 enemy unit, hidden ones included. Nothing here runs during a battle or reaches a controller.
 first_on_wall, wall_sections and siege_order_acted_on need no witness metadata, so they read any
 controller, a model included (second look B1 and ER5, runs/siege-evals-20261108/second-look.json).
-Contact is the engine's melee flag on a unit with men left (evidence_rules.in_melee's rule, read
+Contact is the engine's melee flag on a unit with men left (units.in_melee's rule, read
 from the private record's ``melee``), never the distance between centres: in the 2026-10-14
 attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all, the closest
 10.1 m apart, and none carried the flag. A gate is breached at public hp 0 or less
-(evidence_rules.gate_breached). The front line and ``inside`` are the witness's
+(protocol.gate_breached). The front line and ``inside`` are the witness's
 (escalade_facts.front_line, rests on JUDGEMENT? escalade_facts.py Front line).
 """
 
@@ -22,9 +22,9 @@ attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all,
 from math import floor
 
 from twwarhammer3.battle.escalade_facts import inside
-from twwarhammer3.battle.evidence_rules import accepted_orders, gate_breached, holds
-from twwarhammer3.battle.scripted import distance
-from twwarhammer3.protocol import SIEGE_ORDER_TYPES
+from twwarhammer3.battle.evidence_rules import accepted_orders
+from twwarhammer3.protocol import SIEGE_ORDER_TYPES, gate_breached, holds
+from twwarhammer3.units import distance
 
 # JUDGEMENT?: Escalade readings — Claude, 2026-11-08 (design Measurements, check 7): a sector is
 # its target piece's x plus or minus 60 m; 150 m, 120 s and the gate's 20 m are the design's.

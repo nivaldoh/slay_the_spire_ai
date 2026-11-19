@@ -4531,8 +4531,8 @@ source = "2026-11-15 readings off witnesses: review R4-2"
 id = "protocol-imports-a-witness-in-a-function"
 guards = "The readings rule follows a module outside the battle package, imports inside functions included"
 file = "src/twwarhammer3/protocol.py"
-old = '    from twwarhammer3.battle.evidence_rules import gate_breached  # it imports this module'
-new = '    from twwarhammer3.battle.camp import GUNS; from twwarhammer3.battle.evidence_rules import gate_breached'
+old = '    hp = gate.get("hp")'
+new = '    from twwarhammer3.battle.camp import GUNS; hp = gate.get("hp")'
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R4-2"
 

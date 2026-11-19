@@ -27,21 +27,11 @@ from itertools import groupby
 from pathlib import Path
 
 from twwarhammer3.battle.benchmark import evaluate
-from twwarhammer3.battle.commander import describe_plan
-from twwarhammer3.battle.controllers import policy_parts
-from twwarhammer3.battle.llm import describe_orders, short_type
 from twwarhammer3.battle.stats import row
+from twwarhammer3.order_text import describe_orders, describe_plan, short_type, strength
+from twwarhammer3.policy_names import policy_parts
 
 ONE_X = (0.99, 1.01)  # battle s per Windows s; the owner's "(a)" on this band, 2026-10-29
-
-
-def strength(observation: dict) -> str:
-    friendly = [u for u in observation.get("friendly", []) if u.get("men")]
-    fighting = [u for u in friendly if not {"routing", "shattered"} & set(u.get("state", []))]
-    enemy = observation.get("enemy", [])
-    roster = len(observation.get("enemy_roster", []))
-    return (f"us {len(fighting)}/{len(friendly)}u {sum(u['men'] for u in friendly)}m"
-            f"  seen {len(enemy)}/{roster}u {sum(u.get('men', 0) for u in enemy)}m")
 
 
 def objectives(observation: dict) -> str:

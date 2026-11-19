@@ -8,11 +8,8 @@
   the modules written as an evaluation battle's witness and controls (`camp.py`, `lines.py`,
   `wall_defence.py`, `escalade.py`) nor `calibration.py` (owner, 2026-11-15, "F1: readings off
   witnesses"), so editing one of those files cannot change how a battle is read. The test keeps
-  it so by allowlist: from the game package a readings module imports only `protocol.py`, three
-  shared helper modules and a battle's `*_facts.py`, and those reach only the four modules
-  READINGS_MAY_LOAD adds. The rule does not keep readings away from every controller: the
-  battles also use `scripted.py`'s hold and rushes as controls, and `skills.py` and `llm.py` are
-  reached for one constant.
+  it so by allowlist. Readings may use the protocol, public unit geometry and rules, the
+  scenario evidence helpers and facts. Those helpers may load deployment matching in setup.
 
 The first two rules and the last also run on a planted violation, so a rule that can no longer
 fail shows up here. JUDGEMENT markers are only listed (scripts/check.py): only the owner
@@ -39,17 +36,10 @@ KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
                  rb"|(?<![\w-])sk-(?=[\w-]*[0-9])(?=[\w-]*[A-Z])[\w-]{32,}"
                  rb"|-----BEGIN [A-Z ]*PRIVATE KEY-----")
 AGENTS_MD_LINES = 200
-# The modules of the game package, named from its root, that a readings module may import besides
-# a battle's *_facts module: the protocol, the evidence rules and the helpers witnesses and
-# readings share. READINGS_MAY_LOAD adds what those import in turn today (evidence_rules: setup;
-# unit_geometry: skills for OUT, which imports llm, which imports benchmark), so that a new import
-# statement leading anywhere else in the package fails the test. A *_facts module and the two
-# package files import nothing from the package. Not followed: an import made by a call inside a
-# helper module, exec and the like, and the tests' own fixtures, which do use the witness modules.
-READINGS_MAY_IMPORT = ("protocol", "battle.evidence_rules", "battle.scripted",
-                       "battle.unit_geometry")
-READINGS_MAY_LOAD = (*READINGS_MAY_IMPORT, "battle.setup", "battle.skills", "battle.llm",
-                     "battle.benchmark")
+# Facts and package initializers have no game imports. Evidence rules use setup to match
+# private deployment records. Dynamic imports in shared helpers are outside this static check.
+READINGS_MAY_IMPORT = ("protocol", "units", "battle.evidence_rules")
+READINGS_MAY_LOAD = (*READINGS_MAY_IMPORT, "battle.setup")
 READINGS_RULE = "a readings module loads no witness module"
 
 
@@ -200,8 +190,8 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             "from math import inf\n"
             "from twwarhammer3.battle.camp_facts import CUE_M\n"
             "from twwarhammer3.battle import evidence_rules\n"
-            "from .scripted import distance\n"
-            "from twwarhammer3.battle.unit_geometry import _centre\n"
+            "from ..units import distance\n"
+            "from twwarhammer3.units import centre\n"
             "from twwarhammer3.protocol import visible_enemies\n"),
         "battle/planted_readings.py": (
             "from twwarhammer3.battle.camp import CUE_M\n"
@@ -218,14 +208,13 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             "from twwarhammer3.battle.setup import scenarios\n"),
         # Behind allowed imports: a facts module, and a witness three imports away.
         "battle/behind_readings.py": ("from twwarhammer3.battle.lines_facts import LINE\n"
-                                      "from twwarhammer3.battle.unit_geometry import _active\n"),
+                                      "from twwarhammer3.units import active_units\n"),
         "battle/lines_facts.py": ("import importlib\n"
-                                  "from twwarhammer3.battle.scripted import distance\n"),
-        "battle/unit_geometry.py": "from twwarhammer3.battle.skills import OUT\n",
-        "battle/skills.py": "import importlib\nfrom .llm import LLMPolicy\n",  # a helper may
-        "battle/llm.py": "from twwarhammer3.battle.escalade import front_line\n",
+                                  "from twwarhammer3.units import distance\n"),
+        "units.py": "from twwarhammer3.battle.setup import scenarios\n",
+        "battle/setup.py": "import importlib\nfrom .escalade import front_line\n",
         "battle/evidence_rules.py": "import twwarhammer3.battle\n",
-        "battle/camp_facts.py": "CUE_M = 30\n", "battle/scripted.py": "", "battle/setup.py": "",
+        "battle/camp_facts.py": "CUE_M = 30\n",
         "battle/camp.py": "from twwarhammer3.battle.calibration import CornerHold\n",
         "battle/lines.py": "", "battle/calibration.py": "", "battle/escalade.py": "",
         "battle/wall_defence.py": ""}
@@ -233,7 +222,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
         (root / name).parent.mkdir(parents=True, exist_ok=True)
         (root / name).write_text(text)
     package = ("battle/__init__.py", 1, "battle.wall_defence")
-    behind = ("battle/llm.py", 1, "battle.escalade")
+    behind = ("battle/setup.py", 2, "battle.escalade")
     planted = {
         "planted_readings.py": [package] + [("battle/planted_readings.py", line, name) for
                                             line, name in (
@@ -244,7 +233,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
         "clean_readings.py": [package, behind, ("protocol.py", 2, "battle.camp"),
                               ("battle/evidence_rules.py", 1, "a package")],
         "behind_readings.py": [package, behind, ("battle/lines_facts.py", 1, "by a call"),
-                               ("battle/lines_facts.py", 2, "battle.scripted")]}
+                               ("battle/lines_facts.py", 2, "units")]}
     assert readings_loads(root) == {
         Path("battle") / start: sorted(
             f"{file}:{line} imports {name}, which {start} would load: {READINGS_RULE}"

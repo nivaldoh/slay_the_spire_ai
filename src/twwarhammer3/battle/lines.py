@@ -40,12 +40,9 @@ from copy import deepcopy
 from twwarhammer3.battle.calibration import (
     CornerHold,
     SmallDiagnostic,
-    _centre,
-    _direction,
     _keep,
     _offset,
 )
-from twwarhammer3.battle.evidence_rules import ids_by_type, in_melee
 from twwarhammer3.battle.lines_facts import (
     AHEAD_M,
     ARMOURED,
@@ -57,8 +54,8 @@ from twwarhammer3.battle.lines_facts import (
     STRELTSI,
     TRIGGER_UNITS,
 )
-from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import PolicyFailure, visible_enemies
+from twwarhammer3.units import centre, direction, distance, ids_by_type, in_melee
 
 ARMY = Counter({KOSSARS: 3, ARMOURED: 3, STRELTSI: 2, GUARD: 1, BOYAR: 1, LANCERS: 2})
 LINE_BEHAVIOURS = {"defend": True, "fire_at_will": True, "skirmish": False}
@@ -144,18 +141,18 @@ class LinesWitness(SmallDiagnostic):
                       "lancers": ids_by_type(units, {LANCERS})}
         self.types = {u["id"]: u["type"] for u in units}
         self.posts = {u["id"]: {"x": u["x"], "z": u["z"]} for u in units}
-        inner_centre, self.outer = _centre(inner), _centre(outer)
-        self.forward = _direction(inner_centre, self.outer)  # the outer line's front
+        inner_centre, self.outer = centre(inner), centre(outer)
+        self.forward = direction(inner_centre, self.outer)  # the outer line's front
         back = (-self.forward[0], -self.forward[1])
         self.facing = {u["id"]: back if u["id"] in self.roles["inner"] else self.forward
                        for u in units}
         for side, regiments, end in (("west", outer[:2], outer[0]),
                                      ("east", outer[-2:], outer[-1])):
-            centre = self.sectors[side] = _centre(regiments)
+            sector = self.sectors[side] = centre(regiments)
             self.reserve_posts[side] = {
-                GUARD: _offset(centre, self.forward, -RESERVE_BEHIND_M),
-                BOYAR: _offset(centre, self.forward, -RESERVE_BEHIND_M - BOYAR_BEHIND_M)}
-            outside = _offset(end, _direction(self.outer, end), OUTSIDE_M)
+                GUARD: _offset(sector, self.forward, -RESERVE_BEHIND_M),
+                BOYAR: _offset(sector, self.forward, -RESERVE_BEHIND_M - BOYAR_BEHIND_M)}
+            outside = _offset(end, direction(self.outer, end), OUTSIDE_M)
             self.waypoints[side] = _offset(outside, self.forward, OUTSIDE_AHEAD_M)
 
     def _ahead(self, unit):
@@ -217,7 +214,7 @@ class LinesWitness(SmallDiagnostic):
         if self.side is None or not riders:
             return self._home(riders, enemies)
         mine = [enemy for enemy in relief if self._side_of(enemy) == self.side]
-        group, sector = _centre(riders), self.sectors[self.side]
+        group, sector = centre(riders), self.sectors[self.side]
         target = next((enemy for enemy in mine if enemy["id"] == state["target"]), None)
         if target is None and state["phase"] in ("side", "rear"):
             state.update(phase="wait", target=None)
@@ -249,7 +246,7 @@ class LinesWitness(SmallDiagnostic):
                 else:
                     state.update(phase="withdraw", since_s=self.now,
                                  threat={"x": threat["x"], "z": threat["z"]},
-                                 retreat=_offset(threat, _direction(threat, group), RETREAT_M))
+                                 retreat=_offset(threat, direction(threat, group), RETREAT_M))
         phase = state["phase"]
         if phase == "wait":
             return self._home(riders, enemies)
@@ -367,11 +364,11 @@ class LinesCornerCamp(CornerHold):
         if not units:
             return []
         if self.corner is None:
-            self.corner = self.choose(observation.get("terrain") or {}, _centre(units), enemies)
+            self.corner = self.choose(observation.get("terrain") or {}, centre(units), enemies)
             if self.corner is None:
                 return []
         if self.spots is None:
-            front = _direction(self.corner, self.middle)
+            front = direction(self.corner, self.middle)
             ids = sorted(unit["id"] for unit in units)
             self.spots = {identity: _offset(
                 self.corner, front, CAMP_FRONT_M - CAMP_DEPTH_M * (index // CAMP_RANK),

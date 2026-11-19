@@ -429,7 +429,7 @@ Orders, validated in [protocol.py](../../src/twwarhammer3/protocol.py): `besiege
 `attack_building`, each `{unit, target, run}`, accepted only while the observation lists
 `mode.fortifications`. Each replaces a unit's move, attack or halt and cannot be queued.
 Validation refuses a target that is not listed, a target at 0% or less (the breach rule of
-`evidence_rules.gate_breached`, applied to every piece), a routing or shattered unit, a wall
+`protocol.gate_breached`, applied to every piece), a routing or shattered unit, a wall
 `besiege` by a unit whose `can_climb` is not known to be true, and an `attack_building` without
 `can_siege` true and ammunition left. The Lua mod (`apply_siege`) refuses an unknown or destroyed
 target, a wall `besiege` by a unit that cannot climb and an `attack_building` without `can_siege`
@@ -558,8 +558,8 @@ job. The witness plays these rules:
    0%. A climber or the crew whose target reads 0% walks in as in phase 3, and the Grom stops
    (rests on JUDGEMENT? src/twwarhammer3/battle/escalade.py After a target falls).
 7. **Horse.** Once the public gate nearest g1 reads hp 0 or less, whatever `destroyed` says, or c2
-   is ours, the Lancers ride to c7 and then c1 (`evidence_rules.gate_breached`, resting on
-   JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Breach rule). Two recorded gates read hp 0
+   is ours, the Lancers ride to c7 and then c1 (`protocol.gate_breached`, resting on
+   JUDGEMENT src/twwarhammer3/protocol.py Breach rule). Two recorded gates read hp 0
    with `destroyed` false: `smoke-random-siege-skills-20261014-0511` from 179.5 s and
    `bench-b12-siege-baselines-20261016` episode-0001 from 258.4 s (the review's reading).
 8. **Reserve.** 60 s after the first phase 2 it joins the group that lost the largest share of its
@@ -729,7 +729,7 @@ the metadata. None of this shows what version 2 does in a game.
 
 The engine outcome is primary. Every reading below is descriptive until a check ties it to the
 decision, and a missing value stays unknown. Contact is the engine's melee flag on a unit with men
-left (rests on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Contact rule), and a gate is
+left (rests on JUDGEMENT src/twwarhammer3/units.py Contact rule), and a gate is
 breached at public hp 0 or less.
 
 | Reading | Source and limit | Built |

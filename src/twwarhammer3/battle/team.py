@@ -30,6 +30,7 @@ from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from gameai.provenance import sha256
 from twwarhammer3.battle import llm
+from twwarhammer3.order_text import short_type
 from twwarhammer3.protocol import (
     IllegalActionError,
     PolicyFailure,
@@ -445,7 +446,7 @@ def condition(unit):
 
 def team_section(view):
     """The prompt's last section for a model member: its teammate's units."""
-    allies = [f"- {unit['id']} {llm.short_type(unit.get('type'))}: destroyed"
+    allies = [f"- {unit['id']} {short_type(unit.get('type'))}: destroyed"
               if not unit.get("men") else f"- {llm.render_unit(unit, False)}, {condition(unit)}"
               for unit in view["allies"]]
     return f"\n\n{TEAM_NOTE}\nAllied units:\n" + ("\n".join(allies) or "- none")

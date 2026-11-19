@@ -12,10 +12,10 @@ plan builds on. Select one by dotted class name, e.g.
 
 import math
 
-from twwarhammer3.battle.scripted import Hold, distance
+from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.battle.skills import SHOOTERS
-from twwarhammer3.battle.unit_geometry import _active, _centre, _direction
 from twwarhammer3.protocol import friendly_units, visible_enemies
+from twwarhammer3.units import active_units, centre, direction, distance
 
 # Steps to the eight neighbouring terrain cells.
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
@@ -48,10 +48,10 @@ class SmallDiagnostic(Hold):
         self.now = observation.get("time_ms", 0) / 1000
         self.terrain = observation.get("terrain") or self.terrain
         self.bounds = self.terrain.get("bounds") or {}
-        units = [unit for unit in _active(friendly_units(observation).values())
+        units = [unit for unit in active_units(friendly_units(observation).values())
                  if self.now > self.routing_at.get(unit["id"], -math.inf)]
         return (units,
-                _active(visible_enemies(observation).values()))
+                active_units(visible_enemies(observation).values()))
 
     def issue(self, unit, order):
         """Keep a moving goal until it changes materially; retry dropped/rejected orders."""
@@ -153,13 +153,13 @@ class CornerHold(SmallDiagnostic):
         for x in (bounds["min_x"] + 30, bounds["max_x"] - 30):
             for z in (bounds["min_z"] + 30, bounds["max_z"] - 30):
                 post = {"x": x, "z": z}
-                step = _direction(post, self.middle)
+                step = direction(post, self.middle)
                 for _ in range(8):
                     if _clear(terrain, post):
                         break
                     post = _offset(post, step, terrain.get("cell_m") or 32)
                 posts.append(post)
-        enemy = _centre(enemies) if enemies else None
+        enemy = centre(enemies) if enemies else None
         safe = [post for post in posts if enemy is None
                 or distance(army, post) < distance(enemy, post)]
         return min(safe or posts, key=lambda post: distance(army, post))
@@ -169,13 +169,13 @@ class CornerHold(SmallDiagnostic):
         if not units:
             return []
         units.sort(key=lambda unit: unit["id"])
-        army = _centre(units)
+        army = centre(units)
         if self.corner is None:
             self.corner = self.choose(observation.get("terrain") or {}, army, enemies)
             if self.corner is None:
                 return []
         # Fixed, so an approaching enemy cannot reshuffle the line; terrain may come only once.
-        front = _direction(self.corner, self.middle)
+        front = direction(self.corner, self.middle)
         orders = []
         for index, unit in enumerate(units):
             if "melee" in unit.get("state", []):
@@ -277,8 +277,8 @@ class LineTeam(SmallDiagnostic):
             return []
         line, reserve, guns, knights = self.roles(units)
         if self.forward is None:
-            self.centre = _centre(line or units)
-            self.forward = _direction(self.centre, _centre(enemies))
+            self.centre = centre(line or units)
+            self.forward = direction(self.centre, centre(enemies))
         back = (-self.forward[0], -self.forward[1])
         orders = []
         for unit in line + reserve:
@@ -298,7 +298,7 @@ class LineTeam(SmallDiagnostic):
                 orders += self.issue(gun, {"unit": gun["id"], "type": "halt"})
             else:
                 post = _offset(self.centre, back, 30, 18 if index == 0 else -18)
-                orders += self.move(gun, post, _centre(enemies))
+                orders += self.move(gun, post, centre(enemies))
         orders += self.reserve_orders(reserve, line, enemies, back)
         for unit in knights:
             orders += self.knights_orders(unit, enemies, cavalry, back)
@@ -317,7 +317,7 @@ class LineTeam(SmallDiagnostic):
             if close:
                 orders += self.attack(unit, self.kept(unit, close))
             else:
-                orders += self.move(unit, _offset(self.centre, back, 35), _centre(enemies))
+                orders += self.move(unit, _offset(self.centre, back, 35), centre(enemies))
         return orders
 
     def knights_orders(self, unit, enemies, cavalry, back):
@@ -337,7 +337,7 @@ class LineTeam(SmallDiagnostic):
             return self.attack(unit, target)
         if "melee" in unit.get("state", []):
             return []  # the target broke under them: finish that fight before riding back
-        return self.move(unit, _offset(self.centre, back, 50), _centre(enemies))
+        return self.move(unit, _offset(self.centre, back, 50), centre(enemies))
 
     def metadata(self):
         return {"type": "line_team", "variant": self.variant,

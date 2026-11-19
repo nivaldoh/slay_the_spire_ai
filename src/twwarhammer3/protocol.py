@@ -294,11 +294,28 @@ def _validate_purchase(order, observation, purchases) -> None:
     purchases["spent"] += cost
 
 
+# JUDGEMENT: Breach rule — Claude, 2026-11-08 (portfolio S7b): a gate is breached at public hp 0 or
+# below, ignoring ``destroyed``. Whether hp 0 lets units through is unverified; Haengju's fallback
+# cue, Malta's fall-back rule and Izmail's Horse rule, D2 cue and C5 control rest on it.
+def gate_breached(gate) -> bool:
+    """Whether a ``mode.gates`` entry is breached. Its ``hp`` is a whole percentage of the gate's
+    maximum, rounded, so a gate under 0.5% of its maximum also reads 0; never compare it with raw
+    native hit points. Gates share the name "Gatehouse"; tell them apart by position. A gate with
+    no hp (no readable maximum) is not breached."""
+    hp = gate.get("hp")
+    return hp is not None and hp <= 0
+
+
+def holds(point, side) -> bool:
+    """Whether ``side`` ("us" or "enemy") holds a ``mode.capture_points`` entry. A neutral
+    point has no ``holder`` key and is held by neither side."""
+    return point.get("holder") == side
+
+
 def _validate_siege(unit, order, current, fortifications) -> None:
-    """A besiege or attack_building on a fortification not yet at 0% (evidence_rules
-    .gate_breached's rule for every piece), by an own unit that is not routing: a wall piece
+    """A besiege or attack_building on a fortification not yet at 0% (the public gate HP
+    rule for every piece), by an own unit that is not routing: a wall piece
     needs a unit that can climb walls, attack_building one that can siege and has ammunition."""
-    from twwarhammer3.battle.evidence_rules import gate_breached  # it imports this module
 
     target = fortifications.get(order.get("target"))
     if target is None:

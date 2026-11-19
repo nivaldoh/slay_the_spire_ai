@@ -42,7 +42,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, committed_revision, write_json
-from twwarhammer3.battle.play import SOURCES
+from twwarhammer3.scope import SOURCES
 
 PLAY = ["uv", "run", "python", "-m", "twwarhammer3", "play"]
 SCOPE = (*SOURCES, "scripts/wh3_queue.py")

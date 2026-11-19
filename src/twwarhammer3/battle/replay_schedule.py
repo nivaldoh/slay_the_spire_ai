@@ -23,8 +23,8 @@ from collections import Counter
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.units import distance
 
 VERSION = 1
 PLACE = ("type", "x", "z")

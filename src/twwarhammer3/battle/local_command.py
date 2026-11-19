@@ -7,10 +7,10 @@ These are trusted adapters, not a sandbox for arbitrary Python/tool submissions.
 
 from copy import deepcopy
 
-from twwarhammer3.battle.scripted import distance
 from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
 from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS
 from twwarhammer3.protocol import TeamHarnessError
+from twwarhammer3.units import able, distance
 
 # JUDGEMENT: Local command development profile — Codex, 2026-11-05: local view 160 m,
 # signal 220 m/2 s/5 s cooldown; courier 20 m/s + 2 s dispatch, two slots, 120 s lifetime,
@@ -30,12 +30,6 @@ CODES = ("READY", "HOLD", "COMMIT", "HELP", "ABORT")
 # The order is also each commander's declared anchor-replacement priority.
 GROUP_SLOTS = {"centre": (0, 1, 2, 3), "left_infantry": (4,), "right_infantry": (5,),
                "decisive_cavalry": (6, 7), "containing_cavalry": (8,)}
-OUT = {"routing", "shattered", "leaving", "not_deployed", "deploying"}
-
-
-def able(unit):
-    return (unit.get("men", 0) > 0 and not unit.get("error")
-            and not OUT.intersection(unit.get("state", [])))
 
 
 def bind(placements, friendly):

@@ -18,7 +18,7 @@ from pathlib import Path
 from gameai import windows
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.capture import copy_private_record, copy_recording
-from twwarhammer3.battle.play import SOURCES, battle_session, engine_ending, start_frontend
+from twwarhammer3.battle.play import battle_session, engine_ending, start_frontend
 from twwarhammer3.battle.reserve import check as check_reserve
 from twwarhammer3.battle.reserve import materialize
 from twwarhammer3.battle.setup import (
@@ -35,6 +35,7 @@ from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.scope import SOURCES
 
 # The mod runs neither under the observer session: setup_reserve asserts no multiplayer mode for
 # reserve versions 1-2 and load() goes inactive on custom. A session without them would record a

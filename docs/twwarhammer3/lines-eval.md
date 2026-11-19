@@ -443,7 +443,7 @@ own units, the visible enemies, the terrain grid and the battle time) and gives 
    (35,-265) or (225,-265), and the Boyar 15 m behind it, at (35,-250) or (225,-250), each on the
    same leash. Until then both keep their starts.
 6. **Lancers.** They wait on their leash until 2 relief units on the chosen side are in melee (the
-   engine flag, `evidence_rules.in_melee`), take the engaged unit nearest the sector centre, ride
+   engine flag, `units.in_melee`), take the engaged unit nearest the sector centre, ride
    to a waypoint 110 m past the line's end regiment and 10 m ahead of the line, at (-100,-305) or
    (360,-305), then to 70 m behind the target along the outer line's front, and charge. After 8 s
    of melee, or when the target is lost, they pull out to 120 m from the nearest enemy and ride
@@ -709,7 +709,7 @@ public view and rendered prompt. It does not check both cases or Lua visibility.
 The public replay and private record each contain 335 frames. The experimental contact
 reader reports G/H/L at 42.1/50.2/55.0 s, a 12.9 s spread, using the existing two-of-four
 living-melee rule. One enemy, e10, has no living-melee sample. These readings rest on
-JUDGEMENT `src/twwarhammer3/battle/evidence_rules.py` Contact rule and JUDGEMENT?
+JUDGEMENT `src/twwarhammer3/units.py` Contact rule and JUDGEMENT?
 `src/twwarhammer3/battle/lines_readings.py` Complete contact record; no gate is adopted.
 
 The first friendly rout was the middle outer Kossars, f8, authored slot 10, at 95.2 s.

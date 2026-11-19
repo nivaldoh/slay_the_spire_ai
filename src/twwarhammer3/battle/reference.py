@@ -7,9 +7,10 @@ readings rise when an army really does concentrate; it is not a model of good pl
 
 from statistics import mean
 
-from twwarhammer3.battle.scripted import distance, forget_refused
-from twwarhammer3.battle.skills import CHARGERS, OUT, SHOOTERS
+from twwarhammer3.battle.scripted import forget_refused
+from twwarhammer3.battle.skills import CHARGERS, SHOOTERS
 from twwarhammer3.protocol import friendly_units, visible_enemies
+from twwarhammer3.units import ROUTED, distance
 
 # JUDGEMENT: Concentrate limits — Claude, 2026-11-04, overnight goal: gather while any unit is
 # over 120 m from the army's centre and no enemy is within 80 m of a unit; fast units join when
@@ -20,7 +21,7 @@ CLOSE_M = 80
 
 
 def able(unit):
-    return unit.get("men", 0) > 0 and not OUT & set(unit.get("state") or [])
+    return unit.get("men", 0) > 0 and not ROUTED & set(unit.get("state") or [])
 
 
 class Concentrate:

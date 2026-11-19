@@ -12,9 +12,9 @@ import re
 import statistics
 from pathlib import Path
 
-from twwarhammer3.battle.capture import RECORDER_VERSION
-from twwarhammer3.battle.llm import short_type
+from twwarhammer3.order_text import short_type
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES
+from twwarhammer3.scope import RECORDER_VERSION
 
 SCHEMA = 1
 UNIT_FIELDS = ("id", "type", "name", "class", "commander", "x", "z", "bearing", "men", "men0",

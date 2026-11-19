@@ -12,9 +12,9 @@ import math
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle.local_command import OUT, able
-from twwarhammer3.battle.support_timing import TYPES, identities
 from twwarhammer3.protocol import HIDDEN_KEYS, ProtocolError
+from twwarhammer3.scenarios.support_facts import TYPES, identities
+from twwarhammer3.units import UNAVAILABLE, able
 
 
 def finite(value):
@@ -48,7 +48,7 @@ def lost_support(observation, uid):
     unit = unit_at(observation, uid)
     if unit is None or "state" not in unit or "men" not in unit:
         return None
-    return bool(OUT.intersection(unit["state"])) or unit["men"] == 0
+    return bool(UNAVAILABLE.intersection(unit["state"])) or unit["men"] == 0
 
 
 def together(observation, ids):

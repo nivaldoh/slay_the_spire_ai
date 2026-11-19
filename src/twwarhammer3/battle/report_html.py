@@ -28,7 +28,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle import replay
-from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"

@@ -19,7 +19,7 @@ Witness "Escalade v1" and Controls C3-C9). ``Escalade`` (escalade, the witness):
 - A siege order goes only to a piece listed in this observation's ``mode.fortifications`` and
   not at 0% (protocol's rule). Once its target reads 0% (gate_breached) a climber or the crew
   goes in as in phase 3 and the Grom stops; while the list is missing, they get no order.
-- Horse: once the gate is breached (evidence_rules.gate_breached on the public gate nearest g1:
+- Horse: once the gate is breached (protocol.gate_breached on the public gate nearest g1:
   hp 0 or less, whatever ``destroyed`` says) or c2 is ours, it goes to c7, then c1.
 - Reserve: RESERVE_MS after phase 2 it joins the group that lost the largest share of its men
   since phase 2, if over RESERVE_LOSS, else the group with most units on the wall, and besieges
@@ -72,11 +72,17 @@ from collections import Counter
 from copy import deepcopy
 
 from twwarhammer3.battle.escalade_facts import front_line, inside
-from twwarhammer3.battle.evidence_rules import gate_breached, holds
-from twwarhammer3.battle.local_command import able
 from twwarhammer3.battle.replay_schedule import ReplaySchedule
-from twwarhammer3.battle.scripted import distance, forget_refused, nearest
-from twwarhammer3.protocol import SIEGE_ORDER_TYPES, PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.battle.scripted import forget_refused
+from twwarhammer3.protocol import (
+    SIEGE_ORDER_TYPES,
+    PolicyFailure,
+    friendly_units,
+    gate_breached,
+    holds,
+    visible_enemies,
+)
+from twwarhammer3.units import able, distance, nearest
 
 BOYAR = "wh3_main_ksl_cha_boyar_0"
 ARMOURED = "wh3_main_ksl_inf_armoured_kossars_0"

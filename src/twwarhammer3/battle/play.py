@@ -39,16 +39,7 @@ from twwarhammer3.battle.capture import (
     imagery_settings,
     recording_settings,
 )
-from twwarhammer3.battle.commander import describe_plan
-from twwarhammer3.battle.controllers import (
-    MODEL_POLICIES,
-    card,
-    policy_parts,
-    prompt_path,
-    rotation,
-)
-from twwarhammer3.battle.digest import strength
-from twwarhammer3.battle.llm import describe_orders
+from twwarhammer3.battle.controllers import card, prompt_path, rotation
 from twwarhammer3.battle.setup import (
     NOT_STARTED,
     check_battle,
@@ -67,6 +58,8 @@ from twwarhammer3.battle.team import TeamPolicy
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
+from twwarhammer3.order_text import describe_orders, describe_plan, strength
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 from twwarhammer3.protocol import (
     HIDDEN_KEYS,
     BattleRestarted,
@@ -81,13 +74,10 @@ from twwarhammer3.protocol import (
     scenario_key,
     validate_orders,
 )
+from twwarhammer3.scope import EVALUATOR_VERSION, SOURCES, TRACK
 
 SCORED = {"won", "lost", "draw"}
 ENDED = SCORED | {"truncated"}  # ended without a failure, which a cleanup failure replaces
-SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
-           "uv.lock", ".python-version")
-TRACK = "obs-v4+terrain/act-v2/live-1x"
-EVALUATOR_VERSION = 2
 CAPTION_LIMIT = 400
 # JUDGEMENT?: 1x windows — Claude, 2026-10-29: besides the whole battle (the owner's choice),
 # battle time per Windows second over each stretch of at least 30 s, so a pause of a few

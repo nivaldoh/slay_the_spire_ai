@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-19 (implementation), the owner requested the full restructure and delegated
+  judgement calls: “use common sense and try to choose what I would've likely chosen, taking
+  notes of these decisions for me to review later.” The owner allowed live checks and up to
+  $10 in paid calls, Anthropic first and OpenAI if it has no credits.
 - 2026-11-19 (restructuring, legacy code), the owner decided: “we should not worry about keeping
   legacy parts in the code. We can aggressively restructure anything if we see an opportunity to
   improve it”. This applies across the codebase. When an interface improves, migrate current

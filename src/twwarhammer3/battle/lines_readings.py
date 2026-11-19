@@ -16,10 +16,10 @@ documented in lines-eval.md, First construction battle (2026-11-12).
 
 import math
 
-from twwarhammer3.battle.evidence_rules import group_ids, ids_by_type
+from twwarhammer3.battle.evidence_rules import group_ids
 from twwarhammer3.battle.lines_facts import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
-from twwarhammer3.battle.unit_geometry import _active, _centre, _direction
 from twwarhammer3.protocol import ProtocolError, visible_enemies
+from twwarhammer3.units import active_units, centre, direction, ids_by_type
 
 HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_berserkers_0",
          "wh_dlc08_nor_mon_fimir_0"}
@@ -38,10 +38,10 @@ def _front(declaration):
     and the midpoint between the two lines' centres."""
     line = [p for p in declaration["deployment"]["friendly"] if p["type"] in LINE]
     middle = (max(p["z"] for p in line) + min(p["z"] for p in line)) / 2
-    outer = _centre([p for p in line if p["z"] <= middle])
-    inner = _centre([p for p in line if p["z"] > middle])
+    outer = centre([p for p in line if p["z"] <= middle])
+    inner = centre([p for p in line if p["z"] > middle])
     halfway = {"x": (outer["x"] + inner["x"]) / 2, "z": (outer["z"] + inner["z"]) / 2}
-    return outer, _direction(inner, outer), halfway
+    return outer, direction(inner, outer), halfway
 
 
 def _ahead(point, origin, forward):
@@ -78,7 +78,7 @@ def contacts(frames, declaration, first) -> dict:
     SMACv2 smacv2/env/starcraft2/starcraft2.py init_units/update_units at 577ab5a (references.md);
     these WH3 records use the existing deployment matcher. The two-of-four contact rule rests
     on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines deciding checks and on JUDGEMENT
-    src/twwarhammer3/battle/evidence_rules.py Contact rule. No contact is None, never zero.
+    src/twwarhammer3/units.py Contact rule. No contact is None, never zero.
     """
     groups = group_ids(declaration, first, "enemy", CONTACT_GROUPS)
     identities = [identity for members in groups.values() for identity in members]
@@ -157,7 +157,7 @@ def _trigger_ms(observations, declaration):
     outer, forward, _ = _front(declaration)
     for observation in observations:
         ahead = sum(_ahead(enemy, outer, forward) > AHEAD_M
-                    for enemy in _active(visible_enemies(observation).values()))
+                    for enemy in active_units(visible_enemies(observation).values()))
         if ahead >= TRIGGER_UNITS:
             return observation["time_ms"]
     return None

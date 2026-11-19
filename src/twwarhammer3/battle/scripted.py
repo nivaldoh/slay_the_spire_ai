@@ -4,9 +4,8 @@ Each policy has ``decide(observation) -> orders``, ``acknowledge(ack, latency)``
 ``metadata() -> dict`` (recorded with every decision).
 """
 
-import math
-
 from twwarhammer3.protocol import friendly_units, visible_enemies
+from twwarhammer3.units import distance
 
 
 class Hold:
@@ -65,25 +64,6 @@ class RushNearest(AttackNearest):
 
     def metadata(self) -> dict:
         return {"type": "rush_nearest"}
-
-
-def distance(a: dict, b: dict) -> float:
-    """Metres between two things with x and z (units, points, orders); inf if one is unplaced."""
-    if None in (a.get("x"), a.get("z"), b.get("x"), b.get("z")):
-        return math.inf
-    return math.hypot(a["x"] - b["x"], a["z"] - b["z"])
-
-
-def nearest(unit: dict, others) -> dict | None:
-    """The one of ``others`` nearest ``unit``; ties go to the smaller x, then z, never to id or
-    list order."""
-    return min(others, key=lambda other: (distance(unit, other), other["x"], other["z"]),
-               default=None)
-
-
-def find(units, uid) -> dict | None:
-    """The unit of ``units`` whose id is ``uid``, or None."""
-    return next((unit for unit in units if unit["id"] == uid), None)
 
 
 def forget_refused(sent: dict, ack: dict) -> None:

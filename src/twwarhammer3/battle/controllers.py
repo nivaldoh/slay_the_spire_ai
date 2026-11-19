@@ -22,12 +22,13 @@ from gameai.providers import get_provider, routing, validate
 from twwarhammer3.battle import benchmark, commander, llm, local_team, setup, team
 from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
 # The paid model controllers and their system prompts, which play snapshots per job.
 MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PATH,
                  "commander": commander.PROMPT_PATH, "team_llm_rules": llm.RULES_PROMPT_PATH}
-MODEL_POLICIES = frozenset(MODEL_PROMPTS)
+
 
 
 def prompt_path(base: str, profile: str | None) -> Path:
@@ -67,22 +68,6 @@ class Controller(Protocol):
     def decide(self, observation: dict) -> list[dict]: ...
     def acknowledge(self, ack: dict, latency: dict) -> None: ...
     def metadata(self) -> dict: ...
-
-
-def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
-    """A policy name's base name and the model and effort it plays with: a model policy's
-    ``@MODEL[/EFFORT]`` suffix, else the job's; None for other policies. Readers of recorded
-    jobs use it too, so only rotation and factories check the suffix against today's prices."""
-    base, separator, suffix = name.partition("@")
-    if base not in MODEL_POLICIES:
-        if separator:
-            raise ValueError(f"{name}: only {', '.join(sorted(MODEL_POLICIES))} take @MODEL")
-        return name, None, None
-    # OpenRouter IDs already contain a slash (vendor/model); effort is the final suffix.
-    model, effort = suffix, ""
-    if suffix.count("/") > (1 if config.get("provider") == "openrouter" else 0):
-        model, _, effort = suffix.rpartition("/")
-    return base, model or config.get("model"), effort or config.get("effort")
 
 
 def check_policy(name: str, config: dict) -> None:

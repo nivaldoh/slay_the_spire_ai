@@ -66,13 +66,13 @@ from pathlib import Path
 from gameai import windows
 from gameai.provenance import REPO_ROOT, sha256, source_fingerprints
 from twwarhammer3.battle import setup
-from twwarhammer3.battle.play import SOURCES
 from twwarhammer3.engine import runtime
 from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.multiplayer_adapter import REQUEST_S, Helper
 from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import IllegalActionError, validate_orders
+from twwarhammer3.scope import SOURCES
 
 ROOT = REPO_ROOT / "runs/twwarhammer3/native-multiplayer"
 MODES = ("observe", "control")

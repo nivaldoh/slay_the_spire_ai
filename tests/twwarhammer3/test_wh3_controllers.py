@@ -178,3 +178,18 @@ def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_
 def test_openrouter_rejects_unsupported_settings_before_launch(policy):
     with pytest.raises(ValueError, match="invalid choice"):
         controllers.rotation({"policy": policy, "provider": "openrouter", "effort": "low"})
+
+
+def test_recorded_model_names_match_the_factory_prompt_keys():
+    from twwarhammer3.battle.controllers import MODEL_PROMPTS
+    from twwarhammer3.policy_names import MODEL_POLICIES
+
+    assert MODEL_POLICIES == MODEL_PROMPTS.keys()
+
+
+def test_deploying_unit_has_distinct_geometry_and_command_eligibility():
+    from twwarhammer3.units import able, active_units
+
+    unit = {"men": 10, "x": 0, "z": 0, "state": ["deploying"]}
+    assert active_units([unit]) == [unit]
+    assert not able(unit)

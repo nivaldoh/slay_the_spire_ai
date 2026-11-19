@@ -18,8 +18,8 @@ Without a commander, units keep the default skill of their class.
 import math
 
 from twwarhammer3.battle.llm import ARRIVED_M
-from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import friendly_units, visible_enemies
+from twwarhammer3.units import ROUTED, distance
 
 RUN_M = 30  # run only for the last stretch of a charge
 ENGAGE_M = 40  # how near an enemy must come to a hold post, or the enemy lord to a free unit
@@ -30,7 +30,6 @@ SKIP_S = 30  # and leaves that target alone this long
 SHOOTERS = ("missile", "missile_chariot", "artillery")
 CHARGERS = ("lord", "hero", "cavalry", "chariot", "missile_cavalry")
 MOUNTED = ("cavalry", "chariot", "missile_cavalry", "missile_chariot")
-OUT = {"routing", "shattered"}
 
 
 def default_skill(unit: dict) -> str:
@@ -44,7 +43,7 @@ def _states(unit: dict) -> set:
 
 
 def _live(enemy: dict) -> bool:
-    return enemy.get("x") is not None and not OUT & _states(enemy)
+    return enemy.get("x") is not None and not ROUTED & _states(enemy)
 
 
 def _nearest(unit: dict, enemies) -> dict | None:
@@ -241,7 +240,7 @@ class Skills:
         enemies = visible_enemies(observation)
         orders = []
         for unit_id, unit in friendly_units(observation).items():
-            if not unit.get("men") or OUT & _states(unit) or unit.get("x") is None:
+            if not unit.get("men") or ROUTED & _states(unit) or unit.get("x") is None:
                 self.phase[unit_id] = "routing" if unit.get("men") else "destroyed"
                 continue
             if unit_id not in self.assignments:

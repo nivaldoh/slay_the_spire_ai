@@ -292,7 +292,7 @@ battle by battle let a label mean different things per battle; comparing labels 
    less, whatever `destroyed` says, because two recorded gates read hp 0 with `destroyed` false to
    the end of their battles. Whether hp 0 lets units through is unverified. Both rules are in
    [`battle/evidence_rules.py`](../../src/twwarhammer3/battle/evidence_rules.py) and rest on
-   JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Contact rule and Breach rule. Units are
+   JUDGEMENT src/twwarhammer3/units.py Contact rule and JUDGEMENT src/twwarhammer3/protocol.py Breach rule. Units are
    chosen by type key, because the Magma Cannon reads class `missile_chariot` and the Bull Centaurs
    read `infantry`.
 5. **The evaluator-only private record.** A scenario with `"private_record": true` makes the mod

@@ -9,9 +9,9 @@ Movement records describe waypoint evidence, never a detector of useful envelopm
 from copy import deepcopy
 
 from twwarhammer3.battle.llm import ARRIVED_M
-from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance, forget_refused
+from twwarhammer3.battle.scripted import forget_refused
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.units import able, distance
 
 # JUDGEMENT: Cannae witness development rules — Codex, 2026-11-05: centre engages at
 # 90 m; infantry flank offset 70 m, rear offset 65 m, route deadline 180 s and idle retry

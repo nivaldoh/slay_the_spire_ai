@@ -33,10 +33,9 @@ from twwarhammer3.battle.camp_facts import (
     LEVIES,
     MOUNTED,
 )
-from twwarhammer3.battle.evidence_rules import in_melee
-from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance, find, forget_refused, nearest
+from twwarhammer3.battle.scripted import forget_refused
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.units import able, distance, find, in_melee, nearest
 
 # Since 2026-11-15 the four groups (MOUNTED, LEVIES, COVER, GUNS) are in camp_facts.py, which the
 # readings import too. The marker below still covers them.
@@ -168,7 +167,7 @@ class CampStrike:
         visible = list(visible_enemies(observation).values())
         enemies = [e for e in visible if able(e)]
         # Enemies the engine flags in melee within CUE_M of a levy unit with men left; the
-        # distance test is the camp's own. Rests on JUDGEMENT evidence_rules.py Contact rule.
+        # distance test is the camp's. Rests on JUDGEMENT src/twwarhammer3/units.py Contact rule.
         levies = [units[i] for i in self.roles["levies"] if units.get(i, {}).get("men", 0) > 0]
         fighting = in_melee({"friendly": [], "enemy": visible})
         engaged = {e["id"] for e in visible if e["id"] in fighting

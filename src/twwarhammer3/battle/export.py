@@ -18,8 +18,8 @@ from pathlib import Path
 from gameai.llm import reasoning_parts
 from gameai.provenance import REPO_ROOT, sha256
 from twwarhammer3.battle.benchmark import evaluate
-from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 from twwarhammer3.battle.report import shared_measures
+from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 SCHEMA_VERSION = 2
 OUTCOMES = {"won", "lost", "draw"}

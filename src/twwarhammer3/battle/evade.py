@@ -5,9 +5,8 @@ air candidate plays as defender with timeout_winner us, so a surviving army can 
 timer. Unplayed: no tactical claim rests on it, and it may lose.
 """
 
-from twwarhammer3.battle.local_command import able
-from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.units import able, distance
 
 # JUDGEMENT: Evade parameters — Claude Code, 2026-11-05: eight points 30 m inside the bounds,
 # 10 s retry, stopped = no "moving" flag. Other values change how long the army lasts; the

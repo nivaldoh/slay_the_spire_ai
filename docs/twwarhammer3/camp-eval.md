@@ -453,7 +453,7 @@ built-in policy names. All four share these rules:
 - **Levies.** From the first decision the Warrior Priest and Flagellants attack the nearest visible
   able enemy in `melee` mode at a run, and the Free Company in `auto` mode at a walk. Each keeps its
   target until it is dead, routing, shattered or out of sight.
-- **Cue.** One cover unit's engine melee flag while it has men left (`evidence_rules.in_melee`,
+- **Cue.** One cover unit's engine melee flag while it has men left (`units.in_melee`,
   resting on `JUDGEMENT` Contact rule there), plus the camp's own 30 m test against a levy with men
   left, for 10 s; each cover unit keeps its own streak, which ends at the first observation without
   that state, out of sight included. A routing cover unit still counts (`JUDGEMENT?` Routing cover

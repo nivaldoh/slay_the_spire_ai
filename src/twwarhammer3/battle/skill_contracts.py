@@ -51,7 +51,7 @@ def valid_value(value, kind):
 
 def available(unit):
     return (unit.get("men", 0) > 0 and unit.get("x") is not None
-            and unit.get("z") is not None and not skills.OUT.intersection(unit.get("state", [])))
+            and unit.get("z") is not None and not skills.ROUTED.intersection(unit.get("state", [])))
 
 
 def public_contact(view):

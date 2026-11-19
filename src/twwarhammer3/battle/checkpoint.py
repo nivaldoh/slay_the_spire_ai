@@ -36,6 +36,7 @@ from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import scenario_key, validate_orders
+from twwarhammer3.scope import SOURCES
 
 ENGINE = Path(__file__).resolve().parents[1] / "engine"
 AGENT = ENGINE / "checkpoint_agent.js"
@@ -182,8 +183,8 @@ def launched(plan: dict, output: Path, replay_sha256: str | None, config: dict, 
     write_json(output / "agent-config.json", agent_config)
     write_json(output / "plan.json", plan)
     manifest = {"plan": plan, "replay_sha256": replay_sha256, "config": config, "spend_usd": 0,
-                "source_revision": committed_revision("battle checkpoints", play.SOURCES),
-                "source_files": source_fingerprints(play.SOURCES), "agent_sha256": sha256(AGENT),
+                "source_revision": committed_revision("battle checkpoints", SOURCES),
+                "source_files": source_fingerprints(SOURCES), "agent_sha256": sha256(AGENT),
                 "completed": False}
     if limits != LIMITS:
         manifest["limits"] = limits

@@ -11,7 +11,6 @@ enemies were last seen. No transcript accumulates.
 
 import hashlib
 import json
-import re
 from collections import deque
 from copy import deepcopy
 
@@ -19,8 +18,7 @@ from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.benchmark import BATTLE_USD, CALL_LIMIT, READ_TIMEOUT_S, SUITE, VERSION
-from twwarhammer3.battle.evidence_rules import gate_breached
-from twwarhammer3.battle.scripted import distance
+from twwarhammer3.order_text import describe_dropped, describe_orders, short_type
 from twwarhammer3.protocol import (
     ATTACK_MODES,
     BEHAVIOURS,
@@ -28,9 +26,11 @@ from twwarhammer3.protocol import (
     IllegalActionError,
     PolicyFailure,
     friendly_units,
+    gate_breached,
     validate_orders,
     visible_enemies,
 )
+from twwarhammer3.units import distance
 
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/system_prompt.md"
 RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
@@ -128,11 +128,6 @@ def without_siege_orders(observation: dict) -> dict:
                                    if key != "fortifications"})
 
 
-def short_type(key: str) -> str:
-    """``wh3_main_kho_inf_chaos_warriors_0`` -> ``chaos_warriors_0``."""
-    return re.sub(r"^wh\d?_[a-z0-9]+_[a-z]{3}_[a-z]{3}_", "", key or "?")
-
-
 def _position(unit: dict) -> str:
     if unit.get("x") is None or unit.get("z") is None:
         return "unknown position"
@@ -181,7 +176,7 @@ def holds_siege(unit: dict, order: dict, fortifications: list | None) -> bool:
     if order["type"] == "attack_building" and not (unit.get("ammo") or 0) > 0:
         return False
     # Validation's rule for every piece: one with unreadable hp is kept.
-    # Rests on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py Breach rule.
+    # Rests on JUDGEMENT src/twwarhammer3/protocol.py Breach rule.
     target = next((piece for piece in fortifications or [] if piece.get("id") == order["target"]),
                   None)
     return target is not None and not gate_breached(target)
@@ -662,13 +657,6 @@ def split_valid(orders: list[dict], observation: dict) -> tuple[list[dict], list
     return kept, dropped
 
 
-def describe_dropped(order) -> str:
-    try:
-        return describe_orders([order])
-    except (AttributeError, KeyError, TypeError, ValueError, OverflowError):  # off the schema
-        return json.dumps(order)
-
-
 def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] | None:
     """The last attempt's reply without the orders that are still invalid, so one order
     the model keeps repeating (a cast on cooldown, say) does not forfeit the whole decision
@@ -689,45 +677,6 @@ def strengths(observation: dict) -> dict[str, tuple]:
 
 def invalid_reply(error: InvalidReply) -> PolicyFailure:
     return PolicyFailure(str(error), failure={"kind": "invalid_reply", "attempts": error.attempts})
-
-
-def describe_orders(orders: list[dict]) -> str:
-    if not orders:
-        return "no new orders"
-    parts = []
-    for order in orders:
-        run = " run" if order.get("run") else ""
-        if order["type"] == "move":
-            facing = order.get("facing")
-            parts.append(f"{order['unit']} move ({order['x']:.0f}, {order['z']:.0f})"
-                         + (f" facing {facing:.0f}" if facing is not None else "")
-                         + (f" width {order['width']:.0f}" if order.get("width") else "") + run)
-        elif order["type"] == "attack":
-            mode = "" if order.get("mode", "auto") == "auto" else f" {order['mode']}"
-            parts.append(f"{order['unit']} attack {order['target']}{mode}{run}")
-        elif order["type"] == "behaviour":
-            parts.append(f"{order['unit']} {order['behaviour']} "
-                         + ("on" if order["enabled"] else "off"))
-        elif order["type"] == "flight":
-            parts.append(f"{order['unit']} " + ("take off" if order["flying"] else "land"))
-        elif order["type"] == "ability":
-            target = order.get("target") or "self"
-            if order.get("x") is not None and order.get("z") is not None:
-                target = f"({order['x']:.0f}, {order['z']:.0f})"
-            parts.append(f"{order['unit']} ability {order['ability']} at {target}")
-        elif order["type"] == "build":
-            parts.append(f"{order['unit']} build {order['option']} on {order['slot']}")
-        elif order["type"] == "reinforce":
-            parts.append(f"{order['unit']} reinforce {short_type(order['reinforcement'])}"
-                         f" at zone {order['zone']}")
-        elif order["type"] in SIEGE_ORDER_TYPES:
-            verb = "besiege" if order["type"] == "besiege" else "attack building"
-            parts.append(f"{order['unit']} {verb} {order['target']}{run}")
-        else:
-            parts.append(f"{order['unit']} halt")
-        if order.get("queue"):
-            parts[-1] += " [queued]"
-    return ", ".join(parts)
 
 
 class LLMPolicy:

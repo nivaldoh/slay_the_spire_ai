@@ -14,8 +14,8 @@ from pathlib import Path
 
 from gameai.provenance import write_json
 from gameai.windows import WINDOWS_PYTHON, windows_path
+from twwarhammer3.scope import RECORDER_VERSION
 
-RECORDER_VERSION = 1
 # Battle ids and still triggers become bridge file names.
 NAME = re.compile(r"[\w.-]+", re.ASCII)
 
