@@ -273,11 +273,11 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/controllers/evade.py`: `Evade`, a free control: every unit runs from visible enemies
 - `src/twwarhammer3/battle/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
   Cannae development witnesses on public state
-- `src/twwarhammer3/battle/camp.py`: `CampStrike` and its controls for the camp attack land battle
+- `src/twwarhammer3/scenarios/camp.py`: `CampStrike` and its controls for the camp attack land battle
   (emp-chd-camp-v1), on public state
-- `src/twwarhammer3/battle/camp_facts.py`: what that battle's witness and readings both use:
+- `src/twwarhammer3/scenarios/camp_facts.py`: what that battle's witness and readings both use:
   the unit groups by type key and the cue rule
-- `src/twwarhammer3/battle/camp_readings.py`: that battle's evaluator readings of finished
+- `src/twwarhammer3/scenarios/camp_readings.py`: that battle's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
   two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state
@@ -304,7 +304,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/scope.py`: defines the WH3 source scope and recording versions.
 - `src/twwarhammer3/order_text.py`: renders order, plan and army descriptions for prompts and jobs.
 - `src/twwarhammer3/scenarios/support_facts.py`: binds the three support timing regiment identities.
-- `src/twwarhammer3/battle/evidence_rules.py`: reads deployment groups, tickets and acknowledged orders.
+- `src/twwarhammer3/scenarios/evidence_rules.py`: reads deployment groups, tickets and acknowledged orders.
 - `src/twwarhammer3/controllers/team.py`: independent members sharing one army and one mailbox
 - `src/twwarhammer3/controllers/local_command.py`: C's local sensing and signal/courier router; the
   version 2 text mode, which checks every sender and recipient pair against the arm's links, and

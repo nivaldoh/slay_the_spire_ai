@@ -11,9 +11,9 @@ first observation (evidence_rules.group_ids). The wall line is the public one th
 and on_wall readings, and until then absent.
 """
 
-from twwarhammer3.battle.evidence_rules import accepted_orders, defender_tickets
 from twwarhammer3.battle.wall_facts import RESERVE, inside, wall_distance
 from twwarhammer3.protocol import gate_breached, holds
+from twwarhammer3.scenarios.evidence_rules import accepted_orders, defender_tickets
 from twwarhammer3.units import distance, ids_by_type, in_melee
 
 # JUDGEMENT?: Approach distance — Claude, 2026-11-08 (design, decision 1 and Measurements): a

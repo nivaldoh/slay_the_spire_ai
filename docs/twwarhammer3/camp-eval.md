@@ -8,7 +8,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 |---|---|
 | Tests | One decision ([D1, guns or cover](#the-decision)): once a cover unit has fought within 30 m of a levy for 10 s, should the mounted group attack the war machines first or the cover units fighting the levies? |
 | Why it is hard | Guns first is predicted to win more often only while the guns still fire into the levies' fight. A late cue (the guns have spent most of their shots) may reverse it, and so may the unbuilt variant in which heavy infantry stands beside a gun on the knights' approach. |
-| Witness | `CampStrike` in [battle/camp.py](../../src/twwarhammer3/battle/camp.py): the levies attack from the first decision; at the cue, or at 180 s without one, the mounted group attacks visible war machines first. `CampSupport` is the other arm (cover units first). |
+| Witness | `CampStrike` in [scenarios/camp.py](../../src/twwarhammer3/scenarios/camp.py): the levies attack from the first decision; at the cue, or at 180 s without one, the mounted group attacks visible war machines first. `CampSupport` is the other arm (cover units first). |
 | Outcome | The engine's result. The controller attacks; the defender wins when the 1,200 s timer runs out. Every engine win counts. |
 | Status | `emp-chd-camp-v1` (version 1) and two candidate second versions, `-lordless-v2` and `-equidistant-v2`, in [`scenarios/camp.json`](../../configs/twwarhammer3/scenarios/camp.json): status `candidate`, split `development`. No battle played. |
 | Changes | 2026-11-08 built offline at `e918091`. 2026-11-09 readings and the two second versions added. 2026-11-10 a lobby-only attempt stopped at step 48, when the engine refused the Flagellants. 2026-11-15 the values the readings share with the witness moved to `camp_facts.py`. |
@@ -441,8 +441,8 @@ What stays exploratory or descriptive:
 
 ## Witness, ablations and controls as built
 
-[`battle/camp.py`](../../src/twwarhammer3/battle/camp.py) holds four public-state controllers, each
-loaded by module path (for example `twwarhammer3.battle.camp:CampStrike`); their names are not
+[`scenarios/camp.py`](../../src/twwarhammer3/scenarios/camp.py) holds four public-state controllers, each
+loaded by module path (for example `twwarhammer3.scenarios.camp:CampStrike`); their names are not
 built-in policy names. All four share these rules:
 
 - **Binding.** At the first observation the friendly army must be the ten declared types with
@@ -496,7 +496,7 @@ reading, which is marked and left untested (`runs/siege-evals-20261108/build-off
 None of this shows what the orders do in a game.
 
 [`test_wh3_camp_readings.py`](../../tests/twwarhammer3/test_wh3_camp_readings.py) checks the
-readers in [`battle/camp_readings.py`](../../src/twwarhammer3/battle/camp_readings.py) on those
+readers in [`scenarios/camp_readings.py`](../../src/twwarhammer3/scenarios/camp_readings.py) on those
 observations, on trace rows from the arms' own `decide` and `acknowledge`, and on private-record
 rows from the battle Lua's own `private_unit`. Each of 23 planted wrong versions fails it: ten
 from the implementer, nine from the independent review (seven of which passed the test's first

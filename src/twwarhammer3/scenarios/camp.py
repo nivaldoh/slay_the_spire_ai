@@ -24,7 +24,9 @@ until it is unavailable, as cannae.py does.
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.camp_facts import (
+from twwarhammer3.controllers.scripted import forget_refused
+from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
+from twwarhammer3.scenarios.camp_facts import (
     COVER,
     CUE_HOLD_MS,
     CUE_M,
@@ -33,8 +35,6 @@ from twwarhammer3.battle.camp_facts import (
     LEVIES,
     MOUNTED,
 )
-from twwarhammer3.controllers.scripted import forget_refused
-from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 from twwarhammer3.units import able, distance, find, in_melee, nearest
 
 # Since 2026-11-15 the four groups (MOUNTED, LEVIES, COVER, GUNS) are in camp_facts.py, which the

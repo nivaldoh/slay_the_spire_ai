@@ -238,19 +238,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/camp.py",
+   "path": "src/twwarhammer3/scenarios/camp.py",
    "text": "`CampStrike` and its controls for the camp attack land battle (emp-chd-camp-v1), on public state",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/camp_facts.py",
+   "path": "src/twwarhammer3/scenarios/camp_facts.py",
    "text": "what that battle's witness and readings both use: the unit groups by type key and the cue rule",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/camp_readings.py",
+   "path": "src/twwarhammer3/scenarios/camp_readings.py",
    "text": "that battle's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
@@ -346,7 +346,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/evidence_rules.py",
+   "path": "src/twwarhammer3/scenarios/evidence_rules.py",
    "text": "reads deployment groups, tickets and acknowledged orders.",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"

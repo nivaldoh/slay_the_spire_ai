@@ -3,7 +3,7 @@ type key and the cue rule. camp.py and camp_readings.py import these; the readin
 the witness (tests/test_repo_rules.py; owner, 2026-11-15, "F1: readings off witnesses").
 """
 
-# Groups by the scenario's type keys. They rest on JUDGEMENT src/twwarhammer3/battle/camp.py
+# Groups by the scenario's type keys. They rest on JUDGEMENT src/twwarhammer3/scenarios/camp.py
 # Camp groups.
 MOUNTED = {"wh_main_emp_cha_general_1": 1, "wh_main_emp_cav_empire_knights": 2,
            "wh_main_emp_cav_reiksguard": 1}
@@ -13,7 +13,7 @@ COVER = {"wh3_dlc23_chd_cav_hobgoblin_wolf_raiders_spears", "wh3_dlc23_chd_cav_b
 GUNS = {"wh3_dlc23_chd_veh_magma_cannon", "wh3_dlc23_chd_veh_deathshrieker_rocket_launcher"}
 
 # The cue: one cover unit in melee within CUE_M of a levy for CUE_HOLD_MS, else FALLBACK_MS. The
-# values rest on JUDGEMENT src/twwarhammer3/battle/camp.py Camp thresholds.
+# values rest on JUDGEMENT src/twwarhammer3/scenarios/camp.py Camp thresholds.
 CUE_M = 30
 CUE_HOLD_MS = 10000
 FALLBACK_MS = 180000

@@ -28,8 +28,9 @@ from test_wh3_camp import (
 )
 from wh3_lua import load_battle
 
-from twwarhammer3.battle import camp, camp_readings, play
+from twwarhammer3.battle import play
 from twwarhammer3.protocol import validate_orders
+from twwarhammer3.scenarios import camp, camp_readings
 
 LUA = wh3_lua.runtime()
 LUA.execute("""

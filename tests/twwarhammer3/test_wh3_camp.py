@@ -17,10 +17,11 @@ import wh3_lua
 from wh3_ablation import assert_ablation
 from wh3_lua import load_battle
 
-from twwarhammer3.battle import camp, play
+from twwarhammer3.battle import play
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
+from twwarhammer3.scenarios import camp
 
 SCENARIO = scenarios()["emp-chd-camp-v1"]
 # Labels for the declared placements, in deployment order.
@@ -407,4 +408,4 @@ def test_binding_is_by_type_and_start_never_by_id_or_list_order():
             camp.CampStrike().decide(play.public(short, {}))
         assert not play.is_forfeit(refused.value)  # the episode ends; the army does not stand
     for name in ("CampStrike", "CampSupport", "CampStrikeFixed", "CampStrikeNow"):
-        assert controllers.controller_class(f"twwarhammer3.battle.camp:{name}").__name__ == name
+        assert controllers.controller_class(f"twwarhammer3.scenarios.camp:{name}").__name__ == name

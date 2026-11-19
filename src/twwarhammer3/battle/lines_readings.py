@@ -16,9 +16,9 @@ documented in lines-eval.md, First construction battle (2026-11-12).
 
 import math
 
-from twwarhammer3.battle.evidence_rules import group_ids
 from twwarhammer3.battle.lines_facts import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
 from twwarhammer3.protocol import ProtocolError, visible_enemies
+from twwarhammer3.scenarios.evidence_rules import group_ids
 from twwarhammer3.units import active_units, centre, direction, ids_by_type
 
 HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_berserkers_0",
@@ -28,7 +28,7 @@ HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_ber
 SECTORS = {"west": [8, 9], "east": [11, 12]}
 MOVERS = {GUARD, BOYAR, LANCERS}
 # Rests on JUDGEMENT docs/twwarhammer3/lines-eval.md Lines layout and Lines deciding checks,
-# and JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership.
+# and JUDGEMENT? src/twwarhammer3/scenarios/evidence_rules.py Group membership.
 CONTACT_GROUPS = {"G": [1, 2, 3, 4], "H": [5, 6, 7, 8], "L": [9, 10, 11, 12]}
 
 

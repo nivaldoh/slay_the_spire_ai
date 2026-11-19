@@ -20,8 +20,9 @@ import pytest
 from wh3_ablation import assert_ablation
 from wh3_fixtures import bridge_observation
 
-from twwarhammer3.battle import camp, play, setup
+from twwarhammer3.battle import play, setup
 from twwarhammer3.protocol import HIDDEN_KEYS
+from twwarhammer3.scenarios import camp
 
 # The five entries in configs/twwarhammer3/scenarios/ (camp.json, lines.json) cannot carry a
 # comment, so their markers are on the battles' pages (docs/judgement.md). The design pages they

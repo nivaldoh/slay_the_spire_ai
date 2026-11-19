@@ -102,7 +102,7 @@ naval battle for the 14 July river fight ([camp-eval.md](camp-eval.md#why-this-w
 
 Its one claim is D1, guns or cover. Once a cover unit has been flagged in melee within 30 m of a
 levy for 10 s, `CampStrike` sends the mounted group at the war machines first and `CampSupport` at
-the cover units fighting the levies (`battle/camp.py`). When the mounted group starts
+the cover units fighting the levies (`scenarios/camp.py`). When the mounted group starts
 (`CampStrikeNow`, `CampStrikeFixed`) and the death of either lord stay descriptive.
 
 ### Alesia, 52 BCE: two fronts
@@ -291,7 +291,7 @@ battle by battle let a label mean different things per battle; comparing labels 
    in 364 readings, and none carried the flag. A gate is breached when its public hp reads 0 or
    less, whatever `destroyed` says, because two recorded gates read hp 0 with `destroyed` false to
    the end of their battles. Whether hp 0 lets units through is unverified. Both rules are in
-   [`battle/evidence_rules.py`](../../src/twwarhammer3/battle/evidence_rules.py) and rest on
+   [`scenarios/evidence_rules.py`](../../src/twwarhammer3/scenarios/evidence_rules.py) and rest on
    JUDGEMENT src/twwarhammer3/units.py Contact rule and JUDGEMENT src/twwarhammer3/protocol.py Breach rule. Units are
    chosen by type key, because the Magma Cannon reads class `missile_chariot` and the Bull Centaurs
    read `infantry`.

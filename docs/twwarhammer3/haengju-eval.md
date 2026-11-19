@@ -54,7 +54,7 @@ owner: one primary contrast per battle at two-sided Fisher p < 0.05
 printed in advance; a frozen 4-of-5 witness gate at 5 s added order age and a 5 s decision
 interval before any round; premise checks that print their own error rates; contact from the
 engine melee flag and a gate breached at public hp 0 or below
-([battle/evidence_rules.py](../../src/twwarhammer3/battle/evidence_rules.py)). The
+([scenarios/evidence_rules.py](../../src/twwarhammer3/scenarios/evidence_rules.py)). The
 [overview of the set](historical-evals.md) lists these rules; using one set for every new battle
 rests on JUDGEMENT docs/twwarhammer3/historical-evals.md Shared method rules, and this battle's
 counts and cells rest on the Deciding checks draft marker below. Under the
@@ -674,7 +674,7 @@ descriptive until a check ties it to a decision, and a missing value stays unkno
 | Breach time | `wall_readings.breach`: the first private-record frame in which an enemy reads `on_wall` true, or, once stage 1 has frozen the private wall polygon from the terrain grid and `on_wall` readings, whose centre is inside it in two frames in a row (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Breach reading). `is_on_top_of_wall` has never been read live, and a centre alone can jump between squads |
 | Reserve response | `wall_readings.reserve_response`: ms from the breach until the engine applied the first accepted attack by the Lord or a Jade Warriors unit, and until the first frame with one of them flagged in melee with men left (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Reserve response and JUDGEMENT src/twwarhammer3/units.py Contact rule). Checked only on a hand-built trace |
 | Holder times of `c1`, `c2` and `c7`; ticket onset | `wall_readings.enemy_held` and `ticket_onset`, with holders and tickets as `evidence_rules` reads them: a holder of None is neither side's, and tickets are the defender's row. Tested against the `hold` baseline times above |
-| Divisions as unit ids | `evidence_rules.group_ids`: fixed by the placement each enemy unit matched at the first observation (rests on JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership) |
+| Divisions as unit ids | `evidence_rules.group_ids`: fixed by the placement each enemy unit matched at the first observation (rests on JUDGEMENT? src/twwarhammer3/scenarios/evidence_rules.py Group membership) |
 | Cues, triggers, fallback reason, builds accepted | Each arm's metadata in the trace |
 | Tower builds and losses, the General's death or rout, Harmony effects at the start | Public `mode.slots` and unit rows; no reader is built |
 

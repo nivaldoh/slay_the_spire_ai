@@ -4494,17 +4494,17 @@ source = "2026-11-15 scenario statuses, second review: a field the fixture lacks
 [[plant]]
 id = "camp-readings-import-the-witness-again"
 guards = "A readings module imports its battle's facts, never the witness module"
-file = "src/twwarhammer3/battle/camp_readings.py"
-old = 'from twwarhammer3.battle.camp_facts import ('
-new = 'from twwarhammer3.battle.camp import ('
+file = "src/twwarhammer3/scenarios/camp_readings.py"
+old = 'from twwarhammer3.scenarios.camp_facts import ('
+new = 'from twwarhammer3.scenarios.camp import ('
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: owner, \"F1: readings off witnesses (Recommended)\""
 
 [[plant]]
 id = "camp-readings-import-the-witness-relatively"
 guards = "The readings rule follows a relative import"
-file = "src/twwarhammer3/battle/camp_readings.py"
-old = 'from twwarhammer3.battle.camp_facts import ('
+file = "src/twwarhammer3/scenarios/camp_readings.py"
+old = 'from twwarhammer3.scenarios.camp_facts import ('
 new = 'from .camp import ('
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R3, F1-1"
@@ -4521,9 +4521,9 @@ source = "2026-11-15 readings off witnesses: review R3, F1-1"
 [[plant]]
 id = "battle-package-file-imports-a-witness"
 guards = "The readings rule reads the package files that run before a readings module"
-file = "src/twwarhammer3/battle/__init__.py"
-old = 'its commander; the play loop, digests, the live watcher and the results register."""'
-new = 'its commander; the play loop, digests, the live watcher and the results register."""; from twwarhammer3.battle import camp'
+file = "src/twwarhammer3/scenarios/__init__.py"
+old = '"""Named WH3 scenarios, their witnesses and independent readings."""'
+new = '"""Named WH3 scenarios, their witnesses and independent readings."""; from twwarhammer3.scenarios import camp'
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R4-2"
 
@@ -4532,7 +4532,7 @@ id = "protocol-imports-a-witness-in-a-function"
 guards = "The readings rule follows a module outside the battle package, imports inside functions included"
 file = "src/twwarhammer3/protocol.py"
 old = '    hp = gate.get("hp")'
-new = '    from twwarhammer3.battle.camp import GUNS; hp = gate.get("hp")'
+new = '    from twwarhammer3.scenarios.camp import GUNS; hp = gate.get("hp")'
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R4-2"
 

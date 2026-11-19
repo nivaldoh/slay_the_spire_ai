@@ -22,8 +22,8 @@ attack smoke 6 friendly-enemy pairs stood within 40 m, 364 pair readings in all,
 from math import floor
 
 from twwarhammer3.battle.escalade_facts import inside
-from twwarhammer3.battle.evidence_rules import accepted_orders
 from twwarhammer3.protocol import SIEGE_ORDER_TYPES, gate_breached, holds
+from twwarhammer3.scenarios.evidence_rules import accepted_orders
 from twwarhammer3.units import distance
 
 # JUDGEMENT?: Escalade readings — Claude, 2026-11-08 (design Measurements, check 7): a sector is

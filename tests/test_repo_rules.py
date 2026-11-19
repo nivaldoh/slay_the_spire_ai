@@ -38,7 +38,7 @@ KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
 AGENTS_MD_LINES = 200
 # Facts and package initializers have no game imports. Evidence rules use setup to match
 # private deployment records. Dynamic imports in shared helpers are outside this static check.
-READINGS_MAY_IMPORT = ("protocol", "units", "battle.evidence_rules")
+READINGS_MAY_IMPORT = ("protocol", "units", "scenarios.evidence_rules")
 READINGS_MAY_LOAD = (*READINGS_MAY_IMPORT, "battle.setup")
 READINGS_RULE = "a readings module loads no witness module"
 
@@ -189,7 +189,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             '"""Mentions twwarhammer3.battle.camp only in text."""\n'
             "from math import inf\n"
             "from twwarhammer3.battle.camp_facts import CUE_M\n"
-            "from twwarhammer3.battle import evidence_rules\n"
+            "from twwarhammer3.scenarios import evidence_rules\n"
             "from ..units import distance\n"
             "from twwarhammer3.units import centre\n"
             "from twwarhammer3.protocol import visible_enemies\n"),
@@ -213,7 +213,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
                                   "from twwarhammer3.units import distance\n"),
         "units.py": "from twwarhammer3.battle.setup import scenarios\n",
         "battle/setup.py": "import importlib\nfrom .escalade import front_line\n",
-        "battle/evidence_rules.py": "import twwarhammer3.battle\n",
+        "scenarios/evidence_rules.py": "import twwarhammer3.battle\n",
         "battle/camp_facts.py": "CUE_M = 30\n",
         "battle/camp.py": "from twwarhammer3.battle.calibration import CornerHold\n",
         "battle/lines.py": "", "battle/calibration.py": "", "battle/escalade.py": "",
@@ -231,7 +231,7 @@ def test_planted_witness_imports_in_and_behind_a_readings_module_are_caught(tmp_
             (7, "a package"), (8, "a package"), (9, "by a call"), (11, "by a call"),
             (12, "battle.setup"))],
         "clean_readings.py": [package, behind, ("protocol.py", 2, "battle.camp"),
-                              ("battle/evidence_rules.py", 1, "a package")],
+                              ("scenarios/evidence_rules.py", 1, "a package")],
         "behind_readings.py": [package, behind, ("battle/lines_facts.py", 1, "by a call"),
                                ("battle/lines_facts.py", 2, "units")]}
     assert readings_loads(root) == {

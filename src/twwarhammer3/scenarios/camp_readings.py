@@ -12,7 +12,8 @@ leave it out. The pattern is wall_readings.py's.
 
 from math import inf
 
-from twwarhammer3.battle.camp_facts import (
+from twwarhammer3.protocol import SIEGE_ORDER_TYPES
+from twwarhammer3.scenarios.camp_facts import (
     COVER,
     CUE_HOLD_MS,
     CUE_M,
@@ -21,8 +22,7 @@ from twwarhammer3.battle.camp_facts import (
     LEVIES,
     MOUNTED,
 )
-from twwarhammer3.battle.evidence_rules import accepted_orders
-from twwarhammer3.protocol import SIEGE_ORDER_TYPES
+from twwarhammer3.scenarios.evidence_rules import accepted_orders
 from twwarhammer3.units import distance, in_melee
 
 LORD = "wh3_dlc23_chd_cha_overseer"

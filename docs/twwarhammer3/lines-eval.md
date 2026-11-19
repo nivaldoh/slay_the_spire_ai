@@ -543,8 +543,8 @@ briefing names H's side; and a named-briefing arm only if recognition becomes a 
 | The first friendly rout per sector, and when | `lines_readings.sector_routs`: when the first unit of each sector, and the first of the other eight units, reads `routing` in the private record; sectors bound once to the declared placements (rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Sector rout reading) | Yes, tested on made-up records |
 | The side any controller sent the reserve or the Lancers to first: H, L or neither | `lines_readings.branch`: the side of x = 130 of the first accepted move or attack by the Tzar Guard, the Boyar or a Lancers unit decided at or after the cue, which it computes from public observations (6 visible enemies more than 60 m ahead of the outer line). Only a destination, or an attack target where it stood in the decision's observation, ahead of the midpoint between the two lines (z -230) counts, so an order toward the inner line or the town side is skipped; rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Lines branch reading | Yes, tested on made-up records |
 
-The contact and grouping readings rest on JUDGEMENT src/twwarhammer3/battle/evidence_rules.py
-Contact rule and on JUDGEMENT? src/twwarhammer3/battle/evidence_rules.py Group membership. The
+The contact and grouping readings rest on JUDGEMENT src/twwarhammer3/scenarios/evidence_rules.py
+Contact rule and on JUDGEMENT? src/twwarhammer3/scenarios/evidence_rules.py Group membership. The
 replay keeps enemies only while they are visible. The evaluator-only all-unit record (portfolio
 S3), built at `f3fec92` (fields in `capture.copy_private_record`), holds every enemy unit, hidden
 ones included, and both cases opt into it with `"private_record": true`, so if check 5 or stage 1
@@ -583,7 +583,7 @@ These are proposals for the owner; none is in [agreed checks](../agreed-checks.m
 the set's shared rules: one primary contrast per battle at two-sided Fisher p < 0.05
 ([exact_stats.py](../../src/twwarhammer3/benchmarks/exact_stats.py)), a frozen 4-of-5 witness gate at
 5 s added order age and a 5 s decision interval before any round, exact power printed, and contact
-from the engine melee flag ([evidence_rules.py](../../src/twwarhammer3/battle/evidence_rules.py)).
+from the engine melee flag ([evidence_rules.py](../../src/twwarhammer3/scenarios/evidence_rules.py)).
 No gate exists in this battle, so the hp <= 0 breach rule does not apply. Checks 2-4, and the
 proposed 2b, are premise checks that need all six stage 1 `hold` launches, 3 of 3 in each case. A
 premise that holds in 80% of launches passes one case 0.512 of the time and the whole check, both

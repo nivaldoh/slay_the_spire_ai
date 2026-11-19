@@ -13,8 +13,8 @@ Sources, all under runs/twwarhammer3/battle/ or runs/coord-suite-20261104/:
 import pytest
 
 from twwarhammer3 import protocol, units
-from twwarhammer3.battle import evidence_rules as rules
 from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.scenarios import evidence_rules as rules
 
 
 def frame(friendly, enemy):
