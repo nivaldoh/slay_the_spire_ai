@@ -115,7 +115,8 @@ def install(tmp_path, monkeypatch):
     return root
 
 
-def serve(tmp_path, ttl_s=0.5, **expected):
+def serve(tmp_path, ttl_s=2, **expected):
+    """Give worker operations time for loopback I/O. The link tests exercise lease deadlines."""
     manifest = {"match": "m1", "attempt": "a1",
                 "expected": {**worker.expected_manifest(), **expected},
                 "clients": {"A": {"token_sha256": token_sha256(TOKEN)}}}
@@ -364,8 +365,11 @@ def test_an_owned_worker_runs_its_game_with_its_session_and_closes_both_when_lea
             returncode.append(3)
             thread.join(5)
             assert events(coordinator, "game_exited", 1) == [{"returncode": 3}]
+        else:
+            assert thread.is_alive() and (bridge / "session.json").is_file()
     thread.join(5)
     game.close()
+    assert records(coordinator, "closed")[0]["failed"] is None
     assert result == [1]
     assert calls == [("prepare", True),
                      ("game", tmp_path / "runs/m1/a1/worker-A/game.log", 30),
@@ -379,8 +383,7 @@ def test_an_attached_worker_sends_each_new_observation_and_leaves_the_borrowed_g
     bridge = borrowed_bridge(tmp_path, "observe")
     before = {path.name: path.read_text() for path in bridge.iterdir()}
     game = FakeGame(bridge, "live")
-    # This case checks recorded observations or orders. Leave time for a delayed heartbeat.
-    with serve(tmp_path, ttl_s=2) as coordinator:
+    with serve(tmp_path) as coordinator:
         thread, result = start(coordinator, bridge, mode="observe")
         for seq, battle, total in ((0, "b1", 1), (1, "b1", 2), (1, "b1", 2), (1, "b2", 3)):
             game.publish(seq, battle)
@@ -431,8 +434,7 @@ def test_only_valid_moves_are_written_and_reported_submitted_on_the_games_acknow
                 {"based_on": 1, "orders": [MOVE, {**MOVE, "queue": True}]},
                 {"based_on": 1, "orders": [{**MOVE, "unit": "f9"}]},
                 {"based_on": 1, "orders": [MOVE], "say": "hello"}]
-    # This case checks recorded observations or orders. Leave time for a delayed heartbeat.
-    with serve(tmp_path, ttl_s=2) as coordinator:
+    with serve(tmp_path) as coordinator:
         thread, result = start(coordinator, bridge, mode=mode)
         events(coordinator, "observation", 1)
         statuses = []
@@ -467,8 +469,7 @@ def test_a_request_the_game_takes_but_never_acknowledges_is_unknown_and_stops_th
     bridge = borrowed_bridge(tmp_path)
     game = FakeGame(bridge, "live")
     game.publish(1)
-    # This case checks recorded observations or orders. Leave time for a delayed heartbeat.
-    with serve(tmp_path, ttl_s=2) as coordinator:
+    with serve(tmp_path) as coordinator:
         thread, result = start(coordinator, bridge, ack_s=1.0)
         events(coordinator, "observation", 1)
         coordinator.submit("A", {"based_on": 1, "orders": [MOVE]})
