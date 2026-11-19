@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-19 (restructuring, legacy code), the owner decided: “we should not worry about keeping
+  legacy parts in the code. We can aggressively restructure anything if we see an opportunity to
+  improve it”. This applies across the codebase. When an interface improves, migrate current
+  callers and retire the old path. See the [current plan](restructure-plan.md#decisions-for-the-owner).
 - 2026-11-18 (long-term code structure), the owner asked for the full destination across the
   repository, using earlier sessions and concrete examples from the collected research code.
   Keep the design lean enough for agents to maintain, highlight judgement calls for later

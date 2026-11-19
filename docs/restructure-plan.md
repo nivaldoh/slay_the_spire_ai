@@ -52,7 +52,7 @@ runs/             ignored local jobs, ledgers, saved evidence and scratch
 
 **The WH3 move list.** Each row names the existing files, without the `.py` suffix. Most of the
 inputs are in today's `battle/`. A name after an arrow is the target basename. Package
-initializers are inert. A retained old entry point has a specific caller as described below.
+initializers are inert. Move current callers to the chosen entry points when paths change.
 
 | Destination | Existing modules and resources |
 |---|---|
@@ -135,8 +135,8 @@ failure to act is distinct from infrastructure failure and from an engine-report
   existing `scripts/gcp/`; a one-file operator command needs no directory. The Claude and Codex hooks use
   `scripts/hooks/` for tool and stop checks. Git’s separate `scripts/githooks/pre-commit`
   compares the tree with the last pass from `scripts/check.py` for commits from any client.
-- Tests stay with the game or feature they exercise. Keep unique file names, the Spire legacy
-  test roots and `tests/twwarhammer3/` command paths. Existing graph and team subdirectories are
+- Tests stay with the game or feature they exercise. Use unique file names and update the
+  commands that run a test when it moves. Existing graph and team subdirectories are
   useful. Put a shared builder in a small helper beside its users when a second test needs it.
   Importing another test for the fixture, moving each test to mirror every source rename, or adding
   a test for an empty package makes later refactors harder. Preserve the scope and assertions of
@@ -171,36 +171,20 @@ three different facts. Preserve the supplied policy string in the result. Preser
 register rows, manifests and recordings verbatim. Record the actual source file and digest for a
 new run. Never label an edited controller with the old digest to make a comparison pass.
 
-1. Before moving a policy, exercise the old factory on names from the register, configs and
-   published examples. Capture successful loads, expected refusals, supplied names and defining
-   classes separately. At the baseline only 15 of 36 distinct WH3-prefixed class-path strings
-   in the CSV still load. Twenty names refer to missing attributes and one to a missing module.
-   The old rows remain readable. Reconstructing retired policies is a different task.
-2. Keep the old string accepted by the resolver for each supported moved policy. Maintain a
-   small explicit old-to-new **module** mapping at the factory and preserve the attribute lookup,
-   including re-exports that callers use. Capture the old defining spelling on cards for existing
-   classes when that spelling is part of the reader contract. Use actual new paths for genuinely
-   new classes. Check `battle.controllers:Skills` and the two spellings of `Hold` through
-   `calibration` and `scripted`. They illustrate why the input and the defining class cannot be
-   deduced from each other. Under the proposed compatibility choice, support the old inputs
-   first. If a new spelling is also accepted, record it as supplied and map a known old class
-   identity explicitly wherever comparisons depend on it. Test both spellings with the same
-   source. A single module substitution cannot reconstruct every historical class identity.
-3. An ordinary Python import inside an external file bypasses the factory. In the earlier
-   full-move rehearsal, three saved external policies failed at import. A disposable
-   `battle/scripted.py` forwarding `AttackNearest` and `Hold` to their actual definitions
-   restored all three imports. On the first saved view for each of four register rows it reproduced
-   three recorded decisions and the fourth row's original missing-terrain error. This establishes
-   a remedy for those files only. Keep an explicit forward at known import/command entry points
-   or leave the definition in place until its caller migrates. Check ordinary Python imports,
-   config-only strings and `python -m` subprocesses separately. Avoid global import hooks.
-4. Keep the reader's comparison keys. `stats.configuration` uses a shortened external source or
+1. Update current configs, examples and callers to use the chosen policy names. A name in a
+   saved record identifies what ran at that revision. At baseline only 15 of 36 distinct
+   WH3-prefixed class paths in the register still load, and all the old rows remain readable.
+2. Check direct Python imports as well as names passed to the factory. In the full-move
+   rehearsal three saved external policies imported the old module directly. An external
+   controller intended to run on the new revision can migrate its imports. The recorded revision
+   is the place to run the original file with its original dependencies.
+3. Keep the reader's comparison keys. `stats.configuration` uses a shortened external source or
    composition digest. The HTML harness uses paths and hashes with selected presentation paths
    excluded. Match old and new presentation prefixes individually, including retired config
    paths; excluding all of `results/` would incorrectly exempt the exporter. Recompute an old
    report with its old manifest and a new job with its new manifest. Keep new setup groups apart
    unless the owner agrees otherwise. Preserve the owner's status exclusion in replay identity.
-5. Graph artifacts compare a frozen library with the current one; a change to the hashed policy
+4. Graph artifacts compare a frozen library with the current one; a change to the hashed policy
    modules can legitimately refuse an old artifact. The checkpoint reader checks its JS pin.
    One retained checkpoint already differs from the base JS. Spire exports read both
    `src/spire/llm.py` and `src/spire/fullrun/llm.py` renderer keys from historical manifests.
@@ -217,7 +201,7 @@ Each step is a change or series of small changes that can be reviewed independen
 for a semantic fix and a move. Refresh the actual caller list at the phase base; old migration
 scripts apply to different trees. Use `git ls-files` and `git grep` for dotted names, paths,
 CLI strings, asset basenames, source maps, plants and marker references. Account for every hit
-as an updated consumer, an intentional old entry point or a historical record.
+as a current consumer to migrate, an obsolete interface to retire or a historical record.
 
 ### 1. Repair the evaluator check
 
@@ -229,20 +213,21 @@ Run `uv run --locked pytest -q tests/test_repo_rules.py -k readings`.
 
 ### 2. Cut dependencies before moving files
 
-Extract `policy_names`, keep its old imports working through `battle.controllers`, and switch
-stats, digest, export and HTML over. A temporary version reduced the WH3 modules imported by
+Extract `policy_names` and move the factory, stats, digest, export and HTML callers to it.
+A temporary version reduced the WH3 modules imported by
 stats from 14 to 4. The original and changed readers produced identical rows when each recomputed
 stats for five saved episodes. Those outputs differ from the older CSV entries.
 
 Compare `stats.row` and parser refusals in fresh processes, including vendor/model suffixes.
-Then move scope, public geometry, shared rules and text for the callers named above. Keep
-`battle.play.SOURCES` importable for pinned checkers. Record any hash that changes and why.
+Then move scope, public geometry, shared rules and text for the callers named above. Identify
+which pinned checkers import `battle.play.SOURCES` and use the agreed-check process for any
+replacement at the new revision. Record any hash that changes and why.
 
 ### 3. Move checkpoint and multiplayer separately
 
 Move each track with its Python and JavaScript helpers. Open the built wheel, compare the
 deployed files' bytes, and inspect the actual command built for Windows. Keep the public
-`rl`, `worker`, `coordinator` and `compare-peers` commands and old probe/adapter entry points.
+`rl`, `worker`, `coordinator` and `compare-peers` commands working. Update probe and adapter callers.
 
 A moved file changes the worker’s path-based source hash. Exercise a matching manifest and the
 mixed-version HTTP 409 refusal. Recount copies of saved checkpoint evidence and compare every
@@ -260,9 +245,9 @@ Run the relevant existing browser checks whenever a graph or HTML output changes
 
 ### 5. Move controllers with their callers
 
-First record which class each supported old name loads. Move the factory and generic policies,
-then the team and graph code in working groups. Take their loaders, public import paths and
-other callers with them. Test a saved external Python controller as well as the built-in ones.
+First record which class each active config loads. Move the factory and generic policies,
+then the team and graph code in working groups. Update their loaders and callers. Exercise
+the new import path from an external Python controller as well as from the built-in ones.
 
 Load an artifact, construct the controller and give it the same public observation and
 acknowledgement. Compare orders, the controller’s recorded details and any refusal. Report
@@ -279,7 +264,7 @@ timing’s evidence annotations independently of its six policy classes.
 ### 7. Check the installed commands and update their guides
 
 Use the final paths in the game guides, Code map, queue and hook command checks. Run the CLI
-in a fresh process from the installed wheel. Check help, a saved external import, browser asset
+in a fresh process from the installed wheel. Check help, an external controller import, browser asset
 loading and the Windows helper command line. Wherever shared code or source scopes changed,
 also exercise Spire’s recorded teacher and renderer lookups, dataset split and training resume.
 Retire temporary migration commands once the final paths work through these entry points.
@@ -317,8 +302,8 @@ plant or pinned checker uses the existing approval route. Check on main with ret
 before making a claim about it. Check for an active queue before landing any commit in its checkout. Check each live job’s
 source scope before landing a change there. Some Spire tools fingerprint both games.
 
-If a candidate loses a supported caller, changes a comparison unexpectedly, or needs broad
-forwarding machinery, keep the previous coherent phase and split the change or revisit the
+If a candidate breaks a current workflow or changes a comparison unexpectedly,
+keep the previous coherent phase and split the change or revisit the
 destination. After landing, revert the code commit in a free window if necessary. Keep every
 result, ledger and manifest from both revisions. Only an owner-agreed check run at a particular
 revision can support the corresponding verification claim. A passing offline rehearsal cannot
@@ -336,9 +321,11 @@ JUDGEMENT: Destination — Codex, 2026-11-18, proposes the package and module ho
 Keeping the large battle package or grouping all code by scenario would change navigation,
 dependency cuts and compatibility work. The move list rests on this choice.
 
-JUDGEMENT: Supported old interfaces — Codex, 2026-11-18, proposes preserving documented and observed
-working entry points, including ordinary imports, with bounded forwards. Preserving every private
-path or requiring a versioned migration instead changes which old clients can run.
+**Legacy code and interfaces — decided 2026-11-19.** The owner said “we should not worry about
+keeping legacy parts in the code. We can aggressively restructure anything if we see an opportunity
+to improve it”. This applies to either game and to shared code. Old import paths, aliases and
+command names can go when a better design replaces them. Update current callers to use the new
+interface. Decisions about comparing historical results are listed below.
 
 JUDGEMENT: Evidence across revisions — Codex, 2026-11-18, proposes preserving old grouping and
 recording actual new source identities. Pooling, extending witness hashes or repinning artifacts
