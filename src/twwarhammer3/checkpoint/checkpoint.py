@@ -38,6 +38,9 @@ from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import scenario_key, validate_orders
 from twwarhammer3.scope import SOURCES
 
+# JUDGEMENT: Checkpoint scope — Codex, 2026-11-19. Hash the Spire runtime used to detect
+# process conflicts. Moving its descriptor to gameai would let unrelated Spire edits through.
+CHECKPOINT_SOURCES = (*SOURCES, "src/spire/engine/runtime.py")
 AGENT = Path(__file__).with_name("checkpoint_agent.js")
 RUNNER = Path(__file__).with_name("checkpoint_frida.py")
 WORK = runtime.RUNTIME_DIR / "checkpoint"
@@ -182,9 +185,9 @@ def launched(plan: dict, output: Path, replay_sha256: str | None, config: dict, 
     write_json(output / "agent-config.json", agent_config)
     write_json(output / "plan.json", plan)
     manifest = {"plan": plan, "replay_sha256": replay_sha256, "config": config, "spend_usd": 0,
-                "source_revision": committed_revision("battle checkpoints", SOURCES),
-                "source_files": source_fingerprints(SOURCES), "agent_sha256": sha256(AGENT),
-                "completed": False}
+                "source_revision": committed_revision("battle checkpoints", CHECKPOINT_SOURCES),
+                "source_files": source_fingerprints(CHECKPOINT_SOURCES),
+                "agent_sha256": sha256(AGENT), "completed": False}
     if limits != LIMITS:
         manifest["limits"] = limits
     # Windows Python reads and writes on C:, like the runtime's other scripts; the agent's

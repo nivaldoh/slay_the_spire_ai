@@ -5,10 +5,12 @@ The runtime lock, the first step of a launch, is stubbed to raise, so a missing 
 test instead of starting the game.
 """
 import json
+import subprocess
 from types import SimpleNamespace
 
 import pytest
 
+from gameai import provenance
 from gameai.provenance import sha256
 from twwarhammer3.checkpoint import checkpoint
 
@@ -46,6 +48,23 @@ def test_a_clean_source_plan_reaches_the_launch(offline):
     tmp_path, _, _ = offline
     with pytest.raises(LaunchAttempted):
         launch(SOURCE, tmp_path / "run")
+
+
+def test_checkpoint_refuses_a_dirty_spire_process_descriptor(offline):
+    root, _, monkeypatch = offline
+    subprocess.run(["git", "init", "-q", root], check=True)
+    descriptor = root / "src/spire/engine/runtime.py"
+    descriptor.parent.mkdir(parents=True)
+    descriptor.write_text("CONFLICTS = {}")
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                    "-c", "core.hooksPath=/dev/null", "commit", "-qm", "Original descriptor",
+                    "--no-gpg-sign"], cwd=root, check=True)
+    descriptor.write_text("CONFLICTS = {'names': ['SlayTheSpire.exe']}")
+    monkeypatch.setattr(provenance, "REPO_ROOT", root)
+    monkeypatch.setattr(checkpoint, "committed_revision", provenance.committed_revision)
+    with pytest.raises(ValueError, match="src/spire/"):
+        launch(SOURCE, root / "run")
 
 
 @pytest.mark.parametrize("case,error,message", [
