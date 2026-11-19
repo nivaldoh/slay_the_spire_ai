@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code structure · Game agents</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #faf9f5; --ink: #202d2a; --muted: #52615b; --line: #cdd2c9;
+  --accent: #1d584a; --tint: #e8f0e9;
+  --sans: "Instrument Sans", "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.45 var(--sans); }
+main { max-width: 1160px; margin: auto; padding: 38px clamp(18px, 4vw, 52px) 48px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { letter-spacing: -.045em; line-height: 1.08; }
+h1 { font-size: clamp(38px, 5vw, 59px); font-weight: 650; }
+h2 { font-size: clamp(28px, 3.5vw, 39px); font-weight: 600; }
+h3 { font-size: 18px; letter-spacing: -.025em; }
+code, .path { font: .94em var(--mono); }
+a { color: var(--accent); text-underline-offset: .19em; }
+a:focus-visible { outline: 3px solid #b45c18; outline-offset: 3px; }
+header { border-bottom: 1px solid var(--ink); padding-bottom: 21px; }
+header p { color: var(--muted); margin-top: 9px; }
+.layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: clamp(22px, 4vw, 50px); margin-top: 25px; }
+aside h2 { font: 600 15px var(--mono); letter-spacing: 0; }
+.packages { margin: 12px 0 26px 4px; padding-left: 13px; border-left: 1px solid var(--line); }
+.packages a { position: relative; display: block; padding: 8px 10px; color: var(--ink); text-decoration: none; border-radius: 3px; }
+.packages a::before { content: ""; position: absolute; left: -14px; width: 10px; top: 50%; border-top: 1px solid var(--line); }
+.packages small { display: block; margin-top: 2px; font-size: 12px; }
+.packages a + a { margin-top: 4px; }
+.packages a[aria-current] { background: var(--accent); color: white; }
+.packages a:not([aria-current]):hover, .repo a:hover { background: var(--tint); }
+.repo { padding-top: 16px; border-top: 1px solid var(--line); }
+.repo h2 { font: 600 14px var(--sans); }
+.repo ul { list-style: none; padding: 0; margin: 9px 0 0; }
+.repo a { display: grid; grid-template-columns: 78px 1fr; align-items: baseline; padding: 4px 0; color: var(--ink); text-decoration: none; }
+.repo span { font-size: 13px; color: var(--muted); }
+section { min-width: 0; }
+.pane:not([hidden]) + .pane:not([hidden]) { margin-top: 40px; }
+.pane-head { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; margin-bottom: 16px; }
+.pane-head a { font: 13px var(--mono); }
+.figure { background: var(--tint); color: var(--accent); border: 1px solid #becfc2; border-radius: 6px; padding: 16px clamp(12px, 2vw, 24px) 13px; }
+.figure h3 { color: var(--ink); margin-bottom: 12px; }
+.flow { display: grid; grid-template-columns: minmax(0,1fr) 32px minmax(0,1fr) 32px minmax(0,1fr); align-items: center; }
+.node { display: block; border: 1px solid #9bad9e; border-radius: 4px; color: var(--ink); text-decoration: none; background: var(--paper); padding: 12px 8px; text-align: center; }
+.node:hover { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.node code { display: block; font: 600 clamp(13px, 1.45vw, 18px) var(--mono); }
+.node small { display: block; margin-top: 4px; font-size: 13px; }
+.forward { position: relative; height: 1px; background: currentColor; }
+.forward::after { content: ""; position: absolute; right: 2px; top: -3px; width: 6px; height: 6px; border: solid currentColor; border-width: 1px 1px 0 0; transform: rotate(45deg); }
+.return { position: relative; margin: 0 calc((100% - 64px)/6); height: 23px; border: solid var(--accent); border-width: 0 1px 1px; border-radius: 0 0 5px 5px; }
+.return::before { content: ""; position: absolute; top: 2px; left: -4px; width: 6px; height: 6px; border: solid currentColor; border-width: 1px 1px 0 0; transform: rotate(-45deg); }
+.return-label { text-align: center; font-size: 13px; margin-top: 4px; }
+.group { margin-top: 18px; }
+.entries { margin: 4px 0 0; }
+.entry { display: grid; grid-template-columns: minmax(130px, .85fr) 2.5fr; gap: 14px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.entry dt { font: 600 14px var(--mono); }
+.entry dd { margin: 0; font-size: 15px; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 14px; font-size: 14px; }
+.shared { display: grid; grid-template-columns: 1fr 45px 1fr; align-items: center; max-width: 510px; margin: auto; }
+.callers { display: grid; gap: 8px; }
+.callers code, .shared strong { display: block; text-align: center; background: var(--paper); border: 1px solid #9bad9e; border-radius: 4px; padding: 8px; }
+.shared strong { background: var(--accent); color: white; font: 600 16px var(--mono); }
+.join { height: 45px; width: 50%; border: solid var(--accent); border-width: 1px 1px 1px 0; position: relative; }
+.join .forward { position: absolute; width: 100%; top: 50%; left: 100%; }
+@media (max-width: 760px) {
+  main { padding-top: 22px; }
+  .layout { display: flex; flex-direction: column; gap: 17px; margin-top: 14px; }
+  aside { display: contents; }
+  .source-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; }
+  .packages { display: flex; flex-wrap: wrap; margin: 0; padding: 0; border: 0; gap: 4px; }
+  .packages a { padding: 6px 8px; }
+  .packages a + a { margin: 0; }
+  .packages a::before, .packages small { display: none; }
+  .repo { order: 2; }
+  .repo ul { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .repo a { display: flex; gap: 5px; }
+}
+@media (max-width: 520px) {
+  .flow { grid-template-columns: 1fr; row-gap: 0; margin-right: 28px; }
+  .forward { height: 17px; width: 1px; justify-self: center; }
+  .forward::after { right: -3px; top: auto; bottom: 2px; transform: rotate(135deg); }
+  .node { padding: 8px; }
+  .node code, .node small { display: inline; }
+  .node small { margin-left: 6px; }
+  .route { position: relative; }
+  .return { position: absolute; top: 18px; right: 6px; bottom: 18px; width: 22px; margin: 0; height: auto; border-width: 1px 1px 1px 0; border-radius: 0 5px 5px 0; }
+  .return::before { transform: rotate(-135deg); top: -4px; left: 2px; }
+  .return-label { margin-top: 9px; }
+  .entry { grid-template-columns: 1fr; gap: 2px; padding: 7px 0; }
+  .shared .forward { width: 100%; height: 1px; }
+  .shared .forward::after { right: 2px; top: -3px; bottom: auto; transform: rotate(45deg); }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Code structure</h1>
+    <p>Each game owns its play loop. Both import <code>gameai</code> for Windows processes, model calls and source fingerprints.</p>
+  </header>
+  <div class="layout">
+    <aside>
+      <nav class="source-nav" aria-label="Source packages">
+        <h2>src/</h2>
+        <div class="packages">
+          <a href="#wh3"><code>twwarhammer3/</code><small>Real-time battles</small></a>
+          <a href="#spire"><code>spire/</code><small>Turn-based runs</small></a>
+          <a href="#gameai"><code>gameai/</code><small>Shared services</small></a>
+        </div>
+      </nav>
+      <nav class="repo" aria-label="Repository folders">
+        <h2>Repository folders</h2>
+        <ul>
+          <li><a href="../configs/"><code>configs/</code><span>Inputs</span></a></li>
+          <li><a href="../runs/README.md"><code>runs/</code><span>Local evidence</span></a></li>
+          <li><a href="../scripts/"><code>scripts/</code><span>Tools</span></a></li>
+          <li><a href="../tests/README.md"><code>tests/</code><span>Checks</span></a></li>
+          <li><a href="../docs/"><code>docs/</code><span>Guides</span></a></li>
+        </ul>
+      </nav>
+    </aside>
+    <div class="panes">
+      <section class="pane" id="wh3" aria-labelledby="wh3-title">
+        <div class="pane-head"><h2 id="wh3-title">Warhammer III</h2><a href="../src/twwarhammer3/__main__.py">python -m twwarhammer3 play</a></div>
+        <div class="figure">
+          <h3>One battle decision</h3>
+          <div class="route">
+            <div class="flow">
+              <a class="node" href="../src/twwarhammer3/engine/mailbox.py"><code>engine/</code><small>Read the game state</small></a>
+              <span class="forward" aria-hidden="true"></span>
+              <a class="node" href="../src/twwarhammer3/battle/play.py"><code>battle/</code><small>Build the public view</small></a>
+              <span class="forward" aria-hidden="true"></span>
+              <a class="node" href="../src/twwarhammer3/controllers/scripted.py"><code>controllers/</code><small>Choose orders</small></a>
+            </div>
+            <div class="return" aria-hidden="true"></div>
+          </div>
+          <p class="return-label">The battle loop sends validated orders back through the mailbox.</p>
+        </div>
+        <div class="group">
+          <h3>Scenarios, trials and results</h3>
+          <dl class="entries">
+            <div class="entry"><dt><a href="../src/twwarhammer3/scenarios/">scenarios/</a></dt><dd>Battle-specific policies and evaluators, such as the <a href="../src/twwarhammer3/scenarios/camp_readings.py">camp attack readings</a>.</dd></div>
+            <div class="entry"><dt><a href="../src/twwarhammer3/benchmarks/">benchmarks/</a></dt><dd>Plan trials, set budgets and score outcomes.</dd></div>
+            <div class="entry"><dt><a href="../src/twwarhammer3/results/">results/</a></dt><dd>Write the register, replay decisions and build reports.</dd></div>
+          </dl>
+        </div>
+        <div class="group">
+          <h3>Restore or connect a battle</h3>
+          <dl class="entries">
+            <div class="entry"><dt><a href="../src/twwarhammer3/checkpoint/">checkpoint/</a></dt><dd>Capture a position, restore it and train from it.</dd></div>
+            <div class="entry"><dt><a href="../src/twwarhammer3/multiplayer/">multiplayer/</a></dt><dd>Coordinate native game clients and compare their recordings.</dd></div>
+          </dl>
+        </div>
+        <div class="links"><a href="../src/twwarhammer3/protocol.py">Order contract</a><a href="../src/twwarhammer3/mod/">Game-side Lua</a><a href="../src/twwarhammer3/">Browse package files</a><a href="how-code-works.html#job">Follow a recorded battle →</a></div>
+      </section>
+      <section class="pane" id="spire" aria-labelledby="spire-title">
+        <div class="pane-head"><h2 id="spire-title">Slay the Spire</h2><a href="../src/spire/__main__.py">python -m spire play</a></div>
+        <div class="figure">
+          <h3>One full-run decision</h3>
+          <div class="route">
+            <div class="flow">
+              <a class="node" href="../src/spire/engine/bridge.py"><code>engine/</code><small>Receive a game screen</small></a>
+              <span class="forward" aria-hidden="true"></span>
+              <a class="node" href="../src/spire/decisions.py"><code>decisions.py</code><small>List the legal choices</small></a>
+              <span class="forward" aria-hidden="true"></span>
+              <a class="node" href="../src/spire/fullrun/play.py"><code>fullrun/</code><small>Select a choice</small></a>
+            </div>
+            <div class="return" aria-hidden="true"></div>
+          </div>
+          <p class="return-label">The bridge sends the chosen command to CommunicationMod.</p>
+        </div>
+        <div class="group">
+          <h3>Combat and learning</h3>
+          <dl class="entries">
+            <div class="entry"><dt><a href="../src/spire/combat/">combat/</a></dt><dd>Roll out and evaluate policies on the first fight.</dd></div>
+            <div class="entry"><dt><a href="../src/spire/ppo/">ppo/</a></dt><dd>Train a combat policy and resume its checkpoints.</dd></div>
+            <div class="entry"><dt><a href="../src/spire/language/">language/</a></dt><dd>Build demonstrations, train local language models and evaluate them.</dd></div>
+            <div class="entry"><dt><a href="../src/spire/openweight/env.py">openweight/</a></dt><dd>Expose the full-run loop as a step-by-step training environment.</dd></div>
+          </dl>
+        </div>
+        <div class="links"><a href="../src/spire/fullrun/rules.py">Rule policy</a><a href="../src/spire/fullrun/llm.py">Model policy</a><a href="../src/spire/">Browse package files</a></div>
+      </section>
+      <section class="pane" id="gameai" aria-labelledby="shared-title">
+        <div class="pane-head"><h2 id="shared-title">Shared code</h2></div>
+        <div class="figure">
+          <h3>Package imports</h3>
+          <div class="shared" aria-label="twwarhammer3 and spire import gameai">
+            <div class="callers"><code>twwarhammer3</code><code>spire</code></div>
+            <span class="join" aria-hidden="true"><span class="forward"></span></span>
+            <strong>gameai</strong>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Shared services</h3>
+          <dl class="entries">
+            <div class="entry"><dt><a href="../src/gameai/windows.py">windows.py</a></dt><dd>Launch and supervise game processes with <a href="../src/gameai/windows_game.py">windows_game.py</a>.</dd></div>
+            <div class="entry"><dt><a href="../src/gameai/llm.py">llm.py</a></dt><dd>Send model requests through the configured <a href="../src/gameai/providers.py">provider</a>.</dd></div>
+            <div class="entry"><dt><a href="../src/gameai/ledger.py">ledger.py</a></dt><dd>Reserve a call’s cost and record its charge.</dd></div>
+            <div class="entry"><dt><a href="../src/gameai/provenance.py">provenance.py</a></dt><dd>Record the Git revision and the hashes of source files.</dd></div>
+            <div class="entry"><dt><a href="../src/gameai/sft.py">sft.py</a></dt><dd>Turn either game’s exported decisions into training examples.</dd></div>
+            <div class="entry"><dt><a href="../src/gameai/lm.py">lm.py</a></dt><dd>Score candidate actions with a local language model.</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<script>
+const packages = document.querySelectorAll('.packages a');
+const panes = document.querySelectorAll('.pane');
+function showPackage() {
+  const requested = location.hash.slice(1);
+  const active = Array.from(panes).some(pane => pane.id === requested) ? requested : 'wh3';
+  for (const pane of panes) pane.hidden = pane.id !== active;
+  for (const link of packages) {
+    if (link.hash === '#' + active) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  }
+}
+for (const link of packages) {
+  link.addEventListener('click', event => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+    showPackage();
+  });
+}
+window.addEventListener('hashchange', showPackage);
+window.addEventListener('popstate', showPackage);
+showPackage();
+</script>
+</body>
+</html>

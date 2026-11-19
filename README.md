@@ -37,6 +37,17 @@ saw. Actual battles always run unpaused at 1×. [Still image](docs/images/wh3-re
 | Time | Turn-based decisions with memory across a run | Continuous battle; observation-to-order delay is measured |
 | Investigation | Which prompt and memory changes fix observed mistakes? | How often does a controller win a declared battle, and what explains its successes and failures? |
 
+## Code structure
+
+```mermaid
+flowchart LR
+    wh3["twwarhammer3/<br/>Battles, controllers and results"] -->|imports| shared["gameai/<br/>Windows processes, model calls and provenance"]
+    spire["spire/<br/>Full runs, combat and training"] -->|imports| shared
+```
+
+Open the [interactive package map](docs/code-structure.html) in a browser from a clone.
+It follows one decision in each game and links each step to its source.
+
 ## WARHAMMER III: watch the decisions unfold
 
 The benchmark built so far is **one small Empire-versus-Empire Land Battle** against the game AI.
@@ -93,11 +104,7 @@ handed back to live control at the saved moment ([how and what is verified](docs
 The same tool is public for players and modders:
 [wh3-battle-checkpoints](https://github.com/nivaldoh/wh3-battle-checkpoints).
 
-**How the WH3 code works.** [A page of its own](docs/how-code-works.html) maps the WH3 code and
-tells short stories from real battles. On the map, each teal dot is one thing sent along a link,
-at that link's pace (not to scale): under a model controller the battle state about every
-second, orders and model calls every few seconds, a result once a battle; under a graph
-controller, state and orders several times a second, and no model call or only a few target hints.
+The [WH3 execution map](docs/how-code-works.html) follows observations, orders and model calls through a recorded battle.
 
 [![The map of the WH3 code: one box per part, teal dots moving along the links at their rates](docs/images/code-map.gif)](docs/how-code-works.html)
 
