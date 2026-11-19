@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-11-18 (restructuring review), the owner asked to check Claude Code's interrupted work,
+  probe the proposal with new reference codebases, and make a lean long-term structure concrete
+  enough for another model to implement under owner direction. The [review](restructure-review.md)
+  proposes cards and checks. The owner has not selected a restructure or a verification method.
+  The earlier instruction to merge the first proposal landed at `e453429`.
 - 2026-11-15 (restructuring plan), goal verbatim: "You are the long-term owner of this codebase.
   Without implementing anything yet, write a detailed, concrete plan to completely restructure
   the code to make it better. We need to identify the architecture that will make it as readable,

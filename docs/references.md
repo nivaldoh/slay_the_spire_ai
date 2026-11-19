@@ -6,6 +6,16 @@ evaluation and research-code practice. Thesis related work lives in
 [testing.md](testing.md#references-worth-using). Add a source here when it shapes a plan or a
 rule, with one line on what it says.
 
+## Restructuring review (2026-11-18)
+
+- MiniGrid v2.3.1 supplies separate registration arguments, including
+  `id="MiniGrid-DoorKey-5x5-v0"` and `entry_point="minigrid.envs:DoorKeyEnv"`.
+  The [restructuring review](restructure-review.md) tests where that approach stops helping when
+  an external WH3 controller imports a moved module. [MiniGrid registration source](https://github.com/Farama-Foundation/Minigrid/blob/v2.3.1/minigrid/__init__.py#L94-L106)
+- DeepMind Control 1.0.34 dispatches with `env = domain.SUITE[task_name](**task_kwargs)`.
+  Its cartpole module keeps related tasks together. WH3 can use that locality for battle
+  families while maintaining the independent evaluator boundary. [Suite loader](https://github.com/google-deepmind/dm_control/blob/1.0.34/dm_control/suite/__init__.py#L124-L137) · [Cartpole tasks](https://github.com/google-deepmind/dm_control/blob/1.0.34/dm_control/suite/cartpole.py)
+
 ## Restructuring plan (2026-11-15)
 
 Sources read for [restructure-plan.md](restructure-plan.md), a proposal that is not implemented.

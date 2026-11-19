@@ -1,5 +1,9 @@
 # Plan: restructuring the code
 
+**2026-11-18 review.** The current recommendation, implementation cards and rehearsal findings are
+in the [restructuring review](restructure-review.md). This earlier proposal records the full-move
+alternative and its open decisions.
+
 Written 2026-11-15 by Claude Code (the work ran past midnight into 2026-11-16), from the repository
 as read at `d3c1f0f`. The owner's goal, verbatim: "You are the long-term owner of this codebase.
 Without implementing anything yet, write a detailed, concrete plan to completely restructure the
