@@ -17,7 +17,7 @@ from pathlib import Path
 
 from gameai.llm import reasoning_parts
 from gameai.provenance import REPO_ROOT, sha256
-from twwarhammer3.battle.benchmark import evaluate
+from twwarhammer3.benchmarks.profile import evaluate
 from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 from twwarhammer3.results.report import shared_measures
 

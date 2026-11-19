@@ -762,7 +762,7 @@ change what each stage may claim; every label rests on it.
 
 These are proposals; none is in [agreed checks](../agreed-checks.md). They follow the set's shared
 rules: one primary contrast per battle at two-sided Fisher p < 0.05 with a Newcombe interval
-([exact_stats.py](../../src/twwarhammer3/battle/exact_stats.py)), a frozen 4-of-5 witness gate at
+([exact_stats.py](../../src/twwarhammer3/benchmarks/exact_stats.py)), a frozen 4-of-5 witness gate at
 5 s added order age and a 5 s decision interval before any round, exact error rates and power
 printed in advance, contact from the engine melee flag, a breach at hp 0 or less, tickets read
 from the defender's row with a holder of none never counted as enemy, and units identified by type

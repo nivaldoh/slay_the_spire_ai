@@ -58,7 +58,7 @@ ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army o
 # The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
 PARTITION = {"cavalry": (KNIGHT,), "line": None}
 ARMY_OWNER = "line"
-# Rests on JUDGEMENT src/twwarhammer3/battle/suite.py Class team.
+# Rests on JUDGEMENT src/twwarhammer3/benchmarks/suite.py Class team.
 CLASS_PARTITION = {
     "ranged": ("class:missile", "class:missile_chariot", "class:artillery"),
     "mobile": ("class:cavalry", "class:missile_cavalry", "class:chariot", "class:monster"),

@@ -545,7 +545,7 @@ rests on it.
 
 These are proposals; none is in [agreed checks](../agreed-checks.md). A count of one shows that an
 effect is possible; showing that it is reliable takes more launches. Exact chances below come from
-[`battle/exact_stats.py`](../../src/twwarhammer3/battle/exact_stats.py).
+[`benchmarks/exact_stats.py`](../../src/twwarhammer3/benchmarks/exact_stats.py).
 
 | # | Claim | Evidence | Count and rule | Must fail on |
 |---|---|---|---|---|

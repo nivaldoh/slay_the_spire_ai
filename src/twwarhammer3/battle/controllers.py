@@ -19,9 +19,10 @@ from gameai.ledger import Ledger
 from gameai.llm import api_key, post
 from gameai.provenance import sha256
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import benchmark, commander, llm, local_team, setup, team
+from twwarhammer3.battle import commander, llm, local_team, setup, team
 from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.policy_names import MODEL_POLICIES, policy_parts
 
 BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}

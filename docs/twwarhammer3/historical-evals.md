@@ -194,7 +194,7 @@ battle by battle let a label mean different things per battle; comparing labels 
 1. **One primary contrast per battle.** A battle compares its witness with one ablation that changes
    a single rule, on fresh separate launches whose number is fixed in advance, and decides by a
    two-sided Fisher exact test at p < 0.05 with a Newcombe interval
-   ([`battle/exact_stats.py`](../../src/twwarhammer3/battle/exact_stats.py)). Anything else is
+   ([`benchmarks/exact_stats.py`](../../src/twwarhammer3/benchmarks/exact_stats.py)). Anything else is
    exploratory unless the owner names a procedure fixed in advance. The designs had used Holm over
    two contrasts, a fixed-order rule they called Holm, or a single primary. A pass shows that the
    rule mattered for that witness at that timing on that version, and it says nothing about models.

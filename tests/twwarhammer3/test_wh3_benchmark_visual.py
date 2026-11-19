@@ -5,7 +5,8 @@ from copy import deepcopy
 
 from wh3_fixtures import configured_job, embedded
 
-from twwarhammer3.battle import benchmark, benchmark_plans
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.results import report, report_html
 
 

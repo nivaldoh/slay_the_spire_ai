@@ -7,7 +7,7 @@ An outcome awarded at the timer does not change those counts.
 
 import pytest
 
-from twwarhammer3.battle import suite
+from twwarhammer3.benchmarks import suite
 
 
 @pytest.mark.parametrize("outcome", ["won", "lost", "draw"])

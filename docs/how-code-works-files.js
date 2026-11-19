@@ -142,19 +142,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/benchmark.py",
+   "path": "src/twwarhammer3/benchmarks/profile.py",
    "text": "the mirror profile: limits, one-call transport, battle budget and the first-ending condition; the outcome label of an episode",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/benchmark_plans.py",
+   "path": "src/twwarhammer3/benchmarks/plans.py",
    "text": "frozen benchmark plans and every planned attempt read back",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/suite.py",
+   "path": "src/twwarhammer3/benchmarks/suite.py",
    "text": "the coordination suite: arms, plans, measures and comparison",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
@@ -502,7 +502,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/exact_stats.py",
+   "path": "src/twwarhammer3/benchmarks/exact_stats.py",
    "text": "exact small-sample statistics for win rates: two-sided Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"

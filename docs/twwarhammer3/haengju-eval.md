@@ -50,7 +50,7 @@ evaluating anything, check that orders reach their effects, keep shortcut wins a
 one battle per case to settle nothing. Its deciding checks use the rules that Claude's 2026-11-08
 review of the set (`portfolio.md`) proposed for every new battle, none of them agreed with the
 owner: one primary contrast per battle at two-sided Fisher p < 0.05
-([battle/exact_stats.py](../../src/twwarhammer3/battle/exact_stats.py)) with its exact power
+([benchmarks/exact_stats.py](../../src/twwarhammer3/benchmarks/exact_stats.py)) with its exact power
 printed in advance; a frozen 4-of-5 witness gate at 5 s added order age and a 5 s decision
 interval before any round; premise checks that print their own error rates; contact from the
 engine melee flag and a gate breached at public hp 0 or below
@@ -700,7 +700,7 @@ Other rules change what each stage may claim; every label rests on it.
 
 These are proposals for the owner to accept or change; none is in
 [agreed checks](../agreed-checks.md). They follow the set's shared rules listed at the top. Exact
-chances come from [`battle/exact_stats.py`](../../src/twwarhammer3/battle/exact_stats.py). A count
+chances come from [`benchmarks/exact_stats.py`](../../src/twwarhammer3/benchmarks/exact_stats.py). A count
 of one shows that an effect is possible; showing that it is reliable takes more launches.
 
 | # | Claim | Evidence | Count and rule | Must fail on |

@@ -6,7 +6,7 @@ import json
 import shutil
 import subprocess
 
-from twwarhammer3.battle import suite
+from twwarhammer3.benchmarks import suite
 from twwarhammer3.results import report_html
 
 NOTES = json.loads(report_html.NOTES_PATH.read_text())

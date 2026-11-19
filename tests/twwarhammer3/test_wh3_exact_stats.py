@@ -13,7 +13,7 @@ import re
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import exact_stats
+from twwarhammer3.benchmarks import exact_stats
 
 # (wins_a, launches_a, wins_b, launches_b): two-sided p from scipy.stats.boschloo_exact 1.18.1 at
 # n=256 (runs/siege-evals-20261108/scratch3/stats-method-options/boschloo_reference.py, not in

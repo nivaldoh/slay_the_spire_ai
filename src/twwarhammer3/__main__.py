@@ -319,33 +319,33 @@ def read_paths(path: Path) -> list[Path]:
 def run_benchmark(args, parser) -> int:
     from gameai.ledger import BudgetExhausted
     from gameai.llm import APIError
-    from twwarhammer3.battle import benchmark
+    from twwarhammer3.benchmarks import profile as benchmark
 
     try:
         if args.action == "author":
             from gameai.ledger import Ledger
             from gameai.provenance import committed_revision
-            from twwarhammer3.battle import suite
+            from twwarhammer3.benchmarks import suite
             from twwarhammer3.scope import SOURCES
 
             committed_revision("attributable graph authoring", SOURCES)
             data = suite.author(args.plan, args.scenarios.split(","),
                                 Ledger(LEDGERS["anthropic"], args.budget_usd, must_exist=True))
         elif args.action == "plan" and args.stage == "suite":
-            from twwarhammer3.battle import suite
+            from twwarhammer3.benchmarks import suite
 
             data = suite.make_plan(args.plan, args.scenarios.split(","),
                                    args.arms.split(","), args.repeats, args.budget_usd,
                                    seed=args.seed, start_before=args.start_before,
                                    graphs=args.graphs)
         elif args.action == "plan":
-            from twwarhammer3.battle import benchmark_plans
+            from twwarhammer3.benchmarks import plans as benchmark_plans
 
             data = benchmark_plans.make_plan(args.plan, args.stage, args.budget_usd)
         else:
             output = args.output or args.plan.with_suffix(".report")
             if json.loads(args.plan.read_text()).get("benchmark") == benchmark.SUITE:
-                from twwarhammer3.battle import suite
+                from twwarhammer3.benchmarks import suite
 
                 data = suite.report([args.plan, *args.also], output)
             else:

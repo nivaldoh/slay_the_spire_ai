@@ -77,7 +77,7 @@ Owner's goal, 2026-11-04: compare control methods (one model, a team of models, 
 across different dimensions on a decent number of challenging battles. The suite plays each
 frozen method on each battle and reports them side by side. It is a proposal in use: every
 choice below is marked in the code that holds it, and the owner decides what stays.
-Code: [`suite.py`](../../src/twwarhammer3/battle/suite.py). Commands: [runbook](benchmark-run.md#the-coordination-suite).
+Code: [`suite.py`](../../src/twwarhammer3/benchmarks/suite.py). Commands: [runbook](benchmark-run.md#the-coordination-suite).
 
 **Battles.** Each scenario in `scenarios/suite.json` (they carry `"benchmark": "suite-v1"`) poses one problem,
 named in its `tests` field. Six use authored starting positions, which the setup check reads back
@@ -185,7 +185,7 @@ each other, and in
 page shows, not by its name in the table above.
 
 **Comparison.** The scenario is the unit. Within a scenario arms compare by wins, then `own + taken`
-(rests on JUDGEMENT `battle/suite.py` Scenario tie-break);
+(rests on JUDGEMENT `benchmarks/suite.py` Scenario tie-break);
 across scenarios, each arm against `single` by how many scenarios it did better or worse on, with
 an exact sign test, and a paired t interval of `taken`. Win rates carry Wilson intervals, or the
 exact one-sided bound at zero wins. These are the [guidelines'](evaluation-guidelines.md#72-use-the-named-method-for-each-situation)
@@ -245,7 +245,7 @@ Under the proposed Primary summary, the score is the number of wins divided by t
 | Unknown cause, unsettled cap, or no ending | Shown as unresolved and kept out of the counts: in neither the numerator nor the denominator of a win rate | Owner, 2026-11-15: "Unresolved battles can be kept out of the counts" |
 | A planned battle that never started | Shown with its reason; no outcome | Agreed 2026-10-21 |
 
-Still to settle before a run: provider, key and credit failures; budget stops; and what to do when the wall-clock cap hits with no engine result. That cap is not the engine's timer. Today the code labels those stops `unresolved` (rests on JUDGEMENT `src/twwarhammer3/battle/benchmark.py` Benchmark-outcome rows), and the owner's 2026-11-15 answer covers how an unresolved battle counts, not which stops belong under the label or whether one is replaced. One function gives each episode its label (`benchmark.benchmark_outcome`), and `benchmark.evaluate`, which the readers of the two profiles all use, gives an outcome only under an engine label; it already left unresolved battles out before that answer. Those readers show planned against completed battles, and the plan table lists each battle without an outcome as incomplete with its status; none prints the unresolved count as its own figure. What the readers of other scenarios do is in [5.1](evaluation-guidelines.md#51-one-success-rule-per-card-in-one-function-told-to-the-controller) of the guidelines. Never drop failed battles to improve the rate.
+Still to settle before a run: provider, key and credit failures; budget stops; and what to do when the wall-clock cap hits with no engine result. That cap is not the engine's timer. Today the code labels those stops `unresolved` (rests on JUDGEMENT `src/twwarhammer3/benchmarks/profile.py` Benchmark-outcome rows), and the owner's 2026-11-15 answer covers how an unresolved battle counts, not which stops belong under the label or whether one is replaced. One function gives each episode its label (`benchmark.benchmark_outcome`), and `benchmark.evaluate`, which the readers of the two profiles all use, gives an outcome only under an engine label; it already left unresolved battles out before that answer. Those readers show planned against completed battles, and the plan table lists each battle without an outcome as incomplete with its status; none prints the unresolved count as its own figure. What the readers of other scenarios do is in [5.1](evaluation-guidelines.md#51-one-success-rule-per-card-in-one-function-told-to-the-controller) of the guidelines. Never drop failed battles to improve the rate.
 
 Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
 

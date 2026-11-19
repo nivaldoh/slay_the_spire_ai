@@ -7,7 +7,8 @@ readback still said True. Read fresh flags in the published setup, without reiss
 import pytest
 from wh3_lua import load_battle, runtime
 
-from twwarhammer3.battle import benchmark, play, setup
+from twwarhammer3.battle import play, setup
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.protocol import ProtocolError
 
 

@@ -47,7 +47,7 @@ documentation and the existing `llm_rules` facts/memory. Evaluation, setup, fina
 screenshots and replays remain outside that input. No private enemy histories are needed.
 
 The first model is `llm_rules@claude-haiku-5-5/low`, through Anthropic's Messages API;
-model/effort/repeats rest on JUDGEMENT `battle/benchmark.py` Initial model screen. Its API
+model/effort/repeats rest on JUDGEMENT `benchmarks/profile.py` Initial model screen. Its API
 ID and inexpensive tier were rechecked in [Anthropic's model catalogue](https://platform.claude.com/docs/en/models/overview)
 on 2026-11-02. Existing shared transport/other controllers keep their retry defaults.
 For this profile: one transport attempt, no failed-response resend, parse repair or

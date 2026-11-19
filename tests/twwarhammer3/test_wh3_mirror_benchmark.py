@@ -16,7 +16,9 @@ from wh3_lua import load_battle, runtime
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, post
-from twwarhammer3.battle import benchmark, benchmark_plans, llm, play, setup
+from twwarhammer3.battle import llm, play, setup
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.protocol import PolicyFailure, ProtocolError
 from twwarhammer3.results import report
 

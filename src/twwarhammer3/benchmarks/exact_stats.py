@@ -3,10 +3,10 @@
 fisher(), mcnemar(), plan_power() (evaluation-guidelines.md 7.4) and gate_pass() (2.7) are
 exact: each adds the chances of every possible outcome, and nothing is simulated. Tests are
 two-sided with classic exact p-values. newcombe() is not exact: it combines two Wilson
-intervals (report.wilson, z = 1.96), which rest on a normal approximation (7.2: one Wilson
+intervals (wilson, z = 1.96), which rest on a normal approximation (7.2: one Wilson
 interval's coverage can fall to about 84% for rates near 0 or 1), and it is for separate
 launches only. The paired Newcombe interval 7.2 names for shared launches is not built yet.
-Exact one-sided bounds and the sign test stay in suite.py.
+The suite formats the one-sided bounds.
 
 Two options for the owner sit beside the current method and change nothing by default
 (second look of 2026-11-09, owner question 4). boschloo() is an exact test that could replace
@@ -20,14 +20,30 @@ import bisect
 import functools
 import math
 
-from twwarhammer3.battle import suite
-from twwarhammer3.results.report import wilson
-
 # scipy.stats.fisher_exact (scipy/stats/_stats_py.py, 1.18.1) counts a table whose chance is
 # within this relative margin of the observed table's as no more likely than it.
 RELATIVE_TOLERANCE = 1e-14
 # boschloo() searches the common true rate on this many evenly spaced rates, 0 and 1 included.
 BOSCHLOO_GRID = 2001
+
+
+def wilson(wins: int, count: int) -> list[float] | None:
+    if not count:
+        return None
+    z, p = 1.96, wins / count
+    scale = 1 + z * z / count
+    centre = (p + z * z / (2 * count)) / scale
+    radius = z * math.sqrt(p * (1 - p) / count + z * z / (4 * count * count)) / scale
+    return [max(0, centre - radius), min(1, centre + radius)]
+
+
+def sign_test(better, worse):
+    """Two-sided exact sign test over scenarios that differ."""
+    total = better + worse
+    if not total:
+        return None
+    tail = sum(math.comb(total, k) for k in range(min(better, worse) + 1)) / 2 ** total
+    return round(min(1, 2 * tail), 4)
 
 
 def binomial(launches: int, rate: float) -> list[float]:
@@ -106,7 +122,7 @@ def newcombe(wins_a: int, launches_a: int, wins_b: int, launches_b: int) -> list
     Newcombe 1998 method 10, the hybrid score interval: each end combines the two Wilson
     intervals' distances from their rates. As statsmodels'
     confint_proportions_2indep(method="newcomb") (statsmodels/stats/proportion.py), with
-    report.wilson's z of 1.96. Unlike a normal (Wald) interval it does not shrink to a point
+    wilson's z of 1.96. Unlike a normal (Wald) interval it does not shrink to a point
     when both arms win nothing.
     """
     if not launches_a or not launches_b:
@@ -164,11 +180,11 @@ def mcnemar(pairs) -> dict:
 
     Each pair is (A won, B won) for one shared start, such as two checkpoint branches. Only
     the starts exactly one arm won carry information, and their split is tested with
-    suite.sign_test (two-sided, rounded to 4 places). Returns the four joint counts and p,
+    sign_test (two-sided, rounded to 4 places). Returns the four joint counts and p,
     which is None when no start was won by exactly one arm.
     """
     counts = {"both": 0, "only_a": 0, "only_b": 0, "neither": 0}
     for won_a, won_b in pairs:
         key = ("neither", "only_b", "only_a", "both")[2 * bool(won_a) + bool(won_b)]
         counts[key] += 1
-    return {**counts, "p": suite.sign_test(counts["only_a"], counts["only_b"])}
+    return {**counts, "p": sign_test(counts["only_a"], counts["only_b"])}

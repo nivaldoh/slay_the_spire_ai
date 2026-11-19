@@ -23,13 +23,14 @@ from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle import graph_author, setup
-from twwarhammer3.battle.benchmark import EFFORT, LAUNCH_ARGS, MODEL, SUITE
-from twwarhammer3.battle.benchmark_plans import collect
 from twwarhammer3.battle.skills import SHOOTERS
+from twwarhammer3.benchmarks.exact_stats import sign_test, wilson
+from twwarhammer3.benchmarks.plans import collect
+from twwarhammer3.benchmarks.profile import EFFORT, LAUNCH_ARGS, MODEL, SUITE
 from twwarhammer3.protocol import account_stop
 from twwarhammer3.results import report as trials
 from twwarhammer3.results import report_html
-from twwarhammer3.results.report import mean_interval, trial_metrics, wilson
+from twwarhammer3.results.report import mean_interval, trial_metrics
 
 # JUDGEMENT: Suite arms — Claude, 2026-11-04, overnight goal: the methods the code has today,
 # frozen, at Haiku low: no orders; run at the nearest enemy; the scripted class skills; a script
@@ -388,15 +389,6 @@ def win_bound(wins, battles):
         return {"method": "exact one-sided 95%", "upper": round(1 - .05 ** (1 / battles), 3)}
     low, high = wilson(wins, battles)
     return {"method": "Wilson 95%", "lower": round(low, 3), "upper": round(high, 3)}
-
-
-def sign_test(better, worse):
-    """Two-sided exact sign test over scenarios that differ."""
-    total = better + worse
-    if not total:
-        return None
-    tail = sum(math.comb(total, k) for k in range(min(better, worse) + 1)) / 2 ** total
-    return round(min(1, 2 * tail), 4)
 
 
 # JUDGEMENT: Scenario tie-break — Claude, 2026-11-04, overnight goal: within an outcome arms compare

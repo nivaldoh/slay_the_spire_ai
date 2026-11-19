@@ -26,7 +26,7 @@ from collections import Counter
 from itertools import groupby
 from pathlib import Path
 
-from twwarhammer3.battle.benchmark import evaluate
+from twwarhammer3.benchmarks.profile import evaluate
 from twwarhammer3.order_text import describe_orders, describe_plan, short_type, strength
 from twwarhammer3.policy_names import policy_parts
 from twwarhammer3.results.register import row

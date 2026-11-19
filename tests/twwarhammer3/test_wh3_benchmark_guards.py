@@ -1,4 +1,4 @@
-"""Guards of the benchmark profiles (battle/benchmark.py) that no other test exercised.
+"""Guards of the benchmark profiles (benchmarks/profile.py) that no other test exercised.
 
 Each test feeds the case its refusal names. The 2026-11-13 refusal sweep found these refusals
 uncaught (runs/overnight-20261113/); each test fails when its refusal is removed.
@@ -10,8 +10,9 @@ import signal
 import pytest
 
 from gameai.llm import APIError
-from twwarhammer3.battle import benchmark, benchmark_plans
 from twwarhammer3.battle.setup import scenarios
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
 
 # The frozen profile: one fresh launch and battle, no added waits, 900/1320 s caps and
 # 1000/250 ms observation/tick (benchmark.validate_config). The caps and the no-added-wait

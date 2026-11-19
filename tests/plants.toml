@@ -1205,7 +1205,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-ignores-the-kept-ending"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if ending in (\"won\", \"lost\", \"draw\"):\n        return ending\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1214,7 +1214,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-timer-win-lost"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if status in (\"won\", \"lost\", \"draw\"):\n        return status\n"
 new = "    if status in (\"won\", \"lost\", \"draw\"):\n        return \"lost\" if result.get(\"ended_by\") == \"time_limit\" else status\n"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1223,7 +1223,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-construction-unresolved"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if status == \"policy_failure\" and error.startswith(\"controller construction:\"):"
 new = "    if False:"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1232,7 +1232,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-wall-cap-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if status == \"interrupted\":\n        return \"operator_stop\""
 new = "    if status == \"truncated\" and result.get(\"battle\"):\n        return \"forfeit\"\n    if status == \"interrupted\":\n        return \"operator_stop\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1241,7 +1241,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-silence-proven"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if status == \"unsupported_or_invalid\":"
 new = "    if status in (\"unsupported_or_invalid\", \"infrastructure_failure\"):"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1250,7 +1250,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-provider-failure-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if (status == \"policy_failure\" and \"APIError\" not in error"
 new = "    if (status == \"policy_failure\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1259,7 +1259,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-no-battle-unresolved"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if not result.get(\"battle\"):\n        return \"never_started\"\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1268,7 +1268,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-stop-before-the-ending"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n"
 new = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n    if status == \"interrupted\":\n        return \"operator_stop\"\n"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1277,7 +1277,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-wall-cap-cleanup-forfeit"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "\n            and result.get(\"reason\") != \"episode_timeout\"):"
 new = "):"
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -1286,7 +1286,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "benchmark-outcome-team-fault-not-built"
 guards = "WH3 benchmark-outcome scorer, version 1"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "    if status == \"unsupported_or_invalid\":\n        return \"setup_or_game_failure\""
 new = "    if status == \"unsupported_or_invalid\":\n        return \"not_built\""
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
@@ -3027,7 +3027,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "wilson-lower-bound-always-zero"
 guards = "The reported win interval is the Wilson score interval, lower bound included"
-file = "src/twwarhammer3/results/report.py"
+file = "src/twwarhammer3/benchmarks/exact_stats.py"
 old = "return [max(0, centre - radius), min(1, centre + radius)]"
 new = "return [min(0, centre - radius), min(1, centre + radius)]"
 tests = ["tests/twwarhammer3/test_wh3_report.py::test_the_win_interval_is_the_wilson_score_interval"]
@@ -3976,7 +3976,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "suite-counts-a-replanned-battle-twice"
 guards = "A battle two suite plans name (a replacement plan read with --also) is one row and one planned battle"
-file = "src/twwarhammer3/battle/suite.py"
+file = "src/twwarhammer3/benchmarks/suite.py"
 old = 'key = Path(row["output"]).resolve()'
 new = 'key = (plan, Path(row["output"]).resolve())'
 tests = ["tests/twwarhammer3/test_wh3_suite.py"]
@@ -4048,7 +4048,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "battle-budget-reserve-unlocked"
 guards = "Members calling at once cannot reserve past one battle's allowance"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = "        with _RESERVE_LOCK:"
 new = "        with threading.Lock():"
 tests = ["tests/twwarhammer3/test_wh3_battle_budget.py"]
@@ -4092,7 +4092,7 @@ new = '''    def acknowledge(self, ack, latency):
 
 [[plant]]
 id = "suite-timer-win-overrides-enemy-totals"
-file = "src/twwarhammer3/battle/suite.py"
+file = "src/twwarhammer3/benchmarks/suite.py"
 guards = "timer wins retain physical enemy percentages and unavailable totals"
 tests = ["tests/twwarhammer3/test_wh3_suite_timer_measures.py"]
 old = '    return round(100 * (1 - active / men0), 1)'
@@ -4314,7 +4314,7 @@ source = "2026-11-14 code-quality: apply_order's three army branches became one"
 [[plant]]
 id = "evaluate-counts-an-unresolved-stop-as-a-loss"
 guards = "An unresolved stop is kept out of the counts (owner, 2026-11-15)"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = 'outcome = label if label in OUTCOMES else None'
 new = 'outcome = label if label in OUTCOMES else ("lost" if label == "unresolved" else None)'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_an_engine_ending_counts_and_an_unresolved_stop_does_not"]
@@ -4323,7 +4323,7 @@ source = "2026-11-15 one outcome function: owner, \"Unresolved battles can be ke
 [[plant]]
 id = "benchmark-outcome-keeps-the-ending-of-a-copy-interrupted-trial"
 guards = "A trial stopped during its final copying is an operator stop for the label and for evaluate alike"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = 'if result.get("interrupted_copy") and recorded_outcome(result):'
 new = 'if False:'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_a_trial_the_engine_ended_but_whose_final_copying_was_stopped_is_an_operator_stop", "tests/twwarhammer3/test_wh3_benchmark_guards.py::test_every_benchmark_reader_sees_no_outcome_for_a_copy_interrupted_trial"]
@@ -4422,7 +4422,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "evaluate-counts-an-operator-stop-as-a-loss"
 guards = "An operator stop in mid battle has no outcome"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = 'outcome = label if label in OUTCOMES else None'
 new = 'outcome = label if label in OUTCOMES else ("lost" if label == "operator_stop" and not result.get("interrupted_copy") else None)'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_an_operator_stop_in_mid_battle_has_no_outcome"]
@@ -4431,7 +4431,7 @@ source = "2026-11-15 one outcome function, review: the operator-stop line had no
 [[plant]]
 id = "copy-rule-only-under-status-interrupted"
 guards = "A late controller error with a cut copy is an operator stop too, not the engine's win"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = 'if result.get("interrupted_copy") and recorded_outcome(result):'
 new = 'if result.get("interrupted_copy") and recorded_outcome(result) and result["status"] == "interrupted":'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_a_trial_the_engine_ended_but_whose_final_copying_was_stopped_is_an_operator_stop"]
@@ -4440,7 +4440,7 @@ source = "2026-11-15 one outcome function, review: the copy rule outside status 
 [[plant]]
 id = "copy-rule-relabels-a-forfeit"
 guards = "A forfeit whose final copying was stopped stays labelled forfeit"
-file = "src/twwarhammer3/battle/benchmark.py"
+file = "src/twwarhammer3/benchmarks/profile.py"
 old = 'if result.get("interrupted_copy") and recorded_outcome(result):'
 new = 'if result.get("interrupted_copy"):'
 tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py::test_a_trial_the_engine_ended_but_whose_final_copying_was_stopped_is_an_operator_stop"]

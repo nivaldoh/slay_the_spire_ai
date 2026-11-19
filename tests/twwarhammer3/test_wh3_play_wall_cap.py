@@ -6,8 +6,9 @@ import json
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-from twwarhammer3.battle import benchmark, play
+from twwarhammer3.battle import play
 from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.protocol import PolicyFailure
 
 

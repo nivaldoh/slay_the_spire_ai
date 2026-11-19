@@ -9,9 +9,10 @@ from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
-from twwarhammer3.battle import benchmark, play, setup
+from twwarhammer3.battle import play, setup
 from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.battle.team import TeamHarnessError
+from twwarhammer3.benchmarks import profile as benchmark
 
 TIMER = {"expired": True, "source": "countdown_deadline"}
 

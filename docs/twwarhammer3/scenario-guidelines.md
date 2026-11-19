@@ -407,7 +407,7 @@ Owner, 2026-11-04: compare health and morale, with cost, latency and other relev
 individual scenario results. No ranking formula or metric weights are selected by this reply.
 With the initial two scenarios, any aggregate describes those two cases, not general WH3 skill.
 
-The current [condition calculation](../../src/twwarhammer3/battle/benchmark.py) combines
+The current [condition calculation](../../src/twwarhammer3/benchmarks/profile.py) combines
 unit health with categorical state penalties such as wavering and routing. It is not a
 continuous numeric leadership score. The mirror and suite also use different comparison
 rules ([current definitions](benchmark.md#outcome-and-score)); “like we already do” does

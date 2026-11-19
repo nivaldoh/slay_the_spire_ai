@@ -5,7 +5,7 @@ import threading
 import pytest
 
 from gameai.ledger import BudgetExhausted, Ledger
-from twwarhammer3.battle import benchmark
+from twwarhammer3.benchmarks import profile as benchmark
 
 
 class MeetingLedger(Ledger):

@@ -4,6 +4,7 @@ import json
 import pytest
 from wh3_fixtures import make_job
 
+from twwarhammer3.benchmarks.exact_stats import wilson
 from twwarhammer3.results import report
 
 
@@ -71,8 +72,8 @@ def test_report_clusters_repeats_and_exposes_failures_missing_pairs_and_versions
 
 
 def test_intervals_and_missing_active_strength():
-    assert report.wilson(0, 0) is None
-    assert report.wilson(0, 10)[1] == pytest.approx(.27754, abs=1e-5)
+    assert wilson(0, 0) is None
+    assert wilson(0, 10)[1] == pytest.approx(.27754, abs=1e-5)
     assert report.mean_interval([1])["ci95"] is None
     summary = report.mean_interval([0, 1, 2])
     assert summary["mean"] == 1
@@ -278,8 +279,8 @@ def test_the_win_interval_is_the_wilson_score_interval():
     # Hand-worked Wilson score interval at z = 1.96: 5 of 10 is 0.5 +/- 0.26341, as
     # statsmodels proportion_confint(5, 10, method="wilson") gives (0.23659, 0.76341); 10 of 10
     # is (0.72246, 1).
-    assert report.wilson(5, 10) == pytest.approx([0.23659, 0.76341], abs=1e-5)
-    assert report.wilson(10, 10) == pytest.approx([0.72246, 1], abs=1e-5)
+    assert wilson(5, 10) == pytest.approx([0.23659, 0.76341], abs=1e-5)
+    assert wilson(10, 10) == pytest.approx([0.72246, 1], abs=1e-5)
 
 
 def test_report_counts_each_order_the_engine_refused_by_its_error(tmp_path):

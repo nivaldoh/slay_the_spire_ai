@@ -14,7 +14,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle import setup
-from twwarhammer3.battle.benchmark import (
+from twwarhammer3.benchmarks.profile import (
     EFFORT,
     LAUNCH_ARGS,
     MODEL,

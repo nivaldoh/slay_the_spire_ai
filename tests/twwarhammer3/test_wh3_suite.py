@@ -9,16 +9,12 @@ import pytest
 
 from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import (
-    benchmark,
-    benchmark_plans,
-    configured,
-    controllers,
-    graph,
-    suite,
-    team,
-)
+from twwarhammer3.battle import configured, controllers, graph, team
 from twwarhammer3.battle.setup import check_battle, scenarios, validate_declaration
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
+from twwarhammer3.benchmarks import suite
+from twwarhammer3.benchmarks.exact_stats import sign_test
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -104,9 +100,9 @@ def test_win_bounds_and_sign_test_match_the_guidelines_worked_values():
     assert suite.win_bound(0, 10) == {"method": "exact one-sided 95%", "upper": .259}
     assert suite.win_bound(4, 5) == {"method": "Wilson 95%", "lower": .376, "upper": .964}
     assert suite.win_bound(0, 0) is None
-    assert suite.sign_test(6, 0) == .0312  # 2 x (1/2)^6
-    assert suite.sign_test(0, 0) is None
-    assert suite.sign_test(3, 3) == 1
+    assert sign_test(6, 0) == .0312  # 2 x (1/2)^6
+    assert sign_test(0, 0) is None
+    assert sign_test(3, 3) == 1
 
 
 def row(scenario, arm, outcome, own=0, taken=0):
@@ -210,7 +206,7 @@ def test_authoring_writes_three_graphs_a_configured_team_loads(tmp_path):
 @pytest.mark.parametrize("arm", [arm for arm in suite.ARMS if arm != "gap"])
 def test_each_arm_builds_for_a_suite_scenario_without_a_game_or_a_call(arm, tmp_path, monkeypatch):
     from twwarhammer3.battle import controllers
-    from twwarhammer3.battle.benchmark import validate_config
+    from twwarhammer3.benchmarks.profile import validate_config
 
     monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
     monkeypatch.setattr(configured, "api_key", lambda provider="openai": "test-only")

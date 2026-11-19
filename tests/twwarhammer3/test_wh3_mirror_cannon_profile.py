@@ -4,7 +4,8 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import benchmark, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.protocol import ProtocolError
 
 CANNON = "wh_main_emp_art_great_cannon"

@@ -9,8 +9,9 @@ from threading import Event
 from gameai.ledger import Ledger
 from gameai.llm import Model, api_key, post
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import benchmark, controllers, graph, graph_goals, local_team, team
+from twwarhammer3.battle import controllers, graph, graph_goals, local_team, team
 from twwarhammer3.battle.setup import scenarios
+from twwarhammer3.benchmarks import profile as benchmark
 
 
 def read_spec(path: Path) -> tuple[dict, dict | None, Path]:

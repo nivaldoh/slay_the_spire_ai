@@ -5,7 +5,9 @@ import json
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import benchmark, benchmark_plans, suite
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
+from twwarhammer3.benchmarks import suite
 
 
 def attempts(tmp_path, results, *, args=(), config=None):

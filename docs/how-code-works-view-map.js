@@ -323,10 +323,10 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/policy_names.py",
         "src/twwarhammer3/scope.py",
         "src/twwarhammer3/scenarios/support_facts.py",
-        "src/twwarhammer3/battle/exact_stats.py",
-        "src/twwarhammer3/battle/benchmark.py",
-        "src/twwarhammer3/battle/benchmark_plans.py",
-        "src/twwarhammer3/battle/suite.py",
+        "src/twwarhammer3/benchmarks/exact_stats.py",
+        "src/twwarhammer3/benchmarks/profile.py",
+        "src/twwarhammer3/benchmarks/plans.py",
+        "src/twwarhammer3/benchmarks/suite.py",
         "src/twwarhammer3/results/report.py",
         "src/twwarhammer3/results/report_html.py",
         "src/twwarhammer3/results/replay.py",
@@ -346,9 +346,9 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/results/register.py:1-3",
         "src/twwarhammer3/results/report.py:1",
         "docs/twwarhammer3/results.csv",
-        "src/twwarhammer3/battle/benchmark.py:1-5",
-        "src/twwarhammer3/battle/benchmark_plans.py:1-6",
-        "src/twwarhammer3/battle/suite.py:1-11"
+        "src/twwarhammer3/benchmarks/profile.py:1-5",
+        "src/twwarhammer3/benchmarks/plans.py:1-6",
+        "src/twwarhammer3/benchmarks/suite.py:1-11"
       ]
     },
     {

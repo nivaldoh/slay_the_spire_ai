@@ -6,7 +6,9 @@ from copy import deepcopy
 import pytest
 from wh3_lua import load_battle, runtime
 
-from twwarhammer3.battle import benchmark, benchmark_plans, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.benchmarks import plans as benchmark_plans
+from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.protocol import ProtocolError
 
 

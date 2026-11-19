@@ -13,8 +13,9 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from gameai.provenance import write_json
-from twwarhammer3.battle.benchmark import VERSION, evaluate
-from twwarhammer3.battle.benchmark_plans import collect as collect_plan
+from twwarhammer3.benchmarks.exact_stats import wilson
+from twwarhammer3.benchmarks.plans import collect as collect_plan
+from twwarhammer3.benchmarks.profile import VERSION, evaluate
 from twwarhammer3.results import report_html
 from twwarhammer3.results.register import active_left, configuration
 
@@ -38,16 +39,6 @@ def mean_interval(values: list[float]) -> dict:
         result["ci95"] = [result["mean"] - critical * error, result["mean"] + critical * error]
         result["detectable_difference_80pct"] = (critical + 0.842) * error
     return result
-
-
-def wilson(wins: int, count: int) -> list[float] | None:
-    if not count:
-        return None
-    z, p = 1.96, wins / count
-    scale = 1 + z * z / count
-    centre = (p + z * z / (2 * count)) / scale
-    radius = z * math.sqrt(p * (1 - p) / count + z * z / (4 * count * count)) / scale
-    return [max(0, centre - radius), min(1, centre + radius)]
 
 
 def trial_metrics(directory: Path, result: dict) -> dict:

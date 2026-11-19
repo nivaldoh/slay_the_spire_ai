@@ -12,7 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle.benchmark import evaluate
+from twwarhammer3.benchmarks.profile import evaluate
 from twwarhammer3.policy_names import policy_parts
 
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"

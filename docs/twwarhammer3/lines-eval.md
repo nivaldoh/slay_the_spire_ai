@@ -581,7 +581,7 @@ counts or gates change what each stage may claim; every label rests on it.
 
 These are proposals for the owner; none is in [agreed checks](../agreed-checks.md). They follow
 the set's shared rules: one primary contrast per battle at two-sided Fisher p < 0.05
-([exact_stats.py](../../src/twwarhammer3/battle/exact_stats.py)), a frozen 4-of-5 witness gate at
+([exact_stats.py](../../src/twwarhammer3/benchmarks/exact_stats.py)), a frozen 4-of-5 witness gate at
 5 s added order age and a 5 s decision interval before any round, exact power printed, and contact
 from the engine melee flag ([evidence_rules.py](../../src/twwarhammer3/battle/evidence_rules.py)).
 No gate exists in this battle, so the hp <= 0 breach rule does not apply. Checks 2-4, and the

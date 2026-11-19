@@ -17,7 +17,7 @@ from copy import deepcopy
 from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle.benchmark import BATTLE_USD, CALL_LIMIT, READ_TIMEOUT_S, SUITE, VERSION
+from twwarhammer3.benchmarks.profile import BATTLE_USD, CALL_LIMIT, READ_TIMEOUT_S, SUITE, VERSION
 from twwarhammer3.order_text import describe_dropped, describe_orders, short_type
 from twwarhammer3.protocol import (
     ATTACK_MODES,

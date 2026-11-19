@@ -252,11 +252,11 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 
 `src/twwarhammer3/battle/`, jobs and controllers:
 - `src/twwarhammer3/battle/play.py`: job loop: launch, setup, episodes, rematch, register row
-- `src/twwarhammer3/battle/benchmark.py`: the mirror profile: limits, one-call transport, battle
+- `src/twwarhammer3/benchmarks/profile.py`: the mirror profile: limits, one-call transport, battle
   budget and the first-ending condition; the outcome label of an episode
-- `src/twwarhammer3/battle/benchmark_plans.py`: frozen benchmark plans and every planned attempt
+- `src/twwarhammer3/benchmarks/plans.py`: frozen benchmark plans and every planned attempt
   read back
-- `src/twwarhammer3/battle/suite.py`: the coordination suite: arms, plans, measures and comparison
+- `src/twwarhammer3/benchmarks/suite.py`: the coordination suite: arms, plans, measures and comparison
 - `src/twwarhammer3/battle/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
 - `src/twwarhammer3/battle/support_evidence.py`: offline event brackets and proposed numerical contrast
 - `src/twwarhammer3/battle/manual_demo.py`: separate owner demonstration recorder and pause labels
@@ -344,7 +344,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/results/watch.py`: follow a job
 - `src/twwarhammer3/results/register.py`: results register
 - `src/twwarhammer3/results/report.py`: paired statistics and a mirror plan's report
-- `src/twwarhammer3/battle/exact_stats.py`: exact small-sample statistics for win rates: two-sided
+- `src/twwarhammer3/benchmarks/exact_stats.py`: exact small-sample statistics for win rates: two-sided
   Fisher, exact McNemar, plan power and gate error rates, and the Newcombe interval
 - `src/twwarhammer3/results/report_html.py`: the offline HTML report
 - `src/twwarhammer3/results/replay.py`: the report's replay: public recorded frames and events
