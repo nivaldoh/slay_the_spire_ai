@@ -816,3 +816,31 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                        "read": read_at, "sent": time.time(), "logged": bool(logged),
                        "refusal": refusal}
         result["decisions"] += 1
+
+
+def launch(output: Path, job: str, settings: dict, timeout: float) -> None:
+    """Open an interactive game session and stream its menu and mod logs."""
+    output.mkdir(parents=True, exist_ok=True)
+    with RuntimeLock():
+        record = prepare_runtime()
+        write_json(output / "deployment.json", record)
+        print(json.dumps(record, sort_keys=True))
+        mailbox = Mailbox(BRIDGE_DIR, job=job)
+        mailbox.reset()
+        try:
+            with (mailbox.owned_session(settings),
+                  OwnedGame(output / "game.log", timeout=timeout) as game,
+                  PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
+                                 enabled=settings["stills"])):
+                print(json.dumps(game.info), flush=True)
+                offsets = {"mod.log": 0, "menu.log": 0}
+                while game.process.poll() is None:
+                    for name in offsets:
+                        text = mailbox.log_since(offsets[name], name)
+                        if text:
+                            offsets[name] += len(text.encode())
+                            print(f"{name}: {text.rstrip()}", flush=True)
+                    time.sleep(1)
+                print("game exited", flush=True)
+        except KeyboardInterrupt:
+            print("stopping", flush=True)

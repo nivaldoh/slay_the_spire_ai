@@ -26,6 +26,7 @@ from twwarhammer3.engine.runtime import (
     running_pids,
 )
 from twwarhammer3.results.digest import ONE_X
+from twwarhammer3.scope import SOURCES
 
 # JUDGEMENT: Probe bounds — Codex, 2026-11-01: 5 s settling, 60 m forward, 165 s move/control.
 # Owner approved 540 s contact on 2026-11-01 after the first cutoff. Other geometry/bounds
@@ -245,8 +246,8 @@ def recount(output):
 
 
 def run(output):
-    revision = committed_revision("graph live check", play.SOURCES)
-    fingerprints = source_fingerprints(play.SOURCES)
+    revision = committed_revision("graph live check", SOURCES)
+    fingerprints = source_fingerprints(SOURCES)
     output.mkdir(parents=True)
     environment = collect_diagnostics()
     write_json(output / "environment.json", environment)
@@ -263,7 +264,7 @@ def run(output):
     for kind, duration in WALL_LIMITS.items():
         if time.monotonic() + CONFIG["run_timeout"] + 30 > deadline:
             break
-        if source_fingerprints(play.SOURCES) != fingerprints:
+        if source_fingerprints(SOURCES) != fingerprints:
             raise RuntimeError("sources changed during verification")
         if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
             raise RuntimeError("Spire running; no concurrent game controllers")

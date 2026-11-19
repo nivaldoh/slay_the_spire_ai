@@ -527,12 +527,17 @@ def plan_report(plan_path: Path, output: Path) -> dict:
     for row in data["rows"]:
         text += (f"{row['controller']}: {row['outcome'] or row['status']}; "
                  f"condition {row['condition']}; errors {len(row['errors'])}; {row['output']}\n")
+    write_report(output, visual, data, text)
+    return data
+
+
+def write_report(output: Path, visual: dict, data: dict, text: str) -> None:
+    """Write the HTML, JSON and text for one report stem."""
     output.parent.mkdir(parents=True, exist_ok=True)
 
     def artifact(suffix):
         return output.with_name(output.name + suffix)
 
-    report_html.write(artifact(".html"), visual)
+    report_html.write(artifact(".html"), visual)  # May require Pillow.
     write_json(artifact(".json"), data)
     artifact(".txt").write_text(text)
-    return data

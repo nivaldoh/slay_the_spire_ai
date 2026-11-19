@@ -23,10 +23,11 @@ from gameai.provenance import git, sha256, source_fingerprints, write_json
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
 from twwarhammer3.battle import setup
-from twwarhammer3.battle.play import SOURCES, start_frontend
+from twwarhammer3.battle.play import start_frontend
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
+from twwarhammer3.scope import SOURCES
 
 SWORD = "wh_main_emp_inf_swordsmen"
 CAPTAIN = "wh_main_emp_cha_captain_0"

@@ -343,3 +343,21 @@ class Mailbox:
         if not path.exists():
             return ""
         return path.read_bytes()[offset:].decode("utf-8", "replace")
+
+    def run_menu(self, steps: list[dict], log: str, timeout: float) -> bool:
+        """Write steps, stream their log and wait for this request to finish."""
+        offset = self.log_offset(log)
+        request = self.write_menu(steps)
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            text = self.log_since(offset, log)
+            if text:
+                offset += len(text.encode())
+                print(text.rstrip(), flush=True)
+                lines = text.splitlines()
+                if any(line.endswith(f"menu {request}: failed") for line in lines):
+                    return False
+                if any(line.endswith(f"menu {request}: done") for line in lines):
+                    return True
+            time.sleep(0.5)
+        raise MailboxTimeout("menu request timed out before completion")

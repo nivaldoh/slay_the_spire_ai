@@ -32,7 +32,6 @@ MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PA
                  "commander": commander.PROMPT_PATH, "team_llm_rules": llm.RULES_PROMPT_PATH}
 
 
-
 def prompt_path(base: str, profile: str | None) -> Path:
     """A model policy's prompt. In the suite `llm` is `single`'s prompt plus only the tips, as
     `team_llm_rules` there is ClassTeam: the suite's own arm, not a new policy name."""

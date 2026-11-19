@@ -3,6 +3,7 @@ on. The commands' work is tested beside its module."""
 import argparse
 import json
 import sys
+import time
 
 import pytest
 from wh3_fixtures import configured_job, embedded, make_job
@@ -42,8 +43,8 @@ def test_menu_waits_for_its_own_completion_and_returns_failure_on_timeout(
 
     monkeypatch.setattr(Mailbox, "write_menu", answer)
     clock = iter([0, 0, 2])
-    monkeypatch.setattr(cli.time, "monotonic", lambda: next(clock))
-    monkeypatch.setattr(cli.time, "sleep", lambda _: None)
+    monkeypatch.setattr(time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(time, "sleep", lambda _: None)
     monkeypatch.setattr(sys, "argv", ["wh3", "menu", "--steps", str(steps), "--wait", "1",
                                       *(["--battle"] if battle else [])])
     assert main() == status

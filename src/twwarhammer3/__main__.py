@@ -3,11 +3,10 @@
 import argparse
 import json
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT, write_json
+from gameai.provenance import REPO_ROOT
 from gameai.providers import PROVIDERS, get_provider
 from twwarhammer3.controllers.factory import BUILTINS, check_allowance
 from twwarhammer3.controllers.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
@@ -34,61 +33,9 @@ def add_session_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def run_rl(args, parser) -> int:
-    """Game phases (checkpoint, audit, confirm's launch) hold the GPU lease, so no model
-    process starts beside them; model phases refuse while the game runs."""
-    import subprocess
+    from twwarhammer3.checkpoint.command import run
 
-    from gameai.lm import gpu_lease
-    from twwarhammer3.checkpoint import audit, checkpoint, confirm, rl
-
-    phase, paths = args.phase, [path.resolve() for path in args.paths]
-    if args.output:
-        args.output = args.output.resolve()
-    if args.tasks:
-        args.tasks = args.tasks.resolve()
-    plan = json.loads(paths[0].read_text()) if phase in (
-        "checkpoint", "audit", "tasks", "train", "confirm", "confirm-score") else None
-    if phase == "checkpoint":
-        with gpu_lease(rl.GPU_LOCK_PATH):
-            result = checkpoint.checkpoint_root(plan, Path(plan["library"]))
-        print(json.dumps({"status": result["attempt"]["status"],
-                          "records": [r["tick"] for r in result["records"]]}))
-    elif phase == "audit":
-        with gpu_lease(rl.GPU_LOCK_PATH):
-            result = audit.audit(plan, args.output)
-        print(json.dumps({"pass": result["pass"]}))
-    elif phase == "tasks":
-        value = rl.build_tasks(plan)
-        rl.write_task_set(args.output, value)
-        print(f"{args.output}: {len(value['tasks'])} tasks, {value['hash'][:12]}")
-    elif phase == "measure":
-        print(json.dumps(rl.measure(paths[0], args.output), indent=1))
-    elif phase == "train":
-        print(json.dumps(rl.train(plan, args.output), indent=1))
-    elif phase == "evaluate":
-        value = rl.evaluate(paths[0], paths[1])
-        print("\n".join(rl.report_lines(value)))
-    elif phase == "compare":
-        print(rl.compare(paths, args.split))
-    elif phase == "confirm-score":
-        result = confirm.score(plan, args.output)
-        print(json.dumps({"pass": result["pass"], "checks": result["checks"]}))
-        return 0 if result["pass"] else 1
-    elif phase == "confirm":
-        # The model scores in its own process, which exits before the game starts.
-        scored = subprocess.run([sys.executable, "-m", "twwarhammer3", "rl", "confirm-score",
-                                 str(paths[0]), "--output", str(args.output)])
-        if scored.returncode:
-            return scored.returncode
-        result = confirm.launch(plan, args.output)
-        print(json.dumps({"pass": result["pass"], "clauses": result["clauses"]}))
-        return 0 if result["pass"] else 1
-    elif phase == "recount":
-        result = rl.recount(paths[0], args.tasks)
-        print("\n".join(result["lines"]))
-        print(json.dumps({"pass": result["pass"], "checks": result["checks"]}))
-        return 0 if result["pass"] else 1
-    return 0
+    return run(args)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -434,43 +381,17 @@ def run_pack(args, parser) -> int:
 
 
 def run_launch(args, parser) -> int:
-    from twwarhammer3.battle.capture import PassiveCapture
-    from twwarhammer3.battle.play import session
-    from twwarhammer3.engine.mailbox import Mailbox
-    from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
+    from twwarhammer3.battle.play import launch, session
 
     job = f"launch-{datetime.now():%Y%m%d-%H%M%S}"
-    output = args.output or Path("runs/twwarhammer3") / job
-    output.mkdir(parents=True, exist_ok=True)
-    with RuntimeLock():
-        record = prepare_runtime()
-        write_json(output / "deployment.json", record)
-        print(json.dumps(record, sort_keys=True))
-        mailbox = Mailbox(BRIDGE_DIR, job=job)
-        mailbox.reset()
-        try:
-            with (mailbox.owned_session(session(vars(args))),
-                  OwnedGame(output / "game.log", timeout=args.timeout) as game,
-                  PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
-                                 enabled=args.stills)):
-                print(json.dumps(game.info), flush=True)
-                offsets = {"mod.log": 0, "menu.log": 0}
-                while game.process.poll() is None:
-                    for name in offsets:
-                        text = mailbox.log_since(offsets[name], name)
-                        if text:
-                            offsets[name] += len(text.encode())
-                            print(f"{name}: {text.rstrip()}", flush=True)
-                    time.sleep(1)
-                print("game exited", flush=True)
-        except KeyboardInterrupt:
-            print("stopping", flush=True)
+    launch(args.output or Path("runs/twwarhammer3") / job, job, session(vars(args)), args.timeout)
     return 0
 
 
 def run_menu(args, parser) -> int:
     from twwarhammer3.engine.mailbox import Mailbox
     from twwarhammer3.engine.runtime import BRIDGE_DIR
+    from twwarhammer3.protocol import MailboxTimeout
 
     if not (BRIDGE_DIR / "session.json").exists():
         parser.error("menu needs an active launch session")
@@ -488,22 +409,11 @@ def run_menu(args, parser) -> int:
         parser.error("menu needs --steps, --dump or --find")
     # The battle script runs menu.json steps too (the frontend is unloaded in battle).
     log = "mod.log" if args.battle else "menu.log"
-    offset = mailbox.log_offset(log)
-    request = mailbox.write_menu(steps)
-    deadline = time.monotonic() + args.wait
-    while time.monotonic() < deadline:
-        text = mailbox.log_since(offset, log)
-        if text:
-            offset += len(text.encode())
-            print(text.rstrip(), flush=True)
-            lines = text.splitlines()
-            if any(line.endswith(f"menu {request}: failed") for line in lines):
-                return 1
-            if any(line.endswith(f"menu {request}: done") for line in lines):
-                return 0
-        time.sleep(0.5)
-    print("menu request timed out before completion", file=sys.stderr)
-    return 1
+    try:
+        return 0 if mailbox.run_menu(steps, log, args.wait) else 1
+    except MailboxTimeout as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
 
 def run_graph_author(args, parser) -> int:
@@ -626,8 +536,7 @@ def run_compare_peers(args, parser) -> int:
 
 
 def run_report(args, parser) -> int:
-    from twwarhammer3.results.report import collect, render
-    from twwarhammer3.results.report_html import write
+    from twwarhammer3.results.report import collect, render, write_report
 
     jobs = list(args.jobs)
     if args.jobs_file:
@@ -646,11 +555,7 @@ def run_report(args, parser) -> int:
     data = (collect(jobs, benchmark_plans=args.benchmark_plan)
             if args.benchmark_plan else collect(jobs))
     text = render(data)
-    stem = args.output
-    stem.parent.mkdir(parents=True, exist_ok=True)
-    write(stem.with_name(stem.name + ".html"), data)  # first: it may need Pillow
-    write_json(stem.with_name(stem.name + ".json"), data)
-    stem.with_name(stem.name + ".txt").write_text(text + "\n")
+    write_report(args.output, data, data, text + "\n")
     print(text)
     return 0
 

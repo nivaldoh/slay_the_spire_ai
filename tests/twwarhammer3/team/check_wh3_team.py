@@ -30,6 +30,7 @@ from twwarhammer3.engine.runtime import (
     prepare_runtime,
     running_pids,
 )
+from twwarhammer3.scope import SOURCES
 
 VARIANTS = (team.DelayInfantry, team.DelayCavalry, team.DelayInfantry, team.DelayCavalry)
 CONFIG = {"speed": 1, "pause": False, "observe_ms": 1000, "tick_ms": 250,
@@ -168,8 +169,8 @@ def recount(output, *, destination=None):
 
 
 def run(output):
-    revision = committed_revision("team live verification", play.SOURCES)
-    fingerprints = source_fingerprints(play.SOURCES)
+    revision = committed_revision("team live verification", SOURCES)
+    fingerprints = source_fingerprints(SOURCES)
     output.mkdir(parents=True)
     environment = collect_diagnostics()
     write_json(output / "environment.json", environment)
@@ -189,7 +190,7 @@ def run(output):
     for index, variant in enumerate(VARIANTS):
         if time.monotonic() + CONFIG["run_timeout"] + 30 > deadline:
             break
-        if source_fingerprints(play.SOURCES) != fingerprints:
+        if source_fingerprints(SOURCES) != fingerprints:
             raise RuntimeError("sources changed during verification")
         if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
             raise RuntimeError("Slay the Spire is running; no concurrent game controllers")
