@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code structure · Game agents</title>
+<title>Code structure · WH3 research walkthrough</title>
 <style>
 :root {
   color-scheme: light;
@@ -37,8 +37,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid #bc651d; outline-off
 .masthead { background: var(--navy); color: var(--white); }
 .bar, .workspace { max-width: 1440px; margin: auto; }
 .bar {
-  display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap;
-  gap: 18px; padding: 22px clamp(16px, 4vw, 56px);
+  display: grid; gap: 15px; padding: 22px clamp(16px, 4vw, 56px) 16px;
 }
 .project { color: #abd3c6; margin-bottom: 4px; font: 13px var(--mono); }
 .views { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -87,6 +86,20 @@ summary { cursor: pointer; }
 .path { display: inline-block; margin-bottom: 6px; font: 13px var(--mono); }
 .panel { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
 .panel + .panel { margin-top: 15px; }
+.panel > p { margin-top: 8px; max-width: 83ch; }
+.panel > dl { margin-top: 10px; }
+.panel .start + h3 { margin-top: 16px; }
+.panel .route strong { display: block; font-size: 15px; line-height: 1.3; }
+.panel .route strong + p { margin-top: 4px; }
+.panel .route a { overflow-wrap: anywhere; }
+.decisions dt { font-weight: 650; }
+.evidence { border-left: 4px solid var(--teal); }
+.questions details { border-bottom: 1px solid var(--line); padding: 10px 0; }
+.questions details:last-child { border-bottom: 0; padding-bottom: 0; }
+.questions summary { font-weight: 650; }
+.questions details p { margin: 6px 0 4px 1.2rem; max-width: 78ch; }
+.questions details:target > summary { color: var(--teal); }
+.extras { margin-top: 15px; }
 .route {
   --gap: 22px;
   display: grid; grid-template-columns: repeat(var(--stages), minmax(0, 1fr)); gap: var(--gap);
@@ -169,7 +182,7 @@ summary { cursor: pointer; }
     content: "↓"; top: 100%; left: 50%; width: auto; line-height: 14px; transform: translateX(-50%);
   }
   .start > li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 10px; }
-  .start p { margin: 0; }
+  .start p, .panel .start strong + p { margin: 0; }
   .return { margin-inline: 0; border: 0; text-align: left; padding-inline: 0; }
   .return::before { content: "↺ "; position: static; }
   .trace-event, .shared-files div { grid-template-columns: 1fr; }
@@ -182,9 +195,14 @@ summary { cursor: pointer; }
 <body>
 <header class="masthead">
   <div class="bar">
-    <div><p class="project">Game agents</p><h1>Code structure</h1></div>
+    <div><p class="project">Total War: WARHAMMER III</p><h1>Code structure</h1></div>
     <nav class="views" aria-label="Code map views">
-      <a href="#wh3">Warhammer III</a>
+      <a href="#wh3">Battle loop</a>
+      <a href="#controllers">Controllers</a>
+      <a href="#evals">Benchmark</a>
+      <a href="#reset-data">Reset and data</a>
+      <a href="#factory">Light factory</a>
+      <a href="#practice">Rehearse</a>
       <a href="#spire">Slay the Spire</a>
       <a href="#gameai">Shared code</a>
     </nav>
@@ -288,13 +306,14 @@ summary { cursor: pointer; }
       <header class="view-head">
         <a class="path" href="../src/twwarhammer3/">src/twwarhammer3/</a>
         <h2 id="wh3-title">Warhammer III</h2>
-        <p>Python controls a real-time custom battle through files shared with the Lua mod.</p>
+        <p>WH3 is the environment. A Lua mod reads the battle and applies orders. A Python harness in WSL swaps controllers and records the evidence used to compare them.</p>
+        <div class="more"><a href="#wh3-trace">Follow a recorded decision</a> <a href="#practice">Prepare a short explanation</a></div>
       </header>
       <section class="panel" aria-labelledby="wh3-start">
         <h3 id="wh3-start">Start a play job</h3>
         <ol class="route start">
-          <li><a href="../src/twwarhammer3/__main__.py"><code>python -m twwarhammer3 play</code></a><p>Load options and select a controller.</p></li>
-          <li><a href="../src/twwarhammer3/battle/play.py"><code>play()</code></a><p>Load the scenario and launch or attach.</p></li>
+          <li><a href="../src/twwarhammer3/__main__.py"><code>python -m twwarhammer3 play</code></a><p>Select the scenario, controller and job settings.</p></li>
+          <li><a href="../src/twwarhammer3/battle/play.py"><code>play()</code></a><p>Open the game through the Windows runtime or attach to a running battle.</p></li>
           <li><a href="../src/twwarhammer3/battle/play.py"><code>play_episode()</code></a><p>Make a fresh controller for each battle.</p></li>
         </ol>
         <h3 id="wh3-loop">One battle decision</h3>
@@ -308,18 +327,18 @@ summary { cursor: pointer; }
             </li>
             <li class="step" id="wh3-public" tabindex="-1">
               <span class="label">Python · battle loop</span><strong>Build the public view</strong>
-              <p>Pass friendly units, visible enemies and public context to the controller.</p>
+              <p>Keep friendly units, visible enemies and disclosed facts in the controller’s view.</p>
               <a href="../src/twwarhammer3/battle/play.py"><code>_drive()</code> and <code>public()</code></a>
             </li>
             <li class="step" id="wh3-decide" tabindex="-1">
               <span class="label">Python · policy</span><strong>Choose orders</strong>
-              <p>The selected controller returns an order batch. A model call depends on the controller.</p>
+              <p>A script, model or hybrid turns that view into an order batch.</p>
               <a href="../src/twwarhammer3/controllers/factory.py"><code>Controller.decide()</code></a><br>
               <a href="../src/twwarhammer3/controllers/scripted.py">Scripted</a> · <a href="../src/twwarhammer3/controllers/llm.py">Model</a>
             </li>
             <li class="engine step" id="wh3-send" tabindex="-1">
               <span class="label">Python → Lua</span><strong>Validate and send</strong>
-              <p>Check the orders, then publish <code>orders.json</code>. Lua applies orders and reports per-order results.</p>
+              <p>Validate against the policy view. Publish <code>orders.json</code>. Lua reports each order’s acceptance or refusal.</p>
               <a href="../src/twwarhammer3/protocol.py"><code>validate_orders()</code></a><br>
               <a href="../src/twwarhammer3/engine/mailbox.py"><code>Mailbox.write_orders()</code></a><br>
               <a href="../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"><code>poll()</code></a>
@@ -332,7 +351,7 @@ summary { cursor: pointer; }
       <section class="panel trace-panel" id="wh3-trace" aria-labelledby="wh3-trace-title">
         <header>
           <h3 id="wh3-trace-title">Recorded trace · Empire Knights flank</h3>
-          <p>Three rows from <code>episode-0000/trace.jsonl</code>. Follow <code>seq</code> into the decision and <code>request</code> into the acknowledgement.</p>
+          <p>Follow <code>seq</code> into the decision and <code>request</code> into the acknowledgement. The excerpt is from a historical controller run.</p>
         </header>
         <ol class="trace-log">
           <li class="trace-event">
@@ -348,6 +367,7 @@ summary { cursor: pointer; }
             <p><code>request: …-r1 · based_on: 1 · applied_ms: 8900</code> · Lua reported both orders accepted.</p>
           </li>
         </ol>
+        <p class="trace-meta" id="trace-age">The observation was 3.6 battle seconds old at application (8,900 − 5,300 ms). That age includes more than model inference. Inspect later engine readings to see whether the units moved.</p>
         <details class="trace-meta">
           <summary>Recording and trace readers</summary>
           <p><code>runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl</code> · revision <code>b7e2dd1</code></p>
@@ -355,13 +375,445 @@ summary { cursor: pointer; }
           <p><a href="../src/twwarhammer3/results/digest.py">Digest source</a> · <a href="how-code-works.html#job">Walk through the recorded play job</a></p>
         </details>
       </section>
-      <div class="more">
-        <a href="twwarhammer3/README.md">WH3 guide and code map</a>
-        <a href="../src/twwarhammer3/scenarios/">Scenario policies and evaluators</a>
-        <a href="../src/twwarhammer3/benchmarks/">Trials and scoring</a>
-        <a href="../src/twwarhammer3/checkpoint/">Battle restore</a>
-        <a href="../src/twwarhammer3/multiplayer/">Native multiplayer</a>
-      </div>
+      <section class="panel" aria-labelledby="loop-design">
+        <h3 id="loop-design">Why the loop is built this way</h3>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Use the native engine</dt>
+            <dd>
+              Run the original game to preserve its simulation and outcomes. The Lua frontend drives setup
+              and the battle mod handles orders. File exchange works across Windows and WSL. The trade-off
+              is real startup cost and compatibility work when a game build changes. <a
+              href="../src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua">Frontend Lua</a>
+              · <a href="../src/twwarhammer3/engine/runtime.py">Runtime and build pin</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Keep the game at 1×</dt>
+            <dd>
+              Latency changes what a controller can accomplish, so the battle continues during inference.
+              Battle time is used for order age. The harness also records wall-clock timing and checks
+              whether game time advances at the expected rate. <a href="twwarhammer3/latency.md">Timing
+              design</a> · <a href="owner-direction.md">Owner direction</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Keep private evidence out</dt>
+            <dd>
+              Lua limits live enemies to visible units. Python strips <code>evaluation</code>,
+              <code>final</code>, <code>setup</code> and <code>native</code> before building the policy
+              view. The lobby roster is public. Scorers can use privileged evidence after play. To test for
+              a leak, vary only private fields and compare the rendered policy input. <a
+              href="../src/twwarhammer3/battle/play.py">Policy projection</a> · <a
+              href="twwarhammer3/evaluation-guidelines.md#45-give-controllers-only-listed-public-fields-and-test-by-changing-hidden-data">Boundary
+              check</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Match the right request</dt>
+            <dd>
+              The normal play loop keeps one request outstanding. Job and battle IDs reject foreign
+              commands, and <code>request</code> ties each acknowledgement to its batch.
+              <code>based_on</code> names the harness snapshot for that batch. For a team order, read
+              <code>source_seq</code> and <code>source_ms</code> to find the member’s actual input and
+              measure its age. A Python validation failure is recorded and the loop sends an empty batch.
+              An engine refusal is recorded separately. <a href="../src/twwarhammer3/engine/mailbox.py">Mailbox
+              contract</a> · <a href="../src/twwarhammer3/results/replay.py">Team source in the replay</a> · <a
+              href="../src/twwarhammer3/protocol.py">Validation and errors</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <details class="panel extras">
+        <summary>Related paths for a deeper code tour</summary>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Setup and capture</dt>
+            <dd>
+              <a href="../src/twwarhammer3/battle/setup.py">Setup</a> resolves declarations and checks the
+              live configuration. <a href="../src/twwarhammer3/battle/capture.py">Capture</a> retains replay
+              and evaluator evidence for later readers.
+            </dd>
+          </div>
+          <div>
+            <dt>Native multiplayer</dt>
+            <dd>
+              Separate Windows clients need match and attempt identity, worker coordination and synchronized
+              evidence. This path is separate from several policies sharing one army in one client. Live
+              smoke evidence covers specific setups. <a
+              href="../src/twwarhammer3/multiplayer/link.py">Coordinator and link</a> · <a
+              href="../src/twwarhammer3/multiplayer/peers.py">Peer comparison</a> · <a
+              href="twwarhammer3/native-multiplayer.md">Status and limits</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Shared services</dt>
+            <dd>
+              Process ownership, model transport, spend and provenance belong in <a href="#gameai">Shared
+              code</a>. WH3 owns its job, protocol, scoring and benchmark readers. <a
+              href="twwarhammer3/README.md#code-map">Full WH3 file map</a>
+            </dd>
+          </div>
+        </dl>
+      </details>
+      <div class="more"><a href="#controllers">Compare controller designs →</a></div>
+    </section>
+
+    <section class="view" id="controllers" data-package="wh3" aria-labelledby="controllers-title">
+      <header class="view-head">
+        <a class="path" href="../src/twwarhammer3/controllers/">src/twwarhammer3/controllers/</a>
+        <h2 id="controllers-title">Controller design</h2>
+        <p>Decide what the model controls, what code handles, and how long a decision stays useful.</p>
+      </header>
+      <section class="panel" aria-labelledby="policy-title">
+        <h3 id="policy-title">One harness, several controllers</h3>
+        <p>The factory makes a fresh controller per battle. <code>decide</code> reads the policy view, <code>acknowledge</code> receives feedback for its request, and <code>metadata</code> describes the decision or controller. The harness owns the mailbox. The same seam supports baselines, models and imported controllers. <a href="../src/twwarhammer3/controllers/factory.py">Controller contract and factory</a></p>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Scripted baselines</dt>
+            <dd>
+              <code>hold</code> shows what the engine does on its own. <code>rush_nearest</code> asks how
+              far a simple, reactive rule gets. A scripted witness serves a different purpose: it
+              demonstrates that a particular scenario can be solved. <a
+              href="../src/twwarhammer3/controllers/scripted.py">Baselines</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Direct model</dt>
+            <dd>
+              <code>llm_rules</code> gives the model the interface and objective and asks for orders. A
+              blocking API call leaves those orders based on an older snapshot while the battle advances.
+              Prompt tips, provider, reasoning effort and memory all change the system being compared. <a
+              href="../src/twwarhammer3/controllers/llm.py">Direct policy</a> · <a
+              href="../configs/twwarhammer3/rules_prompt.md">Rules prompt</a> · <a
+              href="../tests/twwarhammer3/prompts/">Rendered inputs</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Planner and executor</dt>
+            <dd>
+              <code>commander</code> asks the model asynchronously for standing assignments.
+              <code>skills</code> turns them into orders from fresh observations. This keeps local reactions
+              quick and gives the model a longer decision horizon. The skill library bounds what the planner
+              can express. Compare against <code>skills</code> alone to estimate what the planner adds. <a
+              href="../src/twwarhammer3/controllers/commander.py">Planner</a> · <a
+              href="../src/twwarhammer3/controllers/skills.py">Executor</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Graph-based control</dt>
+            <dd>
+              A configured graph runs named nodes and transitions as conditions change. A model can write
+              a validated graph before play, shifting some computation outside the battle. The live
+              goal-model variant proposes a target preference while the graph keeps running. The graph’s
+              branches are inspectable and bound what the controller can do. Account for authoring cost
+              separately from play cost. <a href="../src/twwarhammer3/controllers/graph_author.py">Graph
+              authoring</a> · <a href="../src/twwarhammer3/controllers/configured.py">Composition</a> · <a
+              href="../src/twwarhammer3/controllers/graph.py">Graph runtime</a> · <a
+              href="../src/twwarhammer3/controllers/graph_goals.py">Live target preferences</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <section class="panel" aria-labelledby="team-title">
+        <h3 id="team-title">Several policies share one army</h3>
+        <ol class="route start" aria-label="Team dispatch">
+          <li><strong>Project the view</strong><p>Give members their assigned units and the facts their role may read.</p></li>
+          <li><strong>Run members in workers</strong><p>Track each response against the snapshot it came from.</p></li>
+          <li><strong>Dispatch through one loop</strong><p>Enforce unit ownership and check pending orders before dispatch.</p></li>
+        </ol>
+        <p><code>local_team</code> makes communication and visibility experimental variables. Peer captains can communicate directly. A relay passes reports through a commander. The overview commander also sees army-wide facts. A faster stream of replies can still contain old decisions. To explain a team result, account for observations, message routes, helper code, cost and order age. <a href="../src/twwarhammer3/controllers/team.py">Team dispatcher</a> · <a href="../src/twwarhammer3/controllers/local_team.py">Local views and routing</a> · <a href="twwarhammer3/communication-structure.md#the-arms">Trial arms</a></p>
+      </section>
+      <div class="more"><a href="#evals">Follow a benchmark trial →</a></div>
+    </section>
+
+    <section class="view" id="evals" data-package="wh3" aria-labelledby="evals-title">
+      <header class="view-head">
+        <a class="path" href="../src/twwarhammer3/benchmarks/">src/twwarhammer3/benchmarks/</a>
+        <h2 id="evals-title">Benchmark and evidence</h2>
+        <p>A battle measures an entire controller under a particular setup, observation budget and clock. Each stronger claim needs a comparison that isolates it.</p>
+      </header>
+      <section class="panel" aria-labelledby="benchmark-route">
+        <h3 id="benchmark-route">From scenario to result</h3>
+        <ol class="route loop">
+          <li><strong>Declare the task</strong><p>Freeze the roster, setup, disclosed objective and controller configuration.</p><a href="../configs/twwarhammer3/scenarios/">Scenario files</a> · <a href="../src/twwarhammer3/battle/setup.py">Setup and readback</a></li>
+          <li><strong>Check the task</strong><p>A witness tries to solve it. Simple foils test whether a shortcut also works.</p><a href="../src/twwarhammer3/scenarios/cannae.py">Cannae witness</a> · <a href="twwarhammer3/evaluation-guidelines.md#24-attack-each-card-with-shortcuts-and-keep-wins-by-other-tactics">Task design</a></li>
+          <li><strong>Run the plan</strong><p>Record assignments and dispositions. Keep fresh launches distinct from rematches.</p><a href="../src/twwarhammer3/benchmarks/plans.py">Plans</a> · <a href="../src/twwarhammer3/benchmarks/suite.py">Suite</a> · <a href="../scripts/wh3_queue.py">Queue</a></li>
+          <li class="engine"><strong>Read the evidence</strong><p>Use engine endings and independent readings. Retain incomplete trials and missing evidence.</p><a href="../src/twwarhammer3/benchmarks/profile.py">Outcome and rank</a> · <a href="../src/twwarhammer3/results/report.py">Report</a></li>
+        </ol>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Define the denominator</dt>
+            <dd>
+              The profile win rate uses qualifying engine wins, losses and draws, including engine timer
+              endings. An interruption during the final copy can exclude a recorded ending. A wall cap or
+              provider stop without an engine ending stays unresolved. Controller forfeits also stay visible
+              outside the rate. Show attempted counts and what missing outcomes could change. <a
+              href="../src/twwarhammer3/benchmarks/profile.py">Outcome rules</a> · <a
+              href="twwarhammer3/benchmark.md#outcome-and-score">Owner decisions and open accounting
+              choices</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Use valid proxies</dt>
+            <dd>
+              The profile ranks engine outcome first and uses terminal unit condition where available.
+              Scenario readings answer narrower questions. In Escalade, contact comes from the engine’s
+              melee flag on a living unit. Distance alone can count troops on opposite sides of a wall. <a
+              href="../src/twwarhammer3/scenarios/escalade_readings.py">Escalade readings</a> · <a
+              href="../src/twwarhammer3/scenarios/evidence_rules.py">Accepted-order reader</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Design the comparison</dt>
+            <dd>
+              For a communication ablation, hold scenario, model, skill code, ownership and observation
+              scope fixed while changing the message path. Report any coupled changes. To compare
+              independent win rates, the repo has Fisher’s exact test and a Newcombe interval for the
+              difference. For matched win/non-win outcomes, exact McNemar uses pairs where only one arm won.
+              Ticks, calls and rematches within a launch are poor substitutes for independent trials. <a
+              href="../src/twwarhammer3/benchmarks/exact_stats.py">Small-sample statistics</a> · <a
+              href="twwarhammer3/evaluation-guidelines.md#7-use-statistics-that-fit-small-live-studies">Proposed
+              analysis rules</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <section class="panel evidence" aria-labelledby="pilot-title">
+        <h3 id="pilot-title">What the Cannae pilot showed</h3>
+        <p>The November 11 exploratory Cannae pilot ran six fresh launches, two each for peer, relay and overview. All six lost. These are unverified development results. They expose failure modes and leave architecture ranking unresolved. Debug the model replies, local refusals and engine rejections separately, then ask whether the task and endpoint discriminate between controllers. <a href="twwarhammer3/communication-structure.md#exploratory-model-pilot-2026-11-11">Pilot, exact conditions and failure audit</a></p>
+      </section>
+      <div class="more"><a href="#reset-data">Reset and reuse the evidence →</a> <a href="twwarhammer3/evaluation-guidelines.md">Full evaluation guidelines</a></div>
+    </section>
+
+    <section class="view" id="reset-data" data-package="wh3" aria-labelledby="reset-title">
+      <header class="view-head">
+        <h2 id="reset-title">Reset, replay and data</h2>
+        <p>Reuse a starting state for a controlled comparison or reuse a saved decision for offline analysis.</p>
+      </header>
+      <section class="panel" aria-labelledby="checkpoint-title">
+        <h3 id="checkpoint-title">Branch from a battle checkpoint</h3>
+        <ol class="route start">
+          <li><strong>Save the prefix</strong><p>Capture setup and inputs in a native replay, plus the Lua seed.</p></li>
+          <li><strong>Rebuild the state</strong><p>Replay inputs, checking tick checksums on the way.</p></li>
+          <li><strong>Hand over at 1×</strong><p>Replace replay input with live input and try the next order.</p></li>
+        </ol>
+        <p>The agreed Land check compares two same-order restores to one source and requires a changed-order restore to diverge. At <code>210e356</code>, each same-order restore matched 2,000 planned tick checksums and all nine required live readings. The changed-order branch first diverged at tick 1303. Native checksums can miss field construction, so live readings matter too. Wall-clock timers and other setups limit the conclusion. <a href="../src/twwarhammer3/checkpoint/checkpoint_agent.js">In-game restore</a> · <a href="../tests/twwarhammer3/check_wh3_checkpoint.py">Agreed Land harness</a> · <a href="twwarhammer3/checkpoints.md#the-check">Pass and scope</a></p>
+      </section>
+      <section class="panel" aria-labelledby="data-title">
+        <h3 id="data-title">Keep records useful after the run</h3>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Replay and adjudicate</dt>
+            <dd>
+              The job’s <code>manifest.json</code> records source hashes, configuration and prompt
+              provenance. Per battle, <code>trace.jsonl</code> ties decisions to requests,
+              <code>private.jsonl</code> holds evaluator capture when enabled, and <code>result.json</code>
+              records the ending and summaries. Link accepted orders to later engine events before crediting
+              execution. An absent enemy in a public replay can be out of view. <a
+              href="../src/twwarhammer3/battle/capture.py">Capture</a> · <a
+              href="../src/twwarhammer3/results/replay.py">Replay reader</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Export decisions</dt>
+            <dd>
+              For supported built-in model controllers, the exporter groups a model request and its attempts
+              into a row with available execution links. It preserves recorded prompts, flags missing fields,
+              and inventories excluded episodes such as configured teams. Supervised fine-tuning requires a
+              completed reply with recorded prompts. A valid reply can still be poor training data. Split by
+              scenario or checkpoint family to reduce leakage across near-duplicate decisions. <a
+              href="../src/twwarhammer3/results/export.py">Exporter</a> · <a href="../src/gameai/sft.py">SFT
+              builder</a> · <a href="twwarhammer3/traces.md">Trace contract</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Study a fixed choice</dt>
+            <dd>
+              The checkpoint research uses an offline contextual bandit: show a battle state, choose one of
+              a fixed set of candidate orders, and read a reward for that branch. With rewards tabulated for
+              all available actions, the update can optimize the sum of each action’s probability times its
+              reward without sampling actions from the game. Held-out checkpoints and shuffled action order
+              help detect memorization and slot bias. The first synthetic experiment collapsed to a single
+              action. The prototype is paused. Offline performance leaves live generalization and multi-step
+              credit assignment open. <a href="../src/twwarhammer3/checkpoint/rl.py">Bandit and adapter
+              code</a> · <a href="twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11">Prototype
+              results and limits</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <div class="more"><a href="#factory">See how changes and claims are checked →</a></div>
+    </section>
+
+    <section class="view" id="factory" aria-labelledby="factory-title">
+      <header class="view-head">
+        <a class="path" href="workflow.md">docs/workflow.md</a>
+        <h2 id="factory-title">The light factory</h2>
+        <p>An experimental workflow for agent-written changes. The owner sets requirements and decides what counts as verification. Agents implement, run checks and surface decisions that affect interpretation.</p>
+      </header>
+      <section class="panel" aria-labelledby="gate-title">
+        <h3 id="gate-title">From a request to a repeatable check</h3>
+        <ol class="route loop">
+          <li><strong>Write a change card</strong><p>Name the behavior, independent requirement and wrong implementation the check should catch.</p><a href="workflow.md#before-a-change-the-card">Card</a></li>
+          <li><strong>Isolate the change</strong><p>Use an editing worktree. Keep game jobs on a stable checkout and report choices that change meaning.</p><a href="workflow.md#several-sessions-at-once">Worktrees</a> · <a href="judgement.md">Judgement markers</a></li>
+          <li><strong>Challenge the check</strong><p>Show the clean version passes and a plausible wrong version fails. The reviewer gets the card, diff and raw results.</p><a href="../tests/plants.toml">Planted defects</a> · <a href="../.claude/agents/reviewer.md">Reviewer</a></li>
+          <li class="engine"><strong>Gate and record</strong><p>Run Ruff and the offline suite. Save the output and hash the checked tree for the commit hook.</p><a href="../scripts/check.py">Gate</a> · <a href="../scripts/githooks/pre-commit">Commit hook</a> · <a href="../.github/workflows/check.yml">CI</a></li>
+        </ol>
+        <dl class="shared-files decisions">
+          <div>
+            <dt>Why test the tests?</dt>
+            <dd>
+              A check can pass while missing the defect it was written for. <code>--plants</code> replays
+              known bad changes. <code>refusal_sweep.py</code> removes one guard at a time to find untested
+              refusals. One plant adds army-wide magic to a captain’s input. The test compares the full
+              model request to catch that leak. The tools count a timeout as caught, so inspect the failure
+              before calling it a good regression. <a href="../scripts/refusal_sweep.py">Refusal sweep</a> ·
+              <a href="testing.md#show-that-a-test-can-detect-a-wrong-result">Checks of checks</a>
+            </dd>
+          </div>
+          <div>
+            <dt>What counts as verification?</dt>
+            <dd>
+              Tests cover the cases they exercise. The agreed-check register records the method and
+              supported revision for a stronger claim. A passing parser test can prove malformed input was
+              rejected in that case. Proving a unit acted needs engine evidence. A marker preserves open
+              choices such as which failures enter a benchmark denominator. <a
+              href="agreed-checks.md">Agreed checks</a> · <a
+              href="workflow.md#agent-checks-and-the-reviewer">Review and independent recount</a>
+            </dd>
+          </div>
+          <div>
+            <dt>Where can it fail?</dt>
+            <dd>
+              The ordinary gate is offline, risky edits are warnings, and concurrent edits can prevent a
+              pass record. The hook checks that the tree still matches the pass. Reviewer judgments can also
+              miss faults, so the project tests reviewers on prior bugs and clean diffs. <a
+              href="workflow.md#the-exit-gate-scriptscheckpy">Gate limits</a> · <a
+              href="twwarhammer3/log.md#2026-10-29-light-factory-stages-1-3">Early factory experiment</a>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <div class="more"><a href="#practice">Rehearse with the code open →</a></div>
+    </section>
+
+    <section class="view" id="practice" aria-labelledby="practice-title">
+      <header class="view-head">
+        <h2 id="practice-title">Interview rehearsal</h2>
+        <p>Start with the battle trace and explain the project in a minute. Then answer each question aloud before opening the notes. Use the links to show where the claim lives.</p>
+      </header>
+      <section class="panel" aria-labelledby="demo-title">
+        <h3 id="demo-title">A short walkthrough for someone new</h3>
+        <p>“This project puts a model in the loop of a real-time strategy game. WH3 supplies the world and its outcome. A Lua bridge exposes a limited observation and applies orders. Python swaps controllers and retains enough evidence to reconstruct how each one acted. The clock keeps moving while the model thinks, so we can study the interaction between latency, control design and evaluation.”</p>
+        <p>For your own contribution, pick one decision you can substantiate from the owner record. Explain the requirement you set, the alternatives you considered, how agents implemented it, the evidence you reviewed, and what remains open. The 1× rule, checkpoint comparison and outcome-first scoring each have a recorded decision. <a href="owner-direction.md">Owner direction</a></p>
+        <div class="more"><a href="#wh3-trace">Open the trace</a> <a href="#evals">Open the benchmark</a> <a href="#factory">Open the change workflow</a></div>
+      </section>
+      <section class="panel questions" aria-labelledby="questions-title">
+        <h3 id="questions-title">Questions to practice</h3>
+        <details id="ask-debug">
+          <summary>An order was accepted and the unit stood still. Where do you debug?</summary>
+          <p>
+            Match the acknowledgement to the decision by request. Measure age from the snapshot that
+            produced the order, using the member’s source timestamp for a team decision. Look for the
+            intended effect in later engine observations. Check intervening orders, target visibility, unit
+            state and terrain. For a coding exercise, sketch a test where a late acknowledgement for request
+            A arrives while B is outstanding. B must remain outstanding. <a href="#wh3-trace">Trace</a> · <a
+            href="../src/twwarhammer3/battle/play.py">Request matching</a>
+          </p>
+        </details>
+        <details id="ask-state">
+          <summary>What is the state, and what does the policy actually observe?</summary>
+          <p>
+            The engine owns the state. Fog of war and observation delay make the policy’s input partial. The
+            policy can use history to infer where a unit might be, but an unseen enemy’s true current
+            position belongs only to the engine. Issued orders can keep running while the agent waits.
+            For a formal model, specify what an observation contains, when actions take effect and how you
+            track elapsed time. <a href="#wh3-public">Observation boundary</a>
+          </p>
+        </details>
+        <details id="ask-latency">
+          <summary>If you double the call rate, will the agent react faster?</summary>
+          <p>
+            Measure throughput and observation age separately. More calls can finish per second while each
+            still uses stale state. Hold the controller fixed and inject observation delay to probe
+            sensitivity, or compare a slow planner plus fast executor against direct control and report the
+            changed action abstraction. Use the battle clock for age, wall time for provider latency. <a
+            href="#controllers">Controller designs</a> · <a href="twwarhammer3/latency.md">Latency study</a>
+          </p>
+        </details>
+        <details id="ask-eval">
+          <summary>How would you show communication helped?</summary>
+          <p>
+            Specify the endpoint first. Compare a message-enabled controller with a matched muted control,
+            verify that messages reached the intended prompts, and record cost, failure rate and order age.
+            Freeze a development candidate, reserve held-out variants, and report the effect with
+            uncertainty by the independent replicate unit. A transcript shows delivery. A controlled change
+            can support a causal claim. <a href="#evals">Benchmark and pilot</a>
+          </p>
+        </details>
+        <details id="ask-reward">
+          <summary>How would an optimizing policy game this reward?</summary>
+          <p>
+            If rewarded for getting close to an enemy, it could approach across a wall without engaging. Use
+            engine contact or the task’s actual outcome, and run a shortcut controller that gets close
+            without achieving the objective. Keep shaping rewards and final evaluation separate. Vary the
+            setup and check that valid alternate solutions still succeed. <a
+            href="../src/twwarhammer3/scenarios/escalade_readings.py">Contact reading</a> · <a
+            href="twwarhammer3/evaluation-guidelines.md#24-attack-each-card-with-shortcuts-and-keep-wins-by-other-tactics">Shortcut
+            checks</a>
+          </p>
+        </details>
+        <details id="ask-data">
+          <summary>How would you turn these traces into trustworthy training data?</summary>
+          <p>
+            Recover the original prompt, mark each attempt, join orders to application and check subsequent
+            effects. Keep missing evidence explicit. Freeze splits by scenario or checkpoint family before
+            sampling or relabeling. Audit a sample against the raw trace and a domain expert, report
+            rejection rates, and use independent held-out play to assess an adapter. <a
+            href="#reset-data">Export and learning</a>
+          </p>
+        </details>
+        <details id="ask-bandit">
+          <summary>What would an offline bandit win prove?</summary>
+          <p>
+            Compare against a fixed-choice baseline and a simple public-state heuristic. Test on held-out
+            checkpoint families with action slots shuffled and use the table’s best available reward as an
+            upper reference. A result can show state-dependent choice within those candidates. To generalize
+            to live play, first check branch execution, then test fresh setups. A multi-step policy
+            additionally changes the states it later encounters and has to assign credit across orders. <a
+            href="#checkpoint-title">Reset check</a> · <a
+            href="../src/twwarhammer3/checkpoint/rl.py">Offline objective</a>
+          </p>
+        </details>
+        <details id="ask-scale">
+          <summary>How would you turn this into a repeatable eval service?</summary>
+          <p>
+            Version each task’s setup, public instruction, controller and grader. Use a fresh launch or a
+            checked restore, enforce a cap, retain every disposition and retry only under a predeclared
+            rule. Put outcome evidence outside the policy view. Pilot witness and shortcut runs before
+            paying for scale. Compared with Harbor’s containerized task pattern, WH3 adds native Windows
+            game startup, timing and licence dependencies that constrain throughput. <a
+            href="twwarhammer3/benchmark-run.md">WH3 runbook</a> · <a
+            href="https://arxiv.org/abs/2601.11868">Terminal-Bench
+            paper</a>
+          </p>
+        </details>
+        <details id="ask-owner">
+          <summary>What did you own, and how did you catch agent mistakes?</summary>
+          <p>
+            Give a real example. For checkpoints, the owner allowed a faster rebuild before handover,
+            required 1× play afterwards, and agreed to a same-orders check with a changed-order control.
+            Point to the recorded pass and explain its limits. For a code change, show a card, a failure the
+            reviewer or planted test exposed, and how the result is tied to the checked revision. <a
+            href="#reset-data">Checkpoint evidence</a> · <a href="#factory">Light factory</a>
+          </p>
+        </details>
+      </section>
+      <section class="panel" aria-labelledby="interview-sources">
+        <h3 id="interview-sources">What shaped these drills</h3>
+        <p>Revelo’s role spans tooling, evals, datasets, experimental design and reward hacking. OpenAI’s public guide emphasizes design, code quality and testing. Its o1 system card describes coding and ML fundamentals drawn from research-engineer interview material. Anthropic describes live coding for technical roles. DeepMind advises candidates to explain their reasoning and support claims with data. These drills apply those signals to the Revelo brief and this project. <a href="https://www.revelo.com/open-roles/ai-research-engineer-latin-america">Revelo role</a> · <a href="https://openai.com/interview-guide/">OpenAI guide</a> · <a href="https://cdn.openai.com/o1-system-card-20241205.pdf#page=35">OpenAI research-engineer tasks</a> · <a href="https://www.anthropic.com/careers#how-we-hire">Anthropic guide</a> · <a href="https://storage.googleapis.com/deepmind-media/DeepMind.com/Assets/Docs/interviewing-at-google-deepmind.pdf">DeepMind guide</a></p>
+      </section>
     </section>
 
     <section class="view" id="spire" aria-labelledby="spire-title">
@@ -451,7 +903,7 @@ summary { cursor: pointer; }
       <header class="view-head">
         <a class="path" href="../src/gameai/">src/gameai/</a>
         <h2 id="shared-title">Shared code</h2>
-        <p>Each game owns its play loop. Both use these services for parts of a job.</p>
+        <p>The dependency points from the games to shared services. The game packages still own their play loops and evaluation rules.</p>
       </header>
       <section class="panel" aria-labelledby="imports-title">
         <h3 id="imports-title">Package imports</h3>
@@ -461,10 +913,10 @@ summary { cursor: pointer; }
         </div>
         <h3>Where the games use it</h3>
         <dl class="shared-files">
-          <div><dt><a href="../src/gameai/provenance.py"><code>provenance.py</code></a></dt><dd>Record the source revision and hashes when creating a job.</dd></div>
+          <div><dt><a href="../src/gameai/provenance.py"><code>provenance.py</code></a></dt><dd>Record source revision and hashes so a later reader can identify the job’s implementation.</dd></div>
           <div><dt><a href="../src/gameai/windows.py"><code>windows.py</code></a> · <a href="../src/gameai/windows_game.py"><code>windows_game.py</code></a></dt><dd>Launch and supervise the Windows game process.</dd></div>
           <div><dt><a href="../src/gameai/llm.py"><code>llm.py</code></a> · <a href="../src/gameai/providers.py"><code>providers.py</code></a></dt><dd>Send model requests and handle provider-specific replies.</dd></div>
-          <div><dt><a href="../src/gameai/ledger.py"><code>ledger.py</code></a></dt><dd>Reserve funds and record charges for paid calls.</dd></div>
+          <div><dt><a href="../src/gameai/ledger.py"><code>ledger.py</code></a></dt><dd>Reserve a paid call’s estimated maximum before sending it. Record actual charges in an append-only ledger. In-flight reservations count against the shared instance’s cap.</dd></div>
           <div><dt><a href="../src/gameai/sft.py"><code>sft.py</code></a> · <a href="../src/gameai/lm.py"><code>lm.py</code></a></dt><dd>Build supervised training examples and score choices with local language models.</dd></div>
         </dl>
       </section>
@@ -491,7 +943,7 @@ function showView() {
     else link.removeAttribute('aria-current');
   }
   for (const branch of branches) {
-    const selected = branch.dataset.view === active.id;
+    const selected = branch.dataset.view === (active.dataset.package || active.id);
     branch.toggleAttribute('data-active', selected);
     if (selected) branch.open = true;
   }
@@ -501,20 +953,31 @@ function fitTree() {
   repository.open = !narrow.matches;
 }
 
-for (const link of document.querySelectorAll('.views a, .imports a[href^="#"]')) {
-  link.addEventListener('click', event => {
-    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    if (location.hash !== link.hash) history.pushState(null, '', link.hash);
-    showView();
-    window.scrollTo(0, 0);
-  });
+function followHash(focus = false) {
+  showView();
+  const target = document.getElementById(location.hash.slice(1));
+  if (!target || target.classList.contains('view')) window.scrollTo(0, 0);
+  else target.scrollIntoView();
+  if (!target || !focus) return;
+  const destination = target.matches('details') ? target.querySelector('summary')
+    : target.classList.contains('view') ? target.querySelector('h2') : target;
+  if (destination.tabIndex < 0) destination.tabIndex = -1;
+  destination.focus({ preventScroll: true });
 }
+
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[href^="#"]');
+  if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  if (!document.getElementById(link.hash.slice(1))) return;
+  event.preventDefault();
+  if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+  followHash(true);
+});
 narrow.addEventListener('change', fitTree);
-window.addEventListener('hashchange', showView);
-window.addEventListener('popstate', showView);
+window.addEventListener('hashchange', () => followHash());
 fitTree();
 showView();
+if (location.hash) requestAnimationFrame(() => followHash());
 </script>
 </body>
 </html>
