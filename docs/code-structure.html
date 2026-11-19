@@ -7,232 +7,514 @@
 <style>
 :root {
   color-scheme: light;
-  --paper: #faf9f5; --ink: #202d2a; --muted: #52615b; --line: #cdd2c9;
-  --accent: #1d584a; --tint: #e8f0e9;
-  --sans: "Instrument Sans", "Segoe UI", Arial, sans-serif;
-  --mono: "IBM Plex Mono", Consolas, "Liberation Mono", monospace;
+  --ink: #152a31;
+  --muted: #4b5c63;
+  --paper: #f5f6f3;
+  --line: #cdd8d6;
+  --white: #fff;
+  --navy: #102a32;
+  --teal: #12634f;
+  --mint: #e5f3eb;
+  --blue: #254e80;
+  --ice: #eaf1fa;
+  --mono: Consolas, "Liberation Mono", monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.45 var(--sans); }
-main { max-width: 1160px; margin: auto; padding: 38px clamp(18px, 4vw, 52px) 48px; }
-h1, h2, h3, p { margin: 0; }
-h1, h2 { letter-spacing: -.045em; line-height: 1.08; }
-h1 { font-size: clamp(38px, 5vw, 59px); font-weight: 650; }
-h2 { font-size: clamp(28px, 3.5vw, 39px); font-weight: 600; }
-h3 { font-size: 18px; letter-spacing: -.025em; }
-code, .path { font: .94em var(--mono); }
-a { color: var(--accent); text-underline-offset: .19em; }
-a:focus-visible { outline: 3px solid #b45c18; outline-offset: 3px; }
-header { border-bottom: 1px solid var(--ink); padding-bottom: 21px; }
-header p { color: var(--muted); margin-top: 9px; }
-.layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: clamp(22px, 4vw, 50px); margin-top: 25px; }
-aside h2 { font: 600 15px var(--mono); letter-spacing: 0; }
-.packages { margin: 12px 0 26px 4px; padding-left: 13px; border-left: 1px solid var(--line); }
-.packages a { position: relative; display: block; padding: 8px 10px; color: var(--ink); text-decoration: none; border-radius: 3px; }
-.packages a::before { content: ""; position: absolute; left: -14px; width: 10px; top: 50%; border-top: 1px solid var(--line); }
-.packages small { display: block; margin-top: 2px; font-size: 12px; }
-.packages a + a { margin-top: 4px; }
-.packages a[aria-current] { background: var(--accent); color: white; }
-.packages a:not([aria-current]):hover, .repo a:hover { background: var(--tint); }
-.repo { padding-top: 16px; border-top: 1px solid var(--line); }
-.repo h2 { font: 600 14px var(--sans); }
-.repo ul { list-style: none; padding: 0; margin: 9px 0 0; }
-.repo a { display: grid; grid-template-columns: 78px 1fr; align-items: baseline; padding: 4px 0; color: var(--ink); text-decoration: none; }
-.repo span { font-size: 13px; color: var(--muted); }
-section { min-width: 0; }
-.pane:not([hidden]) + .pane:not([hidden]) { margin-top: 40px; }
-.pane-head { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; margin-bottom: 16px; }
-.pane-head a { font: 13px var(--mono); }
-.figure { background: var(--tint); color: var(--accent); border: 1px solid #becfc2; border-radius: 6px; padding: 16px clamp(12px, 2vw, 24px) 13px; }
-.figure h3 { color: var(--ink); margin-bottom: 12px; }
-.flow { display: grid; grid-template-columns: minmax(0,1fr) 32px minmax(0,1fr) 32px minmax(0,1fr); align-items: center; }
-.node { display: block; border: 1px solid #9bad9e; border-radius: 4px; color: var(--ink); text-decoration: none; background: var(--paper); padding: 12px 8px; text-align: center; }
-.node:hover { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.node code { display: block; font: 600 clamp(13px, 1.45vw, 18px) var(--mono); }
-.node small { display: block; margin-top: 4px; font-size: 13px; }
-.forward { position: relative; height: 1px; background: currentColor; }
-.forward::after { content: ""; position: absolute; right: 2px; top: -3px; width: 6px; height: 6px; border: solid currentColor; border-width: 1px 1px 0 0; transform: rotate(45deg); }
-.return { position: relative; margin: 0 calc((100% - 64px)/6); height: 23px; border: solid var(--accent); border-width: 0 1px 1px; border-radius: 0 0 5px 5px; }
-.return::before { content: ""; position: absolute; top: 2px; left: -4px; width: 6px; height: 6px; border: solid currentColor; border-width: 1px 1px 0 0; transform: rotate(-45deg); }
-.return-label { text-align: center; font-size: 13px; margin-top: 4px; }
-.group { margin-top: 18px; }
-.entries { margin: 4px 0 0; }
-.entry { display: grid; grid-template-columns: minmax(130px, .85fr) 2.5fr; gap: 14px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); }
-.entry dt { font: 600 14px var(--mono); }
-.entry dd { margin: 0; font-size: 15px; }
-.links { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 14px; font-size: 14px; }
-.shared { display: grid; grid-template-columns: 1fr 45px 1fr; align-items: center; max-width: 510px; margin: auto; }
-.callers { display: grid; gap: 8px; }
-.callers code, .shared strong { display: block; text-align: center; background: var(--paper); border: 1px solid #9bad9e; border-radius: 4px; padding: 8px; }
-.shared strong { background: var(--accent); color: white; font: 600 16px var(--mono); }
-.join { height: 45px; width: 50%; border: solid var(--accent); border-width: 1px 1px 1px 0; position: relative; }
-.join .forward { position: absolute; width: 100%; top: 50%; left: 100%; }
-@media (max-width: 760px) {
-  main { padding-top: 22px; }
-  .layout { display: flex; flex-direction: column; gap: 17px; margin-top: 14px; }
-  aside { display: contents; }
-  .source-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; }
-  .packages { display: flex; flex-wrap: wrap; margin: 0; padding: 0; border: 0; gap: 4px; }
-  .packages a { padding: 6px 8px; }
-  .packages a + a { margin: 0; }
-  .packages a::before, .packages small { display: none; }
-  .repo { order: 2; }
-  .repo ul { display: flex; flex-wrap: wrap; gap: 4px 18px; }
-  .repo a { display: flex; gap: 5px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--sans); }
+h1, h2, h3, p, figure { margin: 0; }
+h1, h2 { line-height: 1.05; letter-spacing: -.045em; }
+h1 { font-size: clamp(34px, 5vw, 51px); }
+h2 { font-size: clamp(29px, 4vw, 43px); }
+h3 { font-size: 19px; line-height: 1.25; letter-spacing: -.025em; }
+code, .tree, .label, .trace-tag { font-family: var(--mono); }
+code { overflow-wrap: anywhere; }
+a { color: var(--teal); text-underline-offset: .19em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid #bc651d; outline-offset: 3px; }
+[hidden] { display: none !important; }
+[id] { scroll-margin-top: 20px; }
+.masthead { background: var(--navy); color: var(--white); }
+.bar, .workspace { max-width: 1440px; margin: auto; }
+.bar {
+  display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap;
+  gap: 18px; padding: 22px clamp(16px, 4vw, 56px);
 }
-@media (max-width: 520px) {
-  .flow { grid-template-columns: 1fr; row-gap: 0; margin-right: 28px; }
-  .forward { height: 17px; width: 1px; justify-self: center; }
-  .forward::after { right: -3px; top: auto; bottom: 2px; transform: rotate(135deg); }
-  .node { padding: 8px; }
-  .node code, .node small { display: inline; }
-  .node small { margin-left: 6px; }
-  .route { position: relative; }
-  .return { position: absolute; top: 18px; right: 6px; bottom: 18px; width: 22px; margin: 0; height: auto; border-width: 1px 1px 1px 0; border-radius: 0 5px 5px 0; }
-  .return::before { transform: rotate(-135deg); top: -4px; left: 2px; }
-  .return-label { margin-top: 9px; }
-  .entry { grid-template-columns: 1fr; gap: 2px; padding: 7px 0; }
-  .shared .forward { width: 100%; height: 1px; }
-  .shared .forward::after { right: 2px; top: -3px; bottom: auto; transform: rotate(45deg); }
+.project { color: #abd3c6; margin-bottom: 4px; font: 13px var(--mono); }
+.views { display: flex; flex-wrap: wrap; gap: 4px; }
+.views a {
+  display: block; padding: 7px 12px; border: 1px solid transparent; border-radius: 5px;
+  color: #e2f1ed; text-decoration: none; font-size: 14px; font-weight: 600;
+}
+.views a:hover { border-color: #8aafa6; }
+.views a[aria-current] { background: #d8f0e5; color: var(--navy); }
+.workspace { display: grid; grid-template-columns: 235px minmax(0, 1fr); }
+aside { border-right: 1px solid var(--line); }
+.repository {
+  position: sticky; top: 0; max-height: 100vh; overflow: auto;
+  padding: 20px 18px 24px clamp(16px, 3vw, 34px);
+  scrollbar-width: thin;
+}
+summary { cursor: pointer; }
+.repository > summary { font-weight: 700; margin-bottom: 7px; }
+.tree, .tree ul { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+.tree li { margin: 2px 0; }
+.tree ul {
+  border-left: 1px solid var(--line); padding-left: 11px; margin-left: 5px;
+}
+.tree li li { position: relative; }
+.tree li li::before {
+  content: ""; position: absolute; width: 8px; left: -12px; top: .9rem; border-top: 1px solid var(--line);
+}
+.tree a, .tree summary {
+  display: block; padding: 3px 6px; border-radius: 4px; color: inherit; text-decoration: none;
+}
+.tree summary::before { content: "▸"; display: inline-block; width: 1em; color: var(--muted); }
+.tree details[open] > summary::before { content: "▾"; }
+.tree summary::-webkit-details-marker { display: none; }
+.tree .folder { font-weight: 600; }
+.tree .guide { color: var(--muted); font-family: var(--sans); font-size: 12px; }
+.tree a:hover, .tree summary:hover { background: #e6ecea; }
+.tree details[data-active] > summary { background: var(--mint); color: var(--teal); }
+.content { min-width: 0; padding: 24px clamp(16px, 4vw, 52px) 36px; }
+.view + .view { margin-top: 42px; }
+.view[hidden] + .view { margin-top: 0; }
+.view-head { margin-bottom: 15px; }
+.view-head p { color: var(--muted); margin-top: 6px; }
+.label {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.path { display: inline-block; margin-bottom: 6px; font: 13px var(--mono); }
+.panel { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.panel + .panel { margin-top: 15px; }
+.route {
+  --gap: 22px;
+  display: grid; grid-template-columns: repeat(var(--stages), minmax(0, 1fr)); gap: var(--gap);
+  list-style: none; padding: 0; margin: 10px 0 0;
+}
+.route > li {
+  position: relative; min-width: 0; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: 5px; background: var(--paper); font-size: 13px;
+}
+.route > li:not(:last-child)::after {
+  content: "→"; position: absolute; top: 50%; left: calc(100% + 1px);
+  width: var(--gap); text-align: center; transform: translateY(-50%);
+  color: var(--muted); font-size: 17px;
+}
+.start { --stages: 3; margin-bottom: 14px; }
+.start a { font-weight: 600; }
+.start p { color: var(--muted); margin-top: 2px; }
+.loop { --stages: 4; }
+.loop > li { background: var(--ice); border-color: #c5d5e7; }
+.loop > .engine { background: var(--mint); border-color: #bbd8c9; }
+.loop .label { color: var(--blue); }
+.loop .engine .label { color: var(--teal); }
+.loop strong { display: block; margin: 2px 0 4px; font-size: 15px; }
+.loop p { margin-bottom: 6px; }
+.loop a { color: var(--blue); }
+.loop .engine a { color: var(--teal); }
+.return {
+  position: relative; margin: 0 5%; padding: 5px 8px 1px; text-align: center;
+  border: 1px solid #8aafa0; border-top: 0; border-radius: 0 0 5px 5px;
+  color: var(--teal); font-size: 13px;
+}
+.return::before { content: "↑"; position: absolute; top: -5px; left: -.43em; background: var(--white); }
+.output { margin-top: 10px; font-size: 13px; color: var(--muted); }
+:target.step { outline: 2px solid var(--teal); outline-offset: 3px; }
+.trace-panel { background: var(--navy); border-color: var(--navy); color: #f0f8f6; }
+.trace-panel a { color: #b7edda; }
+.trace-panel header > p, .trace-meta, .trace-event p { color: #bdd2d3; }
+.trace-panel header > p { margin-top: 4px; font-size: 13px; }
+.trace-log { list-style: none; padding: 0; margin: 9px 0; }
+.trace-event {
+  display: grid; grid-template-columns: 135px minmax(0, 1fr); gap: 4px 14px;
+  padding: 6px 0; border-top: 1px solid #3b555b; align-items: baseline;
+  font-size: 13px;
+}
+.trace-event:last-child { border-bottom: 1px solid #3b555b; }
+.trace-tag { font-weight: 700; }
+.trace-tag small { color: #a6c2c5; margin-right: 8px; font-size: 11px; }
+.trace-meta { font-size: 12px; overflow-wrap: anywhere; }
+.trace-meta summary { width: fit-content; }
+.trace-meta p { margin-top: 4px; }
+.more { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 13px; }
+.imports {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px;
+  align-items: center; margin: 12px 0 14px;
+}
+.imports p { display: flex; flex-wrap: wrap; gap: 5px 9px; align-items: center; }
+.imports p span { color: var(--muted); }
+.imports a { font-weight: 600; }
+.shared-files { margin: 0; }
+.shared-files div {
+  display: grid; grid-template-columns: minmax(180px, 1fr) 2fr; gap: 4px 14px;
+  padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px;
+}
+.shared-files dd { margin: 0; }
+@media (max-width: 990px) {
+  .workspace { grid-template-columns: 195px minmax(0, 1fr); }
+  .content { padding-inline: 16px; }
+  .route { --gap: 16px; }
+}
+@media (max-width: 820px) {
+  .workspace { display: block; }
+  aside { border-right: 0; border-bottom: 1px solid var(--line); background: var(--white); }
+  .repository { position: static; max-height: 19rem; padding: 8px 16px; }
+  .repository > summary { margin: 0; }
+}
+@media (max-width: 590px) {
+  .views a { padding-inline: 7px; font-size: 13px; }
+  .route { grid-template-columns: 1fr; gap: 14px; }
+  .route > li:not(:last-child)::after {
+    content: "↓"; top: 100%; left: 50%; width: auto; line-height: 14px; transform: translateX(-50%);
+  }
+  .start > li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 10px; }
+  .start p { margin: 0; }
+  .return { margin-inline: 0; border: 0; text-align: left; padding-inline: 0; }
+  .return::before { content: "↺ "; position: static; }
+  .trace-event, .shared-files div { grid-template-columns: 1fr; }
+}
+@media (max-width: 370px) {
+  .imports { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>Code structure</h1>
-    <p>Each game owns its play loop. Both import <code>gameai</code> for Windows processes, model calls and source fingerprints.</p>
-  </header>
-  <div class="layout">
-    <aside>
-      <nav class="source-nav" aria-label="Source packages">
-        <h2>src/</h2>
-        <div class="packages">
-          <a href="#wh3"><code>twwarhammer3/</code><small>Real-time battles</small></a>
-          <a href="#spire"><code>spire/</code><small>Turn-based runs</small></a>
-          <a href="#gameai"><code>gameai/</code><small>Shared services</small></a>
-        </div>
-      </nav>
-      <nav class="repo" aria-label="Repository folders">
-        <h2>Repository folders</h2>
-        <ul>
-          <li><a href="../configs/"><code>configs/</code><span>Inputs</span></a></li>
-          <li><a href="../runs/README.md"><code>runs/</code><span>Local evidence</span></a></li>
-          <li><a href="../scripts/"><code>scripts/</code><span>Tools</span></a></li>
-          <li><a href="../tests/README.md"><code>tests/</code><span>Checks</span></a></li>
-          <li><a href="../docs/"><code>docs/</code><span>Guides</span></a></li>
-        </ul>
-      </nav>
-    </aside>
-    <div class="panes">
-      <section class="pane" id="wh3" aria-labelledby="wh3-title">
-        <div class="pane-head"><h2 id="wh3-title">Warhammer III</h2><a href="../src/twwarhammer3/__main__.py">python -m twwarhammer3 play</a></div>
-        <div class="figure">
-          <h3>One battle decision</h3>
-          <div class="route">
-            <div class="flow">
-              <a class="node" href="../src/twwarhammer3/engine/mailbox.py"><code>engine/</code><small>Read the game state</small></a>
-              <span class="forward" aria-hidden="true"></span>
-              <a class="node" href="../src/twwarhammer3/battle/play.py"><code>battle/</code><small>Build the public view</small></a>
-              <span class="forward" aria-hidden="true"></span>
-              <a class="node" href="../src/twwarhammer3/controllers/scripted.py"><code>controllers/</code><small>Choose orders</small></a>
-            </div>
-            <div class="return" aria-hidden="true"></div>
-          </div>
-          <p class="return-label">The battle loop sends validated orders back through the mailbox.</p>
-        </div>
-        <div class="group">
-          <h3>Scenarios, trials and results</h3>
-          <dl class="entries">
-            <div class="entry"><dt><a href="../src/twwarhammer3/scenarios/">scenarios/</a></dt><dd>Battle-specific policies and evaluators, such as the <a href="../src/twwarhammer3/scenarios/camp_readings.py">camp attack readings</a>.</dd></div>
-            <div class="entry"><dt><a href="../src/twwarhammer3/benchmarks/">benchmarks/</a></dt><dd>Plan trials, set budgets and score outcomes.</dd></div>
-            <div class="entry"><dt><a href="../src/twwarhammer3/results/">results/</a></dt><dd>Write the register, replay decisions and build reports.</dd></div>
-          </dl>
-        </div>
-        <div class="group">
-          <h3>Restore or connect a battle</h3>
-          <dl class="entries">
-            <div class="entry"><dt><a href="../src/twwarhammer3/checkpoint/">checkpoint/</a></dt><dd>Capture a position, restore it and train from it.</dd></div>
-            <div class="entry"><dt><a href="../src/twwarhammer3/multiplayer/">multiplayer/</a></dt><dd>Coordinate native game clients and compare their recordings.</dd></div>
-          </dl>
-        </div>
-        <div class="links"><a href="../src/twwarhammer3/protocol.py">Order contract</a><a href="../src/twwarhammer3/mod/">Game-side Lua</a><a href="../src/twwarhammer3/">Browse package files</a><a href="how-code-works.html#job">Follow a recorded battle →</a></div>
-      </section>
-      <section class="pane" id="spire" aria-labelledby="spire-title">
-        <div class="pane-head"><h2 id="spire-title">Slay the Spire</h2><a href="../src/spire/__main__.py">python -m spire play</a></div>
-        <div class="figure">
-          <h3>One full-run decision</h3>
-          <div class="route">
-            <div class="flow">
-              <a class="node" href="../src/spire/engine/bridge.py"><code>engine/</code><small>Receive a game screen</small></a>
-              <span class="forward" aria-hidden="true"></span>
-              <a class="node" href="../src/spire/decisions.py"><code>decisions.py</code><small>List the legal choices</small></a>
-              <span class="forward" aria-hidden="true"></span>
-              <a class="node" href="../src/spire/fullrun/play.py"><code>fullrun/</code><small>Select a choice</small></a>
-            </div>
-            <div class="return" aria-hidden="true"></div>
-          </div>
-          <p class="return-label">The bridge sends the chosen command to CommunicationMod.</p>
-        </div>
-        <div class="group">
-          <h3>Combat and learning</h3>
-          <dl class="entries">
-            <div class="entry"><dt><a href="../src/spire/combat/">combat/</a></dt><dd>Roll out and evaluate policies on the first fight.</dd></div>
-            <div class="entry"><dt><a href="../src/spire/ppo/">ppo/</a></dt><dd>Train a combat policy and resume its checkpoints.</dd></div>
-            <div class="entry"><dt><a href="../src/spire/language/">language/</a></dt><dd>Build demonstrations, train local language models and evaluate them.</dd></div>
-            <div class="entry"><dt><a href="../src/spire/openweight/env.py">openweight/</a></dt><dd>Expose the full-run loop as a step-by-step training environment.</dd></div>
-          </dl>
-        </div>
-        <div class="links"><a href="../src/spire/fullrun/rules.py">Rule policy</a><a href="../src/spire/fullrun/llm.py">Model policy</a><a href="../src/spire/">Browse package files</a></div>
-      </section>
-      <section class="pane" id="gameai" aria-labelledby="shared-title">
-        <div class="pane-head"><h2 id="shared-title">Shared code</h2></div>
-        <div class="figure">
-          <h3>Package imports</h3>
-          <div class="shared" aria-label="twwarhammer3 and spire import gameai">
-            <div class="callers"><code>twwarhammer3</code><code>spire</code></div>
-            <span class="join" aria-hidden="true"><span class="forward"></span></span>
-            <strong>gameai</strong>
-          </div>
-        </div>
-        <div class="group">
-          <h3>Shared services</h3>
-          <dl class="entries">
-            <div class="entry"><dt><a href="../src/gameai/windows.py">windows.py</a></dt><dd>Launch and supervise game processes with <a href="../src/gameai/windows_game.py">windows_game.py</a>.</dd></div>
-            <div class="entry"><dt><a href="../src/gameai/llm.py">llm.py</a></dt><dd>Send model requests through the configured <a href="../src/gameai/providers.py">provider</a>.</dd></div>
-            <div class="entry"><dt><a href="../src/gameai/ledger.py">ledger.py</a></dt><dd>Reserve a call’s cost and record its charge.</dd></div>
-            <div class="entry"><dt><a href="../src/gameai/provenance.py">provenance.py</a></dt><dd>Record the Git revision and the hashes of source files.</dd></div>
-            <div class="entry"><dt><a href="../src/gameai/sft.py">sft.py</a></dt><dd>Turn either game’s exported decisions into training examples.</dd></div>
-            <div class="entry"><dt><a href="../src/gameai/lm.py">lm.py</a></dt><dd>Score candidate actions with a local language model.</dd></div>
-          </dl>
-        </div>
-      </section>
-    </div>
+<header class="masthead">
+  <div class="bar">
+    <div><p class="project">Game agents</p><h1>Code structure</h1></div>
+    <nav class="views" aria-label="Code map views">
+      <a href="#wh3">Warhammer III</a>
+      <a href="#spire">Slay the Spire</a>
+      <a href="#gameai">Shared code</a>
+    </nav>
   </div>
-</main>
+</header>
+<div class="workspace">
+  <aside>
+    <details class="repository" open>
+      <summary>Repository tree</summary>
+      <ul class="tree" aria-label="Repository folders and selected files">
+        <li><details open>
+          <summary class="folder">src/</summary>
+          <ul>
+            <li><details data-view="wh3">
+              <summary class="folder">twwarhammer3/</summary>
+              <ul>
+                <li><a href="../src/twwarhammer3/__main__.py">__main__.py</a></li>
+                <li><details>
+                  <summary class="folder">battle/</summary>
+                  <ul>
+                    <li><a href="../src/twwarhammer3/battle/play.py">play.py</a></li>
+                    <li><a href="../src/twwarhammer3/battle/setup.py">setup.py</a></li>
+                    <li><a class="guide" href="../src/twwarhammer3/battle/">Browse battle/</a></li>
+                  </ul>
+                </details></li>
+                <li><details>
+                  <summary class="folder">engine/</summary>
+                  <ul>
+                    <li><a href="../src/twwarhammer3/engine/mailbox.py">mailbox.py</a></li>
+                    <li><a href="../src/twwarhammer3/engine/runtime.py">runtime.py</a></li>
+                    <li><a class="guide" href="../src/twwarhammer3/engine/">Browse engine/</a></li>
+                  </ul>
+                </details></li>
+                <li><a class="folder" href="../src/twwarhammer3/controllers/">controllers/</a></li>
+                <li><a href="../src/twwarhammer3/protocol.py">protocol.py</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/mod/">mod/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/scenarios/">scenarios/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/benchmarks/">benchmarks/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/results/">results/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/checkpoint/">checkpoint/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/multiplayer/">multiplayer/</a></li>
+                <li><a class="folder" href="../src/twwarhammer3/assets/">assets/</a></li>
+              </ul>
+            </details></li>
+            <li><details data-view="spire">
+              <summary class="folder">spire/</summary>
+              <ul>
+                <li><a href="../src/spire/__main__.py">__main__.py</a></li>
+                <li><details>
+                  <summary class="folder">fullrun/</summary>
+                  <ul>
+                    <li><a href="../src/spire/fullrun/play.py">play.py</a></li>
+                    <li><a href="../src/spire/fullrun/rules.py">rules.py</a></li>
+                    <li><a href="../src/spire/fullrun/llm.py">llm.py</a></li>
+                    <li><a class="guide" href="../src/spire/fullrun/">Browse fullrun/</a></li>
+                  </ul>
+                </details></li>
+                <li><details>
+                  <summary class="folder">engine/</summary>
+                  <ul>
+                    <li><a href="../src/spire/engine/bridge.py">bridge.py</a></li>
+                    <li><a href="../src/spire/engine/windows_relay.py">windows_relay.py</a></li>
+                    <li><a class="guide" href="../src/spire/engine/">Browse engine/</a></li>
+                  </ul>
+                </details></li>
+                <li><a href="../src/spire/decisions.py">decisions.py</a></li>
+                <li><a href="../src/spire/protocol.py">protocol.py</a></li>
+                <li><a class="folder" href="../src/spire/combat/">combat/</a></li>
+                <li><a class="folder" href="../src/spire/openweight/">openweight/</a></li>
+                <li><a class="folder" href="../src/spire/ppo/">ppo/</a></li>
+                <li><a class="folder" href="../src/spire/language/">language/</a></li>
+              </ul>
+            </details></li>
+            <li><details data-view="gameai">
+              <summary class="folder">gameai/</summary>
+              <ul>
+                <li><a href="../src/gameai/windows.py">windows.py</a></li>
+                <li><a href="../src/gameai/windows_game.py">windows_game.py</a></li>
+                <li><a href="../src/gameai/llm.py">llm.py</a></li>
+                <li><a href="../src/gameai/providers.py">providers.py</a></li>
+                <li><a href="../src/gameai/ledger.py">ledger.py</a></li>
+                <li><a href="../src/gameai/provenance.py">provenance.py</a></li>
+                <li><a href="../src/gameai/sft.py">sft.py</a></li>
+                <li><a href="../src/gameai/lm.py">lm.py</a></li>
+              </ul>
+            </details></li>
+          </ul>
+        </details></li>
+        <li><a class="folder" href="../configs/">configs/ <span class="guide">Inputs</span></a></li>
+        <li><a class="folder" href="../scripts/">scripts/ <span class="guide">Tools</span></a></li>
+        <li><a class="folder" href="../tests/">tests/ <span class="guide">Checks</span></a></li>
+        <li><a class="folder" href="./">docs/ <span class="guide">Guides</span></a></li>
+        <li><a class="folder" href="../runs/README.md">runs/ <span class="guide">Local evidence</span></a></li>
+        <li><a href="../pyproject.toml">pyproject.toml</a></li>
+      </ul>
+    </details>
+  </aside>
+
+  <main class="content">
+    <section class="view" id="wh3" aria-labelledby="wh3-title">
+      <header class="view-head">
+        <a class="path" href="../src/twwarhammer3/">src/twwarhammer3/</a>
+        <h2 id="wh3-title">Warhammer III</h2>
+        <p>Python controls a real-time custom battle through files shared with the Lua mod.</p>
+      </header>
+      <section class="panel" aria-labelledby="wh3-start">
+        <h3 id="wh3-start">Start a play job</h3>
+        <ol class="route start">
+          <li><a href="../src/twwarhammer3/__main__.py"><code>python -m twwarhammer3 play</code></a><p>Load options and select a controller.</p></li>
+          <li><a href="../src/twwarhammer3/battle/play.py"><code>play()</code></a><p>Load the scenario and launch or attach.</p></li>
+          <li><a href="../src/twwarhammer3/battle/play.py"><code>play_episode()</code></a><p>Make a fresh controller for each battle.</p></li>
+        </ol>
+        <h3 id="wh3-loop">One battle decision</h3>
+        <figure>
+          <ol class="route loop">
+            <li class="engine step" id="wh3-observe" tabindex="-1">
+              <span class="label">Lua → Python</span><strong>Read a snapshot</strong>
+              <p>Lua writes <code>observation.json</code>. The mailbox waits for a newer <code>seq</code>.</p>
+              <a href="../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"><code>publish_observation()</code></a><br>
+              <a href="../src/twwarhammer3/engine/mailbox.py"><code>Mailbox.wait_observation()</code></a>
+            </li>
+            <li class="step" id="wh3-public" tabindex="-1">
+              <span class="label">Python · battle loop</span><strong>Build the public view</strong>
+              <p>Pass friendly units, visible enemies and public context to the controller.</p>
+              <a href="../src/twwarhammer3/battle/play.py"><code>_drive()</code> and <code>public()</code></a>
+            </li>
+            <li class="step" id="wh3-decide" tabindex="-1">
+              <span class="label">Python · policy</span><strong>Choose orders</strong>
+              <p>The selected controller returns an order batch. A model call depends on the controller.</p>
+              <a href="../src/twwarhammer3/controllers/factory.py"><code>Controller.decide()</code></a><br>
+              <a href="../src/twwarhammer3/controllers/scripted.py">Scripted</a> · <a href="../src/twwarhammer3/controllers/llm.py">Model</a>
+            </li>
+            <li class="engine step" id="wh3-send" tabindex="-1">
+              <span class="label">Python → Lua</span><strong>Validate and send</strong>
+              <p>Check the orders, then publish <code>orders.json</code>. Lua applies orders and reports per-order results.</p>
+              <a href="../src/twwarhammer3/protocol.py"><code>validate_orders()</code></a><br>
+              <a href="../src/twwarhammer3/engine/mailbox.py"><code>Mailbox.write_orders()</code></a><br>
+              <a href="../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"><code>poll()</code></a>
+            </li>
+          </ol>
+          <figcaption class="return">A later snapshot carries the acknowledgement. Match it by <code>request</code>.</figcaption>
+        </figure>
+        <p class="output">The engine’s result ends the loop → <code>result.json</code> → <a href="../src/twwarhammer3/results/register.py">results register</a></p>
+      </section>
+      <section class="panel trace-panel" id="wh3-trace" aria-labelledby="wh3-trace-title">
+        <header>
+          <h3 id="wh3-trace-title">Recorded trace · Empire Knights flank</h3>
+          <p>Three rows from <code>episode-0000/trace.jsonl</code>. Follow <code>seq</code> into the decision and <code>request</code> into the acknowledgement.</p>
+        </header>
+        <ol class="trace-log">
+          <li class="trace-event">
+            <a class="trace-tag" href="#wh3-public"><small>04</small>observation</a>
+            <p><code>seq: 1 · time_ms: 5300</code> · The snapshot the policy received.</p>
+          </li>
+          <li class="trace-event">
+            <a class="trace-tag" href="#wh3-decide"><small>05</small>decision</a>
+            <p><code>seq: 1 · request: …-r1</code> · Move Swordsmen <code>f1</code> to <code>(-200, 100)</code> and Knights <code>f2</code> to <code>(-150, 200)</code>.</p>
+          </li>
+          <li class="trace-event">
+            <a class="trace-tag" href="#wh3-send"><small>06</small>ack</a>
+            <p><code>request: …-r1 · based_on: 1 · applied_ms: 8900</code> · Lua reported both orders accepted.</p>
+          </li>
+        </ol>
+        <details class="trace-meta">
+          <summary>Recording and trace readers</summary>
+          <p><code>runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000/trace.jsonl</code> · revision <code>b7e2dd1</code></p>
+          <p>The job stores its config and source revision in <code>manifest.json</code> and each battle’s ending in <code>result.json</code>.</p>
+          <p><a href="../src/twwarhammer3/results/digest.py">Digest source</a> · <a href="how-code-works.html#job">Walk through the recorded play job</a></p>
+        </details>
+      </section>
+      <div class="more">
+        <a href="twwarhammer3/README.md">WH3 guide and code map</a>
+        <a href="../src/twwarhammer3/scenarios/">Scenario policies and evaluators</a>
+        <a href="../src/twwarhammer3/benchmarks/">Trials and scoring</a>
+        <a href="../src/twwarhammer3/checkpoint/">Battle restore</a>
+        <a href="../src/twwarhammer3/multiplayer/">Native multiplayer</a>
+      </div>
+    </section>
+
+    <section class="view" id="spire" aria-labelledby="spire-title">
+      <header class="view-head">
+        <a class="path" href="../src/spire/">src/spire/</a>
+        <h2 id="spire-title">Slay the Spire</h2>
+        <p>Python plays through complete runs by sending commands to CommunicationMod over a TCP relay.</p>
+      </header>
+      <section class="panel" aria-labelledby="spire-start">
+        <h3 id="spire-start">Start a play job</h3>
+        <ol class="route start">
+          <li><a href="../src/spire/__main__.py"><code>python -m spire play</code></a><p>Load seeds and configure the model policy.</p></li>
+          <li><a href="../src/spire/fullrun/play.py"><code>play()</code></a><p>Record the job and iterate over seeds.</p></li>
+          <li><a href="../src/spire/fullrun/play.py"><code>play_run()</code></a><p>Open the bridge and launch a fresh JVM for the seed.</p></li>
+        </ol>
+        <h3 id="spire-loop">One full-run decision</h3>
+        <figure>
+          <ol class="route loop">
+            <li class="engine step" id="spire-observe" tabindex="-1">
+              <span class="label">Mod → Python</span><strong>Read a screen</strong>
+              <p>The relay forwards a JSON message. The loop waits until the game is ready for a command.</p>
+              <a href="../src/spire/engine/windows_relay.py"><code>relay()</code></a><br>
+              <a href="../src/spire/engine/bridge.py"><code>BridgeServer.receive()</code></a>
+            </li>
+            <li class="step" id="spire-public" tabindex="-1">
+              <span class="label">Python · decisions</span><strong>List legal choices</strong>
+              <p>Build a public <code>Decision</code> with labeled candidates tied to that screen.</p>
+              <a href="../src/spire/decisions.py"><code>decision_from_message()</code></a>
+            </li>
+            <li class="step" id="spire-decide" tabindex="-1">
+              <span class="label">Python · policy</span><strong>Choose a candidate</strong>
+              <p>The loop selects a sole candidate directly. Otherwise, rules or a model pick from the list.</p>
+              <a href="../src/spire/fullrun/play.py"><code>_decide()</code></a><br>
+              <a href="../src/spire/fullrun/rules.py">Rules</a> · <a href="../src/spire/fullrun/llm.py">Model policy</a>
+            </li>
+            <li class="engine step" id="spire-send" tabindex="-1">
+              <span class="label">Python → Mod</span><strong>Send its command</strong>
+              <p>Check the choice against the current candidates, log the action and send its command string.</p>
+              <a href="../src/spire/fullrun/play.py"><code>_drive()</code></a><br>
+              <a href="../src/spire/engine/bridge.py"><code>BridgeServer.send()</code></a>
+            </li>
+          </ol>
+          <figcaption class="return">CommunicationMod reports the next screen, which can include the run’s outcome.</figcaption>
+        </figure>
+        <p class="output">The game’s outcome ends the loop → <code>result.json</code> → <a href="../src/spire/fullrun/stats.py">results register</a></p>
+      </section>
+      <section class="panel trace-panel" id="spire-trace" aria-labelledby="spire-trace-title">
+        <header>
+          <h3 id="spire-trace-title">Recorded trace · Neow’s reward</h3>
+          <p>Selected rows from <code>run-0000/trace.jsonl</code>. The choice ID ends with the screen sequence and candidate index.</p>
+        </header>
+        <ol class="trace-log">
+          <li class="trace-event">
+            <a class="trace-tag" href="#spire-observe"><small>08</small>observation</a>
+            <p><code>sequence: 3 · screen_type: EVENT</code> · Neow offers four choices.</p>
+          </li>
+          <li class="trace-event">
+            <a class="trace-tag" href="#spire-decide"><small>10</small>decision</a>
+            <p><code>choice_id: …:3:0</code> · The model picks “Obtain a random rare Card.”</p>
+          </li>
+          <li class="trace-event">
+            <a class="trace-tag" href="#spire-send"><small>11</small>action</a>
+            <p><code>sequence: 3 · command: choose 0</code> · The bridge sends the selected command.</p>
+          </li>
+          <li class="trace-event">
+            <a class="trace-tag" href="#spire-observe"><small>12</small>observation</a>
+            <p><code>sequence: 4 · screen_type: EVENT</code> · Neow now offers “Leave.”</p>
+          </li>
+        </ol>
+        <details class="trace-meta">
+          <summary>Recording and trace readers</summary>
+          <p><code>runs/fullrun/llm-qwen36-v10.2-data-20261023-006/run-0000/trace.jsonl</code> · revision <code>6cf0a57</code></p>
+          <p>The job stores its seed list, config and source revision in <code>manifest.json</code> and each run’s ending in <code>result.json</code>.</p>
+          <p><a href="../src/spire/fullrun/digest.py">Digest source</a> · <a href="../src/spire/fullrun/replay.py">Replay source</a> · <a href="spire/fullrun/README.md">Full-run guide and evidence</a></p>
+        </details>
+      </section>
+      <div class="more">
+        <a href="spire/AGENTS.md">Spire layout guide</a>
+        <a href="../src/spire/combat/">First-combat benchmark</a>
+        <a href="../src/spire/ppo/">PPO training</a>
+        <a href="../src/spire/language/">Language-model training</a>
+        <a href="../src/spire/openweight/env.py">Full-run training environment</a>
+      </div>
+    </section>
+
+    <section class="view" id="gameai" aria-labelledby="shared-title">
+      <header class="view-head">
+        <a class="path" href="../src/gameai/">src/gameai/</a>
+        <h2 id="shared-title">Shared code</h2>
+        <p>Each game owns its play loop. Both use these services for parts of a job.</p>
+      </header>
+      <section class="panel" aria-labelledby="imports-title">
+        <h3 id="imports-title">Package imports</h3>
+        <div class="imports">
+          <a href="#wh3"><code>twwarhammer3/</code></a><p><span>imports →</span><a href="../src/gameai/"><code>gameai/</code></a></p>
+          <a href="#spire"><code>spire/</code></a><p><span>imports →</span><a href="../src/gameai/"><code>gameai/</code></a></p>
+        </div>
+        <h3>Where the games use it</h3>
+        <dl class="shared-files">
+          <div><dt><a href="../src/gameai/provenance.py"><code>provenance.py</code></a></dt><dd>Record the source revision and hashes when creating a job.</dd></div>
+          <div><dt><a href="../src/gameai/windows.py"><code>windows.py</code></a> · <a href="../src/gameai/windows_game.py"><code>windows_game.py</code></a></dt><dd>Launch and supervise the Windows game process.</dd></div>
+          <div><dt><a href="../src/gameai/llm.py"><code>llm.py</code></a> · <a href="../src/gameai/providers.py"><code>providers.py</code></a></dt><dd>Send model requests and handle provider-specific replies.</dd></div>
+          <div><dt><a href="../src/gameai/ledger.py"><code>ledger.py</code></a></dt><dd>Reserve funds and record charges for paid calls.</dd></div>
+          <div><dt><a href="../src/gameai/sft.py"><code>sft.py</code></a> · <a href="../src/gameai/lm.py"><code>lm.py</code></a></dt><dd>Build supervised training examples and score choices with local language models.</dd></div>
+        </dl>
+      </section>
+    </section>
+  </main>
+</div>
+
 <script>
-const packages = document.querySelectorAll('.packages a');
-const panes = document.querySelectorAll('.pane');
-function showPackage() {
-  const requested = location.hash.slice(1);
-  const active = Array.from(panes).some(pane => pane.id === requested) ? requested : 'wh3';
-  for (const pane of panes) pane.hidden = pane.id !== active;
-  for (const link of packages) {
-    if (link.hash === '#' + active) link.setAttribute('aria-current', 'location');
+const views = document.querySelectorAll('.view');
+const viewLinks = document.querySelectorAll('.views a');
+const branches = document.querySelectorAll('.tree [data-view]');
+const repository = document.querySelector('.repository');
+const narrow = matchMedia('(max-width: 820px)');
+let activeView;
+
+function showView() {
+  const target = document.getElementById(location.hash.slice(1));
+  const active = target?.closest('.view') || views[0];
+  if (active === activeView) return;
+  activeView = active;
+  for (const view of views) view.hidden = view !== active;
+  for (const link of viewLinks) {
+    if (link.hash === '#' + active.id) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
   }
+  for (const branch of branches) {
+    const selected = branch.dataset.view === active.id;
+    branch.toggleAttribute('data-active', selected);
+    if (selected) branch.open = true;
+  }
 }
-for (const link of packages) {
+
+function fitTree() {
+  repository.open = !narrow.matches;
+}
+
+for (const link of document.querySelectorAll('.views a, .imports a[href^="#"]')) {
   link.addEventListener('click', event => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     if (location.hash !== link.hash) history.pushState(null, '', link.hash);
-    showPackage();
+    showView();
+    window.scrollTo(0, 0);
   });
 }
-window.addEventListener('hashchange', showPackage);
-window.addEventListener('popstate', showPackage);
-showPackage();
+narrow.addEventListener('change', fitTree);
+window.addEventListener('hashchange', showView);
+window.addEventListener('popstate', showView);
+fitTree();
+showView();
 </script>
 </body>
 </html>
