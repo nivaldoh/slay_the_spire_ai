@@ -1297,7 +1297,7 @@ source = "2026-10-31 run, B1 outcome readers"
 [[plant]]
 id = "peers-first-difference-ignores-missing"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too\n                pair[\"first_difference_ms\"] = time_ms\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1306,7 +1306,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-reads-lines-unguarded"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "        problem = unreadable(event)"
 new = "        problem = None"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1315,7 +1315,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-row-type-unchecked"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            if \"error\" not in row and any(field in row and not isinstance(row[field], int | float)\n                                          for field in \"xz\"):"
 new = "            if False:"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1324,7 +1324,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-joins-by-alias"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "    return row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
 new = "    return row.get(\"id\") or row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1333,7 +1333,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-missing-ignores-failed-rows"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "                    and key not in failed[client] and (None, *key[1:]) not in failed[client]]"
 new = "                    ]"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1342,7 +1342,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-reads-every-event-as-an-observation"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            continue\n        data = event[\"event\"][\"data\"][\"observation\"]"
 new = "        data = event[\"event\"][\"data\"][\"observation\"]"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1351,7 +1351,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-last-missing-time-wins"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
 new = "            if gone:  # a missing unit differs too"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1360,7 +1360,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-first-difference-from-b-only"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
 new = "            if gone and client == b and pair[\"first_difference_ms\"] is None:"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1369,7 +1369,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-kind-optional"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            return None"
 new = "        if event[\"event\"].get(\"kind\") != \"observation\":\n            return None"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1378,7 +1378,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-battle-unchecked"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "        missing = [field for field in (\"battle\", \"time_ms\") if field not in data]"
 new = "        missing = [field for field in (\"time_ms\",) if field not in data]"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1387,7 +1387,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-error-rows-need-nothing"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            needed = ROW_FIELDS[:2] if \"error\" in row else ROW_FIELDS"
 new = "            needed = () if \"error\" in row else ROW_FIELDS"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1396,7 +1396,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "peers-z-unchecked"
 guards = "compare-peers reads worker evidence and names a malformed line"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "                                          for field in \"xz\"):"
 new = "                                          for field in \"x\"):"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
@@ -1735,7 +1735,7 @@ source = "2026-10-31 run, refusal sweep review"
 [[plant]]
 id = "worker-names-prefix-match"
 guards = "worker names stay inside the runs folder"
-file = "src/twwarhammer3/engine/worker.py"
+file = "src/twwarhammer3/multiplayer/worker.py"
 old = "    if not all(re.fullmatch(r\"[A-Za-z0-9_-]+\", name) for name in names):"
 new = "    if not all(re.match(r\"[A-Za-z0-9_-]+\", name) for name in names):"
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
@@ -1744,7 +1744,7 @@ source = "2026-10-31 run, refusal sweep review"
 [[plant]]
 id = "worker-ack-deadline-restarts"
 guards = "a request the game never acknowledges becomes unknown after ack_s"
-file = "src/twwarhammer3/engine/worker.py"
+file = "src/twwarhammer3/multiplayer/worker.py"
 old = "                if not self._changed.wait(max(0.0, deadline - time.monotonic())):"
 new = "                if not self._changed.wait(self.ack_s):"
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
@@ -1843,7 +1843,7 @@ source = "2026-10-31 optional processing telemetry oracle"
 [[plant]]
 id = "worker-missing-observation-guard-removed"
 guards = "A move before the first observation is rejected without publishing orders"
-file = "src/twwarhammer3/engine/worker.py"
+file = "src/twwarhammer3/multiplayer/worker.py"
 old = "        if observation is None:\n            return \"no observation yet\""
 new = "        if False:\n            return \"no observation yet\""
 tests = ["tests/twwarhammer3/test_wh3_worker.py::test_a_move_before_the_first_observation_is_rejected_without_touching_the_bridge"]
@@ -2450,7 +2450,7 @@ source = "2026-11-02 cleanup, WH3 tests batch 2"
 [[plant]]
 id = "link-lease-without-owner-check"
 guards = "A lease generation is honoured only for the client whose hello made it"
-file = "src/twwarhammer3/engine/link.py"
+file = "src/twwarhammer3/multiplayer/link.py"
 old = 'return lease if lease and lease["client"] == client else None'
 new = "return lease"
 tests = ["tests/twwarhammer3/test_wh3_link.py"]
@@ -2964,7 +2964,7 @@ source = "2026-11-02 factory startup independent review"
 [[plant]]
 id = "link-status-for-seq-zero-lands-on-the-last-command"
 guards = "A status report names a delivered command by its 1-based seq; seq 0 is no command, even while the latest one waits delivered"
-file = "src/twwarhammer3/engine/link.py"
+file = "src/twwarhammer3/multiplayer/link.py"
 old = "commands[seq - 1] if 0 < seq <= len(commands) else None"
 new = "commands[seq - 1] if 0 <= seq <= len(commands) else None"
 tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_status_for_a_command_never_delivered_is_refused_and_changes_nothing"]
@@ -2973,7 +2973,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "link-status-for-a-queued-command-is-recorded-late"
 guards = "A status for a queued or unknown command is refused as not delivered and leaves no record"
-file = "src/twwarhammer3/engine/link.py"
+file = "src/twwarhammer3/multiplayer/link.py"
 old = 'if not command or command["state"] in ("queued", "fenced"):'
 new = 'if not command and command["state"] in ("queued", "fenced"):'
 tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_status_for_a_command_never_delivered_is_refused_and_changes_nothing"]
@@ -2982,7 +2982,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "link-stopped-worker-requests-time-out-at-once"
 guards = "A stopped worker sends its evidence with a full heartbeat timeout, not one cut at its past deadline"
-file = "src/twwarhammer3/engine/link.py"
+file = "src/twwarhammer3/multiplayer/link.py"
 old = "if self.deadline is not None and not self._stopped:"
 new = "if self.deadline is not None or not self._stopped:"
 tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_request_timeout_is_cut_at_the_lease_deadline_until_the_worker_stops"]
@@ -2991,7 +2991,7 @@ source = "2026-11-02 runtime-readers survivor batch"
 [[plant]]
 id = "link-running-worker-timeout-not-cut-at-deadline"
 guards = "A running worker's heartbeat wait and request timeout end at its lease deadline"
-file = "src/twwarhammer3/engine/link.py"
+file = "src/twwarhammer3/multiplayer/link.py"
 old = "if self.deadline is not None and not self._stopped:"
 new = "if self.deadline is None and not self._stopped:"
 tests = ["tests/twwarhammer3/test_wh3_link.py::test_a_request_timeout_is_cut_at_the_lease_deadline_until_the_worker_stops"]
@@ -3940,7 +3940,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "worker-refusal-misses-attributeerror"
 guards = "a frontend body whose scenario side is not an object is rejected, and the worker keeps running"
-file = "src/twwarhammer3/engine/worker.py"
+file = "src/twwarhammer3/multiplayer/worker.py"
 old = "            except (ValueError, KeyError, TypeError, AttributeError) as error:"
 new = "            except (ValueError, KeyError, TypeError) as error:"
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
@@ -3949,7 +3949,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "worker-unready-battle-proof"
 guards = "a new battle proves only a set_lobby_ready with ready true, never an un-ready"
-file = "src/twwarhammer3/engine/worker.py"
+file = "src/twwarhammer3/multiplayer/worker.py"
 old = '            if ready and body["ready"] and current not in (None, battle):'
 new = '            if ready and current not in (None, battle):'
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
@@ -4012,7 +4012,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "adapter-helper-checks-the-wrong-capture-folder"
 guards = "A Helper refuses a capture folder left by an earlier run, so its old adapter_ready and rows are never taken as this attempt's"
-file = "src/twwarhammer3/engine/multiplayer_adapter.py"
+file = "src/twwarhammer3/multiplayer/multiplayer_adapter.py"
 old = "if self.native.exists():  # an old run's rows would pass as this attempt's"
 new = "if self.evidence.exists():  # an old run's rows would pass as this attempt's"
 tests = ["tests/twwarhammer3/test_wh3_multiplayer_adapter.py"]
@@ -4021,7 +4021,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "peers-native-later-ending-always-conflicts"
 guards = "compare-peers --native calls an ending that is later only over a tick its client did not write inconclusive, not a conflict"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "            or any(ending_conflict(a, b) for a, b in itertools.combinations(names, 2))"
 new = "            or len(set(endings.values()) - {None}) > 1"
 tests = ["tests/twwarhammer3/test_wh3_native_peers.py"]
@@ -4030,7 +4030,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "peers-native-null-hit-points-conflict"
 guards = "compare-peers --native lists a value only one client failed to read (null hit points) as unavailable and inconclusive, not a unit conflict"
-file = "src/twwarhammer3/battle/peers.py"
+file = "src/twwarhammer3/multiplayer/peers.py"
 old = "                unread = unread_fields(rows)"
 new = "                unread = []"
 tests = ["tests/twwarhammer3/test_wh3_native_peers.py"]

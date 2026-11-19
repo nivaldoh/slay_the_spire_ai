@@ -1,4 +1,4 @@
-"""The native multiplayer worker and coordinator command (engine/worker.py): a real Coordinator on
+"""The native multiplayer worker and coordinator command: a real Coordinator on
 127.0.0.1, the worker on a thread, and a fake game thread that publishes observation.json into a
 temporary bridge and answers orders.json as the battle Lua does (it deletes the request, drops
 another job's or battle's, and acknowledges in the next observation's ``orders``, which later
@@ -21,8 +21,9 @@ from wh3_fixtures import bridge_observation, fake_install
 
 from twwarhammer3.__main__ import main
 from twwarhammer3.battle import setup
-from twwarhammer3.engine import runtime, worker
-from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
+from twwarhammer3.engine import runtime
+from twwarhammer3.multiplayer import worker
+from twwarhammer3.multiplayer.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 
 TOKEN = "token-for-a-5e1f0c"
 MOVE = {"unit": "f1", "type": "move", "x": 10.0, "z": 20.0}

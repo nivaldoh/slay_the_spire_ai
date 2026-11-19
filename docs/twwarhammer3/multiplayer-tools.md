@@ -9,7 +9,7 @@ scratch, not a maintained runner; its typed lifecycle has no live pass past `sta
 
 ## Worker operations
 
-[worker.py](../../src/twwarhammer3/engine/worker.py) documents process ownership, manifests,
+[worker.py](../../src/twwarhammer3/multiplayer/worker.py) documents process ownership, manifests,
 acknowledgements and teardown. The coordinator takes one JSON line on stdin per command:
 
 ```json
@@ -60,7 +60,7 @@ not just the coordinator status. The anonymous `end_deployment_execute` count do
 identify which player became ready or show that every peer received it.
 
 The adapter requires deployment phase 4, a current battle interface and a network battle.
-Readiness timing rests on JUDGEMENT? `src/twwarhammer3/engine/multiplayer_adapter.js` Ready phase. This guard
+Readiness timing rests on JUDGEMENT? `src/twwarhammer3/multiplayer/multiplayer_adapter.js` Ready phase. This guard
 has no live run yet; the earlier direct-call evidence used phase 0. The battle-interface
 dependency also leaves headless use unproven.
 
@@ -72,7 +72,7 @@ The caller owns the game PID. Attach before constructing the battle: existing se
 not recovered from memory. The passive command is:
 
 ```bash
-python -m twwarhammer3.engine.multiplayer_probe --pid OWNED_PID --output FRESH_DIR --seconds N
+python -m twwarhammer3.multiplayer.multiplayer_probe --pid OWNED_PID --output FRESH_DIR --seconds N
 ```
 
 It validates the actual executable hash and hook signatures and writes `manifest.json` and
@@ -93,7 +93,7 @@ events are not a replacement for the full per-tick file. Capture events include:
 | Event | Meaning |
 |---|---|
 | `completed_tick` | Tick/checksum after worker join; `phase` is the client-side copy, `sim_phase` the simulated phase. |
-| `witness` | Raw unit rows at scheduled ticks and around captured command packets. Layout: `unitRow` in [multiplayer_probe.js](../../src/twwarhammer3/engine/multiplayer_probe.js). |
+| `witness` | Raw unit rows at scheduled ticks and around captured command packets. Layout: `unitRow` in [multiplayer_probe.js](../../src/twwarhammer3/multiplayer/multiplayer_probe.js). |
 | `command_packet` | Command id, flags, stream offset and last completed tick; includes engine-generated commands. |
 | `end_deployment_*` | Trace from Start Battle through sender, command and execution; execution includes ready count/countdown. |
 | `battle_decided` | Engine ending tick and zero-based winning alliance; -1 means draw. |
@@ -116,7 +116,7 @@ Append `#GENERATION` to a path when its capture contains multiple battles (quote
 interval; otherwise the interval spans all recorded clients' ticks. No nearest-tick match
 or floating-point tolerance is used. `--packets A=ID:COUNT` checks a named command id's
 submission count; enumerate the intended ids because the engine sends its own commands.
-Comparator choices rest on the marked judgements in [peers.py](../../src/twwarhammer3/battle/peers.py)
+Comparator choices rest on the marked judgements in [peers.py](../../src/twwarhammer3/multiplayer/peers.py)
 and the foundation plan's Raw witness choice.
 
 Read the JSON `verdict`: `conflict` means compared evidence differs; `inconclusive` means

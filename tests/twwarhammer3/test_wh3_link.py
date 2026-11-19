@@ -1,4 +1,4 @@
-"""The worker <-> coordinator link (engine/link.py): fake workers over real loopback HTTP,
+"""The worker <-> coordinator link (multiplayer/link.py): fake workers over real loopback HTTP,
 with lease clocks set by hand and poll bounds of a fraction of a second. The worker's poll
 timeout (1 s here) must outlast the coordinator's poll bound. Followed: PySC2
 0df53d38c153972f1e368572ba65b1442a0fd41f ``pysc2/tests/multi_player_test.py``: separate
@@ -12,7 +12,7 @@ from urllib.parse import urlencode, urlsplit
 
 import pytest
 
-from twwarhammer3.engine.link import (
+from twwarhammer3.multiplayer.link import (
     MAX_BODY,
     Coordinator,
     LinkRefused,
@@ -345,7 +345,7 @@ def test_a_command_whose_poll_returns_after_the_worker_deadline_is_not_taken(
         own.t = 15
         return reply
 
-    monkeypatch.setattr("twwarhammer3.engine.link.request", reply_at_15)
+    monkeypatch.setattr("twwarhammer3.multiplayer.link.request", reply_at_15)
     assert link.next_command() is None and stops == ["A"]
     clock.t = 15
     assert coordinator.failed
@@ -499,7 +499,7 @@ def test_events_too_large_to_send_or_keep_are_refused(coordinator):
 
 
 def test_an_accepted_event_is_sent_even_when_it_fills_a_request(coordinator, monkeypatch):
-    monkeypatch.setattr("twwarhammer3.engine.link.MAX_BODY", 2000)  # the coordinator's too
+    monkeypatch.setattr("twwarhammer3.multiplayer.link.MAX_BODY", 2000)  # the coordinator's too
     stops = []
     link = worker(coordinator, stops=stops)
     link.hello()

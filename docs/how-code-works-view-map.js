@@ -402,9 +402,9 @@ DIAGRAM.tabs.push({
         "Each game client has a worker, joined by a coordinator. PC-hosted battles with a VM peer are recorded; full control remains unverified.",
       "command": "uv run python -m twwarhammer3 coordinator --match M --attempt A1 --clients A,B",
       "files": [
-        "src/twwarhammer3/engine/link.py",
-        "src/twwarhammer3/engine/worker.py",
-        "src/twwarhammer3/battle/peers.py",
+        "src/twwarhammer3/multiplayer/link.py",
+        "src/twwarhammer3/multiplayer/worker.py",
+        "src/twwarhammer3/multiplayer/peers.py",
         "scripts/wh3_gcp.py",
         "scripts/gcp/",
         "configs/twwarhammer3/gcp-regions.json"
@@ -412,8 +412,8 @@ DIAGRAM.tabs.push({
       "status": "built, unverified",
       "commit": "601d249",
       "refs": [
-        "src/twwarhammer3/engine/worker.py:1-3",
-        "src/twwarhammer3/battle/peers.py:1-3",
+        "src/twwarhammer3/multiplayer/worker.py:1-3",
+        "src/twwarhammer3/multiplayer/peers.py:1-3",
         "docs/twwarhammer3/log.md:1684-1707"
       ]
     },
@@ -595,7 +595,7 @@ DIAGRAM.tabs.push({
       "label": "a worker per client",
       "payload": "Each worker reads and writes one game client's files.",
       "status": "built, unverified",
-      "refs": ["src/twwarhammer3/engine/worker.py:1-3"]
+      "refs": ["src/twwarhammer3/multiplayer/worker.py:1-3"]
     },
     {
       "id": "map.play>models",

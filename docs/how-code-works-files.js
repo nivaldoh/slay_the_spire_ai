@@ -64,37 +64,37 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/link.py",
+   "path": "src/twwarhammer3/multiplayer/link.py",
    "text": "native multiplayer: the coordinator's link",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/worker.py",
+   "path": "src/twwarhammer3/multiplayer/worker.py",
    "text": "native multiplayer: per-client worker, typed lobby operations, readiness and leave; contracts in its docstring and multiplayer-tools.md",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/multiplayer_probe.py",
+   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.py",
    "text": "bounded Windows reference capture; checks the actual process image and runs the passive multiplayer discovery agent",
    "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/multiplayer_probe.js",
+   "path": "src/twwarhammer3/multiplayer/multiplayer_probe.js",
    "text": "passive deployment/command traces, completed-tick checksums, raw unit witnesses, phases and outcome",
    "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/multiplayer_adapter.py",
+   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.py",
    "text": "Windows Frida helper and stdin requests for direct deployment readiness, plus passive capture",
    "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/multiplayer_adapter.js",
+   "path": "src/twwarhammer3/multiplayer/multiplayer_adapter.js",
    "text": "fixed readiness sender on the game thread; phase/layout guards and submission evidence; unverified",
    "box": "map.runtime",
    "list": "docs/twwarhammer3/README.md"
@@ -526,7 +526,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/peers.py",
+   "path": "src/twwarhammer3/multiplayer/peers.py",
    "text": "native multiplayer: Lua-observation comparison and completed-tick/raw-witness comparison (`compare-peers --native`)",
    "box": "map.multiplayer",
    "list": "docs/twwarhammer3/README.md"

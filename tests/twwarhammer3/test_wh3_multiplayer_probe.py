@@ -12,7 +12,7 @@ import threading
 
 import pytest
 
-from twwarhammer3.engine import multiplayer_probe as probe
+from twwarhammer3.multiplayer import multiplayer_probe as probe
 
 
 def agent_check(checks):

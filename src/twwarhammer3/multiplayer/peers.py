@@ -1,10 +1,10 @@
 """Offline comparison of what the clients of one native match attempt observed (plan step 4,
 docs/twwarhammer3/native-multiplayer.md, and its Verification matrix's comparator row).
 
-Input: an attempt directory the coordinator wrote (engine/link.py). The manifest, the first
+Input: an attempt directory the coordinator wrote (multiplayer/link.py). The manifest, the first
 line of ``match.jsonl``, names the clients; ``events-<client>.jsonl`` holds that worker's
 events, and an event of kind ``observation`` carries one battle observation as
-``{"written_ns", "observation"}`` (engine/worker.py, ``Worker.watch``). Its evaluator-only
+``{"written_ns", "observation"}`` (multiplayer/worker.py, ``Worker.watch``). Its evaluator-only
 ``native`` section (engine/mailbox.py) lists every unit with ``alliance``, ``army``,
 ``index``, ``ui_id``, ``type`` and raw ``x`` and ``z``. A client without an events file has
 no observations. An identical observation sent twice counts once. One client can
@@ -60,7 +60,7 @@ and ``differences`` (every compared unit that is not exact:
 B]}``).
 
 Completed-tick mode (``compare_captures``, schema ``native-v1``): compares each client's
-``native.jsonl`` from engine/multiplayer_probe.py, not Lua observations, so it is the plan's
+``native.jsonl`` from multiplayer/multiplayer_probe.py, not Lua observations, so it is the plan's
 "same tick" rule (docs/twwarhammer3/multiplayer-control-foundation.md, stage 2). Checksums are
 compared at every tick of the interval and raw unit rows at every scheduled tick, with no
 tolerance and without nearest-tick matching. The interval defaults to everything any client

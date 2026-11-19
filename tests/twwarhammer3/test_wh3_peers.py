@@ -1,6 +1,6 @@
-"""The offline peer comparison (battle/peers.py) on synthetic observations that each client's
-worker sends through the real coordinator over loopback (engine/link.py): each one goes out
-through the worker's own ``Worker.watch`` (engine/worker.py), so the evidence files have the
+"""The offline peer comparison (multiplayer/peers.py) on synthetic observations that each client's
+worker sends through the real coordinator over loopback (multiplayer/link.py): each one goes out
+through the worker's own ``Worker.watch`` (multiplayer/worker.py), so the evidence files have the
 worker's event shape and the coordinator's layout. Positions and identities are made up;
 nothing here says how real peers' observations line up."""
 
@@ -8,9 +8,9 @@ from operator import setitem
 
 import pytest
 
-from twwarhammer3.battle.peers import compare
-from twwarhammer3.engine.link import Coordinator, WorkerLink, token_sha256
-from twwarhammer3.engine.worker import Worker
+from twwarhammer3.multiplayer.link import Coordinator, WorkerLink, token_sha256
+from twwarhammer3.multiplayer.peers import compare
+from twwarhammer3.multiplayer.worker import Worker
 
 HALBERDIERS, HANDGUNNERS = "wh_main_emp_inf_halberdiers", "wh_main_emp_inf_handgunners"
 

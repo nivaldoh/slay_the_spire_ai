@@ -145,7 +145,7 @@ def build_parser() -> argparse.ArgumentParser:
                         " beside the game (Windows Frida Python; records native evidence)")
     worker.add_argument("--max-minutes", type=float, default=None,
                         help="stop the worker and its game after this long"
-                        " (default: MAX_MINUTES in engine/worker.py)")
+                        " (default: MAX_MINUTES in multiplayer/worker.py)")
 
     pack = commands.add_parser("pack", help="Build the mod pack, or list/extract a pack")
     pack.add_argument("--output", type=Path, default=Path("runs/twwarhammer3/twwarhammer3.pack"))
@@ -388,7 +388,7 @@ def run_doctor(args, parser) -> int:
 
 
 def run_coordinator(args, parser) -> int:
-    from twwarhammer3.engine.worker import serve
+    from twwarhammer3.multiplayer.worker import serve
 
     try:
         return serve(args.match, args.attempt, args.clients.split(","), port=args.port)
@@ -398,7 +398,7 @@ def run_coordinator(args, parser) -> int:
 
 def run_worker(args, parser) -> int:
     from twwarhammer3.engine import runtime
-    from twwarhammer3.engine.worker import MAX_MINUTES, run
+    from twwarhammer3.multiplayer.worker import MAX_MINUTES, run
 
     if args.bridge and not args.attach:
         parser.error("--bridge needs --attach: an owned game's mod reads C:/wh3-agent/bridge")
@@ -594,7 +594,7 @@ def run_stats(args, parser) -> int:
 
 
 def run_compare_peers(args, parser) -> int:
-    from twwarhammer3.battle.peers import compare, compare_captures, load_capture
+    from twwarhammer3.multiplayer.peers import compare, compare_captures, load_capture
 
     if bool(args.attempt) == bool(args.native):
         parser.error("give an attempt directory or --native, not both")

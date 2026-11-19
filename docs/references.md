@@ -1027,7 +1027,7 @@ Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-mu
 - Kubernetes client-go [`tools/leaderelection/leaderelection.go`](https://github.com/kubernetes/client-go/blob/4563439f729012b84179286a88bc9d191bf3d35e/tools/leaderelection/leaderelection.go)
   at `4563439f`: a client acts only on times from its own clock, and a holder that cannot renew
   within RenewDeadline calls OnStoppedLeading once; client-go stamps its observed time after the
-  update returns, while `engine/link.py` times the worker lease from the send time. **read**
+  update returns, while `multiplayer/link.py` times the worker lease from the send time. **read**
 - Public list prices for the quote worksheet (`runs/twwarhammer3/native-multiplayer/quote-worksheet.md`,
   git-ignored; not a quote): Google Cloud
   [GPU regions](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),

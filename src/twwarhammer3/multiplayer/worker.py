@@ -1,5 +1,5 @@
 """A native multiplayer worker joins one game client's mailbox to the match coordinator's link
-(``engine/link.py``); ``serve`` runs the coordinator for one match attempt. Plan:
+(``link.py``); ``serve`` runs the coordinator for one match attempt. Plan:
 docs/twwarhammer3/native-multiplayer.md, "Architecture", "Identity, timing and evidence
 contract", "Proposed worker connection" and steps 4 and 5.
 
@@ -10,7 +10,7 @@ on Linux; on Windows the folder's access rules decide), printing only its path, 
 those files when the attempt closes (the plan's teardown revokes task tokens). Every worker
 must report the same four fields (``expected_manifest``): the pinned Steam build and
 ``Warhammer3.exe`` sha256, the sha256 of the mod pack built in memory from this checkout's mod
-source, and ``source_sha256`` over the files of ``play.SOURCES`` (no git, so a VM needs none;
+source, and ``source_sha256`` over the files of ``scope.SOURCES`` (no git, so a VM needs none;
 a checkout that converts line endings differs). Operator commands are JSON lines on stdin,
 ``{"client", "body"}``; EOF or Ctrl-C closes the attempt.
 
@@ -29,7 +29,7 @@ The body ``{"control": "ready"}`` (``READY``) is written and acknowledged the sa
 Lua then presses this client's own Start Battle, during deployment only. ``{"control": "leave"}``
 (``LEAVE``) likewise asks the battle Lua to quit to the main menu. ``{"operation":
 "ready_deployment"}`` (``READY_DEPLOYMENT``, a worker started with ``native``) goes to the
-experimental direct adapter (engine/multiplayer_adapter.py) instead of a click: refused or expired
+direct adapter (multiplayer_adapter.py) instead of a click: refused or expired
 is ``rejected``, submitted is ``submitted``, and the engine's anonymous ready count arrives as an
 ``adapter`` event (``end_deployment_execute``). A frontend that loads is a ``frontend`` event,
 which is how a leave is seen to finish. ``--menu`` adds
@@ -67,10 +67,10 @@ from gameai import windows
 from gameai.provenance import REPO_ROOT, sha256, source_fingerprints
 from twwarhammer3.battle import setup
 from twwarhammer3.engine import runtime
-from twwarhammer3.engine.link import Coordinator, LinkRefused, WorkerLink, token_sha256
 from twwarhammer3.engine.mailbox import Mailbox
-from twwarhammer3.engine.multiplayer_adapter import REQUEST_S, Helper
 from twwarhammer3.engine.runtime import pack_sha256
+from twwarhammer3.multiplayer.link import Coordinator, LinkRefused, WorkerLink, token_sha256
+from twwarhammer3.multiplayer.multiplayer_adapter import REQUEST_S, Helper
 from twwarhammer3.protocol import IllegalActionError, validate_orders
 from twwarhammer3.scope import SOURCES
 
@@ -119,7 +119,7 @@ def check_names(*names: str) -> None:
 
 
 def source_sha256() -> str:
-    """sha256 over play.SOURCES' file hashes, keyed by POSIX path so WSL and Windows agree."""
+    """sha256 over scope.SOURCES' file hashes, keyed by POSIX path so WSL and Windows agree."""
     files = {Path(name).as_posix(): digest
              for name, digest in source_fingerprints(SOURCES).items()}
     return hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()

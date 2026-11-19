@@ -232,7 +232,7 @@ def test_report_explicit_job_list_includes_failures_and_rejects_an_empty_selecti
 
 def test_compare_peers_prints_the_summary_and_reports_a_refusal_as_a_usage_error(
         tmp_path, monkeypatch, capsys):
-    from twwarhammer3.battle import peers
+    from twwarhammer3.multiplayer import peers
 
     monkeypatch.setattr(peers, "compare", lambda path: {"attempt": str(path)})
     monkeypatch.setattr(sys, "argv", ["wh3", "compare-peers", str(tmp_path)])

@@ -21,7 +21,7 @@ are retained as history, not the current capability list.
 ### Discovery history
 
 2026-11-04, branch `wh3-multiplayer-foundation`: stage 1 in progress. A bounded passive
-reference probe (`engine/multiplayer_probe.py` and `.js`) follows deployment callback
+reference probe (`multiplayer/multiplayer_probe.py` and `.js`) follows deployment callback
 dispatch to its dynamically resolved handler. It hashes the actual process image, checks
 all hook signatures/layouts before attaching, and records source-side Windows wall times,
 per-invocation identities and diagnostic completed-tick checksums after worker join.
@@ -35,7 +35,7 @@ the underlying session operation can be traced or invoked. No native lifecycle o
 has been promoted to an adapter. Evidence: `runs/wh3-multiplayer-foundation/`.
 
 The capture helper runs under the existing Windows Frida Python as
-`python -m twwarhammer3.engine.multiplayer_probe --pid OWNED_PID --output FRESH_DIR --seconds N`.
+`python -m twwarhammer3.multiplayer.multiplayer_probe --pid OWNED_PID --output FRESH_DIR --seconds N`.
 Its caller must own the game; attach before constructing the reference battle. It never
 launches or closes a game. A `STOP` file ends capture. An error or missing `ready` exits
 nonzero; zero means only that capture ran, not readiness, synchrony or acceptance.
@@ -186,7 +186,7 @@ Evidence locations, deliberately outside Git:
 - `runs/twwarhammer3/native-multiplayer/mp1/combined/` and `mp2/combined/` (independently
   recounted using the current comparator; equal to the retained comparison outputs).
 
-The current [comparator](../../src/twwarhammer3/battle/peers.py) joins equal Lua `time_ms`
+The current [comparator](../../src/twwarhammer3/multiplayer/peers.py) joins equal Lua `time_ms`
 and compares position, type and UI ID, not a complete engine snapshot. The fixed observation
 grid prevents acknowledgements from moving regular sample times; it does not make reads
 atomic at a common completed tick. Moving units on both screens is useful replication
@@ -348,7 +348,7 @@ Preserve numeric precision. Keep omniscient samples and native IDs evaluator-onl
 forwarded to a policy. Sample collection must not wait for another client or policy.
 
 Calibrate cross-peer tick origins, hashes and identity mappings before comparison. Add a
-versioned completed-tick mode to `battle/peers.py`; retain the old Lua-time mode for historical
+versioned completed-tick mode to `multiplayer/peers.py`; retain the old Lua-time mode for historical
 evidence. Compare raw state independently of checksums, using only fields established as
 comparable by the reference. If a required field/hash cannot be calibrated, report the
 missing capability rather than silently dropping it to pass.
@@ -378,7 +378,7 @@ JUDGEMENT: Reset lifetime — Codex, 2026-11-03: retain owned clients after a no
 with fresh attempt/link/mailbox scopes inside an outer process scope. Cold restarts every
 match are simpler but slower; warm-reset design and its checks rest on this choice.
 
-`engine/worker.py` currently couples one owned game to one attempt. For the proposed warm
+`multiplayer/worker.py` currently couples one owned game to one attempt. For the proposed warm
 reset, drain both endings, leave, confirm the old session is gone, invalidate old requests
 and native handles, then establish a new attempt. The frontend, battle Lua and native
 adapter must acknowledge the new binding before accepting commands. A persistent frontend

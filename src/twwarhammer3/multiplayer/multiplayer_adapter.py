@@ -23,8 +23,8 @@ import uuid
 from pathlib import Path
 
 from gameai import windows
-from twwarhammer3.engine import multiplayer_probe as probe
 from twwarhammer3.engine import runtime
+from twwarhammer3.multiplayer import multiplayer_probe as probe
 
 AGENT = Path(__file__).with_suffix(".js")
 OPERATIONS = ("ready_deployment",)
@@ -90,7 +90,7 @@ class Helper:
         evidence.parent.mkdir(parents=True, exist_ok=True)
         self.console = evidence.with_name("helper-console.txt").open("w")
         code = (f"import sys; sys.path.insert(0, {source_path()!r}); "
-                "from twwarhammer3.engine.multiplayer_adapter import main; "
+                "from twwarhammer3.multiplayer.multiplayer_adapter import main; "
                 "raise SystemExit(main())")
         self.process = run([str(FRIDA_PYTHON), "-c", code, "--pid", str(pid),
                             "--output", windows.windows_path(self.native),

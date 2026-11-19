@@ -13,7 +13,7 @@ import pytest
 from test_wh3_multiplayer_probe import agent_check
 
 from twwarhammer3.__main__ import main
-from twwarhammer3.battle.peers import compare_captures, load_capture, submission_problems
+from twwarhammer3.multiplayer.peers import compare_captures, load_capture, submission_problems
 
 GENERATE = r'''
 load(`

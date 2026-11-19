@@ -215,37 +215,37 @@ const MP_LAYOUT = { file: MP_DOC, line: 157, name: "Client layout" };
 const MP_PLATFORM = { file: MP_DOC, line: 161, name: "Worker platform" };
 const MP_TOTALS = { file: MP_DOC, line: 51, name: "Multiplayer friendly totals", sure: false };
 const MP_SIZES = {
-  file: "src/twwarhammer3/engine/link.py",
+  file: "src/twwarhammer3/multiplayer/link.py",
   line: 77,
   name: "link size limits",
   sure: false,
 };
 const MP_REHELLO = {
-  file: "src/twwarhammer3/engine/link.py",
+  file: "src/twwarhammer3/multiplayer/link.py",
   line: 241,
   name: "rehello",
   sure: false,
 };
 const MP_SESSION = {
-  file: "src/twwarhammer3/engine/worker.py",
+  file: "src/twwarhammer3/multiplayer/worker.py",
   line: 64,
   name: "worker session",
   sure: false,
 };
 const MP_ACK = {
-  file: "src/twwarhammer3/engine/worker.py",
+  file: "src/twwarhammer3/multiplayer/worker.py",
   line: 68,
   name: "acknowledgement bound",
   sure: false,
 };
 const MP_RUN_BOUND = {
-  file: "src/twwarhammer3/engine/worker.py",
+  file: "src/twwarhammer3/multiplayer/worker.py",
   line: 72,
   name: "worker run bound",
   sure: false,
 };
 const MP_SUBMITTED = {
-  file: "src/twwarhammer3/engine/worker.py",
+  file: "src/twwarhammer3/multiplayer/worker.py",
   line: 204,
   name: "submitted",
   sure: false,
@@ -262,22 +262,22 @@ const MP_ROUTES = {
   name: "Multiplayer action routes",
   sure: false,
 };
-const MP_JOIN = { file: "src/twwarhammer3/battle/peers.py", line: 67, name: "unit join key" };
-const MP_SAME_TIME = { file: "src/twwarhammer3/battle/peers.py", line: 137, name: "same time" };
+const MP_JOIN = { file: "src/twwarhammer3/multiplayer/peers.py", line: 67, name: "unit join key" };
+const MP_SAME_TIME = { file: "src/twwarhammer3/multiplayer/peers.py", line: 137, name: "same time" };
 const MP_REPEATED = {
-  file: "src/twwarhammer3/battle/peers.py",
+  file: "src/twwarhammer3/multiplayer/peers.py",
   line: 151,
   name: "repeated time",
   sure: false,
 };
 const MP_FAILED_READ = {
-  file: "src/twwarhammer3/battle/peers.py",
+  file: "src/twwarhammer3/multiplayer/peers.py",
   line: 159,
   name: "failed read",
   sure: false,
 };
 const MP_EXACT = {
-  file: "src/twwarhammer3/battle/peers.py",
+  file: "src/twwarhammer3/multiplayer/peers.py",
   line: 202,
   name: "exact",
   sure: false,
@@ -1707,8 +1707,8 @@ const DIAGRAM = {
           status:
             "outside our code: a person (or a script) at the coordinator's terminal; commands are JSON lines on its stdin (worker.py:14-15)",
           refs: [
-            "src/twwarhammer3/engine/worker.py:14-15",
-            "src/twwarhammer3/engine/worker.py:132-142",
+            "src/twwarhammer3/multiplayer/worker.py:14-15",
+            "src/twwarhammer3/multiplayer/worker.py:132-142",
             MP_DOC + ":98",
           ],
           note:
@@ -1730,8 +1730,8 @@ const DIAGRAM = {
           refs: [
             "src/twwarhammer3/__main__.py:98-104",
             "src/twwarhammer3/__main__.py:278-284",
-            "src/twwarhammer3/engine/worker.py:116-145",
-            "src/twwarhammer3/engine/link.py:122-193",
+            "src/twwarhammer3/multiplayer/worker.py:116-145",
+            "src/twwarhammer3/multiplayer/link.py:122-193",
           ],
           rests: [MP_LAYOUT, MP_CONTRACT],
           note:
@@ -1752,9 +1752,9 @@ const DIAGRAM = {
           h: 64,
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:140",
-            "src/twwarhammer3/engine/link.py:147-152",
-            "src/twwarhammer3/engine/link.py:195-233",
+            "src/twwarhammer3/multiplayer/link.py:140",
+            "src/twwarhammer3/multiplayer/link.py:147-152",
+            "src/twwarhammer3/multiplayer/link.py:195-233",
           ],
           rests: [MP_SIZES],
           note:
@@ -1774,9 +1774,9 @@ const DIAGRAM = {
           h: 50,
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:110-113",
-            "src/twwarhammer3/engine/worker.py:119-130",
-            "src/twwarhammer3/engine/link.py:92-93",
+            "src/twwarhammer3/multiplayer/worker.py:110-113",
+            "src/twwarhammer3/multiplayer/worker.py:119-130",
+            "src/twwarhammer3/multiplayer/link.py:92-93",
           ],
           note: "secrets.token_urlsafe(32) per client. Only the path is printed; the evidence keeps only each token's sha256. Deleted when the attempt closes.",
         },
@@ -1792,11 +1792,11 @@ const DIAGRAM = {
           h: 56,
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/worker.py:62",
-            "src/twwarhammer3/engine/link.py:38-41",
-            "src/twwarhammer3/engine/link.py:136-139",
-            "src/twwarhammer3/engine/link.py:270-274",
-            "src/twwarhammer3/engine/link.py:360-363",
+            "src/twwarhammer3/multiplayer/worker.py:62",
+            "src/twwarhammer3/multiplayer/link.py:38-41",
+            "src/twwarhammer3/multiplayer/link.py:136-139",
+            "src/twwarhammer3/multiplayer/link.py:270-274",
+            "src/twwarhammer3/multiplayer/link.py:360-363",
           ],
           note:
             "runs/twwarhammer3/native-multiplayer/<match>/<attempt>/. match.jsonl: the manifest," +
@@ -1817,8 +1817,8 @@ const DIAGRAM = {
           refs: [
             "src/twwarhammer3/__main__.py:205-208",
             "src/twwarhammer3/__main__.py:455-466",
-            "src/twwarhammer3/battle/peers.py:135-224",
-            "src/twwarhammer3/battle/peers.py:30-34",
+            "src/twwarhammer3/multiplayer/peers.py:135-224",
+            "src/twwarhammer3/multiplayer/peers.py:30-34",
           ],
           rests: [MP_SAME_TIME, MP_JOIN, MP_EXACT],
           note:
@@ -1839,7 +1839,7 @@ const DIAGRAM = {
           refs: [
             "src/twwarhammer3/__main__.py:106-118",
             "src/twwarhammer3/__main__.py:286-302",
-            "src/twwarhammer3/engine/worker.py:212-265",
+            "src/twwarhammer3/multiplayer/worker.py:212-265",
             "src/gameai/windows.py:22-29",
           ],
           rests: [MP_PLATFORM, MP_RUN_BOUND],
@@ -1860,10 +1860,10 @@ const DIAGRAM = {
           h: 58,
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:73-76",
-            "src/twwarhammer3/engine/link.py:422-453",
-            "src/twwarhammer3/engine/link.py:512-514",
-            "src/twwarhammer3/engine/link.py:533-539",
+            "src/twwarhammer3/multiplayer/link.py:73-76",
+            "src/twwarhammer3/multiplayer/link.py:422-453",
+            "src/twwarhammer3/multiplayer/link.py:512-514",
+            "src/twwarhammer3/multiplayer/link.py:533-539",
           ],
           rests: [MP_WORKER_LINK, MP_SIZES],
           note:
@@ -1883,9 +1883,9 @@ const DIAGRAM = {
           h: 58,
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/link.py:465-496",
-            "src/twwarhammer3/engine/link.py:516-531",
-            "src/twwarhammer3/engine/worker.py:186-209",
+            "src/twwarhammer3/multiplayer/link.py:465-496",
+            "src/twwarhammer3/multiplayer/link.py:516-531",
+            "src/twwarhammer3/multiplayer/worker.py:186-209",
             "src/twwarhammer3/engine/mailbox.py:232-237",
           ],
           rests: [MP_WORKER_LINK, MP_ACK, MP_SUBMITTED],
@@ -1906,7 +1906,7 @@ const DIAGRAM = {
           w: 210,
           h: 58,
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:212-265"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:212-265"],
           rests: [MP_PLATFORM, MP_RUN_BOUND],
           note: "The same code as worker A, for client B. Each worker knows only its own client.",
         },
@@ -1922,9 +1922,9 @@ const DIAGRAM = {
           h: 58,
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:73-76",
-            "src/twwarhammer3/engine/link.py:422-453",
-            "src/twwarhammer3/engine/link.py:512-514",
+            "src/twwarhammer3/multiplayer/link.py:73-76",
+            "src/twwarhammer3/multiplayer/link.py:422-453",
+            "src/twwarhammer3/multiplayer/link.py:512-514",
           ],
           rests: [MP_WORKER_LINK, MP_SIZES],
         },
@@ -1940,9 +1940,9 @@ const DIAGRAM = {
           h: 58,
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/link.py:465-496",
-            "src/twwarhammer3/engine/link.py:516-531",
-            "src/twwarhammer3/engine/worker.py:186-209",
+            "src/twwarhammer3/multiplayer/link.py:465-496",
+            "src/twwarhammer3/multiplayer/link.py:516-531",
+            "src/twwarhammer3/multiplayer/worker.py:186-209",
           ],
           rests: [MP_WORKER_LINK, MP_ACK, MP_SUBMITTED],
         },
@@ -2091,8 +2091,8 @@ const DIAGRAM = {
           refs: [
             MP_DOC + ":270-292",
             MP_DOC + ":103",
-            "src/twwarhammer3/engine/link.py:3-4",
-            "src/twwarhammer3/engine/link.py:147",
+            "src/twwarhammer3/multiplayer/link.py:3-4",
+            "src/twwarhammer3/multiplayer/link.py:147",
           ],
           rests: [MP_WORKER_LINK],
           note: "The coordinator speaks plain HTTP on 127.0.0.1 only, so a worker on another machine cannot reach it without a link like this. Google IAP TCP tunnelling is the named alternative. Needs an account.",
@@ -2108,7 +2108,7 @@ const DIAGRAM = {
             'JSON lines {"client": "A", "body": {"based_on": <seq>, "orders": [...]}}; EOF or Ctrl-C closes the attempt',
           sync: "blocking: the main thread reads a line and calls Coordinator.submit",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:132-142"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:132-142"],
         },
         {
           id: "mp.coord>handler",
@@ -2118,7 +2118,7 @@ const DIAGRAM = {
           payload: "A queued command; notify_all wakes a waiting long poll",
           sync: "shared state under one threading.Condition",
           status: MP_LINK,
-          refs: ["src/twwarhammer3/engine/link.py:177-193", "src/twwarhammer3/engine/link.py:140"],
+          refs: ["src/twwarhammer3/multiplayer/link.py:177-193", "src/twwarhammer3/multiplayer/link.py:140"],
           rests: [MP_CONTRACT],
         },
         {
@@ -2129,7 +2129,7 @@ const DIAGRAM = {
           payload: "One token per client in a 0600 file; only its path is printed",
           sync: "file write at start; serve's exit stack deletes them at close",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:119-130"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:119-130"],
         },
         {
           id: "mp.coord>evidence",
@@ -2140,10 +2140,10 @@ const DIAGRAM = {
           sync: "appended under the Condition",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:150",
-            "src/twwarhammer3/engine/link.py:191",
-            "src/twwarhammer3/engine/link.py:160-166",
-            "src/twwarhammer3/engine/link.py:345-363",
+            "src/twwarhammer3/multiplayer/link.py:150",
+            "src/twwarhammer3/multiplayer/link.py:191",
+            "src/twwarhammer3/multiplayer/link.py:160-166",
+            "src/twwarhammer3/multiplayer/link.py:345-363",
           ],
         },
         {
@@ -2156,14 +2156,14 @@ const DIAGRAM = {
           sync: "appended by the handler thread, under the Condition",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:232",
-            "src/twwarhammer3/engine/link.py:244",
-            "src/twwarhammer3/engine/link.py:266",
-            "src/twwarhammer3/engine/link.py:239",
-            "src/twwarhammer3/engine/link.py:250-251",
-            "src/twwarhammer3/engine/link.py:270-274",
-            "src/twwarhammer3/engine/link.py:303-304",
-            "src/twwarhammer3/engine/link.py:329-332",
+            "src/twwarhammer3/multiplayer/link.py:232",
+            "src/twwarhammer3/multiplayer/link.py:244",
+            "src/twwarhammer3/multiplayer/link.py:266",
+            "src/twwarhammer3/multiplayer/link.py:239",
+            "src/twwarhammer3/multiplayer/link.py:250-251",
+            "src/twwarhammer3/multiplayer/link.py:270-274",
+            "src/twwarhammer3/multiplayer/link.py:303-304",
+            "src/twwarhammer3/multiplayer/link.py:329-332",
           ],
         },
         {
@@ -2177,10 +2177,10 @@ const DIAGRAM = {
           sync: "blocking, 2 s timeout; once, before the worker touches the game or the bridge",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:387-403",
-            "src/twwarhammer3/engine/link.py:235-253",
-            "src/twwarhammer3/engine/worker.py:94-107",
-            "src/twwarhammer3/engine/worker.py:222",
+            "src/twwarhammer3/multiplayer/link.py:387-403",
+            "src/twwarhammer3/multiplayer/link.py:235-253",
+            "src/twwarhammer3/multiplayer/worker.py:94-107",
+            "src/twwarhammer3/multiplayer/worker.py:222",
           ],
           rests: [MP_WORKER_LINK, MP_REHELLO],
         },
@@ -2194,9 +2194,9 @@ const DIAGRAM = {
           sync: "blocking on its own thread, about every 2 s; the timeout is cut at the lease deadline",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:422-453",
-            "src/twwarhammer3/engine/link.py:255-286",
-            "src/twwarhammer3/engine/link.py:533-539",
+            "src/twwarhammer3/multiplayer/link.py:422-453",
+            "src/twwarhammer3/multiplayer/link.py:255-286",
+            "src/twwarhammer3/multiplayer/link.py:533-539",
           ],
           rests: [MP_WORKER_LINK, MP_SIZES],
         },
@@ -2211,8 +2211,8 @@ const DIAGRAM = {
           sync: "long poll: the handler thread waits on the Condition up to 10 s; client timeout 12 s",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:465-478",
-            "src/twwarhammer3/engine/link.py:288-312",
+            "src/twwarhammer3/multiplayer/link.py:465-478",
+            "src/twwarhammer3/multiplayer/link.py:288-312",
           ],
           rests: [MP_WORKER_LINK],
         },
@@ -2227,9 +2227,9 @@ const DIAGRAM = {
           sync: "blocking; resent every 2 s after a network error until close; any refusal raises",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:480-496",
-            "src/twwarhammer3/engine/link.py:314-333",
-            "src/twwarhammer3/engine/link.py:82",
+            "src/twwarhammer3/multiplayer/link.py:480-496",
+            "src/twwarhammer3/multiplayer/link.py:314-333",
+            "src/twwarhammer3/multiplayer/link.py:82",
           ],
           rests: [MP_WORKER_LINK],
         },
@@ -2243,8 +2243,8 @@ const DIAGRAM = {
           sync: "blocking, 2 s timeout; once",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:387-403",
-            "src/twwarhammer3/engine/link.py:235-253",
+            "src/twwarhammer3/multiplayer/link.py:387-403",
+            "src/twwarhammer3/multiplayer/link.py:235-253",
           ],
           rests: [MP_WORKER_LINK, MP_REHELLO],
         },
@@ -2256,7 +2256,7 @@ const DIAGRAM = {
           payload: "As worker A's heartbeats",
           sync: "blocking on its own thread, about every 2 s",
           status: MP_LINK,
-          refs: ["src/twwarhammer3/engine/link.py:422-453"],
+          refs: ["src/twwarhammer3/multiplayer/link.py:422-453"],
           rests: [MP_WORKER_LINK, MP_SIZES],
         },
         {
@@ -2269,8 +2269,8 @@ const DIAGRAM = {
           sync: "long poll, up to 10 s",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:465-478",
-            "src/twwarhammer3/engine/link.py:288-312",
+            "src/twwarhammer3/multiplayer/link.py:465-478",
+            "src/twwarhammer3/multiplayer/link.py:288-312",
           ],
           rests: [MP_WORKER_LINK],
         },
@@ -2283,7 +2283,7 @@ const DIAGRAM = {
           payload: "As worker A's status reports",
           sync: "blocking",
           status: MP_LINK,
-          refs: ["src/twwarhammer3/engine/link.py:480-496"],
+          refs: ["src/twwarhammer3/multiplayer/link.py:480-496"],
         },
         {
           id: "mp.bridgeA>A",
@@ -2295,8 +2295,8 @@ const DIAGRAM = {
           sync: "polled every 0.1 s by the main thread",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:157-166",
-            "src/twwarhammer3/engine/worker.py:258-259",
+            "src/twwarhammer3/multiplayer/worker.py:157-166",
+            "src/twwarhammer3/multiplayer/worker.py:258-259",
             "src/twwarhammer3/engine/mailbox.py:259-274",
           ],
         },
@@ -2311,8 +2311,8 @@ const DIAGRAM = {
           sync: "file write",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:228-246",
-            "src/twwarhammer3/engine/worker.py:64-67",
+            "src/twwarhammer3/multiplayer/worker.py:228-246",
+            "src/twwarhammer3/multiplayer/worker.py:64-67",
             "src/twwarhammer3/engine/mailbox.py:184-210",
           ],
           rests: [MP_SESSION],
@@ -2328,7 +2328,7 @@ const DIAGRAM = {
           sync: "a subprocess; the worker watches the supervisor process",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:247-257",
+            "src/twwarhammer3/multiplayer/worker.py:247-257",
             "src/gameai/windows.py:115-130",
             "src/gameai/windows.py:165-175",
             "src/twwarhammer3/engine/runtime.py:135-143",
@@ -2344,9 +2344,9 @@ const DIAGRAM = {
           sync: "in memory, under a lock",
           status: MP_LINK,
           refs: [
-            "src/twwarhammer3/engine/link.py:405-420",
-            "src/twwarhammer3/engine/link.py:424-432",
-            "src/twwarhammer3/engine/worker.py:162-163",
+            "src/twwarhammer3/multiplayer/link.py:405-420",
+            "src/twwarhammer3/multiplayer/link.py:424-432",
+            "src/twwarhammer3/multiplayer/worker.py:162-163",
           ],
           rests: [MP_SIZES],
         },
@@ -2359,10 +2359,10 @@ const DIAGRAM = {
           sync: "threading.Condition: watch() notifies",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:155",
-            "src/twwarhammer3/engine/worker.py:164-166",
-            "src/twwarhammer3/engine/worker.py:189-191",
-            "src/twwarhammer3/engine/worker.py:198-203",
+            "src/twwarhammer3/multiplayer/worker.py:155",
+            "src/twwarhammer3/multiplayer/worker.py:164-166",
+            "src/twwarhammer3/multiplayer/worker.py:189-191",
+            "src/twwarhammer3/multiplayer/worker.py:198-203",
           ],
         },
         {
@@ -2375,7 +2375,7 @@ const DIAGRAM = {
           sync: "file write once the last request was consumed (waits up to 10 s)",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/worker.py:195-197",
+            "src/twwarhammer3/multiplayer/worker.py:195-197",
             "src/twwarhammer3/engine/mailbox.py:212-242",
           ],
           rests: [MP_ACK],
@@ -2411,7 +2411,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "polled every 0.1 s",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:157-166"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:157-166"],
         },
         {
           id: "mp.B>bridgeB",
@@ -2421,7 +2421,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "file write",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:228-246"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:228-246"],
           rests: [MP_SESSION],
         },
         {
@@ -2432,7 +2432,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "a subprocess",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:247-257"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:247-257"],
         },
         {
           id: "mp.B>Bhb",
@@ -2442,7 +2442,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "in memory, under a lock",
           status: MP_LINK,
-          refs: ["src/twwarhammer3/engine/link.py:405-420"],
+          refs: ["src/twwarhammer3/multiplayer/link.py:405-420"],
         },
         {
           id: "mp.B>Bpoll",
@@ -2451,7 +2451,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "threading.Condition",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:164-166"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:164-166"],
         },
         {
           id: "mp.Bpoll>bridgeB",
@@ -2461,7 +2461,7 @@ const DIAGRAM = {
           payload: "As for worker A",
           sync: "file write",
           status: MP_WORKER,
-          refs: ["src/twwarhammer3/engine/worker.py:195-197"],
+          refs: ["src/twwarhammer3/multiplayer/worker.py:195-197"],
         },
         {
           id: "mp.gameB>bridgeB",
@@ -2510,8 +2510,8 @@ const DIAGRAM = {
           sync: "offline: files",
           status: MP_PEERS,
           refs: [
-            "src/twwarhammer3/battle/peers.py:100-132",
-            "src/twwarhammer3/battle/peers.py:214-220",
+            "src/twwarhammer3/multiplayer/peers.py:100-132",
+            "src/twwarhammer3/multiplayer/peers.py:214-220",
           ],
         },
         {
@@ -2523,7 +2523,7 @@ const DIAGRAM = {
             "Per client: battle id, observations, repeated times, native errors, failed rows. Per pair: common and compared times, exact units, raw dx and dz, mismatches, missing units, first_difference_ms",
           sync: "printed as JSON on stdout; not saved",
           status: MP_PEERS,
-          refs: ["src/twwarhammer3/__main__.py:455-466", "src/twwarhammer3/battle/peers.py:40-58"],
+          refs: ["src/twwarhammer3/__main__.py:455-466", "src/twwarhammer3/multiplayer/peers.py:40-58"],
           rests: [MP_SAME_TIME, MP_JOIN, MP_REPEATED, MP_FAILED_READ, MP_EXACT],
         },
         {
@@ -2552,7 +2552,7 @@ const DIAGRAM = {
             "The plan's chart has each policy read a permitted view from its worker and send commands back. Today the only command entry is Coordinator.submit, from stdin",
           sync: "not designed",
           status: "planned: native-multiplayer.md, Architecture",
-          refs: [MP_DOC + ":170-183", "src/twwarhammer3/engine/worker.py:133-142"],
+          refs: [MP_DOC + ":170-183", "src/twwarhammer3/multiplayer/worker.py:133-142"],
         },
         {
           id: "mp.team>policy",
@@ -2609,8 +2609,8 @@ const DIAGRAM = {
                 "The operator starts the coordinator for one attempt of one match. It makes a token per client, records the manifest first (the four build fields every worker must match, and each token's sha256) and starts serving on 127.0.0.1, one thread per request.",
               refs: [
                 "src/twwarhammer3/__main__.py:98-104",
-                "src/twwarhammer3/engine/worker.py:116-125",
-                "src/twwarhammer3/engine/link.py:129-152",
+                "src/twwarhammer3/multiplayer/worker.py:116-125",
+                "src/twwarhammer3/multiplayer/link.py:129-152",
               ],
               rests: [MP_CONTRACT],
             },
@@ -2621,8 +2621,8 @@ const DIAGRAM = {
               caption:
                 "Then it writes each token to a 0600 file, prints only the file's path, and prints the URL it serves.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:110-113",
-                "src/twwarhammer3/engine/worker.py:126-131",
+                "src/twwarhammer3/multiplayer/worker.py:110-113",
+                "src/twwarhammer3/multiplayer/worker.py:126-131",
               ],
             },
             {
@@ -2633,10 +2633,10 @@ const DIAGRAM = {
               caption:
                 "The operator starts worker A with its token file. Before it touches the game or the bridge, A says hello with the four fields measured on its host. The coordinator compares only those four (409 naming any that differ), records the hello and grants a lease generation.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:212-222",
-                "src/twwarhammer3/engine/worker.py:100-107",
-                "src/twwarhammer3/engine/link.py:387-403",
-                "src/twwarhammer3/engine/link.py:235-253",
+                "src/twwarhammer3/multiplayer/worker.py:212-222",
+                "src/twwarhammer3/multiplayer/worker.py:100-107",
+                "src/twwarhammer3/multiplayer/link.py:387-403",
+                "src/twwarhammer3/multiplayer/link.py:235-253",
               ],
             },
             {
@@ -2647,9 +2647,9 @@ const DIAGRAM = {
               caption:
                 "A's lease deadline is the hello's send time plus 15 s, on its own clock. It starts the heartbeat thread and the long-poll thread now, before the lock and the launch. (With --attach it first reads the running session, which must have the same mode.)",
               refs: [
-                "src/twwarhammer3/engine/link.py:398-399",
-                "src/twwarhammer3/engine/link.py:498-505",
-                "src/twwarhammer3/engine/worker.py:228-235",
+                "src/twwarhammer3/multiplayer/link.py:398-399",
+                "src/twwarhammer3/multiplayer/link.py:498-505",
+                "src/twwarhammer3/multiplayer/worker.py:228-235",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -2662,9 +2662,9 @@ const DIAGRAM = {
               caption:
                 "About every 2 s, from 2 s after it starts, the heartbeat thread posts the next number and the spooled events. A 'renewed' reply that comes back before the deadline moves it to that request's send time plus 15 s.",
               refs: [
-                "src/twwarhammer3/engine/link.py:422-453",
-                "src/twwarhammer3/engine/link.py:512-514",
-                "src/twwarhammer3/engine/link.py:283-285",
+                "src/twwarhammer3/multiplayer/link.py:422-453",
+                "src/twwarhammer3/multiplayer/link.py:512-514",
+                "src/twwarhammer3/multiplayer/link.py:283-285",
               ],
               rests: [MP_WORKER_LINK, MP_SIZES],
             },
@@ -2675,8 +2675,8 @@ const DIAGRAM = {
               dots: [["mp.Apoll>handler"]],
               caption: "The long-poll thread asks for a command: GET /next.",
               refs: [
-                "src/twwarhammer3/engine/link.py:465-471",
-                "src/twwarhammer3/engine/link.py:516-519",
+                "src/twwarhammer3/multiplayer/link.py:465-471",
+                "src/twwarhammer3/multiplayer/link.py:516-519",
               ],
             },
             {
@@ -2686,7 +2686,7 @@ const DIAGRAM = {
               who: "A",
               caption:
                 "No command is queued, so its handler thread waits on the coordinator's Condition, up to 10 s.",
-              refs: ["src/twwarhammer3/engine/link.py:288-312"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:288-312"],
               rests: [MP_WORKER_LINK],
             },
             {
@@ -2697,8 +2697,8 @@ const DIAGRAM = {
               caption:
                 "Worker B says hello on its own, in any order, and then runs the same start-up (drawn here only for A). A second hello from one client would fail the whole attempt.",
               refs: [
-                "src/twwarhammer3/engine/link.py:241-245",
-                "src/twwarhammer3/engine/worker.py:222",
+                "src/twwarhammer3/multiplayer/link.py:241-245",
+                "src/twwarhammer3/multiplayer/worker.py:222",
               ],
               rests: [MP_REHELLO],
             },
@@ -2709,7 +2709,7 @@ const DIAGRAM = {
               who: "B",
               dots: [MP_BEAT_B],
               caption: "B's heartbeats, on B's own thread and clock.",
-              refs: ["src/twwarhammer3/engine/link.py:512-514"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:512-514"],
             },
             {
               at: 1350,
@@ -2719,8 +2719,8 @@ const DIAGRAM = {
               caption:
                 "Owned mode: A's main thread takes the runtime lock, prepares the runtime, resets the bridge folder and writes session.json: this client's job, observe_ms 1000, tick_ms 250, no replay, multiplayer 'control'.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:228-246",
-                "src/twwarhammer3/engine/worker.py:64-67",
+                "src/twwarhammer3/multiplayer/worker.py:228-246",
+                "src/twwarhammer3/multiplayer/worker.py:64-67",
                 "src/twwarhammer3/engine/mailbox.py:184-210",
               ],
               rests: [MP_SESSION],
@@ -2733,8 +2733,8 @@ const DIAGRAM = {
               caption:
                 "It launches the game: Windows Python runs a supervisor script that starts Warhammer3.exe. Heartbeats and polls go on meanwhile; a command that came now would be rejected (no observation yet).",
               refs: [
-                "src/twwarhammer3/engine/worker.py:247-249",
-                "src/twwarhammer3/engine/worker.py:178-179",
+                "src/twwarhammer3/multiplayer/worker.py:247-249",
+                "src/twwarhammer3/multiplayer/worker.py:178-179",
                 "src/gameai/windows.py:115-130",
               ],
             },
@@ -2758,7 +2758,7 @@ const DIAGRAM = {
               who: "A",
               caption:
                 "A's main thread now runs the watch loop: it reads observation.json every 0.1 s and checks that the game is still running. There is no observation yet.",
-              refs: ["src/twwarhammer3/engine/worker.py:250-259"],
+              refs: ["src/twwarhammer3/multiplayer/worker.py:250-259"],
             },
             {
               at: 8000,
@@ -2777,7 +2777,7 @@ const DIAGRAM = {
               caption:
                 "The watch loop sees a new (battle, seq) and spools it whole as an 'observation' event, with the file's Windows write time.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:157-166",
+                "src/twwarhammer3/multiplayer/worker.py:157-166",
                 "src/twwarhammer3/engine/mailbox.py:259-274",
               ],
             },
@@ -2787,7 +2787,7 @@ const DIAGRAM = {
               dots: [["mp.handler>evidence"]],
               caption:
                 "The next heartbeat carries it. The coordinator stores each event seq once, appends it to events-A.jsonl and acknowledges the highest seq with no gap. It sends observations nowhere else.",
-              refs: ["src/twwarhammer3/engine/link.py:255-276"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:255-276"],
             },
             {
               at: 10000,
@@ -2812,7 +2812,7 @@ const DIAGRAM = {
               dots: [[...MP_OBS_A, "mp.A>Ahb"]],
               caption:
                 "From then on an observation every 1000 ms of battle time, each with the evaluator-only native section. Each new one is spooled for the next heartbeat.",
-              refs: [LUA + ":1331-1335", LUA + ":755", "src/twwarhammer3/engine/worker.py:157-166"],
+              refs: [LUA + ":1331-1335", LUA + ":755", "src/twwarhammer3/multiplayer/worker.py:157-166"],
               rests: [MP_SESSION],
             },
             {
@@ -2823,8 +2823,8 @@ const DIAGRAM = {
               caption:
                 "The 10 s pass with no command: the reply is {command: null}, and the next long poll starts at once.",
               refs: [
-                "src/twwarhammer3/engine/link.py:306-308",
-                "src/twwarhammer3/engine/link.py:516-524",
+                "src/twwarhammer3/multiplayer/link.py:306-308",
+                "src/twwarhammer3/multiplayer/link.py:516-524",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -2900,7 +2900,7 @@ const DIAGRAM = {
               dots: [["mp.op>coord"]],
               caption:
                 'The operator types one line: {"client": "A", "body": {"based_on": <seq>, "orders": [{"unit": "f1", "type": "move", "x": ..., "z": ...}]}}.',
-              refs: ["src/twwarhammer3/engine/worker.py:133-138"],
+              refs: ["src/twwarhammer3/multiplayer/worker.py:133-138"],
             },
             {
               at: 200,
@@ -2909,8 +2909,8 @@ const DIAGRAM = {
               caption:
                 "submit queues it as A's command 1, records 'command' and wakes the waiting long poll. It would refuse if the attempt had failed, A held no lease, or A's last command had no final status. It does not know A's mode.",
               refs: [
-                "src/twwarhammer3/engine/link.py:177-193",
-                "src/twwarhammer3/engine/worker.py:142",
+                "src/twwarhammer3/multiplayer/link.py:177-193",
+                "src/twwarhammer3/multiplayer/worker.py:142",
               ],
               rests: [MP_CONTRACT],
             },
@@ -2920,7 +2920,7 @@ const DIAGRAM = {
               dots: [{ who: "A", path: ["~mp.Apoll>handler"] }, ["mp.handler>evidence"]],
               caption:
                 "The long poll wakes, marks the command delivered (it is never delivered again), records 'delivered' and returns it to worker A.",
-              refs: ["src/twwarhammer3/engine/link.py:296-305"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:296-305"],
             },
             {
               at: 350,
@@ -2930,9 +2930,9 @@ const DIAGRAM = {
               caption:
                 "A heartbeat goes out meanwhile: the heartbeat thread runs on its own during the long poll. The long-poll thread will wait only for the watch loop to report the acknowledgement.",
               refs: [
-                "src/twwarhammer3/engine/link.py:498-505",
-                "src/twwarhammer3/engine/link.py:512-514",
-                "src/twwarhammer3/engine/worker.py:199-202",
+                "src/twwarhammer3/multiplayer/link.py:498-505",
+                "src/twwarhammer3/multiplayer/link.py:512-514",
+                "src/twwarhammer3/multiplayer/worker.py:199-202",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -2945,8 +2945,8 @@ const DIAGRAM = {
               caption:
                 "The long-poll thread runs the command. It checks it against the latest observation: control mode, a body of exactly based_on and orders, move orders with no 'queue' key, then validate_orders. A failure writes nothing and reports 'rejected'.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:186-194",
-                "src/twwarhammer3/engine/worker.py:168-184",
+                "src/twwarhammer3/multiplayer/worker.py:186-194",
+                "src/twwarhammer3/multiplayer/worker.py:168-184",
               ],
             },
             {
@@ -2957,7 +2957,7 @@ const DIAGRAM = {
               caption:
                 "It writes orders.json once the previous request is consumed (waiting up to 10 s) and spools a 'written' event.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:195-197",
+                "src/twwarhammer3/multiplayer/worker.py:195-197",
                 "src/twwarhammer3/engine/mailbox.py:232-242",
               ],
               rests: [MP_ACK],
@@ -3012,8 +3012,8 @@ const DIAGRAM = {
               caption:
                 "The watch loop spools the new observation and wakes the long-poll thread, which sees its request acknowledged.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:157-166",
-                "src/twwarhammer3/engine/worker.py:198-203",
+                "src/twwarhammer3/multiplayer/worker.py:157-166",
+                "src/twwarhammer3/multiplayer/worker.py:198-203",
               ],
             },
             {
@@ -3024,9 +3024,9 @@ const DIAGRAM = {
               caption:
                 "It spools a 'submitted' event with the ack and reports 'submitted', whatever the results' ok say: an unreachable move is 'submitted' too. The coordinator records the status; it is final.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:204-209",
-                "src/twwarhammer3/engine/link.py:480-496",
-                "src/twwarhammer3/engine/link.py:314-333",
+                "src/twwarhammer3/multiplayer/worker.py:204-209",
+                "src/twwarhammer3/multiplayer/link.py:480-496",
+                "src/twwarhammer3/multiplayer/link.py:314-333",
               ],
               rests: [MP_SUBMITTED],
             },
@@ -3037,8 +3037,8 @@ const DIAGRAM = {
               dots: [["~mp.Apoll>status", "mp.Apoll>handler"]],
               caption: "The reply comes back, and the next long poll asks for commands after 1.",
               refs: [
-                "src/twwarhammer3/engine/link.py:477",
-                "src/twwarhammer3/engine/link.py:516-531",
+                "src/twwarhammer3/multiplayer/link.py:477",
+                "src/twwarhammer3/multiplayer/link.py:516-531",
               ],
             },
             {
@@ -3049,8 +3049,8 @@ const DIAGRAM = {
               caption:
                 "The next heartbeat carries the spooled events ('written', the new observation, 'submitted') to events-A.jsonl.",
               refs: [
-                "src/twwarhammer3/engine/link.py:422-453",
-                "src/twwarhammer3/engine/link.py:270-274",
+                "src/twwarhammer3/multiplayer/link.py:422-453",
+                "src/twwarhammer3/multiplayer/link.py:270-274",
               ],
             },
           ],
@@ -3106,8 +3106,8 @@ const DIAGRAM = {
               dots: [["mp.op>coord"]],
               caption: "The operator ends the attempt: EOF on the coordinator's stdin, or Ctrl-C.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:132-133",
-                "src/twwarhammer3/engine/worker.py:14-15",
+                "src/twwarhammer3/multiplayer/worker.py:132-133",
+                "src/twwarhammer3/multiplayer/worker.py:14-15",
               ],
             },
             {
@@ -3116,7 +3116,7 @@ const DIAGRAM = {
               dots: [["mp.coord>tokens"]],
               caption:
                 "serve's exit stack unwinds in reverse order: the token files are deleted first.",
-              refs: ["src/twwarhammer3/engine/worker.py:123-130"],
+              refs: ["src/twwarhammer3/multiplayer/worker.py:123-130"],
             },
             {
               at: 450,
@@ -3126,10 +3126,10 @@ const DIAGRAM = {
               caption:
                 "Then close(): a last lease check; queued commands become 'fenced' and delivered ones without a status 'unknown'; 'closed' is recorded with any failure; a waiting long poll is told to return no command; the server shuts down. close() sends no 'ended'.",
               refs: [
-                "src/twwarhammer3/engine/link.py:160-168",
-                "src/twwarhammer3/engine/link.py:353-358",
-                "src/twwarhammer3/engine/link.py:306-308",
-                "src/twwarhammer3/engine/link.py:280-286",
+                "src/twwarhammer3/multiplayer/link.py:160-168",
+                "src/twwarhammer3/multiplayer/link.py:353-358",
+                "src/twwarhammer3/multiplayer/link.py:306-308",
+                "src/twwarhammer3/multiplayer/link.py:280-286",
               ],
             },
             {
@@ -3138,7 +3138,7 @@ const DIAGRAM = {
               box: "mp.coord",
               caption:
                 "The coordinator prints 'closed' and exits 0, or 'closed: <why>' and 1 if the attempt had failed.",
-              refs: ["src/twwarhammer3/engine/worker.py:143-145"],
+              refs: ["src/twwarhammer3/multiplayer/worker.py:143-145"],
             },
             {
               at: 900,
@@ -3150,10 +3150,10 @@ const DIAGRAM = {
               caption:
                 "Once the server is down, worker A learns of the close only through errors: each heartbeat fails to connect, so nothing renews its lease. A heartbeat that reached the server while close() ran, before the shutdown, would still be answered 'renewed'.",
               refs: [
-                "src/twwarhammer3/engine/link.py:433-440",
-                "src/twwarhammer3/engine/link.py:455-463",
-                "src/twwarhammer3/engine/link.py:167-168",
-                "src/twwarhammer3/engine/link.py:280-285",
+                "src/twwarhammer3/multiplayer/link.py:433-440",
+                "src/twwarhammer3/multiplayer/link.py:455-463",
+                "src/twwarhammer3/multiplayer/link.py:167-168",
+                "src/twwarhammer3/multiplayer/link.py:280-285",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -3165,7 +3165,7 @@ const DIAGRAM = {
               fail: true,
               dots: [["mp.Apoll>handler"]],
               caption: "Its long polls fail the same way; the thread waits 2 s and tries again.",
-              refs: ["src/twwarhammer3/engine/link.py:516-522"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:516-522"],
               rests: [MP_WORKER_LINK],
             },
             {
@@ -3176,7 +3176,7 @@ const DIAGRAM = {
               fail: true,
               dots: [["mp.Bhb>handler"]],
               caption: "Worker B the same, on its own thread and clock.",
-              refs: ["src/twwarhammer3/engine/link.py:433-440"],
+              refs: ["src/twwarhammer3/multiplayer/link.py:433-440"],
             },
             {
               at: 13900,
@@ -3186,10 +3186,10 @@ const DIAGRAM = {
               caption:
                 "A's deadline passes: its last renewed heartbeat's send time plus 15 s. live() calls stop once, and the watch loop ends ('worker: the lease ended').",
               refs: [
-                "src/twwarhammer3/engine/link.py:455-463",
-                "src/twwarhammer3/engine/link.py:541-545",
-                "src/twwarhammer3/engine/worker.py:219-221",
-                "src/twwarhammer3/engine/worker.py:250-261",
+                "src/twwarhammer3/multiplayer/link.py:455-463",
+                "src/twwarhammer3/multiplayer/link.py:541-545",
+                "src/twwarhammer3/multiplayer/worker.py:219-221",
+                "src/twwarhammer3/multiplayer/worker.py:250-261",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -3201,11 +3201,11 @@ const DIAGRAM = {
               caption:
                 "On its way out it stops its owned game (the supervisor gets 'stop'), removes session.json and releases the lock; a borrowed game would keep running. It joins its two threads (up to 12 s each) and exits 1, with no final flush after a lease end.",
               refs: [
-                "src/twwarhammer3/engine/worker.py:236-249",
-                "src/twwarhammer3/engine/worker.py:260-265",
+                "src/twwarhammer3/multiplayer/worker.py:236-249",
+                "src/twwarhammer3/multiplayer/worker.py:260-265",
                 "src/gameai/windows.py:165-175",
                 "src/twwarhammer3/engine/mailbox.py:199-210",
-                "src/twwarhammer3/engine/link.py:507-510",
+                "src/twwarhammer3/multiplayer/link.py:507-510",
               ],
               rests: [MP_WORKER_LINK],
             },
@@ -3216,7 +3216,7 @@ const DIAGRAM = {
               who: "B",
               dots: [["mp.B>gameB"], ["mp.B>bridgeB"]],
               caption: "Worker B's deadline passes 0.8 s later here, and it does the same.",
-              refs: ["src/twwarhammer3/engine/worker.py:250-265"],
+              refs: ["src/twwarhammer3/multiplayer/worker.py:250-265"],
             },
           ],
           lanes: {
@@ -3275,8 +3275,8 @@ const DIAGRAM = {
               caption:
                 "It reads the client list from the manifest and each client's observation events. It refuses an events file holding two battle ids, or a line it cannot read.",
               refs: [
-                "src/twwarhammer3/battle/peers.py:214-220",
-                "src/twwarhammer3/battle/peers.py:100-123",
+                "src/twwarhammer3/multiplayer/peers.py:214-220",
+                "src/twwarhammer3/multiplayer/peers.py:100-123",
               ],
             },
             {
@@ -3285,7 +3285,7 @@ const DIAGRAM = {
               box: "mp.peers",
               caption:
                 "For each pair of clients, at each time_ms both observed, it skips repeated times and times with failed native reads, joins units by (alliance, army, index), and counts a unit exact only when x, z, type and ui_id are all equal. No tolerance, no nearest-time matching.",
-              refs: ["src/twwarhammer3/battle/peers.py:135-211"],
+              refs: ["src/twwarhammer3/multiplayer/peers.py:135-211"],
               rests: [MP_SAME_TIME, MP_JOIN, MP_REPEATED, MP_FAILED_READ, MP_EXACT],
             },
             {
@@ -3323,14 +3323,14 @@ const DIAGRAM = {
         },
         {
           text: "A second real client needs a second Windows machine: the Lua mod's bridge folder is fixed at C:/wh3-agent/bridge/. The coordinator listens on 127.0.0.1 only, so that machine's worker also needs the planned link (Tailscale Serve, or the IAP alternative), and the client needs a second licence and Steam account.",
-          refs: [LUA + ":12", "src/twwarhammer3/engine/link.py:147", MP_DOC + ":101-103"],
+          refs: [LUA + ":12", "src/twwarhammer3/multiplayer/link.py:147", MP_DOC + ":101-103"],
         },
         {
           text: "Only the worker and the Lua mod know a client's mode. The coordinator queues and delivers commands to an observe client too; that worker rejects them, and its Lua drops any orders.json unread.",
           status: MP_WORKER,
           refs: [
-            "src/twwarhammer3/engine/link.py:183-185",
-            "src/twwarhammer3/engine/worker.py:169-170",
+            "src/twwarhammer3/multiplayer/link.py:183-185",
+            "src/twwarhammer3/multiplayer/worker.py:169-170",
             LUA + ":1378",
           ],
         },
@@ -3338,8 +3338,8 @@ const DIAGRAM = {
           text: "A command passes two gates. The worker's checks write nothing and report 'rejected'; they are stricter than the Lua's (any 'queue' key is refused). The Lua can still fail a move inside a request the worker reports 'submitted', for example unit_dead, unit_routing or unreachable.",
           status: { text: MP_WORKER.text, refs: MP_WORKER.refs, rests: [MP_SUBMITTED] },
           refs: [
-            "src/twwarhammer3/engine/worker.py:168-184",
-            "src/twwarhammer3/engine/worker.py:204-209",
+            "src/twwarhammer3/multiplayer/worker.py:168-184",
+            "src/twwarhammer3/multiplayer/worker.py:204-209",
             LUA + ":962-1017",
             LUA + ":1098",
           ],
@@ -3357,11 +3357,11 @@ const DIAGRAM = {
             rests: [MP_WORKER_LINK, MP_REHELLO, MP_ACK],
           },
           refs: [
-            "src/twwarhammer3/engine/link.py:339-358",
-            "src/twwarhammer3/engine/link.py:243-244",
-            "src/twwarhammer3/engine/link.py:265-267",
-            "src/twwarhammer3/engine/link.py:525-530",
-            "src/twwarhammer3/engine/worker.py:198-202",
+            "src/twwarhammer3/multiplayer/link.py:339-358",
+            "src/twwarhammer3/multiplayer/link.py:243-244",
+            "src/twwarhammer3/multiplayer/link.py:265-267",
+            "src/twwarhammer3/multiplayer/link.py:525-530",
+            "src/twwarhammer3/multiplayer/worker.py:198-202",
           ],
         },
         {
@@ -3371,13 +3371,13 @@ const DIAGRAM = {
             rests: [MP_ACK],
           },
           refs: [
-            "src/twwarhammer3/engine/link.py:493-495",
-            "src/twwarhammer3/engine/link.py:525-531",
-            "src/twwarhammer3/engine/link.py:280-282",
-            "src/twwarhammer3/engine/link.py:451-452",
+            "src/twwarhammer3/multiplayer/link.py:493-495",
+            "src/twwarhammer3/multiplayer/link.py:525-531",
+            "src/twwarhammer3/multiplayer/link.py:280-282",
+            "src/twwarhammer3/multiplayer/link.py:451-452",
             LUA + ":1170",
             LUA + ":1537",
-            "src/twwarhammer3/engine/link.py:415-416",
+            "src/twwarhammer3/multiplayer/link.py:415-416",
             "src/twwarhammer3/__main__.py:297",
           ],
         },
@@ -3386,16 +3386,16 @@ const DIAGRAM = {
           refs: [
             MP_DOC + ":294-302",
             MP_DOC + ":170-183",
-            "src/twwarhammer3/engine/link.py:82",
-            "src/twwarhammer3/engine/link.py:147-149",
-            "src/twwarhammer3/engine/worker.py:133-142",
+            "src/twwarhammer3/multiplayer/link.py:82",
+            "src/twwarhammer3/multiplayer/link.py:147-149",
+            "src/twwarhammer3/multiplayer/worker.py:133-142",
           ],
         },
         {
           text: "Clocks: each side times the lease on its own monotonic clock, the worker from its send time and the coordinator from receipt. Event times are the worker host's clocks (WSL's run slow and step); each observation event also carries the file's Windows write time. coordinator_ns is receipt time, not a source time.",
           refs: [
-            "src/twwarhammer3/engine/link.py:33-41",
-            "src/twwarhammer3/engine/worker.py:33-35",
+            "src/twwarhammer3/multiplayer/link.py:33-41",
+            "src/twwarhammer3/multiplayer/worker.py:33-35",
             "src/twwarhammer3/engine/mailbox.py:259-274",
           ],
         },

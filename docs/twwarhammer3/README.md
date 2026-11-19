@@ -229,16 +229,16 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/checkpoint/checkpoint_agent.js`: the checkpoint Frida agent
 - `src/twwarhammer3/checkpoint/checkpoint_frida.py`: runs the checkpoint Frida agent in the
   owned game (Windows side)
-- `src/twwarhammer3/engine/link.py`: native multiplayer: the coordinator's link
-- `src/twwarhammer3/engine/worker.py`: native multiplayer: per-client worker, typed lobby
+- `src/twwarhammer3/multiplayer/link.py`: native multiplayer: the coordinator's link
+- `src/twwarhammer3/multiplayer/worker.py`: native multiplayer: per-client worker, typed lobby
   operations, readiness and leave; contracts in its docstring and multiplayer-tools.md
-- `src/twwarhammer3/engine/multiplayer_probe.py`: bounded Windows reference capture;
+- `src/twwarhammer3/multiplayer/multiplayer_probe.py`: bounded Windows reference capture;
   checks the actual process image and runs the passive multiplayer discovery agent
-- `src/twwarhammer3/engine/multiplayer_probe.js`: passive deployment/command traces,
+- `src/twwarhammer3/multiplayer/multiplayer_probe.js`: passive deployment/command traces,
   completed-tick checksums, raw unit witnesses, phases and outcome
-- `src/twwarhammer3/engine/multiplayer_adapter.py`: Windows Frida helper and stdin requests
+- `src/twwarhammer3/multiplayer/multiplayer_adapter.py`: Windows Frida helper and stdin requests
   for direct deployment readiness, plus passive capture
-- `src/twwarhammer3/engine/multiplayer_adapter.js`: fixed readiness sender on the game thread;
+- `src/twwarhammer3/multiplayer/multiplayer_adapter.js`: fixed readiness sender on the game thread;
   phase/layout guards and submission evidence; unverified
 
 `src/twwarhammer3/mod/`, Lua scripts packed into the game:
@@ -349,7 +349,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/battle/report_html.py`: the offline HTML report
 - `src/twwarhammer3/battle/replay.py`: the report's replay: public recorded frames and events
 - `src/twwarhammer3/battle/report_assets/`: the report's page, script, style and replay
-- `src/twwarhammer3/battle/peers.py`: native multiplayer: Lua-observation comparison and
+- `src/twwarhammer3/multiplayer/peers.py`: native multiplayer: Lua-observation comparison and
   completed-tick/raw-witness comparison (`compare-peers --native`)
 
 `configs/twwarhammer3/`:

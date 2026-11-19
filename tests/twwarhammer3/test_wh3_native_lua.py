@@ -13,7 +13,7 @@ import pytest
 from wh3_lua import BATTLE, MOD, runtime
 
 from twwarhammer3.battle import play
-from twwarhammer3.engine import worker
+from twwarhammer3.multiplayer import worker
 
 BRIDGE = "C:/wh3-agent/bridge/"
 
@@ -197,7 +197,7 @@ def test_without_multiplayer_army_one_is_ours_and_controlled_from_the_start():
 
 @pytest.mark.parametrize("mode", ["observe", "control"])
 def test_the_session_an_owned_worker_writes_activates_the_battle_script(mode):
-    # engine/worker.py run() publishes {**SESSION, "multiplayer": mode} as session.json.
+    # multiplayer/worker.py run() publishes {**SESSION, "multiplayer": mode} as session.json.
     g = battle({**worker.SESSION, "multiplayer": mode})
     [line] = logged(g)
     assert line.startswith("loaded battle ") and not inactive(g)
@@ -371,9 +371,9 @@ def test_two_peers_owning_different_armies_compare_exact_through_the_real_seam(t
     # observation.json; the real Mailbox reads it from disk, Worker.watch sends it over
     # loopback to the real coordinator, and compare-peers reads what the coordinator wrote.
     # Owners and aliases differ by client (A owns army 1, B army 2); identities must not.
-    from twwarhammer3.battle.peers import compare
-    from twwarhammer3.engine.link import Coordinator, WorkerLink, token_sha256
     from twwarhammer3.engine.mailbox import Mailbox
+    from twwarhammer3.multiplayer.link import Coordinator, WorkerLink, token_sha256
+    from twwarhammer3.multiplayer.peers import compare
 
     games = {"A": battle({"multiplayer": "observe"}, "bm.local_army = const(1)"),
              "B": battle({"multiplayer": "observe"})}

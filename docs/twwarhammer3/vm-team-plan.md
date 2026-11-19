@@ -169,7 +169,7 @@ and the unit moves: the owned worker and control mode have then run once live, i
 **O3. S1 kit** (assistant, with a reviewer rerunning each check; you review the S1 card, 15 min; no
 game). (a) A `git archive` of the frozen revision; check: its Windows `expected_manifest()` equals
 WSL's, and a copy with Windows line endings differs. (b) A parity readback per host, since the hello
-compares packs built from each checkout, not the installed files (`engine/worker.py`; checked):
+compares packs built from each checkout, not the installed files (`multiplayer/worker.py`; checked):
 build, exe, mod and movie-pack hashes, mod list, extra files in `data/`, DLC depots, the version
 line and `modified.log`; check: a changed pack byte, a moved movie pack and another mod list each
 show up. (c) Modded clients use the owned worker's session. (d) A recorder for B: a coordinator on
@@ -207,7 +207,7 @@ seen ≥20 m within 30 s of battle time; host check in S2. Another order or boun
 (a) The worker link (decision 8); the token copied with `gcloud compute scp --tunnel-through-iap`,
 never printed. (b) One move-only driver per client in WSL, like `team.py`'s `_MoveOnce`, reading
 only its own client's latest observation minus `HIDDEN_KEYS` (`protocol.py`; workers send
-evaluator sections too: `engine/worker.py`; checked). Planted faults that must fail: A's order sent
+evaluator sections too: `multiplayer/worker.py`; checked). Planted faults that must fail: A's order sent
 to B, a stale `based_on`, B's silence blocking A, B's data or `native` section given to A. (c) The
 `b39a03d` fake-game run (`runs/wh3-native-mp-20261030/`) repeated on Windows over the link, plus a
 wrong token. (d) A runner path that boots from the kept disk. (e) A new archive. Exit: `check.py`
@@ -254,4 +254,4 @@ delivery, observer passivity, step 7, halt, attack, other units and maps, latenc
 viewer, 2v2, strength, and the actual GCP billing. This plan rests on the JUDGEMENT markers in
 `native-multiplayer.md` (Capability fixture, Probe scope, Worker link, Verification contract, Cost
 workload), `gcp-client-setup.md`, `cloud.md` (Cleanup), `scripts/wh3_gcp.py` (Quote age, Reserve),
-`engine/worker.py`, `engine/mailbox.py`, `engine/link.py` and `battle/peers.py`.
+`multiplayer/worker.py`, `engine/mailbox.py`, `multiplayer/link.py` and `multiplayer/peers.py`.
