@@ -280,19 +280,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/wall_defence.py",
+   "path": "src/twwarhammer3/scenarios/wall_defence.py",
    "text": "`WallWitness` and its controls for the walled siege defence (cth-emp-siege-a-v1), on public state",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/wall_facts.py",
+   "path": "src/twwarhammer3/scenarios/wall_facts.py",
    "text": "what that siege's witness and readings both use: the reserve's type keys and the public wall line with its distance and inside tests",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/wall_readings.py",
+   "path": "src/twwarhammer3/scenarios/wall_readings.py",
    "text": "that siege's evaluator readings of finished battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"

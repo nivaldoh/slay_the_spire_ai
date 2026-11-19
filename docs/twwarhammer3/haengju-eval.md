@@ -8,7 +8,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 |---|---|
 | Tests | One decision ([D1, fire across divisions](#decisions-the-battle-could-test)): should the five missile units fire at will from the start, or hold fire until an enemy is within 60 m of the wall line, so that ammunition lasts for the later divisions? |
 | Why it is hard | The attackers come in four divisions released in turn, and the controller is told only that divisions may attack at different times. The claim holds only if ammunition runs short under `hold` (check 6: at most 25% left at the third division's approach); the one launch so far read about 67% left. |
-| Witness | `WallWitness` in [battle/wall_defence.py](../../src/twwarhammer3/battle/wall_defence.py): build, fire, reserve and fallback rules. It holds fire to 60 m, keeps the Lord and the Jade Warriors as a reserve against enemies inside the wall, and falls back to the keep when the gatehouse is taken or a gate is breached. `WFire` is the other arm. |
+| Witness | `WallWitness` in [scenarios/wall_defence.py](../../src/twwarhammer3/scenarios/wall_defence.py): build, fire, reserve and fallback rules. It holds fire to 60 m, keeps the Lord and the Jade Warriors as a reserve against enemies inside the wall, and falls back to the keep when the gatehouse is taken or a gate is breached. `WFire` is the other arm. |
 | Outcome | The engine's result. The controller defends and wins when the 1,200 s timer runs out. Every engine win counts. |
 | Status | `cth-emp-siege-a-v1` (divisions in turn), `cth-emp-siege-a-all-v1` (all at once) and `cth-emp-siege-a-all-gates-v1` (a map screen), version 1, in [`scenarios/siege_defence.json`](../../configs/twwarhammer3/scenarios/siege_defence.json): status `candidate`, split `development`. One battle played: `cth-emp-siege-a-v1` under `hold`, lost at 928 s ([first construction battle](#first-construction-battle-2026-11-14)). |
 | Changes | 2026-11-08 written as a plan. 2026-11-09 built offline at `f3fec92` and revised; the Eagle Gate screen declared at `050020e`. 2026-11-10 lobby readback passed. 2026-11-14 first `hold` launch. 2026-11-15 the values the readings share with the witness moved to `wall_facts.py`. |
@@ -30,8 +30,8 @@ turn) and `cth-emp-siege-a-all-v1` (the same armies all at once) in
 [`scenarios/siege_defence.json`](../../configs/twwarhammer3/scenarios/siege_defence.json). The hold and release are reserve
 profile version 3 in [battle/reserve.py](../../src/twwarhammer3/battle/reserve.py) and the battle
 Lua, the witness and its controls are in
-[battle/wall_defence.py](../../src/twwarhammer3/battle/wall_defence.py), the readings are in
-[battle/wall_readings.py](../../src/twwarhammer3/battle/wall_readings.py), and the offline tests are
+[scenarios/wall_defence.py](../../src/twwarhammer3/scenarios/wall_defence.py), the readings are in
+[scenarios/wall_readings.py](../../src/twwarhammer3/scenarios/wall_readings.py), and the offline tests are
 [test_wh3_waves.py](../../tests/twwarhammer3/test_wh3_waves.py),
 [test_wh3_wall_defence.py](../../tests/twwarhammer3/test_wh3_wall_defence.py),
 [test_wh3_wall_readings.py](../../tests/twwarhammer3/test_wh3_wall_readings.py) and the waves tests
@@ -548,7 +548,7 @@ before any of its units reads melee or `on_wall` in the private record; it does 
 losses from other causes, and no battle has run it.
 
 Proposed narrowing, for the owner to decide (it rests on JUDGEMENT
-src/twwarhammer3/battle/wall_defence.py Wall witness thresholds): in version 1 the fallback cue is
+src/twwarhammer3/scenarios/wall_defence.py Wall witness thresholds): in version 1 the fallback cue is
 `c2` enemy-held, which the hold baseline reached at 336.7 s, before D3's estimated first approach
 at 445 s. If the fallback cue comes before D3's approach in most launches (`gate_timeline` read
 beside `approach_ammunition`), the D1 prediction becomes "more ammunition carried into the later
@@ -575,9 +575,9 @@ tower losses and options are only recorded.
 
 ## Witness, ablations and controls as built
 
-[`battle/wall_defence.py`](../../src/twwarhammer3/battle/wall_defence.py) holds the witness and
+[`scenarios/wall_defence.py`](../../src/twwarhammer3/scenarios/wall_defence.py) holds the witness and
 five controls, each loaded by module path (for example
-`twwarhammer3.battle.wall_defence:WallWitness`); their names are not built-in policy names. The
+`twwarhammer3.scenarios.wall_defence:WallWitness`); their names are not built-in policy names. The
 module has never driven a game. Every arm shares these rules:
 
 - **Binding.** At the first observation the friendly army must be the ten declared types with
@@ -609,7 +609,7 @@ The witness `WallWitness` (`wall_witness`) plays four rules:
    only the Gatehouse can start it: every Empire unit key in the roster reads `can_siege` false
    (`main_units_tables`, read on 2026-11-09) and `siege_equipment` is `{}`.
 
-The values rest on JUDGEMENT src/twwarhammer3/battle/wall_defence.py Wall witness thresholds. The
+The values rest on JUDGEMENT src/twwarhammer3/scenarios/wall_defence.py Wall witness thresholds. The
 witness is single-author until someone without its code reproduces a win.
 
 | Class (`arm`) | Role | What it changes | Counted in the screen only if |
@@ -626,7 +626,7 @@ witness is single-author until someone without its code reproduces a win.
 Every arm records two sets of first times. `cues` are the decisions' cues above, which decide
 whether an ablation launch counts in the screen: the fire cue counts a roster unit never seen as
 not yet within 300 m, the reserve cue needs exactly one confirmed enemy inside, and `KeepOnly`'s
-start is not its fallback cue (rests on JUDGEMENT? src/twwarhammer3/battle/wall_defence.py Ablation
+start is not its fallback cue (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_defence.py Ablation
 cues). `triggers` are when each rule's own trigger first fired; they describe the play and count
 nothing. Each arm's metadata also records its roles, the fallback reason and the builds accepted.
 
@@ -665,14 +665,14 @@ descriptive until a check ties it to a decision, and a missing value stays unkno
 
 | Reading | Source (`f3fec92`, and the three readers added on 2026-11-09) |
 |---|---|
-| Each release: group, time, reason, positions; damage releases with the friendly units then within their public `range` of a released unit | The mod's evidence and `wall_readings.damage_releases` (the friendly view rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Release friendly view) |
-| For each damaged unit of a damage release: its distance to the nearest D1 unit, and whether it lost men or was only flagged under fire | `wall_readings.release_distances`: positions from the last private-record frame at or before the release, D1's ids from `evidence_rules.group_ids` (slots 1-4), the loss from the release's own `men` and `men0` (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Release distance) |
+| Each release: group, time, reason, positions; damage releases with the friendly units then within their public `range` of a released unit | The mod's evidence and `wall_readings.damage_releases` (the friendly view rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Release friendly view) |
+| For each damaged unit of a damage release: its distance to the nearest D1 unit, and whether it lost men or was only flagged under fire | `wall_readings.release_distances`: positions from the last private-record frame at or before the release, D1's ids from `evidence_rules.group_ids` (slots 1-4), the loss from the release's own `men` and `men0` (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Release distance) |
 | The gate, Gatehouse and fallback times | `wall_readings.gate_timeline`: the first observation with a public gate at hp 0 or below, the first with `c2` enemy-held, and the arm's fallback time and reason from its metadata in the trace's last decision row; read beside each division's first sighting and first approach |
-| Each division's men lost before contact | `wall_readings.division_missile_losses`: in the private record, the men each division lost before any of its units reads melee with men left or `on_wall` (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Missile losses and JUDGEMENT src/twwarhammer3/units.py Contact rule); it does not tell missile losses from other causes |
+| Each division's men lost before contact | `wall_readings.division_missile_losses`: in the private record, the men each division lost before any of its units reads melee with men left or `on_wall` (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Missile losses and JUDGEMENT src/twwarhammer3/units.py Contact rule); it does not tell missile losses from other causes |
 | First sighting of each division | `wall_readings.first_sightings`: the first observation whose public `enemy` list holds one of its units, never the private record, which also lists units nobody can see |
-| Missile ammunition at each division's first approach | `wall_readings.approach_ammunition`: at the first observation in which a visible unit of the division is 150 m or nearer the wall line or inside it, the summed `ammo` and `ammo0` of the friendly units that carry ammunition (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Approach distance). The sum weights each unit by its own count. By database values the rockets' 84 made up about half of a 172 total, but the live `ammo` counts shots across a unit's men: in the first launch the rockets' 252 were about 4% of 5,774 ([reading](#first-construction-battle-2026-11-14)). Spent shots do not prove hits. D1's reading also counts the shots fired before D1 first comes within 150 m (its `ammo0` minus its `ammo`), so no other reader is built for them |
-| Breach time | `wall_readings.breach`: the first private-record frame in which an enemy reads `on_wall` true, or, once stage 1 has frozen the private wall polygon from the terrain grid and `on_wall` readings, whose centre is inside it in two frames in a row (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Breach reading). `is_on_top_of_wall` has never been read live, and a centre alone can jump between squads |
-| Reserve response | `wall_readings.reserve_response`: ms from the breach until the engine applied the first accepted attack by the Lord or a Jade Warriors unit, and until the first frame with one of them flagged in melee with men left (rests on JUDGEMENT? src/twwarhammer3/battle/wall_readings.py Reserve response and JUDGEMENT src/twwarhammer3/units.py Contact rule). Checked only on a hand-built trace |
+| Missile ammunition at each division's first approach | `wall_readings.approach_ammunition`: at the first observation in which a visible unit of the division is 150 m or nearer the wall line or inside it, the summed `ammo` and `ammo0` of the friendly units that carry ammunition (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Approach distance). The sum weights each unit by its own count. By database values the rockets' 84 made up about half of a 172 total, but the live `ammo` counts shots across a unit's men: in the first launch the rockets' 252 were about 4% of 5,774 ([reading](#first-construction-battle-2026-11-14)). Spent shots do not prove hits. D1's reading also counts the shots fired before D1 first comes within 150 m (its `ammo0` minus its `ammo`), so no other reader is built for them |
+| Breach time | `wall_readings.breach`: the first private-record frame in which an enemy reads `on_wall` true, or, once stage 1 has frozen the private wall polygon from the terrain grid and `on_wall` readings, whose centre is inside it in two frames in a row (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Breach reading). `is_on_top_of_wall` has never been read live, and a centre alone can jump between squads |
+| Reserve response | `wall_readings.reserve_response`: ms from the breach until the engine applied the first accepted attack by the Lord or a Jade Warriors unit, and until the first frame with one of them flagged in melee with men left (rests on JUDGEMENT? src/twwarhammer3/scenarios/wall_readings.py Reserve response and JUDGEMENT src/twwarhammer3/units.py Contact rule). Checked only on a hand-built trace |
 | Holder times of `c1`, `c2` and `c7`; ticket onset | `wall_readings.enemy_held` and `ticket_onset`, with holders and tickets as `evidence_rules` reads them: a holder of None is neither side's, and tickets are the defender's row. Tested against the `hold` baseline times above |
 | Divisions as unit ids | `evidence_rules.group_ids`: fixed by the placement each enemy unit matched at the first observation (rests on JUDGEMENT? src/twwarhammer3/scenarios/evidence_rules.py Group membership) |
 | Cues, triggers, fallback reason, builds accepted | Each arm's metadata in the trace |

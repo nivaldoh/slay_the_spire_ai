@@ -77,7 +77,7 @@ Helmgart staggering the divisions by distance alone separates their arrivals by 
 attack (reserve profile version 3, which rests on JUDGEMENT docs/twwarhammer3/haengju-eval.md
 Division schedule). The briefing says only "The attacking army is drawn up in several divisions,
 which may attack at different times." The witness `WallWitness` and five controls are in
-`battle/wall_defence.py`, the readings in `battle/wall_readings.py`.
+`scenarios/wall_defence.py`, the readings in `scenarios/wall_readings.py`.
 
 Its one claim is fire across divisions: `WallWitness` turns fire at will on for the archers,
 crossbowmen, rockets and cannon only while a visible enemy that is not routing stands within 60 m of

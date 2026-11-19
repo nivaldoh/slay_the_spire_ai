@@ -287,11 +287,11 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
   (version 3) that holds and releases enemy groups, kept apart from the public battle state
-- `src/twwarhammer3/battle/wall_defence.py`: `WallWitness` and its controls for the walled siege
+- `src/twwarhammer3/scenarios/wall_defence.py`: `WallWitness` and its controls for the walled siege
   defence (cth-emp-siege-a-v1), on public state
-- `src/twwarhammer3/battle/wall_facts.py`: what that siege's witness and readings both use: the
+- `src/twwarhammer3/scenarios/wall_facts.py`: what that siege's witness and readings both use: the
   reserve's type keys and the public wall line with its distance and inside tests
-- `src/twwarhammer3/battle/wall_readings.py`: that siege's evaluator readings of finished
+- `src/twwarhammer3/scenarios/wall_readings.py`: that siege's evaluator readings of finished
   battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases
 - `src/twwarhammer3/battle/escalade.py`: `Escalade` and its controls for the siege attack
   (ksl-emp-siege-a-v1), on public state with the siege orders

@@ -47,7 +47,6 @@ import math
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.wall_facts import JADE, LORD, RESERVE, inside, wall_distance, wall_line
 from twwarhammer3.protocol import (
     PolicyFailure,
     friendly_units,
@@ -55,6 +54,7 @@ from twwarhammer3.protocol import (
     holds,
     visible_enemies,
 )
+from twwarhammer3.scenarios.wall_facts import JADE, LORD, RESERVE, inside, wall_distance, wall_line
 from twwarhammer3.units import able, distance, find, nearest
 
 SPEARMEN = "wh3_main_cth_inf_peasant_spearmen_1"

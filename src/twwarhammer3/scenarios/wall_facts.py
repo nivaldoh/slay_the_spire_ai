@@ -11,7 +11,7 @@ JADE = "wh3_main_cth_inf_jade_warriors_0"
 RESERVE = (LORD, JADE)
 
 # The wall line and what counts as inside it. The values rest on JUDGEMENT
-# src/twwarhammer3/battle/wall_defence.py Wall witness thresholds.
+# src/twwarhammer3/scenarios/wall_defence.py Wall witness thresholds.
 WALL_ENDS = ((-384, -81), (384, -81))  # the line's ends, at the side walls' z
 WALL_POINTS = ("c6", "c5", "c2", "c4", "c3")  # in x order, west to east
 INSIDE_M = 10  # an enemy this far or more north of the wall line is inside

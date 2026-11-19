@@ -13,9 +13,10 @@ import pytest
 from wh3_ablation import assert_ablation
 from wh3_helmgart import GARRISON, SCENARIO, first_observation, garrison
 
-from twwarhammer3.battle import play, wall_defence
+from twwarhammer3.battle import play
 from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
+from twwarhammer3.scenarios import wall_defence
 
 SPEAR = "wh_main_emp_inf_spearmen_0"
 LABELS = ("lord", "jade_a", "jade_b", "spear_a", "archers_a", "archers_b", "crossbows",
@@ -386,5 +387,5 @@ def test_roles_bind_by_type_and_frozen_start_never_by_id_or_list_order():
     with pytest.raises(PolicyFailure, match="capture points"):
         wall_defence.WallWitness().decide(elsewhere)
     for make in ARMS:
-        name = f"twwarhammer3.battle.wall_defence:{make.__name__}"
+        name = f"twwarhammer3.scenarios.wall_defence:{make.__name__}"
         assert controllers.controller_class(name) is make
