@@ -13,6 +13,7 @@ from urllib.parse import urlencode, urlsplit
 import pytest
 
 from twwarhammer3.multiplayer.link import (
+    HEARTBEAT_S,
     MAX_BODY,
     Coordinator,
     LinkRefused,
@@ -265,7 +266,8 @@ def test_a_lost_status_reply_is_resent_and_kept_once_and_applied_is_refused(coor
 def test_the_coordinator_ends_a_lease_without_a_new_heartbeat_and_fences_commands(
         coordinator, clock):
     stops = []
-    a, b = (worker(coordinator, client, stops, clock) for client in "AB")
+    # The fake clock decides expiry. Allow real HTTP calls the normal socket timeout.
+    a, b = (worker(coordinator, client, stops, clock, heartbeat_s=HEARTBEAT_S) for client in "AB")
     a.hello()
     b.hello()
     coordinator.submit("A", {"n": 1})
