@@ -298,19 +298,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/escalade.py",
+   "path": "src/twwarhammer3/scenarios/escalade.py",
    "text": "`Escalade` and its controls for the siege attack (ksl-emp-siege-a-v1), on public state with the siege orders",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/escalade_facts.py",
+   "path": "src/twwarhammer3/scenarios/escalade_facts.py",
    "text": "what that siege's witness and readings both use: the fort's front line and what counts as inside it",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/escalade_readings.py",
+   "path": "src/twwarhammer3/scenarios/escalade_readings.py",
    "text": "that siege's evaluator readings of finished battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"

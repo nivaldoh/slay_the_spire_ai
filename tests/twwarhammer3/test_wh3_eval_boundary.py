@@ -46,14 +46,14 @@ from test_wh3_private_record import battle as private_battle
 from wh3_ablation import run
 from wh3_fixtures import CONFIG, FakeMailbox
 
-from twwarhammer3.battle import escalade, play, reserve
+from twwarhammer3.battle import play, reserve
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.controllers import llm, reference
 from twwarhammer3.controllers.replay_schedule import PLACE, VERSION, declaration_digest
 from twwarhammer3.controllers.scripted import AttackNearest, RushNearest
 from twwarhammer3.controllers.skills import Skills
 from twwarhammer3.protocol import HIDDEN_KEYS
-from twwarhammer3.scenarios import wall_defence
+from twwarhammer3.scenarios import escalade, wall_defence
 
 CAMP, LINES_A, LINES_B = "emp-chd-camp-v1", "ksl-nor-lines-a-v1", "ksl-nor-lines-b-v1"
 WAVES, ALL, ATTACK = "cth-emp-siege-a-v1", "cth-emp-siege-a-all-v1", "ksl-emp-siege-a-v1"

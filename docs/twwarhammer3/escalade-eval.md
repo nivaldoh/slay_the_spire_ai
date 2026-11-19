@@ -8,7 +8,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 |---|---|
 | Tests | One decision ([D1, spread or concentrate](#the-decision)): assault three wall sectors at once, or put the two wings on the wall pieces beside the gate as well? |
 | Why it is hard | Spreading is predicted to win more often only if the garrison moves units along the wall toward an assaulted sector. If the defenders hold their posts, or the concentrated assault gets over the wall first, the prediction may disappear or reverse. |
-| Witness | `Escalade` in [battle/escalade.py](../../src/twwarhammer3/battle/escalade.py), the three-sector assault, with seven controls; `Concentrate` is the other arm. A version 2 is built beside it and no plan uses it. |
+| Witness | `Escalade` in [scenarios/escalade.py](../../src/twwarhammer3/scenarios/escalade.py), the three-sector assault, with seven controls; `Concentrate` is the other arm. A version 2 is built beside it and no plan uses it. |
 | Outcome | The engine's result. The controller attacks; the defender wins when the 1,200 s timer runs out. Every engine win counts. |
 | Status | `ksl-emp-siege-a-v1` (version 1) in [`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json): status `candidate`, split `development`. Two battles played, both under `hold`, both lost at the timer ([first stage 1 launches](#first-stage-1-launches-2026-11-14)). |
 | Changes | 2026-11-08 designed. 2026-11-09 built offline at `f3fec92`, this page written and the readers revised; the siege orders reached `llm` and `llm_rules` as v23 at `da05498`. 2026-11-10 lobby readback completed 157 steps. 2026-11-14 two stage 1 `hold` launches. 2026-11-15 the front line and its inside test moved to `escalade_facts.py`. |
@@ -24,8 +24,8 @@ the Russian assault on the Ottoman fortress of Izmail in December 1790 as a WH3 
 controller attacks a walled fort held by a native AI garrison. It is built from the declaration
 `ksl-emp-siege-a-v1` in [`scenarios/siege_attack.json`](../../configs/twwarhammer3/scenarios/siege_attack.json), the
 siege-attack interface behind that declaration's `siege_assault` opt-in, the witness `Escalade`
-and its controls in [battle/escalade.py](../../src/twwarhammer3/battle/escalade.py), the readings
-in [battle/escalade_readings.py](../../src/twwarhammer3/battle/escalade_readings.py) and the
+and its controls in [scenarios/escalade.py](../../src/twwarhammer3/scenarios/escalade.py), the readings
+in [scenarios/escalade_readings.py](../../src/twwarhammer3/scenarios/escalade_readings.py) and the
 private all-unit record. The owner's choices are collected in
 [decisions for owner review](#decisions-for-owner-review). A witness version 2, the options of
 [question 6](#decisions-for-owner-review), is built beside version 1 in the same module
@@ -520,9 +520,9 @@ What stays exploratory or descriptive:
 
 ## Witness and controls as built
 
-[battle/escalade.py](../../src/twwarhammer3/battle/escalade.py) holds the witness and seven
+[scenarios/escalade.py](../../src/twwarhammer3/scenarios/escalade.py) holds the witness and seven
 controls. Their names are not built-in policy names; a job loads them by module path, for example
-`twwarhammer3.battle.escalade:Escalade`. Each reads only what `play.public` passes: its own units
+`twwarhammer3.scenarios.escalade:Escalade`. Each reads only what `play.public` passes: its own units
 (with `on_wall`, `can_climb` and `can_siege`), the visible enemies and `mode` (capture points,
 gates, fortifications and vehicles). None reads `evaluation`, `setup`, `native`, `final` or the
 job. The witness plays these rules:
@@ -548,15 +548,15 @@ job. The witness plays these rules:
 5. **Phase 3.** A unit with `on_wall` true, or inside the front line, runs to the first victory
    point we do not hold, in the order c7, the nearer of c8 and c9, then c1. The front line is the
    southernmost fortification centre in each 40 m column of x, and inside means 10 m or more north
-   of it (rests on JUDGEMENT? src/twwarhammer3/battle/escalade_facts.py Front line). The order matters
+   of it (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade_facts.py Front line). The order matters
    only in phase 3 and in phase 4 with no visible enemy, since phase 4 sends every unit at the
    nearest visible enemy. On the recorded ticket rule (check 3(f)) holding c7, c8 or c9 drained
    nothing until c1 fell; c7 lies on the way from the gate to c1, and c8 and c9 are a detour
-   (rests on JUDGEMENT? src/twwarhammer3/battle/escalade.py Victory order;
+   (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade.py Victory order;
    [question 6](#decisions-for-owner-review)).
 6. **After a target falls.** A siege order goes only to a piece that this observation lists above
    0%. A climber or the crew whose target reads 0% walks in as in phase 3, and the Grom stops
-   (rests on JUDGEMENT? src/twwarhammer3/battle/escalade.py After a target falls).
+   (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade.py After a target falls).
 7. **Horse.** Once the public gate nearest g1 reads hp 0 or less, whatever `destroyed` says, or c2
    is ours, the Lancers ride to c7 and then c1 (`protocol.gate_breached`, resting on
    JUDGEMENT src/twwarhammer3/protocol.py Breach rule). Two recorded gates read hp 0
@@ -572,7 +572,7 @@ job. The witness plays these rules:
     moving unit reads idle more than 15 m from its point, or an attacking or besieging unit reads
     idle or an attacker has no target; a refused order is sent again at the next decision.
 
-The values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Escalade thresholds.
+The values rest on JUDGEMENT src/twwarhammer3/scenarios/escalade.py Escalade thresholds.
 
 | Class (`arm` in metadata) | Role | Rule it changes |
 |---|---|---|
@@ -586,7 +586,7 @@ The values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Escalade thresh
 | `EscaladeReplay` | C9, exploratory | `replay_schedule.ReplaySchedule` over a witness win; siege orders keep their fortification ids and are dropped when the target is not listed or reads 0% |
 | `hold`, `rush_nearest`, `attack_nearest` (`controllers/scripted.py`) | C1 and C2, shortcuts | `hold` gives no orders; the other two run or attack at the nearest visible enemy. `hold` played this battle twice on 2026-11-14 ([reading](#first-stage-1-launches-2026-11-14)); the other two have played no siege the player attacks |
 
-The controls' values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Control parameters; the
+The controls' values rest on JUDGEMENT src/twwarhammer3/scenarios/escalade.py Control parameters; the
 replay rests on JUDGEMENT src/twwarhammer3/controllers/replay_schedule.py Replay carried out, Replay
 time and Replay remap. The metadata of the witness and its subclasses records the groups, jobs,
 targets, the phase 2 times and reason, the reserve's group and time, the gate's opening time and
@@ -648,7 +648,7 @@ own method or constant. `EscaladeV2`, `ConcentrateV2`, `CavalryEarlyV2`, `Piecem
 `ShootOnlyV2` and `GateOnlyV2` are their version 1 classes with the mixin `Version2`, and
 `BesiegeNearestV2` takes the door rule only. Each keeps its version 1 `arm` name and writes
 `"version": 2` in its metadata; a job loads one by module path, for example
-`twwarhammer3.battle.escalade:EscaladeV2`. `OrderProbe` and `EscaladeReplay` have no version 2.
+`twwarhammer3.scenarios.escalade:EscaladeV2`. `OrderProbe` and `EscaladeReplay` have no version 2.
 
 | Rule | Version 1 (default) | Version 2 option | Marker in `escalade.py` |
 |---|---|---|---|
@@ -739,9 +739,9 @@ breached at public hp 0 or less.
 | First `on_wall` reading, first victory point held, and the time between | `escalade_readings.wall_to_point`, public observations | Yes |
 | Each unit's way in: ladder once it reads `on_wall`, gate when it first comes inside the front line within 20 m of g1 without having read `on_wall` | `entry_routes`; inside starts 10 m north of the line, so a unit that crosses the 10 m band in one reading gets no route (the review's note), and a unit first read already inside gets none | Yes |
 | The first `on_wall` per group | `first_on_wall` over the private record's own units, never the garrison's; groups from the witness's metadata, or one group for a controller without them | Yes |
-| How many wall sections our units hold on the wall within 120 s of the first `on_wall` reading: D1's branch for any controller, a model included (the second look's B1) | `wall_sections` over the private record; a section is a 120 m bin of x of the listed piece nearest the unit (rests on JUDGEMENT? src/twwarhammer3/battle/escalade_readings.py Wall sections). On the fixture's pieces the witness's three targets read 3 and Concentrate's 2 | Yes |
-| Whether each accepted `besiege` or `attack_building` was acted on: its unit 50 m nearer the target within 60 s, or reading climbing within 120 s, with the times | `siege_order_acted_on`, the trace's decisions and acks with the private record; no outcome and no pass rule. A gun that fires from where it stands reads not acted on (rests on JUDGEMENT? src/twwarhammer3/battle/escalade_readings.py Acted on) | Yes |
-| Defender units in melee in each assaulted sector within 120 s of a start time, and those of them that began more than 150 m along x outside it | `reallocation` over the private record's enemy units; a sector is its target piece's x ± 60 m (rests on JUDGEMENT? src/twwarhammer3/battle/escalade_readings.py Escalade readings) | Yes |
+| How many wall sections our units hold on the wall within 120 s of the first `on_wall` reading: D1's branch for any controller, a model included (the second look's B1) | `wall_sections` over the private record; a section is a 120 m bin of x of the listed piece nearest the unit (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade_readings.py Wall sections). On the fixture's pieces the witness's three targets read 3 and Concentrate's 2 | Yes |
+| Whether each accepted `besiege` or `attack_building` was acted on: its unit 50 m nearer the target within 60 s, or reading climbing within 120 s, with the times | `siege_order_acted_on`, the trace's decisions and acks with the private record; no outcome and no pass rule. A gun that fires from where it stands reads not acted on (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade_readings.py Acted on) | Yes |
+| Defender units in melee in each assaulted sector within 120 s of a start time, and those of them that began more than 150 m along x outside it | `reallocation` over the private record's enemy units; a sector is its target piece's x ± 60 m (rests on JUDGEMENT? src/twwarhammer3/scenarios/escalade_readings.py Escalade readings) | Yes |
 | Lancer men lost before the gate reads breached (D2, descriptive) | `lancer_losses`, public observations; nothing after the breach counts | Yes |
 | Gate hp over time, ram position and crew | `mode.gates`, `mode.vehicles`; raw hit points in the private record | Fields only |
 | Ammunition spent per unit | `ammo` and `ammo0`; spent shots are not hits | Fields only |

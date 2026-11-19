@@ -1,4 +1,4 @@
-"""The siege attack's witness and controls (battle/escalade.py) for ksl-emp-siege-a-v1, on the
+"""The siege attack's witness and controls (scenarios/escalade.py) for ksl-emp-siege-a-v1, on the
 offline Helmgart fixture wh3_siege_attack.py (the declaration is test_wh3_siege_assault.py's).
 
 Reference: the 2026-11-08 siege-attack design (runs/siege-evals-20261108/final-izmail.md,
@@ -17,9 +17,10 @@ import pytest
 from wh3_ablation import assert_ablation, run
 from wh3_siege_attack import FORTIFICATIONS, SCENARIO, first_observation, later
 
-from twwarhammer3.battle import escalade, play
+from twwarhammer3.battle import play
 from twwarhammer3.controllers.replay_schedule import declaration_digest
 from twwarhammer3.protocol import PolicyFailure, validate_orders
+from twwarhammer3.scenarios import escalade
 
 
 def staged(observation, orders, time_ms, **changes):

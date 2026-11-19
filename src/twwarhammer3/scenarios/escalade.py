@@ -71,7 +71,6 @@ import math
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.escalade_facts import front_line, inside
 from twwarhammer3.controllers.replay_schedule import ReplaySchedule
 from twwarhammer3.controllers.scripted import forget_refused
 from twwarhammer3.protocol import (
@@ -82,6 +81,7 @@ from twwarhammer3.protocol import (
     holds,
     visible_enemies,
 )
+from twwarhammer3.scenarios.escalade_facts import front_line, inside
 from twwarhammer3.units import able, distance, nearest
 
 BOYAR = "wh3_main_ksl_cha_boyar_0"

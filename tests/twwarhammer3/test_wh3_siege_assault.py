@@ -24,10 +24,11 @@ from wh3_lua import load_battle, runtime
 from wh3_siege_attack import SLOTS, first_observation, later
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import escalade, play, setup
+from twwarhammer3.battle import play, setup
 from twwarhammer3.controllers import commander, configured, llm, team
 from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import IllegalActionError, ProtocolError, validate_orders
+from twwarhammer3.scenarios import escalade
 
 # Marker lines for ksl-emp-siege-a-v1's values in
 # configs/twwarhammer3/scenarios/siege_attack.json, which cannot carry a comment

@@ -146,7 +146,7 @@ sent in a game.
 
 Its one claim is D1, spread or concentrate. `Escalade` sends three groups over three wall sectors at
 once, and `Concentrate` moves the two outer groups onto the wall pieces nearest `c5` and `c4` in the
-gate recess, beside the centre group (`battle/escalade.py`). It is the set's only decision in a
+gate recess, beside the centre group (`scenarios/escalade.py`). It is the set's only decision in a
 siege the player attacks. Holding the Lancers until the gate falls (`CavalryEarly` against the
 witness, the design's D2) is a timing choice and stays descriptive, as do the synchronised start,
 the reserve and suppressing fire.

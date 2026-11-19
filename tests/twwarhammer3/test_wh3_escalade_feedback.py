@@ -8,8 +8,9 @@ is not issuance. The public Helmgart sketch remains the existing unverified fixt
 import pytest
 from wh3_siege_attack import first_observation, later
 
-from twwarhammer3.battle import escalade, play
+from twwarhammer3.battle import play
 from twwarhammer3.protocol import validate_orders
+from twwarhammer3.scenarios import escalade
 
 GATE_ATTACKERS = (escalade.EscaladeV2, escalade.ConcentrateV2, escalade.CavalryEarlyV2,
                   escalade.PiecemealV2, escalade.GateOnlyV2, escalade.BesiegeNearestV2)

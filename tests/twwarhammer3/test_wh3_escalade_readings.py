@@ -1,4 +1,4 @@
-"""The siege attack's descriptive readings (battle/escalade_readings.py, design I8).
+"""The siege attack's descriptive readings (scenarios/escalade_readings.py, design I8).
 
 Reference: final-izmail.md (runs/siege-evals-20261108), Measurements and checks 7 and 8, with
 the portfolio's corrections (contact is the engine's melee flag, a breach is hp 0 or less).
@@ -17,8 +17,8 @@ from copy import deepcopy
 
 from wh3_siege_attack import DEFENDERS, FORTIFICATIONS
 
-from twwarhammer3.battle import escalade_readings as readings
-from twwarhammer3.battle.escalade import front_line
+from twwarhammer3.scenarios import escalade_readings as readings
+from twwarhammer3.scenarios.escalade import front_line
 
 
 def unit(identity, x, z, men):

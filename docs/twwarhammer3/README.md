@@ -293,11 +293,11 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   reserve's type keys and the public wall line with its distance and inside tests
 - `src/twwarhammer3/scenarios/wall_readings.py`: that siege's evaluator readings of finished
   battles: holders, tickets, sightings, ammunition, breach, reserve response, damage releases
-- `src/twwarhammer3/battle/escalade.py`: `Escalade` and its controls for the siege attack
+- `src/twwarhammer3/scenarios/escalade.py`: `Escalade` and its controls for the siege attack
   (ksl-emp-siege-a-v1), on public state with the siege orders
-- `src/twwarhammer3/battle/escalade_facts.py`: what that siege's witness and readings both use:
+- `src/twwarhammer3/scenarios/escalade_facts.py`: what that siege's witness and readings both use:
   the fort's front line and what counts as inside it
-- `src/twwarhammer3/battle/escalade_readings.py`: that siege's evaluator readings of finished
+- `src/twwarhammer3/scenarios/escalade_readings.py`: that siege's evaluator readings of finished
   battles: reallocation by melee flags, entry routes, Lancer losses, wall to victory point
 - `src/twwarhammer3/units.py`: measures public unit distance, eligibility and melee contact.
 - `src/twwarhammer3/policy_names.py`: parses the policy, model and effort in a recorded name.
