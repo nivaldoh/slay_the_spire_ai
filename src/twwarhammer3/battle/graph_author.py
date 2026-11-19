@@ -83,7 +83,11 @@ def frozen_library():
             "node_options": {"mode": {"operation": "select_target",
                                      "values": ["nearest", "engaged"], "location": "node"}},
             "descriptions": dict(DESCRIPTIONS),
-            "parameters": {"arrival_m": catalog.ARRIVAL_M, "timeout_ms": catalog.TIMEOUT_MS,
+            # JUDGEMENT: Frozen routing rule — Codex, 2026-11-19. Pin the states once hashed
+            # inside the tactics file. Hashing all of units.py would also refuse graphs on
+            # edits to geometry used only by other policies and scenario readings.
+            "parameters": {"routed_states": sorted(skills.ROUTED), "arrival_m": catalog.ARRIVAL_M,
+                           "timeout_ms": catalog.TIMEOUT_MS,
                            "retry_ms": catalog.REPEAT_MS, "hold_engage_m": skills.ENGAGE_M,
                            "max_visits": graph.MAX_VISITS, "max_age_ms": graph.MAX_AGE_MS},
             # Rests on JUDGEMENT graph_goals.py G4 Goal limits; plain graphs have no model hint.
