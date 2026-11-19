@@ -15,27 +15,28 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "src/gameai/llm.py": "61bba3a9a44d65d6168239d3574a26e71a8a439d50f573f7d3019e16a11606ce",
    "src/gameai/providers.py": "324bd1e963a75e9ebff1a0d0b01da4f48386f2a04b3fe2b7167b7127eb62997a",
    "src/gameai/windows.py": "b949d0cd10971af687cad0c14afffedf8ea49eb62770dbdd9675ef2e6d538407",
-   "src/twwarhammer3/controllers/llm.py": "38c67388ef444d4397a2bd0fd39ccb8dab1782fe59dafac642e6beeb7e0ef386",
    "src/twwarhammer3/battle/play.py": "2fbb8630139e5adecdbbe2be68dd4c9068e184dddf4647721d4c84d54e030ac7",
-   "src/twwarhammer3/results/report.py": "706721bcbcbe442df0108d2aca4d1ace908994f7ebe1fee8fc957ca6b06c7b0a",
    "src/twwarhammer3/battle/setup.py": "f67e664443621eb8259c907e982b6426b81b27d9f5d39d0b8ae7101e5b612029",
-   "src/twwarhammer3/results/register.py": "ab4ca86984d317dd1a3511b9d1907409d35a07e3bdb819e5f76632cb3d8b9f05",
+   "src/twwarhammer3/battle/llm.py": "38c67388ef444d4397a2bd0fd39ccb8dab1782fe59dafac642e6beeb7e0ef386",
    "src/twwarhammer3/engine/mailbox.py": "26d1d0867d65bfa78e0a573a7b7d4e96365412d4d780243b3e5d1c15aa6efc59",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua": "87cb1c61ebfb95d7867cf4ed2e5c943d0ce762337773a544b8a34e04e8f2db27",
-   "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua": "92485ef8964f01b2fab7aac32a5932adef5afb7cfa9f413ee55ad5a86175150f"
+   "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua": "92485ef8964f01b2fab7aac32a5932adef5afb7cfa9f413ee55ad5a86175150f",
+   "src/twwarhammer3/battle/stats.py": "ab4ca86984d317dd1a3511b9d1907409d35a07e3bdb819e5f76632cb3d8b9f05",
+   "src/twwarhammer3/battle/report.py": "706721bcbcbe442df0108d2aca4d1ace908994f7ebe1fee8fc957ca6b06c7b0a"
   },
   "changed_since": [
    "configs/twwarhammer3/benchmark_jobs.json",
+   "scripts/wh3_queue.py",
    "src/gameai/llm.py",
    "src/gameai/providers.py",
    "src/gameai/windows.py",
-   "src/twwarhammer3/controllers/llm.py",
    "src/twwarhammer3/battle/play.py",
-   "src/twwarhammer3/results/report.py",
    "src/twwarhammer3/battle/setup.py",
-   "src/twwarhammer3/results/register.py",
+   "src/twwarhammer3/battle/llm.py",
    "src/twwarhammer3/engine/mailbox.py",
-   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua",
+   "src/twwarhammer3/battle/stats.py",
+   "src/twwarhammer3/battle/report.py"
   ],
   "messages": {
    "command": {

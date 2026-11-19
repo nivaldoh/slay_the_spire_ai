@@ -19,7 +19,7 @@ DIAGRAM.tabs.push({
     "Models write one graph per member before the battle; during it no model is asked, and the members take turns, each graph moving at most one step per view it gets.",
   "summary":
     "gap-initial-02, 1 Nov: graphs written by Haiku 5.5 before the battle; lost at 618.2 s by engine result; one battle, no strength claim.",
-  "commit": "c37fad8",
+  "commit": "08cd2be",
   "reviewed": "2026-11-14",
   "example": "graph",
   "facts": {
@@ -87,13 +87,13 @@ DIAGRAM.tabs.push({
       "status": {
         "text":
           "agreed offline check: WH3 initial GaP, whose canned author and revision cases passed at d6dfe92, and the initiation check at 4f0c3fc; neither establishes learning or live effects",
-        "refs": ["docs/agreed-checks.md:170-180", "docs/agreed-checks.md:116-131"]
+        "refs": ["docs/agreed-checks.md:177-187", "docs/agreed-checks.md:123-138"]
       },
       "refs": [
         "src/twwarhammer3/controllers/graph_author.py:1",
-        "src/twwarhammer3/__main__.py:212-229",
-        "src/twwarhammer3/controllers/graph_author.py:329-335",
-        "src/twwarhammer3/controllers/graph_author.py:346-362",
+        "src/twwarhammer3/__main__.py:160-177",
+        "src/twwarhammer3/controllers/graph_author.py:334-340",
+        "src/twwarhammer3/controllers/graph_author.py:351-367",
         "runs/twwarhammer3/gap-20261101/initial-02/manifest.json"
       ]
     },
@@ -110,8 +110,8 @@ DIAGRAM.tabs.push({
       "note": "Applies one request per tick and writes the state.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2103-2107",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2172"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2097-2101",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2166"
       ]
     }
   ],
@@ -122,7 +122,7 @@ DIAGRAM.tabs.push({
       "to": "cavalry.start",
       "label": "writes the cavalry graph",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/controllers/graph_author.py:346-362"]
+      "refs": ["src/twwarhammer3/controllers/graph_author.py:351-367"]
     },
     {
       "id": "g.author>line.acquire",
@@ -130,7 +130,7 @@ DIAGRAM.tabs.push({
       "to": "line.acquire",
       "label": "writes the line graph",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/controllers/graph_author.py:346-362"]
+      "refs": ["src/twwarhammer3/controllers/graph_author.py:351-367"]
     },
     {
       "id": "cavalry.charge>g.battle",
@@ -139,7 +139,7 @@ DIAGRAM.tabs.push({
       "label": "charge orders",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/controllers/skill_contracts.py:133-144",
+        "src/twwarhammer3/controllers/skill_contracts.py:134-145",
         "src/twwarhammer3/controllers/team.py:365-374"
       ]
     },
@@ -150,7 +150,7 @@ DIAGRAM.tabs.push({
       "label": "attack orders",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/controllers/skill_contracts.py:133-144",
+        "src/twwarhammer3/controllers/skill_contracts.py:134-145",
         "src/twwarhammer3/controllers/team.py:365-374"
       ]
     }
@@ -166,8 +166,14 @@ DIAGRAM.tabs.push({
           "caption":
             "Before the battle, three Haiku calls, a coordinator and two specialists, write one graph per member.",
           "dots": [
-            { "path": ["g.author>cavalry.start"], "who": "A" },
-            { "path": ["g.author>line.acquire"], "who": "B" }
+            {
+              "path": ["g.author>cavalry.start"],
+              "who": "A"
+            },
+            {
+              "path": ["g.author>line.acquire"],
+              "who": "B"
+            }
           ],
           "box": "g.author",
           "who": "model",
@@ -180,8 +186,8 @@ DIAGRAM.tabs.push({
             "key": "start"
           },
           "refs": [
-            "src/twwarhammer3/controllers/graph_author.py:329-335",
-            "src/twwarhammer3/controllers/graph_author.py:346-362"
+            "src/twwarhammer3/controllers/graph_author.py:334-340",
+            "src/twwarhammer3/controllers/graph_author.py:351-367"
           ]
         },
         {
@@ -199,19 +205,19 @@ DIAGRAM.tabs.push({
             "key": "start"
           },
           "refs": [
-            "src/twwarhammer3/controllers/graph.py:21-23",
-            "src/twwarhammer3/controllers/graph.py:206-225",
+            "src/twwarhammer3/controllers/graph.py:22-24",
+            "src/twwarhammer3/controllers/graph.py:207-226",
             "src/twwarhammer3/controllers/team.py:342-374"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/controllers/graph.py",
-              "line": 21,
+              "line": 22,
               "name": "G4 Graph limits"
             },
             {
               "file": "src/twwarhammer3/controllers/graph.py",
-              "line": 211,
+              "line": 212,
               "name": "G4 Target choice"
             }
           ]
@@ -231,8 +237,8 @@ DIAGRAM.tabs.push({
             "key": "attack"
           },
           "refs": [
-            "src/twwarhammer3/controllers/factory.py:59-60",
-            "src/twwarhammer3/controllers/skill_contracts.py:121-126"
+            "src/twwarhammer3/controllers/factory.py:61-62",
+            "src/twwarhammer3/controllers/skill_contracts.py:122-127"
           ]
         },
         {
@@ -255,14 +261,14 @@ DIAGRAM.tabs.push({
             "key": "walk"
           },
           "refs": [
-            "src/twwarhammer3/controllers/graph.py:203-205",
-            "src/twwarhammer3/controllers/graph_author.py:33",
+            "src/twwarhammer3/controllers/graph.py:204-206",
+            "src/twwarhammer3/controllers/graph_author.py:34",
             "src/twwarhammer3/controllers/team.py:342-374"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/controllers/graph.py",
-              "line": 21,
+              "line": 22,
               "name": "G4 Graph limits"
             }
           ]
@@ -287,13 +293,13 @@ DIAGRAM.tabs.push({
             "key": "deadline"
           },
           "refs": [
-            "src/twwarhammer3/controllers/skill_contracts.py:17-22",
-            "src/twwarhammer3/controllers/skill_contracts.py:103-105"
+            "src/twwarhammer3/controllers/skill_contracts.py:18-23",
+            "src/twwarhammer3/controllers/skill_contracts.py:104-106"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/controllers/skill_contracts.py",
-              "line": 17,
+              "line": 18,
               "name": "G4 Skill limits"
             }
           ]
@@ -312,7 +318,7 @@ DIAGRAM.tabs.push({
             "example": "graph",
             "key": "melee"
           },
-          "refs": ["src/twwarhammer3/controllers/skill_contracts.py:121-126"]
+          "refs": ["src/twwarhammer3/controllers/skill_contracts.py:122-127"]
         },
         {
           "caption":
@@ -336,14 +342,14 @@ DIAGRAM.tabs.push({
             "key": "charge"
           },
           "refs": [
-            "src/twwarhammer3/controllers/graph.py:206-225",
-            "src/twwarhammer3/controllers/graph_author.py:32",
-            "src/twwarhammer3/controllers/graph_author.py:37"
+            "src/twwarhammer3/controllers/graph.py:207-226",
+            "src/twwarhammer3/controllers/graph_author.py:33",
+            "src/twwarhammer3/controllers/graph_author.py:38"
           ],
           "rests": [
             {
               "file": "src/twwarhammer3/controllers/graph.py",
-              "line": 211,
+              "line": 212,
               "name": "G4 Target choice"
             }
           ]
@@ -362,7 +368,7 @@ DIAGRAM.tabs.push({
             "example": "graph",
             "key": "witness"
           },
-          "refs": ["src/twwarhammer3/controllers/skill_contracts.py:121-126"]
+          "refs": ["src/twwarhammer3/controllers/skill_contracts.py:122-127"]
         }
       ]
     },

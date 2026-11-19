@@ -16,8 +16,8 @@ DIAGRAM.tabs.push({
   "summary":
     "Eleven areas, in the bands where they run. Click a box for what it does, the command that starts it, its stories and its files.",
   "banner":
-    "The full-map review date below is 1 Nov. Status lines were source-reviewed on 4 Nov, and the file lists and flagged references on 14 Nov; historical rate examples keep their original dates.",
-  "commit": "7bf32e6",
+    "The full map was reviewed on 1 Nov and its status lines on 4 Nov. File lists and source references were updated on 19 Nov. The battle examples keep their original dates and source identities.",
+  "commit": "08cd2be",
   "reviewed": "2026-11-01",
   "facts": {
     "providers": ["openai", "openrouter", "anthropic"],
@@ -65,7 +65,7 @@ DIAGRAM.tabs.push({
   "elements": [
     {
       "id": "map.runtime",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "label": "The game and our Lua scripts",
       "code": "engine/ · mod/",
       "kind": "process",
@@ -94,13 +94,13 @@ DIAGRAM.tabs.push({
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1-6",
         "src/gameai/windows.py",
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:328-334",
-        "docs/agreed-checks.md:231-234",
-        "docs/agreed-checks.md:239-242"
+        "docs/agreed-checks.md:238-241",
+        "docs/agreed-checks.md:246-249"
       ]
     },
     {
       "id": "map.setup",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "label": "Scenarios and setup",
       "code": "battle/setup.py · scenarios/",
       "kind": "process",
@@ -125,7 +125,7 @@ DIAGRAM.tabs.push({
       "refs": [
         "src/twwarhammer3/battle/setup.py:1",
         "configs/twwarhammer3/scenarios/",
-        "docs/agreed-checks.md:221-230"
+        "docs/agreed-checks.md:228-237"
       ]
     },
     {
@@ -183,7 +183,7 @@ DIAGRAM.tabs.push({
       ],
       "status":
         "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (docs/agreed-checks.md:170-186); target hints passed at 87518f9, one probe (docs/agreed-checks.md:132-156); agreed offline checks: viewer passed at b8f8cb7 (docs/agreed-checks.md:157-169), initiation check passed at 4f0c3fc (docs/agreed-checks.md:116-131)",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "refs": [
         "src/twwarhammer3/controllers/graph.py:1-6",
         "src/twwarhammer3/controllers/graph_author.py:1",
@@ -195,15 +195,15 @@ DIAGRAM.tabs.push({
         "docs/twwarhammer3/gap-plan.md:375-382",
         "docs/twwarhammer3/gap-plan.md:409-411",
         "docs/twwarhammer3/gap-plan.md:443-454",
-        "docs/agreed-checks.md:116-131",
-        "docs/agreed-checks.md:132-156",
-        "docs/agreed-checks.md:157-169",
-        "docs/agreed-checks.md:170-186"
+        "docs/agreed-checks.md:123-138",
+        "docs/agreed-checks.md:139-163",
+        "docs/agreed-checks.md:164-176",
+        "docs/agreed-checks.md:177-193"
       ]
     },
     {
       "id": "map.posttraining",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "label": "Post-training",
       "code": "gameai/sft.py · sft_smoke.py",
       "kind": "process",
@@ -218,7 +218,7 @@ DIAGRAM.tabs.push({
       "command": "uv run --locked --extra llm python scripts/sft_smoke.py DATASET --output DIR",
       "files": ["src/gameai/sft.py", "scripts/sft_smoke.py"],
       "status": "built, component tests only",
-      "refs": ["src/gameai/sft.py:1", "scripts/sft_smoke.py:1", "docs/state.md:74"]
+      "refs": ["src/gameai/sft.py:1", "scripts/sft_smoke.py:1", "docs/state.md:72"]
     },
     {
       "id": "map.play",
@@ -283,13 +283,13 @@ DIAGRAM.tabs.push({
       ],
       "status":
         "agreed live check: scripted team; direct model-team mechanics passed one declared case at c1ad84d. Strength remains unverified",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "refs": [
         "src/twwarhammer3/battle/play.py:1",
         "src/twwarhammer3/controllers/factory.py:1",
-        "src/twwarhammer3/protocol.py:47",
+        "src/twwarhammer3/protocol.py:118",
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:328-332",
-        "docs/agreed-checks.md:191-220"
+        "docs/agreed-checks.md:198-227"
       ]
     },
     {
@@ -341,7 +341,7 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/benchmark_jobs.json"
       ],
       "status": "built, component tests only",
-      "commit": "fd37495",
+      "commit": "08cd2be",
       "refs": [
         "src/twwarhammer3/results/register.py:1-3",
         "src/twwarhammer3/results/report.py:1",
@@ -365,19 +365,16 @@ DIAGRAM.tabs.push({
       "note":
         "Saves a running battle at a tick, then replays its inputs to that tick before returning live control. The checkpoint-RL experiment built on it is paused.",
       "command": "uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output DIR",
-      "files": [
-        "src/twwarhammer3/checkpoint/",
-        "src/gameai/lm.py"
-      ],
+      "files": ["src/twwarhammer3/checkpoint/", "src/gameai/lm.py"],
       "status":
         "agreed live check: Land and siege live-value checks passed for their declared states and readings; other states remain unverified (docs/twwarhammer3/checkpoints.md)",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "refs": [
         "src/twwarhammer3/checkpoint/checkpoint.py:1",
         "src/twwarhammer3/checkpoint/rl.py:1",
         "docs/twwarhammer3/checkpoints.md:1-14",
-        "docs/agreed-checks.md:247-285",
-        "docs/agreed-checks.md:287-312"
+        "docs/agreed-checks.md:254-292",
+        "docs/agreed-checks.md:294-319"
       ]
     },
     {
@@ -402,16 +399,16 @@ DIAGRAM.tabs.push({
         "configs/twwarhammer3/gcp-regions.json"
       ],
       "status": "built, unverified",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "refs": [
         "src/twwarhammer3/multiplayer/worker.py:1-3",
         "src/twwarhammer3/multiplayer/peers.py:1-3",
-        "docs/twwarhammer3/log.md:1684-1707"
+        "docs/twwarhammer3/log.md:1834-1857"
       ]
     },
     {
       "id": "map.models",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "label": "Model calls and budget",
       "code": "gameai/llm.py · ledger.py",
       "kind": "process",
@@ -431,13 +428,13 @@ DIAGRAM.tabs.push({
         "src/gameai/llm.py:1",
         "src/gameai/ledger.py:1",
         "src/gameai/providers.py:92",
-        "docs/agreed-checks.md:235-238"
+        "docs/agreed-checks.md:242-245"
       ],
       "stories": ["decision"]
     },
     {
       "id": "map.provider",
-      "commit": "108b3e6",
+      "commit": "08cd2be",
       "label": "Model providers",
       "code": "OpenAI · OpenRouter · Anthropic",
       "kind": "outside service",
@@ -449,13 +446,13 @@ DIAGRAM.tabs.push({
       "state": "runs today",
       "note": "Outside services, paid per call. Each has its own ledger and cap.",
       "status": "outside our code: the provider APIs (src/gameai/providers.py:92)",
-      "refs": ["src/gameai/providers.py:92", "docs/twwarhammer3/README.md:458-464"]
+      "refs": ["src/gameai/providers.py:92", "docs/twwarhammer3/README.md:494-500"]
     }
   ],
   "wires": [
     {
       "id": "map.setup>play",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "from": "map.setup",
       "to": "map.play",
       "label": "scenario",
@@ -470,8 +467,8 @@ DIAGRAM.tabs.push({
       "refs": [
         "src/twwarhammer3/battle/setup.py:1",
         "src/twwarhammer3/battle/play.py:1-5",
-        "src/twwarhammer3/battle/play.py:219-233",
-        "src/twwarhammer3/battle/play.py:248"
+        "src/twwarhammer3/battle/play.py:204-218",
+        "src/twwarhammer3/battle/play.py:233"
       ]
     },
     {
@@ -491,7 +488,7 @@ DIAGRAM.tabs.push({
     },
     {
       "id": "map.graphs>play",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "from": "map.graphs",
       "to": "map.play",
       "label": "a graph as the controller",
@@ -501,18 +498,18 @@ DIAGRAM.tabs.push({
       "rate": {
         "kind": null,
         "short": "graph jobs only",
-        "graph": {"kind": "job", "short": "once a job"},
+        "graph": {
+          "kind": "job",
+          "short": "once a job"
+        },
         "text":
           "A job loads its graphs when it starts; models wrote them before it (3 calls for the 1 Nov battle)."
       },
-      "refs": [
-        "docs/twwarhammer3/gap-plan.md:409-411",
-        "docs/how-code-works-example-methods.js"
-      ]
+      "refs": ["docs/twwarhammer3/gap-plan.md:409-411", "docs/how-code-works-example-methods.js"]
     },
     {
       "id": "map.play>runtime",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "from": "map.play",
       "to": "map.runtime",
       "label": "orders",
@@ -522,21 +519,24 @@ DIAGRAM.tabs.push({
       "rate": {
         "kind": "seconds",
         "short": "after each decision",
-        "graph": {"kind": "fraction", "short": "after each decision"},
+        "graph": {
+          "kind": "fraction",
+          "short": "after each decision"
+        },
         "text":
           "One request after every decision, with or without orders: 88 in the 335 s basic battle of 20 Oct (49 with none) and 2017 in the 618 s GaP battle of 1 Nov (1852 with none). The game reads orders.json every 0.2 s of real time and applies them at its next tick, every 0.25 s of battle time."
       },
       "refs": [
         "src/twwarhammer3/engine/mailbox.py:1",
-        "src/twwarhammer3/battle/play.py:890",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2369",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2312",
+        "src/twwarhammer3/battle/play.py:809",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2363",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2306",
         "docs/how-code-works-example-methods.js"
       ]
     },
     {
       "id": "map.runtime>play",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "from": "map.runtime",
       "to": "map.play",
       "label": "battle state",
@@ -547,17 +547,20 @@ DIAGRAM.tabs.push({
       "rate": {
         "kind": "second",
         "short": "every 1 s or sooner",
-        "graph": {"kind": "fraction", "short": "every 0.3 s"},
+        "graph": {
+          "kind": "fraction",
+          "short": "every 0.3 s"
+        },
         "text":
           "The battle script writes the state every 1 s of battle time (the default --observe-ms) and again after it applies each request; the play loop looks for a new one every 0.1 s. A graph controller sends a request at every view, so in the 618 s GaP battle of 1 Nov the state came every 0.3 s (1990 of 2016 gaps; the other 26 were 0.6 s)."
       },
       "refs": [
         "src/twwarhammer3/engine/mailbox.py:117-118",
-        "src/twwarhammer3/protocol.py:47",
+        "src/twwarhammer3/protocol.py:118",
         "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:328-334",
         "src/twwarhammer3/__main__.py:26-27",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2125-2137",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1838",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2119-2131",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1832",
         "src/twwarhammer3/engine/mailbox.py:209",
         "docs/how-code-works-example-methods.js"
       ]
@@ -594,20 +597,24 @@ DIAGRAM.tabs.push({
       "from": "map.play",
       "to": "map.models",
       "label": "model calls",
-      "payload": "The direct model controller in the dated example asks for orders. Commander and graph target hints use other timings.",
+      "payload":
+        "The direct model controller in the dated example asks for orders. Commander and graph target hints use other timings.",
       "status": "built, component tests only",
       "rate": {
         "kind": "seconds",
         "short": "every few seconds",
-        "graph": {"kind": null, "short": "none, or a few hints"},
+        "graph": {
+          "kind": null,
+          "short": "none, or a few hints"
+        },
         "text":
           "A model controller asks at every decision: 92 calls in the 335 s battle of 20 Oct (88 decisions, 3 re-asks after a refused batch and 1 call still out at the end), and its orders used a view 3.3 s old (median). The graph controllers of the 1 Nov battle asked none during it; a graph with target hints asks at most once every 30 s of battle while it sees candidate targets, up to its request cap (rests on JUDGEMENT G4 Goal limits in graph_goals.py)."
       },
       "refs": [
         "src/gameai/llm.py:1",
         "docs/how-code-works-example-methods.js",
-        "src/twwarhammer3/controllers/graph_goals.py:24-27",
-        "src/twwarhammer3/controllers/graph_goals.py:207-212"
+        "src/twwarhammer3/controllers/graph_goals.py:25-28",
+        "src/twwarhammer3/controllers/graph_goals.py:206-211"
       ]
     },
     {
@@ -620,19 +627,17 @@ DIAGRAM.tabs.push({
       "rate": {
         "kind": "seconds",
         "short": "per model call",
-        "graph": {"kind": null, "short": "per model call"},
-        "text":
-          "One HTTPS request per model call, more when the service has a passing failure."
+        "graph": {
+          "kind": null,
+          "short": "per model call"
+        },
+        "text": "One HTTPS request per model call, more when the service has a passing failure."
       },
-      "refs": [
-        "src/gameai/providers.py:92",
-        "src/gameai/llm.py:1",
-        "src/gameai/llm.py:133-136"
-      ]
+      "refs": ["src/gameai/providers.py:92", "src/gameai/llm.py:1", "src/gameai/llm.py:140-143"]
     },
     {
       "id": "map.play>reports",
-      "commit": "601d249",
+      "commit": "08cd2be",
       "from": "map.play",
       "to": "map.reports",
       "label": "trace, result, results.csv row",
@@ -647,7 +652,7 @@ DIAGRAM.tabs.push({
       },
       "refs": [
         "src/twwarhammer3/results/register.py:1-3",
-        "src/twwarhammer3/battle/play.py:198",
+        "src/twwarhammer3/battle/play.py:185",
         "docs/how-code-works-example-methods.js"
       ]
     },

@@ -11,7 +11,7 @@ DIAGRAM.tabs.push({
     "The model decides from a state that is already seconds old when its order applies, because the battle never waits for it.",
   "summary":
     "Request 25 of the 20 Oct battle: the state at 79.7 s, the reply, and the order applied at 83.0 s.",
-  "commit": "7bf32e6",
+  "commit": "08cd2be",
   "reviewed": "2026-11-01",
   "example": "decision",
   "facts": {
@@ -55,8 +55,8 @@ DIAGRAM.tabs.push({
       "note": "The play loop writes one request here; the battle script reads and deletes it.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/engine/mailbox.py:212",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1375-1377"
+        "src/twwarhammer3/engine/mailbox.py:248",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2173-2175"
       ]
     },
     {
@@ -73,9 +73,9 @@ DIAGRAM.tabs.push({
         "Polls orders.json on real time; on battle time, each tick applies the waiting request and writes the state.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1368",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1101-1103"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2097-2101",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2166",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1802-1804"
       ]
     },
     {
@@ -92,9 +92,9 @@ DIAGRAM.tabs.push({
         "The newest state only: our units, enemy units while our side can see them, and hidden totals that the play loop strips before a policy sees them.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:283-289",
-        "src/twwarhammer3/engine/mailbox.py:91-92"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:328-334",
+        "src/twwarhammer3/engine/mailbox.py:117-118"
       ]
     },
     {
@@ -111,9 +111,9 @@ DIAGRAM.tabs.push({
         "Reads the newest state, asks the policy only when no request is outstanding, and writes the request.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/battle/play.py:581",
-        "src/twwarhammer3/battle/play.py:662-663",
-        "src/twwarhammer3/battle/play.py:724"
+        "src/twwarhammer3/battle/play.py:643",
+        "src/twwarhammer3/battle/play.py:737-738",
+        "src/twwarhammer3/battle/play.py:809"
       ]
     },
     {
@@ -129,7 +129,7 @@ DIAGRAM.tabs.push({
       "note":
         "Today's code removes the hidden keys (evaluation, final, setup, native) before a policy sees the state; on 20 Oct an inline filter removed the first three.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/protocol.py:45"]
+      "refs": ["src/twwarhammer3/battle/play.py:566-572", "src/twwarhammer3/protocol.py:118"]
     },
     {
       "id": "d.policy",
@@ -146,9 +146,9 @@ DIAGRAM.tabs.push({
       "status": "built, component tests only",
       "refs": [
         "src/twwarhammer3/controllers/llm.py:1",
-        "src/twwarhammer3/controllers/llm.py:382",
-        "src/twwarhammer3/controllers/llm.py:454-461",
-        "src/twwarhammer3/controllers/llm.py:615"
+        "src/twwarhammer3/controllers/llm.py:499",
+        "src/twwarhammer3/controllers/llm.py:579-586",
+        "src/twwarhammer3/controllers/llm.py:713"
       ]
     },
     {
@@ -164,7 +164,7 @@ DIAGRAM.tabs.push({
       "note":
         "Checks the call's worst-case cost against the budget, then sends it; since 21 Oct (commit e554dd5) it also holds that cost in the ledger until the call returns.",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:352", "src/gameai/llm.py:376-378", "src/gameai/llm.py:469"]
+      "refs": ["src/gameai/llm.py:377", "src/gameai/llm.py:401-403", "src/gameai/llm.py:495"]
     },
     {
       "id": "d.provider",
@@ -188,7 +188,7 @@ DIAGRAM.tabs.push({
       "to": "d.obs",
       "label": "writes the state",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762"]
+      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341"]
     },
     {
       "id": "d.obs>play",
@@ -197,8 +197,8 @@ DIAGRAM.tabs.push({
       "label": "read every 0.1 s",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/engine/mailbox.py:173",
-        "src/twwarhammer3/engine/mailbox.py:287-300"
+        "src/twwarhammer3/engine/mailbox.py:209",
+        "src/twwarhammer3/engine/mailbox.py:323-336"
       ]
     },
     {
@@ -207,7 +207,7 @@ DIAGRAM.tabs.push({
       "to": "d.public",
       "label": "the newest state",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:662"]
+      "refs": ["src/twwarhammer3/battle/play.py:737"]
     },
     {
       "id": "d.public>policy",
@@ -215,7 +215,7 @@ DIAGRAM.tabs.push({
       "to": "d.policy",
       "label": "what our side sees",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:530-536"]
+      "refs": ["src/twwarhammer3/battle/play.py:566-572"]
     },
     {
       "id": "d.policy>model",
@@ -223,7 +223,7 @@ DIAGRAM.tabs.push({
       "to": "d.model",
       "label": "prompt",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:469"],
+      "refs": ["src/gameai/llm.py:495"],
       "bend": -24
     },
     {
@@ -232,7 +232,7 @@ DIAGRAM.tabs.push({
       "to": "d.policy",
       "label": "reply",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:469"],
+      "refs": ["src/gameai/llm.py:495"],
       "bend": -24
     },
     {
@@ -241,7 +241,7 @@ DIAGRAM.tabs.push({
       "to": "d.provider",
       "label": "request",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:376-378"],
+      "refs": ["src/gameai/llm.py:401-403"],
       "bend": -26
     },
     {
@@ -250,7 +250,7 @@ DIAGRAM.tabs.push({
       "to": "d.model",
       "label": "reply",
       "status": "built, component tests only",
-      "refs": ["src/gameai/llm.py:469"],
+      "refs": ["src/gameai/llm.py:495"],
       "bend": -26
     },
     {
@@ -259,7 +259,7 @@ DIAGRAM.tabs.push({
       "to": "d.play",
       "label": "orders",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/controllers/llm.py:615"]
+      "refs": ["src/twwarhammer3/controllers/llm.py:713"]
     },
     {
       "id": "d.play>orders",
@@ -267,7 +267,7 @@ DIAGRAM.tabs.push({
       "to": "d.orders",
       "label": "request 25",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:724", "src/twwarhammer3/engine/mailbox.py:212"]
+      "refs": ["src/twwarhammer3/battle/play.py:809", "src/twwarhammer3/engine/mailbox.py:248"]
     },
     {
       "id": "d.orders>battle",
@@ -276,8 +276,8 @@ DIAGRAM.tabs.push({
       "label": "applied at a tick",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1375-1377",
-        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317"
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2173-2175",
+        "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2097-2101"
       ]
     }
   ],
@@ -302,8 +302,8 @@ DIAGRAM.tabs.push({
             "key": "saw"
           },
           "refs": [
-            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762",
-            "src/twwarhammer3/engine/mailbox.py:287-300"
+            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341",
+            "src/twwarhammer3/engine/mailbox.py:323-336"
           ]
         },
         {
@@ -315,7 +315,10 @@ DIAGRAM.tabs.push({
             "example": "decision",
             "key": "prompt"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/controllers/llm.py:382"]
+          "refs": [
+            "src/twwarhammer3/battle/play.py:566-572",
+            "src/twwarhammer3/controllers/llm.py:499"
+          ]
         },
         {
           "caption":
@@ -326,7 +329,7 @@ DIAGRAM.tabs.push({
             "example": "decision",
             "key": "call"
           },
-          "refs": ["src/gameai/llm.py:352", "src/gameai/llm.py:469"]
+          "refs": ["src/gameai/llm.py:377", "src/gameai/llm.py:495"]
         },
         {
           "caption":
@@ -338,8 +341,8 @@ DIAGRAM.tabs.push({
             "key": "trace"
           },
           "refs": [
-            "src/twwarhammer3/battle/play.py:662-663",
-            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:759-762"
+            "src/twwarhammer3/battle/play.py:737-738",
+            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1338-1341"
           ]
         },
         {
@@ -351,7 +354,7 @@ DIAGRAM.tabs.push({
             "example": "decision",
             "key": "reply"
           },
-          "refs": ["src/gameai/llm.py:469", "src/twwarhammer3/controllers/llm.py:615"]
+          "refs": ["src/gameai/llm.py:495", "src/twwarhammer3/controllers/llm.py:713"]
         },
         {
           "caption":
@@ -363,8 +366,8 @@ DIAGRAM.tabs.push({
             "key": "request"
           },
           "refs": [
-            "src/twwarhammer3/battle/play.py:724-728",
-            "src/twwarhammer3/engine/mailbox.py:212"
+            "src/twwarhammer3/battle/play.py:809-813",
+            "src/twwarhammer3/engine/mailbox.py:248"
           ]
         },
         {
@@ -381,9 +384,9 @@ DIAGRAM.tabs.push({
             "key": "after"
           },
           "refs": [
-            "src/twwarhammer3/engine/mailbox.py:212",
-            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1101-1103",
-            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1313-1317"
+            "src/twwarhammer3/engine/mailbox.py:248",
+            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:1802-1804",
+            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2097-2101"
           ]
         },
         {
@@ -396,8 +399,8 @@ DIAGRAM.tabs.push({
             "key": "next"
           },
           "refs": [
-            "src/twwarhammer3/controllers/llm.py:454-461",
-            "src/twwarhammer3/battle/play.py:499-507"
+            "src/twwarhammer3/controllers/llm.py:579-586",
+            "src/twwarhammer3/battle/play.py:535-543"
           ]
         }
       ]

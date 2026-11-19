@@ -11,7 +11,7 @@ DIAGRAM.tabs.push({
     "One command launches the game, sets up a custom battle, lets the model order our units until the engine ends it, then writes one results row.",
   "summary":
     "A real battle of 20 Oct: GLM 5.3 commands our Swordsmen and Empire Knights against three Swordsmen, and loses at 335 s.",
-  "commit": "601d249",
+  "commit": "08cd2be",
   "reviewed": "2026-11-14",
   "example": "job",
   "size": [1000, 470],
@@ -52,7 +52,7 @@ DIAGRAM.tabs.push({
       "note": "The real game, started by the play job and stopped when the job ends.",
       "status":
         "outside our code: the game, owned by OwnedGame (src/twwarhammer3/battle/play.py:244)",
-      "refs": ["src/twwarhammer3/battle/play.py:244", "src/gameai/windows.py"]
+      "refs": ["src/twwarhammer3/battle/play.py:229", "src/gameai/windows.py"]
     },
     {
       "id": "job.battle",
@@ -129,7 +129,7 @@ DIAGRAM.tabs.push({
       "note":
         "Turns the scenario into the menu steps that build this custom battle, and checks the result.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/setup.py:1", "src/twwarhammer3/battle/play.py:138"]
+      "refs": ["src/twwarhammer3/battle/setup.py:1", "src/twwarhammer3/battle/play.py:129"]
     },
     {
       "id": "job.play",
@@ -143,7 +143,7 @@ DIAGRAM.tabs.push({
       "h": 64,
       "note": "Owns the game for the whole job, plays each episode and records it.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:1", "src/twwarhammer3/battle/play.py:232-244"]
+      "refs": ["src/twwarhammer3/battle/play.py:1", "src/twwarhammer3/battle/play.py:217-229"]
     },
     {
       "id": "job.policy",
@@ -158,7 +158,7 @@ DIAGRAM.tabs.push({
       "note":
         "Writes the prompt from what our side can see, asks the model, and checks its orders.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/controllers/llm.py:1", "src/twwarhammer3/battle/play.py:643-649"]
+      "refs": ["src/twwarhammer3/controllers/llm.py:1", "src/twwarhammer3/battle/play.py:566-572"]
     },
     {
       "id": "job.report",
@@ -187,7 +187,7 @@ DIAGRAM.tabs.push({
       "note":
         "The states the model decided from, every model exchange, decision and acknowledgement, and the result; the 1 Hz frames go to replay.jsonl. Kept under runs/, not in Git.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:321", "src/twwarhammer3/battle/play.py:423"]
+      "refs": ["src/twwarhammer3/battle/play.py:306", "src/twwarhammer3/battle/play.py:408"]
     },
     {
       "id": "job.results",
@@ -201,7 +201,7 @@ DIAGRAM.tabs.push({
       "h": 52,
       "note": "One row per episode, committed with the log.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/results/register.py:1-3", "src/twwarhammer3/battle/play.py:198"]
+      "refs": ["src/twwarhammer3/results/register.py:1-3", "src/twwarhammer3/battle/play.py:185"]
     },
     {
       "id": "job.provider",
@@ -234,7 +234,7 @@ DIAGRAM.tabs.push({
       "to": "job.play",
       "label": "menu steps",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:138"]
+      "refs": ["src/twwarhammer3/battle/play.py:129"]
     },
     {
       "id": "job.play>game",
@@ -242,7 +242,7 @@ DIAGRAM.tabs.push({
       "to": "job.game",
       "label": "launches",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:244"]
+      "refs": ["src/twwarhammer3/battle/play.py:229"]
     },
     {
       "id": "job.play>files",
@@ -251,7 +251,7 @@ DIAGRAM.tabs.push({
       "label": "menu.json, orders.json",
       "bend": 46,
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:290", "src/twwarhammer3/engine/mailbox.py:248"]
+      "refs": ["src/twwarhammer3/battle/play.py:275", "src/twwarhammer3/engine/mailbox.py:248"]
     },
     {
       "id": "job.files>play",
@@ -277,7 +277,7 @@ DIAGRAM.tabs.push({
       "label": "orders",
       "bend": 18,
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2179-2181"]
+      "refs": ["src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2173-2175"]
     },
     {
       "id": "job.battle>files",
@@ -295,7 +295,7 @@ DIAGRAM.tabs.push({
       "label": "what our side sees",
       "bend": -24,
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:643-649"]
+      "refs": ["src/twwarhammer3/battle/play.py:566-572"]
     },
     {
       "id": "job.policy>play",
@@ -330,7 +330,7 @@ DIAGRAM.tabs.push({
       "to": "job.evidence",
       "label": "trace rows",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:321", "src/twwarhammer3/battle/play.py:423"]
+      "refs": ["src/twwarhammer3/battle/play.py:306", "src/twwarhammer3/battle/play.py:408"]
     },
     {
       "id": "job.play>results",
@@ -338,7 +338,7 @@ DIAGRAM.tabs.push({
       "to": "job.results",
       "label": "one row",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/play.py:198"]
+      "refs": ["src/twwarhammer3/battle/play.py:185"]
     },
     {
       "id": "job.evidence>report",
@@ -366,8 +366,8 @@ DIAGRAM.tabs.push({
           },
           "refs": [
             "scripts/wh3_queue.py:1-3",
-            "src/twwarhammer3/battle/play.py:122",
-            "src/twwarhammer3/battle/play.py:232-244"
+            "src/twwarhammer3/battle/play.py:117",
+            "src/twwarhammer3/battle/play.py:217-229"
           ]
         },
         {
@@ -380,8 +380,8 @@ DIAGRAM.tabs.push({
             "key": "setup"
           },
           "refs": [
-            "src/twwarhammer3/battle/play.py:138",
-            "src/twwarhammer3/battle/play.py:290",
+            "src/twwarhammer3/battle/play.py:129",
+            "src/twwarhammer3/battle/play.py:275",
             "src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua:1-9"
           ]
         },
@@ -415,7 +415,10 @@ DIAGRAM.tabs.push({
             "example": "job",
             "key": "r1"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:643-649", "src/twwarhammer3/controllers/llm.py:1"]
+          "refs": [
+            "src/twwarhammer3/battle/play.py:566-572",
+            "src/twwarhammer3/controllers/llm.py:1"
+          ]
         },
         {
           "caption":
@@ -432,7 +435,7 @@ DIAGRAM.tabs.push({
           },
           "refs": [
             "src/twwarhammer3/engine/mailbox.py:248",
-            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2179-2181"
+            "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua:2173-2175"
           ]
         },
         {
@@ -461,7 +464,10 @@ DIAGRAM.tabs.push({
             "example": "job",
             "key": "row"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:198", "src/twwarhammer3/results/register.py:1-3"]
+          "refs": [
+            "src/twwarhammer3/battle/play.py:185",
+            "src/twwarhammer3/results/register.py:1-3"
+          ]
         },
         {
           "caption":

@@ -11,13 +11,13 @@ Object.assign(DIAGRAM_EXAMPLES, {
   "story": "docs/how-code-works-view-members.js",
   "files": {
    "src/twwarhammer3/battle/play.py": "097f69e3e9ef64eb5442935408f11b4b351e4cf1d1d11bb1c67216a7e68fe786",
-   "src/twwarhammer3/controllers/team.py": "37e22254a5ad32cff909ddc872f9c91a7aaaace727dc8ee640361e6d9cae1520",
+   "src/twwarhammer3/battle/team.py": "37e22254a5ad32cff909ddc872f9c91a7aaaace727dc8ee640361e6d9cae1520",
    "src/twwarhammer3/engine/mailbox.py": "316879bd897ff1f6ab73d0460b890f33b379c6f7050bc90811a700e9b2a6d48a",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua": "a6c5d1191357c53a02af82535b0dc61e401d281cf68a9a55bee428b0d36a7f46"
   },
   "changed_since": [
    "src/twwarhammer3/battle/play.py",
-   "src/twwarhammer3/controllers/team.py",
+   "src/twwarhammer3/battle/team.py",
    "src/twwarhammer3/engine/mailbox.py",
    "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
   ],

@@ -11,23 +11,23 @@ Object.assign(DIAGRAM_EXAMPLES, {
   "story": "docs/how-code-works-view-graph.js",
   "files": {
    "src/twwarhammer3/__main__.py": "6292e2e56f2d1eec8f7ad0deee7867a2a1861e17d97f8ba42725910f07938051",
-   "src/twwarhammer3/controllers/factory.py": "18c85b117d28d5d695618b5c14b1e8ced3ce6b9ba2193e33355c7c31b3ca9932",
-   "src/twwarhammer3/controllers/graph.py": "ad1f533a8095f956e3c8fd0e0f3a5b73455cf570d9a35383dadb5853ad69d2c4",
-   "src/twwarhammer3/controllers/graph_author.py": "fc67d23ddf58188080f058252f50ca6753b1ade469f7d8d2c00d07a5c6f00d79",
-   "src/twwarhammer3/results/graph_view_assets/view.js": "absent",
-   "src/twwarhammer3/controllers/skill_contracts.py": "7f721e2d29203ad0125dcc8e4b739a69314499b52c1770d98f2df97b7fdb933c",
-   "src/twwarhammer3/controllers/team.py": "195e0e305ef38d45235c9f81d56fcb389ebcac0617d01e254b73b02172e15adf",
-   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua": "a6c5d1191357c53a02af82535b0dc61e401d281cf68a9a55bee428b0d36a7f46"
+   "src/twwarhammer3/battle/controllers.py": "18c85b117d28d5d695618b5c14b1e8ced3ce6b9ba2193e33355c7c31b3ca9932",
+   "src/twwarhammer3/battle/graph.py": "ad1f533a8095f956e3c8fd0e0f3a5b73455cf570d9a35383dadb5853ad69d2c4",
+   "src/twwarhammer3/battle/graph_author.py": "fc67d23ddf58188080f058252f50ca6753b1ade469f7d8d2c00d07a5c6f00d79",
+   "src/twwarhammer3/battle/skill_contracts.py": "7f721e2d29203ad0125dcc8e4b739a69314499b52c1770d98f2df97b7fdb933c",
+   "src/twwarhammer3/battle/team.py": "195e0e305ef38d45235c9f81d56fcb389ebcac0617d01e254b73b02172e15adf",
+   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua": "a6c5d1191357c53a02af82535b0dc61e401d281cf68a9a55bee428b0d36a7f46",
+   "src/twwarhammer3/battle/graph_view_assets/view.js": "absent"
   },
   "changed_since": [
    "src/twwarhammer3/__main__.py",
-   "src/twwarhammer3/controllers/factory.py",
-   "src/twwarhammer3/controllers/graph.py",
-   "src/twwarhammer3/controllers/graph_author.py",
-   "src/twwarhammer3/results/graph_view_assets/view.js",
-   "src/twwarhammer3/controllers/skill_contracts.py",
-   "src/twwarhammer3/controllers/team.py",
-   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+   "src/twwarhammer3/battle/controllers.py",
+   "src/twwarhammer3/battle/graph.py",
+   "src/twwarhammer3/battle/graph_author.py",
+   "src/twwarhammer3/battle/skill_contracts.py",
+   "src/twwarhammer3/battle/team.py",
+   "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua",
+   "src/twwarhammer3/battle/graph_view_assets/view.js"
   ],
   "graph": {
    "elements": [
@@ -44,7 +44,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (contact and charge with melee witnesses); 91 offline cases at d6dfe92; holds and firing unchecked",
       "refs": [
-       "docs/agreed-checks.md:72-88"
+       "docs/agreed-checks.md:79-95"
       ]
      },
      "refs": [
@@ -64,8 +64,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
@@ -86,8 +86,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
@@ -108,13 +108,13 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (contact and charge with melee witnesses); 91 offline cases at d6dfe92; holds and firing unchecked",
       "refs": [
-       "docs/agreed-checks.md:72-88"
+       "docs/agreed-checks.md:79-95"
       ]
      },
      "refs": [
       "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
-      "src/twwarhammer3/controllers/skill_contracts.py:17-22",
-      "src/twwarhammer3/controllers/skill_contracts.py:103-105"
+      "src/twwarhammer3/controllers/skill_contracts.py:18-23",
+      "src/twwarhammer3/controllers/skill_contracts.py:104-106"
      ]
     },
     {
@@ -130,8 +130,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
@@ -152,8 +152,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
@@ -173,8 +173,8 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
@@ -195,14 +195,14 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
       "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
-      "src/twwarhammer3/controllers/skill_contracts.py:17-22",
-      "src/twwarhammer3/controllers/skill_contracts.py:103-105"
+      "src/twwarhammer3/controllers/skill_contracts.py:18-23",
+      "src/twwarhammer3/controllers/skill_contracts.py:104-106"
      ]
     }
    ],
@@ -215,11 +215,11 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (contact and charge with melee witnesses); 91 offline cases at d6dfe92; holds and firing unchecked",
       "refs": [
-       "docs/agreed-checks.md:72-88"
+       "docs/agreed-checks.md:79-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -231,11 +231,11 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (contact and charge with melee witnesses); 91 offline cases at d6dfe92; holds and firing unchecked",
       "refs": [
-       "docs/agreed-checks.md:72-88"
+       "docs/agreed-checks.md:79-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ]
     },
     {
@@ -246,12 +246,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -263,12 +263,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -280,11 +280,11 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed live check: WH3 initial GaP, live 3/3 at d12be58 (contact and charge with melee witnesses); 91 offline cases at d6dfe92; holds and firing unchecked",
       "refs": [
-       "docs/agreed-checks.md:72-88"
+       "docs/agreed-checks.md:79-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -296,12 +296,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -313,12 +313,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -330,12 +330,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -80
     },
@@ -347,12 +347,12 @@ Object.assign(DIAGRAM_EXAMPLES, {
      "status": {
       "text": "agreed offline check: WH3 initial GaP, 91 component cases (branches/loops, effect-based completion) at d6dfe92; the live run at d12be58 witnessed only contact and charge",
       "refs": [
-       "docs/agreed-checks.md:72-82",
-       "docs/agreed-checks.md:87-88"
+       "docs/agreed-checks.md:79-89",
+       "docs/agreed-checks.md:94-95"
       ]
      },
      "refs": [
-      "src/twwarhammer3/controllers/graph.py:21-23"
+      "src/twwarhammer3/controllers/graph.py:22-24"
      ],
      "bend": -120
     }
@@ -420,7 +420,7 @@ Object.assign(DIAGRAM_EXAMPLES, {
    "witness": {
     "title": "The charge counts as done (trace rows 10072 and 10078)",
     "text": "386.3 s: charge -> succeeded: melee with\n  selected target (row 10078)\n386.3 s view (row 10072), x, z:\nKnights (f2) -129, 14: melee, moving,\n  running, target e2\nSwordsmen 2 (e2) -201, 121: melee\nSwordsmen 1 (e1) -140, 19: moving, running\nf2 to e2 129 m, to e1 12 m (unit centres)\nthe check reads only target and melee state",
-    "source": "runs/twwarhammer3/battle/gap-initial-02-20261101/episode-0000/trace.jsonl rows 10072 and 10078; src/twwarhammer3/controllers/skill_contracts.py:119-122"
+    "source": "runs/twwarhammer3/battle/gap-initial-02-20261101/episode-0000/trace.jsonl rows 10072 and 10078; src/twwarhammer3/controllers/skill_contracts.py:120-123"
    }
   },
   "frames": {

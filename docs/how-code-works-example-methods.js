@@ -382,14 +382,14 @@ Object.assign(DIAGRAM_EXAMPLES, {
   "outcome": "lost",
   "story": "docs/how-code-works-view-methods.js",
   "files": {
-   "src/twwarhammer3/controllers/factory.py": "8dcf0efbe59b55c66700ea98ea08fed29c82833a4bf26f53b8a6b3f28b9a18c3",
-   "src/twwarhammer3/controllers/llm.py": "38c67388ef444d4397a2bd0fd39ccb8dab1782fe59dafac642e6beeb7e0ef386",
-   "src/twwarhammer3/battle/play.py": "2fbb8630139e5adecdbbe2be68dd4c9068e184dddf4647721d4c84d54e030ac7"
+   "src/twwarhammer3/battle/play.py": "2fbb8630139e5adecdbbe2be68dd4c9068e184dddf4647721d4c84d54e030ac7",
+   "src/twwarhammer3/battle/controllers.py": "8dcf0efbe59b55c66700ea98ea08fed29c82833a4bf26f53b8a6b3f28b9a18c3",
+   "src/twwarhammer3/battle/llm.py": "38c67388ef444d4397a2bd0fd39ccb8dab1782fe59dafac642e6beeb7e0ef386"
   },
   "changed_since": [
-   "src/twwarhammer3/controllers/factory.py",
-   "src/twwarhammer3/controllers/llm.py",
-   "src/twwarhammer3/battle/play.py"
+   "src/twwarhammer3/battle/play.py",
+   "src/twwarhammer3/battle/controllers.py",
+   "src/twwarhammer3/battle/llm.py"
   ],
   "messages": {
    "r1": {
@@ -500,22 +500,22 @@ Object.assign(DIAGRAM_EXAMPLES, {
   "outcome": "lost",
   "story": "docs/how-code-works-view-methods.js",
   "files": {
-   "src/twwarhammer3/controllers/configured.py": "4a7fc6d9c0391b1576b84b8fd8d2ae7797d35e56904262bd249aec73eb8d672b",
-   "src/twwarhammer3/controllers/factory.py": "18c85b117d28d5d695618b5c14b1e8ced3ce6b9ba2193e33355c7c31b3ca9932",
-   "src/twwarhammer3/controllers/graph.py": "ad1f533a8095f956e3c8fd0e0f3a5b73455cf570d9a35383dadb5853ad69d2c4",
-   "src/twwarhammer3/controllers/graph_author.py": "fc67d23ddf58188080f058252f50ca6753b1ade469f7d8d2c00d07a5c6f00d79",
    "src/twwarhammer3/battle/play.py": "fd2075a65ba405889cf9c3a41cdea8336163cf313012c5be669d074b66b47f17",
-   "src/twwarhammer3/controllers/skill_contracts.py": "7f721e2d29203ad0125dcc8e4b739a69314499b52c1770d98f2df97b7fdb933c",
-   "src/twwarhammer3/controllers/team.py": "195e0e305ef38d45235c9f81d56fcb389ebcac0617d01e254b73b02172e15adf"
+   "src/twwarhammer3/battle/configured.py": "4a7fc6d9c0391b1576b84b8fd8d2ae7797d35e56904262bd249aec73eb8d672b",
+   "src/twwarhammer3/battle/controllers.py": "18c85b117d28d5d695618b5c14b1e8ced3ce6b9ba2193e33355c7c31b3ca9932",
+   "src/twwarhammer3/battle/graph.py": "ad1f533a8095f956e3c8fd0e0f3a5b73455cf570d9a35383dadb5853ad69d2c4",
+   "src/twwarhammer3/battle/graph_author.py": "fc67d23ddf58188080f058252f50ca6753b1ade469f7d8d2c00d07a5c6f00d79",
+   "src/twwarhammer3/battle/skill_contracts.py": "7f721e2d29203ad0125dcc8e4b739a69314499b52c1770d98f2df97b7fdb933c",
+   "src/twwarhammer3/battle/team.py": "195e0e305ef38d45235c9f81d56fcb389ebcac0617d01e254b73b02172e15adf"
   },
   "changed_since": [
-   "src/twwarhammer3/controllers/configured.py",
-   "src/twwarhammer3/controllers/factory.py",
-   "src/twwarhammer3/controllers/graph.py",
-   "src/twwarhammer3/controllers/graph_author.py",
    "src/twwarhammer3/battle/play.py",
-   "src/twwarhammer3/controllers/skill_contracts.py",
-   "src/twwarhammer3/controllers/team.py"
+   "src/twwarhammer3/battle/configured.py",
+   "src/twwarhammer3/battle/controllers.py",
+   "src/twwarhammer3/battle/graph.py",
+   "src/twwarhammer3/battle/graph_author.py",
+   "src/twwarhammer3/battle/skill_contracts.py",
+   "src/twwarhammer3/battle/team.py"
   ],
   "messages": {
    "task": {
