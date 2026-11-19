@@ -39,7 +39,7 @@ def run_rl(args, parser) -> int:
     import subprocess
 
     from gameai.lm import gpu_lease
-    from twwarhammer3.battle import audit, checkpoint, confirm, rl
+    from twwarhammer3.checkpoint import audit, checkpoint, confirm, rl
 
     phase, paths = args.phase, [path.resolve() for path in args.paths]
     if args.output:

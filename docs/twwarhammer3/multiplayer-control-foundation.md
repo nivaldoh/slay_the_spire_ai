@@ -332,7 +332,7 @@ without a new bounded question. A callback name/string is a lead, not an impleme
 
 ### 2 Establish a passive synchronization observer
 
-Reuse the discoveries in `engine/checkpoint_agent.js`, especially `post_tick` and the
+Reuse the discoveries in `checkpoint/checkpoint_agent.js`, especially `post_tick` and the
 `session_step` completed-tick boundary after worker jobs join. Do not load that agent
 unchanged: it writes replay/debug state and contains restoration/test-hook behavior.
 Keep restore code separate from the passive implementation.

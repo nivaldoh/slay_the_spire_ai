@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from twwarhammer3.battle import checkpoint, confirm
-from twwarhammer3.battle.candidates import describe
+from twwarhammer3.checkpoint import checkpoint, confirm
+from twwarhammer3.checkpoint.candidates import describe
 
 LISTED = [{"id": "noop", "orders": [], "description": "no new orders"},
           {"id": "attack_nearest", "orders": [{"unit": "f1", "type": "attack", "target": "e1",
@@ -98,7 +98,7 @@ def test_the_choice_is_the_ordering_averaged_argmax_and_overfit_needs_every_orde
 
 
 def test_the_curriculum_rule_reads_the_rungs_mass_on_winners():
-    from twwarhammer3.battle import rl
+    from twwarhammer3.checkpoint import rl
 
     evaluation = {"metrics": {"tasks": {"t": {"mass": 0.8, "hits": [0, 1]}}}}
     assert rl.curriculum_passed(evaluation, {"hash": "t"})
@@ -121,7 +121,7 @@ def launch(tmp_path, monkeypatch, *, control, live_win, reproduced=True, prelaun
     replaced, so only the pass rule and the launched batch are real."""
     from contextlib import nullcontext
 
-    from twwarhammer3.battle import rl
+    from twwarhammer3.checkpoint import rl
 
     audit = tmp_path / "audit"
     audit.mkdir()

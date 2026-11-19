@@ -1,4 +1,4 @@
-"""battle/checkpoint.py's refusals before a launch, and its saved-replay checks, offline.
+"""checkpoint/checkpoint.py's refusals before a launch, and its saved-replay checks, offline.
 
 Removing any of these passed every test before (runs/refusal-sweep-20261029/wh3-checkpoint.txt).
 The runtime lock, the first step of a launch, is stubbed to raise, so a missing guard fails the
@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 SOURCE = {"scenario": "brt-cavalry-emp-assault", "stop_tick": 10}
 RESTORE = {"checkpoint": {"name": "saved", "tick": 1200}, "stop_tick": 2000}

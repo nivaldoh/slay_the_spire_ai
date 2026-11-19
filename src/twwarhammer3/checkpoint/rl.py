@@ -22,8 +22,9 @@ from pathlib import Path
 
 from gameai.lm import candidate_log_probs, gpu_lease, tensor_hash, verify_adapter_tensors
 from gameai.provenance import committed_revision, sha256, write_json
-from twwarhammer3.battle import checkpoint, play
-from twwarhammer3.battle.candidates import (
+from twwarhammer3.battle import play
+from twwarhammer3.checkpoint import checkpoint
+from twwarhammer3.checkpoint.candidates import (
     CANDIDATES_VERSION,
     candidates,
     evaluation_orderings,
@@ -945,7 +946,7 @@ def compare(paths: list[Path], split: str) -> str:
 def recount(path: Path, tasks_path: Path | None = None) -> dict:
     """``rl recount``: re-derive a record's numbers from records alone (no model, no game);
     writes recount.json beside it with the checker's and the inputs' hashes."""
-    from twwarhammer3.battle import audit
+    from twwarhammer3.checkpoint import audit
 
     checks, inputs = {}, {}
     if path.is_file() and path.name.startswith("eval-"):
@@ -995,7 +996,7 @@ def recount(path: Path, tasks_path: Path | None = None) -> dict:
         lines = [f"run {path.name}: {len(records)} updates, "
                  f"{sum(r['updated'] for r in records)} with a step"]
     elif (path / "confirm.json").exists():
-        from twwarhammer3.battle import confirm as confirm_module
+        from twwarhammer3.checkpoint import confirm as confirm_module
 
         value = json.loads((path / "confirm.json").read_text())
         again = confirm_module.clauses(path)

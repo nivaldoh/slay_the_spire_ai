@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 
 def jsonl(path, rows):
@@ -50,7 +50,7 @@ def window(record):
 
 
 def test_a_move_is_witnessed_by_its_dest_on_the_x_z_plane_and_a_halt_by_no_moving_state():
-    # Distances rest on JUDGEMENT src/twwarhammer3/battle/checkpoint.py witness (dest_m 1).
+    # Distances rest on JUDGEMENT src/twwarhammer3/checkpoint/checkpoint.py witness (dest_m 1).
     # The mod publishes dest as [x, z] (twwarhammer3_battle.lua: get_x(), get_z()).
     move = {"unit": "f1", "type": "move", "x": 10.0, "z": 20.0, "run": False}
     dest_m = checkpoint.WITNESS["dest_m"]

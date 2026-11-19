@@ -27,7 +27,8 @@ import check_wh3_checkpoint as land
 from checkpoint_siege.lobby import make_lobby_steps
 
 from gameai.provenance import sha256, write_json
-from twwarhammer3.battle import checkpoint, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.checkpoint import checkpoint
 from twwarhammer3.engine import runtime
 from twwarhammer3.protocol import ProtocolError
 

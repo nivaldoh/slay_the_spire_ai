@@ -354,7 +354,7 @@ DIAGRAM.tabs.push({
     {
       "id": "map.checkpoints",
       "label": "Checkpoints and RL",
-      "code": "battle/checkpoint.py · rl.py",
+      "code": "checkpoint/checkpoint.py · rl.py",
       "kind": "process",
       "where": "WSL Python",
       "x": 800,
@@ -366,21 +366,21 @@ DIAGRAM.tabs.push({
         "Saves a running battle at a tick, then replays its inputs to that tick before returning live control. The checkpoint-RL experiment built on it is paused.",
       "command": "uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output DIR",
       "files": [
-        "src/twwarhammer3/battle/checkpoint.py",
-        "src/twwarhammer3/battle/candidates.py",
-        "src/twwarhammer3/battle/audit.py",
-        "src/twwarhammer3/battle/rl.py",
-        "src/twwarhammer3/battle/confirm.py",
-        "src/twwarhammer3/engine/checkpoint_agent.js",
-        "src/twwarhammer3/engine/checkpoint_frida.py",
+        "src/twwarhammer3/checkpoint/checkpoint.py",
+        "src/twwarhammer3/checkpoint/candidates.py",
+        "src/twwarhammer3/checkpoint/audit.py",
+        "src/twwarhammer3/checkpoint/rl.py",
+        "src/twwarhammer3/checkpoint/confirm.py",
+        "src/twwarhammer3/checkpoint/checkpoint_agent.js",
+        "src/twwarhammer3/checkpoint/checkpoint_frida.py",
         "src/gameai/lm.py"
       ],
       "status":
         "agreed live check: Land and siege live-value checks passed for their declared states and readings; other states remain unverified (docs/twwarhammer3/checkpoints.md)",
       "commit": "601d249",
       "refs": [
-        "src/twwarhammer3/battle/checkpoint.py:1",
-        "src/twwarhammer3/battle/rl.py:1",
+        "src/twwarhammer3/checkpoint/checkpoint.py:1",
+        "src/twwarhammer3/checkpoint/rl.py:1",
         "docs/twwarhammer3/checkpoints.md:1-14",
         "docs/agreed-checks.md:247-285",
         "docs/agreed-checks.md:287-312"
@@ -584,8 +584,8 @@ DIAGRAM.tabs.push({
           "A checkpoint run plays one source battle or one restore through the normal harness."
       },
       "refs": [
-        "src/twwarhammer3/battle/checkpoint.py:1",
-        "src/twwarhammer3/battle/checkpoint.py:10-11"
+        "src/twwarhammer3/checkpoint/checkpoint.py:1",
+        "src/twwarhammer3/checkpoint/checkpoint.py:10-11"
       ]
     },
     {

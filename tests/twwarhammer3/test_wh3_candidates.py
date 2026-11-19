@@ -4,7 +4,7 @@ import itertools
 
 import pytest
 
-from twwarhammer3.battle import candidates as cand
+from twwarhammer3.checkpoint import candidates as cand
 from twwarhammer3.protocol import validate_orders
 
 BOUNDS = {"min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}
@@ -112,7 +112,7 @@ def test_evaluation_orderings_are_distinct_seeded_and_never_drawn_for_training()
 
 
 def test_fall_back_and_charge_use_the_nearest_of_several_enemies_and_a_ranged_hero_no_charge():
-    # Rests on JUDGEMENT src/twwarhammer3/battle/candidates.py candidate_set (fall_back_m 60).
+    # Rests on JUDGEMENT src/twwarhammer3/checkpoint/candidates.py candidate_set (fall_back_m 60).
     # checkpoint-rl-plan.md decision 3: away from / attack on the unit's nearest visible enemy;
     # a charge only for those classes with range 0. The mod reports ranged cavalry as
     # missile_cavalry, so of the charge classes only a lord, hero or monster has a range.

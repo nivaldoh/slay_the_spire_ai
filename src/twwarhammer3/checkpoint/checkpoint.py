@@ -1,7 +1,7 @@
 """Battle checkpoints: save a running battle at a tick and later continue it from that tick.
 
 A checkpoint is the game's replay file written mid-battle (setup and every input so far)
-plus the Lua random seed from tick 1. `engine/checkpoint_agent.js` restores it when the
+plus the Lua random seed from tick 1. `checkpoint/checkpoint_agent.js` restores it when the
 replay is opened from the Replays menu: it presents the battle as live, rebuilds it quickly
 (inline ticks) while checking every tick's native checksum against the file, and at the
 saved tick swaps in live input; from then on the battle runs at 1x. The owner allowed the
@@ -38,9 +38,8 @@ from twwarhammer3.engine.runtime import pack_sha256
 from twwarhammer3.protocol import scenario_key, validate_orders
 from twwarhammer3.scope import SOURCES
 
-ENGINE = Path(__file__).resolve().parents[1] / "engine"
-AGENT = ENGINE / "checkpoint_agent.js"
-RUNNER = ENGINE / "checkpoint_frida.py"
+AGENT = Path(__file__).with_name("checkpoint_agent.js")
+RUNNER = Path(__file__).with_name("checkpoint_frida.py")
 WORK = runtime.RUNTIME_DIR / "checkpoint"
 # A Windows Python with frida 17 installed (pip install frida==17.*).
 FRIDA_PYTHON = Path("/mnt/c/wh3-agent/checkpoint-frida-venv/Scripts/python.exe")

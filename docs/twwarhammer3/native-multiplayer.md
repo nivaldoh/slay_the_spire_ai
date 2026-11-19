@@ -225,7 +225,7 @@ File names can be settled in the implementation card. The concrete change points
 | `engine/mailbox.py`: `reset`, `owned_session`, `_request` | One directory per client; reject old session/request identities; never reset another client's files |
 | `engine/runtime.py`, `gameai/windows.py` | Extract only Windows process/path/mailbox responsibilities needed remotely; current `fcntl`, `wslpath`, `/mnt/c` and Windows-Python paths are not portable |
 | `battle/play.py`: `public`, `windows_clock`; `battle/team.py`: `project` | Preserve hidden-state filtering before forwarding; timestamp at the producing Windows host; distinguish native armies from subdivisions of one army |
-| `engine/checkpoint_agent.js`: `post_tick`, `session_step`, `testHooks`, `handOver` | Reuse locations as research leads. Do not load the restore agent unchanged as a passive collector: it writes `debug_replay` and can execute test hooks |
+| `checkpoint/checkpoint_agent.js`: `post_tick`, `session_step`, `testHooks`, `handOver` | Reuse locations as research leads. Do not load the restore agent unchanged as a passive collector: it writes `debug_replay` and can execute test hooks |
 
 These are scope notes, not permission to refactor all listed files at once. First add the
 smallest observer slice. Keep existing single-client behavior and its checks intact.

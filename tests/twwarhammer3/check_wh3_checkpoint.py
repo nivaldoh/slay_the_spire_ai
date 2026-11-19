@@ -29,7 +29,7 @@ from collections import Counter
 from pathlib import Path
 
 from gameai.provenance import write_json
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 from twwarhammer3.engine import runtime
 
 SCENARIO = "emp-handgunners-grn-savage-orcs"

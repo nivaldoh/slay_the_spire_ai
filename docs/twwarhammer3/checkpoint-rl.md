@@ -34,7 +34,7 @@ correctly. Keep these as separate checks.
 
 | Existing piece | Reuse and important limit |
 |---|---|
-| [`battle/checkpoint.py`](../../src/twwarhammer3/battle/checkpoint.py), [`checkpoint_agent.js`](../../src/twwarhammer3/engine/checkpoint_agent.js) | Launch/rebuild, tick hooks, checked native state and `restored` event. The runner currently stops at a diagnostic `stop_tick`; it does not run the ordinary policy loop or collect an RL trajectory. |
+| [`checkpoint/checkpoint.py`](../../src/twwarhammer3/checkpoint/checkpoint.py), [`checkpoint_agent.js`](../../src/twwarhammer3/checkpoint/checkpoint_agent.js) | Launch/rebuild, tick hooks, checked native state and `restored` event. The runner currently stops at a diagnostic `stop_tick`; it does not run the ordinary policy loop or collect an RL trajectory. |
 | [`battle/play.py`](../../src/twwarhammer3/battle/play.py), [`mailbox.py`](../../src/twwarhammer3/engine/mailbox.py) | Public observations, command identity, acknowledgements, engine endings and supervised cleanup. `_drive` has no checkpoint handover gate. `Mailbox.reset()` requires a stopped game. |
 | [`protocol.py`](../../src/twwarhammer3/protocol.py) | `validate_orders` validates a batch. It does not enumerate legal candidates; the prototype needs a public candidate builder. |
 | [`spire/language/policy.py`](../../src/spire/language/policy.py), [`sampling.py`](../../src/spire/language/sampling.py) | Pinned Qwen base, candidate sequence scores, seeded categorical sampling, artifact checks. Spire prompts and action objects are game-specific. |

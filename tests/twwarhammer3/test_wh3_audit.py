@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from twwarhammer3.battle import audit, checkpoint
-from twwarhammer3.battle.candidates import candidates
+from twwarhammer3.checkpoint import audit, checkpoint
+from twwarhammer3.checkpoint.candidates import candidates
 
 CONTEXT = {"phase": "Deployed", "time_ms": 210100, "terrain": {"bounds": {
     "min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}},

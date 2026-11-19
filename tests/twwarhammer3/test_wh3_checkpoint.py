@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 spec = importlib.util.spec_from_file_location(
     "check_wh3_checkpoint", Path(__file__).with_name("check_wh3_checkpoint.py"))

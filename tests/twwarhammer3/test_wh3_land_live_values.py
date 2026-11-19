@@ -5,7 +5,7 @@ import sys
 import pytest
 from test_wh3_checkpoint import battle, check, source, write
 
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 
 def runs():

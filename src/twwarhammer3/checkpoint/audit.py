@@ -7,8 +7,8 @@ import json
 from pathlib import Path
 
 from gameai.provenance import sha256, write_json
-from twwarhammer3.battle import checkpoint
-from twwarhammer3.battle.candidates import candidates, mapping_hash
+from twwarhammer3.checkpoint import checkpoint
+from twwarhammer3.checkpoint.candidates import candidates, mapping_hash
 
 # Statuses after which an audit stops: the restore path itself failed.
 STOPS = ("restore_failure", "restore_fault", "infrastructure", "interrupted")

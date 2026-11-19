@@ -29,8 +29,8 @@ import sys
 from pathlib import Path
 
 from gameai.provenance import sha256, write_json
-from twwarhammer3.battle import checkpoint
 from twwarhammer3.battle.scripted import AttackNearest
+from twwarhammer3.checkpoint import checkpoint
 from twwarhammer3.engine import runtime
 from twwarhammer3.protocol import visible_enemies
 from twwarhammer3.units import distance

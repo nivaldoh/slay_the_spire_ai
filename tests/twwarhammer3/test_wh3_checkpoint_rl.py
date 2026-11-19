@@ -14,7 +14,8 @@ from types import SimpleNamespace
 import pytest
 
 from gameai.provenance import REPO_ROOT, sha256
-from twwarhammer3.battle import checkpoint, play
+from twwarhammer3.battle import play
+from twwarhammer3.checkpoint import checkpoint
 from twwarhammer3.protocol import IllegalActionError
 
 EVIDENCE = REPO_ROOT / "runs/twwarhammer3/checkpoint-check-20261025c"
@@ -98,7 +99,7 @@ def test_a_run_without_an_ending_before_the_runners_own_detach_is_infrastructure
 
 
 def test_a_result_logged_after_the_runner_detached_at_its_deadline_is_not_scored():
-    # Rests on JUDGEMENT? src/twwarhammer3/battle/checkpoint.py unwatched_result: the agent
+    # Rests on JUDGEMENT? src/twwarhammer3/checkpoint/checkpoint.py unwatched_result: the agent
     # stopped checking checksums when it detached, so the result is not scored.
     stream = rows()[:-3] + [OWN_DETACH]
     result = {"phase": "Complete", "result": "won", "time_ms": 180000, "remaining_ms": 900000}
@@ -373,7 +374,7 @@ def test_the_copy_leaves_and_bystanders_return_after_an_exception_or_interrupt(g
 
 @pytest.fixture
 def step_plan():
-    # Existing step grid; rests on JUDGEMENT src/twwarhammer3/battle/checkpoint.py dispatch.
+    # Existing step grid; rests on JUDGEMENT src/twwarhammer3/checkpoint/checkpoint.py dispatch.
     context = observation(120100, 400)
     return {"checkpoint": RESTORE, "mod_start_ms": 4900, "grid_ms": 300, "remaining_ms": 60000,
             "limits": LIMITS, "injection": {"tick": T, "orders": ORDERS, "context": context,

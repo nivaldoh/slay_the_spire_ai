@@ -52,13 +52,13 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/checkpoint_agent.js",
+   "path": "src/twwarhammer3/checkpoint/checkpoint_agent.js",
    "text": "the checkpoint Frida agent",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/engine/checkpoint_frida.py",
+   "path": "src/twwarhammer3/checkpoint/checkpoint_frida.py",
    "text": "runs the checkpoint Frida agent in the owned game (Windows side)",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
@@ -430,31 +430,31 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/checkpoint.py",
+   "path": "src/twwarhammer3/checkpoint/checkpoint.py",
    "text": "battle checkpoints: save, fast checked rebuild, live handover; the checkpoint-RL step run, library records and attempt statuses",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/candidates.py",
+   "path": "src/twwarhammer3/checkpoint/candidates.py",
    "text": "checkpoint RL: the public candidate set",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/audit.py",
+   "path": "src/twwarhammer3/checkpoint/audit.py",
    "text": "checkpoint RL: branch audits",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/rl.py",
+   "path": "src/twwarhammer3/checkpoint/rl.py",
    "text": "checkpoint RL: tasks, methods, evaluation (model side)",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/confirm.py",
+   "path": "src/twwarhammer3/checkpoint/confirm.py",
    "text": "checkpoint RL: the closed loop",
    "box": "map.checkpoints",
    "list": "docs/twwarhammer3/README.md"

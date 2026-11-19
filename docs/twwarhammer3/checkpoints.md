@@ -19,7 +19,7 @@ The battle simulation is deterministic: the same setup and inputs, tick by tick,
 same battle (the game's replays rely on this). A checkpoint is the game's replay file
 written mid-battle (setup and every input so far) plus the Lua random seed at tick 1.
 
-A restore opens that replay from the Replays menu. `engine/checkpoint_agent.js` then:
+A restore opens that replay from the Replays menu. `checkpoint/checkpoint_agent.js` then:
 
 - recognises it (the replay's last recorded checksum matches the checkpoint record) and
   clears the battle's replay flag right after the input session is built, so the interface
@@ -35,7 +35,7 @@ A restore opens that replay from the Replays menu. `engine/checkpoint_agent.js` 
 The owner allowed the rebuild to run faster than 1x before the handover (2026-10-25); from
 the handover on the battle runs at 1x.
 
-`battle/checkpoint.py` runs a source battle or a restore through the normal harness, with
+`checkpoint/checkpoint.py` runs a source battle or a restore through the normal harness, with
 saves, Lua (orders, a battle script) and readings at exact completed ticks, and compares a
 restore with its source. A restore opens the first entry of the Replays list, so for its run
 the other replays wait in `replays/checkpoint-aside/` and are put back afterwards; the
@@ -81,9 +81,9 @@ between them through git, and a merge, pull or push between the two does not app
 
 | Piece | This repository | Public repository |
 |---|---|---|
-| In-game agent | `engine/checkpoint_agent.js`, with test hooks (off unless a config is passed) | `checkpoint_agent.js`, build-25961564 version without the test hooks |
+| In-game agent | `checkpoint/checkpoint_agent.js`, with test hooks (off unless a config is passed) | `checkpoint_agent.js`, build-25961564 version without the test hooks |
 | Player command line (`save NAME`, restore from Replays) | not here | `wh3_checkpoints.py` |
-| Harness runs, comparison, agreed check | `battle/checkpoint.py`, `check_wh3_checkpoint.py` | not there |
+| Harness runs, comparison, agreed check | `checkpoint/checkpoint.py`, `check_wh3_checkpoint.py` | not there |
 
 A fix to the agent made here must be copied there by hand, leaving out the test hooks; the
 command-line tool can only be changed there. Before a new public release, run the agreed

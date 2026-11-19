@@ -13,8 +13,8 @@ import time
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import candidates as cand
-from twwarhammer3.battle import rl
+from twwarhammer3.checkpoint import candidates as cand
+from twwarhammer3.checkpoint import rl
 
 CYCLES = ([1, 2, 0], [1, 2, 3, 4, 0])
 

@@ -14,8 +14,8 @@ import math
 from pathlib import Path
 
 from gameai.provenance import sha256, write_json
-from twwarhammer3.battle import checkpoint
-from twwarhammer3.battle.candidates import candidates, describe, slot_to_candidate
+from twwarhammer3.checkpoint import checkpoint
+from twwarhammer3.checkpoint.candidates import candidates, describe, slot_to_candidate
 
 THETA_FIT = 0.95
 # The plan sets the first-order threshold to stage 3's measured objective repeat deviation,
@@ -56,7 +56,7 @@ def chosen(rows: list[dict]) -> int:
 def score(plan: dict, output: Path) -> dict:
     """Model process: reload the adapter, rescore the rung's task under its evaluation
     orderings and run every pre-launch check; writes prelaunch.json."""
-    from twwarhammer3.battle import rl
+    from twwarhammer3.checkpoint import rl
 
     revision = rl.refuse_beside_game()
     declaration = json.loads(Path(plan["adapter"]).read_text())
@@ -106,7 +106,7 @@ def score(plan: dict, output: Path) -> dict:
 def launch(plan: dict, output: Path) -> dict:
     """Game process: the chosen candidate's batch, rebuilt from candidates(context), injected
     at the audit's tick in one step run; then the four clauses."""
-    from twwarhammer3.battle import rl
+    from twwarhammer3.checkpoint import rl
 
     with rl.gpu_lease(rl.GPU_LOCK_PATH):  # no model process may hold it now
         pass

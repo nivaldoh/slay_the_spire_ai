@@ -4,7 +4,7 @@ import subprocess
 
 import pytest
 
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 
 def agent_checks(checks):

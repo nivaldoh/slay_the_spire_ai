@@ -226,8 +226,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   reference
 - `src/twwarhammer3/engine/doctor.py`: the read-only launch check (`doctor`)
 - `src/twwarhammer3/engine/windows_capture.py`: passive stills, run by Windows Python
-- `src/twwarhammer3/engine/checkpoint_agent.js`: the checkpoint Frida agent
-- `src/twwarhammer3/engine/checkpoint_frida.py`: runs the checkpoint Frida agent in the
+- `src/twwarhammer3/checkpoint/checkpoint_agent.js`: the checkpoint Frida agent
+- `src/twwarhammer3/checkpoint/checkpoint_frida.py`: runs the checkpoint Frida agent in the
   owned game (Windows side)
 - `src/twwarhammer3/engine/link.py`: native multiplayer: the coordinator's link
 - `src/twwarhammer3/engine/worker.py`: native multiplayer: per-client worker, typed lobby
@@ -330,12 +330,12 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   for caller-declared initiators
 - `src/twwarhammer3/battle/graph_view.py`: recorded graph/battle inspection
 - `src/twwarhammer3/battle/graph_view_assets/`: the graph view's page, script and style
-- `src/twwarhammer3/battle/checkpoint.py`: battle checkpoints: save, fast checked rebuild,
+- `src/twwarhammer3/checkpoint/checkpoint.py`: battle checkpoints: save, fast checked rebuild,
   live handover; the checkpoint-RL step run, library records and attempt statuses
-- `src/twwarhammer3/battle/candidates.py`: checkpoint RL: the public candidate set
-- `src/twwarhammer3/battle/audit.py`: checkpoint RL: branch audits
-- `src/twwarhammer3/battle/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
-- `src/twwarhammer3/battle/confirm.py`: checkpoint RL: the closed loop
+- `src/twwarhammer3/checkpoint/candidates.py`: checkpoint RL: the public candidate set
+- `src/twwarhammer3/checkpoint/audit.py`: checkpoint RL: branch audits
+- `src/twwarhammer3/checkpoint/rl.py`: checkpoint RL: tasks, methods, evaluation (model side)
+- `src/twwarhammer3/checkpoint/confirm.py`: checkpoint RL: the closed loop
 - `src/twwarhammer3/battle/calibration.py`: the small diagnostics' base class and geometry
   helpers, which lines.py is built on, and the four diagnostics current work still names
 - `src/twwarhammer3/battle/capture.py`: 1 Hz replay recorder and stills

@@ -1,4 +1,4 @@
-"""battle/checkpoint.py rules the other checkpoint tests left open: boundaries of its refusals,
+"""checkpoint/checkpoint.py rules the other checkpoint tests left open: boundaries of its refusals,
 statuses and attribution clauses, and the records a step run writes (no game).
 
 Each wrong version these tests catch passed every test before (cleanup 2026-11-02).
@@ -20,7 +20,7 @@ from test_wh3_checkpoint_rl import (
 )
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import checkpoint
+from twwarhammer3.checkpoint import checkpoint
 
 
 def test_a_restore_runs_lua_at_tick_1_and_after_its_checkpoint_but_not_at_it(tmp_path,
@@ -115,7 +115,7 @@ def test_a_step_run_is_refused_at_the_handover_time_and_by_limits_without_the_re
     # (100 × S)") and "a plan whose limits cannot contain the rung's remaining_ms plus the
     # measured overhead and a margin"; a restore also rebuilds its ticks before the handover
     # (the comment on OVERHEAD_S, limits_covering). A source plan rebuilds nothing.
-    # Rests on JUDGEMENT src/twwarhammer3/battle/checkpoint.py dispatch: the grid rule.
+    # Rests on JUDGEMENT src/twwarhammer3/checkpoint/checkpoint.py dispatch: the grid rule.
     # A mod start of 4800 ms puts a grid time on 120000 ms, the handover of a save at 1200.
     with pytest.raises(ValueError, match="precedes the handover"):
         checkpoint.decision_times(4800, 300, 1200, 1201)
