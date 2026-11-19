@@ -122,6 +122,8 @@ def source_sha256() -> str:
     """sha256 over scope.SOURCES' file hashes, keyed by POSIX path so WSL and Windows agree."""
     files = {Path(name).as_posix(): digest
              for name, digest in source_fingerprints(SOURCES).items()}
+    if not files:
+        raise ValueError("worker identity requires the deployed WH3 source tree")
     return hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
 
 

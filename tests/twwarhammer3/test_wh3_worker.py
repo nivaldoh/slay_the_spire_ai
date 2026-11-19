@@ -860,3 +860,9 @@ def test_commands_wait_for_the_mailbox_reset_of_an_owned_session(tmp_path, insta
         thread, result = start(coordinator, tmp_path / "bridge", attach=False)
         thread.join(10)
     assert order[:2] == ["reset", "commands"]
+
+
+def test_a_worker_without_the_deployed_source_tree_cannot_claim_a_matching_build(monkeypatch):
+    monkeypatch.setattr(worker, "source_fingerprints", lambda paths: {})
+    with pytest.raises(ValueError, match="deployed WH3 source tree"):
+        worker.expected_manifest()
