@@ -1,4 +1,4 @@
-"""The two-front defence's evaluator readings (battle/lines_readings.py) on made-up records.
+"""The two-front defence's evaluator readings (scenarios/lines_readings.py) on made-up records.
 
 Reference: lines-eval.md Measurements and proposed check 2b, and the second look's B1 and A1
 (runs/siege-evals-20261108/second-look.json, untracked). The trace rows have the fields play
@@ -10,7 +10,8 @@ from copy import deepcopy
 
 from test_wh3_lines import A, B, battle
 
-from twwarhammer3.battle import lines, lines_readings, play
+from twwarhammer3.battle import play
+from twwarhammer3.scenarios import lines, lines_readings
 
 
 def trace(make, observations):

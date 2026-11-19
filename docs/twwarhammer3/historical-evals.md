@@ -118,7 +118,7 @@ drops the works ([lines-eval.md](lines-eval.md#choosing-the-wh3-game-mode)). WH3
 as a siege, and that page asks the owner whether it belongs in the set.
 
 Its one claim is P1, the main effort. `LinesWitness` sends the reserve and the Lancers to the side
-whose relief units cost more, and `LinesByMen` to the side with more men (`battle/lines.py`). The
+whose relief units cost more, and `LinesByMen` to the side with more men (`scenarios/lines.py`). The
 witness weighs units by a cost table no model sees, so a pass would say nothing about whether a
 controller can read the main effort from public fields. The inner front, the counterstroke, the
 commander and reading the attack before contact (E1-E4) stay exploratory.

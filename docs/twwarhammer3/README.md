@@ -279,11 +279,11 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   the unit groups by type key and the cue rule
 - `src/twwarhammer3/scenarios/camp_readings.py`: that battle's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
-- `src/twwarhammer3/battle/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
+- `src/twwarhammer3/scenarios/lines.py`: `LinesWitness`, `LinesByMen` and `LinesCentral` for the
   two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state
-- `src/twwarhammer3/battle/lines_facts.py`: what that defence's witness and readings both use:
+- `src/twwarhammer3/scenarios/lines_facts.py`: what that defence's witness and readings both use:
   the unit type keys and the relief trigger
-- `src/twwarhammer3/battle/lines_readings.py`: that defence's evaluator readings of finished
+- `src/twwarhammer3/scenarios/lines_readings.py`: that defence's evaluator readings of finished
   battles, descriptive only, from the trace and the private record; nothing reaches a controller
 - `src/twwarhammer3/battle/reserve.py`: battle B's private reserve draw, and the waves profile
   (version 3) that holds and releases enemy groups, kept apart from the public battle state

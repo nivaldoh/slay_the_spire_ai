@@ -4,7 +4,7 @@
 They read a finished battle's records: the private record (``private.jsonl``, fields in
 capture.copy_private_record), the trace's "decision" and "ack" rows, and the public observations
 (trace.jsonl's observation rows). Nothing here runs during a battle or reaches a controller. The
-geometry is the witness's (battle/lines.py) taken from the declared placements: the outer line's
+geometry is the witness's (scenarios/lines.py) taken from the declared placements: the outer line's
 centre and front, and the split at that centre's x (130), which is also the cases' mirror axis.
 The midpoint between the two lines' centres, (130, -230) in both cases, separates the outer front
 from the town side.
@@ -16,9 +16,9 @@ documented in lines-eval.md, First construction battle (2026-11-12).
 
 import math
 
-from twwarhammer3.battle.lines_facts import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
 from twwarhammer3.protocol import ProtocolError, visible_enemies
 from twwarhammer3.scenarios.evidence_rules import group_ids
+from twwarhammer3.scenarios.lines_facts import AHEAD_M, BOYAR, GUARD, LANCERS, LINE, TRIGGER_UNITS
 from twwarhammer3.units import active_units, centre, direction, ids_by_type
 
 HEAVY = {"wh_dlc08_nor_inf_marauder_champions_0", "wh_dlc08_nor_inf_marauder_berserkers_0",

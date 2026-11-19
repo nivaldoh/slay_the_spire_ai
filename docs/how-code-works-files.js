@@ -256,19 +256,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/lines.py",
+   "path": "src/twwarhammer3/scenarios/lines.py",
    "text": "`LinesWitness`, `LinesByMen` and `LinesCentral` for the two-front land defence (ksl-nor-lines-a-v1, -b-v1), on public state",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/lines_facts.py",
+   "path": "src/twwarhammer3/scenarios/lines_facts.py",
    "text": "what that defence's witness and readings both use: the unit type keys and the relief trigger",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/lines_readings.py",
+   "path": "src/twwarhammer3/scenarios/lines_readings.py",
    "text": "that defence's evaluator readings of finished battles, descriptive only, from the trace and the private record; nothing reaches a controller",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"

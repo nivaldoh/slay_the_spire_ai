@@ -37,7 +37,14 @@ Offline tests show what the scripts order, not what the engine does with the ord
 from collections import Counter
 from copy import deepcopy
 
-from twwarhammer3.battle.lines_facts import (
+from twwarhammer3.controllers.calibration import (
+    CornerHold,
+    SmallDiagnostic,
+    _keep,
+    _offset,
+)
+from twwarhammer3.protocol import PolicyFailure, visible_enemies
+from twwarhammer3.scenarios.lines_facts import (
     AHEAD_M,
     ARMOURED,
     BOYAR,
@@ -48,13 +55,6 @@ from twwarhammer3.battle.lines_facts import (
     STRELTSI,
     TRIGGER_UNITS,
 )
-from twwarhammer3.controllers.calibration import (
-    CornerHold,
-    SmallDiagnostic,
-    _keep,
-    _offset,
-)
-from twwarhammer3.protocol import PolicyFailure, visible_enemies
 from twwarhammer3.units import centre, direction, distance, ids_by_type, in_melee
 
 ARMY = Counter({KOSSARS: 3, ARMOURED: 3, STRELTSI: 2, GUARD: 1, BOYAR: 1, LANCERS: 2})

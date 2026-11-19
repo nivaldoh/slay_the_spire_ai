@@ -8,7 +8,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 |---|---|
 | Tests | One decision ([P1, the main effort](#decisions)): with both relief groups in view, should the reserve (Tzar Guard and Boyar) and the Lancers go to the heavy group's side or the light group's? |
 | Why it is hard | The heavy side has to be read from public state while two lines are attacked back to back, and the two cases put it on opposite sides. The prediction shrinks or reverses if the light group alone can break its sector, if the AI moves the heavy group across, or if the contacts are staggered. |
-| Witness | `LinesWitness` in [battle/lines.py](../../src/twwarhammer3/battle/lines.py): every unit keeps a 40 m leash to its post; once 6 enemies stand more than 60 m ahead of the outer line it scores both sides, posts the reserve behind the higher side's sector and sends the Lancers into a rear charge when 2 relief units there are in melee. |
+| Witness | `LinesWitness` in [scenarios/lines.py](../../src/twwarhammer3/scenarios/lines.py): every unit keeps a 40 m leash to its post; once 6 enemies stand more than 60 m ahead of the outer line it scores both sides, posts the reserve behind the higher side's sector and sends the Lancers into a rear charge when 2 relief units there are in melee. |
 | Outcome | The engine's result. The controller defends and wins when the 1,200 s timer runs out. Every engine win counts. |
 | Status | `ksl-nor-lines-a-v1` and `ksl-nor-lines-b-v1` (version 1) in [`scenarios/lines.json`](../../configs/twwarhammer3/scenarios/lines.json): status `candidate`, split `development`. One battle played: case a under `hold`, lost at 338 s ([first construction battle](#first-construction-battle-2026-11-12)). |
 | Changes | 2026-11-08 built at `e918091`. 2026-11-09 three more classes built as options for owner question 4. 2026-11-10 lobby readback passed case a's rosters. 2026-11-12 first case-a hold. 2026-11-15 the values the readings share with the witness moved to `lines_facts.py`. |
@@ -22,8 +22,8 @@ good battle ideas now and to play them only when the owner says so ("Build now, 
 Alesia (52 BCE), adapted as a WH3 Land battle in which the player defends two lines back to back:
 `ksl-nor-lines-a-v1` and `ksl-nor-lines-b-v1` in
 [`scenarios/lines.json`](../../configs/twwarhammer3/scenarios/lines.json), the witness and its arms in
-[battle/lines.py](../../src/twwarhammer3/battle/lines.py), the evaluator readers in
-[battle/lines_readings.py](../../src/twwarhammer3/battle/lines_readings.py), and their offline
+[scenarios/lines.py](../../src/twwarhammer3/scenarios/lines.py), the evaluator readers in
+[scenarios/lines_readings.py](../../src/twwarhammer3/scenarios/lines_readings.py), and their offline
 tests in [test_wh3_lines.py](../../tests/twwarhammer3/test_wh3_lines.py),
 [test_wh3_lines_readings.py](../../tests/twwarhammer3/test_wh3_lines_readings.py) and
 [test_wh3_land_eval_declarations.py](../../tests/twwarhammer3/test_wh3_land_eval_declarations.py).
@@ -334,7 +334,7 @@ Information asymmetry. The witness weighs the relief groups by lobby cost from a
 (`COST` in lines.py), which no controller is told; a model sees only type keys. The witness
 therefore knows more than any model, and W against M measures whether a cost-informed side choice
 matters for this script. It does not measure whether a controller can read the main effort from
-public fields. This rests on JUDGEMENT src/twwarhammer3/battle/lines.py Lines side weights.
+public fields. This rests on JUDGEMENT src/twwarhammer3/scenarios/lines.py Lines side weights.
 
 The prompt each model arm reads (`controllers.MODEL_PROMPTS`): `llm` reads
 [system_prompt.md](../../configs/twwarhammer3/system_prompt.md), whose "How to fight" section
@@ -417,8 +417,8 @@ like `coord-breakout`, and the owner decides whether to keep it.
 
 ## Witness, arms and controls as built
 
-[battle/lines.py](../../src/twwarhammer3/battle/lines.py) holds three arm classes. No built-in name
-is registered; a job names them as `twwarhammer3.battle.lines:LinesWitness`, `:LinesByMen` and
+[scenarios/lines.py](../../src/twwarhammer3/scenarios/lines.py) holds three arm classes. No built-in name
+is registered; a job names them as `twwarhammer3.scenarios.lines:LinesWitness`, `:LinesByMen` and
 `:LinesCentral`. Three more classes, built on 2026-11-09 as options for owner question 4, run in
 no stage until the owner picks them: `:LinesNoCounterstroke` and `:LinesNoCounterstrokeByMen` in
 the arm table and `:LinesCornerCamp` in the control table. Each arm reads public state only (its
@@ -434,7 +434,7 @@ own units, the visible enemies, the terrain grid and the battle time) and gives 
    enemy is within 40 m of its post and goes back, facing out from its line, when it is more than
    15 m from the post. The eight line regiments set guard and fire at will on and skirmish off.
 3. **Relief units** are the enemies first seen more than 60 m ahead of the outer line's start
-   centre, kept by id (rests on JUDGEMENT? src/twwarhammer3/battle/lines.py Relief membership).
+   centre, kept by id (rests on JUDGEMENT? src/twwarhammer3/scenarios/lines.py Relief membership).
 4. **Side.** The first time 6 enemies stand more than 60 m ahead of the outer line, the relief units
    are split at the outer line's centre x (130) and each side is scored; the higher side is chosen
    and a tie chooses nothing yet. The side switches only when the other side scores more than 1.3
@@ -448,12 +448,12 @@ own units, the visible enemies, the terrain grid and the battle time) and gives 
    (360,-305), then to 70 m behind the target along the outer line's front, and charge. After 8 s
    of melee, or when the target is lost, they pull out to 120 m from the nearest enemy and ride
    again after 20 s, or after 10 s once no enemy is within 80 m. These are
-   `calibration.HammerAnvil`'s values (rests on JUDGEMENT? src/twwarhammer3/battle/lines.py
+   `calibration.HammerAnvil`'s values (rests on JUDGEMENT? src/twwarhammer3/scenarios/lines.py
    Lancers' rear point).
 7. Nothing else: no inner-line replacement and no pursuit. Moves are run orders, and a goal on a
    blocked cell steps to the nearest open cell within two cells, or the unit holds.
 
-The values rest on JUDGEMENT src/twwarhammer3/battle/lines.py Lines witness rules.
+The values rest on JUDGEMENT src/twwarhammer3/scenarios/lines.py Lines witness rules.
 
 | Arm | Class | Rule it changes | Built |
 |---|---|---|---|
@@ -464,7 +464,7 @@ The values rest on JUDGEMENT src/twwarhammer3/battle/lines.py Lines witness rule
 | N, no counterstroke | `LinesNoCounterstroke` | W without rule 6: the Lancers keep their start posts on the leash, as in C | Yes, 2026-11-09, an option for owner question 4; in no stage |
 | NM, N by men | `LinesNoCounterstrokeByMen` | N with M's side rule | Yes, as N |
 
-N and NM keep the Lancers home by C's rule (rests on JUDGEMENT src/twwarhammer3/battle/lines.py
+N and NM keep the Lancers home by C's rule (rests on JUDGEMENT src/twwarhammer3/scenarios/lines.py
 Lines arms without the counterstroke), so they differ only in where the reserve posts.
 
 Offline evidence at `e918091`: the 9 tests in `test_wh3_lines.py` run the arms on made-up fights
@@ -496,7 +496,7 @@ orders is untested.
 | `twwarhammer3.controllers.reference:Concentrate` (lost `coord-breakout` 2 of 2) | `reference.py` | Beating the groups one at a time beats holding lines; the battle narrows to a `coord-breakout`-like label |
 | C | `lines.py` | Committing the reserve and the Lancers at all is not needed |
 | M | `lines.py` | Sending them to L can win. That the side does not matter is not shown at this power (0.281 for 20 to 50%, 0.269 for 30 to 60%, at 16 per arm) |
-| `twwarhammer3.battle.lines:LinesCornerCamp` (built 2026-11-09; in no stage unless the owner adds it, question 4) | `lines.py` | Camping in a corner wins at the timer without the side decision |
+| `twwarhammer3.scenarios.lines:LinesCornerCamp` (built 2026-11-09; in no stage unless the owner adds it, question 4) | `lines.py` | Camping in a corner wins at the timer without the side decision |
 
 Every win is kept; a shortcut win narrows the label and never adds a requirement. No control in
 the current stage 3a camps in a corner, although two of the three player timer wins above were
@@ -510,7 +510,7 @@ the map centre past blocked cells; the nearest post nearer the army than the vis
 centre, else the nearest). The units, sorted by id once, stand in two ranks of six facing the map
 centre, 40 m apart across, 130 m and 100 m from the post toward the centre, so on an open square
 corner the back rank's ends touch the 30 m line along each edge; a unit in melee fights the
-nearest enemy within 20 m and does not move (rests on JUDGEMENT src/twwarhammer3/battle/lines.py
+nearest enemy within 20 m and does not move (rests on JUDGEMENT src/twwarhammer3/scenarios/lines.py
 Lines corner camp). Its tests use made-up observations with no blocked cells. On the recorded
 Taurox grid (the `TERRAIN` fixture in `test_wh3_eval_boundary.py`) the post rule does not reach a
 corner when all 12 enemies are visible, as check 5 expects: the posts nearer the army than the
@@ -540,8 +540,8 @@ briefing names H's side; and a named-briefing arm only if recognition becomes a 
 | The reserve's arrival within 25 m of its post | Same | No |
 | Lancer arrival at the waypoint and melee behind a target | Same; a rear-contact detector stays later work, validated against owner-labelled clips chosen before its thresholds | No |
 | The Boyar's position, waver and death times | Same | No |
-| The first friendly rout per sector, and when | `lines_readings.sector_routs`: when the first unit of each sector, and the first of the other eight units, reads `routing` in the private record; sectors bound once to the declared placements (rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Sector rout reading) | Yes, tested on made-up records |
-| The side any controller sent the reserve or the Lancers to first: H, L or neither | `lines_readings.branch`: the side of x = 130 of the first accepted move or attack by the Tzar Guard, the Boyar or a Lancers unit decided at or after the cue, which it computes from public observations (6 visible enemies more than 60 m ahead of the outer line). Only a destination, or an attack target where it stood in the decision's observation, ahead of the midpoint between the two lines (z -230) counts, so an order toward the inner line or the town side is skipped; rests on JUDGEMENT? src/twwarhammer3/battle/lines_readings.py Lines branch reading | Yes, tested on made-up records |
+| The first friendly rout per sector, and when | `lines_readings.sector_routs`: when the first unit of each sector, and the first of the other eight units, reads `routing` in the private record; sectors bound once to the declared placements (rests on JUDGEMENT? src/twwarhammer3/scenarios/lines_readings.py Sector rout reading) | Yes, tested on made-up records |
+| The side any controller sent the reserve or the Lancers to first: H, L or neither | `lines_readings.branch`: the side of x = 130 of the first accepted move or attack by the Tzar Guard, the Boyar or a Lancers unit decided at or after the cue, which it computes from public observations (6 visible enemies more than 60 m ahead of the outer line). Only a destination, or an attack target where it stood in the decision's observation, ahead of the midpoint between the two lines (z -230) counts, so an order toward the inner line or the town side is skipped; rests on JUDGEMENT? src/twwarhammer3/scenarios/lines_readings.py Lines branch reading | Yes, tested on made-up records |
 
 The contact and grouping readings rest on JUDGEMENT src/twwarhammer3/scenarios/evidence_rules.py
 Contact rule and on JUDGEMENT? src/twwarhammer3/scenarios/evidence_rules.py Group membership. The
@@ -565,7 +565,7 @@ None, and missing coordinates stay None. No pass verdict, restaging choice or ne
 implemented. It supplies raw readings for proposed checks 2-4, whose adoption remains open.
 
 The draft's strict input contract rests on JUDGEMENT?
-`src/twwarhammer3/battle/lines_readings.py` Complete contact record: each private frame must
+`src/twwarhammer3/scenarios/lines_readings.py` Complete contact record: each private frame must
 have the exact enemy identities and readable men/melee fields; duplicate, incomplete,
 foreign-battle and unsupported-format data are refused. It does not infer first contact from
 partial visibility. The reader is merged as experimental code; adopting this contract still awaits
@@ -710,7 +710,7 @@ The public replay and private record each contain 335 frames. The experimental c
 reader reports G/H/L at 42.1/50.2/55.0 s, a 12.9 s spread, using the existing two-of-four
 living-melee rule. One enemy, e10, has no living-melee sample. These readings rest on
 JUDGEMENT `src/twwarhammer3/units.py` Contact rule and JUDGEMENT?
-`src/twwarhammer3/battle/lines_readings.py` Complete contact record; no gate is adopted.
+`src/twwarhammer3/scenarios/lines_readings.py` Complete contact record; no gate is adopted.
 
 The first friendly rout was the middle outer Kossars, f8, authored slot 10, at 95.2 s.
 It is outside the two tracked sectors. The west sector first routed at 115.0 s and the

@@ -8,8 +8,9 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import lines_readings, setup
+from twwarhammer3.battle import setup
 from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.scenarios import lines_readings
 
 
 @pytest.fixture(params=("ksl-nor-lines-a-v1", "ksl-nor-lines-b-v1"))

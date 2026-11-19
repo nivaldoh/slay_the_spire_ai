@@ -1,4 +1,4 @@
-"""The two-front defence witness and its arms (battle/lines.py) on made-up observations built
+"""The two-front defence witness and its arms (scenarios/lines.py) on made-up observations built
 from the ksl-nor-lines-a-v1 and -b-v1 declarations.
 
 Reference: final-alesia.md "Witness and its arms" and deciding check 8 in runs/siege-evals-20261108
@@ -14,9 +14,10 @@ import pytest
 import wh3_ablation
 from wh3_ablation import assert_ablation
 
-from twwarhammer3.battle import lines, play, setup
+from twwarhammer3.battle import play, setup
 from twwarhammer3.controllers import calibration
 from twwarhammer3.protocol import PolicyFailure, validate_orders
+from twwarhammer3.scenarios import lines
 
 A = setup.scenarios()["ksl-nor-lines-a-v1"]
 B = setup.scenarios()["ksl-nor-lines-b-v1"]

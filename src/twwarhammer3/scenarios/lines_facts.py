@@ -11,7 +11,7 @@ BOYAR = "wh3_main_ksl_cha_boyar_0"
 LANCERS = "wh3_main_ksl_cav_winged_lancers_0"
 LINE = (KOSSARS, ARMOURED, STRELTSI)
 
-# The relief trigger. The values rest on JUDGEMENT src/twwarhammer3/battle/lines.py Lines witness
+# The relief trigger. The values rest on JUDGEMENT src/twwarhammer3/scenarios/lines.py Lines witness
 # rules.
 AHEAD_M = 60  # an enemy first seen this far ahead of the outer line is a relief unit
 TRIGGER_UNITS = 6  # W and M choose a side once this many enemies stand that far ahead

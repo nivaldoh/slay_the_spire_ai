@@ -4147,7 +4147,7 @@ source = "2026-11-10 selected cleanup integration: independent fault challenge"
 [[plant]]
 id = "contacts-accept-unidentified-initial-units"
 guards = "A missing private-frame identity cannot match an unidentified initial enemy"
-file = "src/twwarhammer3/battle/lines_readings.py"
+file = "src/twwarhammer3/scenarios/lines_readings.py"
 old = "    if any(not isinstance(identity, str) or not identity for identity in identities):\n        raise ProtocolError(\"private initial enemy identities must be nonempty strings\")\n"
 new = ""
 tests = ["tests/twwarhammer3/test_wh3_lines_contacts.py::test_contacts_refuse_unidentified_initial_units"]
@@ -4512,7 +4512,7 @@ source = "2026-11-15 readings off witnesses: review R3, F1-1"
 [[plant]]
 id = "lines-facts-import-a-witness-module"
 guards = "A facts module imports nothing from the battle package, so readings reach no witness through it"
-file = "src/twwarhammer3/battle/lines_facts.py"
+file = "src/twwarhammer3/scenarios/lines_facts.py"
 old = 'LINE = (KOSSARS, ARMOURED, STRELTSI)'
 new = 'from twwarhammer3.controllers.calibration import NEIGHBOURS; LINE = (KOSSARS, ARMOURED, STRELTSI)'
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
