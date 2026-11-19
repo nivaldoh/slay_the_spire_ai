@@ -30,11 +30,11 @@ from twwarhammer3.battle.setup import (
     scenarios,
     validate_declaration,
 )
-from twwarhammer3.battle.support_timing import SCENARIO
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 from twwarhammer3.protocol import ProtocolError
+from twwarhammer3.scenarios.support_timing import SCENARIO
 from twwarhammer3.scope import SOURCES
 
 # The mod runs neither under the observer session: setup_reserve asserts no multiplayer mode for

@@ -160,13 +160,13 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/support_timing.py",
+   "path": "src/twwarhammer3/scenarios/support_timing.py",
    "text": "infantry/cavalry timing diagnostics and fresh-launch plan",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/support_evidence.py",
+   "path": "src/twwarhammer3/scenarios/support_evidence.py",
    "text": "offline event brackets and proposed numerical contrast",
    "box": "map.reports",
    "list": "docs/twwarhammer3/README.md"
@@ -232,7 +232,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/cannae.py",
+   "path": "src/twwarhammer3/scenarios/cannae.py",
    "text": "`Envelop`, `WingSupport`, `CentreSupport`: scripted Cannae development witnesses on public state",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
@@ -370,7 +370,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/local_scripts.py",
+   "path": "src/twwarhammer3/scenarios/local_scripts.py",
    "text": "scripted C v2 witnesses (peer, relay and overview) and foils (fixed schedule, central concentration, `ThinkingRush`) for the communication-structure stage 2; each sleeps a model-like think time per decision",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"

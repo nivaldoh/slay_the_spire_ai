@@ -310,7 +310,7 @@ runs late, narrow the declared count before launching. Raw card/checks/review/ev
 The first harder screen lost all six attempts, including both original Envelop cases.
 Its infantry routes reached deadlines and cavalry redeployment never started. This does
 not establish a cause or impossibility. `battle.cannae:WingSupport` is a separate candidate
-whole tactic, resting on JUDGEMENT `src/twwarhammer3/battle/cannae.py` B support witness.
+whole tactic, resting on JUDGEMENT `src/twwarhammer3/scenarios/cannae.py` B support witness.
 Envelop's definitions remain unchanged. Stable own binding, first-seen horse labels and
 target persistence inherit the parent's marked development rules.
 
@@ -340,7 +340,7 @@ zero invalid orders in both. This supplies one legal winning trajectory, not a w
 reference for every B3 case. Preserve the previous six losses and both new results.
 
 `battle.cannae:CentreSupport` is one further separate control, resting on JUDGEMENT
-`src/twwarhammer3/battle/cannae.py` B cavalry follow-up. Only the two northern Knights'
+`src/twwarhammer3/scenarios/cannae.py` B cavalry follow-up. Only the two northern Knights'
 candidate priority changes: currently eligible visible north horse, then infantry, then
 south horse. WingSupport keeps north/south/infantry. Other roles, binding, current target
 sets, cache handling and attack primitives stay the same. Absence is not known death;

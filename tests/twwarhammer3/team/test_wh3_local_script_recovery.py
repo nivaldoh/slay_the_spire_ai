@@ -9,7 +9,7 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import local_scripts
+from twwarhammer3.scenarios import local_scripts
 
 
 @pytest.mark.parametrize("accepted", [False, True])

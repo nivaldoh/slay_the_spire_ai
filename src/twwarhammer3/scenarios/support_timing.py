@@ -179,7 +179,7 @@ def main():
     parser.add_argument("output", type=Path, help="new queue plan JSON; never launches")
     args = parser.parse_args()
     # Importable policy names must survive python -m execution.
-    from twwarhammer3.battle.support_timing import make_plan
+    from twwarhammer3.scenarios.support_timing import make_plan
     make_plan(args.output.resolve())
 
 

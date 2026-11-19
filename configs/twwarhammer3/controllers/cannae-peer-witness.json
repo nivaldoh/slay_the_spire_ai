@@ -2,19 +2,19 @@
   "type": "local_team",
   "members": {
     "centre": {
-      "type": "twwarhammer3.battle.local_scripts:PeerWitness"
+      "type": "twwarhammer3.scenarios.local_scripts:PeerWitness"
     },
     "left_infantry": {
-      "type": "twwarhammer3.battle.local_scripts:PeerWitness"
+      "type": "twwarhammer3.scenarios.local_scripts:PeerWitness"
     },
     "right_infantry": {
-      "type": "twwarhammer3.battle.local_scripts:PeerWitness"
+      "type": "twwarhammer3.scenarios.local_scripts:PeerWitness"
     },
     "decisive_cavalry": {
-      "type": "twwarhammer3.battle.local_scripts:PeerWitness"
+      "type": "twwarhammer3.scenarios.local_scripts:PeerWitness"
     },
     "containing_cavalry": {
-      "type": "twwarhammer3.battle.local_scripts:PeerWitness"
+      "type": "twwarhammer3.scenarios.local_scripts:PeerWitness"
     }
   }
 }

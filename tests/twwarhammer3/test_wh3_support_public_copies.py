@@ -8,7 +8,7 @@ import copy
 import pytest
 from test_wh3_support_timing import ending, episode, view
 
-from twwarhammer3.battle.support_evidence import annotate
+from twwarhammer3.scenarios.support_evidence import annotate
 
 
 @pytest.mark.parametrize('raw_first', [True, False])

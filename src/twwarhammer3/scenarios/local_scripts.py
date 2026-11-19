@@ -13,17 +13,18 @@ know their start points (the v1 command block's `rendezvous`), the clock and the
 `ThinkingRush` is the silent local rush at the witnesses' timing. Every member here sleeps in its
 worker per decision (the local_team.py SlowProbeMember pattern). Members are zero-argument
 classes, so a `local_team` controller file names them as
-`twwarhammer3.battle.local_scripts:<Class>`.
+`twwarhammer3.scenarios.local_scripts:<Class>`.
 """
 
 from copy import deepcopy
 from time import sleep
 
-# Rests on JUDGEMENT src/twwarhammer3/battle/cannae.py Cannae witness development rules
-# (the centre's 90 m and the 10 s retry), B support witness and Enemy wing labels.
-from twwarhammer3.battle.cannae import CLOSE_M, RETRY_MS
 from twwarhammer3.controllers.llm import ARRIVED_M
 from twwarhammer3.controllers.scripted import RushNearest, forget_refused
+
+# Rests on JUDGEMENT src/twwarhammer3/scenarios/cannae.py Cannae witness development rules
+# (the centre's 90 m and the 10 s retry), B support witness and Enemy wing labels.
+from twwarhammer3.scenarios.cannae import CLOSE_M, RETRY_MS
 from twwarhammer3.units import able, distance
 
 CAVALRY_GROUPS = ("decisive_cavalry", "containing_cavalry")

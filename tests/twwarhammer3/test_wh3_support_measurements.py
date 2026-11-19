@@ -12,8 +12,8 @@ import pytest
 from test_wh3_support_timing import ending, episode, view
 from wh3_lua import load_battle, runtime
 
-from twwarhammer3.battle import support_evidence as evidence
-from twwarhammer3.battle import support_timing as timing
+from twwarhammer3.scenarios import support_evidence as evidence
+from twwarhammer3.scenarios import support_timing as timing
 
 
 def test_contact_annotation_requires_usable_infantry(tmp_path):

@@ -1,6 +1,7 @@
 """Owner's 2026-11-04 placement repair: translate starts, preserve the battle."""
 
-from twwarhammer3.battle import manual_demo, setup, support_timing
+from twwarhammer3.battle import manual_demo, setup
+from twwarhammer3.scenarios import support_timing
 
 
 def test_current_revision_translates_all_starts_and_preserves_other_settings():

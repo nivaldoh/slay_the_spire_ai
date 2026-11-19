@@ -15,8 +15,14 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wh3_team_fixtures import Workers, ack
 
-from twwarhammer3.battle import local_scripts, setup
-from twwarhammer3.battle.local_scripts import (
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers import local_team
+from twwarhammer3.controllers.scripted import RushNearest
+from twwarhammer3.protocol import validate_orders
+from twwarhammer3.scenarios import local_scripts
+from twwarhammer3.scenarios.local_scripts import (
     CONTACT_MS,
     REFRESH_MS,
     CentralConcentration,
@@ -27,11 +33,6 @@ from twwarhammer3.battle.local_scripts import (
     RelayWitnessCommander,
     ThinkingRush,
 )
-from twwarhammer3.controllers import factory as controllers
-from twwarhammer3.controllers import local_command as local
-from twwarhammer3.controllers import local_team
-from twwarhammer3.controllers.scripted import RushNearest
-from twwarhammer3.protocol import validate_orders
 
 DECLARED_THINK_S = (local_scripts.THINK_S, local_scripts.COMMANDER_THINK_S)
 
@@ -259,7 +260,7 @@ def test_overview_commander_orders_nothing_and_texts_only_new_or_due_targets():
         "decisive_cavalry": "target horse-south 260 -415 5500"}
 
 
-# Rests on JUDGEMENT src/twwarhammer3/battle/cannae.py Enemy wing labels.
+# Rests on JUDGEMENT src/twwarhammer3/scenarios/cannae.py Enemy wing labels.
 def test_witnesses_keep_a_horses_wing_from_where_it_was_first_known():
     """Wrong version caught: a horse's wing set again at each sighting, so a horse first known at
     z=-200 (north of the -250 midline) turns south at z=-330 and the containing cavalry go for it

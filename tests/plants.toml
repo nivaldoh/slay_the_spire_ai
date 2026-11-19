@@ -3281,7 +3281,7 @@ source = "2026-11-04 support-timing implementation and independent review"
 [[plant]]
 id = "support-measurement-error-erases-outcome"
 guards = "A measurement failure cannot erase a known engine ending"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "\"engine_result\": outcome, \"H\": None"
 new = "\"engine_result\": None, \"H\": None"
 tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_unreadable_intermediate_identity_does_not_erase_engine_outcome"]
@@ -3290,7 +3290,7 @@ source = "2026-11-04 support-timing implementation and independent review"
 [[plant]]
 id = "support-partial-trace-erases-outcome"
 guards = "A partial trace preserves the separately recorded ending"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "            except ValueError as exc:\n                issues.append(f\"trace line {number} unreadable: {exc}\")"
 new = "            except ValueError:\n                raise"
 tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_partial_trace_does_not_erase_independently_recorded_engine_ending"]
@@ -3335,7 +3335,7 @@ source = "2026-11-04 support-timing implementation and independent review"
 [[plant]]
 id = "support-delay-submits-at-cue"
 guards = "Delayed cavalry waits twelve battle seconds with unchanged route"
-file = "src/twwarhammer3/battle/support_timing.py"
+file = "src/twwarhammer3/scenarios/support_timing.py"
 old = "now >= self.cue[\"time_ms\"] + delay"
 new = "now >= self.cue[\"time_ms\"]"
 tests = ["tests/twwarhammer3/test_wh3_support_timing.py::test_delayed_freezes_public_cue_route_and_waits_full_battle_delay"]
@@ -3344,7 +3344,7 @@ source = "2026-11-04 support-timing implementation and independent review"
 [[plant]]
 id = "support-audit-cue-ignores-routing"
 guards = "contact annotation requires usable infantry"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "return all(flags) and all(able(unit) for unit in eligible)"
 new = "return all(flags)"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_contact_annotation_requires_usable_infantry"]
@@ -3353,7 +3353,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-conflict-overwrites"
 guards = "conflicting sequence is unknown but keeps engine ending"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "if key in samples and conflicting_observations(samples[key], obs):"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_conflicting_sequence_is_unknown_but_keeps_engine_ending"]
@@ -3362,7 +3362,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-terminal-time-unchecked"
 guards = "terminal time must fit between last live and first ending"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "if (not finite(frozen) or not finite(upper) or frozen > upper\n            or lower is not None and frozen < lower):"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_terminal_time_must_fit_between_last_live_and_first_ending"]
@@ -3371,7 +3371,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-terminal-copy-unchecked"
 guards = "conflicting terminal copies cannot select the more favourable"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "if any(copy != terminal for copy in copies):"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_conflicting_terminal_copies_cannot_select_the_more_favourable"]
@@ -3380,7 +3380,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-config-unchecked"
 guards = "comparison rejects changed run configuration"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "if actual_config.get(key) != value:"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_comparison_rejects_changed_run_configuration"]
@@ -3389,7 +3389,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-battle-reused"
 guards = "copied battle in distinct directories is not a fresh launch"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "if battle and sum(a.get(\"battle\") == battle for a in attempts) > 1:"
 new = "if False:"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_copied_battle_in_distinct_directories_is_not_a_fresh_launch"]
@@ -3407,7 +3407,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-invalid-cli-flag"
 guards = "generated jobs parse with the actual cli"
-file = "src/twwarhammer3/battle/support_timing.py"
+file = "src/twwarhammer3/scenarios/support_timing.py"
 old = "\"--run-timeout\", \"2280\", \"--record-replay\"]"
 new = "\"--run-timeout\", \"2280\", \"--record-replay\", \"--no-stills\"]"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_generated_jobs_parse_with_the_actual_cli"]
@@ -3416,7 +3416,7 @@ source = "2026-11-04 independent support-timing verification audit"
 [[plant]]
 id = "support-audit-earliest-ending"
 guards = "Frozen HP cannot follow the separately recorded first engine ending"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "upper = min(upper, recorded_time)"
 new = "upper = upper"
 tests = ["tests/twwarhammer3/test_wh3_support_measurements.py::test_recorded_first_ending_also_bounds_the_frozen_hp"]
@@ -3425,7 +3425,7 @@ source = "2026-11-04 independent support-timing verification review"
 [[plant]]
 id = "support-audit-public-copy-conflict"
 guards = "A private-field projection is not a contradictory sensor reading"
-file = "src/twwarhammer3/battle/support_evidence.py"
+file = "src/twwarhammer3/scenarios/support_evidence.py"
 old = "conflicting_observations(samples[key], obs)"
 new = "samples[key] != obs"
 tests = ["tests/twwarhammer3/test_wh3_support_public_copies.py::test_compatible_public_and_raw_observations_preserve_event_evidence"]
@@ -3897,7 +3897,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "local-v2-peer-witness-wings-relabelled"
 guards = "A peer witness keeps an enemy horse's wing from where it was first reported (rests on JUDGEMENT cannae.py Enemy wing labels)"
-file = "src/twwarhammer3/battle/local_scripts.py"
+file = "src/twwarhammer3/scenarios/local_scripts.py"
 old = '''self.wings.setdefault(identity, "north" if z >= self.mid_z else "south")'''
 new = '''self.wings[identity] = "north" if z >= self.mid_z else "south"'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_scripts.py::test_witnesses_keep_a_horses_wing_from_where_it_was_first_known"]
@@ -3906,7 +3906,7 @@ source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "local-v2-overview-witness-wings-relabelled"
 guards = "The overview witness commander keeps an enemy horse's wing from where it was first seen (rests on JUDGEMENT cannae.py Enemy wing labels)"
-file = "src/twwarhammer3/battle/local_scripts.py"
+file = "src/twwarhammer3/scenarios/local_scripts.py"
 old = '''self.wings.setdefault(enemy["id"], "north" if enemy["z"] >= self.mid_z else "south")'''
 new = '''self.wings[enemy["id"]] = "north" if enemy["z"] >= self.mid_z else "south"'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_scripts.py::test_witnesses_keep_a_horses_wing_from_where_it_was_first_known"]
@@ -4082,7 +4082,7 @@ tests = ["tests/gameai/test_model.py::test_a_key_that_cannot_be_encoded_as_a_hea
 source = "2026-11-08 repo upkeep"
 [[plant]]
 id = "local-v2-witness-rejection-not-retried"
-file = "src/twwarhammer3/battle/local_scripts.py"
+file = "src/twwarhammer3/scenarios/local_scripts.py"
 guards = "a rejected scripted order is retried before the ordinary idle refresh"
 tests = ["tests/twwarhammer3/team/test_wh3_local_script_recovery.py"]
 old = '''    def acknowledge(self, ack, latency):
@@ -4165,7 +4165,7 @@ source = "2026-11-13 overnight refusal sweeps: independent review round 1"
 [[plant]]
 id = "cannae-route-refuses-only-absent-bounds"
 guards = "A Cannae route needs nonempty public terrain bounds"
-file = "src/twwarhammer3/battle/cannae.py"
+file = "src/twwarhammer3/scenarios/cannae.py"
 old = "        if not bounds:\n            raise PolicyFailure(\"Cannae route needs public terrain bounds\")"
 new = "        if bounds is None:\n            raise PolicyFailure(\"Cannae route needs public terrain bounds\")"
 tests = ["tests/twwarhammer3/test_wh3_cannae.py::test_a_route_without_public_terrain_bounds_is_refused"]
@@ -4174,7 +4174,7 @@ source = "2026-11-13 overnight refusal sweeps: independent review round 1"
 [[plant]]
 id = "cannae-route-reads-terrain-key-directly"
 guards = "A view without a terrain key is refused, not a KeyError"
-file = "src/twwarhammer3/battle/cannae.py"
+file = "src/twwarhammer3/scenarios/cannae.py"
 old = "bounds = (observation.get(\"terrain\") or {}).get(\"bounds\")"
 new = "bounds = (observation[\"terrain\"] or {}).get(\"bounds\")"
 tests = ["tests/twwarhammer3/test_wh3_cannae.py::test_a_route_without_public_terrain_bounds_is_refused"]

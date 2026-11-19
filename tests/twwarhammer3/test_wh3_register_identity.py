@@ -11,11 +11,12 @@ from pathlib import Path
 
 from wh3_fixtures import played_job, team_job
 
-from twwarhammer3.battle import cannae, setup
+from twwarhammer3.battle import setup
 from twwarhammer3.results import register as stats
 from twwarhammer3.results import report
+from twwarhammer3.scenarios import cannae
 
-WING_SUPPORT = "twwarhammer3.battle.cannae:WingSupport"
+WING_SUPPORT = "twwarhammer3.scenarios.cannae:WingSupport"
 
 
 def register_rows(path):

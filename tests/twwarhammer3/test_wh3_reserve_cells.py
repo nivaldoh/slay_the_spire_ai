@@ -7,7 +7,7 @@ from wh3_fixtures import played_job
 
 from gameai.provenance import REPO_ROOT
 
-WING_SUPPORT = "twwarhammer3.battle.cannae:WingSupport"
+WING_SUPPORT = "twwarhammer3.scenarios.cannae:WingSupport"
 SPEC = importlib.util.spec_from_file_location("wh3_reserve_cells_script",
                                               REPO_ROOT / "scripts/wh3_reserve_cells.py")
 script = importlib.util.module_from_spec(SPEC)

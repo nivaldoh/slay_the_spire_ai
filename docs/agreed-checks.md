@@ -16,7 +16,7 @@ read from the whole suite, not the command run alone; `runs/` has no backup. The
 revisions written below are the earlier passes.
 
 - WH3 Cannae fixed rule on harder B (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"):
-  `emp-envelopment-b-v3` with `twwarhammer3.battle.cannae:CentreSupport`, `--reserve-seed` 4, 9, 38,
+  `emp-envelopment-b-v3` with `twwarhammer3.scenarios.cannae:CentreSupport`, `--reserve-seed` 4, 9, 38,
   18, 3, 0, 7 and 1 for the eight catalogue cases, one fresh launch per case, $0, unpaused at 1x, with
   600/1320/2000 s start, episode and job limits. All eight are reported, with no repeats, and a loss
   stands. A launch with no engine outcome is not an attempt and gets one new launch in a new plan. Two

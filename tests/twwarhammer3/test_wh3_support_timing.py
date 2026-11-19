@@ -6,9 +6,9 @@ import json
 import pytest
 
 from twwarhammer3.battle import setup
-from twwarhammer3.battle import support_evidence as evidence
-from twwarhammer3.battle import support_timing as timing
 from twwarhammer3.protocol import ProtocolError, validate_orders
+from twwarhammer3.scenarios import support_evidence as evidence
+from twwarhammer3.scenarios import support_timing as timing
 
 
 def view(ms=1000, *, melee=False, cavalry=False, routed=False, seq=None):

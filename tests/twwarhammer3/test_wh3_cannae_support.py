@@ -5,8 +5,8 @@ from copy import deepcopy
 import pytest
 from test_wh3_cannae import opening
 
-from twwarhammer3.battle.cannae import CentreSupport, WingSupport
 from twwarhammer3.protocol import PolicyFailure, validate_orders
+from twwarhammer3.scenarios.cannae import CentreSupport, WingSupport
 
 
 def test_support_assigns_northern_greatswords_and_two_knights_to_the_same_horse():

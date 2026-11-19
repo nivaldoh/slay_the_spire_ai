@@ -8,7 +8,7 @@ a section below; where they differ, the section holds. Everything is unverified 
 |---|---|
 | Tests | Three evaluations: A, a recognizable Cannae envelopment; B, reserve commitments that change and need fresh decisions; C, agents sharing one army under limited communication ([decisions](#decisions-the-battle-could-test)). |
 | Why it is hard | The same units have competing uses. The centre must hold while the cavalry wins a wing and then reaches the main fight, and the reserves choose between finishing the envelopment and preventing a collapse elsewhere. |
-| Witness | `Envelop`, `WingSupport` and `CentreSupport` in [battle/cannae.py](../../src/twwarhammer3/battle/cannae.py), scripted development witnesses on public state. Battle C's arms are in [communication-structure.md](communication-structure.md). |
+| Witness | `Envelop`, `WingSupport` and `CentreSupport` in [scenarios/cannae.py](../../src/twwarhammer3/scenarios/cannae.py), scripted development witnesses on public state. Battle C's arms are in [communication-structure.md](communication-structure.md). |
 | Outcome | The engine's result; timer wins count. The brief is "Win the battle and preserve the army where possible." |
 | Status | 27 `emp-envelopment-*` entries in [`scenarios/cannae.json`](../../configs/twwarhammer3/scenarios/cannae.json), all status `candidate`, split `development`. 18 of them have been played: 94 register rows from 2026-11-05 to 2026-11-11, 37 won, 56 lost and 1 infrastructure failure, counting every controller. The file also holds the 12 `emp-wing-horse-*` entries of the [communication-structure page](communication-structure.md), which carry another brief and have 18 rows (3 won, 15 lost). No battle is scheduled. |
 | Changes | 2026-11-05 drafted; windows 1 and 2 played ([results](#window-2-results-2026-11-05)). 2026-11-08 to 2026-11-11 the communication arms of C (versions 2 and 3) were added and piloted, recorded on the communication-structure page. |
@@ -256,13 +256,13 @@ attempt, not readiness or difficulty. A nearest-enemy controller succeeded witho
 explicit envelopment plan; retain it as a challenge to that interpretation. The manoeuvre
 witness, route checks and repeatable readiness procedure remain outstanding.
 
-The public-state development witness is `twwarhammer3.battle.cannae:Envelop`. It binds
+The public-state development witness is `twwarhammer3.scenarios.cannae:Envelop`. It binds
 the nine friendly identities once, holds the centre until enemies approach, starts
 Greatsword flank routes after observed centre melee and redirects the decisive cavalry
 after its first-seen opposing wing has no currently eligible visible horse. That cue
 does not mean an unseen enemy is dead. It first assists the other visible cavalry fight
 when present, then attacks infantry. It uses ordinary move/attack orders and no retreat.
-Its candidate limits and enemy wing labels rest on JUDGEMENT `battle/cannae.py`
+Its candidate limits and enemy wing labels rest on JUDGEMENT `scenarios/cannae.py`
 Cannae witness development rules and Enemy wing labels. Waypoints freeze from current
 visible infantry geometry; metadata records actual position arrivals, unavailable units
 and deadlines separately. A win or accepted order is not a completed-envelopment claim.
@@ -276,7 +276,7 @@ not completed cavalry redeployment, assistance to the other wing or useful envel
 Witness v2 changes only the cavalry exit geometry: its first point lies beyond the
 visible infantry rear and its current x before sweeping along that rear. The infantry
 paths, targets, trigger rules and physical scenario stay the same. This rests on JUDGEMENT
-`battle/cannae.py` Cavalry exit v2; the first failure does not prove this is the remedy.
+`scenarios/cannae.py` Cavalry exit v2; the first failure does not prove this is the remedy.
 If map clipping reverses the declared outward geometry, it records `no_exit` and falls
 back to an ordinary eligible-target attack rather than marking that route arrived.
 At `b79c8ce`, `a-envelop-v2-01` won at 234.3 s. Both Greatswords completed their paths;

@@ -67,9 +67,9 @@ RACES = {"brt": ("Bretonnia", "Bretonnian"), "emp": ("Empire", "Empire"),
          "tmb": ("Tomb Kings", "Tomb Kings"), "cst": ("Vampire Coast", "Vampire Coast"),
          "bst": ("Beastmen", "Beastmen"), "nor": ("Norsca", "Norscan")}
 LOCAL_CONTROLS = {
-    "twwarhammer3.battle.local_scripts:ThinkingRush": (
+    "twwarhammer3.scenarios.local_scripts:ThinkingRush": (
         "Local rush", "each group attacks locally without messages"),
-    "twwarhammer3.battle.local_scripts:CentralConcentration": (
+    "twwarhammer3.scenarios.local_scripts:CentralConcentration": (
         "Central concentration", "every group joins the centre's fight without messages"),
 }
 SCRIPTED = {**LOCAL_CONTROLS,
@@ -229,6 +229,7 @@ def harness(definition: dict, job: dict | None) -> str:
 
 # Historical names are display inputs. A job's recorded policy and comparison key stay verbatim.
 OLD_SCRIPT_MODULES = {
+    "twwarhammer3.battle.local_scripts": "twwarhammer3.scenarios.local_scripts",
     "twwarhammer3.battle.reference": "twwarhammer3.controllers.reference",
     "twwarhammer3.battle.calibration": "twwarhammer3.controllers.calibration",
 }

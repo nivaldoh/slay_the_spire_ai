@@ -12,7 +12,7 @@ from wh3_fixtures import make_job
 
 from twwarhammer3.results import report, report_html
 
-PREFIX = "twwarhammer3.battle.local_scripts:"
+PREFIX = "twwarhammer3.scenarios.local_scripts:"
 
 
 def member(name, kind="external"):

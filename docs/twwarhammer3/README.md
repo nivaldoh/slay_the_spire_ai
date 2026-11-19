@@ -257,8 +257,8 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/benchmarks/plans.py`: frozen benchmark plans and every planned attempt
   read back
 - `src/twwarhammer3/benchmarks/suite.py`: the coordination suite: arms, plans, measures and comparison
-- `src/twwarhammer3/battle/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
-- `src/twwarhammer3/battle/support_evidence.py`: offline event brackets and proposed numerical contrast
+- `src/twwarhammer3/scenarios/support_timing.py`: infantry/cavalry timing diagnostics and fresh-launch plan
+- `src/twwarhammer3/scenarios/support_evidence.py`: offline event brackets and proposed numerical contrast
 - `src/twwarhammer3/battle/manual_demo.py`: separate owner demonstration recorder and pause labels
 - `src/twwarhammer3/engine/manual_capture.py`: passive Windows video and state journal for demonstrations
 - `src/twwarhammer3/controllers/reference.py`: `Concentrate`, the suite's scripted coordinated reference
@@ -271,7 +271,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
 - `src/twwarhammer3/controllers/skills.py`: per-unit skill executor, probe_abilities
 - `src/twwarhammer3/controllers/scripted.py`: hold, attack_nearest, rush_nearest
 - `src/twwarhammer3/controllers/evade.py`: `Evade`, a free control: every unit runs from visible enemies
-- `src/twwarhammer3/battle/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
+- `src/twwarhammer3/scenarios/cannae.py`: `Envelop`, `WingSupport`, `CentreSupport`: scripted
   Cannae development witnesses on public state
 - `src/twwarhammer3/scenarios/camp.py`: `CampStrike` and its controls for the camp attack land battle
   (emp-chd-camp-v1), on public state
@@ -313,7 +313,7 @@ lists and check.py's "missing from the Code map" flag rest on this format.
   version 2's peer, relay and overview arms, the muted controls (peer or overview to their
   members, nothing delivered) and the unlinked one (no links, no messages), the commander and its
   stage-1 probes
-- `src/twwarhammer3/battle/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
+- `src/twwarhammer3/scenarios/local_scripts.py`: scripted C v2 witnesses (peer, relay and overview)
   and foils (fixed schedule, central concentration, `ThinkingRush`) for the
   communication-structure stage 2; each sleeps a model-like think time per decision
 - `src/twwarhammer3/controllers/replay_schedule.py`: `ReplaySchedule`, the fixed-schedule foil that

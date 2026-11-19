@@ -72,7 +72,7 @@ def test_other_model_interfaces_cannot_replace_a_local_model(local_declaration, 
 
 @pytest.mark.parametrize("kind", ["llm", "llm_rules", "hold",
     "llm@claude-haiku-5-5/low", "llm_rules@claude-haiku-5-5/low",
-    "twwarhammer3.battle.local_scripts:PeerWitness"])
+    "twwarhammer3.scenarios.local_scripts:PeerWitness"])
 def test_supported_direct_member_interfaces_still_load_without_models(local_declaration, kind):
     raw, load = local_declaration
     raw["members"]["centre"] = {"type": kind}

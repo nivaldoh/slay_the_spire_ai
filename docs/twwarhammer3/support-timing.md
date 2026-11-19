@@ -46,7 +46,7 @@ JUDGEMENT: Diagnostic design — Codex, 2026-11-04, supplied plan: three fresh l
 left then 60 m behind. Different values could change the contrast; these are not a search
 for the best fixed policy or an isolation of model inference latency.
 
-All arms use `battle/support_timing.py`'s one executor. It resolves types to unit IDs and
+All arms use `scenarios/support_timing.py`'s one executor. It resolves types to unit IDs and
 issues the infantry's persistent running melee attack at its first legal visible target.
 It never uses setup, evaluation, replay frames or hidden enemy state. Cavalry treatments:
 
@@ -84,10 +84,10 @@ the owner about any build mismatch and do not re-pin automatically.
 
 ```bash
 uv run --locked python -m twwarhammer3 doctor
-uv run --locked python -m twwarhammer3.battle.support_timing runs/support-timing-live/comparison-v2/plan.json
+uv run --locked python -m twwarhammer3.scenarios.support_timing runs/support-timing-live/comparison-v2/plan.json
 # Owner-agreed exploratory comparison, after setup/action-effect checks:
 uv run --locked python scripts/wh3_queue.py runs/support-timing-live/comparison-v2/plan.json
-uv run --locked python -m twwarhammer3.battle.support_evidence runs/support-timing-live/comparison-v2/plan.json runs/support-timing-live/comparison-v2/annotations.json
+uv run --locked python -m twwarhammer3.scenarios.support_evidence runs/support-timing-live/comparison-v2/plan.json runs/support-timing-live/comparison-v2/annotations.json
 uv run --locked python -m twwarhammer3 report runs/support-timing-live/comparison-v2/block-* --output runs/support-timing-live/report
 ```
 
@@ -103,7 +103,7 @@ Coarser sampling costs less but widens event brackets. Check overhead and video 
 in the pilot, then freeze the same instrumentation for every comparison arm.
 
 ```bash
-uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v2 --policy twwarhammer3.battle.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-02
+uv run --locked python runs/support-verify/audit_play.py --scenario emp-support-timing-v2 --policy twwarhammer3.scenarios.support_timing:Contact --episodes 1 --observe-ms 1000 --tick-ms 250 --interval-ms 0 --start-timeout 900 --episode-timeout 1320 --run-timeout 2280 --record-replay --output runs/support-timing-live/pilot-contact-02
 # After independently checking the pilot, use the ordinary queue with the observer:
 uv run --locked python runs/support-verify/audit_queue.py runs/support-timing-live/comparison-v2/plan.json
 ```

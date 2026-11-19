@@ -4,9 +4,10 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import cannae, play
-from twwarhammer3.battle.cannae import GREATSWORDS, KNIGHTS, SWORDS, Envelop
+from twwarhammer3.battle import play
 from twwarhammer3.protocol import PolicyFailure, validate_orders
+from twwarhammer3.scenarios import cannae
+from twwarhammer3.scenarios.cannae import GREATSWORDS, KNIGHTS, SWORDS, Envelop
 
 
 def unit(identity, kind, x, z, **extra):
