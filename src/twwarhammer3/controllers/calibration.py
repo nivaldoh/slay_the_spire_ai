@@ -7,13 +7,13 @@ and the helpers, which lines.py and lines_readings.py are built on; CornerHold, 
 lines.LinesCornerCamp extends; PriorityStrike, the air relief's selected optional witness
 (tactics-reference.md); and LineTeam and LineTeamReserve, which the parked team-structures
 plan builds on. Select one by dotted class name, e.g.
-``twwarhammer3.battle.calibration:CornerHold``. They use only public observations.
+``twwarhammer3.controllers.calibration:CornerHold``. They use only public observations.
 """
 
 import math
 
-from twwarhammer3.battle.scripted import Hold
-from twwarhammer3.battle.skills import SHOOTERS
+from twwarhammer3.controllers.scripted import Hold
+from twwarhammer3.controllers.skills import SHOOTERS
 from twwarhammer3.protocol import friendly_units, visible_enemies
 from twwarhammer3.units import active_units, centre, direction, distance
 

@@ -6,7 +6,7 @@ import pytest
 from wh3_fixtures import USAGE, api_error, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
-from twwarhammer3.battle.commander import CommanderPolicy
+from twwarhammer3.controllers.commander import CommanderPolicy
 from twwarhammer3.protocol import PolicyFailure
 
 

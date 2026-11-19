@@ -13,9 +13,9 @@ from pathlib import Path
 
 from gameai.llm import Model, api_key, check_fields, post
 from gameai.provenance import git, sha256, write_json
-from twwarhammer3.battle import configured, graph, graph_goals, graph_initiation, skills, team
-from twwarhammer3.battle import skill_contracts as catalog
-from twwarhammer3.battle.llm import MAX_OUTPUT_TOKENS
+from twwarhammer3.controllers import configured, graph, graph_goals, graph_initiation, skills, team
+from twwarhammer3.controllers import skill_contracts as catalog
+from twwarhammer3.controllers.llm import MAX_OUTPUT_TOKENS
 
 ARTIFACT_TYPE = "wh3-graph-author"
 VERSION = f"{ARTIFACT_TYPE}-v4"

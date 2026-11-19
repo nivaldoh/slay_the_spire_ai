@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import graph
+from twwarhammer3.controllers import graph
 from twwarhammer3.results import replay
 
 ASSETS = Path(__file__).with_name("graph_view_assets")

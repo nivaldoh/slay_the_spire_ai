@@ -1,5 +1,5 @@
-from twwarhammer3.battle import skills
-from twwarhammer3.battle.skills import Skills
+from twwarhammer3.controllers import skills
+from twwarhammer3.controllers.skills import Skills
 from twwarhammer3.protocol import validate_orders
 
 

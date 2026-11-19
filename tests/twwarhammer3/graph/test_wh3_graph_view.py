@@ -10,7 +10,7 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import graph
+from twwarhammer3.controllers import graph
 from twwarhammer3.results import graph_view
 
 
@@ -321,7 +321,7 @@ def test_member_inputs_and_order_free_decisions_add_no_frames_orders_or_acks(tmp
     # Frames come from observation/result rows (replay.py sources); a team input row is a
     # member's projected copy (team.decide). play.py also logs order-free decisions, and the
     # engine acknowledges them with no results; they dispatch nothing.
-    from twwarhammer3.battle import team
+    from twwarhammer3.controllers import team
 
     episode, result, rows = recorded(tmp_path)
     line_graph = result["card"]["disclosure"]["configuration"]["members"]["line"]

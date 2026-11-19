@@ -238,8 +238,8 @@ aggregate coordination score before its meaning and deciding check are agreed.
 ## Implementation boundary and proposed checks
 
 The base team controller retains its alliance-wide projection and type partitions.
-`battle/local_command.py` adds C's authored regiment binding, anchor sensing and router;
-`battle/local_team.py` uses the same asynchronous `TeamPolicy` through its member-view
+`controllers/local_command.py` adds C's authored regiment binding, anchor sensing and router;
+`controllers/local_team.py` uses the same asynchronous `TeamPolicy` through its member-view
 hook. Both the input and fresh dispatch guard use that hook. Existing model-team tests
 do not verify these additions. See [current team implementation](multi-agent-implementation.md).
 
@@ -251,7 +251,7 @@ local bounded channels, local no-message control, local fast text and global con
 without messages, respectively. The global control changes target availability as well
 as information, so its difference is not a channel-only effect. No existing suite adopts C.
 
-The concrete numerical profile rests on JUDGEMENT `src/twwarhammer3/battle/local_command.py`
+The concrete numerical profile rests on JUDGEMENT `src/twwarhammer3/controllers/local_command.py`
 Local command development profile and Fast text control. Couriers initially use the
 published starting-anchor rendezvous, not a refreshed peer location. Router events keep
 acceptance, source observation, arrival and delivery disposition. Original content/time
@@ -265,7 +265,7 @@ or channel transmissions/receptions then. Memory of enemy roster types/identitie
 from the initial public roster; remote observed-death updates do not enter C. Navigation,
 queue and destination readbacks are removed rather than refreshing unseen targets.
 New orders must pass the source and latest local views, resting on JUDGEMENT
-`src/twwarhammer3/battle/local_team.py` Local target authority; persistent engine orders
+`src/twwarhammer3/controllers/local_team.py` Local target authority; persistent engine orders
 continue normally. A remote target cannot be queried through fresh orders or error text.
 
 Run via the existing configured controller interface:

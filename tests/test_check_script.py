@@ -995,11 +995,11 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
     assert flags()["s"]["reasons"] == ["example e: src/pkg/a.py changed since the example was made"]
     # Four more facts (versions with their values), a list of examples, and story steps that
     # must name ids the view draws, an example generated or its flow's lanes hold.
-    battle = "src/twwarhammer3/battle/"
-    code = {f"{battle}controllers.py": 'MODEL_PROMPTS = {"llm": llm.PATH, "commander": PROMPT}\n'
+    controllers = "src/twwarhammer3/controllers/"
+    code = {f"{controllers}factory.py": 'MODEL_PROMPTS = {"llm": llm.PATH, "commander": PROMPT}\n'
                                        'VERSIONS = {"llm": "v22", "commander": "v8"}\n',
-            f"{battle}scripted.py": 'POLICIES = {"hold": Hold, "attack_nearest": Nearest}\n',
-            f"{battle}graph_author.py": 'DESCRIPTIONS = {"owned": "x", "engage": "y"}\n'}
+            f"{controllers}scripted.py": 'POLICIES = {"hold": Hold, "attack_nearest": Nearest}\n',
+            f"{controllers}graph_author.py": 'DESCRIPTIONS = {"owned": "x", "engage": "y"}\n'}
     for name, text in code.items():
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text(text)
@@ -1036,18 +1036,18 @@ def test_diagram_flags_check_the_file_lists_stated_facts_and_review_age(tmp_path
         "flow story step 2: its wire cav.no is not in the view",
         "flow story step 2: its row gap.model is not in the view",
         "flow inline step 1: its row gap.line is not in the view"]}
-    edit(tmp_path, f"{battle}controllers.py", ', "commander": PROMPT', "")
-    edit(tmp_path, f"{battle}controllers.py", '"v22"', '"v23"')  # only a value changes
-    edit(tmp_path, f"{battle}scripted.py", "}", ', "rush_nearest": Rush}')
-    edit(tmp_path, f"{battle}graph_author.py", "}", ', "shoot": "z"}')
+    edit(tmp_path, f"{controllers}factory.py", ', "commander": PROMPT', "")
+    edit(tmp_path, f"{controllers}factory.py", '"v22"', '"v23"')  # only a value changes
+    edit(tmp_path, f"{controllers}scripted.py", "}", ', "rush_nearest": Rush}')
+    edit(tmp_path, f"{controllers}graph_author.py", "}", ', "shoot": "z"}')
     commit_all(tmp_path, "new names and versions")
     assert flags()["v"]["reasons"] == [
-        f"{battle}controllers.py MODEL_PROMPTS is now ['llm']; the view says ['commander', 'llm']",
-        f"{battle}scripted.py POLICIES is now ['attack_nearest', 'hold', 'rush_nearest']; the view"
-        " says ['attack_nearest', 'hold']",
-        f"{battle}graph_author.py DESCRIPTIONS is now ['engage', 'owned', 'shoot']; the view says"
-        " ['engage', 'owned']",
-        f"{battle}controllers.py VERSIONS is now ['commander=v8', 'llm=v23']; the view says"
+        f"{controllers}factory.py MODEL_PROMPTS is now ['llm']; the view says ['commander', 'llm']",
+        f"{controllers}scripted.py POLICIES is now ['attack_nearest', 'hold', 'rush_nearest'];"
+        " the view says ['attack_nearest', 'hold']",
+        f"{controllers}graph_author.py DESCRIPTIONS is now ['engage', 'owned', 'shoot'];"
+        " the view says ['engage', 'owned']",
+        f"{controllers}factory.py VERSIONS is now ['commander=v8', 'llm=v23']; the view says"
         " ['commander=v8', 'llm=v22']"]
 
 

@@ -22,11 +22,12 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
-from twwarhammer3.battle import graph_author, setup
-from twwarhammer3.battle.skills import SHOOTERS
+from twwarhammer3.battle import setup
 from twwarhammer3.benchmarks.exact_stats import sign_test, wilson
 from twwarhammer3.benchmarks.plans import collect
 from twwarhammer3.benchmarks.profile import EFFORT, LAUNCH_ARGS, MODEL, SUITE
+from twwarhammer3.controllers import graph_author
+from twwarhammer3.controllers.skills import SHOOTERS
 from twwarhammer3.protocol import account_stop
 from twwarhammer3.results import report as trials
 from twwarhammer3.results import report_html
@@ -47,7 +48,7 @@ ARMS = {
     "hold": ["--policy", "hold"],
     "rush": ["--policy", "rush_nearest"],
     "skills": ["--policy", "skills"],
-    "concentrate": ["--policy", "twwarhammer3.battle.reference:Concentrate"],
+    "concentrate": ["--policy", "twwarhammer3.controllers.reference:Concentrate"],
     "single": ["--policy", f"llm_rules@{MODEL}/{EFFORT}", *PAID],
     # JUDGEMENT: Tips arm — Claude, 2026-11-04, on the owner's "Yes, run it": `single`'s prompt
     # plus only the "How to fight" section of system_prompt.md, which gives commander's tips in

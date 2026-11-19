@@ -15,9 +15,9 @@ from uuid import uuid4
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply, check_fields
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import graph
-from twwarhammer3.battle import skill_contracts as catalog
-from twwarhammer3.battle.llm import invalid_reply
+from twwarhammer3.controllers import graph
+from twwarhammer3.controllers import skill_contracts as catalog
+from twwarhammer3.controllers.llm import invalid_reply
 from twwarhammer3.protocol import is_forfeit, policy_call
 
 VERSION = "wh3-graph-goals-v1"

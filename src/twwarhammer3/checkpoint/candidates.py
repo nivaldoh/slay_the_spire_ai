@@ -15,7 +15,7 @@ import json
 import math
 import random
 
-from twwarhammer3.battle.scripted import AttackNearest, RushNearest
+from twwarhammer3.controllers.scripted import AttackNearest, RushNearest
 from twwarhammer3.protocol import friendly_units, validate_orders, visible_enemies
 from twwarhammer3.units import distance
 

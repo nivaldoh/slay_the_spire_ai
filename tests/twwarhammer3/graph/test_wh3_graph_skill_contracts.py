@@ -2,7 +2,7 @@
 
 import pytest
 
-from twwarhammer3.battle import graph
+from twwarhammer3.controllers import graph
 
 END = {"op": "end", "inputs": {}, "next": {}}
 

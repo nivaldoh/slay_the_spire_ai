@@ -10,8 +10,8 @@ from wh3_fixtures import configured_job, embedded, make_job
 import twwarhammer3.__main__ as cli
 from twwarhammer3.__main__ import add_session_arguments, main
 from twwarhammer3.battle import play
-from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
-from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.controllers.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
+from twwarhammer3.controllers.scripted import Hold
 from twwarhammer3.results import report
 from twwarhammer3.results.register import RESULTS_PATH
 
@@ -131,7 +131,7 @@ def test_cli_play_config_has_no_wait_and_the_fixed_ledger_and_register(tmp_path,
 ])
 def test_cli_provider_selects_its_own_ledger_and_default_model(tmp_path, monkeypatch, capsys,
                                                                provider, model, ledger):
-    from twwarhammer3.battle import controllers
+    from twwarhammer3.controllers import factory as controllers
 
     seen = {}
     monkeypatch.setattr(controllers, "api_key", lambda provider: "test-only")

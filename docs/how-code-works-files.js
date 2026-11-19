@@ -184,7 +184,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/reference.py",
+   "path": "src/twwarhammer3/controllers/reference.py",
    "text": "`Concentrate`, the suite's scripted coordinated reference",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
@@ -196,37 +196,37 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/controllers.py",
+   "path": "src/twwarhammer3/controllers/factory.py",
    "text": "policy names, model prompts, rotation, outside controllers",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/llm.py",
+   "path": "src/twwarhammer3/controllers/llm.py",
    "text": "direct API-model controller: llm, llm_rules",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/commander.py",
+   "path": "src/twwarhammer3/controllers/commander.py",
    "text": "asynchronous API model over skills",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/skills.py",
+   "path": "src/twwarhammer3/controllers/skills.py",
    "text": "per-unit skill executor, probe_abilities",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/scripted.py",
+   "path": "src/twwarhammer3/controllers/scripted.py",
    "text": "hold, attack_nearest, rush_nearest",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/evade.py",
+   "path": "src/twwarhammer3/controllers/evade.py",
    "text": "`Evade`, a free control: every unit runs from visible enemies",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
@@ -352,19 +352,19 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/team.py",
+   "path": "src/twwarhammer3/controllers/team.py",
    "text": "independent members sharing one army and one mailbox",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/local_command.py",
+   "path": "src/twwarhammer3/controllers/local_command.py",
    "text": "C's local sensing and signal/courier router; the version 2 text mode, which checks every sender and recipient pair against the arm's links, and its muted form, which accepts texts and delivers none",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/local_team.py",
+   "path": "src/twwarhammer3/controllers/local_team.py",
    "text": "C's regiment groups, model interface and free probes; version 2's peer, relay and overview arms, the muted controls (peer or overview to their members, nothing delivered) and the unlinked one (no links, no messages), the commander and its stage-1 probes",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
@@ -376,43 +376,43 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/replay_schedule.py",
+   "path": "src/twwarhammer3/controllers/replay_schedule.py",
    "text": "`ReplaySchedule`, the fixed-schedule foil that replays a won episode's accepted orders by battle time on a fresh launch",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/configured.py",
+   "path": "src/twwarhammer3/controllers/configured.py",
    "text": "JSON controller composition; a version 2 star arm's `local_team` node takes the commander, whose model leaf gets its own prompt",
    "box": "map.play",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph.py",
+   "path": "src/twwarhammer3/controllers/graph.py",
    "text": "resumable graph nodes",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/skill_contracts.py",
+   "path": "src/twwarhammer3/controllers/skill_contracts.py",
    "text": "typed skills and public effect witnesses",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph_goals.py",
+   "path": "src/twwarhammer3/controllers/graph_goals.py",
    "text": "background model target preferences over fixed graphs",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph_author.py",
+   "path": "src/twwarhammer3/controllers/graph_author.py",
    "text": "offline multi-LLM authoring and whole-battle revision",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/graph_initiation.py",
+   "path": "src/twwarhammer3/controllers/graph_initiation.py",
    "text": "temporary pre-contact attack-path check for caller-declared initiators",
    "box": "map.graphs",
    "list": "docs/twwarhammer3/README.md"
@@ -460,7 +460,7 @@ Object.assign(DIAGRAM_FILES, {
    "list": "docs/twwarhammer3/README.md"
   },
   {
-   "path": "src/twwarhammer3/battle/calibration.py",
+   "path": "src/twwarhammer3/controllers/calibration.py",
    "text": "the small diagnostics' base class and geometry helpers, which lines.py is built on, and the four diagnostics current work still names",
    "box": "map.setup",
    "list": "docs/twwarhammer3/README.md"

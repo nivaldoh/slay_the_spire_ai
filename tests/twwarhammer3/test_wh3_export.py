@@ -411,9 +411,9 @@ def test_play_captures_exchanges_for_export_including_unadopted_final_plan(tmp_p
     from wh3_fixtures import CONFIG, USAGE, FakeMailbox, bridge_observation
 
     from gameai.ledger import Ledger
-    from twwarhammer3.battle.commander import CommanderPolicy
-    from twwarhammer3.battle.llm import LLMPolicy
     from twwarhammer3.battle.play import play_episode
+    from twwarhammer3.controllers.commander import CommanderPolicy
+    from twwarhammer3.controllers.llm import LLMPolicy
 
     bodies = []
     reply = {"orders": [], "assignments": [], "abilities": [], "reason": "wait", "notes": None}

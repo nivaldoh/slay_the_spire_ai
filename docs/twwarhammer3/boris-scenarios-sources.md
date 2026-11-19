@@ -50,9 +50,9 @@ Inspected at the catalogue's base revision `e449032`:
 
 * [mailbox.py](../../src/twwarhammer3/engine/mailbox.py), unit and terrain contract:
   `barrier` is separate from HP; terrain rows describe clear/blocked movement cells.
-* [llm.py](../../src/twwarhammer3/battle/llm.py), unit rendering, displays barrier values
+* [llm.py](../../src/twwarhammer3/controllers/llm.py), unit rendering, displays barrier values
   when supplied; an optional field is not guaranteed reliable evidence in every battle.
-* [team.py](../../src/twwarhammer3/battle/team.py), `TeamPolicy`, `project` and `ModelTeam`:
+* [team.py](../../src/twwarhammer3/controllers/team.py), `TeamPolicy`, `project` and `ModelTeam`:
   two members, type-based ownership, limited ally state and the fixed model partition.
   [Implementation notes](multi-agent-implementation.md) record the lack of explicit messages
   and the team path's injected-delay restriction.

@@ -107,16 +107,17 @@ EXAMPLES = {
             {"id": "basic", "kind": "model", "example": "methods-basic",
              "job": "runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020",
              "episode": "episode-0000",
-             "title": "Basic: the model picks every order", "code": "llm_rules · battle/llm.py",
+             "title": "Basic: the model picks every order",
+             "code": "llm_rules · controllers/llm.py",
              "before": "Nothing asked: the rules prompt is written by hand",
              "between": "Nothing: a fresh controller each battle, same prompt",
              "decisions": ["r1", "r2"],  # reply 1 and its ack, reply 2 (methods steps 1-3)
              "refs": ["src/twwarhammer3/battle/play.py:1-17",
                       "src/twwarhammer3/battle/play.py:501-503",
-                      "src/twwarhammer3/battle/controllers.py:28-32",
-                      "src/twwarhammer3/battle/controllers.py:35-50",
-                      "src/twwarhammer3/battle/llm.py:59-82",
-                      "src/twwarhammer3/battle/llm.py:464-478"],
+                      "src/twwarhammer3/controllers/factory.py:28-32",
+                      "src/twwarhammer3/controllers/factory.py:35-50",
+                      "src/twwarhammer3/controllers/llm.py:59-82",
+                      "src/twwarhammer3/controllers/llm.py:464-478"],
              "stated": {"calls": [0, 92, 0], "decisions": 88, "reasks": 3, "unused_calls": 1,
                         "carried": 39, "new": 28,
                         "replies_in_window": 9, "new_in_window": 2, "first_view_ms": 5300,
@@ -126,23 +127,23 @@ EXAMPLES = {
              "artifact": "runs/twwarhammer3/gap-20261101/initial-02",
              "revisions": ["runs/twwarhammer3/gap-20261101/revised-01"],
              "title": "GaP: models write graphs, code plays them",
-             "code": "configured · battle/graph.py",
+             "code": "configured · controllers/graph.py",
              "empty": "no model asked during the battle",
              "members": {"cavalry": "A", "line": "B"},  # page colours: A blue, B vermillion
              "rows": {"steps": [37, 28], "order": 75, "view": 66},  # methods steps 5 and 6
              "refs": ["src/twwarhammer3/battle/play.py:1-17",
                       "src/twwarhammer3/battle/play.py:501-503",
-                      "src/twwarhammer3/battle/controllers.py:28-32",
-                      "src/twwarhammer3/battle/controllers.py:35-50",
-                      "src/twwarhammer3/battle/configured.py",
-                      "src/twwarhammer3/battle/team.py:312-344",
-                      "src/twwarhammer3/battle/graph.py:21-23",
-                      "src/twwarhammer3/battle/graph.py:163-230",
-                      "src/twwarhammer3/battle/skill_contracts.py:17-22",
-                      "src/twwarhammer3/battle/skill_contracts.py:119-122",
-                      "src/twwarhammer3/battle/graph_author.py:21",
-                      "src/twwarhammer3/battle/graph_author.py:30-40",
-                      "src/twwarhammer3/battle/graph_author.py:173-178"],
+                      "src/twwarhammer3/controllers/factory.py:28-32",
+                      "src/twwarhammer3/controllers/factory.py:35-50",
+                      "src/twwarhammer3/controllers/configured.py",
+                      "src/twwarhammer3/controllers/team.py:312-344",
+                      "src/twwarhammer3/controllers/graph.py:21-23",
+                      "src/twwarhammer3/controllers/graph.py:163-230",
+                      "src/twwarhammer3/controllers/skill_contracts.py:17-22",
+                      "src/twwarhammer3/controllers/skill_contracts.py:119-122",
+                      "src/twwarhammer3/controllers/graph_author.py:21",
+                      "src/twwarhammer3/controllers/graph_author.py:30-40",
+                      "src/twwarhammer3/controllers/graph_author.py:173-178"],
              "stated": {"calls": [3, 0, 3], "trace_model_exchanges": 0, "decisions": 2016,
                         "carried": 165, "new": 6, "resent_in_window": 11, "new_in_window": 1,
                         "first_view_ms": 7400, "first_applied_ms": 8000,
@@ -179,13 +180,13 @@ EXAMPLES = {
                  "charge": [8729, 8746, 8764, 8784], "charge_view": 8775, "witness_view": 10072,
                  "witness": 10078},
         # The story's refs while docs/how-code-works-view-graph.js does not exist yet.
-        "refs": ["src/twwarhammer3/battle/graph.py:21-23",
-                 "src/twwarhammer3/battle/graph.py:163-230",
-                 "src/twwarhammer3/battle/team.py:312-344",
-                 "src/twwarhammer3/battle/skill_contracts.py:17-22",
-                 "src/twwarhammer3/battle/skill_contracts.py:119-122",
-                 "src/twwarhammer3/battle/graph_author.py:21",
-                 "src/twwarhammer3/battle/graph_author.py:30-40",
+        "refs": ["src/twwarhammer3/controllers/graph.py:21-23",
+                 "src/twwarhammer3/controllers/graph.py:163-230",
+                 "src/twwarhammer3/controllers/team.py:312-344",
+                 "src/twwarhammer3/controllers/skill_contracts.py:17-22",
+                 "src/twwarhammer3/controllers/skill_contracts.py:119-122",
+                 "src/twwarhammer3/controllers/graph_author.py:21",
+                 "src/twwarhammer3/controllers/graph_author.py:30-40",
                  "src/twwarhammer3/results/graph_view_assets/view.js:5-20",
                  "src/twwarhammer3/results/graph_view_assets/view.js:88-99"],
         # The generated boxes' and exits' status, from the agreed check WH3 initial GaP (lines
@@ -225,12 +226,12 @@ EXAMPLES = {
 # not interpolated; the trace has a view every 300-600 ms. Every view would double the file;
 # the replay's map rests on it.
 EXAMPLES["replay"] = {"kind": "replay", "of": "graph", "every_ms": 1000}
-CONTROLLERS = "src/twwarhammer3/battle/controllers.py"
-AUTHOR = "src/twwarhammer3/battle/graph_author.py"
-SKILLS = "src/twwarhammer3/battle/skill_contracts.py"
+CONTROLLERS = "src/twwarhammer3/controllers/factory.py"
+AUTHOR = "src/twwarhammer3/controllers/graph_author.py"
+SKILLS = "src/twwarhammer3/controllers/skill_contracts.py"
 VIEW_JS = "src/twwarhammer3/results/graph_view_assets/view.js"  # graph-view's labels and order
 LABEL_REF, ORDER_REF = f"{VIEW_JS}:5-20", f"{VIEW_JS}:88-99"
-STEP_REF, LIMIT_REF = "src/twwarhammer3/battle/graph.py:21-23", f"{SKILLS}:17-22"
+STEP_REF, LIMIT_REF = "src/twwarhammer3/controllers/graph.py:21-23", f"{SKILLS}:17-22"
 DEADLINE_REF = f"{SKILLS}:103-105"  # a skill step fails at its deadline without its witness
 WITNESS = {"engage": "melee", "charge": "melee", "move": "arrival", "hold": "arrival",
            "shoot": "ammo falling"}  # what each skill waits for (skill_contracts.py:107-122)

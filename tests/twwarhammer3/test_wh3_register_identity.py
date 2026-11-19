@@ -50,8 +50,8 @@ def test_an_external_row_carries_the_hash_of_its_class_file(tmp_path, monkeypatc
 
 def test_a_configured_row_names_its_members_declarations_and_never_the_job_flags(
         tmp_path, monkeypatch):
-    # Both jobs pass Haiku flags; only the smoke has model members. The digests are the two
-    # saved jobs' (c-slow-probe-01, c-model-smoke-02). A summary keyed as before pooled these
+    # Both jobs pass Haiku flags; only the smoke has model members. The current declaration digests
+    # include the member import paths. A summary keyed as before pooled these
     # two into one row: 2 battles, 1 won, $0.94, no model named.
     team_job(tmp_path / "c-slow-probe-01", monkeypatch, "cannae-local-slow-probe")
     team_job(tmp_path / "c-model-smoke-02", monkeypatch, "cannae-local-model", status="lost",
@@ -59,10 +59,10 @@ def test_a_configured_row_names_its_members_declarations_and_never_the_job_flags
     register = tmp_path / "results.csv"
     assert [(row["job"], row["configuration"], row["model"], row["effort"], row["provider"],
              row["case"]) for row in register_rows(register)] == [
-        ("c-slow-probe-01", "798ff9dca844", "", "", "", ""),
+        ("c-slow-probe-01", "5178fcc9dcd9", "", "", "", ""),
         ("c-model-smoke-02", "dcea16e551ab", "claude-haiku-5-5", "low", "anthropic", "")]
     assert sorted((row["Policy"], row["Model"], row["USD"]) for row in summary_rows(register)) == [
-        ("configured 798ff9dca844", "", "0.00"),
+        ("configured 5178fcc9dcd9", "", "0.00"),
         ("configured dcea16e551ab", "claude-haiku-5-5", "0.94")]
 
 
@@ -115,13 +115,13 @@ def test_the_next_row_changes_no_committed_register_line(tmp_path, monkeypatch):
 
 def test_two_compositions_with_equal_flags_stay_two_controllers(tmp_path, monkeypatch):
     # Equal flags and revision put both jobs in one group, so only the label keeps a free probe's
-    # win from pooling with a paid smoke's loss. The digests are the saved jobs'.
+    # win from pooling with a paid smoke's loss. The digests identify today's declarations.
     jobs = [team_job(tmp_path / "c-slow-probe-01", monkeypatch, "cannae-local-slow-probe"),
             team_job(tmp_path / "c-model-smoke-02", monkeypatch, "cannae-local-model",
                      status="lost")]
     group, = report.collect(jobs)["groups"]
     assert {row["controller"]: row["trials"] for row in group["controllers"]} == {
-        "configured / +0s / 798ff9dca844": 1, "configured / +0s / dcea16e551ab": 1}
+        "configured / +0s / 5178fcc9dcd9": 1, "configured / +0s / dcea16e551ab": 1}
 
 
 def test_two_versions_of_an_external_class_stay_two_controllers(tmp_path, monkeypatch):

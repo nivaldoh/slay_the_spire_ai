@@ -13,8 +13,9 @@ from pathlib import Path
 from gameai.provenance import REPO_ROOT, committed_revision, sha256, source_fingerprints, write_json
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
-from twwarhammer3.battle import configured, graph, play, setup, team
-from twwarhammer3.battle.skill_contracts import ARRIVAL_M
+from twwarhammer3.battle import play, setup
+from twwarhammer3.controllers import configured, graph, team
+from twwarhammer3.controllers.skill_contracts import ARRIVAL_M
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import (

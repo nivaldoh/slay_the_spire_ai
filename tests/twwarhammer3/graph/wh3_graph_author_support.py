@@ -4,7 +4,7 @@ import json
 from copy import deepcopy
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import graph, team
+from twwarhammer3.controllers import graph, team
 
 END = {"version": graph.VERSION, "entry": "end", "nodes": {
     "end": {"op": "end", "inputs": {}, "next": {}}}}

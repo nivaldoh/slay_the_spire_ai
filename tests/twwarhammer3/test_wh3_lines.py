@@ -14,7 +14,8 @@ import pytest
 import wh3_ablation
 from wh3_ablation import assert_ablation
 
-from twwarhammer3.battle import calibration, lines, play, setup
+from twwarhammer3.battle import lines, play, setup
+from twwarhammer3.controllers import calibration
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 A = setup.scenarios()["ksl-nor-lines-a-v1"]

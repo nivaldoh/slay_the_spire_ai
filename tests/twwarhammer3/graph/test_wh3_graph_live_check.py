@@ -6,7 +6,7 @@ from copy import deepcopy
 import pytest
 from check_wh3_graph import assess, recount
 
-from twwarhammer3.battle import team
+from twwarhammer3.controllers import team
 
 
 def view(seq, ms, *, cav_x=0, cav_target=None, cav_state=(), enemy_state=("melee",)):

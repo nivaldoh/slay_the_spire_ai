@@ -91,10 +91,10 @@ live check. Agreed checks on these pieces count only at the revisions and for th
 
 | Piece | What it gives us | What this plan still needs |
 |---|---|---|
-| [controllers.py](../../src/twwarhammer3/battle/controllers.py) `controller_class`, `factories` | `decide(observation)`, `acknowledge(ack, latency)`, `metadata()`; a fresh controller per episode; loading an external `module:Class` | A written, type-checked contract, not a new framework. Paid calls and prompts are wired up for named built-ins only, not automatically for external classes |
-| [team.py](../../src/twwarhammer3/battle/team.py) `TeamPolicy`, `project` | Exactly two members, each with a copied view, ownership checks, independent completion and its own feedback | No teammate messages. `ModelTeam` fixes both members to one model and effort and to the Knights/rest split; nothing more general is built |
-| [skills.py](../../src/twwarhammer3/battle/skills.py) `RULES`, `Skills` | Persistent `engage`, `shoot`, `hold`, `charge` and `move` assignments | They return orders and a phase description, not a typed start/running/succeeded/failed/cancelled status |
-| [commander.py](../../src/twwarhammer3/battle/commander.py) `CommanderPolicy` | A fast skill executor keeps acting while a model plans in the background | A scheduling reference and baseline; it assumes the whole army, so a member's view needs an adapter |
+| [controllers.py](../../src/twwarhammer3/controllers/factory.py) `controller_class`, `factories` | `decide(observation)`, `acknowledge(ack, latency)`, `metadata()`; a fresh controller per episode; loading an external `module:Class` | A written, type-checked contract, not a new framework. Paid calls and prompts are wired up for named built-ins only, not automatically for external classes |
+| [team.py](../../src/twwarhammer3/controllers/team.py) `TeamPolicy`, `project` | Exactly two members, each with a copied view, ownership checks, independent completion and its own feedback | No teammate messages. `ModelTeam` fixes both members to one model and effort and to the Knights/rest split; nothing more general is built |
+| [skills.py](../../src/twwarhammer3/controllers/skills.py) `RULES`, `Skills` | Persistent `engage`, `shoot`, `hold`, `charge` and `move` assignments | They return orders and a phase description, not a typed start/running/succeeded/failed/cancelled status |
+| [commander.py](../../src/twwarhammer3/controllers/commander.py) `CommanderPolicy` | A fast skill executor keeps acting while a model plans in the background | A scheduling reference and baseline; it assumes the whole army, so a member's view needs an adapter |
 | [play.py](../../src/twwarhammer3/battle/play.py) `_drive` | One transport writer, validation, acknowledgements, traces, battle endings | `decide` is synchronous here: a graph must return promptly, not wait inside it for movement or a model |
 | [checkpoint.py](../../src/twwarhammer3/checkpoint/checkpoint.py) | Rebuilding a battle from replay inputs, scripted input at chosen ticks; `restore_episode` runs a step with at most one injected batch | No graph or team running continuously after a restore; Python memory is not restored |
 | [worker.py](../../src/twwarhammer3/multiplayer/worker.py), native battle mode | Offline multiplayer plumbing | Worker control accepts only unqueued moves (it rejects even an explicit `queue: false`), so current skills do not plug in. No live native multiplayer battle yet |
@@ -126,10 +126,10 @@ Where the code would go, each piece created only when a step needs it:
 
 | Location | Job |
 |---|---|
-| `battle/controllers.py` | Pick factories, record the full controller identity, keep budget and provider checks |
-| New `battle/graph.py` | Load and validate a graph, track node runs, advance ready work, return orders |
-| `battle/skills.py` plus a small adapter | Approved WH3 skills and their observable status; tactics shared with the baselines |
-| `battle/team.py` | Unit ownership, independent dispatch and feedback; a graph-only dispatch guard, later explicit member factories |
+| `controllers/factory.py` | Pick factories, record the full controller identity, keep budget and provider checks |
+| New `controllers/graph.py` | Load and validate a graph, track node runs, advance ready work, return orders |
+| `controllers/skills.py` plus a small adapter | Approved WH3 skills and their observable status; tactics shared with the baselines |
+| `controllers/team.py` | Unit ownership, independent dispatch and feedback; a graph-only dispatch guard, later explicit member factories |
 | New `configs/twwarhammer3/graphs/` | Reviewed, immutable graphs and skill descriptions, only for planned experiments |
 | A later offline authoring/revision command | Write candidate graphs from training evidence; never edit the running policy or the scorer |
 
@@ -277,7 +277,7 @@ dead, routing or shattered target fails; rout of an owned unit also fails, then 
 `owned` node can include it after rally. New owned units join at the next selection.
 Acceptance never completes a skill. A local cancellation sends no halt and claims no stop.
 Missing effects fail at the battle-time deadline. Parameters rest on JUDGEMENT
-`battle/skill_contracts.py` G4 Skill limits and `battle/graph.py` G4 Graph limits.
+`controllers/skill_contracts.py` G4 Skill limits and `controllers/graph.py` G4 Graph limits.
 These are component contracts until the live check passes at a recorded revision.
 
 Controller composition uses `play --policy configured --controller-config FILE`.
@@ -364,7 +364,7 @@ hashes and check reports, which are rechecked when loaded. Existing artifacts st
 Revisions inherit that requirement when flags are omitted and cannot reassign the initiator.
 This temporary path check allows possible move/hold exits; it does not simulate their
 effects or guarantee every branch progresses. It rests on JUDGEMENT
-`battle/graph_initiation.py` Temporary initiation semantics. This is separate from the
+`controllers/graph_initiation.py` Temporary initiation semantics. This is separate from the
 passed live target dispatch check; the bounded live follow-up is recorded below.
 
 The agreed offline check passed 52 cases at `4f0c3fc`, independently replayed. The bounded
@@ -435,7 +435,7 @@ acknowledgements. The coordinator gets no battle evidence. Hidden result/evaluat
 fields, teammate orders/queues and teammate feedback stay out of specialist context.
 An engine ending gates whether the evidence is complete; its outcome and private diagnostics
 never reach the authors. Source file hashes and retained/truncated counts stay in the audit
-manifest. The context and repair limits rest on JUDGEMENT `battle/graph_author.py` Author limits.
+manifest. The context and repair limits rest on JUDGEMENT `controllers/graph_author.py` Author limits.
 New artifacts may be unchanged; a revision is not evidence of learning or improvement.
 
 ## A first test graph

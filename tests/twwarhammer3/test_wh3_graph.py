@@ -11,8 +11,9 @@ import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 from wh3_graph_fixtures import attack_graph, move_graph
 
-from twwarhammer3.battle import graph, play
-from twwarhammer3.battle import skill_contracts as catalog
+from twwarhammer3.battle import play
+from twwarhammer3.controllers import graph
+from twwarhammer3.controllers import skill_contracts as catalog
 from twwarhammer3.protocol import IllegalActionError, PolicyFailure
 
 

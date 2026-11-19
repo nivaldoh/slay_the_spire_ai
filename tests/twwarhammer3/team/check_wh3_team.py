@@ -19,7 +19,8 @@ from pathlib import Path
 from gameai.provenance import committed_revision, git, sha256, source_fingerprints, write_json
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
-from twwarhammer3.battle import play, setup, team
+from twwarhammer3.battle import play, setup
+from twwarhammer3.controllers import team
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.engine.runtime import (
@@ -217,7 +218,7 @@ def run(output):
                     play.start_frontend(mailbox, CONFIG, directory, steps)
                     manifest["setup_checks"] = setup.check_menu(spec, directory)
                     config = {**CONFIG, "start_timeout": CONFIG["episode_timeout"],
-                              "policy": f"twwarhammer3.battle.team:{variant.__name__}"}
+                              "policy": f"twwarhammer3.controllers.team:{variant.__name__}"}
                     manifest["result"] = play.play_episode(
                         directory / "episode", config, variant, mailbox,
                         not_battle=None, scenario=spec)

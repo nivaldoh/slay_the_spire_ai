@@ -16,9 +16,10 @@ from wh3_lua import load_battle, runtime
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, post
-from twwarhammer3.battle import llm, play, setup
+from twwarhammer3.battle import play, setup
 from twwarhammer3.benchmarks import plans as benchmark_plans
 from twwarhammer3.benchmarks import profile as benchmark
+from twwarhammer3.controllers import llm
 from twwarhammer3.protocol import PolicyFailure, ProtocolError
 from twwarhammer3.results import report
 
@@ -277,7 +278,7 @@ def test_legacy_report_uses_preserved_engine_endings_for_benchmark_denominators(
 
 
 def test_factory_wires_one_request_budget_and_deadline(tmp_path, monkeypatch):
-    from twwarhammer3.battle import controllers
+    from twwarhammer3.controllers import factory as controllers
 
     monkeypatch.setattr(controllers, "api_key", lambda provider: "dummy")
     config = {"scenario": benchmark.SCENARIO, "policy": "llm_rules", "provider": "anthropic",
@@ -328,7 +329,7 @@ def test_lua_sets_both_armies_toggles_and_releases_enemy_control():
 def test_engine_ending_during_a_budget_error_is_retained(tmp_path):
     from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-    from twwarhammer3.battle.scripted import Hold
+    from twwarhammer3.controllers.scripted import Hold
 
     terminal = bridge_observation(3, 2000, result="won")
     terminal["final"] = {"benchmark": {"units": units(), "time_ms": 2000}}

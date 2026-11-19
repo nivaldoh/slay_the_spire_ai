@@ -29,7 +29,7 @@ from time import time
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from gameai.provenance import sha256
-from twwarhammer3.battle import llm
+from twwarhammer3.controllers import llm
 from twwarhammer3.order_text import short_type
 from twwarhammer3.protocol import (
     IllegalActionError,

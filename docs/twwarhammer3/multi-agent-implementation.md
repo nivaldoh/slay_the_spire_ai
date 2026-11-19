@@ -1,6 +1,6 @@
 # The WH3 agent team: what is built and what comes next
 
-Updated 2026-11-10. [team.py](../../src/twwarhammer3/battle/team.py) dispatches members on
+Updated 2026-11-10. [team.py](../../src/twwarhammer3/controllers/team.py) dispatches members on
 one army: the two scripted probes, the two-member model team, and the class-based suite team
 (`team_llm_rules`). [Local command groups](communication-structure.md) reuse its dispatcher.
 Each member decides on its own copy of the public state and gets its orders sent while peers

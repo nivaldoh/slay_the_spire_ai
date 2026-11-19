@@ -9,7 +9,7 @@ import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
 from twwarhammer3.battle import play
-from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.controllers.scripted import Hold
 
 
 @pytest.mark.parametrize("broken", [None, "recording", "imagery", "deep-recording", "deep-imagery"],

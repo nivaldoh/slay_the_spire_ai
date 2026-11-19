@@ -9,12 +9,13 @@ import pytest
 
 from gameai.ledger import Ledger
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import configured, controllers, graph, team
 from twwarhammer3.battle.setup import check_battle, scenarios, validate_declaration
 from twwarhammer3.benchmarks import plans as benchmark_plans
 from twwarhammer3.benchmarks import profile as benchmark
 from twwarhammer3.benchmarks import suite
 from twwarhammer3.benchmarks.exact_stats import sign_test
+from twwarhammer3.controllers import configured, graph, team
+from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -205,8 +206,8 @@ def test_authoring_writes_three_graphs_a_configured_team_loads(tmp_path):
 
 @pytest.mark.parametrize("arm", [arm for arm in suite.ARMS if arm != "gap"])
 def test_each_arm_builds_for_a_suite_scenario_without_a_game_or_a_call(arm, tmp_path, monkeypatch):
-    from twwarhammer3.battle import controllers
     from twwarhammer3.benchmarks.profile import validate_config
+    from twwarhammer3.controllers import factory as controllers
 
     monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
     monkeypatch.setattr(configured, "api_key", lambda provider="openai": "test-only")
@@ -338,7 +339,7 @@ def test_the_gap_arm_loads_without_credentials_and_keeps_the_class_split():
 
 
 def test_the_suite_prompt_states_the_public_rule_and_only_for_the_suite():
-    from twwarhammer3.battle.llm import render_mode
+    from twwarhammer3.controllers.llm import render_mode
 
     assert "destroy or rout" in render_mode({"type": "land_normal", "benchmark": benchmark.SUITE})
     assert "destroy or rout" not in render_mode({"type": "land_normal"})
@@ -379,7 +380,7 @@ def test_a_battle_two_plans_name_is_one_row_from_the_plan_its_evidence_matches(t
 
 
 def test_a_suite_goal_model_has_no_retries_and_a_battle_allowance(tmp_path, monkeypatch):
-    from twwarhammer3.battle import controllers
+    from twwarhammer3.controllers import factory as controllers
 
     monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
     monkeypatch.setattr(configured, "api_key", lambda provider="openai": "test-only")
@@ -396,7 +397,7 @@ def test_a_suite_goal_model_has_no_retries_and_a_battle_allowance(tmp_path, monk
 
 
 def test_a_dry_shooter_no_longer_stops_the_rest_of_its_group():
-    from twwarhammer3.battle.skill_contracts import SkillRun, preconditions
+    from twwarhammer3.controllers.skill_contracts import SkillRun, preconditions
 
     view = {"time_ms": 1000, "friendly": [
         {"id": "a", "men": 10, "x": 0, "z": 0, "ammo": 5, "range": 150, "class": "missile"},
@@ -524,7 +525,7 @@ def test_a_copy_interrupted_trial_has_no_gameplay_measures_but_keeps_its_spend(
     from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
     from twwarhammer3.battle import play
-    from twwarhammer3.battle.scripted import Hold
+    from twwarhammer3.controllers.scripted import Hold
 
     output = tmp_path / "job"
     output.mkdir()

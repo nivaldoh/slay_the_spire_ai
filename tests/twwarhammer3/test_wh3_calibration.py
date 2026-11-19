@@ -10,7 +10,7 @@ tests below.
 import math
 from copy import deepcopy
 
-from twwarhammer3.battle.calibration import (
+from twwarhammer3.controllers.calibration import (
     CornerHold,
     LineTeam,
     LineTeamReserve,

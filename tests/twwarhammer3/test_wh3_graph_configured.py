@@ -6,7 +6,8 @@ import pytest
 from wh3_graph_fixtures import move_graph
 
 from gameai.ledger import BudgetExhausted
-from twwarhammer3.battle import controllers, graph, llm, team
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import graph, llm, team
 
 
 def specification(a, b):

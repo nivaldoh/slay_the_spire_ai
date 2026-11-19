@@ -10,8 +10,8 @@ from copy import deepcopy
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import graph, skills, team
-from twwarhammer3.battle import skill_contracts as catalog
+from twwarhammer3.controllers import graph, skills, team
+from twwarhammer3.controllers import skill_contracts as catalog
 
 VERSION = "wh3-graph-initiation-v1"
 

@@ -77,33 +77,33 @@ SCRIPTED = {**LOCAL_CONTROLS,
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
             "skills": ("Unit skills", "each unit follows its class's default skill"),
-            "twwarhammer3.battle.reference:Concentrate": (
+            "twwarhammer3.controllers.reference:Concentrate": (
                 "Concentrate", "gather the army, then all attack one enemy at a time"),
-            "twwarhammer3.battle.calibration:CentralDefence": (
+            "twwarhammer3.controllers.calibration:CentralDefence": (
                 "Central fallback", "scenario diagnostic: gather at one owned victory point"),
-            "twwarhammer3.battle.calibration:CoordinatedRush": (
+            "twwarhammer3.controllers.calibration:CoordinatedRush": (
                 "Synchronized rush", "scenario diagnostic: delay mobiles to meet the screen"),
-            "twwarhammer3.battle.calibration:CasterSkirmish": (
+            "twwarhammer3.controllers.calibration:CasterSkirmish": (
                 "Airborne casting", "scenario diagnostic: cast and return to stationary escorts"),
-            "twwarhammer3.battle.calibration:FeintFlank": (
+            "twwarhammer3.controllers.calibration:FeintFlank": (
                 "Feint and flank", "scenario diagnostic: opposite charges and withdrawal"),
-            "twwarhammer3.battle.calibration:CrossKite": (
+            "twwarhammer3.controllers.calibration:CrossKite": (
                 "Crossfire kiting", "scenario diagnostic: separate horse archers and keep range"),
-            "twwarhammer3.battle.calibration:Bodyguard": (
+            "twwarhammer3.controllers.calibration:Bodyguard": (
                 "Gun bodyguard", "scenario diagnostic: shoot cavalry and intercept beside the gun"),
-            "twwarhammer3.battle.calibration:Crossfire": (
+            "twwarhammer3.controllers.calibration:Crossfire": (
                 "Flanking fire", "scenario diagnostic: pin one unit and shoot into its flanks"),
-            "twwarhammer3.battle.calibration:SpellWindow": (
+            "twwarhammer3.controllers.calibration:SpellWindow": (
                 "Spell window", "scenario diagnostic: cast only where friends are clear"),
-            "twwarhammer3.battle.calibration:HammerAnvil": (
+            "twwarhammer3.controllers.calibration:HammerAnvil": (
                 "Hammer and anvil", "scenario diagnostic: pin, rear-charge, pull out and repeat"),
-            "twwarhammer3.battle.calibration:CornerHold": (
+            "twwarhammer3.controllers.calibration:CornerHold": (
                 "Corner hold", "scenario diagnostic: back into a map corner and hold a line"),
-            "twwarhammer3.battle.calibration:FocusFire": (
+            "twwarhammer3.controllers.calibration:FocusFire": (
                 "Focus fire", "scenario diagnostic: every shooter on one enemy until it routs"),
-            "twwarhammer3.battle.calibration:MonsterTarget": (
+            "twwarhammer3.controllers.calibration:MonsterTarget": (
                 "Monster target", "scenario diagnostic: go round the spears onto the other unit"),
-            "twwarhammer3.battle.calibration:CounterBattery": (
+            "twwarhammer3.controllers.calibration:CounterBattery": (
                 "Counter-battery", "scenario diagnostic: shoot enemy artillery before advancing")}
 # Unit and frame-mode fields the replay keeps (the page draws all but supplies and tickets);
 # the job directory keeps the rest.
@@ -227,6 +227,18 @@ def harness(definition: dict, job: dict | None) -> str:
                                  **switches}).encode()).hexdigest()[:8]
 
 
+# Historical names are display inputs. A job's recorded policy and comparison key stay verbatim.
+OLD_SCRIPT_MODULES = {
+    "twwarhammer3.battle.reference": "twwarhammer3.controllers.reference",
+    "twwarhammer3.battle.calibration": "twwarhammer3.controllers.calibration",
+}
+
+
+def _script_name(policy):
+    module, _, cls = (policy or "").partition(":")
+    return f"{OLD_SCRIPT_MODULES[module]}:{cls}" if module in OLD_SCRIPT_MODULES else policy
+
+
 def commander(trial: dict, definition: dict) -> dict:
     """The readable identity of a trial's controller: a row of the comparison."""
     card = trial.get("card") or {}
@@ -257,7 +269,7 @@ def commander(trial: dict, definition: dict) -> dict:
         members = ((card.get("disclosure") or {}).get("member_controllers") or {}).values()
         classes = {member.get("class") for member in members}
         if len(classes) == 1 and not any(member.get("kind") == "model" for member in members):
-            candidate = next(iter(classes))
+            candidate = _script_name(next(iter(classes)))
             if candidate in LOCAL_CONTROLS:
                 base = candidate
     # A composed controller on a benchmark battle is a compared method, not a probe: without this
@@ -271,8 +283,9 @@ def commander(trial: dict, definition: dict) -> dict:
                 "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base), gateway),
                 "short": detail(effort and f"{effort} reasoning", VARIANTS.get(base), gateway),
                 "prompt": PROMPTS.get(base)}
-    if base in SCRIPTED:
-        name, rule = SCRIPTED[base]
+    script = _script_name(base)
+    if script in SCRIPTED:
+        name, rule = SCRIPTED[script]
         return {"kind": "scripted", "family": "Scripted", "name": name,
                 "detail": detail(f"scripted: {rule}"), "short": detail()}
     return {"kind": "diagnostic", "family": None, "name": "Diagnostic probe",

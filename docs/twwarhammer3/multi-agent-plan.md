@@ -77,7 +77,7 @@ army: two members, one mailbox writer, one member batch per request and per-memb
 Sources: [battle Lua](../../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua)
 (`load`, `scan`, `visible_to_player`, `observation`), [play
 loop](../../src/twwarhammer3/battle/play.py),
-[controllers](../../src/twwarhammer3/battle/controllers.py), [mailbox
+[controllers](../../src/twwarhammer3/controllers/factory.py), [mailbox
 contract](../../src/twwarhammer3/engine/mailbox.py) and [integration facts](integration.md).
 Known boundary weaknesses (target and death fields, unsandboxed outside controllers) are in
 the [information

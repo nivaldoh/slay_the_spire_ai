@@ -3,7 +3,7 @@ from concurrent.futures import Future
 
 from wh3_fixtures import bridge_observation
 
-from twwarhammer3.battle import team
+from twwarhammer3.controllers import team
 
 
 def state(seq=1, time_ms=10000, **changes):

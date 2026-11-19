@@ -6,7 +6,8 @@ from contextlib import nullcontext
 from types import SimpleNamespace
 
 from gameai.llm import APIError
-from twwarhammer3.battle import controllers, play, setup
+from twwarhammer3.battle import play, setup
+from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.engine import runtime
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 

@@ -264,7 +264,7 @@ def test_play_logs_windows_stamp_of_the_named_observation(tmp_path):
     from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
     from twwarhammer3.battle.play import play_episode
-    from twwarhammer3.battle.scripted import Hold
+    from twwarhammer3.controllers.scripted import Hold
 
     class NewFileDuringDecision(FakeMailbox):
         def wait_observation(self, **kwargs):
@@ -300,7 +300,7 @@ def test_terminal_ack_failure_retains_engine_outcome_and_condition(tmp_path):
     from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
     from twwarhammer3.battle.play import play_episode
-    from twwarhammer3.battle.scripted import Hold
+    from twwarhammer3.controllers.scripted import Hold
 
     class FailedFeedback(Hold):
         def acknowledge(self, *args):

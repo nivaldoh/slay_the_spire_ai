@@ -20,7 +20,7 @@ def member(name, kind="external"):
 
 
 def team(*members):
-    return {"kind": "composed", "class": "twwarhammer3.battle.local_team:LocalTeam",
+    return {"kind": "composed", "class": "twwarhammer3.controllers.local_team:LocalTeam",
             "disclosure": {"member_controllers": dict(enumerate(members))}}
 
 

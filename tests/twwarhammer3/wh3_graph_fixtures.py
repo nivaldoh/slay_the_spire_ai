@@ -1,6 +1,6 @@
 """Small graph inputs shared by graph, composition and team tests."""
 
-from twwarhammer3.battle import graph
+from twwarhammer3.controllers import graph
 
 
 def move_graph():

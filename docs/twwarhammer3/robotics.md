@@ -97,8 +97,8 @@ labor; they do not show that attaching an arbitrary small model to a large one p
 competent control.
 
 WH3 already has this scheduling structure in
-[`CommanderPolicy`](../../src/twwarhammer3/battle/commander.py): a model request runs while
-[`Skills`](../../src/twwarhammer3/battle/skills.py) reacts to observations. The research
+[`CommanderPolicy`](../../src/twwarhammer3/controllers/commander.py): a model request runs while
+[`Skills`](../../src/twwarhammer3/controllers/skills.py) reacts to observations. The research
 question is the division of responsibility and quality of each component.
 
 The planner handles allocation across the army; the executor handles reactions within an
@@ -329,9 +329,9 @@ a different execution boundary and is not the cheap first experiment.
 
 | Existing location | Smallest relevant change, if an experiment is chosen |
 |---|---|
-| [controllers.py](../../src/twwarhammer3/battle/controllers.py) | Construct a candidate and record its configuration. Outside classes already work, but take no constructor arguments; artifact/config selection needs an explicit route rather than hidden mutable globals |
-| [skills.py](../../src/twwarhammer3/battle/skills.py) | A fixed state machine or bounded rule runner can own assignments and phase memory here or in one focused sibling module. Keep existing tactical rules distinct from shared command bookkeeping |
-| [commander.py](../../src/twwarhammer3/battle/commander.py) | Reuse the one-request-in-flight pattern; add only the assignment fields and adoption semantics the chosen comparison needs. Keep prompt/schema changes versioned |
+| [controllers.py](../../src/twwarhammer3/controllers/factory.py) | Construct a candidate and record its configuration. Outside classes already work, but take no constructor arguments; artifact/config selection needs an explicit route rather than hidden mutable globals |
+| [skills.py](../../src/twwarhammer3/controllers/skills.py) | A fixed state machine or bounded rule runner can own assignments and phase memory here or in one focused sibling module. Keep existing tactical rules distinct from shared command bookkeeping |
+| [commander.py](../../src/twwarhammer3/controllers/commander.py) | Reuse the one-request-in-flight pattern; add only the assignment fields and adoption semantics the chosen comparison needs. Keep prompt/schema changes versioned |
 | [play.py](../../src/twwarhammer3/battle/play.py) and [protocol.py](../../src/twwarhammer3/protocol.py) | Preserve public-state filtering, validation, acknowledgement and game ownership. Controllers return orders through this path; they do not read bridge files or send commands themselves |
 | [export.py](../../src/twwarhammer3/results/export.py) | A micro-training dataset needs new row semantics. Today's exporter includes built-in model requests, excludes external/scripted policies, and does not export every executor step |
 

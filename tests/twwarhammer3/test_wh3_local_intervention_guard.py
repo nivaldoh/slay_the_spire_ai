@@ -11,7 +11,8 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import local_team, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import local_team
 
 
 @pytest.mark.parametrize("name", ("emp-envelopment-c-v1", "emp-envelopment-c-peer-v2"))

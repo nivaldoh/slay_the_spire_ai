@@ -9,8 +9,9 @@ shows a placement in the engine, which regiment the native AI attacks, a timing 
 
 import pytest
 
-from twwarhammer3.battle import configured, local_team, setup
-from twwarhammer3.battle import local_command as local
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import configured, local_team
+from twwarhammer3.controllers import local_command as local
 
 DRAWS = ("south", "north", "south-far")
 ARMS = (("silent", 1), ("peer", 2), ("muted", 2))

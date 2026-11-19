@@ -108,7 +108,7 @@ def test_the_harness_changes_with_anything_that_shapes_play(tmp_path, field, val
 
 
 def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
-    code = {"src/twwarhammer3/battle/llm.py": "a", "src/twwarhammer3/results/report.py": "a",
+    code = {"src/twwarhammer3/controllers/llm.py": "a", "src/twwarhammer3/results/report.py": "a",
             "configs/twwarhammer3/report_notes.json": "a",
             "configs/twwarhammer3/benchmark_jobs.json": "a"}
     definition = {"source": "r1", "track": "t", "model": "m", "evaluator_version": 1,
@@ -122,7 +122,7 @@ def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
                                          "configs/twwarhammer3/report_notes.json": "b",
                                          "configs/twwarhammer3/benchmark_jobs.json": "b"}}})
     assert base != report_html.harness(definition, {"provenance": {"source_files": {
-        **code, "src/twwarhammer3/battle/llm.py": "b"}}})
+        **code, "src/twwarhammer3/controllers/llm.py": "b"}}})
     # Without file hashes the revision stands in for the code.
     assert report_html.harness(definition, None) != report_html.harness(
         {**definition, "source": "r2"}, None)
@@ -132,12 +132,13 @@ def test_a_changed_or_new_scenario_file_leaves_the_harness_alone():
     """The declaration is compared itself, so another entry's edit in a family file (since
     2026-11-15 configs/twwarhammer3/scenarios/) must not start a new test setup. Wrong version:
     the directory left out of PRESENTATION."""
-    code = {"src/twwarhammer3/battle/llm.py": "a", "configs/twwarhammer3/scenarios/camp.json": "a",
+    code = {"src/twwarhammer3/controllers/llm.py": "a",
+            "configs/twwarhammer3/scenarios/camp.json": "a",
             "configs/twwarhammer3/scenarios.json": "a"}
     definition = {"source": "r1", "scenario": {"name": "s", "map": "m"}}
     base = report_html.harness(definition, {"provenance": {"source_files": code}})
     assert base == report_html.harness(definition, {"provenance": {"source_files": {
-        "src/twwarhammer3/battle/llm.py": "a", "configs/twwarhammer3/scenarios/camp.json": "b",
+        "src/twwarhammer3/controllers/llm.py": "a", "configs/twwarhammer3/scenarios/camp.json": "b",
         "configs/twwarhammer3/scenarios/new_family.json": "a"}}})
     assert base != report_html.harness({**definition, "scenario": {"name": "s", "map": "n"}},
                                        {"provenance": {"source_files": code}})
@@ -432,7 +433,7 @@ def test_diagnostic_probes_stay_in_the_data_but_off_the_page(tmp_path):
 
 
 def test_named_calibration_policies_are_disclosed_scripted_comparisons(tmp_path):
-    policies = [f"twwarhammer3.battle.calibration:{name}"
+    policies = [f"twwarhammer3.controllers.calibration:{name}"
                 for name in ("CentralDefence", "CoordinatedRush", "CasterSkirmish",
                              "FeintFlank", "CrossKite", "Bodyguard", "Crossfire", "SpellWindow",
                              "HammerAnvil", "CornerHold", "FocusFire", "MonsterTarget",
@@ -671,3 +672,10 @@ def test_harness_ignores_presentation_files_at_both_layouts_and_tracks_exports()
 
         assert identity("before", "a") == identity("after", "a")
         assert identity("before", "a") != identity("before", "b")
+
+
+def test_a_historical_reference_policy_keeps_its_display_label():
+    old = {"policy": "twwarhammer3.battle.reference:Concentrate"}
+    current = {"policy": "twwarhammer3.controllers.reference:Concentrate"}
+    assert report_html.commander(old, {}) == report_html.commander(current, {})
+    assert report_html.commander(old, {})["name"] == "Concentrate"

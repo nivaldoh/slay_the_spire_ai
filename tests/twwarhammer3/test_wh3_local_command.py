@@ -4,9 +4,9 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import local_command as local
 from twwarhammer3.battle.setup import scenarios
-from twwarhammer3.battle.team import TeamHarnessError
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers.team import TeamHarnessError
 
 
 def test_repeated_types_bind_by_authored_identity_and_never_by_roster_order():

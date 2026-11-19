@@ -17,10 +17,10 @@ from time import sleep
 
 from gameai.llm import InvalidReply, check_fields
 from gameai.provenance import REPO_ROOT, sha256
-from twwarhammer3.battle import llm
-from twwarhammer3.battle import local_command as local
-from twwarhammer3.battle.scripted import RushNearest
-from twwarhammer3.battle.team import TeamHarnessError, TeamPolicy
+from twwarhammer3.controllers import llm
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers.scripted import RushNearest
+from twwarhammer3.controllers.team import TeamHarnessError, TeamPolicy
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/local_command_prompt.md"
@@ -106,12 +106,12 @@ def validate_config(scenario, config):
     if not scenario.get("communication"):
         return
     declaration(scenario)
-    from twwarhammer3.battle import controllers
+    from twwarhammer3.controllers import factory as controllers
 
     for name in config["policy"].split(","):
         base = controllers.policy_parts(name, config)[0]
         if base == "configured":
-            from twwarhammer3.battle.configured import load
+            from twwarhammer3.controllers.configured import load
 
             node = load(config["controller_config"], config)[0]
             if node["type"] == "local_team":
@@ -505,7 +505,7 @@ class TextProbeMember(RushNearest):
                 return []
             self.probe_cue = deepcopy(cue)
             start = command["start_points"][name]
-            # Rests on JUDGEMENT `src/twwarhammer3/battle/local_team.py` Message effect probe.
+            # Rests on JUDGEMENT `src/twwarhammer3/controllers/local_team.py` Message effect probe.
             self.probe_destination = {"x": start["x"] + 40, "z": start["z"]}
             return [{"unit": observation["friendly"][0]["id"], "type": "move",
                      **self.probe_destination, "run": True}]

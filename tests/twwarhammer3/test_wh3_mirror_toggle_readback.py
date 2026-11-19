@@ -89,7 +89,7 @@ def test_enemy_handover_waits_for_toggle_application_and_post_release_readback()
 def test_no_policy_orders_during_enemy_handover(tmp_path):
     from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-    from twwarhammer3.battle.scripted import Hold
+    from twwarhammer3.controllers.scripted import Hold
 
     waiting = bridge_observation(2, 5300)
     waiting["setup"] = {"benchmark_release_pending": 1}

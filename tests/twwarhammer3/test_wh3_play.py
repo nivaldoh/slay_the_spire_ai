@@ -11,8 +11,9 @@ from wh3_fixtures import CONFIG, FakeMailbox, api_error, bridge_observation, obs
 import twwarhammer3.battle.manual_demo as manual_demo
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
-from twwarhammer3.battle import commander, llm, play, setup
-from twwarhammer3.battle.scripted import AttackNearest, Hold
+from twwarhammer3.battle import play, setup
+from twwarhammer3.controllers import commander, llm
+from twwarhammer3.controllers.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import MailboxTimeout, PolicyFailure
 from twwarhammer3.results import digest, report
 from twwarhammer3.results import register as stats

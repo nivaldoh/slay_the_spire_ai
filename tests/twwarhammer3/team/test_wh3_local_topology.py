@@ -22,9 +22,11 @@ from wh3_team_fixtures import Workers, ack
 
 from gameai.ledger import Ledger
 from gameai.providers import get_provider
-from twwarhammer3.battle import configured, controllers, llm, local_team, setup
-from twwarhammer3.battle import local_command as local
-from twwarhammer3.battle.team import TeamHarnessError
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import configured, llm, local_team
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers.team import TeamHarnessError
 from twwarhammer3.protocol import PolicyFailure
 
 ARMS = ("peer", "relay", "overview")

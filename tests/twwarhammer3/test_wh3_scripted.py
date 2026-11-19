@@ -1,8 +1,8 @@
-"""The scripted baselines in twwarhammer3/battle/scripted.py."""
+"""The scripted baselines in twwarhammer3/controllers/scripted.py."""
 import pytest
 from wh3_fixtures import bridge_observation
 
-from twwarhammer3.battle import controllers
+from twwarhammer3.controllers import factory as controllers
 
 
 @pytest.mark.parametrize("name,running", [("attack_nearest", False), ("rush_nearest", True)])

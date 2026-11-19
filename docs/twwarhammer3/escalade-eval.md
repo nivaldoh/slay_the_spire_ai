@@ -584,10 +584,10 @@ The values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Escalade thresh
 | `GateOnly` (`gate_only`) | C5, shortcut | No ladders: the infantry, its Streltsi holding their fire, and the Reserve wait 150 m south of g1; the crew besieges and the Grom attacks g1 in phase 2; once the gate is breached or c2 is ours, every unit but the Grom goes to the victory points |
 | `BesiegeNearest` (`besiege_nearest`) | C3, shortcut | Its own plan: from the first decision every climber besieges the wall piece nearest its start, the crew besieges g1 and the Grom attacks it, and the Lancers, the Boyar and any non-climber attack the visible enemy nearest them; a unit on the wall, inside the front line, or whose target fell attacks the visible enemy nearest it |
 | `EscaladeReplay` | C9, exploratory | `replay_schedule.ReplaySchedule` over a witness win; siege orders keep their fortification ids and are dropped when the target is not listed or reads 0% |
-| `hold`, `rush_nearest`, `attack_nearest` (`battle/scripted.py`) | C1 and C2, shortcuts | `hold` gives no orders; the other two run or attack at the nearest visible enemy. `hold` played this battle twice on 2026-11-14 ([reading](#first-stage-1-launches-2026-11-14)); the other two have played no siege the player attacks |
+| `hold`, `rush_nearest`, `attack_nearest` (`controllers/scripted.py`) | C1 and C2, shortcuts | `hold` gives no orders; the other two run or attack at the nearest visible enemy. `hold` played this battle twice on 2026-11-14 ([reading](#first-stage-1-launches-2026-11-14)); the other two have played no siege the player attacks |
 
 The controls' values rest on JUDGEMENT src/twwarhammer3/battle/escalade.py Control parameters; the
-replay rests on JUDGEMENT src/twwarhammer3/battle/replay_schedule.py Replay carried out, Replay
+replay rests on JUDGEMENT src/twwarhammer3/controllers/replay_schedule.py Replay carried out, Replay
 time and Replay remap. The metadata of the witness and its subclasses records the groups, jobs,
 targets, the phase 2 times and reason, the reserve's group and time, the gate's opening time and
 the phase 4 time; `BesiegeNearest` records its plan. The trace logs the metadata whenever it

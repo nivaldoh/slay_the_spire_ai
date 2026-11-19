@@ -30,7 +30,7 @@ from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
-from twwarhammer3.battle import local_team, reserve
+from twwarhammer3.battle import reserve
 from twwarhammer3.battle.capture import (
     PassiveCapture,
     copy_presentation,
@@ -39,7 +39,6 @@ from twwarhammer3.battle.capture import (
     imagery_settings,
     recording_settings,
 )
-from twwarhammer3.battle.controllers import card, prompt_path, rotation
 from twwarhammer3.battle.setup import (
     NOT_STARTED,
     check_battle,
@@ -53,8 +52,10 @@ from twwarhammer3.battle.setup import (
     scenario_steps,
     validate_declaration,
 )
-from twwarhammer3.battle.team import TeamPolicy
 from twwarhammer3.benchmarks import profile as benchmark
+from twwarhammer3.controllers import local_team
+from twwarhammer3.controllers.factory import card, prompt_path, rotation
+from twwarhammer3.controllers.team import TeamPolicy
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime

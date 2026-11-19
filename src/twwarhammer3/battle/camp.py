@@ -33,7 +33,7 @@ from twwarhammer3.battle.camp_facts import (
     LEVIES,
     MOUNTED,
 )
-from twwarhammer3.battle.scripted import forget_refused
+from twwarhammer3.controllers.scripted import forget_refused
 from twwarhammer3.protocol import PolicyFailure, friendly_units, visible_enemies
 from twwarhammer3.units import able, distance, find, in_melee, nearest
 

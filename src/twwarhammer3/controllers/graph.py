@@ -13,8 +13,8 @@ from copy import deepcopy
 from pathlib import Path
 
 from gameai.provenance import sha256
-from twwarhammer3.battle import skill_contracts as catalog
-from twwarhammer3.battle import skills, team
+from twwarhammer3.controllers import skill_contracts as catalog
+from twwarhammer3.controllers import skills, team
 from twwarhammer3.protocol import IllegalActionError, PolicyFailure
 
 VERSION = "wh3-graph-v1"

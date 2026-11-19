@@ -22,9 +22,9 @@ from pathlib import Path
 from wh3_fixtures import FakeSend, opening
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import team
-from twwarhammer3.battle.commander import CommanderPolicy
-from twwarhammer3.battle.llm import LLMPolicy
+from twwarhammer3.controllers import team
+from twwarhammer3.controllers.commander import CommanderPolicy
+from twwarhammer3.controllers.llm import LLMPolicy
 
 PROMPTS = Path(__file__).with_name("prompts")
 
@@ -134,7 +134,7 @@ def test_commander_prompt_after_its_first_plan(tmp_path):
 
 
 def test_custom_objective_rules_and_progress_without_private_placements():
-    from twwarhammer3.battle.llm import render_mode
+    from twwarhammer3.controllers.llm import render_mode
 
     mode = {'type': 'land_ambush', 'custom': {
         'rules': 'Bring both batteries into the circle before 900 seconds.',

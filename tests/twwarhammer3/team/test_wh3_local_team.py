@@ -13,9 +13,11 @@ from wh3_fixtures import CONFIG, FakeSend
 from wh3_team_fixtures import Script, Workers, ack
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import controllers, llm, local_team, play, setup
-from twwarhammer3.battle import local_command as local
-from twwarhammer3.battle.scripted import RushNearest
+from twwarhammer3.battle import play, setup
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import llm, local_team
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers.scripted import RushNearest
 from twwarhammer3.protocol import PolicyFailure
 
 

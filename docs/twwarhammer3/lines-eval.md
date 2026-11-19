@@ -492,8 +492,8 @@ orders is untested.
 | `hold` | `scripted.py` | Engine automation holds both fronts unaided |
 | `attack_nearest`, `rush_nearest` | `scripted.py` | Naive play suffices |
 | `skills` (won `coord-breakout` 1 of 1) | `skills.py` | A class script suffices |
-| `twwarhammer3.battle.evade:Evade` | `evade.py` | The timer alone can decide the battle |
-| `twwarhammer3.battle.reference:Concentrate` (lost `coord-breakout` 2 of 2) | `reference.py` | Beating the groups one at a time beats holding lines; the battle narrows to a `coord-breakout`-like label |
+| `twwarhammer3.controllers.evade:Evade` | `evade.py` | The timer alone can decide the battle |
+| `twwarhammer3.controllers.reference:Concentrate` (lost `coord-breakout` 2 of 2) | `reference.py` | Beating the groups one at a time beats holding lines; the battle narrows to a `coord-breakout`-like label |
 | C | `lines.py` | Committing the reserve and the Lancers at all is not needed |
 | M | `lines.py` | Sending them to L can win. That the side does not matter is not shown at this power (0.281 for 20 to 50%, 0.269 for 30 to 60%, at 16 per arm) |
 | `twwarhammer3.battle.lines:LinesCornerCamp` (built 2026-11-09; in no stage unless the owner adds it, question 4) | `lines.py` | Camping in a corner wins at the timer without the side decision |

@@ -7,7 +7,7 @@ from wh3_fixtures import FakeSend
 
 from gameai.ledger import Ledger
 from gameai.providers import get_provider
-from twwarhammer3.battle import llm, local_team
+from twwarhammer3.controllers import llm, local_team
 from twwarhammer3.protocol import PolicyFailure
 
 

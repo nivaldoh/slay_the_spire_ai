@@ -470,12 +470,12 @@ built-in policy names. All four share these rules:
 | `CampSupport` (`camp_support`) | Arm B | First list: visible able cover units engaged beside the levies; it never rides to an unseen cover unit's last spot (`JUDGEMENT?` Support last spot) |
 | `CampStrikeFixed` (`camp_strike_fixed`) | Timing control, descriptive | Starts at a fixed time `T_fixed` instead of the cue. `FIXED_CUE_MS` is unset, so the class raises; a job started now would end every episode as a policy failure |
 | `CampStrikeNow` (`camp_strike_now`) | Timing control, descriptive | Starts at the first decision |
-| `hold` and `rush_nearest` (`battle/scripted.py`) | Shortcuts | `hold` gives no orders; under `rush_nearest` every unit runs at its nearest visible enemy |
+| `hold` and `rush_nearest` (`controllers/scripted.py`) | Shortcuts | `hold` gives no orders; under `rush_nearest` every unit runs at its nearest visible enemy |
 
 Each controller's metadata records `roles`, `cue_ms`, `start_ms`, `start_reason` (cue, fallback,
 fixed or now) and `targets`, and the trace logs it whenever it changes. The values are marked in
 `camp.py` (`JUDGEMENT` Camp groups, Camp thresholds and Camp target rules). The shared
-fixed-schedule replay (`battle/replay_schedule.py`) is not planned here; `CampStrikeFixed` takes
+fixed-schedule replay (`controllers/replay_schedule.py`) is not planned here; `CampStrikeFixed` takes
 its place.
 
 [`test_wh3_camp.py`](../../tests/twwarhammer3/test_wh3_camp.py) builds every unit record with the

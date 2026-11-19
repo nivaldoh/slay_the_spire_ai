@@ -28,7 +28,7 @@ Two points from the research summary shape the designs:
 
 ## Implemented
 
-`battle/controllers.py` names them (`BUILTINS`, `MODEL_POLICIES`, `MODEL_PROMPTS`) and
+`controllers/factory.py` names them (`BUILTINS`, `MODEL_POLICIES`, `MODEL_PROMPTS`) and
 records a card per trial (kind, class, source file and hash, model, effort, timing).
 
 | Policy | Kind | Who decides | Version on `main` | Code, prompt |

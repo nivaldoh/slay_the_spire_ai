@@ -10,7 +10,8 @@ from copy import deepcopy
 import pytest
 from wh3_graph_fixtures import attack_graph
 
-from twwarhammer3.battle import configured, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import configured
 
 
 @pytest.fixture
@@ -80,7 +81,7 @@ def test_supported_direct_member_interfaces_still_load_without_models(local_decl
 
 @pytest.mark.parametrize("leaf,error", [
     pytest.param("llm_rules@gpt-6-luna/ultra", ValueError, id="effort-the-provider-lacks"),
-    pytest.param("twwarhammer3.battle.scripted:NoSuchPolicy", AttributeError,
+    pytest.param("twwarhammer3.controllers.scripted:NoSuchPolicy", AttributeError,
                  id="class-that-does-not-exist"),
 ])
 def test_a_team_leaf_the_job_cannot_play_is_refused_at_load(tmp_path, leaf, error):

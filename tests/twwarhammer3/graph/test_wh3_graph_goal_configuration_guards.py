@@ -10,7 +10,8 @@ from copy import deepcopy
 import pytest
 from wh3_graph_goal_support import configuration
 
-from twwarhammer3.battle import configured, controllers, team
+from twwarhammer3.controllers import configured, team
+from twwarhammer3.controllers import factory as controllers
 
 
 @pytest.mark.parametrize("change,message", [

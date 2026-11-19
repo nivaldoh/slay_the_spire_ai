@@ -15,8 +15,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wh3_team_fixtures import Workers, ack
 
-from twwarhammer3.battle import controllers, local_scripts, local_team, setup
-from twwarhammer3.battle import local_command as local
+from twwarhammer3.battle import local_scripts, setup
 from twwarhammer3.battle.local_scripts import (
     CONTACT_MS,
     REFRESH_MS,
@@ -28,7 +27,10 @@ from twwarhammer3.battle.local_scripts import (
     RelayWitnessCommander,
     ThinkingRush,
 )
-from twwarhammer3.battle.scripted import RushNearest
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import local_command as local
+from twwarhammer3.controllers import local_team
+from twwarhammer3.controllers.scripted import RushNearest
 from twwarhammer3.protocol import validate_orders
 
 DECLARED_THINK_S = (local_scripts.THINK_S, local_scripts.COMMANDER_THINK_S)

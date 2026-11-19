@@ -7,8 +7,8 @@ readings rise when an army really does concentrate; it is not a model of good pl
 
 from statistics import mean
 
-from twwarhammer3.battle.scripted import forget_refused
-from twwarhammer3.battle.skills import CHARGERS, SHOOTERS
+from twwarhammer3.controllers.scripted import forget_refused
+from twwarhammer3.controllers.skills import CHARGERS, SHOOTERS
 from twwarhammer3.protocol import friendly_units, visible_enemies
 from twwarhammer3.units import ROUTED, distance
 

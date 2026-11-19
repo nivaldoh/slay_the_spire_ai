@@ -29,7 +29,7 @@ again with host and armies swapped. Lobbies are made by hand.
 
 Not included: model agents, halt, attack, step 7's authority and visibility checks, 2v2, lobby
 automation, play with no remote viewer, scores. `team_llm_rules` cannot run there yet: it needs
-Empire Knights and attacks (`battle/team.py`), and in multiplayer the battle Lua accepts only plain
+Empire Knights and attacks (`controllers/team.py`), and in multiplayer the battle Lua accepts only plain
 moves of own units (`twwarhammer3_battle.lua` `apply_order`; checked).
 
 JUDGEMENT: End state — Claude, 2026-11-03: step 9's first scripted case, two host-swapped battles,

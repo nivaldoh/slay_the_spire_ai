@@ -10,7 +10,7 @@ from wh3_graph_author_support import END, WAIT, Canned, completed, ledger, repli
 from gameai.ledger import BudgetExhausted
 from gameai.llm import InvalidReply
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import configured, graph, graph_author
+from twwarhammer3.controllers import configured, graph, graph_author
 
 TEMPLATE = REPO_ROOT / "configs/twwarhammer3/graphs/contact-team.json"
 

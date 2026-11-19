@@ -81,12 +81,12 @@ DIAGRAM.tabs.push({
         }
       ],
       "refs": [
-        "src/twwarhammer3/battle/controllers.py:54-69",
-        "src/twwarhammer3/battle/llm.py:64-87",
-        "src/twwarhammer3/battle/llm.py:589-603",
+        "src/twwarhammer3/controllers/factory.py:54-69",
+        "src/twwarhammer3/controllers/llm.py:64-87",
+        "src/twwarhammer3/controllers/llm.py:589-603",
         "src/twwarhammer3/battle/play.py:1-19",
-        "src/twwarhammer3/battle/controllers.py:59",
-        "src/twwarhammer3/battle/controllers.py:40-41",
+        "src/twwarhammer3/controllers/factory.py:59",
+        "src/twwarhammer3/controllers/factory.py:40-41",
         "docs/twwarhammer3/controllers.md:71-72"
       ]
     },
@@ -113,17 +113,17 @@ DIAGRAM.tabs.push({
           "docs/agreed-checks.md:116-131",
           "docs/twwarhammer3/results.csv:645-649",
           "docs/twwarhammer3/log.md:2299-2312",
-          "src/twwarhammer3/battle/skill_contracts.py:121-124"
+          "src/twwarhammer3/controllers/skill_contracts.py:121-124"
         ]
       },
       "rests": [
         {
-          "file": "src/twwarhammer3/battle/skill_contracts.py",
+          "file": "src/twwarhammer3/controllers/skill_contracts.py",
           "line": 17,
           "name": "G4 Skill limits"
         },
         {
-          "file": "src/twwarhammer3/battle/graph.py",
+          "file": "src/twwarhammer3/controllers/graph.py",
           "line": 21,
           "name": "G4 Graph limits"
         },
@@ -134,14 +134,14 @@ DIAGRAM.tabs.push({
         }
       ],
       "refs": [
-        "src/twwarhammer3/battle/controllers.py:54-69",
-        "src/twwarhammer3/battle/graph.py:21-23",
-        "src/twwarhammer3/battle/graph_author.py:329-335",
-        "src/twwarhammer3/battle/graph_author.py:346-362",
-        "src/twwarhammer3/battle/graph_author.py:177-181",
-        "src/twwarhammer3/battle/skill_contracts.py:17-22",
-        "src/twwarhammer3/battle/skill_contracts.py:100-126",
-        "src/twwarhammer3/battle/graph_goals.py:25-32"
+        "src/twwarhammer3/controllers/factory.py:54-69",
+        "src/twwarhammer3/controllers/graph.py:21-23",
+        "src/twwarhammer3/controllers/graph_author.py:329-335",
+        "src/twwarhammer3/controllers/graph_author.py:346-362",
+        "src/twwarhammer3/controllers/graph_author.py:177-181",
+        "src/twwarhammer3/controllers/skill_contracts.py:17-22",
+        "src/twwarhammer3/controllers/skill_contracts.py:100-126",
+        "src/twwarhammer3/controllers/graph_goals.py:25-32"
       ]
     }
   },
@@ -171,7 +171,7 @@ DIAGRAM.tabs.push({
             "key": "r1"
           },
           "refs": [
-            "src/twwarhammer3/battle/llm.py:64-87",
+            "src/twwarhammer3/controllers/llm.py:64-87",
             "src/twwarhammer3/battle/play.py:545-553"
           ],
           "rests": [
@@ -214,7 +214,7 @@ DIAGRAM.tabs.push({
             "example": "methods-basic",
             "key": "r2"
           },
-          "refs": ["src/twwarhammer3/battle/llm.py:589-594"]
+          "refs": ["src/twwarhammer3/controllers/llm.py:589-594"]
         },
         {
           "rows": ["gap.model"],
@@ -225,8 +225,8 @@ DIAGRAM.tabs.push({
             "key": "task"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph_author.py:329-335",
-            "src/twwarhammer3/battle/graph_author.py:346-362",
+            "src/twwarhammer3/controllers/graph_author.py:329-335",
+            "src/twwarhammer3/controllers/graph_author.py:346-362",
             "runs/twwarhammer3/gap-20261101/initial-02/manifest.json"
           ]
         },
@@ -239,13 +239,13 @@ DIAGRAM.tabs.push({
             "key": "steps"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph.py:21-23",
-            "src/twwarhammer3/battle/graph.py:172-174",
-            "src/twwarhammer3/battle/team.py:342-374"
+            "src/twwarhammer3/controllers/graph.py:21-23",
+            "src/twwarhammer3/controllers/graph.py:172-174",
+            "src/twwarhammer3/controllers/team.py:342-374"
           ],
           "rests": [
             {
-              "file": "src/twwarhammer3/battle/graph.py",
+              "file": "src/twwarhammer3/controllers/graph.py",
               "line": 21,
               "name": "G4 Graph limits"
             }
@@ -265,12 +265,12 @@ DIAGRAM.tabs.push({
             "key": "attack"
           },
           "refs": [
-            "src/twwarhammer3/battle/skill_contracts.py:17-22",
-            "src/twwarhammer3/battle/skill_contracts.py:140-144"
+            "src/twwarhammer3/controllers/skill_contracts.py:17-22",
+            "src/twwarhammer3/controllers/skill_contracts.py:140-144"
           ],
           "rests": [
             {
-              "file": "src/twwarhammer3/battle/skill_contracts.py",
+              "file": "src/twwarhammer3/controllers/skill_contracts.py",
               "line": 17,
               "name": "G4 Skill limits"
             }
@@ -285,7 +285,7 @@ DIAGRAM.tabs.push({
             "key": "revision"
           },
           "refs": [
-            "src/twwarhammer3/battle/graph_author.py:177-181",
+            "src/twwarhammer3/controllers/graph_author.py:177-181",
             "runs/twwarhammer3/gap-20261101/revised-01/manifest.json"
           ]
         }

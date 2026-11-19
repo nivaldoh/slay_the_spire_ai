@@ -3,7 +3,7 @@
 import json
 from copy import deepcopy
 
-from twwarhammer3.battle import graph
+from twwarhammer3.controllers import graph
 
 
 def state(seq=1, ms=1000):

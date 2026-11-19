@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle.llm import (
+from twwarhammer3.controllers.llm import (
     ABILITY_SCHEMA,
     BUILD_SCHEMA,
     FLIGHT_SCHEMA,
@@ -34,7 +34,7 @@ from twwarhammer3.battle.llm import (
     split_valid,
     strengths,
 )
-from twwarhammer3.battle.skills import SKILLS, Skills
+from twwarhammer3.controllers.skills import SKILLS, Skills
 from twwarhammer3.order_text import (
     REPORT_HEADER,
     describe_assignment,

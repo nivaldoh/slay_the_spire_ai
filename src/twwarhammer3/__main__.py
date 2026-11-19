@@ -9,13 +9,13 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from gameai.providers import PROVIDERS, get_provider
-from twwarhammer3.battle.controllers import BUILTINS, check_allowance
-from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
+from twwarhammer3.controllers.factory import BUILTINS, check_allowance
+from twwarhammer3.controllers.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.policy_names import MODEL_POLICIES
 from twwarhammer3.results.register import JOBS_ROOT, RESULTS_PATH
 from twwarhammer3.results.watch import STALL_S
 
-# One spend file, and so one budget, per provider (Spire keeps its own). Not in battle/llm.py:
+# One spend file, and so one budget, per provider (Spire keeps its own). Not in controllers/llm.py:
 # that file's hash is the llm policy's card identity.
 LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH,
            "anthropic": LEDGER_PATH.with_name("anthropic-spend.jsonl")}
@@ -510,7 +510,7 @@ def run_graph_author(args, parser) -> int:
     from gameai.ledger import BudgetExhausted, Ledger
     from gameai.llm import APIError, InvalidReply
     from gameai.provenance import committed_revision
-    from twwarhammer3.battle import graph_author
+    from twwarhammer3.controllers import graph_author
     from twwarhammer3.scope import SOURCES
 
     try:
@@ -531,8 +531,8 @@ def run_graph_author(args, parser) -> int:
 
 
 def run_play(args, parser) -> int:
-    from twwarhammer3.battle.controllers import factories, rotation
     from twwarhammer3.battle.play import play as run_play
+    from twwarhammer3.controllers.factory import factories, rotation
 
     config = {key: value for key, value in vars(args).items()
               if key not in ("command", "output")}

@@ -8,8 +8,9 @@ import json
 import pytest
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import controllers, local_team
 from twwarhammer3.battle.setup import scenarios
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import local_team
 from twwarhammer3.results import report_html
 
 JOB = {"model": "claude-haiku-5-5", "effort": "low", "provider": "anthropic"}

@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wh3_fixtures import CONFIG, FakeMailbox
 from wh3_team_fixtures import Script, Workers, state
 
-from twwarhammer3.battle import configured, play, team
+from twwarhammer3.battle import play
+from twwarhammer3.controllers import configured, team
 
 
 def roster(seq=1, time_ms=10000):

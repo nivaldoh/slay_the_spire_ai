@@ -144,11 +144,11 @@ decision nearest 120 s of battle time. Note a running job in [state.md](../state
 ## Outside controllers
 
 Name a class as `package.module:Class` anywhere in `--policy`. The committed
-`twwarhammer3.battle.scripted:Hold` exercises the path:
+`twwarhammer3.controllers.scripted:Hold` exercises the path:
 
 ```bash
 uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
-  --policy hold,attack_nearest,twwarhammer3.battle.scripted:Hold \
+  --policy hold,attack_nearest,twwarhammer3.controllers.scripted:Hold \
   --output runs/twwarhammer3/battle/my-import-check-20261015
 ```
 
@@ -163,7 +163,7 @@ Earlier examples are kept, untracked, in
 `runs/twwarhammer3/capability-probes/external-controllers/`: `ExternalHold` (the b1
 acceptance controller, with a `card`) and `ProbeFlight` (a flight diagnostic).
 
-The interface (`battle/controllers.py` checks before launch that `decide`, `acknowledge`
+The interface (`controllers/factory.py` checks before launch that `decide`, `acknowledge`
 and `metadata` exist):
 - the constructor takes no arguments; every trial gets a new object;
 - `decide(observation) -> list[dict]`: orders as `protocol.py` defines them. The

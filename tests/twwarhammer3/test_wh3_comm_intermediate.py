@@ -11,7 +11,8 @@ from copy import deepcopy
 
 import pytest
 
-from twwarhammer3.battle import configured, local_team, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import configured, local_team
 
 ARMS = ("peer", "relay", "overview", "muted", "muted-overview", "silent")
 BASE = "emp-envelopment-c-mid-v3"

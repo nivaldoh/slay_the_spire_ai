@@ -7,7 +7,8 @@ must not.
 
 import pytest
 
-from twwarhammer3.battle import local_team, setup
+from twwarhammer3.battle import setup
+from twwarhammer3.controllers import local_team
 
 GREATSWORDS, SWORDSMEN = "wh_main_emp_inf_greatswords", "wh_main_emp_inf_swordsmen"
 

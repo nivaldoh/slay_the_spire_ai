@@ -17,7 +17,7 @@ Without a commander, units keep the default skill of their class.
 
 import math
 
-from twwarhammer3.battle.llm import ARRIVED_M
+from twwarhammer3.controllers.llm import ARRIVED_M
 from twwarhammer3.protocol import friendly_units, visible_enemies
 from twwarhammer3.units import ROUTED, distance
 

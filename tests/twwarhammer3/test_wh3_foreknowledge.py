@@ -7,7 +7,8 @@ import pytest
 from wh3_fixtures import FakeSend, observation
 
 from gameai.ledger import Ledger
-from twwarhammer3.battle import llm, play, reserve, setup, team
+from twwarhammer3.battle import play, reserve, setup
+from twwarhammer3.controllers import llm, team
 
 
 def base(announced=False):

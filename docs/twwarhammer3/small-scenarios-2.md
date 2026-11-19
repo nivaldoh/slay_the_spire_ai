@@ -1,7 +1,7 @@
 # Small focused candidates, second batch (draft, 2026-10-17)
 
 **Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
-all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `battle/calibration.py`
+all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `controllers/calibration.py`
 and 47 scenario entries are gone from the repository; the tag `wh3-legacy-20261115` has them,
 and their jobs, register rows and log entries remain. The four entries this page names are all kept. The
 list of the 47 is in [benchmark-implementation.md](benchmark-implementation.md#history).
@@ -34,7 +34,7 @@ age. A floor win means the step is too easy and climbs.
 | S11 | `dwf-cannon-grn-lobbers` | counter-battery and when to advance | 1 Cannon, 1 Dwarf Warriors (1,250) | 2 Rock Lobbers, 2 Goblin Spearmen (1,750) | 1,950 |
 
 S12 and S13 below are definitions only, not declared. Three disclosed diagnostics are
-implemented in `battle/calibration.py` as `FocusFire`, `MonsterTarget` and
+implemented in `controllers/calibration.py` as `FocusFire`, `MonsterTarget` and
 `CounterBattery`; their controller cards state every rule, and the paragraphs below
 describe them as built. `BraceFacing` (S10) was removed on 2026-10-18 without ever
 playing (S10 is set aside); it remains in Git history before that date.

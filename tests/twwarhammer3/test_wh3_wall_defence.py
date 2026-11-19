@@ -13,7 +13,8 @@ import pytest
 from wh3_ablation import assert_ablation
 from wh3_helmgart import GARRISON, SCENARIO, first_observation, garrison
 
-from twwarhammer3.battle import controllers, play, wall_defence
+from twwarhammer3.battle import play, wall_defence
+from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
 
 SPEAR = "wh_main_emp_inf_spearmen_0"

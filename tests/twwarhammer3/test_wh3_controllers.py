@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from twwarhammer3.battle import commander, controllers, llm
+from twwarhammer3.controllers import commander, llm
+from twwarhammer3.controllers import factory as controllers
 
 
 def test_rotation_pairs_all_controllers_and_delays_in_a_repeatable_order():
@@ -28,7 +29,7 @@ def test_invalid_rotation_is_refused_before_launch(change):
 
 
 def test_importable_controller_and_fresh_instances():
-    name = "twwarhammer3.battle.scripted:AttackNearest"
+    name = "twwarhammer3.controllers.scripted:AttackNearest"
     makers = controllers.factories({"policy": name})
     a, b = makers[name](), makers[name]()
     a.targets["f1"] = "e1"
@@ -36,7 +37,7 @@ def test_importable_controller_and_fresh_instances():
     record = controllers.card(name, a, {})
     assert len(record["source_sha256"]) == 64 and record["kind"] == "external"
     with pytest.raises(ValueError, match="must be a class"):
-        controllers.controller_class("twwarhammer3.battle.scripted:distance")
+        controllers.controller_class("twwarhammer3.controllers.scripted:distance")
 
 
 def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_path, monkeypatch):
@@ -73,8 +74,8 @@ JOB = {"model": "gpt-6-sol", "effort": "low"}  # the job's --model and --effort
     ("llm_rules@gpt-6-luna", ("llm_rules", "gpt-6-luna", "low")),
     ("commander@gpt-6-luna/medium", ("commander", "gpt-6-luna", "medium")),
     ("rush_nearest", ("rush_nearest", None, None)),
-    ("twwarhammer3.battle.scripted:AttackNearest",
-     ("twwarhammer3.battle.scripted:AttackNearest", None, None)),
+    ("twwarhammer3.controllers.scripted:AttackNearest",
+     ("twwarhammer3.controllers.scripted:AttackNearest", None, None)),
 ])
 def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
     assert controllers.policy_parts(name, JOB) == parts
@@ -82,7 +83,7 @@ def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
 
 @pytest.mark.parametrize("policy,error", [
     ("hold@gpt-6-luna", "only commander, llm, llm_rules, team_llm_rules take @MODEL"),
-    ("twwarhammer3.battle.scripted:AttackNearest@gpt-6-luna", "only commander"),
+    ("twwarhammer3.controllers.scripted:AttackNearest@gpt-6-luna", "only commander"),
     ("llm_rules@gpt-6-lunar", "with a model in"), ("llm_rules@", "with a model in"),
     ("llm_rules@gpt-6-luna/minimal", "an effort in none, low"),
     ("llm_rules@gpt-6-luna/", "an effort in"),
@@ -181,7 +182,7 @@ def test_openrouter_rejects_unsupported_settings_before_launch(policy):
 
 
 def test_recorded_model_names_match_the_factory_prompt_keys():
-    from twwarhammer3.battle.controllers import MODEL_PROMPTS
+    from twwarhammer3.controllers.factory import MODEL_PROMPTS
     from twwarhammer3.policy_names import MODEL_POLICIES
 
     assert MODEL_POLICIES == MODEL_PROMPTS.keys()

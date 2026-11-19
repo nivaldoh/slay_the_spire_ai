@@ -95,18 +95,18 @@ def diagram_flags(root: Path, rev: str = "HEAD", views: list | None = None,
             if name.startswith(DIAGRAM_EXAMPLE) and name.endswith(".js"):
                 examples.update(payload(text(rev, name)))
         day = date.fromisoformat(today) if today else date.today()
-        battle = "src/twwarhammer3/battle/"
+        controllers = "src/twwarhammer3/controllers/"
         # fact: (file, constant, values), values: a dict compared key by key and value by value
         facts = {"providers": ("src/gameai/providers.py", "PROVIDERS", False),
                  "hidden_keys": ("src/twwarhammer3/protocol.py", "HIDDEN_KEYS", False),
-                 "model_policies": (f"{battle}controllers.py", "MODEL_PROMPTS", False),
-                 "scripted_policies": (f"{battle}scripted.py", "POLICIES", False),
-                 "graph_ops": (f"{battle}graph_author.py", "DESCRIPTIONS", False),
+                 "model_policies": (f"{controllers}factory.py", "MODEL_PROMPTS", False),
+                 "scripted_policies": (f"{controllers}scripted.py", "POLICIES", False),
+                 "graph_ops": (f"{controllers}graph_author.py", "DESCRIPTIONS", False),
                  # JUDGEMENT?: Whole versions — Claude Code, 2026-11-01, final-spec
                  # viewer_changes: a view states VERSIONS whole, so any controller's new version
                  # flags it, drawn or not. Comparing only the stated names would flag less; the
                  # methods card's "on main" versions rest on it.
-                 "versions": (f"{battle}controllers.py", "VERSIONS", True)}
+                 "versions": (f"{controllers}factory.py", "VERSIONS", True)}
         result: dict = {"revision": rev, "date": day.isoformat(), "views": {}}
         for view in views:
             reasons: list[str] = []

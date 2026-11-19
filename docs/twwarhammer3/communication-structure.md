@@ -167,9 +167,9 @@ In all three arms:
   the exact battle clock and latency feedback reach every captain. The owner's open decision on
   the morale label applies to all arms at once.
 
-These values rest on JUDGEMENT `src/twwarhammer3/battle/local_command.py` Local command
+These values rest on JUDGEMENT `src/twwarhammer3/controllers/local_command.py` Local command
 development profile (160 m view, 240 bytes) and Fast text control (64 slots), JUDGEMENT
-`src/twwarhammer3/battle/local_team.py` Member message batch (two sends) and Local target
+`src/twwarhammer3/controllers/local_team.py` Member message batch (two sends) and Local target
 authority, JUDGEMENT `cannae-communication.md` Command groups and local knowledge, JUDGEMENT
 `src/gameai/providers.py` Haiku first and Anthropic efforts, JUDGEMENT `cannae-eval.md`
 Construction profile (Normal difficulty, 1,200 s timer), and JUDGEMENT? `cannae-communication.md`
@@ -436,8 +436,8 @@ or two messages. Per launch (`pilot-measures.json`, `pilot-gates.json`):
   297 m (median 287 m) from the anchor f7, outside the anchor's 160 m view, so the local target
   rule refused the whole reply. This refusal rests on JUDGEMENT
   `docs/twwarhammer3/cannae-communication.md` Command groups and local knowledge, JUDGEMENT
-  `src/twwarhammer3/battle/local_command.py` Local command development profile (the 160 m view) and
-  JUDGEMENT `src/twwarhammer3/battle/local_team.py` Local target authority (orders legal in the
+  `src/twwarhammer3/controllers/local_command.py` Local command development profile (the 160 m view) and
+  JUDGEMENT `src/twwarhammer3/controllers/local_team.py` Local target authority (orders legal in the
   local view). The whole-reply refusal itself comes from `parse_reply` inside `api.ask`, with no
   retry and no partial salvage (`local_team.py`, `LocalModel`), which carried no marker until the
   one below.
@@ -562,7 +562,7 @@ stage 4 between a redesign and making `taken` the primary measure.
 
 The smallest version, from a reading of the code at `cfe8ab5`:
 
-- **Router links** (`battle/local_command.py`). An optional set of allowed links, with `None`
+- **Router links** (`controllers/local_command.py`). An optional set of allowed links, with `None`
   keeping today's behavior, checked at each text send. Today only couriers can pass a received
   message on to another member, and the new mode turns couriers off along with signals. Rejections
   record a reason (link, size, slots, anchor) in the router's events, and in the acknowledgement
@@ -574,7 +574,7 @@ The smallest version, from a reading of the code at `cfe8ab5`:
   [MARBLE](https://github.com/ulab-uiuc/MARBLE/blob/8d60fa17b5596b44458a52d4296061b9fc13d6f2/marble/agent/base_agent.py),
   which lists each agent's allowed recipients in its message tool. MARBLE's handler checks only
   that the sender has some link, so the router checks every sender and recipient pair itself.
-- **The commander** (`battle/local_team.py`). Allow a sixth member named `commander` only under
+- **The commander** (`controllers/local_team.py`). Allow a sixth member named `commander` only under
   the new declaration. Pass it as the team's `army_owner`, so the rule that skips a member with no
   living men does not skip it. C views carry no army orders, so this grants no authority, and
   `team.py` stays untouched, along with the agreed checks whose tests use it (the two team checks
@@ -583,7 +583,7 @@ The smallest version, from a reading of the code at `cfe8ab5`:
   R's commander a 160 m view around that point. Give it its own view (an empty local view for R,
   the existing global projection for O), its inbox at every call despite the living-men gate in
   `_view`, and a card line saying `army_owner` names it only so that it is asked.
-- **Composition** (`battle/configured.py`). Accept the sixth member only under the new declaration
+- **Composition** (`controllers/configured.py`). Accept the sixth member only under the new declaration
   (today a `local_team` node must name exactly the five groups), give the commander its own system
   prompt (today every model leaf of one type gets the same prompt), and record the new input
   version in the member cards.

@@ -134,7 +134,7 @@ DIAGRAM.tabs.push({
     {
       "id": "d.policy",
       "label": "Model controller",
-      "code": "battle/llm.py (llm_rules)",
+      "code": "controllers/llm.py (llm_rules)",
       "kind": "agent",
       "where": "WSL Python",
       "x": 630,
@@ -145,10 +145,10 @@ DIAGRAM.tabs.push({
         "Builds the prompt (notes, recent decisions, timing, the state) and checks the reply's orders.",
       "status": "built, component tests only",
       "refs": [
-        "src/twwarhammer3/battle/llm.py:1",
-        "src/twwarhammer3/battle/llm.py:382",
-        "src/twwarhammer3/battle/llm.py:454-461",
-        "src/twwarhammer3/battle/llm.py:615"
+        "src/twwarhammer3/controllers/llm.py:1",
+        "src/twwarhammer3/controllers/llm.py:382",
+        "src/twwarhammer3/controllers/llm.py:454-461",
+        "src/twwarhammer3/controllers/llm.py:615"
       ]
     },
     {
@@ -259,7 +259,7 @@ DIAGRAM.tabs.push({
       "to": "d.play",
       "label": "orders",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/llm.py:615"]
+      "refs": ["src/twwarhammer3/controllers/llm.py:615"]
     },
     {
       "id": "d.play>orders",
@@ -315,7 +315,7 @@ DIAGRAM.tabs.push({
             "example": "decision",
             "key": "prompt"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/battle/llm.py:382"]
+          "refs": ["src/twwarhammer3/battle/play.py:530-536", "src/twwarhammer3/controllers/llm.py:382"]
         },
         {
           "caption":
@@ -351,7 +351,7 @@ DIAGRAM.tabs.push({
             "example": "decision",
             "key": "reply"
           },
-          "refs": ["src/gameai/llm.py:469", "src/twwarhammer3/battle/llm.py:615"]
+          "refs": ["src/gameai/llm.py:469", "src/twwarhammer3/controllers/llm.py:615"]
         },
         {
           "caption":
@@ -396,7 +396,7 @@ DIAGRAM.tabs.push({
             "key": "next"
           },
           "refs": [
-            "src/twwarhammer3/battle/llm.py:454-461",
+            "src/twwarhammer3/controllers/llm.py:454-461",
             "src/twwarhammer3/battle/play.py:499-507"
           ]
         }

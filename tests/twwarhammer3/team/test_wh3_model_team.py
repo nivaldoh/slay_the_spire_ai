@@ -18,7 +18,9 @@ from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, Model, usage_cost
-from twwarhammer3.battle import controllers, llm, play, team
+from twwarhammer3.battle import play
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import llm, team
 from twwarhammer3.protocol import PolicyFailure, refused
 from twwarhammer3.results import digest, export, report, watch
 

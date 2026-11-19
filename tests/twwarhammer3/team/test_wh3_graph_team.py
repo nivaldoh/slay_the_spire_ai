@@ -11,7 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wh3_graph_fixtures import attack_graph, move_graph
 from wh3_team_fixtures import Script, Workers, ack, state
 
-from twwarhammer3.battle import controllers, graph, team
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import graph, team
 
 
 def test_target_hiding_after_worker_completion_is_locally_refused_with_original_age():

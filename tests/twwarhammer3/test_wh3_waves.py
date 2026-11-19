@@ -23,7 +23,8 @@ from wh3_fixtures import CONFIG, FakeMailbox
 from wh3_helmgart import SCENARIO, first_observation
 from wh3_lua import load_battle
 
-from twwarhammer3.battle import llm, play, reserve, setup
+from twwarhammer3.battle import play, reserve, setup
+from twwarhammer3.controllers import llm
 from twwarhammer3.protocol import ProtocolError
 
 # Marker lines and pointers for values of the three entries in

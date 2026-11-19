@@ -8,7 +8,8 @@ from wh3_graph_goal_support import configuration, spec, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.provenance import sha256
-from twwarhammer3.battle import configured, controllers, graph, graph_author, graph_goals
+from twwarhammer3.controllers import configured, graph, graph_author, graph_goals
+from twwarhammer3.controllers import factory as controllers
 
 
 def test_goal_configuration_is_resolved_without_a_key_or_model_instance(tmp_path, monkeypatch):

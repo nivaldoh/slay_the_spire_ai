@@ -111,7 +111,7 @@ SNAPSHOTS = "tests/twwarhammer3/prompts/*.txt"
 # docs/judgement.md, "Files that carry no marker".
 NO_MARKER = ("*.json", "configs/*prompt*.md", "tests/twwarhammer3/prompts/*",
              "src/twwarhammer3/mod/*", "src/spire/protocol.py", "src/spire/policies.py",
-             *(f"src/twwarhammer3/battle/{name}.py"
+             *(f"src/twwarhammer3/controllers/{name}.py"
                for name in ("scripted", "calibration", "llm", "commander", "team", "skills")))
 RULE_PAGES = ("AGENTS.md", "docs/judgement.md")  # state the rule; the listing skips them too
 # The owner's untracked thesis notes (the link test skips them too); their markers and links

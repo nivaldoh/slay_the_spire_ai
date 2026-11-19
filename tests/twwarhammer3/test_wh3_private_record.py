@@ -17,7 +17,7 @@ from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 from wh3_lua import MOD, load_battle, runtime
 
 from twwarhammer3.battle import play, setup
-from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.controllers.scripted import Hold
 from twwarhammer3.protocol import ProtocolError
 
 # A fake engine. A unit answers each getter it names with that value (a function of the call's

@@ -4,7 +4,7 @@ import pytest
 from wh3_fixtures import FakeSend, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
-from twwarhammer3.battle import llm
+from twwarhammer3.controllers import llm
 from twwarhammer3.protocol import PolicyFailure
 
 SHAPES = {branch["properties"]["type"]["enum"][0]: set(branch["properties"])

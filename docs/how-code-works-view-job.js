@@ -148,7 +148,7 @@ DIAGRAM.tabs.push({
     {
       "id": "job.policy",
       "label": "Model controller",
-      "code": "battle/llm.py (llm_rules)",
+      "code": "controllers/llm.py (llm_rules)",
       "kind": "agent",
       "where": "WSL Python",
       "x": 720,
@@ -158,7 +158,7 @@ DIAGRAM.tabs.push({
       "note":
         "Writes the prompt from what our side can see, asks the model, and checks its orders.",
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/llm.py:1", "src/twwarhammer3/battle/play.py:643-649"]
+      "refs": ["src/twwarhammer3/controllers/llm.py:1", "src/twwarhammer3/battle/play.py:643-649"]
     },
     {
       "id": "job.report",
@@ -304,7 +304,7 @@ DIAGRAM.tabs.push({
       "label": "orders",
       "bend": -24,
       "status": "built, component tests only",
-      "refs": ["src/twwarhammer3/battle/llm.py:1"]
+      "refs": ["src/twwarhammer3/controllers/llm.py:1"]
     },
     {
       "id": "job.policy>provider",
@@ -415,7 +415,7 @@ DIAGRAM.tabs.push({
             "example": "job",
             "key": "r1"
           },
-          "refs": ["src/twwarhammer3/battle/play.py:643-649", "src/twwarhammer3/battle/llm.py:1"]
+          "refs": ["src/twwarhammer3/battle/play.py:643-649", "src/twwarhammer3/controllers/llm.py:1"]
         },
         {
           "caption":
@@ -450,7 +450,7 @@ DIAGRAM.tabs.push({
             "example": "job",
             "key": "r88"
           },
-          "refs": ["src/twwarhammer3/battle/llm.py:1"]
+          "refs": ["src/twwarhammer3/controllers/llm.py:1"]
         },
         {
           "caption":

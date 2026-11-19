@@ -9,7 +9,7 @@ from wh3_graph_author_support import END, WAIT, Canned, completed, ledger, repli
 from gameai.llm import InvalidReply
 from gameai.provenance import REPO_ROOT
 from twwarhammer3 import __main__ as cli
-from twwarhammer3.battle import graph, graph_author, graph_initiation, team
+from twwarhammer3.controllers import graph, graph_author, graph_initiation, team
 
 TEMPLATE = REPO_ROOT / "configs/twwarhammer3/graphs/contact-team.json"
 GOOD = json.loads((TEMPLATE.parent / "contact-line.json").read_text())
@@ -452,7 +452,7 @@ def test_empty_non_text_or_repeated_unit_ids_are_invalid_start_data(side, index,
 
 
 def test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units():
-    # Rests on JUDGEMENT src/twwarhammer3/battle/graph.py G4 Target choice: select_target picks
+    # Rests on JUDGEMENT src/twwarhammer3/controllers/graph.py G4 Target choice: select_target picks
     # the visible enemy nearest any owned unit. Two cannons (range 100) at x 0 and 1000: e1 at
     # x 50 is in range of the first, e2 at x 500 of neither, so only e1 gives an attack route.
     spec = {"version": graph.VERSION, "entry": "owned", "nodes": {

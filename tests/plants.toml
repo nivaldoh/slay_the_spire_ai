@@ -192,7 +192,7 @@ source = "2026-10-29 night, agreed-check plants"
 [[plant]]
 id = "wh3-controllers-open-the-ledger-without-must-exist"
 guards = "Play commands refuse a missing ledger file"
-file = "src/twwarhammer3/battle/controllers.py"
+file = "src/twwarhammer3/controllers/factory.py"
 old = "Ledger(Path(config[\"ledger\"]), config[\"budget_usd\"], must_exist=True)"
 new = "Ledger(Path(config[\"ledger\"]), config[\"budget_usd\"])"
 tests = ["tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job", "tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget"]
@@ -245,7 +245,7 @@ source = "2026-10-29 night, agreed-check plants"
 [[plant]]
 id = "a-member-is-given-its-ally-s-units-as-its-own"
 guards = "WH3 scripted two-member team (pytest part)"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = "if row[\"id\"] in owned]"
 new = "]"
 tests = ["tests/twwarhammer3/team/test_wh3_team.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_controllers.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -254,7 +254,7 @@ source = "2026-10-29 night, agreed-check plants"
 [[plant]]
 id = "a-member-s-view-carries-the-evaluation-section"
 guards = "WH3 scripted two-member team (pytest part)"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = "\"remaining_ms\", \"enemy_roster\", \"magic\"))"
 new = "\"remaining_ms\", \"enemy_roster\", \"magic\", \"evaluation\"))"
 tests = ["tests/twwarhammer3/team/test_wh3_team.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_controllers.py", "tests/twwarhammer3/test_wh3_digest.py"]
@@ -1407,7 +1407,7 @@ source = "2026-10-31 run, B2 multiplayer seams"
 [[plant]]
 id = "running-at-close-never-set"
 guards = "team records: the card board and calls cut off at cleanup"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = "            running = member.running_at_close = (member.future is not None\n                                                 and not member.future.done())"
 new = "            running = (member.future is not None and not member.future.done())"
 tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
@@ -1589,7 +1589,7 @@ source = "2026-10-31 independent nonvacuous-assertion review"
 [[plant]]
 id = "policy-failure-omits-overlong-attempts"
 guards = "PolicyFailure retains every attempted reply even when invalid response text is long"
-file = "src/twwarhammer3/battle/llm.py"
+file = "src/twwarhammer3/controllers/llm.py"
 old = "\"attempts\": error.attempts}"
 new = "\"attempts\": [a for a in error.attempts if len(a.get(\"text\", \"\")) <= 10000]}"
 tests = ["tests/twwarhammer3/test_wh3_llm.py::test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure"]
@@ -1717,7 +1717,7 @@ source = "2026-10-31 replay-identity oracle audit"
 [[plant]]
 id = "team-duplicate-ids-accepted"
 guards = "the team partition refuses rosters it cannot own"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = "            self._fault(\"team received duplicate friendly unit ids\")"
 new = "            pass"
 tests = ["tests/twwarhammer3/team/test_wh3_team.py"]
@@ -1726,7 +1726,7 @@ source = "2026-10-31 run, refusal sweep review"
 [[plant]]
 id = "team-rest-member-subset-accepted"
 guards = "the team partition refuses rosters it cannot own"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = "                    self.battle is not None and not units >= member.units):"
 new = "                    self.battle is not None and not units & member.units):"
 tests = ["tests/twwarhammer3/team/test_wh3_team.py"]
@@ -2177,7 +2177,7 @@ source = "2026-11-01 control-methods build"
 id = "diagram-graph-ops-fact-unread"
 guards = "A view's model_policies, scripted_policies, graph_ops and versions are compared with the code"
 file = "scripts/diagram_files.py"
-old = "                 \"graph_ops\": (f\"{battle}graph_author.py\", \"DESCRIPTIONS\", False),\n"
+old = "                 \"graph_ops\": (f\"{controllers}graph_author.py\", \"DESCRIPTIONS\", False),\n"
 new = ""
 tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
 source = "2026-11-01 control-methods build"
@@ -2186,8 +2186,8 @@ source = "2026-11-01 control-methods build"
 id = "diagram-versions-keys-only"
 guards = "VERSIONS is compared as a dict: a changed version flags the view"
 file = "scripts/diagram_files.py"
-old = "\"versions\": (f\"{battle}controllers.py\", \"VERSIONS\", True)}"
-new = "\"versions\": (f\"{battle}controllers.py\", \"VERSIONS\", False)}"
+old = "\"versions\": (f\"{controllers}factory.py\", \"VERSIONS\", True)}"
+new = "\"versions\": (f\"{controllers}factory.py\", \"VERSIONS\", False)}"
 tests = ["tests/test_check_script.py::test_diagram_flags_check_the_file_lists_stated_facts_and_review_age"]
 source = "2026-11-01 control-methods build"
 
@@ -2775,7 +2775,7 @@ source = "2026-11-02 checkpoint survivor tests"
 [[plant]]
 id = "configured-openrouter-cap-refuses-exactly-50"
 guards = "An OpenRouter goal budget of exactly $50 is allowed (owner: cannot exceed $50)"
-file = "src/twwarhammer3/battle/controllers.py"
+file = "src/twwarhammer3/controllers/factory.py"
 old = 'if provider == "openrouter" and budget_usd > OPENROUTER_ALLOWANCE_USD:'
 new = 'if provider == "openrouter" and budget_usd >= OPENROUTER_ALLOWANCE_USD:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
@@ -2784,7 +2784,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "configured-skips-the-openrouter-allowance"
 guards = "A configured job with goal models refuses an OpenRouter budget over the owner's $50"
-file = "src/twwarhammer3/battle/configured.py"
+file = "src/twwarhammer3/controllers/configured.py"
 old = 'controllers.check_allowance(provider, config["budget_usd"])'
 new = 'pass'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
@@ -2793,7 +2793,7 @@ source = "2026-11-14 code-quality: the cap moved to controllers.check_allowance"
 [[plant]]
 id = "configured-openrouter-cap-limits-every-provider"
 guards = "The $50 OpenRouter cap does not limit another provider's budget"
-file = "src/twwarhammer3/battle/controllers.py"
+file = "src/twwarhammer3/controllers/factory.py"
 old = 'if provider == "openrouter" and budget_usd > OPENROUTER_ALLOWANCE_USD:'
 new = 'if provider == "openrouter" or budget_usd > OPENROUTER_ALLOWANCE_USD:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
@@ -2802,7 +2802,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "configured-accepts-empty-or-text-unit-types"
 guards = "A team member's unit_types is null or a non-empty list of distinct types"
-file = "src/twwarhammer3/battle/configured.py"
+file = "src/twwarhammer3/controllers/configured.py"
 old = 'elif (not isinstance(unit_types, list) or not unit_types'
 new = 'elif (not isinstance(unit_types, list) and not unit_types'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
@@ -2811,7 +2811,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "configured-goal-effort-ignores-job-effort"
 guards = "A graph_llm member without effort uses the job's --effort, else low"
-file = "src/twwarhammer3/battle/configured.py"
+file = "src/twwarhammer3/controllers/configured.py"
 old = 'effort = node.get("effort", config.get("effort") or "low")'
 new = 'effort = node.get("effort", config.get("effort") and "low")'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_goal_configuration_guards.py"]
@@ -2820,7 +2820,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-author-drops-member-orders"
 guards = "Revision feedback keeps each member's own dispatched order batches"
-file = "src/twwarhammer3/battle/graph_author.py"
+file = "src/twwarhammer3/controllers/graph_author.py"
 old = 'name = (event.get("behavior") or {}).get("member")'
 new = 'name = (event.get("behavior") and {}).get("member")'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
@@ -2829,7 +2829,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-author-counts-order-free-decisions"
 guards = "Decisions without orders are not order batches in revision feedback"
-file = "src/twwarhammer3/battle/graph_author.py"
+file = "src/twwarhammer3/controllers/graph_author.py"
 old = 'if name in histories and event.get("orders"):'
 new = 'if name in histories or event.get("orders"):'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
@@ -2838,7 +2838,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-author-reads-any-team-row-as-feedback"
 guards = "Only team feedback rows become member feedback; other team rows do not refuse revision"
-file = "src/twwarhammer3/battle/graph_author.py"
+file = "src/twwarhammer3/controllers/graph_author.py"
 old = 'elif event.get("kind") == "team" and event.get("event") == "feedback":'
 new = 'elif event.get("kind") == "team" or event.get("event") == "feedback":'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_author.py"]
@@ -2847,7 +2847,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-author-legacy-keeps-one-initiation-field"
 guards = "A legacy artifact carrying either initiation field is refused"
-file = "src/twwarhammer3/battle/graph_author.py"
+file = "src/twwarhammer3/controllers/graph_author.py"
 old = 'elif "initiation_check" in manifest or "initiators" in manifest:'
 new = 'elif "initiation_check" in manifest and "initiators" in manifest:'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
@@ -2856,7 +2856,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-initiation-accepts-empty-or-non-text-ids"
 guards = "Starting unit IDs are non-empty text"
-file = "src/twwarhammer3/battle/graph_initiation.py"
+file = "src/twwarhammer3/controllers/graph_initiation.py"
 old = 'if not all(isinstance(uid, str) and uid for uid in ids)'
 new = 'if not all(isinstance(uid, str) or uid for uid in ids)'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
@@ -2865,7 +2865,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-initiation-accepts-repeated-ids"
 guards = "Starting unit IDs are distinct"
-file = "src/twwarhammer3/battle/graph_initiation.py"
+file = "src/twwarhammer3/controllers/graph_initiation.py"
 old = 'for uid in ids) or len(ids) != len(set(ids)):'
 new = 'for uid in ids) and len(ids) != len(set(ids)):'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py"]
@@ -2901,7 +2901,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "skill-contracts-accepts-empty-or-text-units"
 guards = "A units literal is a non-empty list of distinct strings"
-file = "src/twwarhammer3/battle/skill_contracts.py"
+file = "src/twwarhammer3/controllers/skill_contracts.py"
 old = 'return (isinstance(value, list) and bool(value)'
 new = 'return (isinstance(value, list) or bool(value)'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
@@ -2910,7 +2910,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "skill-contracts-accepts-empty-or-non-text-target"
 guards = "A target literal is a non-empty string"
-file = "src/twwarhammer3/battle/skill_contracts.py"
+file = "src/twwarhammer3/controllers/skill_contracts.py"
 old = 'return isinstance(value, str) and bool(value)'
 new = 'return isinstance(value, str) or bool(value)'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
@@ -2919,7 +2919,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "skill-contracts-accepts-other-point-keys"
 guards = "A point literal has exactly numeric x and z"
-file = "src/twwarhammer3/battle/skill_contracts.py"
+file = "src/twwarhammer3/controllers/skill_contracts.py"
 old = 'return (isinstance(value, dict) and set(value) == {"x", "z"}'
 new = 'return (isinstance(value, dict) or set(value) == {"x", "z"}'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
@@ -2928,7 +2928,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "skill-contracts-destroyed-unit-available"
 guards = "A destroyed unit (0 men) is not owned or available"
-file = "src/twwarhammer3/battle/skill_contracts.py"
+file = "src/twwarhammer3/controllers/skill_contracts.py"
 old = 'return (unit.get("men", 0) > 0 and unit.get("x") is not None'
 new = 'return (unit.get("men", 0) >= 0 and unit.get("x") is not None'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_skill_contracts.py"]
@@ -2937,7 +2937,7 @@ source = "2026-11-02 GaP survivors (cleanup batch gap)"
 [[plant]]
 id = "graph-initiation-targets-the-farthest-enemy"
 guards = "The initiation proof targets the enemy the runtime select_target picks: nearest any owned unit"
-file = "src/twwarhammer3/battle/graph_initiation.py"
+file = "src/twwarhammer3/controllers/graph_initiation.py"
 old = 'target = min(enemies, key=lambda e: (min(skills.distance(u, e) for u in units), e["id"]),'
 new = 'target = min(enemies, key=lambda e: (max(skills.distance(u, e) for u in units), e["id"]),'
 tests = ["tests/twwarhammer3/graph/test_wh3_graph_initiation.py::test_the_proof_targets_the_enemy_the_runtime_selects_among_spread_units"]
@@ -3434,7 +3434,7 @@ source = "2026-11-04 live pilot02: raw roster and public decision copies of seq1
 [[plant]]
 id = "local-input-carries-the-magic-summary"
 guards = "A member's full model request does not change with army-wide magic"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''"remaining_ms"))'''
 new = '''"remaining_ms", "magic"))'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3443,7 +3443,7 @@ source = "2026-11-05 benchmark audit, boundary m01"
 [[plant]]
 id = "local-input-counts-every-contact"
 guards = "A member's full model request does not change with the alliance's contact count"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''result["input_version"] = "local-command-v1"'''
 new = '''result["input_version"] = "local-command-v1"
     result["contacts"] = len(observation.get("enemy", []))'''
@@ -3453,7 +3453,7 @@ source = "2026-11-05 benchmark audit, boundary m02"
 [[plant]]
 id = "local-input-sums-the-armys-men"
 guards = "A member's full model request does not change with an army-wide men total"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''result["input_version"] = "local-command-v1"'''
 new = '''result["input_version"] = "local-command-v1"
     result["army_men"] = sum(u.get("men", 0) for u in observation["friendly"])'''
@@ -3463,7 +3463,7 @@ source = "2026-11-05 benchmark audit, boundary m03"
 [[plant]]
 id = "local-input-summarizes-the-armys-morale"
 guards = "A member's full model request does not change with a distant unit's morale"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''result["input_version"] = "local-command-v1"'''
 new = '''result["input_version"] = "local-command-v1"
     result["army_morale"] = min(u["morale"]["fraction"] for u in observation["friendly"]
@@ -3474,7 +3474,7 @@ source = "2026-11-05 card-tests: the card names morale among the distant changes
 [[plant]]
 id = "local-command-block-shows-peer-anchors"
 guards = "A member's command block carries no peer position"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
 new = '''"rendezvous": deepcopy(self.router.rendezvous), "peers": deepcopy(self.current),'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3483,7 +3483,7 @@ source = "2026-11-05 benchmark audit, boundary m04"
 [[plant]]
 id = "local-command-block-shows-which-peers-stand"
 guards = "A member's command block does not say whether a distant peer still has an anchor"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
 new = '''"rendezvous": deepcopy(self.router.rendezvous),
                            "peers_up": {n: a is not None for n, a in self.current.items()},'''
@@ -3493,7 +3493,7 @@ source = "2026-11-05 benchmark audit, boundary m05"
 [[plant]]
 id = "team-feedback-lists-ready-peers"
 guards = "Order feedback does not tell a member which peers have replied"
-file = "src/twwarhammer3/battle/team.py"
+file = "src/twwarhammer3/controllers/team.py"
 old = '''self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)'''
 new = '''ack = {**ack, "peer_ready": [n for n, m in self.members.items() if m.ready is not None]}
         self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)'''
@@ -3503,7 +3503,7 @@ source = "2026-11-05 benchmark audit, boundary m06"
 [[plant]]
 id = "local-models-share-one-history"
 guards = "A peer's replies do not enter a member's history"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''self.history = deque(maxlen=llm.HISTORY_LENGTH)'''
 new = '''self.history = vars(self.api.ledger).setdefault("history",
                                                         deque(maxlen=llm.HISTORY_LENGTH))'''
@@ -3513,7 +3513,7 @@ source = "2026-11-05 benchmark audit, boundary m07, one team's members sharing"
 [[plant]]
 id = "local-model-prompt-reads-peer-notes"
 guards = "A peer's notes do not enter a member's prompt"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''self.behavior = {}
 
     def decide(self, observation):
@@ -3531,7 +3531,7 @@ source = "2026-11-05 benchmark audit, boundary m08, one team's members sharing"
 [[plant]]
 id = "courier-arrives-at-half-travel-time"
 guards = "A courier is not available one tick before dispatch plus travel"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''+ distance(origin, point) / self.profile["courier_m_s"] * 1000)'''
 new = '''+ distance(origin, point) / self.profile["courier_m_s"] * 500)'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_time_comes_from_the_published_rendezvous_and_it_is_never_a_tick_early"]
@@ -3540,7 +3540,7 @@ source = "2026-11-05 benchmark audit, boundary m14"
 [[plant]]
 id = "courier-time-tracks-the-recipients-live-position"
 guards = "Courier travel uses the published rendezvous, not a secret live position"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''point = self.rendezvous[recipient]'''
 new = '''point = current.get(recipient) or self.rendezvous[recipient]'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_time_comes_from_the_published_rendezvous_and_it_is_never_a_tick_early"]
@@ -3549,7 +3549,7 @@ source = "2026-11-05 benchmark audit, boundary m28"
 [[plant]]
 id = "courier-text-read-at-delivery"
 guards = "A courier delivers the text accepted at send, not a later edit of the message"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''"recipients": recipients, "payload": deepcopy(payload)})'''
 new = '''"recipients": recipients,
                                  "payload": message if "text" in message else deepcopy(payload)})'''
@@ -3559,7 +3559,7 @@ source = "2026-11-05 benchmark audit, boundary m16 and m16b"
 [[plant]]
 id = "relay-uses-no-courier-slot"
 guards = "A relay is refused when the sender's courier slots are full"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''active = sum(p["sender"] == sender and p["channel"] == channel'''
 new = '''active = 0 if "relay" in message else sum(p["sender"] == sender and p["channel"] == channel'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_relay_needs_the_senders_own_receipt_and_a_free_courier_slot"]
@@ -3568,7 +3568,7 @@ source = "2026-11-05 benchmark audit, boundary m15"
 [[plant]]
 id = "relay-without-own-receipt"
 guards = "A member relays only a message delivered to that member"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''previous = self.known[sender].get((relay["sender"], relay["send"]))'''
 new = '''previous = next((k.get((relay["sender"], relay["send"])) for k in self.known.values()
                                      if k.get((relay["sender"], relay["send"]))), None)'''
@@ -3578,7 +3578,7 @@ source = "2026-11-05 benchmark audit, boundary m25"
 [[plant]]
 id = "signal-delivered-to-its-sender"
 guards = "A signal reaches only other members"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''for name, anchor in current.items() if name != sender
                               and anchor is not None'''
 new = '''for name, anchor in current.items() if anchor is not None'''
@@ -3588,7 +3588,7 @@ source = "2026-11-05 benchmark audit, boundary m19"
 [[plant]]
 id = "signal-range-open-boundary"
 guards = "A member exactly at signal_m hears the signal (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_local_command.py Closed channel bounds)"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''distance(origin, anchor) <= self.profile["signal_m"]]'''
 new = '''distance(origin, anchor) < self.profile["signal_m"]]'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_signal_reaches_exactly_its_published_range"]
@@ -3597,7 +3597,7 @@ source = "2026-11-05 benchmark audit, boundary m20"
 [[plant]]
 id = "signal-range-a-metre-wide"
 guards = "A member past signal_m does not hear the signal"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''distance(origin, anchor) <= self.profile["signal_m"]]'''
 new = '''distance(origin, anchor) <= self.profile["signal_m"] + 1]'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_signal_reaches_exactly_its_published_range"]
@@ -3606,7 +3606,7 @@ source = "2026-11-05 card-tests: the far side of the exact range"
 [[plant]]
 id = "rendezvous-open-boundary"
 guards = "A recipient exactly at rendezvous_m gets the courier (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_local_command.py Closed channel bounds)"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''<= self.profile["rendezvous_m"])'''
 new = '''< self.profile["rendezvous_m"])'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_courier_reaches_exactly_the_published_rendezvous_radius"]
@@ -3615,7 +3615,7 @@ source = "2026-11-05 benchmark audit, boundary m21"
 [[plant]]
 id = "rendezvous-radius-a-metre-wide"
 guards = "A recipient past rendezvous_m misses the courier"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''<= self.profile["rendezvous_m"])'''
 new = '''<= self.profile["rendezvous_m"] + 1)'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_courier_reaches_exactly_the_published_rendezvous_radius"]
@@ -3662,7 +3662,7 @@ source = "2026-11-05 benchmark audit, boundary m34"
 [[plant]]
 id = "local-input-reads-the-last-applied-batch"
 guards = "A member does not read the last applied batch, which names peers' regiments"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''"remaining_ms"))'''
 new = '''"remaining_ms", "orders"))'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3671,7 +3671,7 @@ source = "2026-11-05 card-tests review: top-level orders"
 [[plant]]
 id = "local-input-marks-distant-deaths-on-the-roster"
 guards = "A distant death marked on the alliance roster stays out of a member's roster"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''global_view=self.arm == "global")
         if for_input'''
 new = '''global_view=self.arm == "global")
@@ -3686,7 +3686,7 @@ source = "2026-11-05 card-tests review: roster dead flag"
 [[plant]]
 id = "local-input-reads-the-live-roster"
 guards = "A regiment sighted elsewhere stays out of a member's bound roster"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''self.current[name], self.roster,'''
 new = '''self.current[name], observation["enemy_roster"],'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3695,7 +3695,7 @@ source = "2026-11-05 card-tests review: the same roster channel"
 [[plant]]
 id = "local-command-block-counts-couriers-in-flight"
 guards = "A member cannot tell that an unseen peer has a courier out"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
 new = '''"rendezvous": deepcopy(self.router.rendezvous), "in_flight": len(self.router.pending),'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3704,7 +3704,7 @@ source = "2026-11-05 card-tests review: peer pending state"
 [[plant]]
 id = "local-command-block-counts-peer-mail"
 guards = "A member cannot tell that a peer holds unread mail"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''"rendezvous": deepcopy(self.router.rendezvous),'''
 new = '''"rendezvous": deepcopy(self.router.rendezvous), "unread": sum(map(len, self.router.inboxes.values())),'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_team.py::test_distant_state_and_peer_memory_leave_the_full_request_byte_identical_up_to_a_cue"]
@@ -3713,7 +3713,7 @@ source = "2026-11-05 card-tests review: peer inbox, the page's peer row"
 [[plant]]
 id = "courier-time-starts-at-the-senders-rendezvous"
 guards = "Courier travel starts at the sender's anchor frozen at send, not at its rendezvous"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''+ distance(origin, point) / self.profile["courier_m_s"] * 1000)'''
 new = '''+ distance(self.rendezvous[sender], point) / self.profile["courier_m_s"] * 1000)'''
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_courier_travel_starts_from_the_senders_anchor_frozen_at_send"]
@@ -3731,7 +3731,7 @@ source = "2026-11-05 card-tests review: the sibling field applied_ms"
 [[plant]]
 id = "evade-all-refused-forfeits-silently"
 guards = "A fully refused Evade ends its episode instead of holding and earning a timer win"
-file = "src/twwarhammer3/battle/evade.py"
+file = "src/twwarhammer3/controllers/evade.py"
 old = "                from RuntimeError(\"no open point left\")"
 new = "                from None"
 tests = ["tests/twwarhammer3/test_wh3_evade.py"]
@@ -3740,7 +3740,7 @@ source = "2026-11-05 integration review of the Cannae controls"
 [[plant]]
 id = "local-v2-link-check-removed"
 guards = "A version 2 text send off its arm's links is refused (communication-structure.md, Proposed checks row 1)"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''        if (sender, message["to"]) not in self.links:
             return "link"
 '''
@@ -3751,7 +3751,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-link-check-only-the-sender"
 guards = "The link filter checks every sender and recipient pair, not only that the sender has some link (MARBLE's gap)"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''        if (sender, message["to"]) not in self.links:
             return "link"
 '''
@@ -3764,7 +3764,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-commander-skipped"
 guards = "The commander, who owns no regiments, is still asked (TeamPolicy skips a non-owner with no living men)"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''army_owner=COMMANDER if COMMANDER in policies else None'''
 new = '''army_owner=None'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_commander_is_asked_without_regiments_and_reads_its_inbox_at_every_input"]
@@ -3773,7 +3773,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-commander-inbox-gated-on-men"
 guards = "The commander reads its inbox at every input despite owning no men"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''name == COMMANDER or any(u.get("men", 0) > 0 for u in view["friendly"])'''
 new = '''any(u.get("men", 0) > 0 for u in view["friendly"])'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_the_commander_is_asked_without_regiments_and_reads_its_inbox_at_every_input"]
@@ -3782,7 +3782,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-parser-minimum-removed"
 guards = "A captain's model reply with no message forfeits (the minimum is not enforced only on the wire)"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''if len(messages) < rules["min_messages"]:'''
 new = '''if len(messages) < 0:'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
@@ -3791,7 +3791,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-parser-trusts-the-recipient-enum"
 guards = "A model reply naming a recipient outside its links forfeits (the parser does not trust the schema's enum)"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''if any(m.get("to") not in rules["recipients"] for m in messages):'''
 new = '''if False:'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
@@ -3800,7 +3800,7 @@ source = "2026-11-08 card A of the communication-structure build"
 [[plant]]
 id = "local-v2-muted-delivers-anyway"
 guards = "The muted arm accepts texts as peer does and never delivers one (stage 2's muted witness)"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = '''                if self.muted:  # the sender saw an acceptance; nothing reaches an input
                     valid = False
 '''
@@ -3811,7 +3811,7 @@ source = "2026-11-08 card C of the communication-structure build"
 [[plant]]
 id = "local-v2-muted-overview-delivers-anyway"
 guards = "The muted_overview arm accepts texts as overview does and never delivers one"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''muted=self.arm in SHOWN_ARM)'''
 new = '''muted=self.arm == "muted")'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_muted_arm_is_the_arm_it_shows_to_its_members_and_delivers_nothing", "tests/twwarhammer3/team/test_wh3_local_scripts.py::test_each_witness_file_plays_the_real_v2_team_within_its_rules"]
@@ -3820,7 +3820,7 @@ source = "2026-11-08 muted_overview follow-up of the communication-structure bui
 [[plant]]
 id = "local-v2-forfeit-drops-mail"
 guards = "A forfeited v2 call's mail and send feedback come back in the member's next input, oldest first"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''                self.router.inboxes[name][:0] = self.last_mail[name]["received"]
                 self.acceptances[name][:0] = self.last_mail[name]["send_feedback"]
 '''
@@ -3832,7 +3832,7 @@ source = "2026-11-08 card D of the communication-structure build (review of 2204
 [[plant]]
 id = "local-v2-captains-get-the-global-view"
 guards = "A v2 captain sees only within 160 m of its anchor in every arm"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''            view = local.project(observation, self.members[name].units, anchor, self.roster,
                                  version=TOPOLOGY_INPUT)'''
 new = '''            view = local.project(observation, self.members[name].units, anchor, self.roster,
@@ -3843,7 +3843,7 @@ source = "2026-11-08 card D of the communication-structure build (review of 2204
 [[plant]]
 id = "local-v2-captain-inbox-not-cleared"
 guards = "A v2 captain reads each message delivered to it exactly once"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''        if for_input and (name == COMMANDER or any(u.get("men", 0) > 0 for u in view["friendly"])):
             self.last_mail[name] = {"received": self.router.inbox(name),
                                     "send_feedback": deepcopy(self.acceptances[name])}
@@ -3861,7 +3861,7 @@ source = "2026-11-08 card D of the communication-structure build (review of 2204
 [[plant]]
 id = "local-v2-parser-ignores-the-channel"
 guards = "A model reply on another channel forfeits even when it names a linked recipient"
-file = "src/twwarhammer3/battle/local_team.py"
+file = "src/twwarhammer3/controllers/local_team.py"
 old = '''if any(m.get("channel") != "text" for m in messages):'''
 new = '''if False:'''
 tests = ["tests/twwarhammer3/team/test_wh3_local_topology.py::test_a_model_reply_off_its_rules_forfeits_with_no_partial_orders"]
@@ -4138,7 +4138,7 @@ source = "2026-11-10 selected cleanup integration: independent fault challenge"
 [[plant]]
 id = "shoot-dry-waits-instead-of-failing"
 guards = "A fresh shoot skill with no ammunition fails without orders"
-file = "src/twwarhammer3/battle/skill_contracts.py"
+file = "src/twwarhammer3/controllers/skill_contracts.py"
 old = "if error:\n            self.status, self.reason = \"failed\", error\n            return self.status, [], error"
 new = "if error:\n            return \"running\", [], None"
 tests = ["tests/twwarhammer3/test_wh3_graph.py::test_shoot_without_ammunition_fails_without_orders"]
@@ -4183,7 +4183,7 @@ source = "2026-11-13 overnight refusal sweeps: independent review round 2"
 [[plant]]
 id = "replay-schedule-defaults-missing-version"
 guards = "A replay schedule without a version is refused"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = "if schedule.get(\"version\") != VERSION:"
 new = "if schedule.get(\"version\", VERSION) != VERSION:"
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_of_another_or_no_version_is_refused"]
@@ -4192,7 +4192,7 @@ source = "2026-11-13 overnight refusal sweeps: independent review round 1"
 [[plant]]
 id = "replay-schedule-refuses-only-fully-unnumbered-acks"
 guards = "A partly numbered acknowledgement is refused"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = "if any(\"index\" not in item for item in results):"
 new = "if all(\"index\" not in item for item in results):"
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_trace_whose_acknowledgements_number_no_order_is_refused"]
@@ -4219,7 +4219,7 @@ source = "2026-11-13 overnight refusal sweeps: independent review round 3"
 [[plant]]
 id = "text-router-skips-sender-check"
 guards = "A text router refuses an unknown sender"
-file = "src/twwarhammer3/battle/local_command.py"
+file = "src/twwarhammer3/controllers/local_command.py"
 old = "        if sender not in self.counts:"
 new = "        if self.mode != \"text\" and sender not in self.counts:"
 tests = ["tests/twwarhammer3/test_wh3_local_command.py::test_a_send_names_a_known_sender_and_a_basis_no_later_than_its_time"]
@@ -4282,7 +4282,7 @@ source = "2026-11-14 code-quality: account_stop reads APIError.status and stop"
 [[plant]]
 id = "configured-skips-its-leaf-check"
 guards = "configured.load refuses a leaf the job cannot play (provider effort, missing class) before launching"
-file = "src/twwarhammer3/battle/configured.py"
+file = "src/twwarhammer3/controllers/configured.py"
 old = 'controllers.check_policy(kind, config)'
 new = 'pass'
 tests = ["tests/twwarhammer3/test_wh3_configured_guards.py::test_a_team_leaf_the_job_cannot_play_is_refused_at_load"]
@@ -4291,7 +4291,7 @@ source = "2026-11-14 code-quality review: skipping the leaf check passed every W
 [[plant]]
 id = "forget-refused-forgets-accepted-orders"
 guards = "Witnesses resend only the orders the engine refused, not the ones it accepted"
-file = "src/twwarhammer3/battle/scripted.py"
+file = "src/twwarhammer3/controllers/scripted.py"
 old = '''    for result in ack.get("results", []):
         if not result.get("ok"):
             sent.pop(result.get("unit"), None)'''
@@ -4341,7 +4341,7 @@ source = "2026-11-15 scenario statuses: owner, \"Approve this mapping (Recommend
 [[plant]]
 id = "replay-identity-hashes-the-status-word"
 guards = "A new status word does not orphan a win recorded under another one"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items()})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_new_status_word_does_not_orphan_a_recorded_win"]
@@ -4350,7 +4350,7 @@ source = "2026-11-15 scenario statuses: owner, \"Leave status out (Recommended)\
 [[plant]]
 id = "diagnostic-never-resends-an-unchanged-order"
 guards = "A small diagnostic sends an unchanged order again once three seconds passed and its unit is idle"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'if same and (self.now - when < 3 or "idle" not in unit.get("state", [])):'
 new = 'if same:'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_an_unchanged_order_waits_three_seconds_and_for_an_idle_unit_before_it_goes_again"]
@@ -4359,7 +4359,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "diagnostic-resends-to-a-busy-unit"
 guards = "A small diagnostic does not repeat an unchanged order to a unit still carrying it out"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'if same and (self.now - when < 3 or "idle" not in unit.get("state", [])):'
 new = 'if same and self.now - when < 3:'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_an_unchanged_order_waits_three_seconds_and_for_an_idle_unit_before_it_goes_again"]
@@ -4368,7 +4368,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "diagnostic-keeps-a-refused-order-on-record"
 guards = "A refused order is forgotten, so the same order goes again at once"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'order = self.sent.pop(result.get("unit"), ({},))[0]'
 new = 'order = self.sent.get(result.get("unit"), ({},))[0]'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_refused_order_is_forgotten_and_an_accepted_one_is_kept"]
@@ -4377,7 +4377,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "diagnostic-forgets-an-accepted-order"
 guards = "An accepted order stays on record and is not sent again within three seconds"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'if not result.get("ok"):'
 new = 'if True:'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_refused_order_is_forgotten_and_an_accepted_one_is_kept"]
@@ -4386,7 +4386,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "diagnostic-forgets-an-unreachable-spot"
 guards = "A move refused as unreachable is remembered and the next open spot is ordered"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'self.unreachable.append({"x": order["x"], "z": order["z"]})'
 new = 'pass'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_a_move_refused_as_unreachable_is_remembered_and_the_next_open_spot_is_taken"]
@@ -4395,7 +4395,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "keep-drops-the-committed-target"
 guards = "_keep holds the committed target while it is listed"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or min('
 new = 'return min('
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_keep_holds_the_committed_target_while_it_is_listed_and_otherwise_takes_the_nearest"]
@@ -4404,7 +4404,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "keep-falls-back-to-the-farthest"
 guards = "_keep takes the nearest enemy when the committed target is gone"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or min('
 new = 'return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or max('
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_keep_holds_the_committed_target_while_it_is_listed_and_otherwise_takes_the_nearest"]
@@ -4413,7 +4413,7 @@ source = "2026-11-15 legacy deletion review: base-class bookkeeping had been cov
 [[plant]]
 id = "offset-puts-across-on-the-other-side"
 guards = "_offset puts a positive across to the left of the direction"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = '"z": origin["z"] + dz * forward + dx * across}'
 new = '"z": origin["z"] + dz * forward - dx * across}'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_offset_goes_forward_along_the_direction_and_across_to_its_left"]
@@ -4449,7 +4449,7 @@ source = "2026-11-15 one outcome function, review: version 2 first relabelled su
 [[plant]]
 id = "replay-build-still-hashes-the-status-word"
 guards = "A schedule built from a win recorded under one status word replays under another"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = '"scenario_sha256": declaration_digest(manifest["scenario"]),'
 new = '"scenario_sha256": digest(manifest["scenario"]),'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_new_status_word_does_not_orphan_a_recorded_win"]
@@ -4458,7 +4458,7 @@ source = "2026-11-15 scenario statuses, review: the test recorded its win withou
 [[plant]]
 id = "replay-identity-leaves-out-brief-and-family-too"
 guards = "A schedule is refused when any declaration field but status differs"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items() if key not in ("brief", "status", "family")})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
@@ -4467,7 +4467,7 @@ source = "2026-11-15 scenario statuses, review: only split had been varied"
 [[plant]]
 id = "replay-identity-leaves-out-the-version"
 guards = "A schedule is refused when any declaration field but status differs"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items() if key not in ("status", "scenario_version")})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
@@ -4476,7 +4476,7 @@ source = "2026-11-15 scenario statuses, review: only split had been varied"
 [[plant]]
 id = "priority-strike-inverts-the-men-fraction"
 guards = "With no artillery or lord in sight the flyers take the enemy with the lowest men fraction"
-file = "src/twwarhammer3/battle/calibration.py"
+file = "src/twwarhammer3/controllers/calibration.py"
 old = 'return unit["men"] / unit["men0"] if unit.get("men0") else 1'
 new = 'return unit["men0"] / unit["men"] if unit.get("men0") else 1'
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_priority_strike_flyers_take_the_enemy_with_the_lowest_men_fraction"]
@@ -4485,7 +4485,7 @@ source = "2026-11-15 legacy deletion, second review: the restored helper had los
 [[plant]]
 id = "replay-identity-leaves-out-the-expected-settings"
 guards = "A schedule is refused when any declaration field but status differs"
-file = "src/twwarhammer3/battle/replay_schedule.py"
+file = "src/twwarhammer3/controllers/replay_schedule.py"
 old = 'for key, value in scenario.items() if key != "status"})'
 new = 'for key, value in scenario.items() if key not in ("status", "expect")})'
 tests = ["tests/twwarhammer3/test_wh3_replay_schedule.py::test_a_schedule_is_refused_when_any_field_but_status_differs"]
@@ -4514,7 +4514,7 @@ id = "lines-facts-import-a-witness-module"
 guards = "A facts module imports nothing from the battle package, so readings reach no witness through it"
 file = "src/twwarhammer3/battle/lines_facts.py"
 old = 'LINE = (KOSSARS, ARMOURED, STRELTSI)'
-new = 'from twwarhammer3.battle.calibration import NEIGHBOURS; LINE = (KOSSARS, ARMOURED, STRELTSI)'
+new = 'from twwarhammer3.controllers.calibration import NEIGHBOURS; LINE = (KOSSARS, ARMOURED, STRELTSI)'
 tests = ["tests/test_repo_rules.py::test_wh3_readings_load_no_witness_module"]
 source = "2026-11-15 readings off witnesses: review R3, F1-1"
 

@@ -12,7 +12,7 @@ import pytest
 from wh3_fixtures import CONFIG, FakeMailbox
 
 from twwarhammer3.battle import play
-from twwarhammer3.battle.replay_schedule import (
+from twwarhammer3.controllers.replay_schedule import (
     ReplaySchedule,
     build,
     carried_out,

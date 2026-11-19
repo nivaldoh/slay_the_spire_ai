@@ -22,8 +22,8 @@ from time import sleep
 # Rests on JUDGEMENT src/twwarhammer3/battle/cannae.py Cannae witness development rules
 # (the centre's 90 m and the 10 s retry), B support witness and Enemy wing labels.
 from twwarhammer3.battle.cannae import CLOSE_M, RETRY_MS
-from twwarhammer3.battle.llm import ARRIVED_M
-from twwarhammer3.battle.scripted import RushNearest, forget_refused
+from twwarhammer3.controllers.llm import ARRIVED_M
+from twwarhammer3.controllers.scripted import RushNearest, forget_refused
 from twwarhammer3.units import able, distance
 
 CAVALRY_GROUPS = ("decisive_cavalry", "containing_cavalry")

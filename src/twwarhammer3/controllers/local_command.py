@@ -8,7 +8,7 @@ These are trusted adapters, not a sandbox for arbitrary Python/tool submissions.
 from copy import deepcopy
 
 from twwarhammer3.battle.setup import DEPLOYMENT_TOLERANCE_M
-from twwarhammer3.battle.team import ALLY_FIELDS, UNIT_FIELDS
+from twwarhammer3.controllers.team import ALLY_FIELDS, UNIT_FIELDS
 from twwarhammer3.protocol import TeamHarnessError
 from twwarhammer3.units import able, distance
 

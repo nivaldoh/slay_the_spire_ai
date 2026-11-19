@@ -17,7 +17,7 @@ from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 from wh3_helmgart import MODE, first_observation
 
 from twwarhammer3.battle import play, setup, wall_defence, wall_readings
-from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.controllers.scripted import Hold
 
 HOLDERS = {  # time_ms -> holders of c1, c2, c3, c7 (None: neutral)
     5200: ("us", "us", None, "us"), 63700: ("us", "us", None, "us"),

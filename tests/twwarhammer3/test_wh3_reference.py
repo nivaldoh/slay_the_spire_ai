@@ -1,7 +1,7 @@
 """The scripted reference: it gathers, then one target at a time, cavalry last."""
 import pytest
 
-from twwarhammer3.battle.reference import Concentrate
+from twwarhammer3.controllers.reference import Concentrate
 
 
 def unit(id, x, z=0, kind="infantry", state=(), men=90, **extra):

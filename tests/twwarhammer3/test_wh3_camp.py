@@ -17,8 +17,9 @@ import wh3_lua
 from wh3_ablation import assert_ablation
 from wh3_lua import load_battle
 
-from twwarhammer3.battle import camp, controllers, play
+from twwarhammer3.battle import camp, play
 from twwarhammer3.battle.setup import scenarios
+from twwarhammer3.controllers import factory as controllers
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
 
 SCENARIO = scenarios()["emp-chd-camp-v1"]

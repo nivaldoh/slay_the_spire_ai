@@ -3,8 +3,9 @@
 import pytest
 from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
-from twwarhammer3.battle import controllers, play
-from twwarhammer3.battle.evade import RETRY_MS, Evade
+from twwarhammer3.battle import play
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers.evade import RETRY_MS, Evade
 from twwarhammer3.protocol import HIDDEN_KEYS, PolicyFailure, validate_orders
 
 MAP = {"min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}  # A's real public bounds
@@ -222,6 +223,6 @@ def test_missing_bounds_are_a_failure_rather_than_a_silent_hold():
 
 
 def test_it_loads_as_an_outside_controller_with_its_own_metadata():
-    name = "twwarhammer3.battle.evade:Evade"
+    name = "twwarhammer3.controllers.evade:Evade"
     policy = controllers.factories({"policy": name})[name]()
     assert type(policy) is Evade and policy.metadata() == {"type": "evade"}

@@ -10,7 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from math import hypot, isfinite
 
-from twwarhammer3.battle import skills
+from twwarhammer3.controllers import skills
 from twwarhammer3.protocol import IllegalActionError, validate_orders
 
 VERSION = "wh3-skills-v1"

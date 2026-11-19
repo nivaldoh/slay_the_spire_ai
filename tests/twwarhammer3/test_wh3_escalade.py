@@ -18,7 +18,7 @@ from wh3_ablation import assert_ablation, run
 from wh3_siege_attack import FORTIFICATIONS, SCENARIO, first_observation, later
 
 from twwarhammer3.battle import escalade, play
-from twwarhammer3.battle.replay_schedule import declaration_digest
+from twwarhammer3.controllers.replay_schedule import declaration_digest
 from twwarhammer3.protocol import PolicyFailure, validate_orders
 
 

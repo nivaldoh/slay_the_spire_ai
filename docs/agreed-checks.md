@@ -35,7 +35,7 @@ revisions written below are the earlier passes.
 
 - WH3 Cannae shortcut challenges (agreed 2026-11-05, owner: "Accept rows 3 and 4, win stands (Recommended)"): one launch each, $0,
   unpaused at 1x, 600/1320/2000 s limits: `emp-envelopment-a-v2` with Hold and with
-  `twwarhammer3.battle.evade:Evade`, `emp-envelopment-b-v3` with `--reserve-seed` 1 and Evade,
+  `twwarhammer3.controllers.evade:Evade`, `emp-envelopment-b-v3` with `--reserve-seed` 1 and Evade,
   `brt-air-relief-v1` with Evade, and `emp-envelopment-c-silent-v2` with
   `configs/twwarhammer3/controllers/cannae-local-rush.json`. Reported only, with no pass rule. A win is
   recorded as a win and narrows that candidate's label. A timer win by Evade means the task can be
@@ -125,7 +125,7 @@ revisions written below are the earlier passes.
   check, wrong contact branch and accidental checking of waiting members.
   This is an optimistic control-flow check: possible skill exits do not prove movement,
   contact, completion, universal progress or strength. Semantics rest on JUDGEMENT
-  `battle/graph_initiation.py` Temporary initiation semantics. Passed at `4f0c3fc`: 52 cases
+  `controllers/graph_initiation.py` Temporary initiation semantics. Passed at `4f0c3fc`: 52 cases
   on a clean tracked tree, independently replayed; three semantic plants caught on the
   same source bytes. Evidence: `runs/gap-initiation-20261101/agreed-at-revision.json` and
   `review/author-followup/report.txt` there.

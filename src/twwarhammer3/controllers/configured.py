@@ -9,9 +9,10 @@ from threading import Event
 from gameai.ledger import Ledger
 from gameai.llm import Model, api_key, post
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import controllers, graph, graph_goals, local_team, team
 from twwarhammer3.battle.setup import scenarios
 from twwarhammer3.benchmarks import profile as benchmark
+from twwarhammer3.controllers import factory as controllers
+from twwarhammer3.controllers import graph, graph_goals, local_team, team
 
 
 def read_spec(path: Path) -> tuple[dict, dict | None, Path]:
@@ -21,7 +22,7 @@ def read_spec(path: Path) -> tuple[dict, dict | None, Path]:
     if path.is_dir() and not manifest.is_file():
         raise ValueError("controller artifact needs manifest.json")
     if (path.is_dir() or path.name == "controller.json") and manifest.is_file():
-        from twwarhammer3.battle import graph_author  # it imports this module
+        from twwarhammer3.controllers import graph_author  # it imports this module
 
         metadata = json.loads(manifest.read_text())
         if (path.is_dir() or metadata.get("artifact_type") == graph_author.ARTIFACT_TYPE

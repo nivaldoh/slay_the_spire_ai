@@ -1,7 +1,7 @@
 # WH3 tactic cards
 
 **Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
-all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `battle/calibration.py`
+all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `controllers/calibration.py`
 and 47 scenario entries are gone from the repository; the tag `wh3-legacy-20261115` has them,
 and their jobs, register rows and log entries remain. Four of the entries this page names are among them and five are kept; the six
 `-heldout-wastes` entries it mentions as a group are deleted too. The
@@ -215,14 +215,14 @@ list keeps evolving across five kinds, plus scale:
 | setup | rosters (1-4 units a side where possible), map, battle type, role, timer, funds, AI modifier |
 | mechanism | why the tactic should matter; the simplest way to win without it, to test first |
 | foils | declared plays that must lose: the naive floors (`hold`, `attack_nearest`, `rush_nearest`) and at least one plausible wrong tactic |
-| witness | a disclosed public-state bot (`battle/calibration.py`) that executes the tactic; later a model's or a person's win |
+| witness | a disclosed public-state bot (`controllers/calibration.py`) that executes the tactic; later a model's or a person's win |
 | signature | observable action and subsequent effect, its source/resolution, and positive, negative and unknown cases; say when it measures only an attempt |
 | knob | one declared difficulty change at a time, such as unit rank; keep the mechanism and a credible winning route |
 | knowledge | mechanics supplied or withheld; separately declare whether the tactic is told; the reference and model must have the same permitted state |
 | timing | configured age and interval, achieved order ages and gaps; any claimed opportunity/deadline needs an observable reference |
 | frozen rule | card/scorer revision, success and failure treatment, foil/witness counts, stopping rule, evidence cohort and reserved variants |
 
-Disclosed withdrawal choices in [calibration.py](../../src/twwarhammer3/battle/calibration.py),
+Disclosed withdrawal choices in [calibration.py](../../src/twwarhammer3/controllers/calibration.py),
 flagged by Codex on 2026-10-31; source dates below are UTC. Commit f063730 lists Claude
 as a co-author; who selected either withdrawal rule is unrecorded:
 

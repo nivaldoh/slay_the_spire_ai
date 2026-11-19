@@ -72,8 +72,8 @@ from collections import Counter
 from copy import deepcopy
 
 from twwarhammer3.battle.escalade_facts import front_line, inside
-from twwarhammer3.battle.replay_schedule import ReplaySchedule
-from twwarhammer3.battle.scripted import forget_refused
+from twwarhammer3.controllers.replay_schedule import ReplaySchedule
+from twwarhammer3.controllers.scripted import forget_refused
 from twwarhammer3.protocol import (
     SIEGE_ORDER_TYPES,
     PolicyFailure,

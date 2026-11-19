@@ -15,7 +15,7 @@ from wh3_graph_goal_support import spec, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import InvalidReply, Model
-from twwarhammer3.battle import graph, graph_goals, team
+from twwarhammer3.controllers import graph, graph_goals, team
 from twwarhammer3.protocol import PolicyFailure
 
 

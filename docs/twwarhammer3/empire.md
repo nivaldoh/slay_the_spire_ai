@@ -1,7 +1,7 @@
 # The Empire set
 
 **Code removed, 2026-11-15:** the owner had the superseded October designs deleted ("Delete
-all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `battle/calibration.py`
+all of it"). `battle/cards.py`, the `card` command, 20 diagnostics of `controllers/calibration.py`
 and 47 scenario entries are gone from the repository; the tag `wh3-legacy-20261115` has them,
 and their jobs, register rows and log entries remain. Six of the entries this page names are among them and six are kept. The
 list of the 47 is in [benchmark-implementation.md](benchmark-implementation.md#history).
@@ -80,7 +80,7 @@ off shooting cavalry first, the reserve waiting behind the centre, the knights w
 until an enemy cavalry unit comes within 120 m, then charging it, then the archers, then
 the weakest engaged enemy); `LineTeamReserve` adds one rule: when a line unit is seen
 routing, the reserve attacks the enemy infantry nearest to where that unit stood. Their
-rules are in their cards (`battle/calibration.py`). After the night, b46 made the guns,
+rules are in their cards (`controllers/calibration.py`). After the night, b46 made the guns,
 reserve and knights keep their targets, stopped the knights' recall mid-melee and
 reworded the reserve card to what the code does; the revised arms are unplayed.
 
@@ -125,7 +125,7 @@ comparison between models.
    record is the contact win (every enemy unit routed or destroyed before the timer), as
    the chariot card already reads it (`cards.outcome`); timer wins are reported beside it.
    Found afterwards (2026-10-20, recounted from the traces): the model prompt still tells a
-   defender "if time runs out, you win" (`battle/llm.py:300`). 16 of the night's 29 model
+   defender "if time runs out, you win" (`controllers/llm.py:300`). 16 of the night's 29 model
    launches had that line, all seven line-battle launches among them, and models acted on
    it (Kimi, line launch 2: "Defender, timeout wins. Hold defensive line."). Those rows
    were told one goal and scored on another. The owner ruled on 2026-10-21 ([directions](../owner-direction.md)):

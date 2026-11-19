@@ -12,7 +12,7 @@ from wh3_lua import load_battle, runtime
 
 from twwarhammer3.battle import play, reserve, setup
 from twwarhammer3.battle.play import public
-from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.controllers.scripted import Hold
 from twwarhammer3.protocol import ProtocolError
 
 
