@@ -170,14 +170,18 @@ def card(name: str, policy, config: dict) -> dict:
 
 def factories(config: dict, *, _ledger=None) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
-    profile = setup.scenarios().get(config.get("scenario"), {}).get("benchmark")
-    is_benchmark = profile == benchmark.VERSION
-    is_suite = profile == benchmark.SUITE
+    def selected_scenario():
+        name = config.get("scenario")
+        return setup.scenarios().get(name, {}) if name else {}
+
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
     models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
     ledger = _ledger
     if models:
+        profile = selected_scenario().get("benchmark")
+        is_benchmark = profile == benchmark.VERSION
+        is_suite = profile == benchmark.SUITE
         if config.get("budget_usd") is None:
             raise ValueError("model controllers require --budget-usd")
         provider = config.get("provider", "openai")
@@ -227,9 +231,10 @@ def factories(config: dict, *, _ledger=None) -> dict:
             makers[name] = factory(config["controller_config"], config, ledger=ledger)
         else:
             kind = controller_class(name)
-            if setup.scenarios().get(config.get("scenario"), {}).get("communication"):
-                if issubclass(kind, local_team.LocalTeam):
-                    makers[name] = partial(kind, scenario=setup.scenarios()[config["scenario"]])
+            if issubclass(kind, local_team.LocalTeam):
+                scenario = selected_scenario()
+                if scenario.get("communication"):
+                    makers[name] = partial(kind, scenario=scenario)
                     continue
             makers[name] = kind
     return makers

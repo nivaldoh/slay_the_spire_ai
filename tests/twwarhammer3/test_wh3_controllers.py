@@ -28,9 +28,11 @@ def test_invalid_rotation_is_refused_before_launch(change):
         controllers.rotation({"policy": "hold", **change})
 
 
-def test_importable_controller_and_fresh_instances():
+def test_importable_controller_and_fresh_instances(tmp_path, monkeypatch):
+    # Installed external policies can be constructed without the game's scenario declarations.
+    monkeypatch.setattr(controllers.setup, "SCENARIOS_PATH", tmp_path / "uninstalled")
     name = "twwarhammer3.controllers.scripted:AttackNearest"
-    makers = controllers.factories({"policy": name})
+    makers = controllers.factories({"policy": name, "scenario": "scenario-on-the-game-host"})
     a, b = makers[name](), makers[name]()
     a.targets["f1"] = "e1"
     assert b.targets == {}
