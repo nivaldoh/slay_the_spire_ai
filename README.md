@@ -45,8 +45,8 @@ flowchart LR
     spire["spire/<br/>Full runs, combat and training"] -->|imports| shared
 ```
 
-Open the [interactive package map](docs/code-structure.html) in a browser from a clone.
-It follows one decision in each game and links each step to its source.
+Open the [code walkthrough and interview rehearsal](docs/code-structure.html) in a browser from a clone.
+Follow one WH3 cavalry order through the code to the battle result. Expand the repository map to see which package owns each step.
 
 ## WARHAMMER III: watch the decisions unfold
 
