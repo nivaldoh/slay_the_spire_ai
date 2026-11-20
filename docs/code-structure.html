@@ -47,6 +47,25 @@ summary:hover { color: var(--forest); }
 .bar span { color: #c3dbcf; margin-left: 9px; font-size: 14px; }
 .hero { display: grid; grid-template-columns: 1.65fr 1fr; align-items: center; gap: clamp(24px,5vw,80px); padding-block: clamp(24px,3.5vw,50px); border-bottom: 1px solid var(--line); }
 .hero > div > p { margin-top: 12px; max-width: 62ch; color: var(--muted); }
+.terminal,.excerpt { white-space: pre-wrap; overflow-wrap: anywhere; margin: 10px 0; font: 14px/1.5 var(--mono); }
+.terminal { padding: 13px 17px; color: #f4faf7; background: #173d3b; border-radius: 6px; }
+.hero > div { min-width: 0; }
+.stack { margin: 8px 0 12px; padding-left: 0; list-style: none; }
+.stack ul { list-style: none; margin: 2px 0 2px 6px; padding-left: 12px; border-left: 1px solid #abc0b7; }
+.stack li { position: relative; }
+.stack ul > li::before { content: ""; position: absolute; top: 10px; left: -12px; width: 8px; border-top: 1px solid #abc0b7; }
+.stack a { font: 13px/1.4 var(--mono); }
+.terminal code,.excerpt code { font: inherit; }
+.excerpt { padding: 8px 12px; background: #eaf0eb; border-left: 2px solid #81a899; }
+.calls { list-style: none; counter-reset: call; padding: 0; margin: 15px 0; }
+.calls > li { counter-increment: call; position: relative; padding: 0 0 20px 29px; margin-left: 10px; border-left: 1px solid #a5b8ae; }
+.calls > li:last-child { border-color: transparent; padding-bottom: 0; }
+.calls > li::before { content: counter(call); position: absolute; left: -11px; top: 2px; width: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: #225c50; color: white; font: 600 13px/22px var(--mono); }
+.calls .sites { font-size: 13px; margin: 3px 0; }
+.calls > li > p { max-width: 78ch; }
+.trace .excerpt { background: #173d3b; color: #f4faf7; }
+.trace .source { color: #d9eadd; }
+.trace .sites { margin: 3px 0; font-size: 13px; }
 .warmup { border-left: 3px solid #bc6c38; padding: 3px 0 4px 21px; }
 .label { font-size: 12px; font-weight: 700; color: var(--amber); letter-spacing: .055em; }
 .warmup p { font: 500 clamp(21px,2.1vw,28px)/1.25 var(--serif); margin: 7px 0 10px; }
@@ -160,17 +179,36 @@ summary:hover { color: var(--forest); }
 </style>
 </head>
 <body>
-<a class="skip" href="#wh3">Skip to the battle walkthrough</a>
+<a class="skip" href="#tour">Skip to the command</a>
 <header class="mast"><div class="wrap bar"><div><b>Code structure</b><span>Total War: WARHAMMER III</span></div><nav aria-label="Walkthrough shortcuts"><a class="map-link" href="#map">Map</a><a href="#practice">Interview rehearsal ↓</a></nav></div></header>
 <main class="wrap" id="tour">
-  <div class="hero">
-    <div><h1>One battle, from order to outcome</h1>
-      <p>Empire Knights receive a move order. They begin to move. Their army eventually loses. Follow that recorded battle to see how the code connects a model’s decision to the evidence you can defend.</p>
+  <div class="hero" id="wh3">
+    <div><h1>Trace the <code>play</code> command</h1>
+      <pre class="terminal" id="play-command"><code>uv run --locked python -m twwarhammer3 play \
+  --scenario emp-knights-emp-swordsmen \
+  --policy llm_rules@z-ai/glm-5.3/low \
+  --provider openrouter --budget-usd 22.5 \
+  --episodes 1 --output runs/knights-example</code></pre>
+      <p>This command asks the model to play one battle with Empire Knights and Swordsmen. It uses the saved run’s settings and an example output directory. Running it from the repository root launches the game. The budget caps cumulative spending on the OpenRouter ledger.</p>
     </div>
-    <aside class="warmup" aria-label="Interview warm-up"><b class="label">Interview warm-up</b>
-      <p>What can you prove when the game accepts an order?</p>
-      <a href="#wh3-trace">Work through the recording</a>
-    </aside>
+    <nav class="warmup" aria-label="Call stack for the live loop"><b class="label">Call stack during a decision</b>
+      <ul class="stack">
+        <li><a href="#dispatch">__main__.main()</a><ul>
+          <li><a href="#handler">run_play()</a><ul>
+            <li><a href="#job">battle.play.play()</a><ul>
+              <li><a href="#episodes">episodes()</a><ul>
+                <li><a href="#episode">play_episode()</a><ul>
+                  <li><a href="#wh3-loop">_drive()</a><ul>
+                    <li><a href="#wh3-decide">policy_call() → decide()</a></li>
+                  </ul></li>
+                </ul></li>
+              </ul></li>
+            </ul></li>
+          </ul></li>
+        </ul></li>
+      </ul>
+      <a href="#saved-decision">Inspect the recorded decision offline</a>
+    </nav>
   </div>
   <div class="reading">
     <aside class="aside" aria-label="Explore the repository">
@@ -186,6 +224,8 @@ summary:hover { color: var(--forest); }
   <li><details open><summary><code>twwarhammer3/</code> <span>WH3 experiments</span></summary>
 
   <ul class="children">
+  <li><details id="map-cli"><summary><code>__main__.py</code> <span>Parse and dispatch commands</span></summary>
+  <div class="contents"><p><code>main()</code> chooses a handler from <code>COMMANDS</code>. For <code>play</code>, the handler prepares the job configuration and passes it to the battle runner.</p><a href="#dispatch">Trace the dispatch →</a></div></details></li>
   <li><details id="map-battle"><summary><code>battle/</code> <span>Run each episode</span></summary>
   <div class="contents"><dl class="leaves">
     <div><dt><code>setup.py</code></dt><dd>Checks the requested battle against the game’s readback.</dd></div>
@@ -285,12 +325,66 @@ summary:hover { color: var(--forest); }
       </details>
     </aside>
     <article class="story" aria-label="WH3 code and interview walkthrough">
-      <section class="chapter" id="wh3" data-branches="map-configs map-battle">
-        <header><div class="path">configs/twwarhammer3/ → src/twwarhammer3/<b>battle/</b></div>
-          <h2>Set up the battle</h2>
-          <p>The environment is the original Windows game. A controller chooses orders for one army.
-            The harness is the Python code that sets up the match, delivers observations and records what happens.
-            In the Knights run, a direct language-model controller commanded Swordsmen and cavalry against the game AI.</p></header>
+      <section class="chapter" id="dispatch" data-branches="map-cli map-controllers">
+        <header><div class="path">src/twwarhammer3/<b>__main__.py</b></div>
+          <h2>Start in <code>main()</code></h2>
+          <p>Open <code>src/twwarhammer3/__main__.py</code> at the bottom. The source links point to the exact lines in the implementation at <code>aecdd84</code>. The recorded battle used an earlier revision, <code>b7e2dd1</code>.</p></header>
+        <ol class="calls" aria-label="From command-line arguments to the game runner">
+          <li>
+            <h3>Let Python resolve the package</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L601"><code>__main__.py:601</code></a></div>
+            <p><code>uv run --locked</code> starts Python in the project environment. With <code>-m twwarhammer3</code>, Python executes <code>src/twwarhammer3/__main__.py</code>. At the bottom of that file <code>raise SystemExit(main())</code> calls the entry point. The tokens beginning with <code>play</code> are its command-line arguments.</p>
+          </li>
+          <li>
+            <h3>Parse the tokens and choose a handler</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L595"><code>__main__.py:595</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L41"><code>__main__.py:41</code></a></div>
+            <p><code>build_parser()</code> registers <code>play</code> as a subcommand. <code>parse_args()</code> reads the arguments into an <code>argparse.Namespace</code>. Here <code>args.command</code> is <code>"play"</code>, <code>args.episodes</code> is the integer <code>1</code>, and <code>args.output</code> is a <code>Path</code>. Looking up <code>COMMANDS["play"]</code> gives the function <code>run_play</code> in this same file.</p>
+            <pre class="excerpt"><code>parser = build_parser()
+args = parser.parse_args()
+return COMMANDS[args.command](args, parser)</code></pre>
+          </li>
+          <li id="handler">
+            <h3>Turn the parsed arguments into a job</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L443"><code>__main__.py:443</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/controllers/factory.py#L171"><code>controllers/factory.py:171</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/policy_names.py#L6"><code>policy_names.py:6</code></a></div>
+            <p>The CLI’s <code>run_play(args, parser)</code> copies the options into <code>config</code>, keeping the command name and output directory out of that dictionary. It fills in the default model and the paths to the ledger and results register. <code>rotation(config)</code> checks the requested combinations of policy and delay.</p>
+            <p>Inside <code>factories(config)</code>, <code>policy_parts()</code> splits the policy string into <code>llm_rules</code>, the model <code>z-ai/glm-5.3</code> and the reasoning effort <code>low</code>. The factory reads <code>configs/twwarhammer3/rules_prompt.md</code> and stores a constructor in <code>makers</code> under the full policy string. The job will call that constructor once per battle.</p>
+            <p>Now step into the last call in the CLI handler. The import <code>from twwarhammer3.battle.play import play as run_play</code> gives the battle runner the same name as the handler. This call crosses into <code>battle/play.py</code>.</p>
+            <pre class="excerpt"><code>manifest = run_play(args.output, config, makers=makers)</code></pre>
+          </li>
+        </ol>
+        <div class="drills"><h3>Interview practice</h3><details class="ask"><summary>Where would you stop in a debugger to inspect the exact configuration before launch?</summary><p>Stop at the call passing <code>args.output</code>, <code>config</code> and <code>makers</code> in <code>__main__.run_play()</code>. Inspect the parsed scenario and the constructor keyed by the full policy string. Step into that call to reach <code>battle.play.play()</code>.</p></details></div>
+      </section>
+      <section class="chapter" id="job" data-branches="map-configs map-battle map-engine map-mod">
+        <header><div class="path">src/twwarhammer3/<b>battle/play.py</b></div><h2>Inside <code>play(output, config, makers=…)</code></h2>
+          <p>Follow the fresh-launch branch selected by the example. <code>play()</code> owns the job, which can contain several episodes. This command requests one.</p></header>
+        <ol class="calls" aria-label="From job setup to an episode">
+          <li>
+            <h3>Build the trial and read the scenario</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L117"><code>battle/play.py:117</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/setup.py#L200"><code>battle/setup.py:200</code></a></div>
+            <p><code>play()</code> calls <code>rotation(config)</code> again to get the ordered trial list. Here the trial has the named policy and <code>delay_ms = 0</code>. <code>load_scenario(config)</code> looks up the scenario through <code>scenarios()</code>. Its <code>entries()</code> reader loads the scenario JSON files and <code>scenarios()</code> resolves their base chains. The Knights declaration lives in <code>configs/twwarhammer3/scenarios/retired.json</code>. <code>scenario_steps()</code> turns the resolved map and armies into menu steps. The runner creates the new output directory and writes <code>manifest.json</code> with the config, source identity and planned trials.</p>
+          </li>
+          <li>
+            <h3>Start the game process</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/engine/runtime.py#L104"><code>engine/runtime.py:104</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/gameai/windows.py#L143"><code>gameai/windows.py:143</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/gameai/windows_game.py#L114"><code>gameai/windows_game.py:114</code></a></div>
+            <p>In the fresh-launch branch, <code>RuntimeLock</code> guards setup. <code>prepare_runtime()</code> installs the mod and helpers. The runner resets the mailbox, enters <code>mailbox.owned_session(settings)</code> and enters <code>OwnedGame</code>. Its inherited <code>__enter__()</code> in <code>src/gameai/windows.py</code> starts the Windows supervisor. In that process, <code>src/gameai/windows_game.py</code> runs <code>main()</code> and launches <code>Warhammer3.exe</code>.</p>
+          </li>
+          <li>
+            <h3>Send the menu steps to the game</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L262"><code>battle/play.py:262</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/mod/script/frontend/mod/twwarhammer3_frontend.lua#L87"><code>twwarhammer3_frontend.lua:87</code></a></div>
+            <p><code>start_frontend()</code> waits for the frontend mod, then calls <code>Mailbox.write_menu(steps)</code>. The frontend Lua script’s <code>poll()</code> reads <code>menu.json</code> and uses <code>run_step()</code> to operate the menus. Back in Python, <code>check_menu()</code> verifies the lobby readback for this scenario.</p>
+          </li>
+          <li id="episodes">
+            <h3>Select the first episode</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L161"><code>battle/play.py:161</code></a></div>
+            <p>Now <code>play()</code> calls its nested <code>episodes(mailbox)</code> function. For the first trial it passes <code>makers[trial["policy"]]</code> and <code>runs/knights-example/episode-0000</code> into <code>play_episode()</code>.</p>
+          </li>
+          <li id="episode">
+            <h3>Construct the controller and start its loop</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L298"><code>battle/play.py:298</code></a></div>
+            <p><code>play_episode()</code> opens <code>trace.jsonl</code>, calls <code>make_policy()</code> to create a fresh <code>LLMPolicy</code>, then passes the policy, mailbox and mutable result dictionary to <code>_drive()</code>.</p>
+            <pre class="excerpt"><code>_drive(config, policy, mailbox, not_battle, result, event, started, scenario or {})</code></pre>
+          </li>
+        </ol>
         <figure class="system" id="wh3-start" aria-labelledby="system-title">
           <h3 id="system-title">Inside a WH3 play job</h3>
           <div class="machines">
@@ -306,10 +400,6 @@ summary:hover { color: var(--forest); }
           </div>
           <figcaption>After play, the <b>results reader</b> can open the saved trace and ending after the game and play job have closed.</figcaption>
         </figure>
-        <details class="dive"><summary>How the harness starts a trial</summary><p>The command selects a scenario and policy.
-          <code>battle/setup.py</code> resolves the declared map and armies, then checks the game’s setup.
-          <code>battle/play.py</code> creates a fresh controller for the episode. The job manifest records
-          the configuration and source revision, so a later reader can identify what actually ran.</p></details>
         <p>Using the original engine preserves movement, visibility and combat rules. It also makes each fresh launch expensive. The owner chose unpaused play at 1× so the cost of waiting for a model shows up in the battle.</p>
         <div class="drills"><h3>Interview practice</h3>
   <details class="ask" id="ask-state"><summary>What is the environment’s state, and what is an observation?</summary>
@@ -319,19 +409,31 @@ summary:hover { color: var(--forest); }
 </div>
       </section>
       <section class="chapter" id="wh3-loop" data-branches="map-mod map-engine map-protocol map-controllers">
-        <header><div class="path">src/twwarhammer3/ <b>· live decision loop</b></div>
-          <h2>Follow the Knights’ move order</h2>
-          <p>The game runs on Windows. Python runs in WSL, the Linux environment on the same machine.
-            The Lua mod publishes snapshots through a file mailbox. Python sends orders back through it.
-            The game keeps moving throughout this exchange.</p></header>
-        <figure class="trace" id="wh3-trace"><h3>One request on the battle clock</h3>
+        <header><div class="path">battle/play.py <b>· _drive()</b></div>
+          <h2>Step through one iteration of <code>_drive()</code></h2>
+          <p><code>Mailbox.wait_new_battle()</code> gives the loop its first battle ID and sequence number.
+            Inside <code>while True</code>, <code>wait_observation(battle=…, after_seq=…)</code> waits for a newer snapshot.
+            Python and Lua run independently. The two processes exchange observations and orders through files.</p></header>
+        <figure class="trace" id="wh3-trace"><h3>Follow the first Knights order</h3>
           <ol>
-            <li id="wh3-observe"><time datetime="PT5.3S">5.3 s</time><div><b>Lua publishes snapshot 1.</b><p>The Knights, <code>f2</code>, are near (90, −287). The battle loop filters the observation, then passes it to the controller.</p></div></li>
-            <li id="wh3-decide"><span class="interval" aria-label="Between observations">↓</span><div><b>The model chooses two moves.</b><p>Send the Swordsmen to (−200, 100) and the Knights to (−150, 200). Python validates the batch and sends request <code>…-r1</code>, based on snapshot 1.</p></div></li>
-            <li id="wh3-send"><time datetime="PT8.9S">8.9 s</time><div><b>Lua acknowledges both orders.</b><p>The request ID matches. The input is now 3.6 battle seconds old. That interval includes transport and polling as well as model inference.</p></div></li>
-            <li><time datetime="PT10.7S">10.7 s</time><div><b>The next evidence is a position.</b><p>By snapshot 6 the Knights are near (84, −279). Their centre has shifted toward the destination. Arrival and tactical benefit are still open questions.</p></div></li>
+            <li id="wh3-observe"><time datetime="PT5.3S">5.3 s</time><div><b>Read <code>observation.json</code> and select the policy input.</b>
+              <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua#L1338"><code>twwarhammer3_battle.lua:1338</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L643"><code>battle/play.py:643</code></a></div>
+              <p>Lua’s <code>tick()</code> calls <code>publish_observation(now)</code>. In Python, <code>_drive()</code> receives the snapshot, checks the first roster with <code>_start()</code>, and adds <code>public(observation, scenario)</code> to its history once deployed. With zero added delay the Knights decision uses snapshot 1. Unit <code>f2</code> is near (90, −287).</p></div></li>
+            <li id="wh3-decide"><span class="interval" aria-label="During the decision">↓</span><div><b>Call <code>LLMPolicy.decide(basis)</code> and get orders back.</b>
+              <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/protocol.py#L86"><code>protocol.py:86</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/controllers/llm.py#L713"><code>controllers/llm.py:713</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/gameai/llm.py#L495"><code>src/gameai/llm.py:495</code></a></div>
+              <p><code>policy_call(policy, "decide", basis)</code> invokes the concrete policy. <code>decide()</code> builds the prompt with <code>render_prompt()</code>. <code>Model.ask()</code> calls <code>Model.call()</code>. Inside <code>_call_reserved()</code>, <code>self.send(body)</code> invokes <code>gameai.llm.post()</code> with OpenRouter as the provider.</p>
+              <p>Back in <code>ask()</code>, the policy’s <code>parse_reply()</code> callback reads the response text. <code>decide()</code> returns <code>reply["orders"]</code>. In the recording those orders send the Swordsmen to (−200, 100) and the Knights to (−150, 200).</p></div></li>
+            <li><span class="interval" aria-label="After the model returns">↓</span><div><b>Validate the batch and write <code>orders.json</code>.</b>
+              <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/protocol.py#L143"><code>protocol.py:143</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/engine/mailbox.py#L248"><code>engine/mailbox.py:248</code></a></div>
+              <p>Back in <code>_drive()</code>, Python checks for an ending that arrived during inference. While play continues, <code>validate_orders(orders, basis)</code> checks the direct model’s batch. <code>mailbox.write_orders(battle, basis["seq"], orders, …)</code> publishes it and returns a request ID. The loop retains that ID in <code>outstanding</code>. Here is the Knights’ order in the recorded batch.</p>
+              <pre class="excerpt"><code>{"unit": "f2", "type": "move", "x": -150, "z": 200,
+ "run": true, "queue": false, "facing": null, "width": null}</code></pre></div></li>
+            <li id="wh3-send"><time datetime="PT8.9S">8.9 s</time><div><b>Apply the pending batch and match the acknowledgement.</b>
+              <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua#L2166"><code>twwarhammer3_battle.lua:2166</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua#L1802"><code>apply_pending():1802</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L535"><code>battle/play.py:535</code></a></div>
+              <p>Battle Lua’s <code>poll()</code> checks the job, battle and request IDs in <code>orders.json</code> and sets <code>state.pending</code>. On a battle tick, <code>apply_pending(now)</code> calls <code>apply_order()</code> for each order and records the per-order results. The Knights’ unqueued move with no facing or width selects <code>goto_location</code>. A later snapshot carries the acknowledgement. When its request matches <code>outstanding["request"]</code>, Python calls <code>_acknowledge()</code>, delivers feedback to the policy and clears the pending request. Both recorded orders were accepted, <b>3.6 battle seconds</b> after the input snapshot.</p></div></li>
+            <li><time datetime="PT10.7S">10.7 s</time><div><b>Read another snapshot.</b><p>The loop repeats. By snapshot 6 the Knights are near (84, −279), closer to the requested destination. That is evidence of movement. Arrival and tactical benefit require further observations.</p></div></li>
           </ol>
-          <figcaption>In the trace, <code>seq</code> identifies an observation and <code>request</code> identifies an order batch. One snapshot can describe both the current world and feedback about an earlier decision.</figcaption>
+          <figcaption><code>seq</code> identifies the observation a decision used. <code>request</code> identifies the batch the game acknowledged. The 3.6-second interval includes polling and transport as well as model inference.</figcaption>
         </figure>
         <h3 id="wh3-public">Who gets to see what?</h3>
         <dl class="fork">
@@ -359,9 +461,26 @@ summary:hover { color: var(--forest); }
         <details class="refs"><summary>Recording and implementation</summary><p>Knights job at <code>b7e2dd1</code>, episode 0000, in <code>runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/</code>. The times above come from its trace. <a href="how-code-works.html#job">Recorded job</a> · <a href="../src/twwarhammer3/battle/play.py">Battle loop</a> · <a href="../src/twwarhammer3/engine/mailbox.py">Mailbox</a> · <a href="../src/twwarhammer3/controllers/factory.py">Controller contract</a></p></details>
       </section>
       <section class="chapter" id="evals" data-branches="map-scenarios map-benchmarks map-results">
-        <header><div class="path">src/twwarhammer3/ <b>· benchmarks/ and results/</b></div>
-          <h2>Read the ending. Then decide what to count.</h2>
+        <header><div class="path">battle/play.py <b>→ results/register.py → __main__.py</b></div>
+          <h2>Follow the result back to <code>main()</code></h2>
           <p>At 335.2 battle seconds, the game reported a loss. The earlier acknowledgement and the later loss both belong in the record. Neither tells us whether a different cavalry order would have won.</p></header>
+        <ol class="calls" aria-label="Return from the episode to the shell">
+          <li>
+            <h3>Return from the live loop</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua#L1921"><code>twwarhammer3_battle.lua:1921</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L298"><code>battle/play.py:298</code></a></div>
+            <p>Lua’s <code>finish()</code> publishes the terminal observation. When <code>_drive()</code> reads the engine result, it sets the episode status, logs a result event and returns. The <code>finally</code> block in <code>play_episode()</code> writes <code>episode-0000/result.json</code> and closes the trace. The returned dictionary describes this one battle.</p>
+          </li>
+          <li>
+            <h3>Record the episode and return to the shell</h3>
+            <div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L161"><code>battle/play.py:161</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/results/register.py#L133"><code>results/register.py:133</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L443"><code>__main__.py:443</code></a></div>
+            <p>Back in <code>episodes()</code>, the runner reads the saved result, appends it to <code>manifest["episodes"]</code> and calls <code>results/register.py → record()</code> to update <code>docs/twwarhammer3/results.csv</code>. A loss counts as a finished battle. When the trial list is exhausted, <code>episodes()</code> returns <code>"completed"</code>. <code>play()</code> saves the final manifest and returns it to the CLI. That job can therefore exit successfully even though the Knights lost.</p>
+            <pre class="excerpt"><code>return 0 if manifest[&quot;status&quot;] == &quot;completed&quot; else 1</code></pre>
+          </li>
+        </ol>
+        <details class="dive" id="saved-decision"><summary>Try a read-only command on the recorded episode</summary><p>From the checkout containing the saved run, follow the same <code>main()</code> dispatch with <code>digest</code> as the subcommand.</p><pre class="excerpt"><code>uv run --locked python -m twwarhammer3 digest \
+  runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000 \
+  --at 5.3</code></pre><p><code>run_digest()</code> takes the <code>--at</code> branch and calls <code>results/digest.py → decision_at()</code>. It reads the episode’s <code>trace.jsonl</code> and prints the decision nearest 5.3 seconds, including the prompt, orders and acknowledgement. This reader needs only the saved episode directory.</p><div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L462"><code>__main__.py:462</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/results/digest.py#L176"><code>results/digest.py:176</code></a></div></details>
+        <h3>How those records enter a benchmark comparison</h3>
         <ol class="rail" id="benchmark-route" aria-label="From outcome to comparison">
           <li><b>Keep the ending</b><small>The episode result records how this battle ended. The trace lets a reader work backward to particular decisions.</small><code>runs/…/episode-0000/</code></li>
           <li><b>Apply one outcome rule</b><small>The benchmark profile counts qualifying engine wins, losses and draws. If the provider stops during play and the game supplies no ending, that attempt stays unresolved.</small><code>benchmarks/profile.py</code></li>
