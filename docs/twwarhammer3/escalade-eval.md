@@ -1019,8 +1019,8 @@ fire-at-will read enabled for the crew and Little Grom. Over the window the crew
 ammunition stayed at 450 and Little Grom's fell from 22 to 20.
 
 This one stock start supplies movement and health evidence. Check 3(b) and C5
-remain unverified. The [authored deployment draft](#integrated-stage-2-draft-2026-11-23)
-still needs a live setup readback, including the ram position and crew association.
+remain unverified. The [authored-start readbacks](#authored-start-native-readbacks-2026-11-23)
+then exposed a separate problem with the ram and crew positions.
 [Run log](log.md#2026-11-23-izmail-stock-ram-gate-order)
 
 ### Saved opening and order-probe rehearsal (2026-11-23)
@@ -1260,11 +1260,57 @@ matched the earlier preview digest. Receipts and reproduction commands are in
 
 The offline assembly uses the parked setup and tower changes. Review item 15 includes the
 climb eligibility draft and decisions on the tower-owner fix and fixed starts.
-The frozen Stage 2 plan needs the corresponding live setup readbacks and a named window
-with an explicit cutoff and process cap. If fixed starts are selected, their live
-readback must also check for wall targets. Native setup, movement, order effects and ticket
+The frozen Stage 2 plan needs a valid setup and a named window with an explicit cutoff
+and process cap. The two [authored-start probes](#authored-start-native-readbacks-2026-11-23)
+failed setup validation. A new fixed-start candidate needs a crew readback and a wall-target
+sample before it can support the planned orders. Integrated native order effects and ticket
 changes remain unverified.
 [Review item 15](../review-queue.md#decisions)
+
+### Authored-start native readbacks (2026-11-23)
+
+JUDGEMENT?: Authored-start probe source — Codex, 2026-11-23. Read the parked `3f951ef`
+deployment on the stock pack. The declaration was loaded in the diagnostic process.
+Adopting it or using the engine starts changes the benchmark construction.
+
+Both launches used the frozen 152-step plan and passed the lobby checks. At 5.3 s
+both openings had 13 friendly units,
+12 enemy units and one ram. Both failed the existing setup reader, which reported
+an Armoured Kossars match 34 m from its target. It pairs the nearest remaining unit of
+each type. The raw readings identify the crew as `f2` in both launches.
+
+JUDGEMENT?: Slot readback — Codex, 2026-11-23. Count private offsets descriptively in
+the same order as Lua `authored_entry` binds the next unused unit of each type.
+The setup check uses nearest positions and can pair a displaced unit to a different
+slot. Keep its original refusal as well as the binding-based offsets.
+
+| First private reading | A | B |
+| --- | ---: | ---: |
+| Crew centre (x, z) | (229.9, -247.0) | (-210.1, -245.4) |
+| Crew distance to authored slot | 216.1 m | 223.9 m |
+| Crew-linked vehicle centre (x, z) | (13.7, -245.3) | (13.7, -245.3) |
+| Crew distance to crew-linked vehicle | 216.2 m | 223.8 m |
+| Assault-equipment centre (x, z) | (13.8, -245.4) | (13.8, -245.4) |
+| Crew distance to assault equipment | 216.1 m | 223.9 m |
+| Vehicle distance to g1 building centre | 226.7 m | 226.7 m |
+| Assault-equipment distance to g1 building centre | 226.9 m | 226.9 m |
+
+Between starts the crew centres were 440.0 m apart. The other 24 slot pairs
+had a largest separation of 1.91 m. The first setup readings included bearing and ordered
+width for all 25 units in each launch. The crew's ordered width was 11.4 m in both
+against its authored 31.8 m. Ordered width is the field the engine reads back.
+
+Both starts reported six capture points as enemy-held and omitted the holder
+for three. The c3 holder went from enemy to unreported and c6 went from unreported
+to enemy. All 12 private defenders read `on_wall=false` at 5.3 s in both.
+The planned public sample near the order boundary was unavailable after the setup
+refusals. Both games stopped without an issued order.
+
+The draft is parked. A later diagnostic can observe whether the crew and ram
+positions converge during setup or stay apart. The fixed starts, assembly of the
+opening crew and Stage 2 wall-target availability remain unverified. Raw openings
+and the comparison are in `runs/izmail-authored-live-20261123/`.
+[Run log](log.md#2026-11-23-izmail-authored-start-readbacks)
 
 ## Risks
 
@@ -1278,7 +1324,7 @@ changes remain unverified.
 | A building is both a wall piece and a tower and gets two ids | 1 | Check 2 reports it; dedupe as a new version |
 | The front line, the ±60 m sectors, the recess pieces or the 40 m staging spacing do not fit the real pieces | 1 | A new version with the rules re-marked; the fixture's pieces are a sketch |
 | Dozens of wall pieces bloat the observation | 1 | Group the pieces between Fort Tower points into sections, as a new version |
-| The engine's attacker start varies between launches | 1 | Author the start with `deployment` and read it back, once [Haengju](haengju-eval.md)'s stage 1 shows whether teleport works in a siege |
+| The engine's attacker start varies between launches | 1 | The [authored-start probes](#authored-start-native-readbacks-2026-11-23) recorded matching ram centres and different crew positions at the two openings. Read the crew and ram together before adopting a fixed start |
 | Winged Lancers or the ksl ram do not recruit | L | Horse Raiders (`wh3_main_ksl_cav_horse_raiders_0`, recruited in `ksl-raiders-emp-halberds`) for the Lancers, as a new version; a ram that does not recruit goes to the owner |
 | The Grom or the ram makes the gate trivial (C5 wins) | 3a | Remove one, as a new version with a stated reason |
 | Missile attrition wins (C4) | 3a | Fewer bows, one step at a time; keep the win |

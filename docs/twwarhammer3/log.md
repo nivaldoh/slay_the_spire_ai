@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail authored-start readbacks
+
+Two setup-only launches at `19a5e06` with the parked `3f951ef` declaration,
+stock pack and build 26403568, $0. Both used the 152-step plan and passed
+lobby checks. Their 5.3 s records had 13 friendly, 12 enemy and one ram each. Both starts failed
+the setup checker on an Armoured Kossars match 34 m from its target.
+
+The raw vehicle named f2 as crew in both launches. It was 216.2 m and 223.8 m
+from f2 at the private opening. Vehicle centres matched and f2's centres were
+440.0 m apart. The largest separation among the other 24 authored-slot pairs
+was 1.91 m. Holders c3 and c6 differed. All 12 private defenders in both
+openings read `on_wall=false` at 5.3 s. The public order-window reading was
+unavailable after the setup refusals. Zero battle orders. All five runtime
+files and preferences matched their prelaunch hashes after both launches.
+The draft stays parked and unverified. Records in `runs/izmail-authored-live-20261123/`.
+[Evaluation](escalade-eval.md#authored-start-native-readbacks-2026-11-23)
+
 ## 2026-11-23 Izmail stock ram gate order
 
 One stock-start launch at `e26b8e2`, build 26403568, $0. The checked lobby
