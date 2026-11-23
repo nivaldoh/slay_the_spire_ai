@@ -188,27 +188,6 @@ local function unit_class(unit)
     return class
 end
 
--- JUDGEMENT?: First climb effect probe — Codex, 2026-11-23. For this one job,
--- require a matching live unmounted unit and its man entity. The land record alone
--- can admit Little Grom. This trial gives no unit-level rule for mixed entities.
-local function wall_context_climb(entry, unit)
-    local id = entry.ui_id
-    if type(id) ~= "string" or id == "" then return nil end
-    local context = "CcoBattleUnit"
-    local context_id = get_context("UniqueUiId", context, id)
-    local unit_type = get(unit, "type", nil)
-    if (type(context_id) ~= "number" and type(context_id) ~= "string")
-            or tostring(context_id) ~= id or type(unit_type) ~= "string" or unit_type == ""
-            or get_context("UnitRecordContext.Key", context, id) ~= unit_type then
-        return nil
-    end
-    local mounts = get_context("MountList.Size", context, id)
-    if type(mounts) ~= "number" or mounts < 0 or mounts % 1 ~= 0 then return nil end
-    if mounts ~= 0 then return false end
-    return get_context("EntityList.FirstContext(IsMan).EntityRecordContext.CanClimbLadderAndStairPipes",
-                       context, id)
-end
-
 -- Siege assault only (state.fortifications, set up with session.siege_assault): on_wall
 -- (is_on_top_of_wall, CA's battle_unit.html) for our units and visible enemies, and for ours
 -- can_climb (can_climb_walls) and can_siege (has_attribute "can_siege"), each kept once read. A
@@ -220,12 +199,7 @@ local function siege_unit(record, unit, entry)
     if not entry then return end
     for _, read in ipairs({{"can_climb", "can_climb_walls"}, {"can_siege", "has_attribute", "can_siege"}}) do
         if entry[read[1]] == nil then
-            local value
-            if read[1] == "can_climb" and state.climb_effect_probe then
-                value = wall_context_climb(entry, unit)
-            else
-                value = get(unit, read[2], nil, read[3])
-            end
+            local value = get(unit, read[2], nil, read[3])
             if type(value) == "boolean" then entry[read[1]] = value end
         end
         record[read[1]] = entry[read[1]]
@@ -1668,14 +1642,8 @@ local function apply_siege(entry, controller, order)
     local health = get(target.building, "health", nil)
     if type(health) == "number" and health <= 0 then error("target_destroyed") end
     if order.type == "besiege" then
-        if target.kind == "wall" then
-            local can_climb
-            if state.climb_effect_probe then
-                can_climb = wall_context_climb(entry, entry.unit)
-            else
-                can_climb = get(entry.unit, "can_climb_walls", nil)
-            end
-            if can_climb ~= true then error("cannot_climb") end
+        if target.kind == "wall" and get(entry.unit, "can_climb_walls", nil) ~= true then
+            error("cannot_climb")
         end
         controller:besiege_building(target.building, 1, order.run == true)
     else
@@ -2267,7 +2235,6 @@ local function start()
         state.setup.reserve = {ok = reserve_ok, error = not reserve_ok and clean_error(reserve_error) or nil}
     end
     if session.siege_assault then
-        state.climb_effect_probe = session.job == "probe-wall-reference-20261123" and not state.multiplayer
         -- A refusal (the player defending, an unreadable building) leaves every siege field out.
         local siege_ok, lists = pcall(setup_fortifications)
         state.setup.siege_assault = {ok = siege_ok, lists = siege_ok and lists or nil,

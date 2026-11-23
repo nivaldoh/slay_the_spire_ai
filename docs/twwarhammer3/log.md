@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail wall-height repeat
+
+One stock-start diagnostic, `probe-wall-reference-20261123`, $0. Source `05048c6`,
+Steam build 26403568, pack SHA-256
+`d6e04fecb1bdc2ee07f67e18e7a12f9c0b749c8ed8db7940dd727f892c6ba8eb`. The 152-step lobby plan and native setup matched the stock scenario.
+The second earlier hold had the same 71 fortification IDs, kinds and centres. Two
+defender readings supplied 345.0 m at both ordered pieces under the centre-based
+association described in the [evaluation](escalade-eval.md#wall-height-reference-and-repeat-2026-11-23).
+
+The bridge acknowledged Armoured Kossars to `w11` and Kossars (Spears) to `w12` at 10.4 s.
+Their first paired readings with a positive wall flag and height within 3 m came at
+87.2 s (345.0 m) and 94.1 s (342.3 m), 76.8 s and 83.7 s after dispatch.
+The collector stopped at 94.4 s, unpaused at 1x, with no battle result. The stock
+pack and Lua source were restored. The four other runtime files and preferences
+matched the prelaunch hashes. Check 3(a) remains unverified pending agreement.
+Evidence, including 76 public frames and the independent reference, is under
+`runs/izmail-wall-reference-20261123/`.
+
 ## 2026-11-23 Izmail infantry wall order effects
 
 One stock-start `launch` and menu diagnostic, `probe-climb-effect-20261123`, $0.
@@ -39,7 +57,7 @@ OrderProbe's two infantry wall orders and the temporary entity guard described i
 [evaluation](escalade-eval.md#climb-order-effect-diagnostic-2026-11-23).
 
 The request was based on the 10.1 s observation. It ordered Armoured Kossars to `w11`
-and Kossars (Spears) to `w12`. The engine acknowledged both at 10.4 s. The first private wall
+and Kossars (Spears) to `w12`. The bridge acknowledged both at 10.4 s. The first private wall
 flag and height pairs came at 85.1 s (341.1 m) and 89.0 s (339.9 m), respectively.
 The collector ended at 89.6 s, unpaused at 1x. The independent wall-top references are
 missing and the proposed Check 3(a) remains unverified. The scoped trial ended before

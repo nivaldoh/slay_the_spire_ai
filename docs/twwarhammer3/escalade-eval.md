@@ -1052,7 +1052,7 @@ wall orders on the stock start. Require a matching live unit ID and type, zero m
 and a true ladder flag on the first live man at dispatch. The land record alone could
 admit Little Grom. These two sends give evidence for the chosen infantry in one opening.
 
-The engine accepted both orders in one request at 10.4 s on the script clock.
+The bridge acknowledged both orders in one request at 10.4 s on the script clock.
 The private record first paired the unit's `on_wall=true` with its height as follows.
 
 | Unit | Ordered wall | Time after dispatch | Height on wall | Height at order basis |
@@ -1061,10 +1061,42 @@ The private record first paired the unit's `on_wall=true` with its height as fol
 | Kossars (Spears) (`f8`) | `w12` | 78.6 s | 339.9 m | 302.7 m |
 
 Both first readings are within the proposed 150 s window, and both heights continued
-to rise afterward. The independent wall-top height for either target is missing, so
-Check 3(a) as written remains unverified. The guard was scoped
-to this job, and the original pack and source were restored. A production unit-level rule,
-fixed starts and tower ownership remain open. [Run log](log.md#2026-11-23-izmail-infantry-wall-order-effects)
+to rise afterward. This trial ended on the wall flags while the independent height comparison
+was still outstanding. The original pack and source were restored.
+[Run log](log.md#2026-11-23-izmail-infantry-wall-order-effects)
+
+### Wall-height reference and repeat (2026-11-23)
+
+JUDGEMENT?: Defender reference for wall height — Codex, 2026-11-23. Use the closest
+nonclimbing defender with a positive wall flag from the separate second hold. Associate
+it with the nearest of all 71 fortification centres. Building membership or a map
+surface reading could change that association. The proposed 3 m comparison rests on it.
+
+JUDGEMENT?: Fixed diagnostic wall targets — Codex, 2026-11-23. Keep OrderProbe's actor
+selection and timing. Send each infantry type to the same reference wall as in the first
+trial. A nearest-wall repeat would have selected `w3` for both infantry from the
+second hold's opening.
+
+The hold and both trial openings agreed on all 71 fortification IDs, kinds and centres
+on build 26403568. The closest qualifying defender samples stood at 345.0 m. The
+Handgunners were 1.3 m from `w11` and 20.7 m from the next centre. The Crossbowmen
+were 1.9 m from `w12` and 19.5 m from the next centre. These are unit positions on
+the deck, associated with the wall by centre distance. When the same comparison was
+applied to the first trial, one of two units met the height criterion by its last
+private frame at 91.1 s.
+
+The repeat's bridge acknowledged both wall orders at 10.4 s. Each unit subsequently read
+`on_wall=true` while nearest its ordered piece and within 3 m of the defender height.
+
+| Unit | Ordered wall | First wall flag after dispatch | First flag and height match after dispatch | Height at match |
+|---|---|---:|---:|---:|
+| Armoured Kossars (`f4`) | `w11` | 75.6 s | 76.8 s | 345.0 m |
+| Kossars (Spears) (`f8`) | `w12` | 82.8 s | 83.7 s | 342.3 m |
+
+The repeat produced both comparisons within 150 s. Check 3(a) remains unverified
+pending agreement on the height method. The stock guard was restored. Production
+eligibility, fixed starts and tower ownership remain open.
+[Run log](log.md#2026-11-23-izmail-wall-height-repeat)
 
 ### Stage 2 preflight (2026-11-23)
 
