@@ -1145,6 +1145,29 @@ change in proposed Check 3(c). It remains unverified under the owner's rule
 pending agreement on the method. The original Lua and pack were restored.
 [Run log](log.md#2026-11-23-izmail-little-grom-gate-order)
 
+### Grom gate eligibility draft (2026-11-23)
+
+JUDGEMENT?: Grom gate eligibility — Codex, 2026-11-23. Publish
+`gate_attack_target="g1"` for the exact Little Grom in a single-player siege
+assault when a fresh false attribute, a readable positive weapon range and the
+registered gate support it. A broad `can_siege=true` would also allow the
+untried wall and tower targets. Both publication and dispatch use the current
+Grom attribute so a cached true cannot outlast a change. The native controller
+keeps its movement and aiming rules.
+
+The friendly replay retains the gate grant and the accompanying false
+attribute. The direct model sees `g1` next to Little Grom as its building
+target. Python validation, the native guard and the three Izmail controller
+paths use that gate and check ammunition. Team member projection still omits
+the siege grants. Existing saved observations keep their admission behavior.
+
+The candidate is parked at `00cf1bb` on local branch `izmail-gate-rule-20261123`.
+An offline composition of the earlier climb opening and the separate Grom readings
+produced two wall orders, the original ram order and one Grom order on `g1`.
+An overlay on Stage 2 `8033afe` reproduced 14 fake episodes and five prelaunch
+cases. Both eligibility drafts remain unverified in the integrated native game.
+Evidence and rerun commands are in `runs/izmail-gate-rule-20261123/`.
+
 ### Stage 2 preflight (2026-11-23)
 
 JUDGEMENT?: Stage 2 preview composition — Codex, 2026-11-23: overlay the fixed-start draft,
