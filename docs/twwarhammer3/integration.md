@@ -577,9 +577,10 @@ From the documentation or code reading; probe before relying on them:
   units on Altdorf (`capital-attacker`: a ram pushed about 300 m by 240 s, a wall besieger that
   routed). Stage 1 read `is_on_top_of_wall` on visible Izmail defenders. In one fresh Izmail
   opening on build 26403568, both `can_climb_walls` calls failed with a missing-method error
-  on all 13 native friendly unit objects. A player-side climb through the mod's wall-order
-  wrapper remains unverified.
-  [Izmail diagnostic](escalade-eval.md#climb-getter-diagnostic-2026-11-23)
+  on all 13 native friendly unit objects. A follow-up read the Boolean
+  `CcoBattleEntityRecord.CanClimbLadderAndStairPipes` through the unit's man records.
+  A player-side climb through the mod's wall-order wrapper remains unverified.
+  [Izmail diagnostics](escalade-eval.md#climb-entity-context-diagnostic-2026-11-23)
 - The boundary of a siege the player attacks, as fixed on 2026-11-09, offline only. Until then
   `mode.slots` listed the defender's eight tower slots with their build timers (the attacker's
   `ToggleableSlotList(PlayerArmyContext)` in the 2026-10-14 attack smoke), and an accepted

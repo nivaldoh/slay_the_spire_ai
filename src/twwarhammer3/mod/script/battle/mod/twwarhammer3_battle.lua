@@ -1335,51 +1335,10 @@ local function observation(now)
     }
 end
 
-local function log_siege_climb_context_probe(message)
-    local function read(ui_id, expression)
-        local ok, value = pcall(common.get_context_value, "CcoBattleUnit", ui_id, expression)
-        local kind = type(value)
-        local result = {ok = ok, type = kind}
-        if ok and (kind == "boolean" or kind == "number" or kind == "string") then
-            result.value = value
-        end
-        if not ok then result.error = clean_error(value) end
-        return result
-    end
-    local units = {}
-    for _, record in ipairs(message.friendly) do
-        local ui_id = state.friendly[record.id].ui_id
-        local land = "UnitRecordContext.UnitLandRecordContext"
-        local mount_count = read(ui_id, "MountList.Size")
-        local unit = {id = record.id, type = record.type, class = record.class, ui_id = ui_id,
-                      context_id = read(ui_id, "UniqueUiId"),
-                      context_type = read(ui_id, "UnitRecordContext.Key"),
-                      land_man_can_climb = read(ui_id, land .. ".ManEntityContext.CanClimbLadderAndStairPipes"),
-                      live_man_can_climb = read(ui_id,
-                          "EntityList.FirstContext(IsMan).EntityRecordContext.CanClimbLadderAndStairPipes"),
-                      mount_count = mount_count}
-        if type(mount_count.value) == "number" and mount_count.value > 0 then
-            unit.live_mount_can_climb = read(ui_id,
-                "MountList.At(0).EntityRecordContext.CanClimbLadderAndStairPipes")
-        end
-        units[#units + 1] = unit
-    end
-    log("climb_context_probe " .. json.encode({job = message.job, battle = message.battle,
-        seq = message.seq, time_ms = message.time_ms, phase = message.phase, units = units}))
-end
-
 local function publish_observation(now)
     local ok, message = pcall(observation, now)
     if not ok then log("observation failed: " .. clean_error(message)); return false end
-    local sent = publish("observation.json", message)
-    if sent and session.job == "probe-climb-context-20261123" and state.started and not state.finished
-        and state.fortifications and not state.multiplayer and not state.siege_climb_probed
-        and #message.friendly > 0 then
-        state.siege_climb_probed = true
-        local measured, err = pcall(log_siege_climb_context_probe, message)
-        if not measured then log("climb context probe failed: " .. clean_error(err)) end
-    end
-    return sent
+    return publish("observation.json", message)
 end
 
 -- Presentation-only samples, independently of the synchronous controller's reads.

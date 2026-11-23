@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail ladder entity context diagnostic
+
+One authorized passive `launch` and menu probe on the stock start, $0. Source
+`b8d0042`, Steam build 26403568, pack SHA-256
+`32e1350763c85e588354b9c8af72a4732a0e65ed0e1a83a8263011e6a2fdbf40`.
+The stock lobby and native opening checks passed. At sequence 1, 5.3 s on the script
+clock and speed 1, 13 CCO unit IDs and keys matched the published friendlies.
+
+All 11 zero-mount units read `true` on the first live man entity. The Lancers and Grom
+had 45 and 2 mounts. Each first mount read `false`, and the live man read was `nil`.
+The Grom's land man record read `true`. The diagnostic sent no policy or climb
+orders. The owned game closed after the sample and the runtime pack and source were restored. Unit-level
+wall-order eligibility and actual climbing remain unverified.
+Evidence is in `runs/izmail-climb-binding-20261123/`.
+[Evaluation readback](escalade-eval.md#climb-entity-context-diagnostic-2026-11-23)
+
 ## 2026-11-23 Izmail native climb getter diagnostic
 
 One authorized `launch` plus menu probe, `probe-climb-20261123`, $0. Source

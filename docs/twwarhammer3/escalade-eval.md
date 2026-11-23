@@ -1023,10 +1023,27 @@ for all 13 in the matched observation. This opening gives no evidence for changi
 argument count. The reason the documented method was missing on these native objects remains
 open. The probe sent no orders and collected no climbing effects.
 
-Stage 2 needs a supported climb capability reading, the tower-owner decision and a decision
-on authored deployment. The sealed plan and raw game, menu and mod records are in
+The [entity context probe below](#climb-entity-context-diagnostic-2026-11-23) found a candidate reading for the unit-level
+climb check. The sealed plan and raw game, menu and mod records are in
 `runs/izmail-climb-probe-20261123/` and `runs/izmail-climb-live-20261123/`.
 [Run log](log.md#2026-11-23-izmail-native-climb-getter-diagnostic)
+
+### Climb entity context diagnostic (2026-11-23)
+
+The pinned executable contained the known unit-method controls and no NUL-terminated
+`can_climb_walls` literal in the two searched encodings. The extracted UI reference names
+`CanClimbLadderAndStairPipes` on `CcoBattleEntityRecord`.
+
+One passive stock-start probe at `b8d0042`, build 26403568, matched the CCO identity and unit
+key for all 13 friendlies. At 5.3 s on the script clock, the first live man entity read
+`true` for all 11 units with zero mounts. The Lancers and Little Grom had 45 and 2 mounts
+respectively. Their live man reads were `nil` and their first live mount records were
+`false`. The land man record read `true` for the Grom and `false` for the Lancers.
+
+These are entity-record readings. Stage 2 needs a unit-level rule and evidence that its wall
+orders lead to climbing. The proposed first effect check and its JUDGEMENT? marker are in
+`runs/izmail-climb-binding-20261123/MODLOG.md` beside the raw records. Fixed starts and tower
+ownership remain open. [Run log](log.md#2026-11-23-izmail-ladder-entity-context-diagnostic)
 
 ### Stage 2 preflight (2026-11-23)
 
@@ -1070,7 +1087,7 @@ acknowledgements came from the fake mailbox.
 
 The isolated [climb diagnostic](#climb-getter-diagnostic-2026-11-23) and the optional combined
 climb and Little Grom diagnostic (`2852416`) have separate pinned sources and packs. The stage
-2 freeze needs a supported climb capability reading, the tower-owner and fixed-start decisions, corresponding
+2 freeze needs unit-level climb evidence, the tower-owner and fixed-start decisions, corresponding
 live setup readbacks, and an explicit cutoff and process cap for a named window. Fixed starts
 need a fresh wall-target readback. Native movement, isolation and order effects are unverified.
 
@@ -1088,7 +1105,7 @@ matched the earlier preview digest. Receipts and reproduction commands are in
 `runs/izmail-stage2-integrated-20261123/`.
 
 The offline assembly uses the parked setup and tower changes. Review item 15 needs a
-supported climb capability reading and decisions on the tower-owner fix and fixed starts.
+unit-level climb evidence and decisions on the tower-owner fix and fixed starts.
 The frozen Stage 2 plan needs the corresponding live setup readbacks and a named window
 with an explicit cutoff and process cap. If fixed starts are selected, their live
 readback must also check for wall targets. Native setup, movement, order effects and ticket
