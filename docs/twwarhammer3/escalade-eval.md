@@ -886,7 +886,7 @@ launch count. Both stage 1 holds reached the timer. Battles that end earlier tak
 | Stage | What runs | Launches and time | What it can show |
 |---|---|---|---|
 | 0 (done offline) | Declaration, interface, private record, `escalade.py`, `escalade_readings.py`, tests; `check.py` passed at `f3fec92` (3585 passed, 70 skipped, by its commit message) | Done | The code does what its tests say |
-| 0b (offline) | `OrderProbe` builds the first wall, gate and artillery orders. The [saved-opening rehearsal](#saved-opening-and-order-probe-rehearsal-2026-11-23) exercises the recorded boundary. The [stage 2 preflight](#stage-2-preflight-2026-11-23) checks the parked readers in one offline preview and lists the inputs still needed for a frozen plan | No game | Inputs for checks 2, 3, 4, 5 and 7 |
+| 0b (offline) | `OrderProbe` builds the first wall, gate and artillery orders. The [saved-opening rehearsal](#saved-opening-and-order-probe-rehearsal-2026-11-23) exercises the recorded boundary. The [integrated Stage 2 draft](#integrated-stage-2-draft-2026-11-23) rehearses the manifest and lists the inputs still needed for a frozen plan | No game | Inputs for checks 2, 3, 4, 5 and 7 |
 | L | The set's lobby-only readback (check 0), one game session with no battle | Minutes | Whether the Winged Lancers and a ksl ram in the player's slot recruit, before any launch |
 | 1 | 2 `hold` launches | 40-50 min | Checks 1 and 2; both engine starts and whether they repeat within 25 m per unit; `can_climb` and `can_siege` per unit; which unit crews the ram; enemy builds; visibility at 5 s; `sample_cpu_ms`; the hold result (C1) |
 | 2 | The order-effect probe | 2-3 launches, 40-75 min | Check 3, with which holdings drain the defender's tickets (c7 alone as the control, then c1), and the climb go/no-go |
@@ -1045,7 +1045,7 @@ rehearsal evidence are in `runs/izmail-stage2-preflight-20261123/`.
 JUDGEMENT?: Expanded preview composition — Codex, 2026-11-23: include the parked tower and
 setup drafts in the offline overlay. A different setup choice would change the native inputs.
 
-The expanded overlay added the engagement controller (`716bdcc`) and the ticket controller
+The earlier expanded overlay added the engagement controller (`716bdcc`) and the ticket controller
 and its separate declaration (`c63ad53`, based on the private holder draft `a1c884c`). It
 reproduced each added declaration and the original scenario. The combined source passed
 285 focused tests. Evidence is in `runs/izmail-stage2-composition-20261123/`.
@@ -1054,9 +1054,9 @@ Five intended scenario and controller pairs reached the production source-check 
 They cover the original and fixed-start scenarios with `OrderProbe` or `EngagementProbe`,
 and `ksl-emp-siege-a-ticket-v1` with `TicketControlProbe`. Each generated 152 menu steps
 and passed the map and settings checks on both saved lobbies. The prelaunch checks admitted a 2,280 s rehearsal cap
-for the declared setup, episode and reset limits. One second less was refused. The CLI also admitted the ticket controller with the
-original scenario, whose session lacks explicit neutral labels. Any ticket launch plan needs
-to bind the controller to its separate declaration.
+for the declared setup, episode and reset limits. One second less was refused. In this overlay,
+the CLI also admitted the ticket controller with the original scenario, whose session lacks
+explicit neutral labels. The integrated draft below adds the guard for this pairing.
 
 With a fake mailbox, the two original openings each sent one ranged attack and the ram order.
 An adjacent wall fixture added one melee attack in each hold. Both original openings produced
@@ -1070,6 +1070,27 @@ climb and Little Grom diagnostic (`2852416`) have separate pinned sources and pa
 2 freeze needs capability results, the tower-owner and fixed-start decisions, corresponding
 live setup readbacks, and an explicit cutoff and process cap for a named window. Fixed starts
 need a fresh wall-target readback. Native movement, isolation and order effects are unverified.
+
+### Integrated Stage 2 draft (2026-11-23)
+
+The local draft `8033afe` includes the ticket launch guard and the gate and engagement
+readers. Five intended scenario and controller pairs wrote temporary manifests before
+runtime ownership. Each reproduced the reference plan's 152 menu actions and matched
+174 source file hashes to the commit. The rehearsal refused both wrong ticket pairings,
+the undersized cap and the bare controller name before writing output.
+
+All 14 fake episodes and two saved gate readbacks matched their earlier receipts.
+The two saved holds contained no accepted engagement orders. The pack built in memory
+matched the earlier preview digest. Receipts and reproduction commands are in
+`runs/izmail-stage2-integrated-20261123/`.
+
+The offline assembly uses the parked setup and tower changes. Review item 15 still needs a
+named window for the capability diagnostic and decisions on the tower-owner fix and fixed
+starts. The frozen Stage 2 plan needs the corresponding live setup readbacks and a named
+window with an explicit cutoff and process cap. If fixed starts are selected, their live
+readback must also check for wall targets. Native setup, movement, order effects and ticket
+changes remain unverified.
+[Review item 15](../review-queue.md#decisions)
 
 ## Risks
 
