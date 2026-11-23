@@ -55,6 +55,9 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     read 218.5 m between them at the order boundary and zero eligible wall
     defenders among five visible enemies. The first eligible wall defender was sampled
     at 18.5 s. Melee adjacency and a repeatable crew-and-ram opening remain unverified.
+    The [parked authored slot check](twwarhammer3/escalade-eval.md#authored-slot-readback-draft-2026-11-23)
+    identifies the displaced crew in the original refusals and catches same-type
+    swaps in its offline tests. It changes which setup readings count and awaits review.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

@@ -29,6 +29,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail authored slot check draft
+
+On local branch `izmail-slot-readback-20261123`, only the parked fixed-start
+declaration opts into the Lua slot bindings. All three saved native openings
+refused `f2` in slot 2 on replay. The draft caught a 60 m same-type swap and
+generated the same 152 lobby steps and four scenario-derived session settings.
+
+232 focused tests passed. The sweep caught all five new refusals. The same
+15 existing refusals escaped both the baseline and candidate focused suites.
+No live game or API ran. Crew placement remains unverified. Evidence is in
+`runs/izmail-slot-readback-20261123/`.
+[Evaluation](escalade-eval.md#authored-slot-readback-draft-2026-11-23)
+
 ## 2026-11-23 Izmail passive authored-start follow-up
 
 One $0 launch at `c55cdff`, build 26403568, used the same parked declaration

@@ -1344,6 +1344,25 @@ most 1.2 s. The collector stopped at the 60.5 s public frame. The readings leave
 later assembly untested and the authored deployment parked.
 [Run log](log.md#2026-11-23-izmail-passive-authored-start-follow-up)
 
+### Authored slot readback draft (2026-11-23)
+
+JUDGEMENT?: Authored Izmail slot binding — Codex, 2026-11-23. In the parked
+fixed-start draft, compare each slot with the unit Lua selected for teleport using the existing
+25 m bound. The current nearest-type reader can accept switched placements
+and use a different unit in a group readback. Adopt an exact-slot check only
+after reviewing the changed startup criterion.
+
+The opt-in is parked at `4ee7b72` on local branch
+`izmail-slot-readback-20261123`. A simulated
+swap of two same-type units 60 m apart passed the current reader and failed the
+draft. On the three saved 5.3 s openings, the draft refused friendly slot 2
+with the ram crew `f2` at 216.11, 223.90 and 225.60 m from its place. The standard
+reader reported 34 m for a different match in each. The draft generated the same
+152 lobby steps and four scenario-derived session settings as the original
+fixed-start plan. Getting the ram
+and crew into a repeatable opening remains unverified.
+[Run log](log.md#2026-11-23-izmail-authored-slot-check-draft)
+
 ## Risks
 
 | Risk | Stage that shows it | Response |
