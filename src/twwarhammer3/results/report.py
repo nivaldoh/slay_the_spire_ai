@@ -352,9 +352,12 @@ def collect(jobs: list[Path], *, benchmark_plans: list[Path] | None = None) -> d
             # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent
             # unrecorded; flagged by Codex, 2026-10-23): only engine-ended trials count.
             # Including card forfeits changes the rate; this remains a diagnostic.
-            outcome = "time_limit" if result.get("ended_by") == "time_limit" else result["status"]
-            benchmark = evaluate(result) if scenario.get("benchmark") else None
             recorded_status = result["status"]
+            outcome = "time_limit" if result.get("ended_by") == "time_limit" else result["status"]
+            # A saved timer marker can survive interruption during the final evidence copy.
+            if recorded_status not in OUTCOMES:
+                outcome = recorded_status
+            benchmark = evaluate(result) if scenario.get("benchmark") else None
             if benchmark:
                 outcome = benchmark["outcome"] or (
                     benchmark["outcome_label"] if recorded_status in OUTCOMES else recorded_status)
@@ -473,8 +476,14 @@ def render(report: dict) -> str:
                   "| Controller / added age | Instances | Started | Valid | W/L/D/time | Other | "
                   f"{rate_heading} [95% CI] | USD | Wall h | Unchecked |",
                   "|" + "---|" * 10]
+        timer_lines = []
         for row in group["controllers"]:
             outcomes = row["outcomes"]
+            timer = row.get("time_limit_engine_outcomes")
+            if timer:
+                timer_lines.append(f"- {row['controller']} ({timer.get('won', 0)} won, "
+                                   f"{timer.get('lost', 0)} lost, {timer.get('draw', 0)} drawn)")
+            timers = sum(timer.values()) if timer is not None else outcomes.get("time_limit", 0)
             rate = row["win_rate"]
             interval = row["win_ci95"]
             ci = f" [{interval[0]:.2f}, {interval[1]:.2f}]" if interval else " [unavailable]"
@@ -490,11 +499,13 @@ def render(report: dict) -> str:
                 rate_text += f" ({bounds} if resolved)"
             lines.append("| " + " | ".join([
                 row["controller"], str(row["instances"]), str(row["trials"]), str(row["valid"]),
-                "/".join(str(outcomes.get(key, 0))
-                         for key in ("won", "lost", "draw", "time_limit")),
+                "/".join(str(count) for count in (outcomes.get("won", 0), outcomes.get("lost", 0),
+                                                  outcomes.get("draw", 0), timers)),
                 other, rate_text,
                 f"{row['usd']:.4f}", f"{row['wall_s'] / 3600:.2f}", str(row["unchecked_trials"]),
             ]) + " |")
+        if timer_lines:
+            lines += ["", "Engine results in the timer column", "", *timer_lines]
         lines += ["", "Means: gameplay over valid trials; timing over all recorded trials. "
                   "Median order age: the median of each trial's median. "
                   "Unavailable values excluded.", "",
@@ -543,7 +554,8 @@ def render(report: dict) -> str:
             if (trial["metrics"].get("benchmark") or {}).get("outcome_label") == "unresolved":
                 outcome = f"unresolved ({outcome})"
             elif outcome == "time_limit":
-                outcome += f" (engine {trial['engine_outcome']})"
+                engine = trial["engine_outcome"]
+                outcome += f" (engine {engine})" if engine else " (engine outcome unavailable)"
             lines.append(f"- {Path(trial['instance']).name}/{trial['episode']}: "
                          f"{trial['controller']}, {outcome}; "
                          f"order age {age if age is not None else 'unavailable'} s; "

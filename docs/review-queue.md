@@ -64,8 +64,8 @@ deleted (tag `wh3-legacy-20261115` has them), the benchmark readers count throug
 label with unresolved kept out, and each declared scenario writes its own status. Unverified:
 no live run. You kept the three classes that were on the deletion list and that current pages
 still name (`PriorityStrike`, `LineTeam`, `LineTeamReserve`: "Keep the three (Recommended)").
-Open conventions. (1) Outside the two profiles the text `report` still shows a
-timer win as `time_limit` and `stats` tallies raw statuses. (2) Whether a forfeit counts as a
+Open conventions. (1) Outside the two profiles the text `report` lists engine outcomes for completed timer endings and
+keeps the historical non-timer win rate. `stats` tallies raw statuses. (2) Whether a forfeit counts as a
 non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)).
 (3) The benchmark reports show the unresolved count and the range those attempts could produce.
 The [report definitions](twwarhammer3/benchmark.md#outcome-and-score) name the marked choices.

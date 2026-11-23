@@ -4,6 +4,7 @@ import json
 import pytest
 from wh3_fixtures import make_job
 
+from twwarhammer3.battle.play import interrupt_copy
 from twwarhammer3.benchmarks.exact_stats import wilson
 from twwarhammer3.results import report
 
@@ -223,6 +224,42 @@ def test_timer_win_retains_engine_outcome_and_labels_non_timer_win_rate(tmp_path
     assert controller["time_limit_engine_outcomes"] == {"won": 1}
     text = report.render(result)
     assert "Non-timer win rate" in text and "time_limit (engine won)" in text
+
+
+def test_timer_summary_counts_engine_endings_and_keeps_copy_interruption_as_other(tmp_path):
+    statuses = ("won", "lost", "draw", "won", "time_limit", "policy_failure", "won")
+    job = make_job(tmp_path, "timer", [("hold", 0, status) for status in statuses])
+    for index, status in enumerate(statuses):
+        path = job / f"episode-{index:04d}" / "result.json"
+        result = json.loads(path.read_text())
+        result["ended_by"] = "time_limit"
+        if status in ("won", "lost", "draw"):
+            result["engine_ending"] = {"result": status, "ended_by": "time_limit"}
+        if index == 3:
+            interrupt_copy(result, "recording")
+        if status == "policy_failure":
+            result["error"] = "controller failed"
+        path.write_text(json.dumps(result))
+
+    data = report.collect([job])
+    [group] = data["groups"]
+    [hold] = group["controllers"]
+    interrupted = group["trials"][3]
+    assert (interrupted["outcome"], interrupted["recorded_status"], interrupted["ended_by"],
+            interrupted["valid"]) == ("interrupted", "interrupted", "time_limit", False)
+    assert interrupted["error"] == "recording copy: interrupted"
+    failed = group["trials"][5]
+    assert (failed["outcome"], failed["recorded_status"], failed["ended_by"], failed["valid"],
+            failed["error"]) == ("policy_failure", "policy_failure", "time_limit", False,
+                                 "controller failed")
+    assert hold["valid"] == 4 and hold["win_rate"] == 0
+    assert hold["time_limit_engine_outcomes"] == {"won": 2, "lost": 1, "draw": 1}
+    text = report.render(data)
+    assert "| 7 | 4 | 0/0/0/4 | 3 |" in text
+    assert "hold / +0s (2 won, 1 lost, 1 drawn)" in text
+    assert "episode-0003: hold / +0s, interrupted;" in text
+    assert "episode-0004: hold / +0s, time_limit (engine outcome unavailable);" in text
+    assert "episode-0005: hold / +0s, policy_failure;" in text
 
 
 def test_typical_order_delay_is_the_median_of_per_trial_medians_and_jobs_keep_their_start(

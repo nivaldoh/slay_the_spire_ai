@@ -352,6 +352,12 @@ HTML file, not the evidence directory. Margin, throughput, the strict per-versio
 paired intervals, detailed setup flags and statistical limitations remain in the text and
 JSON. Failures and progress are also visible in the HTML.
 
+Outside benchmark profiles, the text report lists completed timer endings as the fourth number
+in `W/L/D/time` and shows their engine wins, losses and draws below the table. Its non-timer win
+rate divides non-timer wins by all complete engine endings. Trials without a completed status
+belong in Other, including interruptions during the final copy. Their saved ending cause remains
+in the JSON. `stats` summarizes the statuses recorded in the register.
+
 ## The page
 
 A paper page around one dark replay panel. Titles and prose use a book serif with lining
