@@ -743,7 +743,7 @@
   }
 
   const SUITE_RULE =
-    "Engine outcome first: win > draw > loss. Within the same outcome, own is the mean of every original unit's health fraction after its strongest state penalty, times 100, and taken is the percent of the enemy dead or routed. State factors: normal 1, wavering 0.8, routing 0.5; shattered, dead or departed 0. Missing reads leave a value unavailable. No aggregate ranking.";
+    "Engine outcome first: win > draw > loss. Within the same outcome, own is the mean of every original unit's health fraction after its strongest state penalty, times 100, and taken is the percentage of the ending enemy roster's initial headcount outside its active-men total. State factors: normal 1, wavering 0.8, routing 0.5; shattered, dead or departed 0. An unread original unit leaves own unavailable. No aggregate ranking.";
 
   const winRateRange = (bounds) => bounds?.map((rate) => `${(rate * 100).toFixed(1)}%`).join(" to ");
 
@@ -784,7 +784,7 @@
         : []),
       el(
         "p",
-        "Won counts completed battles. Own, taken and killed are 0 to 100. Taken counts enemy men dead, routed or gone; killed counts only deaths. A timer win can leave either percentage below 100. Arms did not all play the same scenarios, so compare them in the scenario table. Think is the median model reply. Age is observation to engine application for the orders sent, which for commander and gap come from scripts between replies; plan age is how old a commander's plan is when adopted. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
+        "Won counts completed battles. Own, taken and killed are 0 to 100. Taken compares the ending enemy roster's initial headcount with its active-men total. Killed uses reported living men in that comparison. Active men exclude those in routing or shattered units. A timer win can leave either percentage below 100. Arms did not all play the same scenarios, so compare them in the scenario table. Think is the median model reply. Age is observation to engine application for the orders sent, which for commander and gap come from scripts between replies; plan age is how old a commander's plan is when adopted. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
         "benchmark-summary",
       ),
       table(

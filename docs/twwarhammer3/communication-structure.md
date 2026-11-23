@@ -514,7 +514,7 @@ Secondary measures are descriptive. The experiment card defines each one before 
 
 | Measure | Definition |
 |---|---|
-| Score, `taken`, `own`, `killed` | The score is 100 for an engine win and otherwise `taken`, the percent of enemy men dead, routed or gone at the ending (`suite.taken` is not 100 on every timer win, so the score sets it). Also the condition score of our army and the percent of enemy men dead. Each win's ending (rout or timer) is shown |
+| Score, `taken`, `own`, `killed` | The score is 100 for an engine win and otherwise `taken`, the percentage of the ending enemy roster's initial headcount outside its `active_men` total. A timer win can leave active enemies, so raw `taken` can be below 100. `own` reads our army's condition and `killed` uses the reported living headcount instead of `active_men`. Each win's ending (rout or timer) is shown |
 | Transport and resources | Per agent: time from reply completion to the engine's acknowledgement, the share of mailbox cycles taken by commander replies, and calls, tokens and delivered bytes per battle minute |
 | Grounding | For each message naming a unit id: whether the sender could know it (its own view at the source time for captains, a report in its inbox for R, its view for O). Unmatched ids are counted as ungrounded |
 | Fact reach | For each cue and each enemy id named in a message: the first frame any group saw it, when it entered the dependent captain's input, and by which path (direct, through the commander, or by sight) |
@@ -977,6 +977,20 @@ the earlier scripted screen. Optional controlled message reasks were not sent:
 preflight still found a prototype summary defect after a simulated ledger-write
 failure at the third review round. That prototype stays parked, with no new metric
 adopted. Next agree the performance endpoint and repeatable checks before scored stage 4.
+
+### Terminal and shared-time readings (2026-11-23)
+
+Two terminal `taken` readings included men still alive in routing or shattered units, 18 and 6
+respectively. The other four matched the percentage below the ending living headcount. Enemy
+leaving, absent and unknown unit counters were zero at all six endings.
+
+All six replays have a frame at 351.1 engine seconds, the latest shared timestamp before the
+first ending. Each frame omits one or two enemy unit readings. In four battles the final `taken`
+was above the highest value compatible with that frame, by at least 1 to 29 men. These bounds
+rest on JUDGEMENT `runs/comm-endpoint-20261123/read_endpoint.py` Shared pilot sample and Missing
+enemy bounds. The replay bounds and native endings are in `runs/comm-endpoint-20261123/`.
+If the owner chooses `taken`, the card needs to specify the observation time and how unread
+enemy totals are handled. These six losses remain development evidence.
 
 ## Failed-reply audit (2026-11-11)
 

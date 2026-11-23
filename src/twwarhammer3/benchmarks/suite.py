@@ -180,7 +180,7 @@ def make_plan(output, scenario_names, arm_names, repeats, budget_usd, *, seed, s
 
 
 def killed(result):
-    """Percent of enemy men dead; unlike taken, excludes routed or departed survivors."""
+    """Percent below the ending enemy roster's initial headcount, using reported living men."""
     enemy = (result.get("final") or {}).get("enemy") or {}
     men0, men = enemy.get("men0"), enemy.get("men")
     if not men0 or men is None:
@@ -189,10 +189,12 @@ def killed(result):
 
 
 def taken(result):
-    """Percent of the enemy army dead, routed or gone at the end; None if unread.
+    """Percent below the ending enemy roster's initial headcount, using active men.
 
-    The engine's own totals. It counts what a loss still achieved: the first screen's best
-    condition (28.4) belonged to an army that routed having cost the enemy 2% of its men.
+    The native active-men total excludes routing and shattered men. Leaving and absence
+    have their own unit counters.
+    It counts what a loss still achieved: the first screen's best condition (28.4) belonged
+    to an army that routed having cost the enemy 2% of its men.
     """
     enemy = (result.get("final") or {}).get("enemy") or {}
     men0, active = enemy.get("men0"), enemy.get("active_men")
