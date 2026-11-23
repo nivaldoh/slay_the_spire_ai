@@ -1354,7 +1354,7 @@ local function sample_grom_gate(message)
         if not ok then
             row.error = clean_error(value)
         elseif kind == "boolean" or kind == "string"
-            or (kind == "number" and value > -math.huge and value < math.huge) then
+            or (kind == "number" and value > -(1 / 0) and value < (1 / 0)) then
             row.value = value
         end
         return row
@@ -1702,7 +1702,7 @@ local function apply_siege(entry, controller, order)
         local diagnostic = false
         if can_siege == false and grom_trial then
             local range = get(entry.unit, "missile_range", nil)
-            diagnostic = type(range) == "number" and range > 0 and range < math.huge
+            diagnostic = type(range) == "number" and range > 0 and range < (1 / 0)
         end
         if can_siege ~= true and not diagnostic then error("cannot_siege") end
         if get(entry.unit, "ammo_left", 0) <= 0 then error("no_ammunition") end
