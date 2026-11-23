@@ -64,6 +64,9 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [held-garrison probe](twwarhammer3/escalade-eval.md#held-garrison-staging-readback-2026-11-23)
     read all 25 within their slot radii at a single timed release of all 12 defenders. Review
     the hold and the controller and timer treatment before adopting a staged start.
+    The [parked startup draft](twwarhammer3/escalade-eval.md#staged-startup-draft-2026-11-23)
+    checks slots on the first observed released frame and keeps the native timer running during the hold.
+    Decide on those rules and the repeatable live check before adoption.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

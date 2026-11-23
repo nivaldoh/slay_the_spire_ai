@@ -1433,9 +1433,32 @@ The native timer had 1,044.8 s left at the release. A reconstruction using
 the 160.1 s public frame, positions and equipment with the original 5.3 s
 setup metadata passed the parked slot check at `4ee7b72` offline.
 Repeatability, ram attachment and gameplay from that handover remain
-unverified. A playable draft needs a decision on where to check the setup
-and how its controller and timer should treat the held interval.
+unverified.
 [Run log](log.md#2026-11-23-izmail-held-garrison-staging)
+
+### Staged startup draft (2026-11-23)
+
+The parked `ksl-emp-siege-a-staged-v3` declaration extends the local
+[authored slot check](#authored-slot-readback-draft-2026-11-23) at `494396b`.
+
+JUDGEMENT?: Staged Izmail setup — Codex, 2026-11-23. In an owned launch,
+hold all 12 defenders in one wave due at 160 s. Check the first observed
+deployed frame with the whole garrison released, matching each defender
+to its authored slot before supplying the first controller observation.
+A later survey or a damage-based release would select a different start.
+
+JUDGEMENT?: Staged Izmail clocks — Codex, 2026-11-23. Preserve native
+elapsed and remaining time in the controller and for orders and
+acknowledgements. Start active wall time and controller history at the
+handover. The wait counts against the episode cap. Rebasing or extending
+the native timer could change controller decisions or available play time.
+
+In the offline replay, the normal episode accepted the reconstructed
+160.1 s frame at sequence 130 with 1,044.8 s of native time remaining.
+Swapping two same-type unit positions refused setup before any policy
+decision or order request. Native staged play, repeatability and ram attachment remain
+unverified.
+[Draft log](log.md#2026-11-23-izmail-staged-startup-draft)
 
 ## Risks
 

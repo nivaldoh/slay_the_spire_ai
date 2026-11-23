@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail staged startup draft
+
+Parked local declaration and episode code at `494396b`. The
+episode checks the first observed released frame before it supplies a
+controller observation and keeps native elapsed and remaining time.
+
+The offline replay accepted the archived geometry at sequence 130,
+at native battle time 160.1 s, with 1,044.8 s remaining. Swapping two same-type
+positions made zero policy decisions and zero bridge order requests. The
+focused suite passed 313 cases. Tests caught 8/8 refusal removals from the
+staging guard, 14/14 from the play loop and three further changes that
+bypassed the guard, leaked held frames or rebased controller time.
+No game or model API ran for this draft. Live startup, repeatability and
+ram attachment remain unverified. Records in
+`runs/izmail-staged-handover-20261123/`.
+[Evaluation](escalade-eval.md#staged-startup-draft-2026-11-23)
+
 ## 2026-11-23 Izmail held-garrison staging
 
 One $0 stock-pack launch at `1fc51ad`, build 26403568. On the original
