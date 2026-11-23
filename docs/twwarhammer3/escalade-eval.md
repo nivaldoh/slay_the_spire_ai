@@ -255,8 +255,9 @@ ammunition match the design's 2026-11-08 reading; the ranges are new here. The e
 for the four Kislev missile units in the first observations of `bench-b12-m1-kislev-20261016`,
 `bench-b12-kislev-baselines-20261016` and `bench-b12-kislev-reserves-r2-20261016`, 145 m for the
 Handgunners in `attack-emp-mirror-20261013`, and 145 and 160 m for the Handgunners and Crossbowmen
-in `bench-b23-l1-setup-20261017` (read by this page's review and reread for this page). No lobby
-has read these rosters back, so the charge and the recruited sizes are unverified.
+in `bench-b23-l1-setup-20261017` (read by this page's review and reread for this page). Both
+[stage 1 lobby readbacks](#first-stage-1-launches-2026-11-14) matched the declared rosters and
+ranks. The purchase charge and recruited unit sizes remain unverified.
 
 | Attacker, Kislev | Count | Cost | Men (table) | Weapons and ammunition | Group in `escalade.py` |
 |---|---|---|---|---|---|
@@ -265,7 +266,7 @@ has read these rosters back, so the charge and the recruited sizes are unverifie
 | Kossars (Spears) `wh3_main_ksl_inf_kossars_1` | 3 | 500 each | 90 each | Spear; bow 140 m, 20 arrows; leather 15, morale 60 | One each in West, Centre and East |
 | Streltsi `wh3_main_ksl_inf_streltsi_0` | 2 | 850 each | 90 each | Halberd; rifle 145 m, 20 rounds; plate 70 | The western one Centre, the other Reserve |
 | Winged Lancers `wh3_main_ksl_cav_winged_lancers_0` | 1 | 1,000 | 60 | Lance; plate 80 | Horse |
-| Little Grom `wh3_main_ksl_veh_little_grom_0` | 1 | 1,400 | 2 | Cannon 420 m (minimum 10 m), 22 rounds, can damage buildings; `can_siege` true | Centre |
+| Little Grom `wh3_main_ksl_veh_little_grom_0` | 1 | 1,400 | 2 | Cannon 420 m (minimum 10 m), 22 rounds, can damage buildings; database `can_siege` true | Centre |
 
 | Garrison, Empire | Count | Cost | Men (table) | Missile |
 |---|---|---|---|---|
@@ -274,8 +275,8 @@ has read these rosters back, so the charge and the recruited sizes are unverifie
 | Handgunners `wh_main_emp_inf_handgunners` | 3 | 600 each | 90 each | Rifle 145 m, 22 rounds |
 | Spearmen `wh_main_emp_inf_spearmen_0` | 3 | 300 each | 120 each | None |
 | Crossbowmen `wh_main_emp_inf_crossbowmen` | 1 | 475 | 90 | Crossbow 160 m, 22 bolts |
-| Great Cannon `wh_main_emp_art_great_cannon` | 1 | 800 | 44 | 22 rounds; `can_siege` true |
-| Mortar `wh_main_emp_art_mortar` | 1 | 600 | 44 | 22 rounds; `can_siege` true |
+| Great Cannon `wh_main_emp_art_great_cannon` | 1 | 800 | 44 | 22 rounds; database `can_siege` true |
+| Mortar `wh_main_emp_art_mortar` | 1 | 600 | 44 | 22 rounds; database `can_siege` true |
 
 The attacker has 13 units, 9,800 in cost and 1,013 men in the table, about 760 at large scale; the
 garrison has 12 units, 6,275 and 1,049 men, about 787. The army's missile stock is 3 × 20 arrows,
@@ -883,7 +884,7 @@ launch count. Both stage 1 holds reached the timer. Battles that end earlier tak
 | Stage | What runs | Launches and time | What it can show |
 |---|---|---|---|
 | 0 (done offline) | Declaration, interface, private record, `escalade.py`, `escalade_readings.py`, tests; `check.py` passed at `f3fec92` (3585 passed, 70 skipped, by its commit message) | Done | The code does what its tests say |
-| 0b (offline) | `OrderProbe` builds the first wall, gate and artillery orders. The [saved-opening rehearsal](#saved-opening-and-order-probe-rehearsal-2026-11-23) exercises the recorded boundary and initial order generation. Work remains on the full fort readback, the C3-C5 carried-out readings, the ticket-control sequence and the frozen launch plan | No game | Inputs for checks 2, 3, 4, 5 and 7 |
+| 0b (offline) | `OrderProbe` builds the first wall, gate and artillery orders. The [saved-opening rehearsal](#saved-opening-and-order-probe-rehearsal-2026-11-23) exercises the recorded boundary. The [stage 2 preflight](#stage-2-preflight-2026-11-23) checks the parked readers in one offline preview and lists the inputs still needed for a frozen plan | No game | Inputs for checks 2, 3, 4, 5 and 7 |
 | L | The set's lobby-only readback (check 0), one game session with no battle | Minutes | Whether the Winged Lancers and a ksl ram in the player's slot recruit, before any launch |
 | 1 | 2 `hold` launches | 40-50 min | Checks 1 and 2; both engine starts and whether they repeat within 25 m per unit; `can_climb` and `can_siege` per unit; which unit crews the ram; enemy builds; visibility at 5 s; `sample_cpu_ms`; the hold result (C1) |
 | 2 | The order-effect probe | 2-3 launches, 40-75 min | Check 3, with which holdings drain the defender's tickets (c7 alone as the control, then c1), and the climb go/no-go |
@@ -995,6 +996,29 @@ launch plan and `live-check.md` are in `runs/izmail-climb-probe-20261123/`. The 
 offline with a fake engine and awaits a game window. If the calls yield the same result, this
 sample leaves the cause unresolved. Stage 2 still needs the tower-owner decision and an authored
 deployment.
+
+### Stage 2 preflight (2026-11-23)
+
+JUDGEMENT?: Stage 2 preview composition — Codex, 2026-11-23: overlay the fixed-start draft,
+tower-owner change, fort registry, ticket and shortcut readers for the offline rehearsal.
+The engine-start or original tower mapping choices change which inputs a native run would use.
+
+The preview built the pack in memory and passed 149 focused tests. Both the original and
+fixed-start declarations reached the CLI's source check using
+`twwarhammer3.scenarios.escalade:OrderProbe`. Each declaration reproduced 152 menu steps and
+accepted both saved lobby readbacks. The play loop used the engine-start declaration, the
+two saved openings and a simulated acknowledgement of the empty opening batch. Each opening
+produced one ram order. Adding synthetic eligibility for the two infantry units and artillery
+produced four orders in each case. Native effects are unverified. Patch, pack digest and
+rehearsal evidence are in `runs/izmail-stage2-preflight-20261123/`.
+
+The isolated [climb diagnostic](#climb-getter-diagnostic-2026-11-23) has its own pinned source
+and pack. The stage 2 freeze needs its result, the tower-owner and fixed-start decisions, and
+the corresponding live setup readbacks. `OrderProbe` covers the initial climb, ram and gun
+orders. The Streltsi, wall melee and isolated `c7`-then-`c1` sequence still need a plan. The ticket
+and raw holder draft is `a1c884c`, the fort reader is `1f16ff5`, and the shortcut reader is
+`fb1f22e`. The single-trial preview defaulted to an eight-hour process cap. A named window needs
+an explicit cutoff and process cap before its plan is frozen.
 
 ## Risks
 
