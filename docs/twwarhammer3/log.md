@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail native climb getter diagnostic
+
+One authorized `launch` plus menu probe, `probe-climb-20261123`, $0. Source
+`c91661c` on build 26403568, diagnostic pack SHA-256
+`6320eed43a98a17fffb90a7cdc169c6c13112024070a8c2348b81cde1bb73659`.
+The sealed plan contained 152 lobby actions. The recorded lobby checks matched,
+and the engine started the stock siege with 13 friendly and 12 enemy units.
+
+The first active observation was sequence 1, `Deployed`, at 5.3 s on the script clock and speed 1.
+Both call forms failed on all 13 friendly units with the same missing-method error.
+All 13 published climb fields were absent. The owned launch stopped after the paired
+record, and the prior runtime pack and stock Lua were restored. This was a setup
+diagnostic with zero policy orders and zero benchmark rows. Native climbing remains
+unverified. [Evaluation readback](escalade-eval.md#climb-getter-diagnostic-2026-11-23)
+Evidence is in `runs/izmail-climb-live-20261123/` and
+`runs/izmail-climb-probe-20261123/probe-climb-20261123/`.
+
 ## 2026-11-19 WH3 package restructure
 
 All seven [restructure steps](../restructure-plan.md#implementation-notes) landed from `b5e2537`.

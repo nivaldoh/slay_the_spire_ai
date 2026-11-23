@@ -218,7 +218,7 @@ In the fields of [the scenario specification](scenario-guidelines.md#the-scenari
 | Public task | Win the battle; every engine win counts, and the timer ending is a loss for the attacker. The public observation with the siege fields and the orders listed below, `besiege` and `attack_building` included, unpaused at 1x, with no added briefing; `llm` also reads its prompt's How to fight section ([public briefing](#public-briefing)) |
 | Concrete setup | The settings below, [rosters](#rosters) and [map and starts](#map-and-starts). No build had read this battle when it was built (the pin is 9.0.5, Steam build 26403568); the two `hold` launches of 2026-11-14 ran on that build. Kislev and Empire unit keys and a ksl ram, which the lobby readback (check 0) checks |
 | Decision opportunity | [D1](#the-decision): from the start, with the fortification list and the wall's defenders in view; three sectors or the gate recess. The groups stage 150 m south of their targets and climb at phase 2, by 150 s at the latest |
-| Mechanic reference | [Why this WH3 game mode](#why-this-wh3-game-mode) and [the interface](#the-siege-attack-interface-as-built): CA's documentation, the recorded runs on 9.0.3 and 9.0.4, the 2026-11-03 checkpoint battles on 9.0.5, and database values read on 2026-11-09. Unread: the mod's siege orders, `is_on_top_of_wall`, a player climb against an active garrison, a siege timer win |
+| Mechanic reference | [Why this WH3 game mode](#why-this-wh3-game-mode) and [the interface](#the-siege-attack-interface-as-built): CA's documentation, the recorded runs on 9.0.3 and 9.0.4, the 2026-11-03 checkpoint battles on 9.0.5, and database values read on 2026-11-09. Stage 1 read visible defenders on walls. The mod's siege order effects, a player climb against an active garrison and a siege timer win remain unread |
 | Winnability evidence | None yet: the owner's demonstration (check 8) and the frozen witness gate (check 6) |
 | Controls and predictions | [Witness and controls](#witness-and-controls-as-built); condition X and variant Z in [the decision](#the-decision) |
 | Measurements | [Measurements](#measurements) |
@@ -451,10 +451,9 @@ The CA calls behind the two orders, `besiege_building` and `attack_building`, ha
 from the 2026-11-03 checkpoint battles, sent through
 `tests/twwarhammer3/checkpoint_siege/assault.lua`: on AI-side units on Helmgart
 (`helmgart-defender`) and on the player's own units on Altdorf (`capital-attacker`)
-([map and starts](#map-and-starts)). Still unread: the mod's wrappers
-(`apply_siege` and the readings behind the fields above, `is_on_top_of_wall` among them) and a
-climb by the player's units against an active garrison; the full list is in
-[integration](integration.md#unverified). The Lua tests run the mod's real definitions under Lua 5.1
+([map and starts](#map-and-starts)). Stage 1 read `is_on_top_of_wall` on visible defenders.
+The mod's siege order effects through `apply_siege` and a player climb against an active
+garrison remain unread. [Integration](integration.md#unverified) The Lua tests run the mod's real definitions under Lua 5.1
 against a fake engine that answers with CA's documented values, so they show what the mod does with
 those answers and nothing about what the engine returns.
 
@@ -937,7 +936,7 @@ These parts did not, each with what rests on it:
   here; validation refuses a wall `besiege` and every `attack_building` from our units; and the
   witness never picks a ladder. Only a `besiege` of the gate or of a tower remains. Enemy units
   on the wall did read `on_wall` true. The [getter diagnostic below](#climb-getter-diagnostic-2026-11-23)
-  is ready for a game window.
+  found the native method missing for both calls in one fresh opening.
 - Tower owners read from the wrong side. Whenever the defender held a Fort Tower's point, its tower
   read owner "us", and "none" when nobody held it (in launch 1, c6's tower turned "us" when the
   defender took c6 at 470.3 s). The mod compares `alliance_owner_id` with the one-based
@@ -1013,17 +1012,21 @@ Saved probe sample. Source and check outputs are in `runs/izmail-boundary-202611
 ### Climb getter diagnostic (2026-11-23)
 
 The observation publisher passes an explicit `nil` to `can_climb_walls()`. The wall order
-handler calls the same getter with zero arguments. An offline fixture with the documented
-zero-argument signature reproduces the missing `can_climb` field. The native getter's response
-to the extra argument remains unknown.
+handler calls the same getter with zero arguments. The diagnostic on
+`izmail-climb-probe-20261123` (`47e0ccf`) compares both calls on each friendly unit immediately
+after the first active observation.
 
-The local branch `izmail-climb-probe-20261123` (`47e0ccf`) compares both calls on the same
-friendly units immediately after the first active observation. It records whether each call
-succeeded, the return type and boolean value or error, and the published value. The frozen pack,
-launch plan and `live-check.md` are in `runs/izmail-climb-probe-20261123/`. The probe passed
-offline with a fake engine and awaits a game window. If the calls yield the same result, this
-sample leaves the cause unresolved. Stage 2 still needs the tower-owner decision and an authored
-deployment.
+One stock-start battle ran unpaused at 1x on build 26403568 with the Lua diagnostic at
+`c91661c`. At 5.3 s on the script clock (sequence 1, `Deployed`), both calls on all 13 units failed with
+`attempt to call method 'can_climb_walls' (a nil value)`. The public climb field was absent
+for all 13 in the matched observation. This opening gives no evidence for changing the
+argument count. The reason the documented method was missing on these native objects remains
+open. The probe sent no orders and collected no climbing effects.
+
+Stage 2 needs a supported climb capability reading, the tower-owner decision and a decision
+on authored deployment. The sealed plan and raw game, menu and mod records are in
+`runs/izmail-climb-probe-20261123/` and `runs/izmail-climb-live-20261123/`.
+[Run log](log.md#2026-11-23-izmail-native-climb-getter-diagnostic)
 
 ### Stage 2 preflight (2026-11-23)
 
@@ -1067,7 +1070,7 @@ acknowledgements came from the fake mailbox.
 
 The isolated [climb diagnostic](#climb-getter-diagnostic-2026-11-23) and the optional combined
 climb and Little Grom diagnostic (`2852416`) have separate pinned sources and packs. The stage
-2 freeze needs capability results, the tower-owner and fixed-start decisions, corresponding
+2 freeze needs a supported climb capability reading, the tower-owner and fixed-start decisions, corresponding
 live setup readbacks, and an explicit cutoff and process cap for a named window. Fixed starts
 need a fresh wall-target readback. Native movement, isolation and order effects are unverified.
 
@@ -1084,10 +1087,10 @@ The two saved holds contained no accepted engagement orders. The pack built in m
 matched the earlier preview digest. Receipts and reproduction commands are in
 `runs/izmail-stage2-integrated-20261123/`.
 
-The offline assembly uses the parked setup and tower changes. Review item 15 still needs a
-named window for the capability diagnostic and decisions on the tower-owner fix and fixed
-starts. The frozen Stage 2 plan needs the corresponding live setup readbacks and a named
-window with an explicit cutoff and process cap. If fixed starts are selected, their live
+The offline assembly uses the parked setup and tower changes. Review item 15 needs a
+supported climb capability reading and decisions on the tower-owner fix and fixed starts.
+The frozen Stage 2 plan needs the corresponding live setup readbacks and a named window
+with an explicit cutoff and process cap. If fixed starts are selected, their live
 readback must also check for wall targets. Native setup, movement, order effects and ticket
 changes remain unverified.
 [Review item 15](../review-queue.md#decisions)

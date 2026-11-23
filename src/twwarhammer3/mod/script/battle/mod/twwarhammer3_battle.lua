@@ -1335,39 +1335,10 @@ local function observation(now)
     }
 end
 
-local function log_siege_climb_probe(message)
-    local function read(unit, ...)
-        local ok, value = pcall(function(...) return unit:can_climb_walls(...) end, ...)
-        local reading = {ok = ok, type = type(value)}
-        if ok and type(value) == "boolean" then reading.value = value end
-        if not ok then reading.error = clean_error(value) end
-        return reading
-    end
-    local units = {}
-    for _, record in ipairs(message.friendly) do
-        local unit = state.friendly[record.id].unit
-        local zero = read(unit)
-        local single_nil = read(unit, nil)
-        units[#units + 1] = {id = record.id, type = record.type, zero = zero, single_nil = single_nil,
-                             published_type = type(record.can_climb),
-                             published_value = record.can_climb}
-    end
-    log("climb_probe " .. json.encode({job = message.job, battle = message.battle,
-        seq = message.seq, time_ms = message.time_ms, phase = message.phase, units = units}))
-end
-
 local function publish_observation(now)
     local ok, message = pcall(observation, now)
     if not ok then log("observation failed: " .. clean_error(message)); return false end
-    local sent = publish("observation.json", message)
-    if sent and session.job == "probe-climb-20261123" and state.started and not state.finished
-        and state.fortifications and not state.multiplayer and not state.siege_climb_probed
-        and #message.friendly > 0 then
-        state.siege_climb_probed = true
-        local measured, err = pcall(log_siege_climb_probe, message)
-        if not measured then log("climb probe failed: " .. clean_error(err)) end
-    end
-    return sent
+    return publish("observation.json", message)
 end
 
 -- Presentation-only samples, independently of the synchronous controller's reads.
