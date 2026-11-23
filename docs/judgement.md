@@ -29,6 +29,12 @@ marking them for the owner's review; the rule for agents is in
 - List: `git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'`; add `-F "JUDGEMENT?"`
   for the uncertain ones, or a branch name for unmerged drafts.
 
+The marker checker can read a historical excerpt against its Git tree. Open the Markdown fence
+with `text git:<full-commit-id>:<path>` and label each copied range `L<first>–<last>`. The checker
+uses the cited tree after matching the copied ranges. Use repository-relative target paths in
+those excerpts. An unavailable commit or changed excerpt
+raises a warning and its references are checked against the current tree.
+
 ## Lifecycle
 
 - The agent that makes or finds a call adds the marker in the same change and names the

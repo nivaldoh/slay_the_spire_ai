@@ -605,6 +605,15 @@ tests = ["tests/test_check_script.py"]
 source = "2026-10-29 evening"
 
 [[plant]]
+id = "markers-archive-accepts-a-git-replacement"
+guards = "Historical marker excerpts must read the cited Git object despite local replacement refs"
+file = "scripts/check.py"
+old = '["git", "--no-replace-objects", "cat-file", "blob", f"{revision}:{path}"],'
+new = '["git", "cat-file", "blob", f"{revision}:{path}"],'
+tests = ["tests/test_check_script.py::test_a_replacement_git_object_cannot_authenticate_a_quote"]
+source = "2026-11-23 restructure archive review"
+
+[[plant]]
 id = "check-passes-failing-tests"
 guards = "check.py exits 1 when Ruff or a test fails"
 file = "scripts/check.py"

@@ -122,6 +122,9 @@ SKIP = re.compile(r"pytest\.(skip|xfail|importorskip)\(|pytest\.mark\.(skip|skip
 MARKER = re.compile(r"(?<!`)JUDGEMENT\??:")
 DATED = re.compile(r"\b(20\d\d-\d\d-\d\d|\d\d-\d\d|[vb]\d[\w.]*)\b|author unrecorded")
 RESTS_ON = re.compile(r"rests? on JUDGEMENT\??\s+`?([\w./-]+\.\w+)`?")
+MARKDOWN_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)\r?(?:\n|$)", re.MULTILINE)
+ARCHIVE_SOURCE = re.compile(r"text git:([0-9a-f]{40}):([\w./-]+)")
+ARCHIVE_RANGE = re.compile(r"^L([0-9]{1,9})–([0-9]{1,9})\r?\n", re.MULTILINE)
 MISSPELT = re.compile(r"\bJUDG[M]ENT")
 SUMMARY = re.compile(r"\d+ (passed|failed|skipped|errors?|xfailed|xpassed)\b.* in [\d.]+s")
 SKIPPED = re.compile(r"^SKIPPED \[(\d+)\] \S+?:\d+: (.*)$", re.M)
@@ -552,15 +555,127 @@ def warnings(root: Path, base: str) -> list[str]:
     return out
 
 
+def archived_blob(root: Path, revision: str, path: str) -> str | None:
+    """Read the exact local Git object with no replacements or remote fetch."""
+    result = subprocess.run(
+        ["git", "--no-replace-objects", "cat-file", "blob", f"{revision}:{path}"],
+        cwd=root, capture_output=True, env={**os.environ, "GIT_ALLOW_PROTOCOL": ""},
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout.decode("utf-8", errors="surrogateescape")
+
+
+def excerpt_matches(quote: str, original: str) -> bool:
+    prefix, *excerpts = ARCHIVE_RANGE.split(quote.replace("\r\n", "\n"))
+    if prefix.strip() or not excerpts:
+        return False
+    lines = original.replace("\r\n", "\n").split("\n")
+    if lines[-1] == "":
+        lines.pop()  # The line after a terminal LF is outside the file.
+    for i in range(0, len(excerpts), 3):
+        first, last, copied = excerpts[i:i + 3]
+        start, stop = int(first), int(last)
+        if not 1 <= start <= stop <= len(lines):
+            return False
+        expected = "\n".join(lines[start - 1:stop]) + "\n"
+        if copied not in (expected, expected + "\n"):  # one optional separator
+            return False
+    return True
+
+
+def markdown_fences(text: str):
+    """Yield top-level Markdown fences and their closing positions."""
+    opened = None
+    for match in MARKDOWN_FENCE.finditer(text):
+        delimiter, info = match.groups()
+        if opened is None:
+            if delimiter.startswith("~") or "`" not in info:
+                opened = match
+            continue
+        first = opened[1]
+        if delimiter[0] == first[0] and len(delimiter) >= len(first) and not info.strip():
+            yield opened, match
+            opened = None
+    if opened is not None:
+        yield opened, None
+
+
+# JUDGEMENT?: Archived marker references — Codex, 2026-11-23: verify the quote and
+# use its Git tree. Resolving it in the current tree would warn about retired paths.
+def reference_sections(root: Path, name: str, text: str, problems: list[str]):
+    """Yield text and the revision against which its references should be checked."""
+    cursor = 0
+    for opened, closed in markdown_fences(text):
+        source = ARCHIVE_SOURCE.fullmatch(opened[2].strip())
+        if source is None:
+            continue
+        revision, path = source.groups()
+        cited = f"{revision[:7]}:{path}"
+        if closed is None:
+            problems.append(f"{name}: archived excerpt has no closing fence: {cited}")
+            continue
+        quote = text[opened.end():closed.start()]
+        original = archived_blob(root, revision, path)
+        if original is None:
+            problems.append(f"{name}: archived excerpt unavailable: {cited}")
+        elif not excerpt_matches(quote, original):
+            problems.append(f"{name}: archived excerpt differs from {cited}")
+        else:
+            yield text[cursor:opened.start()], None
+            yield quote, revision
+            cursor = closed.end()
+    yield text[cursor:], None
+
+
+def check_references(root: Path, name: str, text: str, every: list[str],
+                     revision: str | None, problems: list[str]) -> None:
+    for target in dict.fromkeys(RESTS_ON.findall(" ".join(text.splitlines()))):
+        if revision is None:
+            # Resolve a root-relative path or a matching path tail in the current tree.
+            paths = [root / target, *(root / f for f in every if f.endswith("/" + target))]
+            present = [path for path in paths if path.is_file()]
+            exists = bool(present)
+            bodies = (path.read_text(encoding="utf-8", errors="replace") for path in present)
+        else:
+            blob = archived_blob(root, revision, target)
+            exists = blob is not None
+            bodies = () if blob is None else (blob,)
+            target = f"{target} at {revision[:7]}"
+        if not exists:
+            problems.append(f"{name}: rests on JUDGEMENT {target}, which does not exist")
+        elif not any(MARKER.search(body) for body in bodies):
+            problems.append(f"{name}: rests on JUDGEMENT {target}, which has no marker")
+
+
+def files_with_marker_text(root: Path) -> set[str]:
+    listed = git(root, "grep", "-l", "-I", "--untracked", "-e", "JUDGEMENT", "-e", "JUDG" "MENT")
+    return set(listed.split())
+
+
+def files_with_archive_fences(root: Path) -> set[str]:
+    # An edited excerpt may have lost its last marker reference.
+    listed = git(root, "grep", "-l", "-z", "-I", "--untracked", "-E",
+                 "-e", r"^ {0,3}(`{3,}|~{3,})[[:blank:]]*text git:", "--", "*.md")
+    return set(filter(None, listed.split("\0")))
+
+
 def marker_problems(root: Path) -> list[str]:
     """Marker lines that break docs/judgement.md's format, for the owner to sort out."""
-    listed = git(root, "grep", "-l", "-I", "--untracked", "-e", "JUDGEMENT", "-e", "JUDG" "MENT")
+    listed = set()
+    for search in (files_with_marker_text, files_with_archive_fences):
+        try:
+            listed.update(search(root))
+        except subprocess.CalledProcessError as error:
+            if error.returncode != 1:  # grep returns 1 for an empty match set
+                raise
     every = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
     problems = []
-    for name in listed.split():
+    for name in sorted(listed):
         if name in RULE_PAGES or name.startswith(PRIVATE):
             continue
-        lines = (root / name).read_text(encoding="utf-8", errors="replace").splitlines()
+        text = (root / name).read_bytes().decode("utf-8", errors="surrogateescape")
+        lines = text.splitlines()
         history = Path(name).name == "log.md"
         for number, line in enumerate(lines, 1):
             if MISSPELT.search(line):
@@ -576,16 +691,10 @@ def marker_problems(root: Path) -> list[str]:
                 problems.append(f"{name}:{number}: no date or version in its first three lines")
         if history:
             continue  # history keeps the paths of its day
-        for target in RESTS_ON.findall(" ".join(lines)):
-            # From the root, or the tail of a path ("team/check_wh3_team.py", "proposal.md");
-            # a bare name may match several files, and any one with a marker will do.
-            paths = [root / target, *(root / f for f in every if f.endswith("/" + target))]
-            paths = [p for p in paths if p.is_file()]
-            if not paths:
-                problems.append(f"{name}: rests on JUDGEMENT {target}, which does not exist")
-            elif not any(MARKER.search(p.read_text(encoding="utf-8", errors="replace"))
-                         for p in paths):
-                problems.append(f"{name}: rests on JUDGEMENT {target}, which has no marker")
+        sections = (reference_sections(root, name, text, problems) if name.endswith(".md")
+                    else ((text, None),))
+        for body, revision in sections:
+            check_references(root, name, body, every, revision, problems)
     return list(dict.fromkeys(problems))
 
 

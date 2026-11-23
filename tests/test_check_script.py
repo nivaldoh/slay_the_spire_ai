@@ -167,6 +167,152 @@ def test_marker_problems_are_listed(repo):
     ]
 
 
+def archived_reference(repo, *, marked=True, suffix=""):
+    target = repo / "src/pkg/former.py"
+    proposal = repo / "docs/proposal.md"
+    reference = f"A proposed step {RESTS}? `src/pkg/former.py` Thing.{suffix}"
+    target.write_text(f"# {MARK} Thing — Claude, 2026-10-29: X.\n" if marked else "pass\n")
+    proposal.write_text(f"# Old proposal\n{reference}\n")
+    git(repo, "add", ".")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "old proposal")
+    revision = check.git(repo, "rev-parse", "HEAD").strip()
+    target.unlink()
+    proposal.unlink()
+    return revision, reference
+
+
+def test_a_verified_excerpt_reads_the_archived_marker_and_keeps_checking_live_references(repo):
+    revision, reference = archived_reference(repo)
+    path = repo / "docs/archive.md"
+    quote = f"```text git:{revision}:docs/proposal.md\nL2–2\n{reference}\n```\n"
+    path.write_text(quote)
+    assert check.marker_problems(repo) == []
+    path.write_text(quote + reference + "\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist"]
+
+
+@pytest.mark.parametrize(("change", "reason"), [
+    ("edited", "differs from"), ("unavailable", "unavailable:"),
+])
+def test_an_unverified_excerpt_does_not_hide_a_current_reference(repo, change, reason):
+    revision, reference = archived_reference(repo)
+    if change == "edited":
+        reference += " Added later."
+    else:
+        revision = "f" * 40
+    (repo / "docs/archive.md").write_text(
+        f"```text git:{revision}:docs/proposal.md\nL2–2\n{reference}\n```\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt {reason} {revision[:7]}:docs/proposal.md",
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist",
+    ]
+
+
+def test_removing_the_last_reference_does_not_hide_an_edited_excerpt(repo):
+    revision, _ = archived_reference(repo)
+    (repo / "docs/page.md").unlink()
+    (repo / "docs/archive.md").write_text(
+        f"```text git:{revision}:docs/proposal.md\nL2–2\nAn altered excerpt.\n```\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt differs from {revision[:7]}:docs/proposal.md"]
+
+
+def test_an_archived_reference_requires_a_marker_at_its_cited_revision(repo):
+    revision, reference = archived_reference(repo, marked=False)
+    (repo / "src/pkg/former.py").write_text(f"# {MARK} Thing — Claude, 2026-11-06: X.\n")
+    (repo / "docs/archive.md").write_text(
+        f"```text git:{revision}:docs/proposal.md\nL2–2\n{reference}\n```\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: {RESTS} src/pkg/former.py at {revision[:7]}, which has no marker"]
+
+
+def test_an_archive_fence_inside_an_example_stays_in_the_current_scope(repo):
+    revision, reference = archived_reference(repo)
+    text = (f"````markdown\n```text git:{revision}:docs/proposal.md\n"
+            f"L2–2\n{reference}\n```\n````\n")
+    (repo / "docs/archive.md").write_text(text)
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist"]
+
+
+@pytest.mark.parametrize("newline", ["\n", "\r\n"])
+def test_archive_line_ranges_keep_unicode_separators_inside_a_git_line(repo, newline):
+    revision, reference = archived_reference(repo, suffix=" First half.\u2028Second half.")
+    text = f"```text git:{revision}:docs/proposal.md\nL1–2\n# Old proposal\n{reference}\n```\n"
+    (repo / "docs/archive.md").write_bytes(text.replace("\n", newline).encode())
+    assert check.marker_problems(repo) == []
+
+
+def test_invalid_utf8_cannot_replace_a_literal_replacement_character_in_a_quote(repo):
+    revision, reference = archived_reference(repo, suffix=" Past note \ufffd.")
+    text = f"```text git:{revision}:docs/proposal.md\nL2–2\n{reference}\n```\n"
+    (repo / "docs/archive.md").write_bytes(text.encode().replace("\ufffd".encode(), b"\xff"))
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt differs from {revision[:7]}:docs/proposal.md",
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist",
+    ]
+
+
+def test_a_replacement_git_object_cannot_authenticate_a_quote(repo):
+    revision, reference = archived_reference(repo)
+    amended = reference + " Different text."
+    proposal = repo / "docs/proposal.md"
+    proposal.write_text(f"# Old proposal\n{amended}\n")
+    git(repo, "add", "-A")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "different proposal")
+    replacement = check.git(repo, "rev-parse", "HEAD").strip()
+    git(repo, "replace", revision, replacement)
+    proposal.unlink()
+    (repo / "docs/archive.md").write_text(
+        f"```text git:{revision}:docs/proposal.md\nL2–2\n{amended}\n```\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt differs from {revision[:7]}:docs/proposal.md",
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist",
+    ]
+
+
+def test_a_labelled_blank_line_is_part_of_the_archived_excerpt(repo):
+    revision, reference = archived_reference(repo, suffix="\n")
+    path = repo / "docs/archive.md"
+    opening = f"```text git:{revision}:docs/proposal.md\nL2–3\n"
+    path.write_text(opening + reference + "\n```\n")
+    assert check.marker_problems(repo) == []
+    path.write_text(opening + reference + "```\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt differs from {revision[:7]}:docs/proposal.md",
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist",
+    ]
+
+
+def test_an_unclosed_archive_fence_keeps_checking_current_references(repo):
+    revision, reference = archived_reference(repo)
+    (repo / "docs/archive.md").write_text(
+        f"```text git:{revision}:docs/proposal.md\nL2–2\n{reference}\n")
+    assert check.marker_problems(repo) == [
+        f"docs/archive.md: archived excerpt has no closing fence: {revision[:7]}:docs/proposal.md",
+        f"docs/archive.md: {RESTS} src/pkg/former.py, which does not exist",
+    ]
+
+
+def test_a_matched_live_path_tail_does_not_read_later_candidates(repo, monkeypatch):
+    for folder in ("a", "z"):
+        (repo / folder).mkdir()
+    (repo / "a/shared.py").write_text(f"# {MARK} Thing — Claude, 2026-10-29: X.\n")
+    late = repo / "z/shared.py"
+    late.write_text("pass\n")
+    (repo / "docs/ref.md").write_text(f"This {RESTS}? `shared.py` Thing.\n")
+    original = Path.read_text
+
+    def read(path, *args, **kwargs):
+        if path == late:
+            pytest.fail("path-tail lookup read a later candidate after finding its marker")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", read)
+    assert check.marker_problems(repo) == []
+
+
 def test_a_marker_in_log_history_is_listed(repo):
     (repo / "docs/wh3").mkdir(parents=True)
     (repo / "docs/wh3/log.md").write_text(

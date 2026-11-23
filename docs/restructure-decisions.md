@@ -7,11 +7,11 @@ To read each original proposal, use the Git command beside its group. The second
 on a local branch. Its Git objects and unfinished edits are backed up under
 `runs/restructure-plan-20261115/final/review/` on the evidence machine.
 
-The quotations retain their original paths. For current source, the “Witness hash” marker
-moved to `src/twwarhammer3/controllers/factory.py`, “Summary identity” to
-`src/twwarhammer3/results/register.py`, and “Test setup” to
-`src/twwarhammer3/results/report_html.py`. The marker checker lists the three quoted paths
-because they exist only at the revisions named below.
+The quotations retain their original paths. In current source, see
+[Witness hash](../src/twwarhammer3/controllers/factory.py),
+[Summary identity](../src/twwarhammer3/results/register.py), and
+[Test setup](../src/twwarhammer3/results/report_html.py). The quoted references below are
+checked against the cited proposal's Git revision.
 
 ## First proposal
 
@@ -307,7 +307,7 @@ for broader changes. The owner decides what evidence establishes correctness at 
 These excerpts preserve the first proposal’s links between decisions. Each number is a
 line in `e453429:docs/restructure-plan.md`. Phase names and counts belong to that revision.
 
-```text
+```text git:e4534292f686e86c30c6293d149cc99c23ea036b:docs/restructure-plan.md
 L10–12
 why." And the same day: "Let's be open to any type of structure for now, without restricting
 ourselves to previous decisions. Use JUDGEMENT calls in the document so I can decide whether we will
