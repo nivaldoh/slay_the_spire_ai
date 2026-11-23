@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail held-garrison staging
+
+One $0 stock-pack launch at `1fc51ad`, build 26403568. On the original
+authored layout, one stock wave held all 12 defenders and released them
+at 160.1 s. The 5.3 s setup check refused again. Zero bridge battle orders.
+
+All 12 defenders were within 25 m of their slots in all 155 held private
+samples. The first all-25 match came at 114.2 s. There were 46 matches
+before release and 13 at or after release, through 172.1 s. The 160.1 s
+sample had all 25 in place. Unit men and ammunition matched the opening
+at 159.2 s and 160.1 s. The c6 holder went from enemy to unreported.
+From the order boundary, the first eligible wall defender was sampled
+at 173.3 s. The collector
+stopped at the 180.5 s public frame. All five runtime files and preferences
+matched their prelaunch hashes. Repeatability, attachment and live play
+from the proposed handover remain unverified. Records in
+`runs/izmail-held-start-20261123/`.
+[Evaluation](escalade-eval.md#held-garrison-staging-readback-2026-11-23)
+
 ## 2026-11-23 Izmail extended authored-start readback
 
 One $0 stock-pack launch at `2ac1913`, build 26403568, with the original

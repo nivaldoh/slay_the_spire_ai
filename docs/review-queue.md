@@ -61,6 +61,9 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [extended passive readback](twwarhammer3/escalade-eval.md#extended-authored-start-readback-2026-11-23)
     first found the crew within its slot radius at 112.1 s. Only 16 of 25 units were in
     their assigned radii then. None of the 175 samples had all 25 in place.
+    The [held-garrison probe](twwarhammer3/escalade-eval.md#held-garrison-staging-readback-2026-11-23)
+    read all 25 within their slot radii at a single timed release of all 12 defenders. Review
+    the hold and the controller and timer treatment before adopting a staged start.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

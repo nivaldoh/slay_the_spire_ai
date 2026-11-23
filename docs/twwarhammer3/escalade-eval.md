@@ -1397,6 +1397,46 @@ was `e5` at 13.7 s. Physical attachment and a repeatable authored opening
 remain unverified.
 [Run log](log.md#2026-11-23-izmail-extended-authored-start-readback)
 
+### Held-garrison staging readback (2026-11-23)
+
+JUDGEMENT?: Held-garrison staging — Codex, 2026-11-23. On the original
+authored layout, use the stock version-3 waves adapter to hold all 12
+defenders as one group until 160 s, with damage-triggered release off.
+An earlier, damage-triggered or crew-based release would give the garrison
+different time under AI control. This is a diagnostic setup candidate.
+
+The launch used the same lobby steps, authored positions and stock pack as
+the extended passive run. The 5.3 s setup check again refused. The private
+wave receipts bound the 12 defenders to their assigned slots. All 12 read
+within 25 m of their slots in all 155 private samples before release.
+
+| Private sample | Crew distance to its slot | Units within 25 m of their slots |
+| --- | ---: | ---: |
+| 5.3 s, opening | 225.5 m | 24 of 25 |
+| 114.2 s, first full match while held | 24.96 m | 25 of 25 |
+| 159.2 s, last sample before release | 16.4 m | 25 of 25 |
+| 160.1 s, first sample at or after release | 16.4 m | 25 of 25 |
+| 179.0 s, last private sample through 180 s | 16.1 m | 17 of 25 |
+
+The native receipt recorded one timed release at 160.1 s with all 12
+defenders released and no skipped units. The largest defender-slot offset
+in the receipt was 4.90 m. There were 46 complete
+all-slot matches before release, through 159.2 s, and 13 at or after release,
+through 172.1 s. The collector stopped at the 180.5 s public frame.
+
+Every unit's men and ammunition read the same at the 159.2 s and 160.1 s
+samples as at 5.3 s. The opening reported c6 as enemy-held. The samples
+either side of release omitted its holder. The first eligible public wall
+defender sampled from the 10 s order boundary onward was `e6` at 173.3 s.
+
+The native timer had 1,044.8 s left at the release. A reconstruction using
+the 160.1 s public frame, positions and equipment with the original 5.3 s
+setup metadata passed the parked slot check at `4ee7b72` offline.
+Repeatability, ram attachment and gameplay from that handover remain
+unverified. A playable draft needs a decision on where to check the setup
+and how its controller and timer should treat the held interval.
+[Run log](log.md#2026-11-23-izmail-held-garrison-staging)
+
 ## Risks
 
 | Risk | Stage that shows it | Response |
