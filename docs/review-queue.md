@@ -58,6 +58,9 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [parked authored slot check](twwarhammer3/escalade-eval.md#authored-slot-readback-draft-2026-11-23)
     identifies the displaced crew in the original refusals and catches same-type
     swaps in its offline tests. It changes which setup readings count and awaits review.
+    The [extended passive readback](twwarhammer3/escalade-eval.md#extended-authored-start-readback-2026-11-23)
+    first found the crew within its slot radius at 112.1 s. Only 16 of 25 units were in
+    their assigned radii then. None of the 175 samples had all 25 in place.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

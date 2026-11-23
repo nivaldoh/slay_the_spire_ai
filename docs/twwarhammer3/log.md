@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail extended authored-start readback
+
+One $0 stock-pack launch at `2ac1913`, build 26403568, with the original
+authored declaration. Lobby checks passed and setup refused again at 5.3 s.
+The diagnostic issued zero battle orders. The collector stopped at the
+180.5 s public frame.
+
+All 175 private and 146 public samples through 180 s kept f2 as the
+crew. Vehicle and equipment centres stayed fixed. The crew first read
+within 25 m of its slot at 112.1 s, when 16 of 25 slots were in range.
+The best count while the crew was inside was 19. Zero private samples
+had all slots in range. The crew's nearest slot distance was 13.6 m at
+119.0 s. The first eligible defender after the 10 s order boundary was
+sampled at 13.7 s. All five runtime files and preferences matched their
+prelaunch hashes at exit.
+Repeatable placement and physical attachment remain unverified. Records
+in `runs/izmail-authored-assembly-20261123/`.
+[Evaluation](escalade-eval.md#extended-authored-start-readback-2026-11-23)
+
 ## 2026-11-23 Izmail authored slot check draft
 
 On local branch `izmail-slot-readback-20261123`, only the parked fixed-start

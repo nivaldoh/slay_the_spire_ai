@@ -236,7 +236,7 @@ The settings:
 | Difficulty and scale | AI `ai_level_very_hard`, stats modifier 1.0, large units (0.75), realism off, rank 0 for every unit |
 | Timer and funds | 1,200 s (the lobby offers 1,200, 2,400 or 3,600); `funds_custom` 20,000, which both rosters fit by database cost; the lobby charge, the ram's included, is unread |
 | Siege equipment | `siege_equipment` `{ksl_battering_ram: 1, ksl_siege_tower_15m: 0}`: the lobby steps remove every piece the player's slot holds, add one ram and read back the count per key, and `check_battle` compares the battle's `assault_equipment` with the declaration (rests on JUDGEMENT src/twwarhammer3/battle/setup.py Battle-side equipment check) |
-| Placement | No `deployment`: the engine's own starts for both sides; teleporting units in a siege is untested |
+| Placement | The base declaration uses native starts on both sides. The [authored placement draft](#extended-authored-start-readback-2026-11-23) is parked and remains unverified. |
 | Toggles | `behaviour_defaults: true` (fire at will on at the start; the controller may change it) |
 | Opt-ins | `siege_assault: true` (the fields and orders [below](#the-siege-attack-interface-as-built)); `private_record: true`, which `siege_equipment` requires |
 | Withheld words | 29 lower-case words: the 1790 sources' people, places and sides, and "escalade"; a job or recording name that holds one is refused (rests on JUDGEMENT? tests/twwarhammer3/test_wh3_siege_assault.py Siege attack withheld names) |
@@ -1340,8 +1340,8 @@ All 46 public and 55 private samples through 60 s still named `f2` as the
 vehicle crew. The reported vehicle and equipment centres held their first
 positions. The crew centre moved toward them during the run. The last in-window
 public and private samples were at 59.3 and 59.0 s respectively, with gaps of at
-most 1.2 s. The collector stopped at the 60.5 s public frame. The readings leave
-later assembly untested and the authored deployment parked.
+most 1.2 s. The collector stopped at the 60.5 s public frame. The
+[extended readback](#extended-authored-start-readback-2026-11-23) tracked the later approach.
 [Run log](log.md#2026-11-23-izmail-passive-authored-start-follow-up)
 
 ### Authored slot readback draft (2026-11-23)
@@ -1362,6 +1362,40 @@ reader reported 34 m for a different match in each. The draft generated the same
 fixed-start plan. Getting the ram
 and crew into a repeatable opening remains unverified.
 [Run log](log.md#2026-11-23-izmail-authored-slot-check-draft)
+
+### Extended authored-start readback (2026-11-23)
+
+JUDGEMENT?: Extended passive window — Codex, 2026-11-23. Continue after the
+same startup refusal with zero battle orders. Count through 180 s because
+the crew was still approaching at 60 s. Use the original 25 m bound for each
+unit's assigned slot. At each private sample compare all 25, since a late
+opening could count different unit positions. The existing startup check
+still decides construction.
+
+The launch used the original authored declaration and stock pack. The lobby
+checks passed and setup again refused the Armoured Kossars match at 5.3 s.
+All 146 public and 175 private samples through 180 s still named `f2` as crew.
+The vehicle and equipment centres stayed fixed in their respective readings.
+
+| Private sample | Crew distance to its assigned slot | Crew distance to the vehicle | Units within 25 m of their slots |
+| --- | ---: | ---: | ---: |
+| 5.3 s, first | 214.4 m | 214.5 m | 24 of 25 |
+| 112.1 s, crew first within 25 m | 23.9 m | 24.0 m | 16 of 25 |
+| 119.0 s, closest crew reading to its slot | 13.6 m | 13.8 m | 16 of 25 |
+| 179.0 s, last within the window | 16.1 m | 16.2 m | 19 of 25 |
+
+All 175 private samples had readable positions for all 25 slots. When the
+crew first came inside the radius, nine defenders were outside theirs.
+Across the 68 private samples with the crew inside, the most slots inside
+together was 19. Zero samples had all 25 simultaneously within 25 m. The
+collector stopped at the 180.5 s public frame, and the longest gap within
+either sampled stream was 1.2 s.
+
+The 10.1 s frame had five visible enemies and zero eligible wall defenders.
+From the 10 s order boundary onward, the first sampled eligible defender
+was `e5` at 13.7 s. Physical attachment and a repeatable authored opening
+remain unverified.
+[Run log](log.md#2026-11-23-izmail-extended-authored-start-readback)
 
 ## Risks
 
