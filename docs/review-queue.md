@@ -45,8 +45,11 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [Izmail opening and order-probe rehearsal](twwarhammer3/escalade-eval.md#saved-opening-and-order-probe-rehearsal-2026-11-23) uses both saved holds. Only the ram order was eligible on those inputs.
     The [integrated Stage 2 draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23) rehearsed manifest creation offline. Its ticket controller requires the explicit-holder scenario. The freeze still needs agreement on the [combined eligibility draft](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23), the height check and setup choices, native setup readbacks, and a named window with a cutoff and process cap. The [Grom gate trial](twwarhammer3/escalade-eval.md#little-grom-gate-diagnostic-2026-11-23) recorded the paired change under a diagnostic rule while the stock attribute read false.
     The [gate readback](twwarhammer3/escalade-eval.md#gate-target-and-door-readback) separates the
-    published g1 centre from the position in the Gatehouse readout. The Check 2 anchor and
-    the choice of measure for Check 3(b) and C5 remain open.
+    published g1 centre from the position in the Gatehouse readout. In the
+    [stock ram trial](twwarhammer3/escalade-eval.md#stock-ram-gate-diagnostic-2026-11-23),
+    the closest public sample in 180 s was 37.6 m from the centre and 62.1 m
+    from the door, which stayed at full HP. The Check 2 anchor and the measure for
+    Check 3(b) and C5 remain open. The authored setup still needs its native readback.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

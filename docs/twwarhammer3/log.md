@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail stock ram gate order
+
+One stock-start launch at `e26b8e2`, build 26403568, $0. The checked lobby
+and native setup matched the 152-step plan. Pack SHA-256
+`f5c7de5589cd654e25e5da16260c727aed7dfcd18960fa800e3959bde700110d`.
+The bridge acknowledged one ram crew `besiege` on g1 at 10.4 s. The following
+180 s yielded 150 public and 180 private samples, gaps at most 1.2 s.
+
+The public ram reading moved from 312.2 m to 37.6 m from g1 and ended
+62.1 m from the door. The last private sample in the window read the
+crew-linked ram at 38.1 m and 62.7 m, and equipment at 38.4 m and 63.0 m. Gate and door stayed at 100%, including
+9,000 raw door HP. The crew's ammunition stayed at 450 and Little Grom's
+fell from 22 to 20 with fire-at-will enabled at dispatch. All five runtime
+files and preferences matched the prelaunch hashes at exit. Check 3(b) and
+C5 remain unverified. Records and recount in `runs/izmail-ram-gate-20261123/`.
+[Evaluation](escalade-eval.md#stock-ram-gate-diagnostic-2026-11-23)
+
 ## 2026-11-23 Izmail Little Grom gate order
 
 Two stock-start diagnostic launches on build 26403568, $0. At `b74b1f6` the
