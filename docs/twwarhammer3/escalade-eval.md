@@ -1306,11 +1306,43 @@ to enemy. All 12 private defenders read `on_wall=false` at 5.3 s in both.
 The planned public sample near the order boundary was unavailable after the setup
 refusals. Both games stopped without an issued order.
 
-The draft is parked. A later diagnostic can observe whether the crew and ram
-positions converge during setup or stay apart. The fixed starts, assembly of the
-opening crew and Stage 2 wall-target availability remain unverified. Raw openings
-and the comparison are in `runs/izmail-authored-live-20261123/`.
+The draft is parked. The [passive follow-up](#passive-authored-start-follow-up-2026-11-23)
+continued through the order window. Raw openings and the comparison are in
+`runs/izmail-authored-live-20261123/`.
 [Run log](log.md#2026-11-23-izmail-authored-start-readbacks)
+
+### Passive authored-start follow-up (2026-11-23)
+
+JUDGEMENT?: Passive follow-up window — Codex, 2026-11-23. Record the existing
+setup refusal and continue with zero battle orders to the first observation at
+or after 60 s, then count samples through 60 s. A different window could see
+further movement. Sample the public wall targets from 10 to 11 s, as in the
+parked setup draft. These are diagnostic readings for the original declaration.
+
+The launch reused the stock pack and authored deployment. The lobby checks
+passed. The 5.3 s setup check again refused on an Armoured Kossars match 34 m from its target.
+The public order-window sample at 10.1 s had five visible enemies, all with
+`on_wall=false`. It supplied zero eligible wall defenders and no unread flags.
+The public distance from the listed crew to the vehicle was 218.5 m at that
+time. Using the same public predicate on later frames, the first sampled eligible
+defender was `e9` at 18.5 s. The parked engagement probe keeps looking from
+10 s onward. An offline replay at `8033afe` produced one protocol-valid
+ranged order from `f10` to `e9` at 18.5 s. A melee order also needs an
+adjacent friendly climber on the wall, which this passive run did not exercise.
+
+| Ram reading | Distance from listed crew at 5.3 s | Closest sampled distance through 60 s |
+| --- | ---: | ---: |
+| Public crew-linked vehicle | 225.5 m | 129.0 m at 59.3 s |
+| Private crew-linked vehicle | 225.5 m | 131.1 m at 58.1 s |
+| Private assault equipment | 225.6 m | 131.2 m at 58.1 s |
+
+All 46 public and 55 private samples through 60 s still named `f2` as the
+vehicle crew. The reported vehicle and equipment centres held their first
+positions. The crew centre moved toward them during the run. The last in-window
+public and private samples were at 59.3 and 59.0 s respectively, with gaps of at
+most 1.2 s. The collector stopped at the 60.5 s public frame. The readings leave
+later assembly untested and the authored deployment parked.
+[Run log](log.md#2026-11-23-izmail-passive-authored-start-follow-up)
 
 ## Risks
 

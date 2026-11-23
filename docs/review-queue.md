@@ -51,8 +51,10 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     from the door, which stayed at full HP. The Check 2 anchor and the measure for
     Check 3(b) and C5 remain open. Both [authored-start probes](twwarhammer3/escalade-eval.md#authored-start-native-readbacks-2026-11-23)
     failed setup. The ram centre matched and its listed crew read over 216 m away
-    in each opening. The wall-target sample at the order boundary was unavailable.
-    Choose a setup after the crew and ram share a repeatable opening.
+    in each opening. The [passive follow-up](twwarhammer3/escalade-eval.md#passive-authored-start-follow-up-2026-11-23)
+    read 218.5 m between them at the order boundary and zero eligible wall
+    defenders among five visible enemies. The first eligible wall defender was sampled
+    at 18.5 s. Melee adjacency and a repeatable crew-and-ram opening remain unverified.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks

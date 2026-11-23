@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail passive authored-start follow-up
+
+One $0 launch at `c55cdff`, build 26403568, used the same parked declaration
+and stock pack as the two authored-start probes. The lobby checks passed.
+The 5.3 s setup reader again refused the 34 m Armoured Kossars match. No
+battle orders. The 10.1 s sample had five visible enemy units, zero eligible
+wall defenders and all wall flags read. The first later eligible defender
+was e9 at 18.5 s.
+
+Through 60 s, 46 public and 55 private samples named f2 as the crew. The
+vehicle and equipment centres held their first positions. Public crew-to-vehicle
+distance fell from 225.5 m to its sampled minimum of 129.0 m at 59.3 s. The
+private minimum was 131.1 m at 58.1 s. The collector stopped at 60.5 s.
+All five runtime files and the preferences matched their prelaunch hashes
+after exit. Fixed starts remain unverified. Records in
+`runs/izmail-authored-settle-20261123/`.
+[Evaluation](escalade-eval.md#passive-authored-start-follow-up-2026-11-23)
+
 ## 2026-11-23 Izmail authored-start readbacks
 
 Two setup-only launches at `19a5e06` with the parked `3f951ef` declaration,
