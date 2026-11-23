@@ -266,7 +266,7 @@ ranks. The purchase charge and recruited unit sizes remain unverified.
 | Kossars (Spears) `wh3_main_ksl_inf_kossars_1` | 3 | 500 each | 90 each | Spear; bow 140 m, 20 arrows; leather 15, morale 60 | One each in West, Centre and East |
 | Streltsi `wh3_main_ksl_inf_streltsi_0` | 2 | 850 each | 90 each | Halberd; rifle 145 m, 20 rounds; plate 70 | The western one Centre, the other Reserve |
 | Winged Lancers `wh3_main_ksl_cav_winged_lancers_0` | 1 | 1,000 | 60 | Lance; plate 80 | Horse |
-| Little Grom `wh3_main_ksl_veh_little_grom_0` | 1 | 1,400 | 2 | Cannon 420 m (minimum 10 m), 22 rounds, can damage buildings; database `can_siege` true | Centre |
+| Little Grom `wh3_main_ksl_veh_little_grom_0` | 1 | 1,400 | 2 | Cannon 420 m (minimum 10 m), 22 rounds, projectile can damage buildings | Centre |
 
 | Garrison, Empire | Count | Cost | Men (table) | Missile |
 |---|---|---|---|---|
@@ -1115,9 +1115,35 @@ the siege-order menu. Team member projections still omit `can_climb`.
 The draft is parked at `218d73f` on local branch `izmail-climb-rule-20261123`
 and remains unverified at that revision in the native game. A scratch overlay on Stage 2
 `8033afe` reproduced all 14 fake episodes and all five prelaunch cases. The
-scratch tests used recorded or fake input. The separate stock Grom attribute
-probe and the native setup checks remain open. Evidence and commands are in
-`runs/izmail-climb-rule-20261123/`.
+scratch tests used recorded or fake input. The native setup checks remain open.
+Evidence and commands are in `runs/izmail-climb-rule-20261123/`. The stock Grom
+attribute and gate experiment are below.
+
+### Little Grom gate diagnostic (2026-11-23)
+
+JUDGEMENT?: Grom gate diagnostic rule — Codex, 2026-11-23. For this trial only,
+admit the exact Little Grom type on `g1` when the stock attribute is false and
+the gun has readable range and ammunition. The installed unit specifies a
+cannon projectile with building damage enabled. An artillery-getter rule would
+exclude this chariot-class gun. The production eligibility decision remains open.
+
+At 5.3 s and 10.1 s the same gun had 22 rounds and 420 m range. Its raw
+`has_attribute("can_siege")`, cached `can_siege` and raw `is_artillery()` read
+false on both frames. The bridge acknowledged one `attack_building` on `g1` at
+10.4 s. The dispatch receipt read the raw attribute as false and recorded use
+of the diagnostic rule.
+
+At 7.2 s after dispatch there were 21 rounds left. The gate building and door
+both read 87% at 10.8 s after dispatch, with 21 rounds left. At the end of the
+60 s window both read 62%, with 18 rounds left. The private door record went
+from 9,000 to 5,580 HP and the door remained intact. Fire-at-will read enabled
+in every sampled frame. The public enemy-unit target was `e1` at the order
+basis and absent in all 50 sampled post-dispatch frames in the window.
+
+This one stock-start comparison supplies evidence on the paired ammo and gate
+change in proposed Check 3(c). It remains unverified under the owner's rule
+pending agreement on the method. The original Lua and pack were restored.
+[Run log](log.md#2026-11-23-izmail-little-grom-gate-order)
 
 ### Stage 2 preflight (2026-11-23)
 

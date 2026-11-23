@@ -1335,56 +1335,10 @@ local function observation(now)
     }
 end
 
-local function sample_grom_gate(message)
-    local first = state.grom_gate_opening_ms
-    local sample
-    if first == nil then
-        state.grom_gate_opening_ms, sample = message.time_ms, "opening"
-    elseif not state.grom_gate_probed and message.time_ms >= 10000 and message.time_ms > first then
-        state.grom_gate_probed, sample = true, "order_window"
-    else
-        return
-    end
-    local function read(unit, method, ...)
-        local ok, value = pcall(function(...)
-            return unit[method](unit, ...)
-        end, ...)
-        local kind = type(value)
-        local row = {ok = ok, type = kind}
-        if not ok then
-            row.error = clean_error(value)
-        elseif kind == "boolean" or kind == "string"
-            or (kind == "number" and value > -(1 / 0) and value < (1 / 0)) then
-            row.value = value
-        end
-        return row
-    end
-    local guns = {}
-    for _, record in ipairs(message.friendly) do
-        if record.type == "wh3_main_ksl_veh_little_grom_0" then
-            local unit = state.friendly[record.id].unit
-            guns[#guns + 1] = {id = record.id, type = record.type, ammo = record.ammo,
-                fresh = read(unit, "has_attribute", "can_siege"),
-                artillery = read(unit, "is_artillery"), range = read(unit, "missile_range"),
-                published_type = type(record.can_siege), published_value = record.can_siege}
-        end
-    end
-    log("grom_gate_probe " .. json.encode({job = message.job, battle = message.battle,
-        seq = message.seq, time_ms = message.time_ms, phase = message.phase,
-        sample = sample, units = guns}))
-end
-
 local function publish_observation(now)
     local ok, message = pcall(observation, now)
     if not ok then log("observation failed: " .. clean_error(message)); return false end
-    local sent = publish("observation.json", message)
-    if sent and session.job == "probe-grom-gate-20261123" and message.phase == "Deployed"
-        and state.started and not state.finished and state.fortifications and not state.multiplayer
-        and not state.grom_gate_probed then
-        local measured, err = pcall(sample_grom_gate, message)
-        if not measured then log("grom gate probe failed: " .. clean_error(err)) end
-    end
-    return sent
+    return publish("observation.json", message)
 end
 
 -- Presentation-only samples, independently of the synchronous controller's reads.
@@ -1693,25 +1647,9 @@ local function apply_siege(entry, controller, order)
         end
         controller:besiege_building(target.building, 1, order.run == true)
     else
-        local can_siege = get(entry.unit, "has_attribute", nil, "can_siege")
-        -- JUDGEMENT?: Grom gate diagnostic rule — Codex, 2026-11-23. Its shipped
-        -- projectile can damage buildings. Test this specific gun and gate in one job.
-        local grom_trial = session and session.job == "probe-grom-gate-20261123"
-            and not state.multiplayer and order.target == "g1" and target.kind == "gate"
-            and get(entry.unit, "type", nil) == "wh3_main_ksl_veh_little_grom_0"
-        local diagnostic = false
-        if can_siege == false and grom_trial then
-            local range = get(entry.unit, "missile_range", nil)
-            diagnostic = type(range) == "number" and range > 0 and range < (1 / 0)
-        end
-        if can_siege ~= true and not diagnostic then error("cannot_siege") end
+        if get(entry.unit, "has_attribute", nil, "can_siege") ~= true then error("cannot_siege") end
         if get(entry.unit, "ammo_left", 0) <= 0 then error("no_ammunition") end
         controller:attack_building(target.building, 1, order.run == true)
-        if grom_trial then
-            log("grom_gate_dispatch " .. json.encode({job = session.job, battle = state.battle,
-                time_ms = battle_time(), unit = order.unit, target = order.target,
-                can_siege = can_siege, alternate_rule = diagnostic}))
-        end
     end
 end
 

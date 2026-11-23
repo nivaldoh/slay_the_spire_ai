@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail Little Grom gate order
+
+Two stock-start diagnostic launches on build 26403568, $0. At `b74b1f6` the
+sampler failed at 5.3 s because the game's Lua omits `math.huge`. It issued
+zero orders and the original pack was restored. Retry `a6c38b3` reused the
+152-step plan. Its pack SHA-256 was
+`d55020361d12f129112e22815229017f128ba0da15d9a5c2da008c2d328eecf5`.
+
+The retry read raw and published `can_siege=false` at 5.3 and 10.1 s. The bridge
+acknowledged one Grom order on `g1` at 10.4 s. The fresh attribute at dispatch
+was false and the diagnostic rule supplied eligibility. At 21.2 s ammunition
+had fallen from 22 to 21 and both health readings had fallen from 100% to 87%.
+At the 70.4 s stop both were at 62% and 18 rounds remained. The door stayed
+intact. The sampled frames read speed 1 and fire-at-will enabled. The original
+pack and Lua were restored. The four other checked runtime files and preferences
+matched their prelaunch hashes. Check 3(c) remains unverified pending agreement.
+The two attempts and 56 retry public frames are in `runs/izmail-grom-gate-20261123/`.
+[Evaluation](escalade-eval.md#little-grom-gate-diagnostic-2026-11-23)
+
 ## 2026-11-23 Izmail wall-height repeat
 
 One stock-start diagnostic, `probe-wall-reference-20261123`, $0. Source `05048c6`,
