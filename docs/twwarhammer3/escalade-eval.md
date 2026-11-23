@@ -1098,6 +1098,27 @@ pending agreement on the height method. The stock guard was restored. Production
 eligibility, fixed starts and tower ownership remain open.
 [Run log](log.md#2026-11-23-izmail-wall-height-repeat)
 
+### Climb eligibility draft (2026-11-23)
+
+JUDGEMENT?: Climb eligibility fallback — Codex, 2026-11-23. Keep a Boolean from
+`can_climb_walls`. For an unread getter, use the live man entity flag for Armoured
+Kossars and Kossars (Spears) when the live unit ID and key agree and the mount count
+is zero. A rule for all unmounted men would also admit the Boyar and Streltsi from
+the passive readback. Wall orders recheck the live eligibility before dispatch.
+
+On the one paired opening with 13 native context rows, the draft published true
+for five Armoured Kossars and three Kossars (Spears). The other five units stayed
+unread. At the simulated 10 s order delay, OrderProbe produced two wall orders and
+kept the ram's gate order. The same eight fields make the direct LLM view offer
+the siege-order menu. Team member projections still omit `can_climb`.
+
+The draft is parked at `218d73f` on local branch `izmail-climb-rule-20261123`
+and remains unverified at that revision in the native game. A scratch overlay on Stage 2
+`8033afe` reproduced all 14 fake episodes and all five prelaunch cases. The
+scratch tests used recorded or fake input. The separate stock Grom attribute
+probe and the native setup checks remain open. Evidence and commands are in
+`runs/izmail-climb-rule-20261123/`.
+
 ### Stage 2 preflight (2026-11-23)
 
 JUDGEMENT?: Stage 2 preview composition — Codex, 2026-11-23: overlay the fixed-start draft,
@@ -1157,8 +1178,8 @@ The two saved holds contained no accepted engagement orders. The pack built in m
 matched the earlier preview digest. Receipts and reproduction commands are in
 `runs/izmail-stage2-integrated-20261123/`.
 
-The offline assembly uses the parked setup and tower changes. Review item 15 needs a
-unit-level climb evidence and decisions on the tower-owner fix and fixed starts.
+The offline assembly uses the parked setup and tower changes. Review item 15 includes the
+climb eligibility draft and decisions on the tower-owner fix and fixed starts.
 The frozen Stage 2 plan needs the corresponding live setup readbacks and a named window
 with an explicit cutoff and process cap. If fixed starts are selected, their live
 readback must also check for wall targets. Native setup, movement, order effects and ticket
