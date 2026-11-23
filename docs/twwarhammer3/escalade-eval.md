@@ -1012,13 +1012,36 @@ produced one ram order. Adding synthetic eligibility for the two infantry units 
 produced four orders in each case. Native effects are unverified. Patch, pack digest and
 rehearsal evidence are in `runs/izmail-stage2-preflight-20261123/`.
 
-The isolated [climb diagnostic](#climb-getter-diagnostic-2026-11-23) has its own pinned source
-and pack. The stage 2 freeze needs its result, the tower-owner and fixed-start decisions, and
-the corresponding live setup readbacks. `OrderProbe` covers the initial climb, ram and gun
-orders. The Streltsi, wall melee and isolated `c7`-then-`c1` sequence still need a plan. The ticket
-and raw holder draft is `a1c884c`, the fort reader is `1f16ff5`, and the shortcut reader is
-`fb1f22e`. The single-trial preview defaulted to an eight-hour process cap. A named window needs
-an explicit cutoff and process cap before its plan is frozen.
+### Expanded stage 2 preflight (2026-11-23)
+
+JUDGEMENT?: Expanded preview composition — Codex, 2026-11-23: include the parked tower and
+setup drafts in the offline overlay. A different setup choice would change the native inputs.
+
+The expanded overlay added the engagement controller (`716bdcc`) and the ticket controller
+and its separate declaration (`c63ad53`, based on the private holder draft `a1c884c`). It
+reproduced each added declaration and the original scenario. The combined source passed
+285 focused tests. Evidence is in `runs/izmail-stage2-composition-20261123/`.
+
+Five intended scenario and controller pairs reached the production source-check call.
+They cover the original and fixed-start scenarios with `OrderProbe` or `EngagementProbe`,
+and `ksl-emp-siege-a-ticket-v1` with `TicketControlProbe`. Each generated 152 menu steps
+and passed the map and settings checks on both saved lobbies. The prelaunch checks admitted a 2,280 s rehearsal cap
+for the declared setup, episode and reset limits. One second less was refused. The CLI also admitted the ticket controller with the
+original scenario, whose session lacks explicit neutral labels. Any ticket launch plan needs
+to bind the controller to its separate declaration.
+
+With a fake mailbox, the two original openings each sent one ranged attack and the ram order.
+An adjacent wall fixture added one melee attack in each hold. Both original openings produced
+zero ticket orders. With climb, waypoint arrivals and c7 ownership supplied by the fixture,
+both ticket rehearsals released the second mover toward c1. An unread holder in the control
+period kept both c1 movers staged. The fixture supplied the later c1 ownership, and the
+acknowledgements came from the fake mailbox.
+
+The isolated [climb diagnostic](#climb-getter-diagnostic-2026-11-23) and the optional combined
+climb and Little Grom diagnostic (`2852416`) have separate pinned sources and packs. The stage
+2 freeze needs capability results, the tower-owner and fixed-start decisions, corresponding
+live setup readbacks, and an explicit cutoff and process cap for a named window. Fixed starts
+need a fresh wall-target readback. Native movement, isolation and order effects are unverified.
 
 ## Risks
 
