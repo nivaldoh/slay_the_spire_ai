@@ -29,6 +29,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail infantry wall order effects
+
+One stock-start `launch` and menu diagnostic, `probe-climb-effect-20261123`, $0.
+Source `3cccbda`, Steam build 26403568, pack SHA-256
+`e21e238deb010d4031a2a31df45dd10df4ebc148da5d7f7246ccd37baaea78ba`.
+The 152-step lobby plan and native setup matched the stock scenario. The probe used
+OrderProbe's two infantry wall orders and the temporary entity guard described in the
+[evaluation](escalade-eval.md#climb-order-effect-diagnostic-2026-11-23).
+
+The request was based on the 10.1 s observation. It ordered Armoured Kossars to `w11`
+and Kossars (Spears) to `w12`. The engine acknowledged both at 10.4 s. The first private wall
+flag and height pairs came at 85.1 s (341.1 m) and 89.0 s (339.9 m), respectively.
+The collector ended at 89.6 s, unpaused at 1x. The independent wall-top references are
+missing and the proposed Check 3(a) remains unverified. The scoped trial ended before
+a battle result. The original mod pack and Lua source were restored. The other four
+runtime files and the preferences matched their prelaunch hashes.
+The raw request, acknowledgement, 72 public frames and private record are in
+`runs/izmail-climb-effect-20261123/`. No benchmark row was recorded.
+
 ## 2026-11-23 Izmail ladder entity context diagnostic
 
 One authorized passive `launch` and menu probe on the stock start, $0. Source
@@ -41,7 +60,7 @@ All 11 zero-mount units read `true` on the first live man entity. The Lancers an
 had 45 and 2 mounts. Each first mount read `false`, and the live man read was `nil`.
 The Grom's land man record read `true`. The diagnostic sent no policy or climb
 orders. The owned game closed after the sample and the runtime pack and source were restored. Unit-level
-wall-order eligibility and actual climbing remain unverified.
+wall-order eligibility and actual climbing were outside this passive diagnostic.
 Evidence is in `runs/izmail-climb-binding-20261123/`.
 [Evaluation readback](escalade-eval.md#climb-entity-context-diagnostic-2026-11-23)
 
@@ -57,8 +76,7 @@ The first active observation was sequence 1, `Deployed`, at 5.3 s on the script 
 Both call forms failed on all 13 friendly units with the same missing-method error.
 All 13 published climb fields were absent. The owned launch stopped after the paired
 record, and the prior runtime pack and stock Lua were restored. This was a setup
-diagnostic with zero policy orders and zero benchmark rows. Native climbing remains
-unverified. [Evaluation readback](escalade-eval.md#climb-getter-diagnostic-2026-11-23)
+diagnostic with zero policy orders and zero benchmark rows. It collected no wall-order effects. [Evaluation readback](escalade-eval.md#climb-getter-diagnostic-2026-11-23)
 Evidence is in `runs/izmail-climb-live-20261123/` and
 `runs/izmail-climb-probe-20261123/probe-climb-20261123/`.
 

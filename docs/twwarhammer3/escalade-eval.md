@@ -1045,6 +1045,27 @@ orders lead to climbing. The proposed first effect check and its JUDGEMENT? mark
 `runs/izmail-climb-binding-20261123/MODLOG.md` beside the raw records. Fixed starts and tower
 ownership remain open. [Run log](log.md#2026-11-23-izmail-ladder-entity-context-diagnostic)
 
+### Climb order effect diagnostic (2026-11-23)
+
+JUDGEMENT?: First climb effect probe — Codex, 2026-11-23. Use OrderProbe's two infantry
+wall orders on the stock start. Require a matching live unit ID and type, zero mounts
+and a true ladder flag on the first live man at dispatch. The land record alone could
+admit Little Grom. These two sends give evidence for the chosen infantry in one opening.
+
+The engine accepted both orders in one request at 10.4 s on the script clock.
+The private record first paired the unit's `on_wall=true` with its height as follows.
+
+| Unit | Ordered wall | Time after dispatch | Height on wall | Height at order basis |
+|---|---|---:|---:|---:|
+| Armoured Kossars (`f4`) | `w11` | 74.7 s | 341.1 m | 312.5 m |
+| Kossars (Spears) (`f8`) | `w12` | 78.6 s | 339.9 m | 302.7 m |
+
+Both first readings are within the proposed 150 s window, and both heights continued
+to rise afterward. The independent wall-top height for either target is missing, so
+Check 3(a) as written remains unverified. The guard was scoped
+to this job, and the original pack and source were restored. A production unit-level rule,
+fixed starts and tower ownership remain open. [Run log](log.md#2026-11-23-izmail-infantry-wall-order-effects)
+
 ### Stage 2 preflight (2026-11-23)
 
 JUDGEMENT?: Stage 2 preview composition — Codex, 2026-11-23: overlay the fixed-start draft,
