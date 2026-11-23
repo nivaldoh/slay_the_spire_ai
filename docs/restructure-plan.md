@@ -7,8 +7,9 @@ command from its arguments to the game or saved files it touches, and to the che
 catch a mistake there.
 
 The owner commissioned all seven steps on 2026-11-19 and delegated the implementation choices.
-The plan was drawn at `e453429`. The implementation started at `b5e2537`. The move list below
-names the original inputs. The [visual package map](code-structure.html) shows the new structure.
+All seven are on `main`. The plan was drawn at `e453429` and implementation started at
+`b5e2537`. The move list below names the original inputs. The [visual package map](code-structure.html)
+shows the current structure.
 The [WH3 file map](twwarhammer3/README.md#code-map) gives the current paths.
 See the [implementation notes](#implementation-notes) for decisions and their evidence.
 

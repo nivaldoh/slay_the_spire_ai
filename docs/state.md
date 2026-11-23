@@ -73,11 +73,11 @@ Secondary priority. Capture, export and dataset smoke checks passed; the learnin
 
 ## Known issues
 
-- A Ctrl-C during a job's final copying now writes the record as `interrupted`, and benchmark readers (via `benchmark.evaluate`) skip that trial (owner's answer, 2026-11-13; offline tests only). An interrupt in other cleanup steps, or a second one, can still lose the record.
+- A Ctrl-C during a job's final copying writes the record as `interrupted`, which `benchmarks.profile.evaluate` excludes from benchmark win rates (owner's answer, 2026-11-13; offline tests only). An interrupt in other cleanup steps, or a second one, can still lose the record.
 - `runs/` has no backup (30 GB on 2026-10-31, inventory in `runs/overnight-20261031/b7/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowances are kept by hand. Keep both Anthropic ledgers under the key's $200: its limit error is untested.
 - No test yet shows whether a game patch changes results (owner: later). A build warning shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- WH3 readers differed on 3 timer wins, 8 controller failures and 5 wall caps of the 642 rows on 2026-10-31. The two profiles' readers count through `benchmark.evaluate`, which since 2026-11-15 takes its outcome from `benchmark.benchmark_outcome`'s label (v2); unresolved battles were already out of its counts. For other scenarios the text `report` still shows a timer win as `time_limit` and `stats` tallies raw statuses. Register/`stats` also have blank benchmark versions and commit grouping.
+- WH3 readers differed on 3 timer wins, 8 controller failures and 5 wall caps of the 642 rows on 2026-10-31. The two benchmark profiles' readers use the outcome labels in `benchmarks.profile`. For other scenarios the text `report` still shows a timer win as `time_limit` and `stats` tallies raw statuses. Register/`stats` also have blank benchmark versions and commit grouping.
 - Since `1cc4582` each observation's `speed` is the engine's (one probe: 440/440 read 1); a slowed battle was never tried. A pause stops the `repeat_callback` tick, so no observation is written ([integration](twwarhammer3/integration.md#loading-phases-and-control)); the Windows-clock line (b51) covers pauses.
 - WSL clocks ran about 6-8% slow against Windows (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23; [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before more Spire game time.

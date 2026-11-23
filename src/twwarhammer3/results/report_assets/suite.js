@@ -260,7 +260,8 @@ function suitePage(data, api) {
     cost.append(el("th", "A battle costs"));
     for (const arm of order) {
       const row = suite.arms[arm];
-      wins.append(el("td", `${row.wins} of ${row.completed}`));
+      const unresolved = row.unresolved == null ? "" : ` (${row.unresolved} unresolved)`;
+      wins.append(el("td", `${row.wins} of ${row.completed}${unresolved}`));
       cost.append(el("td", money((row.usd || 0) + (row.authoring_usd || 0))));
     }
     foot.append(wins, cost);

@@ -454,6 +454,7 @@ def summarize(rows):
         decided = [row for row in done if row["orders"]]
         table[arm] = {
             "planned": len(mine), "completed": len(done), "wins": wins, "draws": draws,
+            "unresolved": sum(row.get("outcome_label") == "unresolved" for row in mine),
             "losses": len(done) - wins - draws, "win_bound": win_bound(wins, len(done)),
             "win_text": bound_text(win_bound(wins, len(done))),
             "scenarios_won": len({r["scenario"] for r in done if r["outcome"] == "won"}),
@@ -487,6 +488,7 @@ def summarize(rows):
                             "taken": taken_difference(rows, arm, CONTROLS[arm], scenarios)}}
                if CONTROLS.get(arm) in arms else {})}
     matrix = {scenario: {arm: [{"outcome": r["outcome"] or r["status"],
+                                "outcome_label": r.get("outcome_label"),
                                 "own": None if r["own"] is None else round(r["own"], 1),
                                 "taken": r["taken"]}
                                for r in rows if r["scenario"] == scenario and r["arm"] == arm]
@@ -505,6 +507,7 @@ def bound_text(bound):
 
 
 COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
+           ("unresolved", lambda a: a["unresolved"]),
            ("win 95%", lambda a: bound_text(a["win_bound"])), ("own", lambda a: a["own"]),
            ("taken", lambda a: a["taken"]), ("killed", lambda a: a["killed"]),
            ("$/battle", lambda a: a["usd"]),
@@ -537,7 +540,8 @@ def render(data):
     lines.append("")
     for scenario, cells in data["summary"]["matrix"].items():
         text = "; ".join(f"{arm} " + ",".join(
-            f"{cell['outcome']}({cell['own']}/{cell['taken']})" for cell in cell_rows)
+            f"{cell['outcome_label'] or cell['outcome']}({cell['own']}/{cell['taken']})"
+            for cell in cell_rows)
             for arm, cell_rows in cells.items())
         lines.append(f"{scenario}: {text}")
     return "\n".join(lines) + "\n"

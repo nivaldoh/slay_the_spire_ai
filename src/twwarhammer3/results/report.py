@@ -233,10 +233,14 @@ def controller_summary(controller: str, items: list[dict]) -> dict:
     # Typical order delay: the median of each battle's median order age.
     medians = [trial["metrics"]["order_age_s"]["p50"] for trial in items
                if trial["metrics"]["order_age_s"]["p50"] is not None]
+    benchmark = [trial["metrics"]["benchmark"] for trial in items
+                 if "benchmark" in trial["metrics"]]
     return {
         "controller": controller, "trials": len(items), "valid": valid,
         "instances": len({trial["instance"] for trial in items}),
         "outcomes": dict(outcomes), "win_rate": outcomes["won"] / valid if valid else None,
+        **({"unresolved": sum(trial["outcome_label"] == "unresolved" for trial in benchmark)}
+           if benchmark else {}),
         "time_limit_engine_outcomes": dict(Counter(
             trial["engine_outcome"] for trial in items
             if trial["outcome"] == "time_limit" and trial["engine_outcome"])),
@@ -428,21 +432,25 @@ def render(report: dict) -> str:
     for group in report["groups"]:
         definition = group["definition"]
         scenario = definition["scenario"]
+        rate_heading = "Win rate" if scenario.get("benchmark") else "Non-timer win rate"
         lines += [f"Scenario: {scenario.get('name') or scenario.get('map', 'unlabelled')}; "
                   f"source {str(definition['source'])[:7]}", "",
                   "| Controller / added age | Instances | Started | Valid | W/L/D/time | Other | "
-                  "Non-timer win rate [95% CI] | USD | Wall h | Unchecked |",
+                  f"{rate_heading} [95% CI] | USD | Wall h | Unchecked |",
                   "|" + "---|" * 10]
         for row in group["controllers"]:
             outcomes = row["outcomes"]
             rate = row["win_rate"]
             interval = row["win_ci95"]
             ci = f" [{interval[0]:.2f}, {interval[1]:.2f}]" if interval else " [unavailable]"
+            other = str(row["trials"] - row["valid"])
+            if "unresolved" in row:
+                other += f" ({row['unresolved']} unresolved)"
             lines.append("| " + " | ".join([
                 row["controller"], str(row["instances"]), str(row["trials"]), str(row["valid"]),
                 "/".join(str(outcomes.get(key, 0))
                          for key in ("won", "lost", "draw", "time_limit")),
-                str(row["trials"] - row["valid"]), f"{rate:.2f}{ci}" if rate is not None else "—",
+                other, f"{rate:.2f}{ci}" if rate is not None else "—",
                 f"{row['usd']:.4f}", f"{row['wall_s'] / 3600:.2f}", str(row["unchecked_trials"]),
             ]) + " |")
         lines += ["", "Means: gameplay over valid trials; timing over all recorded trials. "
@@ -490,7 +498,9 @@ def render(report: dict) -> str:
         for trial in group["trials"]:
             age = trial["metrics"]["order_age_s"]["mean"]
             outcome = trial["outcome"]
-            if outcome == "time_limit":
+            if (trial["metrics"].get("benchmark") or {}).get("outcome_label") == "unresolved":
+                outcome = f"unresolved ({outcome})"
+            elif outcome == "time_limit":
                 outcome += f" (engine {trial['engine_outcome']})"
             lines.append(f"- {Path(trial['instance']).name}/{trial['episode']}: "
                          f"{trial['controller']}, {outcome}; "
@@ -519,13 +529,20 @@ def plan_report(plan_path: Path, output: Path) -> dict:
     ``output`` is STEM; a coordination-suite plan's is suite.report."""
     visual = collect([], benchmark_plans=[plan_path])
     data = visual["benchmark_plans"][0]
+    rate = data["win_rate_completed"]
+    wins = (f"{data['outcomes']['won']}/{data['completed']} wins ({rate:.1%})"
+            if rate is not None else "win rate unavailable")
     text = (f"{VERSION}: {data['completed']}/{data['planned']} engine-completed; "
+            f"{wins}, {data['unresolved']} unresolved; "
             f"{data['never_started']} never started; outcomes {data['outcomes']}.\n"
             "Rank completed battles by win > draw > loss, then own condition; "
             "unavailable condition has no tie-break. No aggregate controller ranking.\n"
             "Error categories count recorded events, which can describe the same failure.\n")
     for row in data["rows"]:
-        text += (f"{row['controller']}: {row['outcome'] or row['status']}; "
+        outcome = row["outcome"] or row["status"]
+        if row["outcome_label"] == "unresolved":
+            outcome = f"unresolved ({outcome})"
+        text += (f"{row['controller']}: {outcome}; "
                  f"condition {row['condition']}; errors {len(row['errors'])}; {row['output']}\n")
     write_report(output, visual, data, text)
     return data

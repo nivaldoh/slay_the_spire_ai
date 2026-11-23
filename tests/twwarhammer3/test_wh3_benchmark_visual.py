@@ -59,6 +59,49 @@ def test_plan_report_reuses_visual_page_without_changing_raw_plan_contract(tmp_p
     assert missing["battle_key"] is None and missing["outcome"] is None
 
 
+def test_unresolved_attempts_are_reported_beside_engine_endings(tmp_path):
+    won = mirror_job(tmp_path, "won", outcome="won")
+    lost = mirror_job(tmp_path, "lost")
+    stopped = mirror_job(tmp_path, "stopped", outcome="provider_error")
+    trace = {"kind": "battle", "observation": {"job": "stopped", "battle": "stopped"}}
+    (stopped / "episode-0000/trace.jsonl").write_text(json.dumps(trace) + "\n")
+    alias = tmp_path / "stopped-alias"
+    alias.symlink_to(stopped, target_is_directory=True)
+    foreign = mirror_job(tmp_path, "foreign", outcome="provider_error")
+    manifest_path = foreign / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_revision"] = "different-revision"
+    manifest_path.write_text(json.dumps(manifest))
+    plan = plan_for(tmp_path, won)
+    declared = json.loads(plan.read_text())
+    declared["jobs"].extend({"output": str(job), "controller": "llm_rules"}
+                            for job in (lost, alias, foreign))
+    plan.write_text(json.dumps(declared))
+
+    data = report.plan_report(plan, tmp_path / "planned")
+    assert (data["planned"], data["completed"], data["unresolved"]) == (5, 2, 1)
+    assert data["win_rate_completed"] == 0.5
+    text = (tmp_path / "planned.txt").read_text()
+    assert "1/2 wins (50.0%), 1 unresolved" in text
+    assert text.count("unresolved (provider_error)") == 1
+    planned, = embedded((tmp_path / "planned.html").read_text())["benchmark_plans"]
+    assert planned["unresolved"] == 1
+    assert planned["rows"][3]["output"] == "stopped"
+    assert planned["rows"][3]["outcome_label"] == "unresolved"
+    assert planned["rows"][4]["outcome_label"] is None
+
+    jobs = report.collect([won, lost, stopped])
+    row, = jobs["groups"][0]["controllers"]
+    assert (row["valid"], row["win_rate"], row["unresolved"]) == (2, 0.5, 1)
+    text = report.render(jobs)
+    assert "1 unresolved" in text and "unresolved (provider_error)" in text
+    html = report_html.render(jobs)
+    (tmp_path / "unplanned.html").write_text(html)
+    page = embedded(html)
+    scenario, = page["scenarios"]
+    assert len(scenario["battles"]) == 2
+
+
 def test_visual_data_retains_condition_and_separates_profiles_even_with_a_legacy_core(tmp_path):
     old = mirror_job(tmp_path, "v4", version=4, outcome="won", hp=.02)
     current = mirror_job(tmp_path, "v5")

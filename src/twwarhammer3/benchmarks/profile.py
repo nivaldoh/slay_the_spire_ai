@@ -213,7 +213,7 @@ def evaluate(result: dict | None) -> dict:
     if outcome and measured.get("version") == version and result.get("setup_checks"):
         scored = condition(list((result.get("start") or {}).get("friendly", {})),
                            measured.get("units") or [], None if version == SUITE else 5)
-    return {"version": version, "outcome": outcome, **scored,
+    return {"version": version, "outcome": outcome, "outcome_label": label, **scored,
             "rank": [OUTCOMES[outcome], scored["condition"]]
             if outcome and scored["condition"] is not None else None}
 

@@ -452,10 +452,10 @@ Until 2026-11-15 four readers used four rules: `cards.outcome` (timer wins and f
 were losses; the primary rate; deleted with the tactic cards, tag `wh3-legacy-20261115`), `report`
 (timer wins are not wins; forfeits are dropped), the HTML report (timer wins are wins;
 forfeits are dropped) and `stats` (raw counts, no rate). The last three remain for scenarios
-outside the two benchmark profiles, whose readers all count through `benchmark.evaluate`.
+outside the two benchmark profiles, whose readers all count through `benchmarks.profile.evaluate`.
 
 - *Check:* proposed (medium): a `success` field per card and one result function (since
-  2026-11-15 the label is `benchmark.benchmark_outcome`), whose value `report` writes into the
+  2026-11-15 the label comes from `benchmarks.profile.benchmark_outcome`), whose value `report` writes into the
   page data and `results.csv` stores for `stats`. A fixture job (contact win, timer win, draw, forfeit, construction failure,
   rematch) gives one count in the report and `stats`.
 

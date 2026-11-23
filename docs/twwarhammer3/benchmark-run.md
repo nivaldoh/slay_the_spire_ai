@@ -12,10 +12,9 @@ benchmarks are built and have run through `benchmark plan`, `scripts/wh3_queue.p
 recording and arithmetic checked at `b1136e8`) and the exploratory
 [coordination suite](#the-coordination-suite) (`suite-v1`). Strength and winnability remain
 unverified. The rest of the definition is still a plan: no reader applies the whole
-[outcome table](benchmark.md#outcome-and-score). `benchmark report` scores from the engine
-ending (`benchmark.evaluate`), so a timer win counts as a win there. Since 2026-11-15
-`evaluate` takes that outcome from `benchmark.benchmark_outcome`, which labels every row, and
-the tactic cards, which scored a timer win as a loss, are deleted. The two scenarios still
+[outcome table](benchmark.md#outcome-and-score). `benchmark report` counts engine endings,
+including timer wins, through `benchmarks.profile.evaluate` and shows the separate unresolved
+count. The 2026-11-15 cleanup deleted the tactic cards, which scored a timer win as a loss. The two scenarios still
 declared `"scoring": "contact"` (two more went with the 2026-11-15 deletion) keep prompts that
 count only routing or destroying every enemy before the timer, and no next scenario is
 selected. The other commands below describe existing capabilities.
@@ -260,11 +259,11 @@ with one row per planned battle.
   process (`uv run` forwards it). Play records the running episode and the manifest as
   `interrupted`, appends the register row, and the supervisor closes the game. An
   interrupted trial is a failure in the register and stats, never a loss. Benchmark readers
-  (through `benchmark.evaluate`: the plan table, stats, the report's trial groups, export)
+  (through `benchmarks.profile.evaluate`: the plan table, stats, the report's trial groups, export)
   skip one stopped during its final copying, as it has no outcome (`recorded_engine_outcome`
   keeps the engine's), and count one stopped during controller close by its engine ending
   (owner, 2026-11-13: "interrupted, readers skip it (Recommended)"). Since 2026-11-15
-  `benchmark.benchmark_outcome` (v2) labels a trial the engine ended but whose final copying
+  `benchmarks.profile.benchmark_outcome` (v2) labels a trial the engine ended but whose final copying
   was stopped `operator_stop`; one stopped during controller close keeps its engine label.
 - **A queue after its current job**: create `my-plan-stop` beside the plan; the running job
   plays its remaining episodes and the plan ends `stopped`.

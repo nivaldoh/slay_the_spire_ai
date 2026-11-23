@@ -66,9 +66,10 @@ no live run. You kept the three classes that were on the deletion list and that 
 still name (`PriorityStrike`, `LineTeam`, `LineTeamReserve`: "Keep the three (Recommended)").
 Four questions it leaves for you. (1) Outside the two profiles the text `report` still shows a
 timer win as `time_limit` and `stats` tallies raw statuses. (2) Whether a forfeit counts as a
-non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)). (3) No
-reader prints the unresolved count as its own figure, which the option you answered had
-mentioned. (4) Status `held_out` is tied to split `held_out` by a rule marked `JUDGEMENT?`.
+non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)).
+(3) The benchmark reports now print the unresolved count. The choice to count matching result
+records in plans is marked `Unresolved plan count` in [benchmarks/plans.py](../src/twwarhammer3/benchmarks/plans.py).
+(4) Status `held_out` is tied to split `held_out` by a rule marked `JUDGEMENT?`.
 The rest of the plan, which you chose on 2026-11-15 (F1, F6, F8 and the scenario file split),
 is built offline at $0 ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)):
 readings no longer load the witness modules, the scenario file is eleven family files, the
@@ -79,7 +80,8 @@ proposal marked `JUDGEMENT?`: under it a refactor that changes no behaviour woul
 results poolable, while `report` splits on it, the HTML report too outside its presentation
 files, and `stats` pools one harness version across commits. (6) A witness's file hash no longer covers the values now in its
 `*_facts.py`, so `stats` could pool two jobs of one witness that differ only there (marked
-`JUDGEMENT?` Witness hash in `controllers.py`; no row is affected today; asked on 2026-11-15
+`JUDGEMENT?` Witness hash in [controllers/factory.py](../src/twwarhammer3/controllers/factory.py);
+no row was affected on 2026-11-15, when
 you answered "Decide later"). (7) Four markers
 (Camp groups, Camp thresholds, Lines witness rules, Wall witness thresholds) stay in the
 witness files while 12 of the values they name are in the facts files; a plain line above each

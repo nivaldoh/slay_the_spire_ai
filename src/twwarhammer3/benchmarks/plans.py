@@ -101,10 +101,11 @@ def collect(plan_path: Path) -> dict:
         profile = (plan["scenarios"][scenario] if plan["benchmark"] == SUITE
                    else expected_profile)
         directory = REPO_ROOT / job["output"]
+        resolved = directory.resolve()
         manifest = read_json(directory / "manifest.json") or {}
         result = read_json(directory / "episode-0000/result.json")
         errors = []
-        execution = executions.get(str(directory.resolve()))
+        execution = executions.get(str(resolved))
         if execution and execution.get("exit_code"):
             errors.append({"category": "queue", "detail": execution})
         trace = directory / "episode-0000/trace.jsonl"
@@ -121,7 +122,7 @@ def collect(plan_path: Path) -> dict:
                 if event["kind"] == "battle":
                     observed = event.get("observation") or {}
                     identity = observed.get("battle")
-                    if (observed.get("job") == directory.name
+                    if (observed.get("job") in (directory.name, resolved.name)
                             and isinstance(identity, str) and identity):
                         if traced_battle and traced_battle != identity:
                             trace_mismatch = True
@@ -162,7 +163,7 @@ def collect(plan_path: Path) -> dict:
         measured = evaluate(result)
         recorded = recorded_outcome(result)
         if not matches:
-            measured = evaluate(None)
+            measured = {**evaluate(None), "outcome_label": None}
         if result and not measured["outcome"]:
             errors.append({"category": "incomplete", "detail": result.get("status")})
         if measured["outcome"] and measured["condition"] is None:
@@ -171,7 +172,9 @@ def collect(plan_path: Path) -> dict:
         # keeps what the engine ended.
         if (result or {}).get("interrupted_copy"):
             errors.append({"category": "interrupted_copy", "detail": result["interrupted_copy"]})
-        rows.append({"output": str(directory), "controller": job["controller"],
+        # Match the path used by report.collect for this recording, including symlink aliases.
+        rows.append({"output": str(resolved if matches else directory),
+                     "controller": job["controller"],
                      "scenario": scenario, "arm": job.get("arm"),
                      "started": bool(result_battle or traced_battle),
                      "status": (result or manifest).get("status", "never_started"),
@@ -187,11 +190,14 @@ def collect(plan_path: Path) -> dict:
                      "llm": (result or {}).get("llm"), "errors": errors, **measured})
     counts = Counter(row["outcome"] for row in rows if row["outcome"])
     completed = sum(counts.values())
+    # JUDGEMENT: Unresolved plan count — Codex, 2026-11-23: count matched result labels.
+    # Counting trace-only starts or foreign records would change the reported unresolved total.
     return {"version": plan["benchmark"], "plan": str(plan_path.resolve()), "queue_state": state,
             "planned": len(rows),
             "started": sum(r["started"] for r in rows), "completed": completed,
             "engine_completed": sum(bool(r["recorded_engine_outcome"]) for r in rows),
             "never_started": sum(not r["started"] for r in rows),
+            "unresolved": sum(r["outcome_label"] == "unresolved" for r in rows),
             "outcomes": {key: counts[key] for key in OUTCOMES},
             "win_rate_completed": counts["won"] / completed if completed else None,
             "completion_rate": completed / len(rows) if rows else None,

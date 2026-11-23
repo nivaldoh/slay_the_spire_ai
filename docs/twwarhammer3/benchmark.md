@@ -245,7 +245,16 @@ Under the proposed Primary summary, the score is the number of wins divided by t
 | Unknown cause, unsettled cap, or no ending | Shown as unresolved and kept out of the counts: in neither the numerator nor the denominator of a win rate | Owner, 2026-11-15: "Unresolved battles can be kept out of the counts" |
 | A planned battle that never started | Shown with its reason; no outcome | Agreed 2026-10-21 |
 
-Still to settle before a run: provider, key and credit failures; budget stops; and what to do when the wall-clock cap hits with no engine result. That cap is not the engine's timer. Today the code labels those stops `unresolved` (rests on JUDGEMENT `src/twwarhammer3/benchmarks/profile.py` Benchmark-outcome rows), and the owner's 2026-11-15 answer covers how an unresolved battle counts, not which stops belong under the label or whether one is replaced. One function gives each episode its label (`benchmark.benchmark_outcome`), and `benchmark.evaluate`, which the readers of the two profiles all use, gives an outcome only under an engine label; it already left unresolved battles out before that answer. Those readers show planned against completed battles, and the plan table lists each battle without an outcome as incomplete with its status; none prints the unresolved count as its own figure. What the readers of other scenarios do is in [5.1](evaluation-guidelines.md#51-one-success-rule-per-card-in-one-function-told-to-the-controller) of the guidelines. Never drop failed battles to improve the rate.
+Provider, key and credit failures, budget stops and wall-clock caps without an engine ending
+currently carry the `unresolved` label (rests on JUDGEMENT
+`src/twwarhammer3/benchmarks/profile.py` Benchmark-outcome rows). The owner's 2026-11-15 answer
+settles the denominator. Classification and replacement rules remain open.
+[`benchmarks.profile.evaluate`](../../src/twwarhammer3/benchmarks/profile.py) gives readers the
+label and an engine outcome when one counts. Reports for both profiles show the unresolved
+count alongside wins and engine endings. A plan counts only matching result records labelled
+`unresolved` (rests on JUDGEMENT `src/twwarhammer3/benchmarks/plans.py` Unresolved plan count).
+Its table retains the recorded status for other attempts. [Other scenario readers](evaluation-guidelines.md#51-one-success-rule-per-card-in-one-function-told-to-the-controller)
+use their own rules.
 
 Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
 

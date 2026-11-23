@@ -93,6 +93,17 @@ def test_provider_failed_response_counts_even_when_battle_finishes(tmp_path):
     assert arm["bad_replies"] == 0 and arm["call_failures"] == 1
 
 
+def test_suite_reports_unresolved_beside_each_arms_win_count(tmp_path):
+    plan = attempts(tmp_path, [{"status": status} for status in
+                               ("won", "lost", "provider_error", "interrupted")])
+    data = suite.report([plan], tmp_path / "report")
+    arm = data["summary"]["arms"]["gap"]
+    assert (arm["wins"], arm["completed"], arm["unresolved"]) == (1, 2, 1)
+    text = (tmp_path / "report.txt").read_text()
+    assert "gap | 1/2 | 1 |" in text
+    assert "unresolved(None/None),operator_stop(None/None)" in text
+
+
 def test_numeric_queue_arguments_use_the_same_spelling_as_at_launch(tmp_path):
     plan = attempts(tmp_path, [{"status": "won"}], args=[
         "--episodes", 1, "--provider", "anthropic"], config={"provider": "anthropic"})

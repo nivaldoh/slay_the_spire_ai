@@ -779,6 +779,7 @@
         [
           "Method",
           "Won",
+          "Unresolved",
           "Win rate, 95%",
           "Scenarios won",
           "Own",
@@ -802,6 +803,7 @@
         arms.map(([name, arm]) => [
           name,
           `${arm.wins}/${arm.completed} of ${arm.planned}`,
+          arm.unresolved,
           arm.win_text,
           `${arm.scenarios_won}/${arm.scenarios_played}`,
           arm.own,
@@ -864,33 +866,52 @@
   function renderBenchmarkResults() {
     const box = $("benchmark-attempts");
     const plans = data.benchmark_plans || [];
-    const linked = new Set(plans.flatMap((plan) => plan.rows.map((row) => row.battle_key)));
-    const unplanned = [...shown].filter((key) => isBenchmark(entries.get(key)) && !linked.has(key));
+    const planRows = plans.flatMap((plan) => plan.rows);
+    const linked = new Set(planRows.map((row) => row.battle_key));
+    const matchedJobs = new Set(
+      planRows.filter((row) => row.evidence_matches_plan).map((row) => row.output),
+    );
+    const unplanned = [...entries.values()].filter((entry) => {
+      if (!isBenchmark(entry) || linked.has(entry.key)) return false;
+      return (
+        shown.has(entry.key) ||
+        (entry.trial.metrics.benchmark?.outcome_label === "unresolved" &&
+          (entry.trial.episode !== "episode-0000" || !matchedJobs.has(entry.trial.instance)))
+      );
+    });
     if (!plans.length && !unplanned.length) return;
     $("benchmark-results").hidden = false;
     $("benchmark-rule").textContent = data.suite ? SUITE_RULE : BENCHMARK_RULE;
     box.replaceChildren();
-    const sections = plans.map((plan) => ({
-      name: plan.plan,
-      summary: `${plan.planned} planned; ${plan.started} started; ${plan.completed} matched engine endings; ${plan.never_started} never started. Wins / draws / losses: ${plan.outcomes.won} / ${plan.outcomes.draw} / ${plan.outcomes.lost}.`,
-      rows: plan.rows,
-    }));
-    if (unplanned.length)
+    const sections = plans.map((plan) => {
+      const rate = plan.win_rate_completed;
+      const wins =
+        rate == null
+          ? "Win rate unavailable"
+          : `${plan.outcomes.won}/${plan.completed} wins (${(rate * 100).toFixed(1)}%)`;
+      return {
+        name: plan.plan,
+        summary: `${plan.planned} planned, ${plan.started} started, ${plan.never_started} never started. ${wins}, ${plan.unresolved ?? "unavailable"} unresolved. Engine endings include ${plan.outcomes.draw} draws and ${plan.outcomes.lost} losses.`,
+        rows: plan.rows,
+      };
+    });
+    if (unplanned.length) {
+      const unresolved = unplanned.filter(
+        (entry) => entry.trial.metrics.benchmark?.outcome_label === "unresolved",
+      ).length;
       sections.push({
         name: "Recorded battles without a supplied plan",
-        summary: "Planned and never-started counts are unavailable for these battles.",
-        rows: unplanned.map((key) => {
-          const entry = entries.get(key);
-          return {
-            ...entry.battle.benchmark,
-            output: entry.trial.instance,
-            controller: fullName(entry),
-            status: entry.trial.outcome,
-            battle_key: key,
-            errors: null,
-          };
-        }),
+        summary: `${unresolved} unresolved. Planned and never-started counts are unavailable for these battles.`,
+        rows: unplanned.map((entry) => ({
+          ...entry.battle.benchmark,
+          output: entry.trial.instance,
+          controller: fullName(entry),
+          status: entry.trial.outcome,
+          battle_key: shown.has(entry.key) ? entry.key : null,
+          errors: null,
+        })),
       });
+    }
     for (const section of sections) {
       box.append(el("h3", section.name), el("p", section.summary, "benchmark-summary"));
       const table = el("table", null, "benchmark-table"),
@@ -926,7 +947,12 @@
         battle.append(el("small", row.output, "benchmark-job"));
         const outcome = el("td", row.outcome ? capital(row.outcome) : "No engine outcome");
         outcome.className = "benchmark-outcome";
-        if (!row.outcome) outcome.append(el("small", row.not_started_reason || row.status));
+        if (!row.outcome) {
+          const status = row.not_started_reason || row.status;
+          outcome.append(
+            el("small", row.outcome_label === "unresolved" ? `Unresolved (${status})` : status),
+          );
+        }
         const score = el("td", null, "benchmark-condition");
         score.append(el("b", conditionText(row.condition)));
         if (row.condition != null) {
@@ -1679,14 +1705,14 @@
       launches = data.omitted.setup_only.length;
     if (battles || launches)
       items.push([
-        "Not shown",
+        "Outside the replay and comparison views",
         `${[
           battles &&
             `${battles} further battle${battles > 1 ? "s" : ""} (variants, pilots, incomplete attempts and diagnostic probes)`,
           launches && `${launches} launch${launches > 1 ? "es" : ""} stopped during setup`,
         ]
           .filter(Boolean)
-          .join(" and ")}; the report JSON and text keep them.`,
+          .join(" and ")}. See the report JSON and text for their records.`,
       ]);
     if (synthetic) items.unshift(["Synthetic demo", NOTICE]);
     $("method-notes").replaceChildren(
