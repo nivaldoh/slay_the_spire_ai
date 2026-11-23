@@ -138,7 +138,8 @@ Follow a job with `uv run python -m twwarhammer3 watch` (the live job's model in
 outputs) or `watch runs/twwarhammer3/battle/JOB --next`, which waits for the next episode
 result, stall (`--stall-minutes`, default 2) or job end, prints it and exits. Afterwards,
 `digest JOB` gives a table per episode and `digest JOB/episode-0000 --at 120` the full
-decision nearest 120 s of battle time. Note a running job in [state.md](../state.md).
+decision nearest 120 s of battle time. If the trace pairs any prompts with model attempts,
+the search uses those decisions. Note a running job in [state.md](../state.md).
 
 ## Outside controllers
 

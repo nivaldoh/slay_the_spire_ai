@@ -207,6 +207,7 @@ summary:hover { color: var(--forest); }
           </ul></li>
         </ul></li>
       </ul>
+      <a href="#command-arguments">What the commands and options do</a><br>
       <a href="#saved-decision">Inspect the recorded decision offline</a>
     </nav>
   </div>
@@ -225,7 +226,7 @@ summary:hover { color: var(--forest); }
 
   <ul class="children">
   <li><details id="map-cli"><summary><code>__main__.py</code> <span>Parse and dispatch commands</span></summary>
-  <div class="contents"><p><code>main()</code> chooses a handler from <code>COMMANDS</code>. For <code>play</code>, the handler prepares the job configuration and passes it to the battle runner.</p><a href="#dispatch">Trace the dispatch →</a></div></details></li>
+  <div class="contents"><p><code>main()</code> chooses a handler from <code>COMMANDS</code>. For <code>play</code>, the handler prepares the job configuration and passes it to the battle runner.</p><a href="#dispatch">Trace the dispatch →</a><br><a href="#command-arguments">Look up commands and options →</a></div></details></li>
   <li><details id="map-battle"><summary><code>battle/</code> <span>Run each episode</span></summary>
   <div class="contents"><dl class="leaves">
     <div><dt><code>setup.py</code></dt><dd>Checks the requested battle against the game’s readback.</dd></div>
@@ -354,6 +355,39 @@ return COMMANDS[args.command](args, parser)</code></pre>
         </ol>
         <div class="drills"><h3>Interview practice</h3><details class="ask"><summary>Where would you stop in a debugger to inspect the exact configuration before launch?</summary><p>Stop at the call passing <code>args.output</code>, <code>config</code> and <code>makers</code> in <code>__main__.run_play()</code>. Inspect the parsed scenario and the constructor keyed by the full policy string. Step into that call to reach <code>battle.play.play()</code>.</p></details></div>
       </section>
+      <section class="chapter" id="command-arguments" data-branches="map-cli">
+        <header><h2>Commands and options</h2>
+          <p><code>uv run --locked python -m twwarhammer3 play --help</code> lists the options for <code>play</code>. Replace <code>play</code> with any command below to see its options.</p>
+        </header>
+
+        <h3>Run a battle with <code>play</code></h3>
+        <dl class="roles">
+          <div><dt><code>--scenario</code><br><code>--output</code></dt><dd>Choose the battle setup and the new directory for its logs and results. Both options are required. With a random scenario, <code>--seed</code> controls the draw of the map and each side’s race. The game then generates the armies.</dd></div>
+          <div><dt><code>--policy</code><br><code>--provider</code></dt><dd>Choose who gives orders and, for model controllers, which API provider the job uses. For example, <code>rush_nearest</code> is scripted and <code>llm_rules</code> uses a language model. The example at the top uses <code>NAME@MODEL/EFFORT</code> to choose the model and reasoning effort for that controller. <code>--model</code> and <code>--effort</code> supply defaults for controllers that omit them.</dd></div>
+          <div><dt><code>--delay-seconds</code><br><code>--episodes</code><br><code>--rotation-seed</code></dt><dd>The controller gets the newest snapshot at least as old as the requested delay. By default, a job runs one battle per controller and delay combination. <code>--episodes</code> sets the total, which must cover every combination, and <code>--rotation-seed</code> makes their order repeatable. <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/battle/play.py#L742">Snapshot selection and the “Added age” judgement</a> · <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/controllers/factory.py#L93">Trial order</a></dd></div>
+          <div><dt><code>--observe-ms</code><br><code>--interval-ms</code></dt><dd>Set the observation cadence and the optional wait after orders apply. Both use battle time. Team controllers require zero added delay and zero wait.</dd></div>
+          <div><dt><code>--budget-usd</code></dt><dd>Cap the total on this provider’s WH3 ledger, including earlier jobs. Built-in model controllers require it. <code>spend --provider PROVIDER</code> prints the total so far.</dd></div>
+        </dl>
+
+        <h3>Check the setup and connect game clients</h3>
+        <dl class="roles">
+          <div><dt><code>doctor</code></dt><dd>Checks whether the game is ready to launch. It looks for the executable, runs a Windows Python version check, reads game preferences, and checks whether the game is already open. A missing executable is a blocker. A Steam build that differs from the recorded version produces a warning. <code>--json</code> prints the full report, which <code>play</code> also saves as <code>environment.json</code>. The checks are read-only. <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/engine/doctor.py#L19">Diagnostic checks</a></dd></div>
+          <div><dt><code>pack</code></dt><dd>Bundles our Lua scripts into a <code>.pack</code> archive the game can load. <code>--output FILE</code> chooses where to write it. <code>--list PACK</code> lists files in an existing archive, and <code>--extract PACK NAME</code> writes one file’s contents to standard output. <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L366">Pack command</a></dd></div>
+          <div><dt><code>launch</code><br><code>menu</code></dt><dd><code>launch</code> installs the mod and starts the game. The mod-list change persists after the game closes. <code>menu</code> talks to a running session. Use <code>--dump DEPTH</code> to save a tree of UI elements or <code>--steps FILE</code> to run a sequence of UI actions from JSON.</dd></div>
+          <div><dt><code>coordinator</code><br><code>worker</code></dt><dd><code>coordinator</code> serves one multiplayer attempt, identified by <code>--match</code> and <code>--attempt</code>. It gives each name in <code>--clients A,B</code> its own token. A <code>worker</code> joins using <code>--coordinator URL</code>, <code>--token-file FILE</code>, and the matching <code>--match</code>, <code>--attempt</code>, and <code>--client</code> values. <code>--mode observe</code> sends observations. <code>--mode control</code> can also pass supported commands to the game. <code>--attach</code> borrows a compatible running game's bridge and session. <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/multiplayer/worker.py#L346">Worker connection</a></dd></div>
+        </dl>
+
+        <details class="dive" id="review-commands">
+          <summary>Plan experiments and inspect results</summary>
+          <dl class="roles">
+            <div><dt><code>benchmark</code></dt><dd><code>benchmark plan PLAN.json</code> writes a queue plan. <code>benchmark report PLAN.json</code> reads the plan and its saved results, including incomplete attempts.</dd></div>
+            <div><dt><code>watch</code><br><code>digest</code></dt><dd><code>watch JOB</code> follows job output. Add <code>--next</code> to wait for the next battle result, a stall, or the end of the job. <code>digest</code> summarizes saved results. <code>digest EPISODE --at SECONDS</code> shows the nearest logged decision in battle time. If the trace pairs any prompts with model attempts, it searches only those decisions.</dd></div>
+            <div><dt><code>stats</code><br><code>report</code></dt><dd><code>stats</code> summarizes the results CSV. <code>report JOB --output STEM</code> builds a report from saved jobs, including an HTML file you can open offline.</dd></div>
+            <div><dt><code>compare-peers</code><br><code>export</code></dt><dd><code>compare-peers</code> compares what multiplayer clients recorded for the same match. <code>export</code> turns logged model requests and replies into data for later training.</dd></div>
+          </dl>
+          <p><a href="twwarhammer3/README.md">WH3 README with more command examples</a></p>
+        </details>
+      </section>
       <section class="chapter" id="job" data-branches="map-configs map-battle map-engine map-mod">
         <header><div class="path">src/twwarhammer3/<b>battle/play.py</b></div><h2>Inside <code>play(output, config, makers=…)</code></h2>
           <p>Follow the fresh-launch branch selected by the example. <code>play()</code> owns the job, which can contain several episodes. This command requests one.</p></header>
@@ -479,7 +513,7 @@ return COMMANDS[args.command](args, parser)</code></pre>
         </ol>
         <details class="dive" id="saved-decision"><summary>Try a read-only command on the recorded episode</summary><p>From the checkout containing the saved run, follow the same <code>main()</code> dispatch with <code>digest</code> as the subcommand.</p><pre class="excerpt"><code>uv run --locked python -m twwarhammer3 digest \
   runs/twwarhammer3/battle/bench-b45-knights3-glm-low-l1-20261020/episode-0000 \
-  --at 5.3</code></pre><p><code>run_digest()</code> takes the <code>--at</code> branch and calls <code>results/digest.py → decision_at()</code>. It reads the episode’s <code>trace.jsonl</code> and prints the decision nearest 5.3 seconds, including the prompt, orders and acknowledgement. This reader needs only the saved episode directory.</p><div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L462"><code>__main__.py:462</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/results/digest.py#L176"><code>results/digest.py:176</code></a></div></details>
+  --at 5.3</code></pre><p><code>run_digest()</code> takes the <code>--at</code> branch and calls <code>results/digest.py → decision_at()</code>. It reads the episode’s <code>trace.jsonl</code>, finds the decision with a model reply nearest 5.3 seconds, and prints the prompt, orders and acknowledgement. This reader needs only the saved episode directory.</p><div class="sites"><a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/__main__.py#L462"><code>__main__.py:462</code></a> · <a class="source" href="https://github.com/nivaldoh/slay_the_spire_ai/blob/aecdd84b9796bee9a2db16966b73853baffbbea5/src/twwarhammer3/results/digest.py#L176"><code>results/digest.py:176</code></a></div></details>
         <h3>How those records enter a benchmark comparison</h3>
         <ol class="rail" id="benchmark-route" aria-label="From outcome to comparison">
           <li><b>Keep the ending</b><small>The episode result records how this battle ended. The trace lets a reader work backward to particular decisions.</small><code>runs/…/episode-0000/</code></li>
