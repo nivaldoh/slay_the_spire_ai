@@ -33,8 +33,8 @@ SECTOR_HALF_M = 60
 FAR_M = 150  # a defender that started this far (along x) outside a sector came from elsewhere
 WINDOW_MS = 120000  # melee counted this long after the reading's start
 GATE_M = 20  # a unit that first comes inside this close to g1 came in by the gate
-# Re-checked once stage 1 reads g1's central_position: the recorded Helmgart ram stopped at
-# (-2,-30), 33 m from the gate's (-32,-16) (escalade-eval.md, check 3).
+# The checkpoint ram stop is 10.7 m from Izmail's published g1 and 32.9 m from the
+# checkpoint's Gatehouse readout (escalade-eval.md, Gate target and door readback).
 # JUDGEMENT?: Wall sections — Claude, 2026-11-09 (second look B1): a section is a 120 m bin of x of
 # the listed piece nearest a unit on the wall. Sections between Fort Tower points, or another
 # width, change the count; any controller's D1 branch reading rests on it.

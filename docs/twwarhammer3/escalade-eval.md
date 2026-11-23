@@ -323,22 +323,22 @@ come from the attack smoke's first observation and match the [Haengju map](haeng
   near (0,-247) and (22,-229) with its ram at (0,-231) and a siege tower at (262,-236) (the
   design's reading). Stage 1 reads the 13- and 12-unit starts of this battle.
 - Timings recorded so far, as the design read the checkpoint launch: an AI-side ram crew under the
-  checkpoint's script pushed the ram from (0,-231) to (-2,-30) in about 105 s (about 1.9 m/s), and
-  the gate's raw hit points fell from 4,380 to 0 between 105 and 120 s against defenders who never
-  moved; an AI-side besieger the script ordered at 10 s read `is_climbing_ladder` from 100 s at
-  y 330 and reached y 345 at about 130 s. Those were AI units against an idle garrison, so they
-  give only an order of magnitude. Public gate hp is a percentage, so the raw values are never used
-  as public thresholds.
-- The ram stopped at (-2,-30), 33 m from the gate's position (-32,-16), and in
-  `bench-b12-siege-baselines-20261016` episode-0001 the Trolls that broke the door stood at about
-  (-2,-23), 31 m from it (both rechecked for this page). A gate rule keyed on g1's centre must
-  allow for that offset ([check 3](#proposed-deciding-checks)).
+  checkpoint's script pushed the ram from about (0,-231) at 5 s to (-2.1,-29.8) at 110 s (about
+  1.9 m/s). Door hit points fell from 4,380 to 0 between 110 and 120 s while the attacking cannon
+  was also firing. An AI-side besieger the script ordered at 10 s read `is_climbing_ladder` from 100 s at
+  y 330 and reached y 345 at about 130 s. These timings come from the checkpoint's scripted AI
+  orders and give an order of magnitude. Public gate hp is a percentage, so the raw values are
+  never used as public thresholds.
+- The checkpoint ram stop was 32.9 m from the Gatehouse readout at (-32,-16). At the first replay
+  sample with door HP at 0% in `bench-b12-siege-baselines-20261016` episode-0001, an enemy Trolls
+  unit stood at (-2.6,-23), 30.2 m from the same readout. The published Izmail attack target
+  g1 has a different centre ([readback](#gate-target-and-door-readback)).
 - In the player-side Altdorf launch (`capital-attacker`) the crew ordered at 10 s pushed its ram
   about 300 m by 240 s under fire, about 1.3 m/s (1.2 m/s over its first 180 s), and fell from 90
   to 58 men; it was still about 260 m from the gate at 240 s (recounted for this page from
   `native.jsonl`). The UI's `VehicleList` `IsDestroyed` read true while a ram
   still moved: there from 140 s with `health_percent` 0.99, and in `helmgart-defender` from 70 s
-  with 0.999, before that ram broke the door. A ram's state is read from `health_percent`. No code
+  with 0.999, before the door read 0 HP. A ram's state is read from `health_percent`. No code
   here reads `IsDestroyed` for a vehicle, and the mod's vehicle reading (`crew_reading`) records
   neither field.
 
@@ -774,10 +774,10 @@ launches.
 |---|---|---|---|---|
 | 0 | Recruits | The set's lobby-only readback: the scenario's lobby steps without the Start click, then `setup.army_checks` | All 13 attacker and 12 garrison cards recruit, the Winged Lancers included; the player's slot holds exactly one `ksl_battering_ram` and nothing else | A copy with one key swapped; a lobby that still holds an `emp_battering_ram` from a Haengju launch (the removal step must clear every piece) |
 | 1 | Constructed | Lobby readback and the private first reading, every launch; `check_battle` | Map, type `settlement_standard`, role attacker, timeout winner enemy, difficulty, modifier, scale, timer, funds, rank 0 and rosters by multiplicity; `assault_equipment` keys equal one ksl ram and `setup.siege_assault` reads ok with a gate and a wall piece (both built: `check_battle` raises otherwise) | One Armoured Kossars swapped for Kossars (Spears); an emp ram passing for the declared ksl ram and a failed siege setup ignored (both planted offline and caught); a setup that reads ok with no gate or no wall piece listed (a test added after `f3fec92`, when the set's integration review's plant of it survived) |
-| 2 | Fort registry | Stage 1 first and last observations against the engine's three fort lists, read in the same launch | The gate listed once; wall pieces equal the wall list minus gates; centres within 0.5 m of `central_position`; ids unchanged after a piece falls; g1 within 1 m of (-32,-16); a tower within 30 m of each of c3-c6; no building with both a w and a t id; tower owners agree with the Fort Tower capture holders | Offline, built and caught: ids reassigned in list order, the gate counted as a wall piece, towers dropped, `position()` used for the centre, a zero-based owner reading. Live: a building listed twice must be reported |
-| 3 | Orders reach effects, with the climb go/no-go | Stage 2 probe, trace, private record and video | (a) An Armoured Kossars and a Kossars (Spears) besieging a wall piece read `on_wall` within 150 s, with y within 3 m of the wall-top height the private record shows there. (b) The crew besieging g1 brings the ram within 15 m of the gate within 180 s. The recorded Helmgart ram stopped at (-2,-30), 33 m from g1's expected centre (-32,-16), and the Trolls that broke the door in `bench-b12-siege-baselines-20261016` episode-0001 stood at about (-2,-23), so (b) as written can fail a ram that works (marker Gate anchor below). (c) The Grom's `attack_building` on g1 lowers its hp within 60 s while its ammunition falls; whether g1's `health()` reaches 0 when the door breaks is recorded. (d) Streltsi fire at a visible wall defender lowers its men within 60 s (descriptive). (e) A unit on the wall reads melee within 60 s of an attack on an adjacent wall defender. (f) Which holdings drain the defender's tickets, read with `wall_readings.ticket_onset` beside the capture holders: first c7 alone as the control, then c1. The recorded rule, recounted for this page from 23 Helmgart siege traces with the player defending (9.0.3 and 9.0.4; 4 drains, all on 9.0.4; a trace counts when its job's manifest names the Helmgart map, `battle_preset_wh2_dlc13_minor_settlement_empire_fort`): no reading showed the tickets below 1,000 while only c7, c8 or c9 was attacker-held (c7, by its position, was in 13 of the 23); 19 of the 23 kept 1 Hz replay frames, and none of those frames showed it either. In all 4 drains' replay frames the first drop came 0 to 1.2 s after c1's first enemy reading. In the fourth (`bench-b13-v1c-siege-flankers-kimi-20261016`) the trace jumps from 643.9 to 659.0 s; its replay frames read c1 enemy-held at 649.0 s and the tickets first at 990 at 650.2 s. The records cannot tell c1 alone from c1 plus supply points, since c1 fell after at least two of them each time, and the attack side is unread. Go/no-go: no player unit reads `on_wall` in two attempts by both unit types stops the battle; a unit at wall-top height whose `on_wall` stays false is a getter fault and goes back to the interface | `besiege` sent as a move to the piece centre (no `on_wall`, as in the smoke) and `attack_building` sent to the same index of another list (gate hp unchanged): both planted offline and caught. Built since: `siege_order_acted_on` reads the recorded Altdorf crew, whose ram stood 327 m short of the gate at 190 s, the test's last frame, and 263 m short when the record ends at 240 s, as acted on, and a reader keyed on the ram within 15 m of the gate within 180 s fails that test |
+| 2 | Fort registry | Stage 1 first and last observations against the engine's three fort lists, read in the same launch | The gate listed once; wall pieces equal the wall list minus gates; centres within 0.5 m of `central_position`; ids unchanged after a piece falls; g1 within 1 m of (-32,-16) in the original proposal (all four saved endpoints miss this anchor, see [readback](#gate-target-and-door-readback)); a tower within 30 m of each of c3-c6; no building with both a w and a t id; tower owners agree with the Fort Tower capture holders | Offline, built and caught: ids reassigned in list order, the gate counted as a wall piece, towers dropped, `position()` used for the centre, a zero-based owner reading. Live: a building listed twice must be reported |
+| 3 | Orders reach effects, with the climb go/no-go | Stage 2 probe, trace, private record and video | (a) An Armoured Kossars and a Kossars (Spears) besieging a wall piece read `on_wall` within 150 s, with y within 3 m of the wall-top height the private record shows there. (b) The crew besieging g1 brings the ram within 15 m of the gate within 180 s. The checkpoint ram stop is within the distance bound when measured against published Izmail g1 ([readback](#gate-target-and-door-readback)). The native Izmail time and effect still need a stage 2 probe. (c) The Grom's `attack_building` on g1 lowers its hp within 60 s while its ammunition falls; whether g1's `health()` reaches 0 when the door breaks is recorded. (d) Streltsi fire at a visible wall defender lowers its men within 60 s (descriptive). (e) A unit on the wall reads melee within 60 s of an attack on an adjacent wall defender. (f) Which holdings drain the defender's tickets, read with `wall_readings.ticket_onset` beside the capture holders: first c7 alone as the control, then c1. The recorded rule, recounted for this page from 23 Helmgart siege traces with the player defending (9.0.3 and 9.0.4; 4 drains, all on 9.0.4; a trace counts when its job's manifest names the Helmgart map, `battle_preset_wh2_dlc13_minor_settlement_empire_fort`): no reading showed the tickets below 1,000 while only c7, c8 or c9 was attacker-held (c7, by its position, was in 13 of the 23); 19 of the 23 kept 1 Hz replay frames, and none of those frames showed it either. In all 4 drains' replay frames the first drop came 0 to 1.2 s after c1's first enemy reading. In the fourth (`bench-b13-v1c-siege-flankers-kimi-20261016`) the trace jumps from 643.9 to 659.0 s; its replay frames read c1 enemy-held at 649.0 s and the tickets first at 990 at 650.2 s. The records cannot tell c1 alone from c1 plus supply points, since c1 fell after at least two of them each time, and the attack side is unread. Go/no-go: no player unit reads `on_wall` in two attempts by both unit types stops the battle; a unit at wall-top height whose `on_wall` stays false is a getter fault and goes back to the interface | `besiege` sent as a move to the piece centre (no `on_wall`, as in the smoke) and `attack_building` sent to the same index of another list (gate hp unchanged): both planted offline and caught. Built since: `siege_order_acted_on` reads the recorded Altdorf crew, whose ram stood 327 m short of the gate at 190 s, the test's last frame, and 263 m short when the record ends at 240 s, as acted on, and a reader keyed on the ram within 15 m of the gate within 180 s fails that test |
 | 4 | Information boundary | Built: the declaration test (no withheld word outside the list; `bench-izmail-r1` and `escalade-r1` refused), the Lua tests (climbing never shown, a hidden enemy's `on_wall` absent, unbuilt enemy slots absent) and the job-rename check in `assert_ablation`; the review's one-off script found the LLM request and all 7 arms' orders unchanged when `evaluation`, `setup`, `native` and `final` changed. The [saved-opening rehearsal](#saved-opening-and-order-probe-rehearsal-2026-11-23) compares current requests and `play.public` on both recorded stage 1 openings (question 4 answered 2026-11-09). Until the 2026-11-09 fix for the second look's seat-1 and seat-2, the boundary broke in two ways: `mode.slots`, which the mod reads in every battle, listed the defender's eight tower slots with their build timers (the attack smoke's slot list), and an accepted `besiege` or `attack_building` rendered in the `llm` prompt as "no order", which the system prompt defines as standing until ordered. The mod now leaves `mode.slots` out of a siege the player attacks, and the v23 prompt shows the unit's last siege order; both offline only | No `evaluation`, `setup`, `native`, `final`, climbing or private-record field in any controller input; enemy `on_wall` only on visible enemies; enemy structures only once finished; no withheld word, group label or staging point | A hidden enemy's `on_wall` and an unbuilt slot listed (both planted offline and caught); "izmail" in the job name (built test) |
-| 5 | Shortcuts | C1 `hold`, C2 `rush_nearest` and `attack_nearest`, C3 `BesiegeNearest`, C4 `ShootOnly`, C5 `GateOnly`: one fresh launch each on the frozen version | Reported only; a win is kept and narrows the label. A control counts only if it carried out its play (C3: at least one `on_wall`; C4: at least half its ammunition spent; C5: the ram within 15 m of the gate, which a working ram may never meet: the recorded one stopped 33 m from the gate's centre, marker Gate anchor below). A C1 or C3 win sends the battle to a harder step before any gate | A control that never carried out its play must read "not carried out" in place of a loss (the reading is not built) |
+| 5 | Shortcuts | C1 `hold`, C2 `rush_nearest` and `attack_nearest`, C3 `BesiegeNearest`, C4 `ShootOnly`, C5 `GateOnly`: one fresh launch each on the frozen version | Reported only; a win is kept and narrows the label. A control counts only if it carried out its play (C3: at least one `on_wall`; C4: at least half its ammunition spent; C5: the ram within 15 m of the gate, with the reference pending [Gate anchor](#proposed-deciding-checks) and the [saved readback](#gate-target-and-door-readback)). A C1 or C3 win sends the battle to a harder step before any gate | A control that never carried out its play must read "not carried out" in place of a loss (the reading is not built) |
 | 6 | Witness gate | `Escalade` at 5 s added age and a 5 s interval, frozen code, fresh launches; development launches never count | At least 4 of 5, stopping at the 4th win or the 2nd loss. It passes a 50% witness 0.1875 of the time and fails an 80% one 0.263 (`exact_stats.gate_pass`). Then 5 launches at 10 s / 10 s, reported only | A win credited to a timing the witness did not play |
 | 7 | D1 exercised and relevant, the one primary contrast | `Escalade` against `Concentrate`, n separate fresh launches per arm fixed in advance (10 in the design), 5 s / 5 s, order drawn in blocks | Exercised: in at least 6 of 10 `Concentrate` launches (10 of 16 at 16 per arm, marker Exercised at 16 below), at least 2 enemy units that stood more than 150 m along x outside an assaulted sector at the end of staging are flagged in melee inside it within 120 s of our first `on_wall` (`reallocation` over private frames from the end of staging; the reading over frames from the battle's start is reported beside it). The 6-of-10 rule passes a 50% rate 0.377 of the time and a 40% one 0.166, and fails an 80% one 0.033. Relevant: two-sided Fisher p < 0.05 (`fisher`), Newcombe interval (`newcombe`), a disposition table for every planned launch that gives each arm's per-group `phase2_ms` and its `phase2_reason` (staged or time) from the metadata, every launch counted. An unexercised D1 never carries the label; a relevant but unexercised D1 reads "mechanism not shown" | A proximity detector (planted offline and caught on two observations copied from the smoke, at 5.3 s and 714.5 s, the second holding 2 of its 6 friendly-enemy pairs within 40 m, none flagged); analysis code that drops a launch, counts a rematch, or reports a one-sided or Wald result |
 | 8 | Human win | `uv run --locked python -m twwarhammer3.battle.manual_demo record --scenario ksl-emp-siege-a-v1 --output DIR --ffmpeg FFMPEG --timeout SECONDS --start-reference HOLD1 --start-reference HOLD2`, with one `--start-reference` for each of stage 1's two `hold` episode folders; the recorder runs the same lobby steps, copies the private record and refuses a withheld word in the output name; its handover is unverified. The engine places both armies and the owner plays through deployment, so the owner starts the battle without moving any unit, and `manifest.start_check` compares both armies' first private-record positions with every hold's | One engine win; every attempt kept; pauses labelled from video; an attempt counts only if `manifest.start_check.label` reads `same start`, and one that reads `own deployment` or `start not comparable` is kept and does not count (marker Demo start label below) | A recording whose equipment readback failed must be refused. Built and caught offline (`test_wh3_manual_demo.py`): one enemy unit 40 m off read as the same start; one hold, or holds 30 m apart, read as comparable |
@@ -793,8 +793,10 @@ the enemy AI deploys the same way after the owner's deployment phase is unread; 
 attempt reads `own deployment` although the owner moved nothing.
 
 JUDGEMENT?: Gate anchor — Claude, 2026-11-09 (proposed, owner question 6; second look ER5): 3(b)
-and C5 read door hp falling or the ram within 15 m of the recorded stop near (-2,-30). The current
-15 m of g1's centre fails the recorded ram; check 3(b) and C5's carried-out reading rest on it.
+and C5 read door hp falling or the ram within 15 m of the recorded stop near (-2,-30). The original
+reason used the Gatehouse position as g1. The later [readback](#gate-target-and-door-readback)
+puts the stop within 15 m of published g1. Check 3(b) and C5's carried-out reading still rest on
+which measure the owner chooses.
 
 JUDGEMENT?: Check 3 split — Claude, 2026-11-09 (proposed, owner question 6; second look ER5):
 check 3 splits into acted on (the go/no-go; it misses a gun firing in place, below) and outcomes
@@ -826,8 +828,8 @@ the gate within 180 s (built: that reader fails the Altdorf crew test) and on ch
 
 Two more 20 m values sit on g1's centre: `escalade_readings.GATE_M`, within which a unit coming
 inside counts as a gate entry, and `CavalryEarly`'s ride to 20 m south of g1 (`GATE_FRONT_M`).
-Both are re-checked against the recorded 33 m offset once stage 1 reads g1's `central_position`
-(check 2).
+The stage 1 [readback](#gate-target-and-door-readback) places the checkpoint ram stop 10.7 m
+from published g1. These two 20 m values still need their own native checks for entry and staging.
 
 If the witness fails check 6, no round runs. The version then steps down one factor (see the
 ladder below) or is revised, and the new version gets a gate on fresh launches; an unchanged gate is
@@ -943,10 +945,10 @@ These parts did not, each with what rests on it:
   `tower-owner-20261114`, parked because it changes what a model reads ("held by us"). The list
   also carries the defender's unbuilt tower slots: in launch 1 three slots not yet built were
   already listed with hp 100, so neither hp nor owner tells a built tower from an empty slot.
-- The gate's centre: the fortification gate g1 reads (-2,-19.1), about 30 m from the `mode.gates`
-  Gatehouse position (-32,-16) that check 2 expects it near. The recorded ram stop (-2,-30) is
-  10.9 m from g1, so check 3(b) as written would pass that ram; the Gate anchor marker's concern
-  assumed g1 at (-32,-16).
+- The published fortification g1 and the Gatehouse readout are 30.2 m apart in all four hold
+  endpoints. Check 2's proposed position clause misses the published g1. The checkpoint ram
+  stop lies within check 3(b)'s distance bound when measured against g1. See the
+  [gate readback](#gate-target-and-door-readback) for the source and the limits of that comparison.
 - Engine starts do not repeat. Matching each unit to the nearest unit of its type in the other
   launch, every unit moved more than 40 m, up to 224 m (ours) and 441 m (the garrison's), and the
   ram started near (12.6,-229) once and (-210.8,-229) once. The garrison also began on different
@@ -964,6 +966,32 @@ records and the independent recount: `runs/haengju-20261114/` (`card-izmail.md`,
 plan named the jobs after the battle and `play` refused it before launching anything, because the
 name is a withheld word. The card and checking method were not agreed, so no gameplay or benchmark
 verification follows.
+
+### Gate target and door readback
+
+Both 2026-11-14 Izmail holds read `mode.fortifications` g1 at (-2,-19.1) and `mode.gates`
+Gatehouse at (-32,-16) in their opening and result frames. They are 30.16 m apart in all four
+frames. The 1 m clause in check 2 used the Gatehouse coordinates. Its replacement needs the
+native fort-registry comparison of g1 with the independent `central_position()` reading and an
+owner decision. Neither hold issued a `besiege` order.
+
+In the earlier `helmgart-defender` checkpoint, the stored script scheduled both the ram crew's
+`besiege_building` and the Great Cannon's `attack_building` on the gate. In 48 samples, the ram
+first read its final position (-2.10,-29.80) at 110 s. This is 32.9 m from that checkpoint's
+Gatehouse and 10.7 m from the g1 centre published in the separate Izmail holds. The same position
+falls on opposite sides of the 15 m limit depending on the reference.
+
+| Checkpoint sample | Door HP | Building HP | Attacking cannon ammo |
+| --- | ---: | ---: | ---: |
+| 110 s, ram at its final position | 4,380 | 8,760 | 57 |
+| 115 s, last positive door HP | 1,380 | 5,760 | 57 |
+| 120 s, first zero door HP | 0 | 3,061 | 55 |
+| 150 s, first zero building HP | 0 | 0 | 52 |
+
+The cannon spent two rounds between the last positive and first zero door readings. That launch
+cannot attribute the breach to the ram alone. Check 3(b) and C5 still need a native Izmail readback
+with the ram and door readings kept together. The geometry recount and raw sample references are
+in `runs/izmail-gate-target-20261123/`.
 
 ### Saved opening and order-probe rehearsal (2026-11-23)
 

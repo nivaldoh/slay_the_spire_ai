@@ -853,11 +853,12 @@ These parts did not:
   `destroyed` read false throughout. No field names the damage source. Until 418 s, when the raw
   hp read 3,864, the only enemy within 45 m of the gate's recorded position was the D1 Spearmen
   e2, standing on the Gatehouse point `c2` with the engine's melee flag on from 2.1 s before the
-  first drop. Izmail's launches on this map read the gate building's centre 3.4 m from `c2`, and
-  the recorded ram and Trolls that broke this door stood at the same spot. Our cannon
+  first drop. In the two Izmail holds on this map, the published g1 centre was 3.4 m from c2.
+  The earlier ram and Trolls positions were 7.3 m and 0.8 m from c2 in separate Helmgart records.
+  The ram checkpoint also records cannon fire during the drop to zero. Our cannon
   and rocket shots show no link to the drops. Whether units can pass a gate at hp 0 is still
   unread, and `c2` was never enemy-held. Under JUDGEMENT? Gate stop the stage stops here, and
-  stages 1b-1e did not run.
+  stages 1b-1e did not run. [Gate readback](escalade-eval.md#gate-target-and-door-readback)
 - Check 6's premise in this launch: at D3's first approach (412.3 s) the garrison still held
   3,866 of its 5,774 shots (67%), against the proposed bar of at most 25%. The live `ammo` counts shots across
   a unit's men: the two Peasant Archer units start with 1,980 each and the rocket battery with
