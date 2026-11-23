@@ -14,6 +14,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle import setup
+from twwarhammer3.benchmarks.exact_stats import win_rate_if_resolved
 from twwarhammer3.benchmarks.profile import (
     EFFORT,
     LAUNCH_ARGS,
@@ -76,6 +77,27 @@ def controller_matches(job, config):
                 != (REPO_ROOT / expected.controller_config).resolve()):
             return False
     return config.get("policy") == job["controller"]
+
+
+def attempt_counts(rows: list[dict]) -> dict:
+    """Account for planned rows after the caller attributes or deduplicates evidence."""
+    outcomes = Counter(row["outcome"] for row in rows if row["outcome"])
+    completed = sum(outcomes.values())
+    started = sum(bool(row.get("started", row["outcome"])) for row in rows)
+    # JUDGEMENT: Unresolved plan count — Codex, 2026-11-23: count matched result labels.
+    # Counting trace-only starts or foreign records would change the reported unresolved total.
+    labels = Counter(row.get("outcome_label") for row in rows)
+    # JUDGEMENT: Outside the win rate — Codex, 2026-11-23: all attempts without a counted ending.
+    # Restricting this count to setup and provenance failures would omit other excluded attempts.
+    excluded = len(rows) - completed
+    return {
+        "planned": len(rows), "started": started, "never_started": len(rows) - started,
+        "engine_completed": sum(bool(row.get("recorded_engine_outcome", row["outcome"]))
+                                for row in rows),
+        "completed": completed, "excluded": excluded,
+        "forfeited": labels["forfeit"], "unresolved": labels["unresolved"],
+        "outcomes": {key: outcomes[key] for key in OUTCOMES},
+    }
 
 
 def collect(plan_path: Path) -> dict:
@@ -188,18 +210,12 @@ def collect(plan_path: Path) -> dict:
                                             or "queue has not reached this attempt")
                      if not (result_battle or traced_battle) else None,
                      "llm": (result or {}).get("llm"), "errors": errors, **measured})
-    counts = Counter(row["outcome"] for row in rows if row["outcome"])
-    completed = sum(counts.values())
-    # JUDGEMENT: Unresolved plan count — Codex, 2026-11-23: count matched result labels.
-    # Counting trace-only starts or foreign records would change the reported unresolved total.
+    counts = attempt_counts(rows)
+    wins, completed = counts["outcomes"]["won"], counts["completed"]
     return {"version": plan["benchmark"], "plan": str(plan_path.resolve()), "queue_state": state,
-            "planned": len(rows),
-            "started": sum(r["started"] for r in rows), "completed": completed,
-            "engine_completed": sum(bool(r["recorded_engine_outcome"]) for r in rows),
-            "never_started": sum(not r["started"] for r in rows),
-            "unresolved": sum(r["outcome_label"] == "unresolved" for r in rows),
-            "outcomes": {key: counts[key] for key in OUTCOMES},
-            "win_rate_completed": counts["won"] / completed if completed else None,
+            **counts,
+            "win_rate_completed": wins / completed if completed else None,
+            "win_rate_if_resolved": win_rate_if_resolved(wins, completed, counts["unresolved"]),
             "completion_rate": completed / len(rows) if rows else None,
             "error_categories": dict(Counter(e["category"] for row in rows for e in row["errors"])),
             "rows": rows}

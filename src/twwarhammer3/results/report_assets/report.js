@@ -745,6 +745,14 @@
   const SUITE_RULE =
     "Engine outcome first: win > draw > loss. Within the same outcome, own is the mean of every original unit's health fraction after its strongest state penalty, times 100, and taken is the percent of the enemy dead or routed. State factors: normal 1, wavering 0.8, routing 0.5; shattered, dead or departed 0. Missing reads leave a value unavailable. No aggregate ranking.";
 
+  const winRateRange = (bounds) => bounds?.map((rate) => `${(rate * 100).toFixed(1)}%`).join(" to ");
+
+  function attemptCounts(data) {
+    const starts = `${data.planned} planned, ${data.started} recorded starts, ${data.never_started} never started in the records.`;
+    if (data.excluded == null) return starts;
+    return `${starts} ${data.engine_completed} recorded engine endings, ${data.completed} counted engine endings, ${data.excluded} outside the win rate, ${data.forfeited} forfeited.`;
+  }
+
   // The coordination suite's own summary (suite.py); nothing here is computed from replays.
   function renderSuite() {
     const suite = data.suite;
@@ -770,6 +778,10 @@
     const arms = Object.entries(suite.arms);
     box.replaceChildren(
       el("h3", "Control methods, every dimension"),
+      ...(suite.attempts
+        ? [el("p", `${attemptCounts(suite.attempts)} ${suite.attempts.unresolved} unresolved across the suite.`,
+              "benchmark-summary")]
+        : []),
       el(
         "p",
         "Won counts completed battles. Own, taken and killed are 0 to 100. Taken counts enemy men dead, routed or gone; killed counts only deaths. A timer win can leave either percentage below 100. Arms did not all play the same scenarios, so compare them in the scenario table. Think is the median model reply. Age is observation to engine application for the orders sent, which for commander and gap come from scripts between replies; plan age is how old a commander's plan is when adopted. Spread is seconds from first contact until the median fighter joined; local is friendly men over all men near each fight. No method is ranked overall.",
@@ -780,6 +792,7 @@
           "Method",
           "Won",
           "Unresolved",
+          "Win-rate range if resolved",
           "Win rate, 95%",
           "Scenarios won",
           "Own",
@@ -804,6 +817,7 @@
           name,
           `${arm.wins}/${arm.completed} of ${arm.planned}`,
           arm.unresolved,
+          winRateRange(arm.win_rate_if_resolved),
           arm.win_text,
           `${arm.scenarios_won}/${arm.scenarios_played}`,
           arm.own,
@@ -853,7 +867,7 @@
           suite.witnessed_by[scenario].join(", ") || "nobody yet",
           ...arms.map(([name]) =>
             (cells[name] || [])
-              .map((cell) => `${cell.outcome} ${text(cell.own)} / ${text(cell.taken)}`)
+              .map((cell) => `${cell.outcome_label || cell.outcome} ${text(cell.own)} / ${text(cell.taken)}`)
               .join("; "),
           ),
         ]),
@@ -889,9 +903,11 @@
         rate == null
           ? "Win rate unavailable"
           : `${plan.outcomes.won}/${plan.completed} wins (${(rate * 100).toFixed(1)}%)`;
+      const bounds = winRateRange(plan.win_rate_if_resolved);
+      const range = bounds ? ` Win-rate range if resolved: ${bounds}.` : "";
       return {
         name: plan.plan,
-        summary: `${plan.planned} planned, ${plan.started} started, ${plan.never_started} never started. ${wins}, ${plan.unresolved ?? "unavailable"} unresolved. Engine endings include ${plan.outcomes.draw} draws and ${plan.outcomes.lost} losses.`,
+        summary: `${attemptCounts(plan)} ${wins}, ${plan.unresolved ?? "unavailable"} unresolved.${range} Counted draws: ${plan.outcomes.draw}. Counted losses: ${plan.outcomes.lost}.`,
         rows: plan.rows,
       };
     });
@@ -945,13 +961,18 @@
           );
         } else battle.append(el("span", String(index + 1)));
         battle.append(el("small", row.output, "benchmark-job"));
-        const outcome = el("td", row.outcome ? capital(row.outcome) : "No engine outcome");
+        const outcome = el("td", row.outcome ? capital(row.outcome) : "No engine outcome counted");
         outcome.className = "benchmark-outcome";
         if (!row.outcome) {
           const status = row.not_started_reason || row.status;
-          outcome.append(
-            el("small", row.outcome_label === "unresolved" ? `Unresolved (${status})` : status),
-          );
+          const label = row.outcome_label;
+          const details =
+            label && label !== row.status && label !== "never_started"
+              ? `${capital(label.replaceAll("_", " "))} (${status})`
+              : status;
+          outcome.append(el("small", details));
+          if (row.recorded_engine_outcome)
+            outcome.append(el("small", `Saved engine ending: ${row.recorded_engine_outcome}`));
         }
         const score = el("td", null, "benchmark-condition");
         score.append(el("b", conditionText(row.condition)));

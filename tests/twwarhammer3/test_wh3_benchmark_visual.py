@@ -102,6 +102,61 @@ def test_unresolved_attempts_are_reported_beside_engine_endings(tmp_path):
     assert len(scenario["battles"]) == 2
 
 
+def test_plan_accounting_distinguishes_saved_and_counted_endings(tmp_path):
+    won = mirror_job(tmp_path, "won", outcome="won")
+    lost = mirror_job(tmp_path, "lost")
+    stopped = mirror_job(tmp_path, "stopped", outcome="provider_error")
+    forfeited = mirror_job(tmp_path, "forfeited", outcome="policy_failure")
+    copied = mirror_job(tmp_path, "aborted-copy", outcome="won")
+    copied_result = copied / "episode-0000/result.json"
+    result = json.loads(copied_result.read_text())
+    result["interrupted_copy"] = "recording"
+    copied_result.write_text(json.dumps(result))
+    foreign = mirror_job(tmp_path, "foreign", outcome="provider_error")
+    manifest_path = foreign / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_revision"] = "different-revision"
+    manifest_path.write_text(json.dumps(manifest))
+    plan = plan_for(tmp_path, won)
+    declared = json.loads(plan.read_text())
+    declared["jobs"].extend({"output": str(job), "controller": "llm_rules"}
+                            for job in (lost, stopped, foreign, forfeited, copied))
+    plan.write_text(json.dumps(declared))
+
+    data = report.plan_report(plan, tmp_path / "planned")
+    assert (data["planned"], data["completed"], data["unresolved"]) == (7, 2, 1)
+    assert data["win_rate_completed"] == 0.5
+    assert (data["started"], data["never_started"], data["engine_completed"]) == (6, 1, 3)
+    assert (data["excluded"], data["forfeited"]) == (5, 1)
+    assert data["win_rate_if_resolved"] == [1 / 3, 2 / 3]
+    text = (tmp_path / "planned.txt").read_text()
+    assert "1/2 wins (50.0%), 1 unresolved" in text
+    assert "Win-rate range if resolved: 33.3% to 66.7%." in text
+    assert "5 outside the win rate, 1 forfeited" in text
+    assert text.count("unresolved (provider_error)") == 1
+    assert "operator_stop (won), saved engine ending won" in text
+    planned, = embedded((tmp_path / "planned.html").read_text())["benchmark_plans"]
+    assert planned["unresolved"] == 1
+    assert planned["win_rate_if_resolved"] == [1 / 3, 2 / 3]
+    combined = report.render(report.collect([], benchmark_plans=[plan]))
+    assert "Win-rate range if resolved: 33.3% to 66.7%." in combined
+    assert "5 outside the win rate, 1 forfeited" in combined
+
+    jobs = report.collect([won, lost, stopped, forfeited, copied])
+    row, = jobs["groups"][0]["controllers"]
+    assert (row["valid"], row["win_rate"], row["unresolved"]) == (2, 0.5, 1)
+    assert (row["excluded"], row["forfeited"]) == (3, 1)
+    assert row["win_rate_if_resolved"] == [1 / 3, 2 / 3]
+    text = report.render(jobs)
+    assert "1 unresolved" in text and "unresolved (provider_error)" in text
+    assert "33.3% to 66.7% if resolved" in text
+    html = report_html.render(jobs)
+    (tmp_path / "unplanned.html").write_text(html)
+    page = embedded(html)
+    scenario, = page["scenarios"]
+    assert len(scenario["battles"]) == 2
+
+
 def test_visual_data_retains_condition_and_separates_profiles_even_with_a_legacy_core(tmp_path):
     old = mirror_job(tmp_path, "v4", version=4, outcome="won", hp=.02)
     current = mirror_job(tmp_path, "v5")
@@ -152,6 +207,17 @@ def test_a_plan_with_no_launches_still_has_a_visual_attempt_report(tmp_path):
     data = embedded(report_html.render(source))
     assert data["scenarios"] == []
     assert data["benchmark_plans"][0]["never_started"] == 1
+
+
+def test_an_unresolved_only_plan_has_a_range_but_no_observed_rate(tmp_path):
+    job = mirror_job(tmp_path, "stopped", outcome="provider_error")
+    plan = plan_for(tmp_path, job)
+    data = report.plan_report(plan, tmp_path / "stopped-only")
+    assert data["win_rate_completed"] is None
+    assert data["win_rate_if_resolved"] == [0, 1]
+    text = (tmp_path / "stopped-only.txt").read_text()
+    assert "Win-rate range if resolved: 0.0% to 100.0%." in text
+    assert "0 counted engine endings" in text
 
 
 def test_combined_plan_names_remain_distinct_after_local_paths_are_removed(tmp_path):

@@ -37,6 +37,16 @@ def wilson(wins: int, count: int) -> list[float] | None:
     return [max(0, centre - radius), min(1, centre + radius)]
 
 
+# JUDGEMENT: Unresolved win-rate range — Codex, 2026-11-23: use only labelled unresolved rows.
+# Including forfeits or other excluded rows would change the endpoints shown in the reports.
+def win_rate_if_resolved(wins: int, completed: int, unresolved: int) -> list[float] | None:
+    """Rate if every unresolved outcome is a non-win, then if every one is a win."""
+    if not unresolved:
+        return None
+    count = completed + unresolved
+    return [wins / count, (wins + unresolved) / count]
+
+
 def sign_test(better, worse):
     """Two-sided exact sign test over scenarios that differ."""
     total = better + worse

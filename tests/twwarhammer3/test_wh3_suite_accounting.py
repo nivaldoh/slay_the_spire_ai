@@ -104,6 +104,25 @@ def test_suite_reports_unresolved_beside_each_arms_win_count(tmp_path):
     assert "unresolved(None/None),operator_stop(None/None)" in text
 
 
+def test_suite_attempt_summary_deduplicates_replacement_plans(tmp_path):
+    plan = attempts(tmp_path, [{"status": status} for status in
+                               ("won", "lost", "provider_error", "interrupted", "policy_failure")])
+    repeated = tmp_path / "replacement.json"
+    replacement = json.loads(plan.read_text())
+    replacement["jobs"] = replacement["jobs"][2:4]
+    repeated.write_text(json.dumps(replacement))
+    data = suite.report([plan, repeated], tmp_path / "report")
+    arm = data["summary"]["arms"]["gap"]
+    assert (arm["wins"], arm["completed"], arm["unresolved"]) == (1, 2, 1)
+    assert (data["planned"], data["started"], data["excluded"], data["forfeited"]) == (5, 5, 3, 1)
+    assert (arm["planned"], arm["excluded"], arm["forfeited"]) == (5, 3, 1)
+    assert arm["win_rate_if_resolved"] == [1 / 3, 2 / 3]
+    text = (tmp_path / "report.txt").read_text()
+    assert "gap | 1/2 | 1 |" in text
+    assert "33.3% to 66.7%" in text
+    assert "unresolved(None/None),operator_stop(None/None)" in text
+
+
 def test_numeric_queue_arguments_use_the_same_spelling_as_at_launch(tmp_path):
     plan = attempts(tmp_path, [{"status": "won"}], args=[
         "--episodes", 1, "--provider", "anthropic"], config={"provider": "anthropic"})

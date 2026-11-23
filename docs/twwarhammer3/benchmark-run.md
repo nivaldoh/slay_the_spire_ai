@@ -289,10 +289,11 @@ It prints the text report and writes `my-cavalry.txt`, `.json` and the offline
 and limitations: a matched formation alone does not show a matched caster's resources or
 spell loadout. Everything else is in [reports.md](reports.md).
 
-The suite report is rebuilt from the versioned list: `report --jobs-file
+The legacy battle report is rebuilt from the versioned list with `report --jobs-file
 configs/twwarhammer3/benchmark_jobs.json --output runs/twwarhammer3/reports/benchmark`
-([reports.md](reports.md)); last built 2026-10-17. Different scenarios and controller
-versions can share one HTML file while their comparison conditions remain distinct.
+([reports.md](reports.md)). Different scenarios and controller versions can share one HTML
+file while their comparison conditions remain distinct. Use the [frozen plans](#the-coordination-suite)
+to rebuild a coordination-suite report.
 
 ## Independent rerun acceptance (proposal)
 

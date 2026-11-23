@@ -23,8 +23,8 @@ from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError, InvalidReply
 from gameai.provenance import REPO_ROOT, write_json
 from twwarhammer3.battle import setup
-from twwarhammer3.benchmarks.exact_stats import sign_test, wilson
-from twwarhammer3.benchmarks.plans import collect
+from twwarhammer3.benchmarks.exact_stats import sign_test, wilson, win_rate_if_resolved
+from twwarhammer3.benchmarks.plans import attempt_counts, collect
 from twwarhammer3.benchmarks.profile import EFFORT, LAUNCH_ARGS, MODEL, SUITE
 from twwarhammer3.controllers import graph_author
 from twwarhammer3.controllers.skills import SHOOTERS
@@ -449,14 +449,14 @@ def summarize(rows):
     for arm in arms:
         mine = [row for row in rows if row["arm"] == arm]
         done = [row for row in mine if row["outcome"]]
-        wins = sum(row["outcome"] == "won" for row in done)
-        draws = sum(row["outcome"] == "draw" for row in done)
+        counts = attempt_counts(mine)
+        wins, draws, losses = (counts["outcomes"][key] for key in ("won", "draw", "lost"))
+        bound = win_bound(wins, len(done))
         decided = [row for row in done if row["orders"]]
         table[arm] = {
-            "planned": len(mine), "completed": len(done), "wins": wins, "draws": draws,
-            "unresolved": sum(row.get("outcome_label") == "unresolved" for row in mine),
-            "losses": len(done) - wins - draws, "win_bound": win_bound(wins, len(done)),
-            "win_text": bound_text(win_bound(wins, len(done))),
+            **counts, "wins": wins, "draws": draws, "losses": losses,
+            "win_bound": bound, "win_text": bound_text(bound),
+            "win_rate_if_resolved": win_rate_if_resolved(wins, len(done), counts["unresolved"]),
             "scenarios_won": len({r["scenario"] for r in done if r["outcome"] == "won"}),
             "scenarios_played": len({r["scenario"] for r in done}),
             "own": points(mean([r["own"] for r in done])),
@@ -508,6 +508,8 @@ def bound_text(bound):
 
 COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
            ("unresolved", lambda a: a["unresolved"]),
+           ("win-rate range if resolved",
+            lambda a: trials.win_range_text(a["win_rate_if_resolved"]) or "—"),
            ("win 95%", lambda a: bound_text(a["win_bound"])), ("own", lambda a: a["own"]),
            ("taken", lambda a: a["taken"]), ("killed", lambda a: a["killed"]),
            ("$/battle", lambda a: a["usd"]),
@@ -522,8 +524,9 @@ COLUMNS = (("won", lambda a: f"{a['wins']}/{a['completed']}"),
 
 
 def render(data):
-    lines = [f"{SUITE}: {data['completed']}/{data['planned']} planned battles completed."
-             " Exploratory: no ranking is claimed from these counts.", "",
+    lines = [f"{SUITE}: {data['completed']}/{data['planned']} counted engine endings."
+             " Exploratory results.", trials.attempt_counts_text(data),
+             f"{data['unresolved']} unresolved across the suite.", "",
              " | ".join(["arm", *[name for name, _ in COLUMNS]])]
     for arm, row in data["summary"]["arms"].items():
         lines.append(" | ".join([arm, *[str(read(row)) for _, read in COLUMNS]]))
@@ -558,8 +561,8 @@ def gather(plans):
             if key not in kept or row["evidence_matches_plan"] > kept[key]["evidence_matches_plan"]:
                 kept[key] = row
     rows = [{**row, **measure(row)} for row in kept.values()]
-    return {"version": SUITE, "plans": [str(plan) for plan in plans], "planned": len(rows),
-            "completed": sum(bool(row["outcome"]) for row in rows), "rows": rows,
+    return {"version": SUITE, "plans": [str(plan) for plan in plans],
+            **attempt_counts(rows), "rows": rows,
             "summary": summarize(rows)}
 
 
@@ -574,6 +577,9 @@ def report(plans, output):
     visual = trials.collect([], benchmark_plans=plans)
     pictures = scenario_pictures(data["rows"], notes["scenarios"])
     page = {**data["summary"], "pictures": pictures,
+            "attempts": {key: data[key] for key in (
+                "planned", "started", "never_started", "completed", "engine_completed",
+                "excluded", "forfeited", "unresolved")},
             "scenarios": scenario_order(pictures, notes["scenarios"]),
             "page": {**notes.get("suite", {}), "plans": [Path(plan).stem for plan in plans]}}
     report_html.write(output.with_name(output.name + ".html"), {**visual, "suite": page})

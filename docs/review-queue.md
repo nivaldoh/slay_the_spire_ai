@@ -64,11 +64,11 @@ deleted (tag `wh3-legacy-20261115` has them), the benchmark readers count throug
 label with unresolved kept out, and each declared scenario writes its own status. Unverified:
 no live run. You kept the three classes that were on the deletion list and that current pages
 still name (`PriorityStrike`, `LineTeam`, `LineTeamReserve`: "Keep the three (Recommended)").
-Four questions it leaves for you. (1) Outside the two profiles the text `report` still shows a
+Open conventions. (1) Outside the two profiles the text `report` still shows a
 timer win as `time_limit` and `stats` tallies raw statuses. (2) Whether a forfeit counts as a
 non-win in a denominator ([outcome table](twwarhammer3/benchmark.md#outcome-and-score)).
-(3) The benchmark reports now print the unresolved count. The choice to count matching result
-records in plans is marked `Unresolved plan count` in [benchmarks/plans.py](../src/twwarhammer3/benchmarks/plans.py).
+(3) The benchmark reports show the unresolved count and the range those attempts could produce.
+The [report definitions](twwarhammer3/benchmark.md#outcome-and-score) name the marked choices.
 (4) Status `held_out` is tied to split `held_out` by a rule marked `JUDGEMENT?`.
 The rest of the plan, which you chose on 2026-11-15 (F1, F6, F8 and the scenario file split),
 is built offline at $0 ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)):

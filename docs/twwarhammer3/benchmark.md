@@ -256,7 +256,20 @@ count alongside wins and engine endings. A plan counts only matching result reco
 Its table retains the recorded status for other attempts. [Other scenario readers](evaluation-guidelines.md#51-one-success-rule-per-card-in-one-function-told-to-the-controller)
 use their own rules.
 
-Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
+Plan reports count the declared attempts, including those with no recorded start. A recorded
+start has a battle identity in the result or trace. Recorded engine endings include any saved
+ending, such as a win that precedes an interrupted copy. The win-rate denominator uses counted
+engine endings that match the plan. Every other planned attempt appears in the count outside
+the win rate, including forfeits and unresolved attempts under their existing matched labels.
+The suite counts each output once across replacement plans. The exclusion total rests on
+JUDGEMENT `src/twwarhammer3/benchmarks/plans.py` Outside the win rate.
+
+When unresolved attempts exist, reports also show the possible win-rate range. The lower
+endpoint treats all labelled unresolved attempts as non-wins and the upper endpoint treats
+them all as wins. Both add the unresolved count to the denominator (rests on JUDGEMENT
+`src/twwarhammer3/benchmarks/exact_stats.py` Unresolved win-rate range). The observed rate
+and its sampling interval, where reported, still use counted engine endings. The broader
+scoring choice under Primary summary remains open.
 
 ## Measurements
 
