@@ -933,9 +933,9 @@ These parts did not, each with what rests on it:
   (`can_siege` false for all 13 units, the Little Grom included). In today's code that means
   `llm.offers_siege_orders` is false, so `llm`/`llm_rules` v23 would not offer the siege orders
   here; validation refuses a wall `besiege` and every `attack_building` from our units; and the
-  witness never picks a ladder. Only a `besiege` of the gate or of a tower remains. Why the
-  getter fails is unread; a branch probe that logs its error in one battle would tell. Enemy
-  units on the wall did read `on_wall` true, so `is_on_top_of_wall` works.
+  witness never picks a ladder. Only a `besiege` of the gate or of a tower remains. Enemy units
+  on the wall did read `on_wall` true. The [getter diagnostic below](#climb-getter-diagnostic-2026-11-23)
+  is ready for a game window.
 - Tower owners read from the wrong side. Whenever the defender held a Fort Tower's point, its tower
   read owner "us", and "none" when nobody held it (in launch 1, c6's tower turned "us" when the
   defender took c6 at 470.3 s). The mod compares `alliance_owner_id` with the one-based
@@ -964,6 +964,21 @@ records and the independent recount: `runs/haengju-20261114/` (`card-izmail.md`,
 plan named the jobs after the battle and `play` refused it before launching anything, because the
 name is a withheld word. The card and checking method were not agreed, so no gameplay or benchmark
 verification follows.
+
+### Climb getter diagnostic (2026-11-23)
+
+The observation publisher passes an explicit `nil` to `can_climb_walls()`. The wall order
+handler calls the same getter with zero arguments. An offline fixture with the documented
+zero-argument signature reproduces the missing `can_climb` field. The native getter's response
+to the extra argument remains unknown.
+
+The local branch `izmail-climb-probe-20261123` (`47e0ccf`) compares both calls on the same
+friendly units immediately after the first active observation. It records whether each call
+succeeded, the return type and boolean value or error, and the published value. The frozen pack,
+launch plan and `live-check.md` are in `runs/izmail-climb-probe-20261123/`. The probe passed
+offline with a fake engine and awaits a game window. If the calls yield the same result, this
+sample leaves the cause unresolved. Stage 2 still needs the tower-owner decision and an authored
+deployment.
 
 ## Risks
 
