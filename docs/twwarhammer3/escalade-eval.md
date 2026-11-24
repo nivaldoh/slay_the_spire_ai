@@ -1055,10 +1055,15 @@ for all 13 in the matched observation. This opening gives no evidence for changi
 argument count. The reason the documented method was missing on these native objects remains
 open. The probe sent no orders and collected no climbing effects.
 
-The [entity context probe below](#climb-entity-context-diagnostic-2026-11-23) found a candidate reading for the unit-level
-climb check. The sealed plan and raw game, menu and mod records are in
-`runs/izmail-climb-probe-20261123/` and `runs/izmail-climb-live-20261123/`.
-[Run log](log.md#2026-11-23-izmail-native-climb-getter-diagnostic)
+The [entity context probe](#climb-entity-context-diagnostic-2026-11-23)
+found a candidate unit-level reading. The [wall-height repeat](#wall-height-reference-and-repeat-2026-11-23)
+records the subsequent climbing evidence. The sealed plan and raw game,
+menu and mod records are in `runs/izmail-climb-probe-20261123/` and
+`runs/izmail-climb-live-20261123/`. The isolated (`47e0ccf`) and combined
+(`2852416`) probe branches have exact checkout restore commands and
+replay receipts in `runs/izmail-capability-retire-20261123/`. The
+[separate Grom probe](#little-grom-gate-diagnostic-2026-11-23) supplies the
+native artillery reading. [Run log](log.md#2026-11-23-izmail-native-climb-getter-diagnostic)
 
 ### Climb entity context diagnostic (2026-11-23)
 
