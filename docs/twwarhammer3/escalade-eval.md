@@ -1512,6 +1512,42 @@ vehicle before and after the crew's approach. Physical attachment remains
 unverified. This run used the stock pack and sent zero battle orders.
 [Run log](log.md#2026-11-23-izmail-crew-vehicle-context)
 
+### Staged ram order diagnostic (2026-11-23)
+
+JUDGEMENT?: Staged ram diagnostic — Codex, 2026-11-23. Reuse the 180 s
+follow-up and the original stock g1 order. Require the first observed
+full release to follow an adjacent held sequence and to have a
+same-time private reading with all exact author-assigned slots in
+radius. This samples how the ram responds to one order. Which start
+qualifies for the benchmark and which gate reading counts remain open.
+
+The stock 5.3 s opening passed in this launch. The exact private check
+also read 25 of 25 slots in radius, and the listed crew was 2.0 m from
+the ram centre. In the three preceding passive launches the centres
+were more than 200 m apart at opening. At 160.1 s, all 12 defenders
+released and all 25 slots were again in radius. No orders preceded
+release. The one `f2` order to besiege `g1` used sequence 130. The
+engine acknowledged it at 160.4 s.
+
+| Ram reading | Distance to g1 at basis | Closest distance to g1 | Time after acknowledgement |
+| --- | ---: | ---: | ---: |
+| Public crew-linked vehicle | 226.7 m | 43.2 m | 127.2 s |
+| Private crew-linked vehicle | 226.7 m | 42.3 m | 127.8 s |
+| Private assault equipment | 226.9 m | 41.9 m | 128.7 s |
+
+The 128.7 s private sample first recorded the crew routing, with 27
+men. The private vehicle entry stopped listing its crew on that sample.
+The assault equipment read (0.2, −60.9) m there and through the last
+private sample. The 150 public samples kept both building and
+door health at 100%. The 180 private samples kept door HP at 9,000.
+Little Grom's ammunition stayed at 22.
+
+The ram moved after one order from this handover. The observed opening
+had the crew already close to the ram. Response after a distant crew
+opening, physical attachment before the order and live use of the
+parked startup draft remain unverified.
+[Run log](log.md#2026-11-23-izmail-staged-ram-order)
+
 ## Risks
 
 | Risk | Stage that shows it | Response |

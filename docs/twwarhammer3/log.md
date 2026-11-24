@@ -29,6 +29,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail staged ram order
+
+One $0 stock launch at `9d1bd75`, build 26403568. The opening passed
+at 5.3 s, with all 25 slots in radius and crew and ram centres 2.0 m
+apart. At the 160.1 s release, all 12 defenders released and all 25
+slots again matched. One validated `f2` besiege order on `g1` used that
+frame and was acknowledged at 160.4 s.
+
+In 180 s after acknowledgement, the private assault equipment went
+from 226.9 m to 41.9 m from g1. The closest equipment sample, 128.7 s
+after acknowledgement, first recorded the crew routing with 27 men. The 150
+public samples kept both building and door at 100%. The 180 private
+samples kept raw door HP at 9,000. All five runtime files and the
+preferences matched prelaunch. Response from a distant crew opening,
+physical attachment and live use of the parked startup draft remain
+unverified. Records in `runs/izmail-staged-ram-20261123/`.
+[Evaluation](escalade-eval.md#staged-ram-order-diagnostic-2026-11-23)
+
 ## 2026-11-23 Izmail crew vehicle context
 
 One $0 stock launch at `4cbf39b`, build 26403568. All 19 read-only
