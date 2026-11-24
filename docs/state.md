@@ -3,6 +3,8 @@
 Updated 2026-11-23. Status only. History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md). Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+Izmail held-garrison repeat is in progress. One stock native readback will sample the authored slots and the listed ram crew around release. Evidence: `runs/izmail-held-repeat-20261123/`.
+
 The [seven-step restructure](restructure-plan.md#implementation-notes) is complete, and the [code walkthrough](code-structure.html#command-arguments) includes a command reference. The [WH3 log](twwarhammer3/log.md#2026-11-19-wh3-package-restructure) records the checks and limits. The changed checker imports and plant definitions await owner review ([item 17](review-queue.md#decisions)).
 
 Terminal-Bench plan, 2026-11-15 (Claude): the superseded October designs are deleted except three classes current pages name (tag `wh3-legacy-20261115`), benchmark readers count through one outcome label and each declared scenario writes its own status; offline, $0, no live run ([log](twwarhammer3/log.md#2026-11-15-october-designs-deleted-one-outcome-label-a-status-on-each-scenario)). The rest of that plan followed the same day: readings off the witness modules, the scenario file split by family, a proposed change-levels table and evaluation page headers ([log](twwarhammer3/log.md#2026-11-15-readings-off-the-witness-modules-scenario-files-by-family-change-levels-page-headers)). Seven questions wait in the [review queue](review-queue.md#completed-work-and-handoffs).
