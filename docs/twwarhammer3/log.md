@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail staged ram order from a distant opening
+
+One $0 stock launch at `6be5091`, build 26403568. At 5.3 s, `f2` was
+225.5 m from the ram and 225.6 m from its slot. The exact release
+reading at 160.1 s had all 25 units in radius and all 12 defenders
+released. One staged `f2` besiege order on `g1` was acknowledged at
+160.4 s.
+
+The assault equipment went from 226.9 m to 43.4 m from g1. The first
+routing sample had 27 crew at 127.8 s after acknowledgement and the
+equipment stayed in place from that reading. Through the 180 s
+follow-up the gate and door read 100% and raw door HP stayed at
+9,000. All five runtime files and preferences matched prelaunch.
+Physical attachment before the order and use of the parked startup
+draft remain unverified. Records in `runs/izmail-distant-ram-20261123/`.
+[Evaluation](escalade-eval.md#staged-ram-order-from-a-distant-opening-2026-11-23)
+
 ## 2026-11-23 Izmail staged ram order
 
 One $0 stock launch at `9d1bd75`, build 26403568. The opening passed

@@ -68,7 +68,9 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     again had all slots in radius at release. The crew-side query resolved the ram during
     the distant opening and again near release. In a [staged ram diagnostic](twwarhammer3/escalade-eval.md#staged-ram-order-diagnostic-2026-11-23),
     the ram moved after one order, from an opening where its crew was already nearby.
-    The crew routed while the gate and door still read 100%.
+    A [distant-opening trial](twwarhammer3/escalade-eval.md#staged-ram-order-from-a-distant-opening-2026-11-23)
+    recorded ram motion after the same staged order. The crew routed while the gate and
+    door still read 100% in both trials.
     The [parked startup draft](twwarhammer3/escalade-eval.md#staged-startup-draft-2026-11-23)
     checks slots on the first observed released frame and keeps the native timer running during the hold.
     Decide on those rules and the repeatable live check before adoption.

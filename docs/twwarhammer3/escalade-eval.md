@@ -1543,10 +1543,42 @@ door health at 100%. The 180 private samples kept door HP at 9,000.
 Little Grom's ammunition stayed at 22.
 
 The ram moved after one order from this handover. The observed opening
-had the crew already close to the ram. Response after a distant crew
-opening, physical attachment before the order and live use of the
-parked startup draft remain unverified.
+had the crew already close to the ram. The next diagnostic covers a
+distant opening.
 [Run log](log.md#2026-11-23-izmail-staged-ram-order)
+
+### Staged ram order from a distant opening (2026-11-23)
+
+JUDGEMENT?: Distant-crew selection — Codex, 2026-11-23. Select on
+the first private opening with `f2` more than 200 m from the ram and
+outside the existing 25 m radius of its own slot. A smaller separation
+could include ordinary local formation changes. The thresholds select
+evidence for this diagnostic.
+
+The first launch qualified at 5.3 s. The listed crew was 225.5 m from
+the ram and 225.6 m from its slot. The other 24 slots were in radius.
+All 25 matched at the 160.1 s timed release of 12 defenders. The crew
+was then 15.7 m from its slot. The validated `f2` besiege order on `g1`
+used sequence 130 and was acknowledged at 160.4 s.
+
+| Ram reading | Distance to g1 at basis | Closest distance to g1 | Time after acknowledgement |
+| --- | ---: | ---: | ---: |
+| Public crew-linked vehicle | 226.7 m | 45.2 m | 126.0 s |
+| Private crew-linked vehicle | 226.7 m | 44.2 m | 126.6 s |
+| Private assault equipment | 226.9 m | 43.4 m | 127.8 s |
+
+The 127.8 s private sample first showed the crew routing with 27 men.
+The private equipment stayed at (0.3, −62.4) m from that sample to the
+last, and the vehicle entry stopped listing the crew. Across 180 s
+after acknowledgement, the 150 public readings kept the gate and
+door at 100%, and all 180 private samples kept raw door HP at 9,000.
+
+In the near and distant openings, the ram moved after the order. The
+private equipment reading stayed at the same position from the first
+routing sample onward in each case.
+Physical attachment before the order and live use of the parked
+startup draft remain unverified.
+[Run log](log.md#2026-11-23-izmail-staged-ram-order-from-a-distant-opening)
 
 ## Risks
 
