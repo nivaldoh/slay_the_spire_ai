@@ -1491,6 +1491,27 @@ request. The native repeat sent zero battle orders. Live staged play
 and physical attachment remain unverified.
 [Run log](log.md#2026-11-23-izmail-held-garrison-repeat)
 
+### Crew vehicle context probe (2026-11-23)
+
+The stock battle bridge queried `CcoBattleUnit.VehicleContext` by the
+ram's listed crew ID and through `VehicleList` in a third held-garrison
+launch. The reference describes the field as the vehicle the unit is
+using. [CA's UI context reference](https://chadvandy.github.io/tw_modding_resources/WH3/cco/documentation.html#CcoBattleUnit)
+
+All 19 requests completed, covering all 14 observed frames from 154 to
+170 s. Both query paths returned the same ram for `f2` in every
+sample. The comparison unit, a separate player-controlled unit, returned
+nil each time. The opening UI read at 5.5 s returned the ram even though
+the 5.3 s private frame put the crew and ram centres 214.5 m apart.
+
+The release receipt again covered all 12 defenders at 160.1 s and the
+private sample then had all 25 slots in radius. The crew and ram
+centres were 16.6 m apart. The UI request for the 160.1 s public release
+frame ran at 160.2 s and still returned the ram. The field identifies the associated
+vehicle before and after the crew's approach. Physical attachment remains
+unverified. This run used the stock pack and sent zero battle orders.
+[Run log](log.md#2026-11-23-izmail-crew-vehicle-context)
+
 ## Risks
 
 | Risk | Stage that shows it | Response |

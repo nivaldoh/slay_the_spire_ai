@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail crew vehicle context
+
+One $0 stock launch at `4cbf39b`, build 26403568. All 19 read-only
+battle UI requests completed, including every eligible public frame
+from 154 to 170 s (14). Direct and linked crew queries both returned
+the ram throughout. The other player unit returned nil. The first
+query executed at 5.5 s, 0.2 s after the private geometry put the
+crew and ram centres 214.5 m apart.
+
+The third native release again recorded all 12 defenders and 25 of 25
+slots in radius at 160.1 s. The UI request for that public frame ran
+at 160.2 s and still returned the ram. Physical attachment and live staged play remain
+unverified. Zero battle orders and no model calls. All five runtime files
+and preferences matched prelaunch. Records in
+`runs/izmail-ram-context-20261123/`.
+[Evaluation](escalade-eval.md#crew-vehicle-context-probe-2026-11-23)
+
 ## 2026-11-23 Izmail held-garrison repeat
 
 One $0 stock launch at `166d14c`, build 26403568. The lobby, pack and
