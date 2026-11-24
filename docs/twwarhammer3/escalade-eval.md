@@ -1623,10 +1623,26 @@ the gate. The [gate readback](#gate-target-and-door-readback) shows why
 Check 2's fort anchor and Check 3(b)'s gate anchor remain open, along with
 the Check 3 split and C5's carried-out rule.
 
-Before a live startup smoke, agree on the handover rule and its check.
-Record the first released observation and confirm that setup passes before
-the controller receives it, while the order and acknowledgement keep native
-time. Choose the witness-clock rule before a staged witness run. The
+JUDGEMENT?: Staged startup smoke scope — Codex, 2026-11-23. The proposed
+first live smoke uses `hold` to isolate handover from witness timing and
+combat behavior. Agree on the handover rule and check before launch. Match
+the first policy observation to the admitted sequence and native time, check
+that its public view excludes private fields, and match its empty request to
+the bridge acknowledgement by request ID and native time. A live `play` run
+appends its ordinary register row once an episode result exists, including
+an interrupted result.
+
+The offline CLI reached manifest creation for `hold` at `494396b` and
+`212180b` and for both staged witnesses at `212180b`. Each invocation
+planned one trial, generated the same 152 lobby actions, and reproduced
+all 14 recorded settings, including the reserve wave. The locally built pack
+matched the recorded hash. Offline diagnostics used the pinned build ID.
+Both drafts refused attachment and undersized episode and process caps before
+writing output or taking runtime ownership. The rehearsal set
+`--start-timeout` to 360 s, `--episode-timeout` to 1,320 s and
+`--run-timeout` to 1,740 s.
+
+Choose the witness-clock rule before a staged witness run. The
 [climb and Grom eligibility rules](#grom-gate-eligibility-draft-2026-11-23),
 [wall height check](#wall-height-reference-and-repeat-2026-11-23) and tower
 ownership still belong to the Stage 2 freeze. The integrated draft's ticket controller requires its separate
@@ -1634,7 +1650,10 @@ ownership still belong to the Stage 2 freeze. The integrated draft's ticket cont
 use of the staged startup draft remain unverified.
 
 The reproducible offline contrast and recount are in
-`runs/izmail-stage2-clock-review-20261123/`.
+`runs/izmail-stage2-clock-review-20261123/`. CLI rehearsal evidence and
+instructions to restore the earlier authored deployment (`3f951ef`) and
+exact slot readback (`4ee7b72`) worktrees are in
+`runs/izmail-staged-smoke-preflight-20261123/`.
 [Stage 2 review queue](../review-queue.md#decisions)
 
 ## Risks

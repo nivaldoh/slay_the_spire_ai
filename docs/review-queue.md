@@ -47,8 +47,8 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     link the startup, clock and gate decisions to the recorded evidence. The staged
     startup draft checks exact slots at first release and keeps the native timer running
     during the hold. With the absolute clock, both witnesses have already passed their
-    staging cutoff on the saved handovers. Agree on the setup check for a live startup smoke and
-    choose the clock before a staged witness run. The parked `StagedEscalade` and
+    staging cutoff on the saved handovers. Review the proposed `hold` startup smoke
+    after the offline CLI rehearsal and choose the clock before a staged witness run. The parked `StagedEscalade` and
     `StagedConcentrate` classes implement the first-observation fallback option.
     The ram moved after a staged order
     in nearby and distant openings, with the gate and door at full health. Review the
