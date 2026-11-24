@@ -1287,8 +1287,8 @@ need a fresh wall-target readback. Native movement, isolation and order effects 
 
 ### Integrated Stage 2 draft (2026-11-23)
 
-The local draft `8033afe` includes the ticket launch guard and the gate and engagement
-readers. Five intended scenario and controller pairs wrote temporary manifests before
+The earlier assembly at `8033afe` includes the ticket launch guard and the gate and
+engagement readers. Five intended scenario and controller pairs wrote temporary manifests before
 runtime ownership. Each reproduced the reference plan's 152 menu actions and matched
 174 source file hashes to the commit. The rehearsal refused both wrong ticket pairings,
 the undersized cap and the bare controller name before writing output.
@@ -1297,6 +1297,14 @@ All 14 fake episodes and two saved gate readbacks matched their earlier receipts
 The two saved holds contained no accepted engagement orders. The pack built in memory
 matched the earlier preview digest. Receipts and reproduction commands are in
 `runs/izmail-stage2-integrated-20261123/`.
+
+JUDGEMENT?: Historical review checkouts — Codex, 2026-11-24. Keep the combined
+`7f4cd65` worktree open for current review and restore the older drafts when
+their separate results are needed. Keeping all four checkouts would make those
+reruns immediate. The older `218d73f`, `00cf1bb` and `8033afe` worktrees were
+retired after fresh checkouts at their original paths reproduced the saved
+replays and CLI manifest. The local branches retain their full tips. The
+restore commands and receipts are in `runs/izmail-review-checkout-cleanup-20261124/`.
 
 The offline assembly uses the parked setup and tower changes. Review item 15 includes the
 [combined climb and Grom eligibility draft](#grom-gate-eligibility-draft-2026-11-23)

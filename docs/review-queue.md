@@ -58,8 +58,8 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     the [Check 2 fort anchor](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
     [climb and Grom eligibility](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23),
     the height check and the [tower-owner fixture and live check](twwarhammer3/escalade-eval.md#tower-ownership-readback-2026-11-24)
-    before the Stage 2 freeze. The [integrated draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
-    keeps the ticket probe paired with its explicit-holder scenario.
+    before the Stage 2 freeze. Use `7f4cd65` for review. The [integration notes](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
+    point to the earlier draft restores. The ticket probe still requires its explicit-holder scenario.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks
