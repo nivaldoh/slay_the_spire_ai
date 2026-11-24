@@ -1608,12 +1608,33 @@ changes what both arms do and which witness evidence would carry forward.
 The local draft at `212180b` provides
 `twwarhammer3.scenarios.escalade:StagedEscalade` and
 `twwarhammer3.scenarios.escalade:StagedConcentrate` as explicit policy
-choices for the staged-start draft. On both saved release messages, the
-offline episodes issued staging moves at native 160.1 s and recorded a
-310.1 s fallback. Focused tests cover the exact deadline and phase 2
+choices for the staged-start draft. In the no-delay replay of both saved
+release messages, the variants issued staging moves at native 160.1 s and
+recorded a 310.1 s fallback. Focused tests cover the exact deadline and phase 2
 starting early when the units reach their staging spots. Live use of these
 variants remains unverified.
 [Draft log](log.md#2026-11-23-izmail-staged-witness-clock-draft)
+
+JUDGEMENT?: Witness cadence fixture — Codex, 2026-11-24. Hold the released
+formation fixed, reuse the archived observation cadence and simulate a 300 ms
+application delay. Movement to the staging spots in live play could bring
+phase 2 forward. Use the fixture results to compare time rules.
+
+In eight offline CLI trials at `7f4cd65`, the proposed 5 s age and 5 s
+interval yielded 30 decisions each before the synthetic ending at 340.4 s,
+the last archived frame. Both ordinary and staged variants first
+received the 160.1 s observation and dispatched at native 165.2 s. The ordinary
+witnesses went straight to phase 2. The staged variants moved first and
+recorded a 310.1 s fallback. Their first phase-2 request used the 315.2 s
+observation and dispatched at 321.2 s. The recorded time left at phase-2
+dispatch was 1,039.7 s for the ordinary witnesses and 883.7 s for the staged
+variants. Observation age at dispatch ranged from 5.1 to 6.0 s.
+
+A separate interval fixture inserted a frame at 170.3 s after the first
+request dispatched at 165.2 s and applied at 165.5 s. The runner waited for
+the 171.2 s frame. The altered loop that timed the interval from dispatch
+sent at 170.3 s and failed the schedule check. The scripts and receipts are
+in `runs/izmail-witness-cadence-20261124/`.
 
 The existing `siege_order_acted_on` reader returns true for all three ram
 probes. Each ram missed 15 m against all three references. The table uses

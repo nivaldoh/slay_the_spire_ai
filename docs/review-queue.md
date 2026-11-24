@@ -48,8 +48,10 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     startup draft checks exact slots at first release and keeps the native timer running
     during the hold. With the absolute clock, both witnesses have already passed their
     staging cutoff on the saved handovers. Review the proposed `hold` startup smoke
-    after the offline CLI rehearsal and choose the clock before a staged witness run. The parked `StagedEscalade` and
-    `StagedConcentrate` classes implement the first-observation fallback option.
+    after the offline CLI rehearsal and choose the clock before a staged witness run.
+    In the fixed-formation 5 s / 5 s replay, the ordinary witnesses first
+    dispatched phase-2 orders at 165.2 s and the staged variants did so at
+    321.2 s. [Timing rehearsal](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23)
     All three ram probes missed 15 m against each candidate anchor. In the separate
     Grom-only probe the door lost HP with the ram about 296 m or more from g1. Review the
     [proposed distinction between ram arrival and door damage](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23),
