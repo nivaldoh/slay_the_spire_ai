@@ -1639,6 +1639,16 @@ same reading under all three anchors. A same-battle Check 2 registry match,
 the Check 3 split and the C5 criterion still need agreement.
 The raw-trace recount is in `runs/izmail-gate-attribution-20261123/`.
 
+The existing fort diagnostic can compare published g1 with the fresh
+native gate list in its first successful recorded read. An offline
+rehearsal of the proposed passive stock start exercised the Lua collector,
+matched the 152 lobby steps and caught a displaced native centre with the stored g1 binding
+unchanged. The recipe and scope marker are in
+`runs/izmail-fort-anchor-20261123/`. The opening comparison and the full
+Check 2 registry comparison remain unverified in game. The full check
+also needs a terminal frame, and assessing id stability needs a piece to
+fall.
+
 JUDGEMENT?: Staged startup smoke scope — Codex, 2026-11-23. The proposed
 first live smoke uses `hold` to isolate handover from witness timing and
 combat behavior. Agree on the handover rule and check before launch. Match
