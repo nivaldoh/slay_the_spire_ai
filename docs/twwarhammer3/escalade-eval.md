@@ -1432,8 +1432,7 @@ defender sampled from the 10 s order boundary onward was `e6` at 173.3 s.
 The native timer had 1,044.8 s left at the release. A reconstruction using
 the 160.1 s public frame, positions and equipment with the original 5.3 s
 setup metadata passed the parked slot check at `4ee7b72` offline.
-Repeatability, ram attachment and gameplay from that handover remain
-unverified.
+The second stock reading appears below.
 [Run log](log.md#2026-11-23-izmail-held-garrison-staging)
 
 ### Staged startup draft (2026-11-23)
@@ -1456,9 +1455,41 @@ the native timer could change controller decisions or available play time.
 In the offline replay, the normal episode accepted the reconstructed
 160.1 s frame at sequence 130 with 1,044.8 s of native time remaining.
 Swapping two same-type unit positions refused setup before any policy
-decision or order request. Native staged play, repeatability and ram attachment remain
-unverified.
+decision or order request. Native staged play and physical ram attachment
+remain unverified. Agreement on a repeatable live check is pending.
 [Draft log](log.md#2026-11-23-izmail-staged-startup-draft)
+
+### Held-garrison repeat (2026-11-23)
+
+The second stock launch used the same setup and collector as the
+[original held-garrison probe](#held-garrison-staging-readback-2026-11-23).
+In both, the 5.3 s setup check refused and the timed wave released all 12
+defenders at 160.1 s. Both first public frames carrying the receipt were
+at 160.1 s, sequence 130, with 1,044.8 s of native time remaining.
+Each launch had a private reading at that same timestamp with every
+unit within 25 m of its assigned slot.
+
+| Reading | First launch | Repeat |
+| --- | ---: | ---: |
+| All slots in radius at the release sample | 25 of 25 | 25 of 25 |
+| Held samples with all 12 defenders in radius | 155 of 155 | 155 of 155 |
+| Full matches from release within the 180 s window | 13 | 12 |
+| Distance from listed crew's centre to ram centre at 5.3 s | 225.4 m | 214.6 m |
+| Distance from listed crew's centre to ram centre at release | 16.5 m | 17.6 m |
+
+The stock ram `v1` was at (13.7, −245.3) m at opening and release
+in both launches. Its listed crew `f2` moved from (−211.7, −245.3) to
+(13.7, −261.8) m in the first launch and from (228.3, −247.0) to
+(13.6, −262.9) m in the repeat. Coordinates are x and z. The crew ID
+was available even when the centres were over 200 m apart. Physical
+attachment remains unread by the stock pack.
+
+An offline replay in the parked draft at `494396b` accepted the
+reconstructed repeat frame at sequence 130. Swapping two same-type
+positions again stopped setup before any policy decision or order
+request. The native repeat sent zero battle orders. Live staged play
+and physical attachment remain unverified.
+[Run log](log.md#2026-11-23-izmail-held-garrison-repeat)
 
 ## Risks
 

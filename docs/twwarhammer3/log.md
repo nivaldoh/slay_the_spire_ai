@@ -29,6 +29,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail held-garrison repeat
+
+One $0 stock launch at `166d14c`, build 26403568. The lobby, pack and
+session settings matched the first held launch. Setup refused at 5.3 s.
+The native wave released all 12 defenders at 160.1 s. Both launches had
+25 of 25 slots in radius in their private reading at that timestamp.
+The repeat listed ram crew `f2` 17.6 m from the ram centre at release.
+The original read 16.5 m. The stock reading leaves physical attachment
+unread. Zero battle orders and no model calls. Collection stopped at
+180.5 s. All five runtime files and the preferences matched prelaunch.
+
+Offline at `494396b`, the reconstructed repeat reached the controller
+on sequence 130 with 1,044.8 s remaining. The same-type swap yielded no
+policy decisions or order requests. Native staged play and physical
+attachment remain unverified. Records in `runs/izmail-held-repeat-20261123/`.
+[Evaluation](escalade-eval.md#held-garrison-repeat-2026-11-23)
+
 ## 2026-11-23 Izmail staged startup draft
 
 Parked local declaration and episode code at `494396b`. The
