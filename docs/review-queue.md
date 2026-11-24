@@ -57,7 +57,8 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     [proposed distinction between ram arrival and door damage](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23),
     the [Check 2 fort anchor](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
     [climb and Grom eligibility](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23),
-    the height check and the tower-owner fix before the Stage 2 freeze. The [integrated draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
+    the height check and the [tower-owner fixture and live check](twwarhammer3/escalade-eval.md#tower-ownership-readback-2026-11-24)
+    before the Stage 2 freeze. The [integrated draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
     keeps the ticket probe paired with its explicit-holder scenario.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;

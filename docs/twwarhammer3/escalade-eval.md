@@ -966,6 +966,40 @@ plan named the jobs after the battle and `play` refused it before launching anyt
 name is a withheld word. The card and checking method were not agreed, so no gameplay or benchmark
 verification follows.
 
+### Tower ownership readback (2026-11-24)
+
+The two saved Stage 1 holds contain 1,989 distinct observation frames.
+Each frame had one tower within the proposed 30 m pairing radius for each
+of c3–c6. Across the resulting 7,956 pairs, all 4,331 readings with an
+enemy-held point labelled its tower `us`. In the other 3,625 pairs the
+point reported no holder and the tower read `none`. The 2,196 holder
+readings with an exact-time private capture record all matched the
+observation. The archived frames carry the rendered owner labels.
+Friendly-held Fort Towers and raw native owner IDs remain unread in them.
+
+On raw owner values 0, 1, −1 and unread, both the parked fix at
+`d6b4d76` and the combined candidate at `7f4cd65` produced the expected
+labels in Lua fixtures for both player-alliance positions. The proposed
+test fixture uses raw owners 1/0 in place of 2/1 for its player-alliance-0
+case and asserts the resulting ownership labels. That test file is part
+of an agreed check and its edit awaits review. All 40 siege-assault
+tests passed on `7f4cd65`. Substituting the stock tower publisher in the
+candidate fixture failed two of those tests.
+For the model, the corrected fixture changes t23 from “held by you” to
+“held by enemy.”
+
+JUDGEMENT?: Tower owner opening check — Codex, 2026-11-24. Use an accepted
+Izmail opening at 1x and compare c3–c6 to their unique nearby towers.
+Link its job, battle, sequence and time to the launch and setup receipts
+before interpreting the checker result.
+Require at least one uncontested enemy-held pair and agreement on every
+such pair. Requiring the specific points held in the first archived
+start could leave another legitimate opening unreadable. Keep other
+holder states in the report. The opening checker flags two stock towers,
+passes the corrected fixture and reports missing coverage on a copy with
+no enemy-held point. The live mapping and the check remain unverified.
+Code and receipts are in `runs/izmail-tower-owner-review-20261124/`.
+
 ### Gate target and door readback
 
 Both 2026-11-14 Izmail holds read `mode.fortifications` g1 at (-2,-19.1) and `mode.gates`
