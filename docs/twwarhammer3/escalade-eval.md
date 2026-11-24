@@ -1600,6 +1600,16 @@ and remaining time for engine timing and recorded phase starts. The current
 absolute cutoff instead skips staging on the saved release frames. The choice
 changes what both arms do and which witness evidence would carry forward.
 
+The local draft at `212180b` provides
+`twwarhammer3.scenarios.escalade:StagedEscalade` and
+`twwarhammer3.scenarios.escalade:StagedConcentrate` as explicit policy
+choices for the staged-start draft. On both saved release messages, the
+offline episodes issued staging moves at native 160.1 s and recorded a
+310.1 s fallback. Focused tests cover the exact deadline and phase 2
+starting early when the units reach their staging spots. Live use of these
+variants remains unverified.
+[Draft log](log.md#2026-11-23-izmail-staged-witness-clock-draft)
+
 | Saved ram order | First private sample with the crew 50 m nearer g1, after acknowledgement | Closest equipment distance to g1 in 180 s | Raw door HP |
 | --- | ---: | ---: | ---: |
 | Unstaged | 47.7 s | 38.4 m | 9,000 throughout |

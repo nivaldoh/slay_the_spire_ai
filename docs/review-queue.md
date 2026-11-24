@@ -46,9 +46,11 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [current Izmail Stage 2 choices](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23)
     link the startup, clock and gate decisions to the recorded evidence. The staged
     startup draft checks exact slots at first release and keeps the native timer running
-    during the hold. Both witnesses already exceed their staging cutoff at that handover
-    on the saved frames. Agree on the setup check for a live startup smoke and
-    choose the clock before a staged witness run. The ram moved after a staged order
+    during the hold. With the absolute clock, both witnesses have already passed their
+    staging cutoff on the saved handovers. Agree on the setup check for a live startup smoke and
+    choose the clock before a staged witness run. The parked `StagedEscalade` and
+    `StagedConcentrate` classes implement the first-observation fallback option.
+    The ram moved after a staged order
     in nearby and distant openings, with the gate and door at full health. Review the
     [Check 2 fort and Check 3(b) gate anchors](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
     [climb and Grom eligibility](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23),

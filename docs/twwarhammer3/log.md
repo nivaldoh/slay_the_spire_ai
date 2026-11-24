@@ -29,6 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-11-23 Izmail staged witness clock draft
+
+The parked draft at `212180b` adds explicit `StagedEscalade` and
+`StagedConcentrate` classes. Both use the first controller observation to
+set the phase-2 fallback and record its deadline in native milliseconds.
+
+Both saved release messages at 160.1 s produced only staging moves in
+fake-mailbox episodes with the new classes. The recorded deadline was
+310.1 s. The focused suite covered the exact cutoff and earlier arrivals.
+Tests caught all five removed refusals, four clock faults and a target mix-up.
+No native game or model call ran for this draft. Live staged play remains
+unverified. Records in `runs/izmail-staged-witness-20261123/`.
+[Stage 2 choices](escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23)
+
 ## 2026-11-23 Izmail staged ram order from a distant opening
 
 One $0 stock launch at `6be5091`, build 26403568. At 5.3 s, `f2` was
