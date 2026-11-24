@@ -50,9 +50,10 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     staging cutoff on the saved handovers. Review the proposed `hold` startup smoke
     after the offline CLI rehearsal and choose the clock before a staged witness run. The parked `StagedEscalade` and
     `StagedConcentrate` classes implement the first-observation fallback option.
-    The ram moved after a staged order
-    in nearby and distant openings, with the gate and door at full health. Review the
-    [Check 2 fort and Check 3(b) gate anchors](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
+    All three ram probes missed 15 m against each candidate anchor. In the separate
+    Grom-only probe the door lost HP with the ram about 296 m or more from g1. Review the
+    [proposed distinction between ram arrival and door damage](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23),
+    the [Check 2 fort anchor](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
     [climb and Grom eligibility](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23),
     the height check and the tower-owner fix before the Stage 2 freeze. The [integrated draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
     keeps the ticket probe paired with its explicit-holder scenario.

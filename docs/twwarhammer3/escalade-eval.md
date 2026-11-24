@@ -1610,18 +1610,34 @@ starting early when the units reach their staging spots. Live use of these
 variants remains unverified.
 [Draft log](log.md#2026-11-23-izmail-staged-witness-clock-draft)
 
-| Saved ram order | First private sample with the crew 50 m nearer g1, after acknowledgement | Closest equipment distance to g1 in 180 s | Raw door HP |
-| --- | ---: | ---: | ---: |
-| Unstaged | 47.7 s | 38.4 m | 9,000 throughout |
-| Near opening | 36.6 s | 41.9 m | 9,000 throughout |
-| Distant opening | 35.7 s | 43.4 m | 9,000 throughout |
+The existing `siege_order_acted_on` reader returns true for all three ram
+probes. Each ram missed 15 m against all three references. The table uses
+the 180 s ram windows and 60 s Grom window after acknowledgement.
 
-The existing `siege_order_acted_on` reader returns true for all three.
-Each of the three also misses the proposed 15 m arrival test against g1.
-These traces distinguish movement after dispatch from reaching or damaging
-the gate. The [gate readback](#gate-target-and-door-readback) shows why
-Check 2's fort anchor and Check 3(b)'s gate anchor remain open, along with
-the Check 3 split and C5's carried-out rule.
+| Saved probe | Private samples | Crew first 50 m nearer g1 | Ram minimum to g1 | To Gatehouse | To checkpoint stop | Raw door HP |
+|---|---:|---:|---:|---:|---:|---:|
+| Unstaged ram | 180 | 47.7 s | 38.4 m | 63.0 m | 30.6 m | 9,000 throughout |
+| Near opening ram | 180 | 36.6 s | 41.9 m | 55.3 m | 31.2 m | 9,000 throughout |
+| Distant opening ram | 180 | 35.7 s | 43.4 m | 56.5 m | 32.7 m | 9,000 throughout |
+| Little Grom only | 60 | — | 296.2 m | 278.2 m | 288.6 m | 9,000 to 5,580 |
+
+Each probe had one order matched to its acknowledgement and native dispatch.
+The fourth had only `attack_building` on g1 and the gun spent four rounds.
+In the earlier mixed-order checkpoint, the stopped ram was 10.7 m from
+published Izmail g1 and 32.9 m from its own Gatehouse. Two cannon rounds
+were spent between the last positive and first zero door readings.
+[Grom diagnostic](#little-grom-gate-diagnostic-2026-11-23) · [Checkpoint readback](#gate-target-and-door-readback)
+
+JUDGEMENT?: Ram arrival and door damage — Codex, 2026-11-23. For
+Check 3(b) and C5's ram reading, prefer the proposed 15 m limit on native
+equipment distance to same-battle g1, once Check 2 validates that anchor.
+Keep movement after dispatch and door damage as their own readings. Counting
+door damage as ram arrival could credit a C5 run for the gun's effects
+when Little Grom is eligible. A C5 test of whether the gate route works
+could instead use gate opening as an outcome. The three ram probes give the
+same reading under all three anchors. A same-battle Check 2 registry match,
+the Check 3 split and the C5 criterion still need agreement.
+The raw-trace recount is in `runs/izmail-gate-attribution-20261123/`.
 
 JUDGEMENT?: Staged startup smoke scope — Codex, 2026-11-23. The proposed
 first live smoke uses `hold` to isolate handover from witness timing and
