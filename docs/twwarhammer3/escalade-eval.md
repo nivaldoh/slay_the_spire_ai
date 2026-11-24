@@ -1705,8 +1705,12 @@ The reproducible offline contrast and recount are in
 `runs/izmail-stage2-clock-review-20261123/`. CLI rehearsal evidence and
 instructions to restore the earlier authored deployment (`3f951ef`) and
 exact slot readback (`4ee7b72`) worktrees are in
-`runs/izmail-staged-smoke-preflight-20261123/`.
-[Stage 2 review queue](../review-queue.md#decisions)
+`runs/izmail-staged-smoke-preflight-20261123/`. The standalone staged-start
+(`494396b`) and witness-clock (`212180b`) worktrees were also retired after
+reproducing their original standalone replays and CLI smoke. The named
+branches, archived check receipts and exact restore steps are recorded in
+`runs/izmail-staged-retirement-20261124/`. The current combined offline
+candidate is `7f4cd65`. [Stage 2 review queue](../review-queue.md#decisions)
 
 ## Risks
 
