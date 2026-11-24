@@ -904,8 +904,9 @@ Through stage 3b that is about 25-27 launches and 8.3-11.3 hours of game time be
 step or round. The design's stage 4 had 30 launches with `CavalryEarly` as a third arm; with D2
 descriptive the round has two arms.
 
-Stage 1 ran on 2026-11-14 ([readings](#first-stage-1-launches-2026-11-14)); stage 2's climb
-go/no-go cannot pass until the missing `can_climb` reading below is understood.
+Stage 1 ran on 2026-11-14 ([readings](#first-stage-1-launches-2026-11-14)).
+The [current Stage 2 choices](#stage-2-choices-after-the-ram-trials-2026-11-23)
+cover the staged start, witness clock, climb check and live prerequisites.
 
 ## First stage 1 launches (2026-11-14)
 
@@ -1259,12 +1260,14 @@ matched the earlier preview digest. Receipts and reproduction commands are in
 `runs/izmail-stage2-integrated-20261123/`.
 
 The offline assembly uses the parked setup and tower changes. Review item 15 includes the
-climb eligibility draft and decisions on the tower-owner fix and fixed starts.
-The frozen Stage 2 plan needs a valid setup and a named window with an explicit cutoff
-and process cap. The two [authored-start probes](#authored-start-native-readbacks-2026-11-23)
-failed setup validation. A new fixed-start candidate needs a crew readback and a wall-target
-sample before it can support the planned orders. Integrated native order effects and ticket
-changes remain unverified.
+[combined climb and Grom eligibility draft](#grom-gate-eligibility-draft-2026-11-23)
+and decisions on the tower-owner fix and fixed starts.
+The frozen Stage 2 plan needs an agreed setup and a named window with a cutoff and
+process cap. The first two [authored-start probes](#authored-start-native-readbacks-2026-11-23)
+failed setup. The later [staged startup draft](#staged-startup-draft-2026-11-23) and
+[ram trials](#staged-ram-order-from-a-distant-opening-2026-11-23) supply evidence for the
+[remaining Stage 2 choices](#stage-2-choices-after-the-ram-trials-2026-11-23).
+Integrated native order effects and ticket changes remain unverified.
 [Review item 15](../review-queue.md#decisions)
 
 ### Authored-start native readbacks (2026-11-23)
@@ -1579,6 +1582,50 @@ routing sample onward in each case.
 Physical attachment before the order and live use of the parked
 startup draft remain unverified.
 [Run log](log.md#2026-11-23-izmail-staged-ram-order-from-a-distant-opening)
+
+### Stage 2 choices after the ram trials (2026-11-23)
+
+On the saved near and distant release frames, the current `Escalade` and
+`Concentrate` controllers both put all three groups in phase 2 with
+reason `time` on their first decision at native 160.1 s. Each issued the ram's
+`besiege` order immediately. On the same inputs at elapsed zero or 149.999 s,
+both issued staging moves and kept phase 2 pending. At exactly 150 s they
+switched to the native-release behaviour. The replay varied only the
+controller's elapsed-time input.
+
+JUDGEMENT?: Staged witness clock — Codex, 2026-11-23. If the staged start
+should still give both arms their planned staging phase, count the witness's
+phase-2 fallback from its first controller observation. Retain native elapsed
+and remaining time for engine timing and recorded phase starts. The current
+absolute cutoff instead skips staging on the saved release frames. The choice
+changes what both arms do and which witness evidence would carry forward.
+
+| Saved ram order | First private sample with the crew 50 m nearer g1, after acknowledgement | Closest equipment distance to g1 in 180 s | Raw door HP |
+| --- | ---: | ---: | ---: |
+| Unstaged | 47.7 s | 38.4 m | 9,000 throughout |
+| Near opening | 36.6 s | 41.9 m | 9,000 throughout |
+| Distant opening | 35.7 s | 43.4 m | 9,000 throughout |
+
+The existing `siege_order_acted_on` reader returns true for all three.
+Each of the three also misses the proposed 15 m arrival test against g1.
+These traces distinguish movement after dispatch from reaching or damaging
+the gate. The [gate readback](#gate-target-and-door-readback) shows why
+Check 2's fort anchor and Check 3(b)'s gate anchor remain open, along with
+the Check 3 split and C5's carried-out rule.
+
+Before a live startup smoke, agree on the handover rule and its check.
+Record the first released observation and confirm that setup passes before
+the controller receives it, while the order and acknowledgement keep native
+time. Choose the witness-clock rule before a staged witness run. The
+[climb and Grom eligibility rules](#grom-gate-eligibility-draft-2026-11-23),
+[wall height check](#wall-height-reference-and-repeat-2026-11-23) and tower
+ownership still belong to the Stage 2 freeze. The integrated draft's ticket controller requires its separate
+`ksl-emp-siege-a-ticket-v1` declaration. Physical ram attachment and live
+use of the staged startup draft remain unverified.
+
+The reproducible offline contrast and recount are in
+`runs/izmail-stage2-clock-review-20261123/`.
+[Stage 2 review queue](../review-queue.md#decisions)
 
 ## Risks
 

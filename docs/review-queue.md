@@ -43,37 +43,17 @@ wins with owner-only pause, and work toward an overall ranking. Concrete setups,
     The [first Alesia hold](twwarhammer3/lines-eval.md#first-construction-battle-2026-11-12), 2026-11-12, lost at 338.5 s. The middle outer Kossars routed first, before either tracked sector; this launch misses proposed check 2b's first-rout-in-H-sector clause. Review that premise before more holds or restaging. Actual army purchase charge remains unavailable; no readiness gate or comparison was adopted. Evidence: `runs/comm-feedback-20261112/`.
     Haengju 1a and Izmail stage 1, 2026-11-14 ([log](twwarhammer3/log.md#2026-11-14-first-haengju-and-izmail-construction-holds)), three `hold` launches, $0. Haengju: teleport, hold and timed releases worked; the gate's hit points fell to 0 with D1's Spearmen at it, so Gate stop ended stage 1, and check 6's premise read 67% of shots left at D3's approach. Recommended: park Haengju v1 until the siege-interface fixes below land, then choose a version 2 (the gate as a way in, ammunition re-budgeted) or drop decision 1; deferring keeps Haengju unplayed. Izmail: both ended at the timer (`time_limit`, defender wins). Stage 2 awaits (a) adoption of the parked tower-owner fix on `tower-owner-20261114` (changes what a model reads, card `runs/haengju-20261114/card-tower-owner.md`), (b) agreement on the [parked production climb rule](twwarhammer3/escalade-eval.md#climb-eligibility-draft-2026-11-23) and the defender height method from the stock-start repeat, and (c) review of the authored `deployment` draft on local branch `escalade-deployment-20261123`, since every unit's engine start moved over 40 m between launches. The draft moves wall defenders to interior ground. The card and prepared live readback are in `runs/escalade-deployment-20261123/`. [Haengju](twwarhammer3/haengju-eval.md#first-construction-battle-2026-11-14), [Izmail](twwarhammer3/escalade-eval.md#first-stage-1-launches-2026-11-14).
     The [Izmail opening and order-probe rehearsal](twwarhammer3/escalade-eval.md#saved-opening-and-order-probe-rehearsal-2026-11-23) uses both saved holds. Only the ram order was eligible on those inputs.
-    The [integrated Stage 2 draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23) rehearsed manifest creation offline. Its ticket controller requires the explicit-holder scenario. The freeze still needs agreement on the [combined eligibility draft](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23), the height check and setup choices, native setup readbacks, and a named window with a cutoff and process cap. The [Grom gate trial](twwarhammer3/escalade-eval.md#little-grom-gate-diagnostic-2026-11-23) recorded the paired change under a diagnostic rule while the stock attribute read false.
-    The [gate readback](twwarhammer3/escalade-eval.md#gate-target-and-door-readback) separates the
-    published g1 centre from the position in the Gatehouse readout. In the
-    [stock ram trial](twwarhammer3/escalade-eval.md#stock-ram-gate-diagnostic-2026-11-23),
-    the closest public sample in 180 s was 37.6 m from the centre and 62.1 m
-    from the door, which stayed at full HP. The Check 2 anchor and the measure for
-    Check 3(b) and C5 remain open. Both [authored-start probes](twwarhammer3/escalade-eval.md#authored-start-native-readbacks-2026-11-23)
-    failed setup. The ram centre matched and its listed crew read over 216 m away
-    in each opening. The [passive follow-up](twwarhammer3/escalade-eval.md#passive-authored-start-follow-up-2026-11-23)
-    read 218.5 m between them at the order boundary and zero eligible wall
-    defenders among five visible enemies. The first eligible wall defender was sampled
-    at 18.5 s. Melee adjacency and a repeatable crew-and-ram opening remain unverified.
-    The [parked authored slot check](twwarhammer3/escalade-eval.md#authored-slot-readback-draft-2026-11-23)
-    identifies the displaced crew in the original refusals and catches same-type
-    swaps in its offline tests. It changes which setup readings count and awaits review.
-    The [extended passive readback](twwarhammer3/escalade-eval.md#extended-authored-start-readback-2026-11-23)
-    first found the crew within its slot radius at 112.1 s. Only 16 of 25 units were in
-    their assigned radii then. None of the 175 samples had all 25 in place.
-    Both [held-garrison launches](twwarhammer3/escalade-eval.md#held-garrison-repeat-2026-11-23)
-    read all 25 within their slot radii at the timed release of all 12 defenders. Physical
-    ram attachment remains unread. Review the hold and the controller and timer treatment
-    before adopting a staged start. A [third stock launch](twwarhammer3/escalade-eval.md#crew-vehicle-context-probe-2026-11-23)
-    again had all slots in radius at release. The crew-side query resolved the ram during
-    the distant opening and again near release. In a [staged ram diagnostic](twwarhammer3/escalade-eval.md#staged-ram-order-diagnostic-2026-11-23),
-    the ram moved after one order, from an opening where its crew was already nearby.
-    A [distant-opening trial](twwarhammer3/escalade-eval.md#staged-ram-order-from-a-distant-opening-2026-11-23)
-    recorded ram motion after the same staged order. The crew routed while the gate and
-    door still read 100% in both trials.
-    The [parked startup draft](twwarhammer3/escalade-eval.md#staged-startup-draft-2026-11-23)
-    checks slots on the first observed released frame and keeps the native timer running during the hold.
-    Decide on those rules and the repeatable live check before adoption.
+    The [current Izmail Stage 2 choices](twwarhammer3/escalade-eval.md#stage-2-choices-after-the-ram-trials-2026-11-23)
+    link the startup, clock and gate decisions to the recorded evidence. The staged
+    startup draft checks exact slots at first release and keeps the native timer running
+    during the hold. Both witnesses already exceed their staging cutoff at that handover
+    on the saved frames. Agree on the setup check for a live startup smoke and
+    choose the clock before a staged witness run. The ram moved after a staged order
+    in nearby and distant openings, with the gate and door at full health. Review the
+    [Check 2 fort and Check 3(b) gate anchors](twwarhammer3/escalade-eval.md#gate-target-and-door-readback),
+    [climb and Grom eligibility](twwarhammer3/escalade-eval.md#grom-gate-eligibility-draft-2026-11-23),
+    the height check and the tower-owner fix before the Stage 2 freeze. The [integrated draft](twwarhammer3/escalade-eval.md#integrated-stage-2-draft-2026-11-23)
+    keeps the ticket probe paired with its explicit-holder scenario.
     The experimental offline `lines_readings.contacts` reader landed in the 2026-11-11 cleanup.
     Independent review found and reproduced invalid initial identities matching unidentified frames;
     the reader now requires nonempty string identities. Synthetic regressions and mutation checks
